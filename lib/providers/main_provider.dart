@@ -600,20 +600,15 @@ class MainProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 2026-05-10 (v1.2.18): in-flight count for the eager pre-load
-  /// of all 13 Bible versions during boot. The splash paints a
-  /// "Loading versions: 5/13" subtitle when `versionPreloadTotal > 0`
-  /// — clearer than reusing `loadAttempt` (which means retry count
-  /// in the verse-fetch context). Cleared back to 0/0 when pre-
-  /// load completes so the splash subtitle disappears before the
-  /// `_loading = false` setState.
-  int versionPreloadCount = 0;
-  int versionPreloadTotal = 0;
-  void setVersionPreloadProgress(int count, int total) {
-    if (versionPreloadCount == count && versionPreloadTotal == total) return;
-    versionPreloadCount = count;
-    versionPreloadTotal = total;
-    notifyListeners();
+  /// Completes when the splash has handed over to the app. The eager
+  /// version pre-load waits on this so its per-version `json.decode`
+  /// — ~1 s of blocked main thread each — cannot land while the
+  /// splash is still on screen, where it both janks the splash and
+  /// delays the 3 s advance timer that dismisses it.
+  Future<void> get splashDismissed => _splashDismissed.future;
+  final Completer<void> _splashDismissed = Completer<void>();
+  void markSplashDismissed() {
+    if (!_splashDismissed.isCompleted) _splashDismissed.complete();
   }
 
   /// 2026-05-10 (v1.2.13): true while a version-switch is in flight

@@ -1201,55 +1201,66 @@ has never seen this repo.
       sermon.** Inserting or removing breaks in another man's preaching
       is an expressive decision he did not make. Only typography moves.
 
-- [ ] **The splash re-parses all 7 Bible versions on EVERY cold start.**
-      User, 2026-08-11, from the iPhone: "为什么每一次加载的时候都会加载
-      中译本，但是iPhone不应该全部已经有了吗，不应该有加载中这个界面".
+- [x] **The splash no longer loads a single version — the pre-load now
+      waits for it to go.** The line the user objected to is gone,
+      because the work it described is off the boot path entirely.
 
-      **Reported a second time on 2026-08-12**, which raises its
-      priority — they had already seen it fixed nowhere: "the loading
+      **The recorded diagnosis below was half wrong, and the wrong half
+      mattered.** It says the splash "walks 7 versions before the splash
+      dismisses". It does not — v1.3.4 already made the pre-load
+      fire-and-forget, and the splash dismisses on its own 3 s advance
+      timer (`loading_page.dart:317`) regardless. So the progress line
+      was reporting background work **nobody was waiting for**: it was
+      left over from v1.2.25, when the loop really did block the splash.
+
+      That does not make it harmless. Each version is a `json.decode` of
+      a 2–9 MB string on the main thread, six of them, started
+      immediately after bootstrap — so they ran *underneath* the splash,
+      janking its animation and delaying the very Timer that dismisses
+      it. The user was seeing a screen that said it was loading Bible
+      versions while their phone had every one of them in the bundle,
+      and the claim was slowing down the screen that made it.
+
+      **Fix, in the shape the item asked for — off the boot path, not
+      deleted.** `MainProvider.splashDismissed` is a Completer that
+      `_RootRouter._advance()` completes at the moment the splash hands
+      over; the loop (now `lib/services/version_preloader.dart`, lifted
+      out of `_MainAppState` so its ordering is testable at all) awaits
+      it before the first decode. The user's v1.2.25 choice is intact —
+      every version still lands in the LRU, just after the splash rather
+      than under it.
+
+      The splash's version-progress subtitle, its determinate progress
+      bar, `versionPreloadCount`/`Total` and the `loadingVersionsProgress`
+      ui-string are all deleted rather than hidden: with the pre-load
+      deferred, nothing could ever set them, and a splash that can paint
+      "Loading versions: 3/6" over bundled assets is the exact claim the
+      user says is untrue. The verse-fetch retry subtitle stays — that
+      one is a real wait.
+
+      `test/splash_version_preload_test.dart` asserts no version is
+      touched before `markSplashDismissed()`, and fails on the pre-fix
+      ordering with `Actual: ['kjv', 'nasb', 'leb', …]`; a widget test
+      pins that a healthy splash paints no progress line in any of the
+      three locales. **Not yet confirmed on the user's iPhone** — the
+      acceptance test is their own sentence, and only they can run it.
+
+      Original report, kept for the record —
+      user, 2026-08-11, from the iPhone: "为什么每一次加载的时候都会加载
+      中译本，但是iPhone不应该全部已经有了吗，不应该有加载中这个界面",
+      and again on 2026-08-12: "the loading
       page in iphone still have loading bible version which I feel no
       need right because it is iphone so it will be loaded in phone".
 
-      Note what their second wording asks for. It is not "make the
-      progress line faster" — it is that a bundled app should not show
-      a loading screen for its own bundled data at all. Treat "no
-      version-progress line on a warm cold-start" as the requirement,
-      not as a nice-to-have.
-
-      They are right, and the diagnosis is not what the wording suggests
-      — **nothing is being downloaded.** On iOS every version ships in
-      the bundle. What the splash is waiting on is `json.decode`:
-      `_eagerPreloadAllVersions` (`lib/main.dart:488`) walks 7 versions
-      before the splash dismisses, and `MainProvider.preloadVersion`
-      (`lib/providers/main_provider.dart:214`) short-circuits only on
-      `_versesCache`, which is an in-memory LRU that dies with the
-      process. So the work is redone in full at every launch, and the
-      comment in `main.dart` describing it as first-run-only
-      ("反正第一次用才 load version") has never been true.
-
-      **Do not simply delete the pre-load.** The user chose it
-      deliberately in v1.2.25, after v1.2.22's hybrid was rejected. The
-      goal is to get it OFF the boot path, not to remove it:
-
-      1. Measure first, on a real device, not the simulator: how long
-         does each version's decode actually take, and how much of the
-         splash is decode versus the rest of boot? The `~1 s` in the
-         main.dart comment is an estimate nobody has checked.
-      2. Preferred fix — dismiss the splash after the ACTIVE version
-         is ready, and continue the other 6 in the background. A
-         version switch that arrives before its decode finishes already
-         has a loading state (`bible_reading_pane.dart:2476`), so the
-         worst case is a state that already exists and is already
-         handled.
-      3. If decode itself is the cost, the real fix is not to decode:
-         a pre-parsed binary form the OS can mmap. Bigger job, measure
-         before proposing it.
-
-      Whatever ships, the acceptance test is the user's own sentence,
-      and they have now said it twice: a cold start on an iPhone must
-      not show a version-loading progress line. Verify it on the
-      device, not the simulator — the whole question is decode speed on
-      real hardware.
+      **Still true and still unmeasured:** every version really is
+      re-decoded at every launch — `MainProvider.preloadVersion` short-
+      circuits only on `_versesCache`, an in-memory LRU that dies with
+      the process — and nobody has ever timed a decode on real hardware.
+      The `~1 s` in the code is an estimate. That cost has simply moved
+      out from under the splash; if the user reports jank on the
+      dashboard in the first seconds after boot, the next step is to
+      measure on the device, and after that a pre-parsed binary form the
+      OS can mmap rather than a faster decode.
 
 > **Host reachability, re-measured 2026-08-11 from the Mac with
 > Tailscale stopped and the sandbox disabled — this corrects what the

@@ -33,6 +33,7 @@ import 'package:yswords/services/song_download_service.dart';
 import 'package:yswords/widgets/global_mini_player.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
+import 'package:yswords/services/version_preloader.dart';
 import 'package:provider/provider.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/theme_accent.dart'
@@ -413,7 +414,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     // caches each fetched bundle so later sessions are instant anyway.
     if (mainProvider.verses.isNotEmpty && !kIsWeb) {
       // ignore: unawaited_futures
-      _eagerPreloadAllVersions(mainProvider).catchError(
+      eagerPreloadAllVersions(mainProvider, isActive: () => mounted)
+          .catchError(
           (Object e, StackTrace st) =>
               debugPrint('background version preload failed: $e'));
     }
@@ -465,55 +467,6 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         _loading = false;
       });
     }
-  }
-
-  /// 2026-05-10 (v1.2.25 — restored from v1.2.18): eager pre-load
-  /// of ALL Bible versions before the splash dismisses. User
-  /// chose this trade ("反正第一次用才 load version") again after
-  /// noticing v1.2.22's hybrid stopped at "4/4" in the splash
-  /// progress.
-  ///
-  /// Sequential, no-gap parse of all non-active versions. Updates
-  /// `MainProvider.versionPreloadProgress` so the splash paints
-  /// "Loading versions: N/M" while the user waits.
-  ///
-  /// Order: simplified Chinese staples (largest user base) →
-  /// English → traditional Chinese → LJK2 NT-only specialty.
-  /// Most-likely-next picks land in the LRU first, so even if
-  /// the user is impatient and force-quits during pre-load,
-  /// the first session-start switches still hit the cache.
-  ///
-  /// `preloadVersion` is best-effort — swallows failures so a
-  /// single missing asset doesn't block boot.
-  Future<void> _eagerPreloadAllVersions(MainProvider mainProvider) async {
-    if (!mounted) return;
-    const candidates = <String>[
-      // Simplified Chinese staple — largest user base.
-      'cuvs-yhwh',
-      // English flagships.
-      'kjv',
-      'nasb',
-      'leb',
-      // Traditional Chinese variant.
-      'cuvs-yhwh-tr',
-      // LJK2 — NT-only specialty translation.
-      'biblexg-v2',
-      'biblexg-v2-tr',
-    ];
-    final toLoad =
-        candidates.where((v) => v != mainProvider.currentVersion).toList();
-    final total = toLoad.length;
-    for (int i = 0; i < total; i++) {
-      if (!mounted) return;
-      mainProvider.setVersionPreloadProgress(i + 1, total);
-      // Yield once per iteration so the splash actually repaints
-      // before the next ~1 s json.decode hogs the main thread.
-      await Future<void>.delayed(Duration.zero);
-      await mainProvider.preloadVersion(toLoad[i]);
-    }
-    if (!mounted) return;
-    mainProvider.setVersionPreloadProgress(0, 0);
-    debugPrint('Eager pre-load complete: $total versions');
   }
 
   @override
@@ -916,6 +869,9 @@ class _RootRouterState extends State<_RootRouter> {
   void _advance() {
     if (!mounted || _showHome) return;
     setState(() => _showHome = true);
+    // Releases the eager version pre-load, which is held off the boot
+    // path until the splash is gone.
+    context.read<MainProvider>().markSplashDismissed();
     _handleDeepLink();
   }
 

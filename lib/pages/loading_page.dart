@@ -703,41 +703,30 @@ class _LoadingPageState extends State<LoadingPage> {
                   // "Retrying… (n/m)" (attempts 2+, when the user
                   // would otherwise wonder if the app is frozen).
                   // Goes away as soon as the load settles.
-                  // 2026-05-10 (v1.2.18): added a third state to
-                  // this subtitle. Priority: version-pre-load
-                  // progress > verse-load retry > "Loading verses…".
-                  // Only ONE shows at a time.
-                  if (mainProvider.loadAttempt > 0 ||
-                      mainProvider.versionPreloadTotal > 0) ...[
+                  // 2026-08-12: the version-pre-load state that used
+                  // to take priority here is gone. The pre-load now
+                  // waits for the splash to dismiss, so a line saying
+                  // "Loading versions: 3/6" over bundled assets that
+                  // are not being loaded yet — and are never
+                  // downloaded on native at all — could only mislead.
+                  if (mainProvider.loadAttempt > 0) ...[
                     SizedBox(height: 18 * s),
                     Text(
-                      mainProvider.versionPreloadTotal > 0
-                          ? ((uiStrings['loadingVersionsProgress']
+                      mainProvider.loadAttempt <= 1
+                          ? (uiStrings['loadingVerses']
+                                  ?[settings.locale] ??
+                              'Loading verses…')
+                          : ((uiStrings['retryingAttempt']
                                       ?[settings.locale] ??
-                                  'Loading versions: {n}/{total}')
+                                  'Retrying… ({n}/{max})')
                               .replaceFirst(
                                   '{n}',
-                                  mainProvider.versionPreloadCount
+                                  mainProvider.loadAttempt
                                       .toString())
                               .replaceFirst(
-                                  '{total}',
-                                  mainProvider.versionPreloadTotal
-                                      .toString()))
-                          : (mainProvider.loadAttempt <= 1
-                              ? (uiStrings['loadingVerses']
-                                      ?[settings.locale] ??
-                                  'Loading verses…')
-                              : ((uiStrings['retryingAttempt']
-                                          ?[settings.locale] ??
-                                      'Retrying… ({n}/{max})')
-                                  .replaceFirst(
-                                      '{n}',
-                                      mainProvider.loadAttempt
-                                          .toString())
-                                  .replaceFirst(
-                                      '{max}',
-                                      mainProvider.loadMaxAttempts
-                                          .toString()))),
+                                  '{max}',
+                                  mainProvider.loadMaxAttempts
+                                      .toString())),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: settings.fontSize * 0.85,
@@ -750,24 +739,16 @@ class _LoadingPageState extends State<LoadingPage> {
                       ),
                     ),
                     SizedBox(height: 10 * s),
-                    // Determinate when we already have exact counts
-                    // for free (version pre-load); indeterminate
-                    // during the verse-fetch retry sub-phase, where
-                    // there's no real progress signal to show.
-                    _buildDownloadBar(
-                      context,
-                      value: mainProvider.versionPreloadTotal > 0
-                          ? mainProvider.versionPreloadCount /
-                              mainProvider.versionPreloadTotal
-                          : null,
-                    ),
+                    // Indeterminate: the verse-fetch retry sub-phase
+                    // has no real progress signal to show.
+                    _buildDownloadBar(context),
                   ],
                   // 2026-07-21: same patience escalation as the
                   // booting scaffold. This normal splash is the one
                   // that actually gets stuck showing on a genuinely
                   // slow boot — `_splashVerse` can resolve (via the
                   // 5 s random-fallback) well before FetchVerses does,
-                  // and the loadAttempt/versionPreload subtitle above
+                  // and the loadAttempt subtitle above
                   // only covers the FetchVerses sub-phase, not e.g. a
                   // slow/blocked Firebase-auth network call earlier in
                   // `_bootstrap()` — which otherwise left this screen
@@ -884,21 +865,19 @@ class _LoadingPageState extends State<LoadingPage> {
   /// (uncached) load: once the service worker has the Bible-JSON
   /// asset cached, the fetch resolves near-instantly and this bar
   /// barely has time to render. Deliberately indeterminate (no byte-
-  /// level tracking) EXCEPT for the one sub-case where exact progress
-  /// is already free: `versionPreloadCount`/`versionPreloadTotal`.
-  /// `rootBundle.loadString()` (what `FetchVerses` actually uses) has
+  /// level tracking): `rootBundle.loadString()` (what `FetchVerses` uses) has
   /// no progress API, so a byte-accurate bar would mean rewriting the
   /// core fetch path — the same code both of today's earlier
   /// incidents touched — for a purely cosmetic win. Not worth the
   /// risk; scoped to UI only.
-  Widget _buildDownloadBar(BuildContext context, {double? value}) {
+  Widget _buildDownloadBar(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: 220,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: LinearProgressIndicator(
-          value: value,
+          value: null,
           minHeight: 4,
           backgroundColor: scheme.primary.withValues(alpha: 0.15),
           valueColor: AlwaysStoppedAnimation<Color>(
