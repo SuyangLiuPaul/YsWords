@@ -243,9 +243,9 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   /// song, and a playlist's preference could only be set before
   /// pressing play — so "I am driving, drop the vocals" meant going
   /// back and rebuilding the queue. This re-resolves every song in
-  /// place, keeps the one that is playing, and carries the position
-  /// across: the mixes are the same arrangement, so 1:12 into the sung
-  /// take is 1:12 into the accompaniment.
+  /// place and keeps the one that is playing, carrying the position
+  /// across it: the mixes are the same arrangement, so 1:12 into the
+  /// sung take is 1:12 into the accompaniment.
   ///
   /// Songs with no track of the wanted kind follow [fallback] — the
   /// point of `skip` is that an accompaniment queue never surprises a
@@ -258,6 +258,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     final wasPlaying = _playing;
     final resumeAt = _position;
     final currentUrl = _queue.current?.url;
+    final currentSongId = _queue.current?.song.id;
 
     // The rebuild itself is a pure queue transformation — see
     // SongQueue.withPreference, which is where its rules are tested.
@@ -281,7 +282,13 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
       return;
     }
 
-    _resumeAt = wasPlaying || resumeAt > Duration.zero ? resumeAt : null;
+    // The position carries across the same SONG only. The mixes are the
+    // same arrangement, so 1:12 into the sung take is 1:12 into the
+    // accompaniment — but a song with no such track was skipped, and
+    // 1:12 into a different song is not where anybody was.
+    final sameSong = _queue.current?.song.id == currentSongId;
+    _resumeAt =
+        sameSong && (wasPlaying || resumeAt > Duration.zero) ? resumeAt : null;
     await _playCurrent();
     await _publishQueue();
   }

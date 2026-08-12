@@ -664,6 +664,7 @@ class _MixPicker extends StatelessWidget {
       ),
     ];
 
+    final queue = player.queue;
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 8,
@@ -674,12 +675,20 @@ class _MixPicker extends StatelessWidget {
             avatar: Icon(icon, size: 16),
             label: Text(label, style: const TextStyle(fontSize: 12)),
             selected: current == pref,
-            onSelected: (_) => player.setTrackPreference(
-              pref,
-              fallback: pref == TrackPreference.vocal
-                  ? TrackFallback.useVocal
-                  : TrackFallback.skip,
-            ),
+            // Greyed out when no song in the queue publishes that mix,
+            // rather than accepting the tap and doing nothing: only two
+            // of the four sources record accompaniments at all, so a
+            // queue filtered to the other two had a chip that could
+            // never work. Reported from the phone as pressing
+            // Accompaniment and still hearing singing.
+            onSelected: queue.hasMix(pref)
+                ? (_) => player.setTrackPreference(
+                      pref,
+                      fallback: pref == TrackPreference.vocal
+                          ? TrackFallback.useVocal
+                          : TrackFallback.skip,
+                    )
+                : null,
           ),
       ],
     );

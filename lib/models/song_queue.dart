@@ -171,6 +171,15 @@ class SongQueue {
     return QueueItem(song: song, url: chosen.url, kind: chosen.kind);
   }
 
+  /// Whether any song in this queue publishes [preference]'s mix.
+  ///
+  /// Only 108 of the 609 songs in the catalogue have an accompaniment
+  /// and 208 an instrumental, and both live on two of the four sources
+  /// — so a queue filtered to CGDC or Cahaya has neither. Offering the
+  /// chip anyway makes it a control that does nothing when tapped.
+  bool hasMix(TrackPreference preference) => items.any((i) =>
+      resolveTrack(i.song, preference, TrackFallback.skip) != null);
+
   SongQueue copyWith({
     List<QueueItem>? items,
     int? index,
@@ -199,6 +208,14 @@ class SongQueue {
   /// must never reshuffle as a side effect), and returns an EMPTY queue
   /// when nothing survives [fallback] — the caller decides whether that
   /// means "leave it alone and say so" or something else.
+  ///
+  /// When the song being listened to has no track of the wanted mix,
+  /// [TrackFallback.skip] drops it, and the listener has to land
+  /// somewhere. That somewhere is the next surviving song **forward**
+  /// from where they were, which is what skipping means. It used to be
+  /// track one: the index was left to default, so asking for
+  /// accompaniment on song 300 of the catalogue restarted the queue at
+  /// the beginning.
   SongQueue withPreference(
     TrackPreference preference,
     TrackFallback fallback,
@@ -209,11 +226,22 @@ class SongQueue {
       preference: preference,
       fallback: fallback,
       shuffled: false,
-      startSongId: current?.song.id,
       repeat: repeat,
       sourceLabel: sourceLabel,
     );
-    return rebuilt.isEmpty ? rebuilt : rebuilt.copyWith(shuffled: shuffled);
+    if (rebuilt.isEmpty) return rebuilt;
+    // Counted by position rather than looked up by id: the current song
+    // may not be in the rebuilt queue at all, and counting works the
+    // same whether it survived or not — the survivors before it are
+    // exactly the ones that come before its replacement.
+    final survivorsBefore = items
+        .take(index)
+        .where((i) => resolveTrack(i.song, preference, fallback) != null)
+        .length;
+    return rebuilt.copyWith(
+      index: survivorsBefore.clamp(0, rebuilt.length - 1),
+      shuffled: shuffled,
+    );
   }
 
   /// Put [item] into the queue at [at], keeping the current track

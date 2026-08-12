@@ -87,6 +87,45 @@ void main() {
     expect(next.items.every((i) => i.kind == 'accompaniment'), isTrue);
   });
 
+  test('the song you are on being dropped moves you FORWARD', () {
+    // Reported from the phone, 2026-08-12: "我播放按了中间accom那个但是
+    // 还在唱歌". Only 108 of the 609 songs in the catalogue publish an
+    // accompaniment, so the song you are listening to usually has none
+    // — and the index was left to default, which is 0. Asking for
+    // accompaniment part-way down a queue therefore threw you back to
+    // the top of it.
+    final queue = SongQueue.fromSongs([
+      song('s0', accompaniment: 'https://x/s0-acc.mp3'),
+      song('s1', accompaniment: 'https://x/s1-acc.mp3'),
+      song('s2'),
+      song('s3', accompaniment: 'https://x/s3-acc.mp3'),
+    ], startSongId: 's2');
+
+    final next = queue.withPreference(
+        TrackPreference.accompaniment, TrackFallback.skip);
+
+    expect(next.current!.song.id, 's3',
+        reason: 'skipping means going on to the next song that has the '
+            'mix, never back to the start of the queue');
+    expect(next.current!.kind, 'accompaniment');
+  });
+
+  test('nothing ahead has the mix → the closest one behind', () {
+    final queue = SongQueue.fromSongs([
+      song('s0', accompaniment: 'https://x/s0-acc.mp3'),
+      song('s1', accompaniment: 'https://x/s1-acc.mp3'),
+      song('s2'),
+      song('s3'),
+    ], startSongId: 's3');
+
+    final next = queue.withPreference(
+        TrackPreference.accompaniment, TrackFallback.skip);
+
+    expect(next.current!.song.id, 's1',
+        reason: 'the end of the queue is nearer to where you were than '
+            'the start of it');
+  });
+
   test('useVocal falls back instead of dropping the song', () {
     final queue = SongQueue.fromSongs([
       song('has', accompaniment: 'https://x/has-acc.mp3'),
@@ -112,6 +151,23 @@ void main() {
     expect(next.isEmpty, isTrue,
         reason: 'the handler keeps the old queue and reports no-tracks '
             'rather than stopping the music');
+  });
+
+  test('hasMix answers for the queue, so a dead chip can be greyed out',
+      () {
+    final none = SongQueue.fromSongs([song('s0'), song('s1')]);
+    expect(none.hasMix(TrackPreference.accompaniment), isFalse);
+    expect(none.hasMix(TrackPreference.vocal), isTrue);
+
+    final some = SongQueue.fromSongs(
+        [song('s0'), song('s1', accompaniment: 'https://x/s1-acc.mp3')]);
+    expect(some.hasMix(TrackPreference.accompaniment), isTrue,
+        reason: 'one song with the mix is enough — skip drops the rest');
+
+    // Already switched: you must always be able to go back to singing.
+    final acc =
+        some.withPreference(TrackPreference.accompaniment, TrackFallback.skip);
+    expect(acc.hasMix(TrackPreference.vocal), isTrue);
   });
 
   test('going back to vocal restores the sung take', () {
