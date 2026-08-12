@@ -1140,6 +1140,57 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Turn the featured video into a SERIES section — "Standing at
+      the Cross / 在十字架下, A 10-Part Journey / 人生十堂课".**
+      User, 2026-08-12: "那个featured video现有的删掉变成这里面的video，
+      放成一个系列。暂时只有英语广东话… 因为以后可能更多板块，好好设计一下".
+      Supersedes the plain rename item above — do that rename as part of
+      this, not separately.
+
+      **What is missing is one level.** `assets/onegod.json` already
+      models `episodes[] → tracks[]`, where a track is one language's
+      recording of the same teaching, and paths are already numbered
+      (`/onegod/01/en.mp4`). What it cannot express is a SERIES: a
+      titled, ordered collection of 10 parts. Add that level rather
+      than starting over —
+
+          series[] → episodes[] → tracks[]
+
+      with `series` carrying localised title AND subtitle lines, since
+      this one has four ("Standing at the Cross" / 在十字架下 /
+      "A 10-Part Journey" / 人生十堂课). Two series must be able to
+      differ in language coverage: this one is English + Cantonese only,
+      while 獨一真神 has Mandarin too, so language buttons have to come
+      from the episode, never from a fixed list.
+
+      **ASK BEFORE DELETING 獨一真神.** The user said "现有的删掉", but
+      the structure they are asking for makes deletion unnecessary — it
+      becomes one series beside the new one. Deleting it discards 238 MB
+      of hosted video and, less replaceably, the subtitle work: five VTT
+      files whose timings came from Whisper and whose words came from
+      the church's own .docx via `scripts/align_subtitles.py`. That is
+      not a re-run, it is a rebuild. Put both series in, show the user,
+      and let them delete it afterwards if they still want to.
+
+      **Blocked on the user for the media.** No files or links for
+      Standing at the Cross have been supplied. Note also that on the
+      same day they said the featured video "以后我会要变成YouTube link"
+      — if this series is YouTube-hosted, the player, the offline story
+      and the subtitle story all change, and `videoBase` stops being the
+      answer. Ask which before building the player.
+
+      **Design notes worth keeping:** the section label becomes the
+      series list, not a single video; a series with one episode should
+      not render a list of one; and the existing position-preserving
+      language switch is the feature most worth carrying over — it is
+      why tracks live under an episode rather than beside it.
+
+- [x] **Rename 獨一真神 to "Featured video"** — folded into the series item above, 2026-08-12; doing it alone would be work thrown away.
+
+<details><summary>original</summary>
+
+</details>
+
 - [ ] **Rename 獨一真神 to "Featured video" — LOW priority.**
       User, 2026-08-12: "独一真神那个板块换名字叫featured video之后里面我
       会要变成YouTube link".
