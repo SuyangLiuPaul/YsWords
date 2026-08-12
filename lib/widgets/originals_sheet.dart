@@ -1600,93 +1600,79 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
             ),
           ],
           if (hasChunks) ...[
-            // Bounded transcript — long answers scroll inside the
-            // panel. Each direction tap APPENDS a new labeled chunk
-            // so the user builds up a multi-angle study (verse →
-            // chapter → cross-refs) without losing earlier sections.
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 320),
-              child: Scrollbar(
-                thumbVisibility: true,
-                child: SingleChildScrollView(
-                  primary: false,
-                  padding: const EdgeInsets.only(right: 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (int i = 0; i < _aiChunks.length; i++) ...[
-                        if (i > 0)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Divider(
-                              color: scheme.outlineVariant
-                                  .withValues(alpha: 0.6),
-                              height: 1,
-                            ),
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Text(
-                            _aiChunks[i].label,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: scheme.primary,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ),
-                        // Round 56 (continued — markdown rendering):
-                        // Gemini ignores "no markdown" instructions
-                        // and ships **bold** / ***heading*** markers
-                        // even when told not to. Parse them into
-                        // proper TextSpans (bold/italic) instead of
-                        // showing literal asterisks. Stripped:
-                        // ##/### heading hashes, --- rules, leading
-                        // bullets. User feedback: "the exegesis when
-                        // asking gemini questions, it has *** which
-                        // indicate the format issue".
-                        SelectableText.rich(
-                          TextSpan(
-                            children: parseAiMarkdown(
-                              _aiChunks[i].text,
-                              base: TextStyle(
-                                fontSize: 14,
-                                color: scheme.onSurface,
-                                height: 1.55,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                      if (_aiLoading) ...[
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              uiStrings['aiExplainAsking']?[locale] ??
-                                  'Asking Gemini…',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color:
-                                    scheme.onSurfaceVariant,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
+            // The transcript flows into the sheet's own ListView. It
+            // used to sit in a 320pt-capped SingleChildScrollView so the
+            // direction chips below stayed reachable, but two scrollables
+            // in one axis meant the sheet swallowed every drag: a long
+            // answer was cut mid-sentence with a scrollbar that rendered
+            // and would not move. Each direction tap APPENDS a new
+            // labeled chunk so the user builds up a multi-angle study
+            // (verse → chapter → cross-refs) without losing earlier
+            // sections.
+            for (int i = 0; i < _aiChunks.length; i++) ...[
+              if (i > 0)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(
+                    color: scheme.outlineVariant.withValues(alpha: 0.6),
+                    height: 1,
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  _aiChunks[i].label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.primary,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ),
-            ),
+              // Round 56 (continued — markdown rendering):
+              // Gemini ignores "no markdown" instructions and ships
+              // **bold** / ***heading*** markers even when told not
+              // to. Parse them into proper TextSpans (bold/italic)
+              // instead of showing literal asterisks. Stripped:
+              // ##/### heading hashes, --- rules, leading bullets.
+              // User feedback: "the exegesis when asking gemini
+              // questions, it has *** which indicate the format issue".
+              SelectableText.rich(
+                TextSpan(
+                  children: parseAiMarkdown(
+                    _aiChunks[i].text,
+                    base: TextStyle(
+                      fontSize: 14,
+                      color: scheme.onSurface,
+                      height: 1.55,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            if (_aiLoading) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    uiStrings['aiExplainAsking']?[locale] ??
+                        'Asking Gemini…',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 10),
             // Direction chips — each tap appends a new chunk in the
             // requested direction. The first row tunes the LENGTH of

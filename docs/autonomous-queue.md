@@ -1026,9 +1026,11 @@ has never seen this repo.
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
-        2026-08-11 (sixth) and 2026-08-12 (seventh and eighth): still
-        `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged across eight consecutive iterations. **Tell the user** — they can probably reach Bentley
+        2026-08-11 (sixth) and 2026-08-12 (seventh, eighth and ninth):
+        still `connect=0.000000`, curl times out with no TCP connect.
+        Unchanged across nine consecutive iterations, while cgdc.hk and
+        cahayapengharapan.org answered 200 in the same probe — so it is
+        that host, not the probe. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
         this task can move until it does.
       - Related pages found via search, useful once the host is up:
@@ -1185,28 +1187,12 @@ has never seen this repo.
       language switch is the feature most worth carrying over — it is
       why tracks live under an episode rather than beside it.
 
-- [x] **Rename 獨一真神 to "Featured video"** — folded into the series item above, 2026-08-12; doing it alone would be work thrown away.
-
-<details><summary>original</summary>
-
-</details>
-
-- [ ] **Rename 獨一真神 to "Featured video" — LOW priority.**
-      User, 2026-08-12: "独一真神那个板块换名字叫featured video之后里面我
-      会要变成YouTube link".
-
-      Two steps, and only the first is asked for now:
-      1. **Rename.** `oneGodTitle` is used at 4 sites. The page itself
-         keeps its own heading; what changes is the SECTION label. Give
-         the section its own key rather than editing `oneGodTitle` in
-         place — the video's actual title is still 獨一真神, and the
-         Featured card already has a separate subtitle.
-      2. **Later, not now:** the content becomes YouTube links instead
-         of the self-hosted MP4s. Do NOT start this until the user says
-         so — it changes the subtitle track story completely (the burned
-         cue files in `assets/subtitles/` are ours; YouTube captions are
-         not), and it decides whether the Netlify-hosted 238 MB of video
-         can be dropped. Ask before touching it.
+- [x] **Rename 獨一真神 to "Featured video"** — folded into the series
+      item above, 2026-08-12; doing it alone would be work thrown away.
+      The rename itself is step 1 there: give the SECTION its own key
+      rather than editing `oneGodTitle` (used at 4 sites) in place, since
+      the video's actual title is still 獨一真神. Step 2 — the content
+      becoming YouTube links — stays untouched until the user says so.
 
 - [ ] **An interactive Bible chronology chart — LOW priority, several
       iterations.**
@@ -1257,6 +1243,36 @@ has never seen this repo.
       chronology scheme each date belongs to — and write the test that
       every year is sourced. The rendering is the easy half.
 
+- [x] **The AI exegesis panel cannot be scrolled — fixed by deleting the
+      inner scroll view.** The transcript now flows into the sheet's own
+      `ListView` and scrolls with everything else; the direction chips
+      sit below it, one swipe away. The 320pt cap and its `Scrollbar` are
+      gone.
+
+      **The queue's own claim that this was the only instance of the
+      shape was wrong, and counting said so.** There are 14 bounded
+      scroll views in `lib/`, not one. Thirteen are fine and were left
+      alone: they cap at a FRACTION of the viewport
+      (`MediaQuery.of(context).size.height * 0.35`) because that is how
+      every sheet and dialog here is sized, and the scroll view under
+      them is that sheet's only scrollable — `_PassageFilterSheet` was
+      read in full to confirm the body is a `mainAxisSize.min` Column,
+      not a scrollable. What broke was the one cap in fixed POINTS:
+      that says "clip this region and scroll it by itself", which only
+      holds while nothing around it scrolls in the same axis, and in a
+      sheet something always does.
+
+      `test/nested_scrollable_test.dart` checks the shape rather than
+      this panel — a widget test would pump one panel in one state and
+      miss the next one nested. It flags a fixed-point `maxHeight` whose
+      direct child is a vertical scroll view, and verified: 1 offender
+      on the pre-fix source, 0 after. Deliberately out of scope: the
+      onboarding dialog's 240pt `PageView` of independently scrolling
+      slides, which scrolls across the parent's axis rather than
+      against it.
+
+<details><summary>original</summary>
+
 - [ ] **The AI exegesis panel cannot be scrolled — a nested scroll view
       inside the sheet.**
       User, 2026-08-12, with a screenshot of 創世紀 36:3: the AI answer
@@ -1294,6 +1310,19 @@ has never seen this repo.
       `lib/`, this is the **only** one wrapping a scroll view, so
       fixing it fixes the whole class. Do not go hunting again.
 
+</details>
+
+- [x] **The web app is letterboxed on Android tablets: the manifest
+      locked portrait — fixed in `34dd0ce`,** shipped in v1.4.72. The
+      code landed but the item was never ticked; ticking it here on
+      2026-08-12 after re-reading `web/manifest.json` — the key is
+      DROPPED rather than set to `"any"`, which is the same thing to a
+      browser — and `test/web_manifest_test.dart`, which pins its
+      absence along with the fields an install depends on.
+      Still needs the tablet check below, which only the user can do.
+
+<details><summary>original</summary>
+
 - [ ] **The web app is letterboxed on Android tablets: the manifest
       locks portrait.**
       User, 2026-08-12, from a Xiaomi Pad: "webapp打开两边是黑的不能像
@@ -1327,6 +1356,8 @@ has never seen this repo.
       the WebAPK, so an already-installed PWA keeps the old orientation
       until it is removed and re-added. A tester who skips that step
       will report the fix as not working.
+
+</details>
 
 - [ ] **Re-probe the blocked hosts EVERY iteration, and take the work
       the moment they answer.**
