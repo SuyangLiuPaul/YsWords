@@ -62,6 +62,15 @@ class StrongsEntry {
   /// first translation phrase from `defZh`. Detected via the
   /// gloss ending in `:` or `：`, OR being very short (≤4 chars)
   /// and ending in a particle that indicates "see below".
+  ///
+  /// 2026-08-12: 11 entries carry a Chinese *definition* and no Chinese
+  /// gloss at all, so the card headline fell through to English on the
+  /// Chinese exegesis panel — including G2596 κατά (473 occurrences in
+  /// `assets/originals/`), G302 ἄν, H7665 שָׁבַר, and G2243 Ἡλίας, whose
+  /// English gloss is itself truncated to `Helias (i`. The Chinese was
+  /// in our own asset the whole time; the same `defZh` extraction that
+  /// already rescues a stub gloss now also runs when there is no
+  /// Chinese gloss to stub.
   String localizedGloss(String locale) {
     String? raw;
     String? rawDef;
@@ -73,6 +82,10 @@ class StrongsEntry {
     } else if (locale.startsWith('zh')) {
       if ((glossZh ?? '').isNotEmpty) raw = glossZh;
       if ((definitionZh ?? '').isNotEmpty) rawDef = definitionZh;
+    }
+    if (raw == null && rawDef != null) {
+      final extracted = _extractFirstPhrase(rawDef);
+      if (extracted.isNotEmpty) return extracted;
     }
     raw ??= gloss;
     if (raw.isNotEmpty && _isStubGloss(raw) && rawDef != null) {
@@ -111,6 +124,13 @@ class StrongsEntry {
     final t = g.trim();
     if (t.isEmpty) return true;
     if (t.endsWith(':') || t.endsWith('：')) return true;
+    // A "Chinese" gloss with no Chinese in it. CBOL files eight entries
+    // under the Hebrew stem alone — H874 בָּאַר is `(Piel)`, H952 בּוּר is
+    // `(Qal)` — which names the conjugation and not the sense; the
+    // meaning is the very next line of `defZh` (`1a) 使之明显, 清楚`).
+    // Only reached on the Chinese path, because [_extractFirstPhrase] is
+    // only consulted when a Chinese definition exists.
+    if (!RegExp(r'[㐀-鿿]').hasMatch(t)) return true;
     // Pure punctuation / numbers only.
     if (RegExp(r'^[\s\d.,;:：，。;()()\[\]【】]+$').hasMatch(t)) return true;
     return false;
@@ -164,15 +184,26 @@ class StrongsEntry {
         final t = line.trim();
         if (t.isEmpty) continue;
         if (RegExp(r'^[\s\d]+[a-zA-Z]').hasMatch(t)) continue; // ID + translit
+        // A line opening with a bare Strong's number is CBOL etymology,
+        // not a meaning: H4092's is `04084 的变异型; 形容词`, and printing
+        // that as the word's gloss states a fact about the dictionary
+        // where the reader is promised the sense of the word.
+        if (RegExp(r'^\s*\d').hasMatch(t)) continue;
         if (RegExp(r'^(源自|AV|TDNT|TWOT|钦定本|欽定本|BDB|形容词|形容詞|名词|名詞|动词|動詞|副词|副詞|代词|代詞|介词|介詞|虚词|虛詞|连词|連詞|数词|數詞|冠词|冠詞|专有名词|專有名詞|字根型|阴性名词|陰性名詞|阳性名词|陽性名詞)').hasMatch(t)) continue;
         // Skip lines with `{...}` (pronunciation/transliteration).
         if (t.contains('{') && t.contains('}')) continue;
-        // CJK ratio: only accept lines where >40% chars are CJK.
-        final cjkCount = t.runes
+        // CJK ratio: only accept lines where >40% chars are CJK. The
+        // citation and the cross-referenced number are stripped first —
+        // they are ASCII the reader never sees, and counting them sank
+        // H4092's 「米甸人 = 见 米甸 [4080] "争斗" (#创37:36|)」 to 26%.
+        final measured = t
+            .replaceAll(RegExp(r'\(#[^)]*\)'), '')
+            .replaceAll(RegExp(r'\[\d+\]'), '');
+        final cjkCount = measured.runes
             .where((r) => (r >= 0x3400 && r <= 0x9FFF) ||
                 (r >= 0x20000 && r <= 0x2FA1F))
             .length;
-        if (cjkCount * 100 < t.runes.length * 40) continue;
+        if (cjkCount * 100 < measured.runes.length * 40) continue;
         body = t;
         break;
       }
@@ -182,8 +213,13 @@ class StrongsEntry {
     body = body.replaceAll(RegExp(r'\s*\(#[^)]*\)'), '').trim();
     // Drop trailing ASCII tails (CBOL sometimes appends English).
     body = body.replaceFirst(RegExp(r'\s*[A-Za-z;,.\s]+$'), '').trim();
+    // CBOL's sub-sense numbering (`1a)`, `1c1)`) is structure, not text:
+    // it belongs to a list the card does not draw, so it becomes a
+    // separator rather than being printed as though it were the word.
+    body = body.replaceAll(RegExp(r'\s*\b\d(?:[a-z]\d*)+\)\s*'), '; ');
     // Collapse whitespace.
     body = body.replaceAll(RegExp(r'\s+'), ' ').trim();
+    body = body.replaceFirst(RegExp(r'^;\s*'), '').replaceFirst(RegExp(r';\s*$'), '');
     if (body.length > 36) body = '${body.substring(0, 36)}…';
     return body;
   }

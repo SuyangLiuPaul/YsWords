@@ -294,14 +294,77 @@ and quoted.**
           tokens numbered `G0`/`H0`.** The 295 in the P1 item below are
           the TAGGER's alone, so that item is about `assets/tagged/`
           only and does not touch the originals.
-        • **The Chinese glosses.** They come from CBOL/bible.fhl.net
-          (CC-BY-NC-SA 4.0). Nothing has checked that the gloss shown
-          belongs to the number shown.
+        • ~~**The Chinese glosses.**~~ **Done — the merge is sound, and
+          the audit found a different defect. See the item below.**
 
       Report counts before changing data, as everywhere else in this
       queue. A wrong number here is the same class of error as a wrong
       verse — it is quoted in Bible study.
 
+- [x] **Do the Chinese glosses belong to the numbers they are filed
+      under? Yes — measured, 91.5% of CBOL's own citations verify. And
+      the audit found 18 words answered in English instead.**
+      The last unaudited surface of the item above. The glosses come
+      from CBOL/bible.fhl.net and nothing had ever checked the merge; a
+      gloss under the wrong number is the same class of error as a wrong
+      verse, because the Originals sheet prints it as the meaning of the
+      word the reader tapped.
+
+      **The check does not read the Chinese, it falsifies it.** 8,536
+      entries end their `defZh` with CBOL's own verse citations — H3 אֵב
+      carries 「(#伯 8:12; 歌 6:11|)」 — which is a claim about the text:
+      the word numbered H3 must stand in Job 8:12. Every one of the
+      14,203 citations was resolved against `assets/originals/`, an
+      independently sourced dataset (OSHB / OpenGNT) the glosses were
+      never derived from, through
+      `assets/originals_versification.json` because CBOL numbers verses
+      the way the reading text does. **12,994 land on their own number
+      (91.5%), and 8,197 of the 8,536 entries (96.0%) verify.**
+      `tools/audit_strongs_gloss_refs.py`, one second to run.
+
+      **A misfiled merge would have scored near zero, and the residue is
+      not misfiling.** Of the 339 entries where no citation resolves, 21
+      are Strong's compound lemmas that OSHB numbers part by part
+      (H382 אִישׁ־טוֹב), 15 cite a verse our critical text does not have,
+      and the rest are Textus-Receptus-vs-critical variants and
+      suppletive lemmatisation — G5414 φόρτος at 使徒行傳 27:10, where
+      the TR reads φόρτου and the critical text φορτίου G5413, and
+      G183 ἀκατάσχετος at 雅各書 3:8, where ours reads ἀκατάστατον G182.
+      Read as evidence: 18 of them resolve one number down and 18 one
+      number up, 16 at −2 and 7 at +2. **A systematic offset points one
+      way and moves thousands; noise points both ways and moves tens.**
+      Ten entries also carry CBOL's own id in their header line
+      (`2243 Helias {hay-lee'-as}`) and all ten match their key.
+
+      **What was wrong was ours: 18 words showed English on the Chinese
+      exegesis card.** 11 entries have no `glossZh` at all while the
+      Chinese sits in `defZh`, and `localizedGloss` fell straight
+      through to the English — G2596 κατά (473 occurrences in
+      `assets/originals/`), G302 ἄν (166), H7665 שָׁבַר (148), and
+      G2243 Ἡλίας, which answered `Helias (i` — the English gloss itself
+      truncated by the importer at the first full stop — while our own
+      asset held 以利亚 = 「我的神是雅伟」. Writing the invariant as a test
+      then found 8 more that reading the data had not: entries glossed
+      with the Hebrew stem and nothing else (H874 בָּאַר 「(Piel)」,
+      H952 בּוּר 「(Qal)」), where the sense is the next line down. The
+      stem is kept — in exegesis the binyan is information — it just
+      stops being the whole answer.
+
+      Nothing untrue was ever on screen, which is why no accuracy audit
+      caught it: the app was not showing the Chinese it had. Two
+      narrower repairs came with it — a line opening with a bare Strong's
+      number is etymology, not a meaning (H4092 would have glossed
+      itself 「04084 的变异型」), and CBOL's sub-sense numbering
+      (`1a)`, `1c1)`) becomes a separator instead of being printed as
+      though it were the word.
+
+      Proof nothing else moved: all **14,197** entries were rendered in
+      `zh-Hans`, `zh-Hant` and `en` before and after, and **exactly 18
+      changed, in Chinese only** — no English gloss anywhere differs.
+      `test/strongs_chinese_gloss_test.dart` states the invariant over
+      the real assets rather than listing the 18, so a re-import that
+      drops a Chinese gloss fails the suite; it fails on the pre-fix code
+      with `Actual: 'Helias (i'`.
 
 - [x] **The Originals sheet showed the wrong Hebrew in 1,626 verses.**
       `assets/originals/` and `assets/strongs/concordance.json` are
@@ -963,9 +1026,9 @@ has never seen this repo.
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
-        2026-08-11 (sixth) and 2026-08-12 (seventh): still
+        2026-08-11 (sixth) and 2026-08-12 (seventh and eighth): still
         `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged across seven consecutive iterations. **Tell the user** — they can probably reach Bentley
+        Unchanged across eight consecutive iterations. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
         this task can move until it does.
       - Related pages found via search, useful once the host is up:
