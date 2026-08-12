@@ -59,10 +59,36 @@ class TaggedRun {
 
   factory TaggedRun.fromJson(Map<String, dynamic> j) => TaggedRun(
         text: (j['w'] ?? '') as String,
-        strongs: (j['s'] ?? '') as String,
+        strongs: isSuppliedMarker((j['s'] ?? '') as String)
+            ? ''
+            : (j['s'] ?? '') as String,
         implied: ((j['i'] as List?) ?? const []).cast<String>(),
         grammar: ((j['g'] as List?) ?? const []).cast<String>(),
       );
+
+  /// `H0` / `G0`, which is not a Strong's number: it is the tagger's
+  /// marker for translation-supplied text that no original word stands
+  /// behind. Read as a number it promises an answer the lexicon cannot
+  /// give — neither is a key in `assets/strongs/`, so the sheet said
+  /// 「Lexicon entry not found for H0」 — and the words carrying it are
+  /// the divine name (152 bare 雅伟, 28 主), the word a reader is most
+  /// likely to tap.
+  ///
+  /// Settled against `assets/originals/`, not from the marker's shape:
+  /// 178 of the 295 sit in a verse whose original has no divine name at
+  /// all — 歷代志上 2:3 「雅伟就使他死了」 renders וַיְמִיתֵהוּ, one verb
+  /// with the subject carried in its inflection, and 帖撒羅尼迦前書 1:7
+  /// 「信主之人」 renders τοῖς πιστεύουσιν with no κύριος. The rest are
+  /// the CUV printing the name twice where the Hebrew has it once, and
+  /// there the one Hebrew word is already tagged on the other run.
+  /// So numbering these H3068 / G2962 would state that the original
+  /// carries a word it does not.
+  ///
+  /// Untagged is what the tagger meant: no dotted underline, no tap, no
+  /// promise. The text itself is untouched — it is scripture as the CUV
+  /// prints it and still renders.
+  static bool isSuppliedMarker(String strongs) =>
+      strongs == 'H0' || strongs == 'G0';
 }
 
 class TaggedTextService {

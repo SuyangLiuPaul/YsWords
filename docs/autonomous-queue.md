@@ -963,9 +963,9 @@ has never seen this repo.
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
-        2026-08-11 (sixth): still `connect=0.000000`, curl times out
-        with no TCP connect. Unchanged across six consecutive
-        iterations. **Tell the user** — they can probably reach Bentley
+        2026-08-11 (sixth) and 2026-08-12 (seventh): still
+        `connect=0.000000`, curl times out with no TCP connect.
+        Unchanged across seven consecutive iterations. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
         this task can move until it does.
       - Related pages found via search, useful once the host is up:
@@ -1036,14 +1036,39 @@ has never seen this repo.
       counterpart at all (2 Peter 3:3). Run `--tail 100` and read the
       verse before concluding any of them is a defect.
 
-- [ ] **295 tagged runs carry `H0` / `G0`, which is not a Strong's
-      number.** 253 Hebrew, 42 Greek; neither is a key in
-      `assets/strongs/`, so tapping those words gives "not found".
-      Likely the tagger's marker for the Hebrew direct-object particle
-      or for untagged punctuation. Decide whether they should be
-      untagged runs (no dotted underline, no promise of an answer)
-      rather than tagged ones that cannot answer. Found by
-      `tools/audit_strongs_tagging.py`.
+- [x] **295 tagged runs carried `H0` / `G0`, which is not a Strong's
+      number — now untagged.** 253 Hebrew, 42 Greek; neither is a key in
+      `assets/strongs/`, so the Originals sheet drew the dotted
+      underline, took the tap and answered 「Lexicon entry not found for
+      H0」. The guess written here — the Hebrew direct-object particle —
+      **was wrong.** The words carrying it are the divine name: 152 bare
+      雅伟, 28 主, and they are the words a reader is most likely to tap.
+
+      **What the marker means was settled against `assets/originals/`,
+      not from its shape. 178 of the 295 sit in a verse whose original
+      has no divine name at all**: 歷代志上 2:3 「雅伟就使他死了」 renders
+      וַיְמִיתֵהוּ, one verb with its subject in the inflection, and
+      帖撒羅尼迦前書 1:7 「信主之人」 renders τοῖς πιστεύουσιν with no
+      κύριος anywhere in the verse. The other 117 are the CUV printing
+      the name twice where the Hebrew prints it once — 歷代志上 21:26
+      「求告雅伟。雅伟就应允他」 for one וַיִּקְרָא אֶל־יְהוָה וַיַּעֲנֵהוּ —
+      and there the single Hebrew word is already tagged on the other
+      run. So `H0` means "the translation supplies this; no original
+      word stands behind it", the opposite of a Strong's number.
+
+      **Numbering them H3068 / G2962 was the tempting fix and would have
+      been a false claim** — it tells a reader the Hebrew carries a word
+      it does not, on the divine name, in a panel that looks like it is
+      quoting the original. Untagged is what the tagger meant: the
+      scripture still prints, the promise goes away. One line in
+      `TaggedRun.fromJson`, no asset touched.
+
+      Measured first, as everywhere here: those two are the **only**
+      unresolvable numbers in the whole tagged corpus — 367,589 runs,
+      360,946 tagged, 0 other primary numbers and 0 implied numbers
+      missing from the lexicon. `test/tagged_supplied_words_test.dart`
+      pins that against the real assets and fails on the pre-fix code
+      with the right diagnosis (`{'H0': 253, 'G0': 42}`).
 
 - [ ] **Commentary import (public domain).** One module first — Matthew
       Henry or JFB — via the published `.cmt.mybible` SQLite file, never
