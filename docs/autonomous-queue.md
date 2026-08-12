@@ -1140,6 +1140,40 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **The web app is letterboxed on Android tablets: the manifest
+      locks portrait.**
+      User, 2026-08-12, from a Xiaomi Pad: "webapp打开两边是黑的不能像
+      ipad webapp一样吗".
+
+      **Cause, read off the deployed manifest** (`curl
+      https://yswords-dev.netlify.app/manifest.json`):
+
+          display      "standalone"
+          orientation  "portrait-primary"
+
+      Android honours that lock for an installed PWA, so a tablet held
+      in landscape gets a portrait-shaped window with black bars either
+      side. **iOS and iPadOS ignore the manifest `orientation` field
+      entirely** — Safari does not implement it — which is exactly why
+      the same build fills the screen on the iPad and does not on the
+      Android tablet. One manifest, two platforms, and the difference
+      is this single line.
+
+      **This is not a layout problem.** The app is already responsive
+      across 375–1280 and `test/responsive_all_pages_smoke_test.dart`
+      holds it there. The manifest is refusing landscape before any
+      Flutter code runs.
+
+      **Fix:** in `web/manifest.json`, `"orientation": "any"`, or drop
+      the key. Check whether the file is generated or hand-maintained
+      before editing — `flutter build web` will overwrite a generated
+      one.
+
+      **Verifying needs an uninstall.** Android caches the manifest in
+      the WebAPK, so an already-installed PWA keeps the old orientation
+      until it is removed and re-added. A tester who skips that step
+      will report the fix as not working.
+
 - [ ] **Re-probe the blocked hosts EVERY iteration, and take the work
       the moment they answer.**
       User, 2026-08-11: "api之前没拿到的是不是可以拿到了也加入iteration".
