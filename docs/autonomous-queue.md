@@ -1180,6 +1180,17 @@ has never seen this repo.
       User, 2026-08-11, from the iPhone: "为什么每一次加载的时候都会加载
       中译本，但是iPhone不应该全部已经有了吗，不应该有加载中这个界面".
 
+      **Reported a second time on 2026-08-12**, which raises its
+      priority — they had already seen it fixed nowhere: "the loading
+      page in iphone still have loading bible version which I feel no
+      need right because it is iphone so it will be loaded in phone".
+
+      Note what their second wording asks for. It is not "make the
+      progress line faster" — it is that a bundled app should not show
+      a loading screen for its own bundled data at all. Treat "no
+      version-progress line on a warm cold-start" as the requirement,
+      not as a nice-to-have.
+
       They are right, and the diagnosis is not what the wording suggests
       — **nothing is being downloaded.** On iOS every version ships in
       the bundle. What the splash is waiting on is `json.decode`:
@@ -1209,8 +1220,11 @@ has never seen this repo.
          a pre-parsed binary form the OS can mmap. Bigger job, measure
          before proposing it.
 
-      Whatever ships, the acceptance test is the user's sentence: a
-      second cold start on an iPhone must not show a progress line.
+      Whatever ships, the acceptance test is the user's own sentence,
+      and they have now said it twice: a cold start on an iPhone must
+      not show a version-loading progress line. Verify it on the
+      device, not the simulator — the whole question is decode speed on
+      real hardware.
 
 > **Host reachability, re-measured 2026-08-11 from the Mac with
 > Tailscale stopped and the sandbox disabled — this corrects what the
