@@ -61,6 +61,14 @@ and quoted.**
       20 references, so it also catches an entry nobody has read yet. It
       fails on the pre-fix code naming all 20.
 
+      **Accepted side effect, worth a look on a phone:** the label is now
+      a few characters longer for those 20, and the list cards in
+      `evidence_page.dart` render it `maxLines: 1` with an ellipsis, so
+      the longest — 「使徒行传 19:11-20, 23-41」 — may cut on a narrow
+      card. That is a visibly truncated citation rather than a silently
+      narrowed one, which is the right way round, but if it looks bad
+      the card should wrap to two lines rather than go back to lying.
+
 - [x] **Switching translation silently fails, and you have to try
       several times — the chip was reading a variable the text does not
       follow, and a failed load had no way of telling anyone.**
