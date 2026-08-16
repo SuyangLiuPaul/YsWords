@@ -440,6 +440,28 @@ class _EvidencePageState extends State<EvidencePage> {
   }
 }
 
+/// Where a tap on a card's scripture-reference row lands, or null when
+/// the citation names nothing this app can open.
+///
+/// The row draws its affordance — the dotted underline, the arrow, the
+/// ink response — from this same call, so the card cannot offer a jump
+/// the tap will refuse. Two of the 225 entries resolve to nothing:
+/// `cairo_genizah` cites `Ecclesiasticus (Sirach) 39:1` and
+/// `strabo_geography` cites `Various NT references`. Both are honest
+/// citations — the first is deuterocanonical and outside every version
+/// we ship — so there is nothing to repair in the data; it was the
+/// affordance that lied.
+BibleReference? cardJumpTarget(String raw) {
+  final whole = parseReference(raw);
+  if (whole != null) return whole;
+  if (!raw.contains(';')) return null;
+  for (final part in raw.split(';')) {
+    final ref = parseReference(part.trim());
+    if (ref != null) return ref;
+  }
+  return null;
+}
+
 class _EvidenceCard extends StatelessWidget {
   final BibleEvidence evidence;
   final String locale;
@@ -597,49 +619,7 @@ class _EvidenceCard extends StatelessWidget {
                     // showed the ref as plain text and only the
                     // detail page exposed a tappable chip, so the
                     // direct connection to scripture was buried.
-                    InkWell(
-                      onTap: () =>
-                          _openReferenceFromCard(context, evidence),
-                      borderRadius: BorderRadius.circular(6),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 4),
-                        child: Row(
-                          children: [
-                            Icon(Icons.menu_book_rounded,
-                                size: 14, color: scheme.primary),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                localizedReferenceLabel(
-                                    evidence.scriptureReference,
-                                    locale,
-                                    currentVersion),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                                  fontSize: (settings.fontSize - 4)
-                                      .clamp(11.0, 14.0)
-                                      .toDouble(),
-                                  fontWeight: FontWeight.w700,
-                                  color: scheme.primary,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: scheme.primary
-                                      .withValues(alpha: 0.4),
-                                  decorationStyle:
-                                      TextDecorationStyle.dotted,
-                                ),
-                              ),
-                            ),
-                            Icon(Icons.arrow_forward_rounded,
-                                size: 12,
-                                color: scheme.primary
-                                    .withValues(alpha: 0.65)),
-                          ],
-                        ),
-                      ),
-                    ),
+                    _referenceRow(context, scheme, settings, currentVersion),
                   ],
                 ),
               ),
@@ -651,6 +631,58 @@ class _EvidenceCard extends StatelessWidget {
     );
   }
 
+  /// The scripture-reference row at the foot of a card.
+  ///
+  /// Tappable only when the citation resolves — see [cardJumpTarget].
+  /// An unresolvable one keeps its book icon and its text and loses the
+  /// underline, the arrow and the ink response, because a row that
+  /// invites a tap it can only apologise for teaches the reader that
+  /// the app's cross-links do not work.
+  Widget _referenceRow(BuildContext context, ColorScheme scheme,
+      AppSettings settings, String currentVersion) {
+    final navigable = cardJumpTarget(evidence.scriptureReference) != null;
+    final row = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      child: Row(
+        children: [
+          Icon(Icons.menu_book_rounded,
+              size: 14,
+              color: navigable ? scheme.primary : scheme.onSurfaceVariant),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              localizedReferenceLabel(
+                  evidence.scriptureReference, locale, currentVersion),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize:
+                    (settings.fontSize - 4).clamp(11.0, 14.0).toDouble(),
+                fontWeight: FontWeight.w700,
+                color: navigable ? scheme.primary : scheme.onSurfaceVariant,
+                decoration: navigable ? TextDecoration.underline : null,
+                decorationColor: scheme.primary.withValues(alpha: 0.4),
+                decorationStyle: TextDecorationStyle.dotted,
+              ),
+            ),
+          ),
+          if (navigable)
+            Icon(Icons.arrow_forward_rounded,
+                size: 12,
+                color: scheme.primary.withValues(alpha: 0.65)),
+        ],
+      ),
+    );
+    if (!navigable) return row;
+    return InkWell(
+      onTap: () => _openReferenceFromCard(context, evidence),
+      borderRadius: BorderRadius.circular(6),
+      child: row,
+    );
+  }
+
   /// Tapping the scripture-reference row on a card jumps the reader
   /// straight to the cited verse, bypassing the detail page. Mirrors
   /// `EvidenceDetailPage._openReference`: parse → resolveAndPrepareJump
@@ -658,25 +690,8 @@ class _EvidenceCard extends StatelessWidget {
   /// versions) → SnackBar feedback → push HomePage.
   Future<void> _openReferenceFromCard(
       BuildContext context, BibleEvidence evidence) async {
-    final raw = evidence.scriptureReference;
-    BibleReference? ref = parseReference(raw);
-    if (ref == null && raw.contains(';')) {
-      for (final part in raw.split(';')) {
-        ref = parseReference(part.trim());
-        if (ref != null) break;
-      }
-    }
-    if (ref == null) {
-      final locale = context.read<AppSettings>().locale;
-      final msg = (uiStrings['couldNotParseRef']?[locale] ??
-              "Couldn't parse reference: {ref}")
-          .replaceFirst('{ref}', raw);
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
-        content: Text(msg),
-        duration: const Duration(seconds: 3),
-      ));
-      return;
-    }
+    final ref = cardJumpTarget(evidence.scriptureReference);
+    if (ref == null) return;
     final mp = context.read<MainProvider>();
     final result = await resolveAndPrepareJump(reference: ref, mp: mp);
     if (!context.mounted) return;

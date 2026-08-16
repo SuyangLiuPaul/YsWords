@@ -1266,10 +1266,10 @@ has never seen this repo.
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
-        2026-08-11 (sixth), 2026-08-12 (seventh through twelfth) and
-        2026-08-16 (thirteenth): still `connect=0.000000`, curl times
-        out with no TCP connect.
-        Unchanged across thirteen consecutive iterations, while cgdc.hk and
+        2026-08-11 (sixth), 2026-08-12 (seventh through twelfth),
+        2026-08-16 (thirteenth) and 2026-08-17 (fourteenth): still
+        `connect=0.000000`, curl times out with no TCP connect.
+        Unchanged across fourteen consecutive iterations, while cgdc.hk and
         cahayapengharapan.org answered 200 in the same probe — so it is
         that host, not the probe. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
@@ -1516,15 +1516,59 @@ has never seen this repo.
       evidence corpus ever grows: the honest fix is to drop the target
       when the chapter is too short, not to clamp it to the last verse.
 
-- [ ] **A citation that cannot be parsed still gets a 「→ 阅读经文」
-      chip that can only apologise.** `cairo_genizah` cites
-      `Ecclesiasticus (Sirach) 39:1` and `strabo_geography` cites
-      `Various NT references`; both go down the single-reference path, which wires
-      `onTap` unconditionally and answers "Couldn't parse reference" in a
-      snackbar. The multi-reference path already renders an unresolvable
-      part as plain text with no tap target — the single path should do
-      the same. Deuterocanonical, so there is nothing to navigate to and
-      nothing to fix in the data; it is the affordance that lies.
+- [x] **A citation that cannot be parsed still gets a 「→ 阅读经文」
+      chip that can only apologise — fixed on BOTH evidence surfaces.**
+      `cairo_genizah` cites `Ecclesiasticus (Sirach) 39:1` and
+      `strabo_geography` cites `Various NT references`; both go down the
+      single-reference path, which wired `onTap` unconditionally and
+      answered "Couldn't parse reference" in a snackbar. Nothing is wrong
+      with the data — those are honest citations of things the app does
+      not contain — so it was the affordance that lied.
+
+      **The list card had the same defect and this item did not know it.**
+      The queue described only the detail-page chip; `evidence_page.dart`
+      draws the reference row with a dotted underline, a trailing arrow
+      and an `InkWell` that calls its own `_openReferenceFromCard`, and
+      that path also ended in the snackbar. The list is the surface every
+      reader scrolls, so it was the more visible of the two.
+
+      Fixed the same way on both: an unresolvable citation keeps its book
+      icon and its text and loses the underline, the arrow, the 「→ 阅读
+      经文」 and the ink response. The card row now derives its affordance
+      from `cardJumpTarget()` — **the same call the tap uses** — so the
+      row cannot offer a jump the tap will refuse. A `;` citation whose
+      first part fails and whose second resolves stays tappable, which is
+      the behaviour this must not narrow.
+
+      **Counted before concluding: exactly 2 of 225 entries, 0 empty.**
+      The test asserts the two by name rather than the number alone, so a
+      future import that adds a third fails with its id.
+
+      **A refuter took all four claims and could not break any of them**
+      — it re-derived the 225/2 with its own harness compiling the repo's
+      real parser, confirmed all 7 shipped versions are 66/27-book with no
+      Sirach anywhere, and read the pre-fix code out of `git show HEAD:`
+      to confirm neither surface could navigate. It did correct one piece
+      of wording, and the correction is the item below.
+
+- [ ] **The timeline and person-detail reference chips have the same
+      unconditional `onTap` — safe only because their data resolves.**
+      Raised by the refuter on the item above, which had claimed the
+      defect "does not exist" there. It does exist in the code:
+      `_RefChip` in `bible_timeline_page.dart` and `_refChip` in
+      `person_detail_sheet.dart` wire their tap exactly as the pre-fix
+      evidence chip did, and both end in the same
+      「Couldn't parse reference」 snackbar. What is true is that it is
+      **not reachable from today's data** — measured, 123 refs in
+      `bible_timeline.json` and 665 in `family_tree.json`, 0 unresolvable
+      on either.
+
+      Not fixed, deliberately: defending against data that does not exist
+      adds dead UI code. The cheaper guard is the standing data check now
+      in `test/evidence_unresolvable_citation_test.dart`, which fails if a
+      future import hands either surface a citation it cannot open. If
+      that test ever goes red, fix the chip the way the evidence chip was
+      fixed rather than repairing the reference by guess.
 
 - [ ] **Bounded scroll boxes are everywhere, not just the AI panel.**
       User, 2026-08-16: "很多时候这些框框都是上下滑动很多地方都是这样是不是

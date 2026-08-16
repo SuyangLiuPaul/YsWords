@@ -654,8 +654,13 @@ class _Section extends StatelessWidget {
 /// Separate chips rather than a `TapGestureRecognizer` per span — an
 /// outer `InkWell` and a span recognizer both enter the gesture arena,
 /// and the flowing-paragraph layout below was itself a fix that a `Row`
-/// broke. The single-reference path is left exactly as it was, because
-/// 204 of the 225 entries go down it.
+/// broke. 204 of the 225 entries go down the single-reference path.
+///
+/// A citation that resolves to nothing renders as plain text on BOTH
+/// paths. The multi path already did; the single one wired `onTap`
+/// unconditionally and could only answer "couldn't parse", which is an
+/// affordance that lies about the citation rather than a link that is
+/// merely broken.
 class _ReferenceChip extends StatelessWidget {
   final String reference;
   final String locale;
@@ -690,72 +695,73 @@ class _ReferenceChip extends StatelessWidget {
     final whole = segments.isEmpty
         ? CitationSegment(reference.trim(), parseReference(reference))
         : segments.first;
+    // Laid out as ONE flowing paragraph, not a Row.
+    //
+    // 2026-08-11, second report on this chip. Making the reference
+    // Flexible stopped it being cut off, but a Row places its trailing
+    // children beside the whole text BLOCK, not after the last word —
+    // so with two references the 「→ 阅读经文」 sat at the end of line
+    // one and 「10:26」 continued underneath it. Correct, and unreadable.
+    //
+    // WidgetSpans put the icons in the text stream, so everything wraps
+    // together and the affordance always follows the last reference,
+    // however many there are.
+    final label = Text.rich(
+      TextSpan(
+        children: [
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: Icon(Icons.menu_book_outlined,
+                  size: 16, color: scheme.primary),
+            ),
+          ),
+          TextSpan(
+            text: localizedReferenceLabel(reference, locale, currentVersion),
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: settings.fontSize,
+              fontWeight: FontWeight.w700,
+              color: scheme.primary,
+            ),
+          ),
+          if (whole.target != null) ...[
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Icon(Icons.arrow_forward,
+                    size: 14, color: scheme.primary),
+              ),
+            ),
+            TextSpan(
+              text: uiStrings['readInBible']?[locale] ?? 'Read',
+              style: TextStyle(
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontSize:
+                    (settings.fontSize - 3).clamp(11.0, 15.0).toDouble(),
+                fontWeight: FontWeight.w600,
+                color: scheme.primary,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+    const padding = EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+    if (whole.target == null) {
+      return Padding(padding: padding, child: label);
+    }
     return Material(
       color: scheme.primary.withValues(alpha: 0.10),
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: () => onOpen(whole),
-        child: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          // Laid out as ONE flowing paragraph, not a Row.
-          //
-          // 2026-08-11, second report on this chip. Making the
-          // reference Flexible stopped it being cut off, but a Row
-          // places its trailing children beside the whole text BLOCK,
-          // not after the last word — so with two references the
-          // 「→ 阅读经文」 sat at the end of line one and 「10:26」
-          // continued underneath it. Correct, and unreadable.
-          //
-          // WidgetSpans put the icons in the text stream, so everything
-          // wraps together and the affordance always follows the last
-          // reference, however many there are.
-          child: Text.rich(
-            TextSpan(
-              children: [
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Icon(Icons.menu_book_outlined,
-                        size: 16, color: scheme.primary),
-                  ),
-                ),
-                TextSpan(
-                  text: localizedReferenceLabel(
-                      reference, locale, currentVersion),
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontFamilyFallback: kCjkFontFallback,
-                    fontSize: settings.fontSize,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.primary,
-                  ),
-                ),
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Icon(Icons.arrow_forward,
-                        size: 14, color: scheme.primary),
-                  ),
-                ),
-                TextSpan(
-                  text: uiStrings['readInBible']?[locale] ?? 'Read',
-                  style: TextStyle(
-                    fontFamily: settings.fontFamily,
-                    fontFamilyFallback: kCjkFontFallback,
-                    fontSize:
-                        (settings.fontSize - 3).clamp(11.0, 15.0).toDouble(),
-                    fontWeight: FontWeight.w600,
-                    color: scheme.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        child: Padding(padding: padding, child: label),
       ),
     );
   }
