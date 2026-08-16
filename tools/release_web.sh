@@ -70,16 +70,132 @@ fi
 
 cd "$PROJECT"
 
-# Deploy build/web to each "id:name" entry (parallel, then wait).
-deploy_sites() {
-  for entry in "$@"; do
-    id="${entry%:*}"
-    name="${entry#*:}"
-    echo "==> deploying $name ($id)"
-    "$NETLIFY" deploy --prod --site "$id" --dir build/web \
-      --message "v$APP_VERSION $name" &
+# Prove one site is serving what was just built.
+#
+# Netlify answers a request for a missing file with 200 + index.html, so
+# an exit status settles nothing here — both checks read the body.
+verify_site() {
+  local label="$1" host="$2"
+  local url="https://$host.netlify.app"
+  local served attempt want got
+
+  # WHICH bundle landed matters as much as which version. The China build
+  # is the only one passed --no-web-resources-cdn and that changes
+  # flutter_bootstrap.js, which Netlify serves byte-identical to the file
+  # on disk — measured across all four sites, 2026-08-17 — so comparing
+  # hashes settles it without depending on anything inside the file. It
+  # is the check that catches the recorded recovery hazard: once the
+  # second build starts, build/web holds the CHINA bundle, so redeploying
+  # it to an international site ships CHINA_MODE to readers who can reach
+  # Google.
+  #
+  # Its one blind spot, so nobody assumes more of it than it gives: the
+  # two bootstraps differ ONLY because --no-web-resources-cdn is passed
+  # to the China build alone (dart-defines do not reach this file). Pass
+  # that flag to both builds, or neither, and this check keeps passing
+  # while no longer being able to tell the bundles apart.
+  want="$(shasum -a 256 "$PROJECT/build/web/flutter_bootstrap.js" | cut -d' ' -f1)"
+
+  # Retried together, because an abort costs a rebuild and a single
+  # dropped connection must not be able to cause one. Freshness comes
+  # from Netlify invalidating the edge on deploy, NOT from a cache-buster
+  # — measured 2026-08-17, a random query string returns the same edge
+  # object with the same `age`, so the query is part of nothing.
+  for attempt in 1 2 3; do
+    served="$(curl -fsS --max-time 30 "$url/version.json" 2>/dev/null \
+      | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+    got="$(curl -fsS --max-time 30 "$url/flutter_bootstrap.js" 2>/dev/null \
+      | shasum -a 256 | cut -d' ' -f1)"
+    if [[ "$served" = "$APP_VERSION" && "$got" = "$want" ]]; then
+      echo "  ✓ $label — v$APP_VERSION, bundle matches build/web"
+      return 0
+    fi
+    if [[ "$attempt" != "3" ]]; then sleep 5; fi
   done
-  wait
+
+  if [[ "$served" != "$APP_VERSION" ]]; then
+    echo "  ✗ $label serves version '${served:-none}', expected $APP_VERSION"
+  else
+    echo "  ✗ $label serves v$APP_VERSION but a different bundle than build/web"
+  fi
+  return 1
+}
+
+# Deploy build/web to each "id:label:host" entry (parallel), then verify
+# every one of them.
+#
+# 2026-08-17: this used to run each deploy with `&` and then a bare
+# `wait`, which returns 0 whatever the jobs did — verified on this
+# machine's bash 3.2 — so `set -e` could never fire. Twice, v1.4.61 and
+# v1.4.65 and both yswords-qat, the script printed "✓ deployed" while the
+# site still served the previous version; the second time
+# `netlify api listSiteDeploys` had recorded `state: error, "Deploy
+# canceled"`.
+#
+# Waiting per PID is therefore NOT on its own enough, and the fix does
+# not rest on it: "Deploy canceled" is a state Netlify can set after the
+# upload finishes and the CLI has already exited 0, and no exit code
+# would carry that. So exit codes only drive the retry — whether the
+# release succeeded is decided by re-fetching from the SITE.
+deploy_sites() {
+  local entry id label host i
+  local pids=() entries=() failed=()
+
+  if [[ ! -f "$PROJECT/build/web/main.dart.js" ]]; then
+    echo "✗ build/web/main.dart.js is missing — refusing to deploy a shell"
+    exit 1
+  fi
+
+  for entry in "$@"; do
+    IFS=':' read -r id label host <<<"$entry"
+    echo "==> deploying $label ($id)"
+    "$NETLIFY" deploy --prod --site "$id" --dir build/web \
+      --message "v$APP_VERSION $label" &
+    pids+=("$!")
+    entries+=("$entry")
+  done
+
+  for i in "${!pids[@]}"; do
+    if ! wait "${pids[$i]}"; then
+      IFS=':' read -r id label host <<<"${entries[$i]}"
+      echo "WARN: netlify deploy of $label exited non-zero"
+      failed+=("${entries[$i]}")
+    fi
+  done
+
+  # Retry a failed site once, on its own. Both recorded failures were a
+  # canceled deploy inside a parallel fan-out, and stopping here would
+  # leave the sites on two different versions — the state this change
+  # exists to prevent. The retry's own exit code is not trusted either;
+  # verification below decides.
+  for entry in ${failed[@]+"${failed[@]}"}; do
+    IFS=':' read -r id label host <<<"$entry"
+    echo "==> retrying $label alone"
+    "$NETLIFY" deploy --prod --site "$id" --dir build/web \
+      --message "v$APP_VERSION $label (retry)" || true
+  done
+
+  failed=()
+  echo "==> verifying"
+  for entry in "$@"; do
+    IFS=':' read -r id label host <<<"$entry"
+    if ! verify_site "$label" "$host"; then
+      failed+=("$entry")
+    fi
+  done
+
+  if [[ ${#failed[@]} -gt 0 ]]; then
+    echo
+    echo "✗ release ABORTED — these sites are not serving v$APP_VERSION:"
+    for entry in "${failed[@]}"; do
+      IFS=':' read -r id label host <<<"$entry"
+      echo "    $label  https://$host.netlify.app  ($id)"
+    done
+    echo "  build/web still holds the bundle for THIS group, so re-running"
+    echo "  the same netlify deploy is safe right now. After a later build"
+    echo "  overwrites build/web it is not — rebuild that bundle first."
+    exit 1
+  fi
 }
 
 # 2026-08-03: `flutter build web` does NOT clean stray files it
@@ -107,12 +223,12 @@ echo "==> building INTERNATIONAL bundle"
 "$FLUTTER" build web --release \
   --dart-define="APP_VERSION=$APP_VERSION"
 INTL_SITES=(
-  "b745ae1f-0780-4fa3-8478-bdf2f2aaf59a:dev"
-  "2bcb6644-2a3a-4050-b6dc-5b059bbe96d3:qat"
+  "b745ae1f-0780-4fa3-8478-bdf2f2aaf59a:dev:yswords-dev"
+  "2bcb6644-2a3a-4050-b6dc-5b059bbe96d3:qat:yswords-qat"
 )
 if [[ "$INCLUDE_PROD" = "1" ]]; then
   echo "==> --include-prod set; international build will also go to prod."
-  INTL_SITES+=("975d1a08-8203-4994-a7ef-ca60452e41bf:prod")
+  INTL_SITES+=("975d1a08-8203-4994-a7ef-ca60452e41bf:prod:yswords")
 fi
 deploy_sites "${INTL_SITES[@]}"
 
@@ -137,15 +253,16 @@ echo "==> building CHINA bundle (CHINA_MODE=true)"
   --dart-define="APP_VERSION=$APP_VERSION" \
   --dart-define="CHINA_MODE=true"
 CN_SITES=(
-  "50f1502c-299f-4ff8-a21b-28f53eaee1e1:cn-dev"
-  "266f97ef-f28b-4313-b83b-653c098df640:cn-qat"
+  "50f1502c-299f-4ff8-a21b-28f53eaee1e1:cn-dev:yswords-cn-dev"
+  "266f97ef-f28b-4313-b83b-653c098df640:cn-qat:yswords-cn-qat"
 )
 if [[ "$INCLUDE_PROD" = "1" ]]; then
   echo "==> --include-prod set; China build will also go to yswords-cn."
-  CN_SITES+=("3094b5e5-bf62-48e4-9b3b-4ff8adc84f3c:cn")
+  CN_SITES+=("3094b5e5-bf62-48e4-9b3b-4ff8adc84f3c:cn:yswords-cn")
 fi
 deploy_sites "${CN_SITES[@]}"
 
 echo
-echo "✓ v$APP_VERSION deployed (international → en sites, CHINA_MODE → cn sites)."
+echo "✓ v$APP_VERSION deployed (international → en sites, CHINA_MODE → cn sites)"
+echo "  — every site was re-fetched and confirmed serving it."
 echo "  next: git commit + push, then tools/yswords-ios-reinstall.sh for native devices"

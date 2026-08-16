@@ -1267,10 +1267,10 @@ has never seen this repo.
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
         2026-08-11 (sixth), 2026-08-12 (seventh through twelfth),
-        2026-08-16 (thirteenth) and 2026-08-17 (fourteenth and
-        fifteenth): still
+        2026-08-16 (thirteenth) and 2026-08-17 (fourteenth through
+        sixteenth): still
         `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged across fifteen consecutive iterations, while cgdc.hk and
+        Unchanged across sixteen consecutive iterations, while cgdc.hk and
         cahayapengharapan.org answered 200 in the same probe — so it is
         that host, not the probe. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
@@ -2372,6 +2372,66 @@ so the bundle-size answer stays on the record.
 - [x] Artwork thumbnails in song list rows — behind the play button, so
       the 407 songs without artwork are not left with a hole.
 
+- [x] **`release_web.sh` could report success when a site did not deploy
+      — the site is now asked, and it decides.** 2026-08-17.
+
+      The old `deploy_sites` ran each `netlify deploy` with `&` and then
+      a bare `wait`, which returns 0 whatever the jobs did (verified on
+      this machine's bash 3.2: `set -e; (exit 7) & wait; echo $?` → 0),
+      so `set -e` could never fire.
+
+      **Waiting per PID was NOT enough on its own, and an adversarial
+      pass is what established that.** "Deploy canceled" is a state
+      Netlify can set *after* the upload finishes and the CLI has already
+      exited 0 — no exit code carries it. So exit codes now only drive a
+      one-shot sequential retry of a failed site, and success is decided
+      by **re-fetching from the site**: `version.json` must be this
+      version, and the served `flutter_bootstrap.js` must be
+      byte-identical to the `build/web` copy that was just uploaded.
+
+      **The bundle check is a hash comparison, which needs no assumption
+      about what is inside the file.** Measured: Netlify serves that file
+      byte-for-byte as it is on disk, cn-dev and cn-qat both matching the
+      local artifact while dev and qat carry a different hash. This is
+      the check that catches the recorded recovery hazard — build/web
+      holds the CHINA bundle once the second build starts, so a redeploy
+      after a failure can ship CHINA_MODE to an international site.
+      Its blind spot is written into the code: the two bootstraps differ
+      only because `--no-web-resources-cdn` goes to the China build
+      alone, so giving that flag to both (or neither) would leave the
+      check passing and blind.
+
+      Verified against the LIVE sites with the netlify CLI stubbed, so
+      nothing was deployed: a matching bundle passes both cn sites; the
+      international sites abort while build/web holds the China bundle;
+      a version the sites do not serve aborts; and a CLI failure is
+      retried alone and then verified. The same failure run on the
+      pre-fix code (`git show HEAD:`) prints 「✓ deployed」 and exits 0,
+      which is the evidence that this was real and not theoretical.
+      Also added: a refusal to deploy at all when `build/web/main.dart.js`
+      is missing.
+
+      Two corrections this turned up, both worth more than the fix:
+
+      1. **The recovery advice recorded below was wrong.** It said to
+         「check `flutter_bootstrap.js` mentions `gstatic.com/flutter-canvaskit`
+         to tell the two apart」. Both bundles mention it — it sits in the
+         engine loader on every build. The real marker is
+         `"useLocalCanvasKit":true`, present only on the China build.
+         Following the old advice during a recovery would have identified
+         the bundles backwards.
+      2. **A query string does not bust Netlify's edge cache.** A fresh
+         random `?v=` returns the same edge object with the same `age`
+         and `etag`. Freshness after a deploy comes from Netlify
+         invalidating on deploy, not from a cache-buster, and the first
+         draft of this fix carried a comment claiming otherwise.
+
+      Left alone deliberately: `curl` has no `-L`, so if the prod
+      hostnames ever move behind a redirecting custom domain, an
+      `--include-prod` run would abort. Both answer 200 directly today.
+
+<details><summary>original report</summary>
+
 - [ ] **`release_web.sh` can report success when a site did not deploy.**
       Hit on 2026-08-11 during the v1.4.61 release: `deploy_sites` runs
       each `netlify deploy` with `&` and then a bare `wait`, which
@@ -2406,6 +2466,8 @@ so the bundle-size answer stays on the record.
       Worth fixing now rather than measuring further, and worth fetching
       one repaired asset (not only `version.json`) to confirm a deploy
       truly landed.
+
+</details>
 
 ## P3 — known but blocked or deferred
 
