@@ -16,6 +16,51 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+- [x] **20 Bible Evidence cards printed a narrower passage than the one
+      they cite.** Found while investigating the 「两个经文只能去一个」
+      report below, and it outranks it: that item is about a link you
+      cannot follow, this one is about a reference that is wrong on
+      screen.
+
+      `localizedReferenceLabel` re-rendered the label from the parsed
+      `BibleReference`, and `parseReference` **deliberately narrows** —
+      it stops at the first comma and keeps only the opening chapter of
+      a range, because its job is to produce ONE navigable target. Right
+      for deciding where to jump, wrong for deciding what to print.
+
+      | the entry cites | the card printed |
+      |---|---|
+      | `2 Kings 19-20; Isaiah 37-39` | 列王纪下 19; 以赛亚书 37 |
+      | `Acts 27:27-28:1` | 使徒行传 27:27 |
+      | `2 Kings 9:2–10:36` | 列王纪下 9:2 |
+      | `Daniel 2, 7, 8, 11` | 但以理书 2 |
+      | `Acts 19:11-20, 23-41` | 使徒行传 19:11-20 |
+      | `Jude 14-15` | 犹大书 1:14 |
+
+      Jude is the worst of them: a one-chapter book, so `14-15` is
+      verses — the label both re-punctuated the citation and dropped
+      v15.
+
+      **Counted before concluding, as the rule requires: 25 of 225
+      entries rendered differently from their source, of which 20 lost
+      cited text.** The other 5 are the canonical rename Psalm → Psalms,
+      which is correct and was left.
+
+      Fixed at the shared layer, so all four surfaces that show a
+      reference are corrected at once (the evidence list card, the
+      detail chip, the share text and the trivia page): the book name is
+      now swapped in place and **the cited chapter/verse text is kept
+      verbatim**. Navigation is untouched — jumping to the first verse
+      of a range is still right; only the claim on screen changed. The
+      split point is accepted only once the prefix alone resolves to the
+      same book as the whole segment, so `1 Corinthians 13` cannot split
+      at the `1` and re-attribute a verse.
+
+      `test/reference_label_citation_test.dart` walks the whole asset in
+      three locales and compares the citation tail rather than a list of
+      20 references, so it also catches an entry nobody has read yet. It
+      fails on the pre-fix code naming all 20.
+
 - [x] **Switching translation silently fails, and you have to try
       several times — the chip was reading a variable the text does not
       follow, and a failed load had no way of telling anyone.**
@@ -1341,6 +1386,33 @@ has never seen this repo.
       since those hosts are the slow ones, and check whether the
       handler stops because every remaining track is marked failed.
 
+      **Read the handler on 2026-08-16 without being able to reproduce
+      it — no device, and a widget test has no audio plugin. Three
+      leads, none yet proven to be the cause:**
+
+      1. `_player.onError.listen` in `song_audio_handler.dart` calls
+         `_skipPastFailure()` but never adds the song to `_failed`, and
+         calls `notifyUi()` rather than `_broadcast()`. So the
+         loop-guard that set exists for cannot arm from this path — and
+         on NATIVE this is the only path an error takes, because
+         `SongPlaybackEngine._guard` swallows the throw into `onError`,
+         which makes the `_failed.add` in `_playCurrent`'s `catch` dead
+         code off the web. With repeat on, a queue of dead links would
+         walk itself instead of stopping.
+      2. `_guard` reports a failed `stop()`, `pause()` or `seek()` on
+         the same `onError` stream, so a failure of any of those starts
+         the NEXT track — the user stops and the music moves on.
+      3. `toggle()` builds a ONE-SONG queue, so a song started from the
+         detail sheet's mix chips legitimately stops at the end with
+         nothing to advance to. The list rows already use `playQueue`
+         (`songs_page.dart:333`), so this is not the list case — but it
+         may be what the user was doing. Worth asking where they tapped.
+
+      The engine is a `final` field constructed in place, so none of
+      this is testable without a seam. Adding one is a production change
+      for a symptom nobody has reproduced yet; ask the user which
+      surface they played from first.
+
 - [ ] **Two references, only one is reachable.**
       User, 2026-08-16: "那个经文其实是两个，但是按了好像只能去一个，另个去
       不了". The evidence card's 经文对应 chip is now one flowing
@@ -1348,6 +1420,24 @@ has never seen this repo.
       to the first reference. Make each reference its own tap target —
       `TapGestureRecognizer` per TextSpan, or separate chips — so
       「以赛亚书 44:28; 以斯拉记 1:1-4」 offers both.
+
+      **Measured, so the next iteration starts from facts: 17 of the 225
+      entries carry more than one reference**, and the user's example is
+      `tomb_of_cyrus` exactly. Separate chips look safer than a
+      recognizer per span — an outer `InkWell` and a span recognizer
+      both enter the gesture arena, and the flowing-paragraph layout in
+      `_ReferenceChip` was itself a fix (2026-08-11) that a `Row` broke.
+      Keep the single flowing chip for the 208 one-reference entries and
+      only switch to a `Wrap` of chips at two or more.
+
+      **One segment has no book name of its own** —
+      `peter_raises_tabitha_joppa` cites `Acts 9:36-43; 10:5-6`, and
+      `parseReference('10:5-6')` returns null. Today that is harmless
+      (the label passes it through verbatim), but giving it its own chip
+      would create a tap target that answers "couldn't parse". Either
+      inherit the book from the preceding segment — which is what the
+      citation convention means — or leave that one segment untappable.
+      Do not let it parse as some other book.
 
 - [ ] **Bounded scroll boxes are everywhere, not just the AI panel.**
       User, 2026-08-16: "很多时候这些框框都是上下滑动很多地方都是这样是不是
