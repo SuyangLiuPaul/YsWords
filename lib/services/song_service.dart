@@ -82,24 +82,20 @@ class _SongServiceImpl extends RemoteDataService<_SongBundle> {
 class SongService {
   static final _SongServiceImpl _impl = _SongServiceImpl();
 
-  /// Sources hidden from the app.
+  /// Sources hidden from the app. Empty since 2026-08-17.
   ///
-  /// `cahaya` (cahayapengharapan.org) publishes no audio of its own —
-  /// all 47 of its songs live on SoundCloud (27) or YouTube (36), and
-  /// neither exposes a stream URL a player can open, so every one of
-  /// those rows showed a language badge where the other 559 songs show
-  /// a play button. The user asked for them out rather than sitting
-  /// there unplayable next to songs that work.
+  /// `cahaya` (cahayapengharapan.org) was hidden because it publishes no
+  /// audio of its own — all 47 of its songs live on SoundCloud (27) or
+  /// YouTube (36), neither of which exposes a stream URL a player can
+  /// open, so every one of those rows showed a language badge where the
+  /// rest of the catalogue shows a play button. The user asked for them
+  /// back ("还是enable吧"), and the row now offers the external source
+  /// instead of an inert badge, which is what made them worth hiding.
   ///
-  /// The data is NOT removed upstream: yswords-data still carries all
-  /// 606 songs, because a data repository's job is to be complete and
-  /// other consumers may want them. This is a presentation decision,
-  /// reversible by emptying this set.
-  ///
-  /// If Cahaya ever hosts mp3s on its own server the way it already
-  /// hosts its sheet-music PDFs, remove `cahaya` here and those 47
-  /// songs become fully playable with no other change.
-  static const Set<String> hiddenSources = {'cahaya'};
+  /// Hiding was always a presentation decision — yswords-data carries
+  /// all 609 songs either way, because a data repository's job is to be
+  /// complete. Put a source id back in this set to hide it again.
+  static const Set<String> hiddenSources = <String>{};
 
   /// Never throws: falls back through cache → bundle.
   static Future<List<Song>> load() async {

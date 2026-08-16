@@ -274,9 +274,22 @@ class Song {
       instrumentalUrl != null || accompanimentUrl != null;
 
   /// External player URL for SoundCloud rows.
+  ///
+  /// The id is scraped out of an `api.soundcloud.com/tracks/<id>` embed,
+  /// and that address used to be handed to the browser as-is — but it is
+  /// an API endpoint, not a page: it answers **401 with JSON** to an
+  /// unauthenticated request, which is every request we make. Checked
+  /// live against all 27 ids in the catalogue: 27 of 27 gave 401.
+  ///
+  /// The widget player takes the same id and resolves it to the real
+  /// track — 27 of 27 gave 200 `text/html` carrying the canonical
+  /// `soundcloud.com/<user>/<slug>` for the right song. That canonical
+  /// is not derivable from the id without asking SoundCloud, so it is
+  /// not guessed at here.
   String? get soundcloudUrl => soundcloudTrackId == null
       ? null
-      : 'https://api.soundcloud.com/tracks/$soundcloudTrackId';
+      : 'https://w.soundcloud.com/player/?url='
+          'https%3A//api.soundcloud.com/tracks/$soundcloudTrackId';
 
   /// Watch URL for YouTube rows.
   String? get youtubeUrl =>

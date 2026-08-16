@@ -1267,9 +1267,10 @@ has never seen this repo.
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
         2026-08-11 (sixth), 2026-08-12 (seventh through twelfth),
-        2026-08-16 (thirteenth) and 2026-08-17 (fourteenth): still
+        2026-08-16 (thirteenth) and 2026-08-17 (fourteenth and
+        fifteenth): still
         `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged across fourteen consecutive iterations, while cgdc.hk and
+        Unchanged across fifteen consecutive iterations, while cgdc.hk and
         cahayapengharapan.org answered 200 in the same probe — so it is
         that host, not the probe. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
@@ -1393,6 +1394,39 @@ has never seen this repo.
       walk itself into silence. Reproduce with a CDC/fydt song first,
       since those hosts are the slow ones, and check whether the
       handler stops because every remaining track is marked failed.
+
+      **Read the code 2026-08-17 without being able to reproduce** —
+      cdc and fydt are both unreachable from this machine, so nothing
+      below is confirmed against a running player and none of it was
+      changed. Two things in `song_audio_handler.dart` are worth
+      checking first, because both end in silence rather than in the
+      next song:
+
+      1. **One dead track can trigger TWO advances.** A web failure
+         arrives twice — as an `onError` event (line 57, which calls
+         `_skipPastFailure`) and as the rejection of `_el.play()`
+         (line 484's `catch`, which also calls `_skipPastFailure`). The
+         second advance runs while the first's `_playCurrent` is still
+         in flight and re-assigns the element's `src`, which aborts it;
+         an aborted play leaves `_el.error` null, so the engine reports
+         it as `PlaybackBlockedException` — and that branch deliberately
+         **stops without advancing** (line 470). So: one bad link,
+         one song skipped unheard, and playback parked. That shape
+         matches the report exactly, which is a reason to look, not
+         evidence that it is the cause.
+      2. **`_failed` is never written on the `onError` path**, so the
+         `playable == 0` guard that exists to stop the queue spinning
+         cannot fire for a failure reported that way, and
+         `_failed.remove` at line 469 clears the flag whenever `play()`
+         merely *returns* — which on web means nothing, since the
+         element accepts any src and reports the failure later. A
+         track is alive when it produces audio, not when play() returns;
+         that is already the signal `_cancelStallWatchdog` uses.
+
+      Do not "fix" either one blind. The engine is a compile-time
+      conditional export with no seam to inject a fake, so there is no
+      way to test a change to this path today — which is itself the
+      first thing to fix if this item is taken.
 
       **Read the handler on 2026-08-16 without being able to reproduce
       it — no device, and a widget test has no audio plugin. Three
@@ -1617,13 +1651,49 @@ has never seen this repo.
       edited in-app. A control that looks editable and is not is worse
       than one that explains itself.
 
-- [ ] **Enable the hidden cahayapengharapan songs.**
+- [x] **Enabled the 47 Cahaya songs — and the SoundCloud link they now
+      lead to was opening a 401 error page.**
       User, 2026-08-16: "还是enable吧", pointing at
       `https://cahayapengharapan.org/pujian/` and
-      `.../pujian/video-pujian/`. That host is reachable (200, ~340ms),
-      so this is actionable now. Find why those entries are hidden
-      before un-hiding them — they may have been excluded for a reason
-      the sync recorded.
+      `.../pujian/video-pujian/`.
+
+      **Why they were hidden, as the item asked:** recorded in
+      `song_service.dart` — none of the 47 has a stream the player can
+      open (the audio is on SoundCloud or YouTube), so every row showed
+      a language badge where the rest of the catalogue shows a play
+      button, and the user had asked for them out. Un-hiding alone would
+      have restored exactly that complaint, so the row's leading slot
+      now **opens the off-site source** instead of sitting inert, using
+      the same glyphs the detail sheet's link chips use.
+
+      **The data was re-derived from the live site before trusting it:**
+      `fetch_cahaya()` run against cahayapengharapan.org today returns
+      the same 47 ids as the bundled snapshot, 0 added and 0 removed,
+      with no field differences. All 47 are non-playable and all 47
+      carry a SoundCloud id (27) or a YouTube id (36), so no row is a
+      dead end. Exactly one other song in the 609 has no playable audio
+      — `fydt:94` — and it has sheet music rather than either, so it
+      keeps the badge.
+
+      **A refuter broke the claim that mattered, before it shipped.**
+      `Song.soundcloudUrl` built `https://api.soundcloud.com/tracks/<id>`
+      — the address the id is *scraped from*, which is an API endpoint,
+      not a page. Checked live against all 27 ids: **27 of 27 answer 401
+      with JSON.** The detail sheet's SoundCloud chip has been sending
+      users there all along; this change would have added 27 list rows
+      pointing at the same error. Now the widget player, verified on the
+      same 27: 200 `text/html`, each carrying the canonical
+      `soundcloud.com/<user>/<slug>` for the right song. The canonical
+      is not derivable from the id without asking SoundCloud, so it is
+      not guessed at.
+
+      `test/cahaya_songs_enabled_test.dart` — three data checks (the
+      rows load, no streamless row is a dead end, every Cahaya row has
+      audio or video off-site) plus a widget test that searches the real
+      catalogue and asserts the row's control is a real button. It fails
+      on the pre-fix widget with the right diagnosis: the row is
+      present, the tappable control is not. `song_model_test.dart` pins
+      the URL form and asserts it is *not* the api.soundcloud.com one.
 
 - [ ] **Now Playing: four things from the phone, 2026-08-12.**
       All four reported together with a screenshot and a crash report.

@@ -1697,7 +1697,12 @@ class _PlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!song.hasPlayableAudio) {
-      return ClipRRect(
+      // There is no stream to open, but nearly every such row publishes
+      // the song somewhere else, so the slot goes there rather than
+      // sitting inert. SoundCloud before YouTube: it is audio, and a tap
+      // in a song list is a request to listen.
+      final external = song.soundcloudUrl ?? song.youtubeUrl;
+      final box = ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
           width: 40,
@@ -1708,21 +1713,50 @@ class _PlayButton extends StatelessWidget {
               Container(color: scheme.primary.withValues(alpha: 0.10)),
               _withArtwork(
                 context,
-                (onArt) => Center(
-                  child: Text(
-                    fallbackBadge,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: onArt
-                          ? Colors.white
-                          : scheme.primary.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ),
+                (onArt) {
+                  final fg = onArt
+                      ? Colors.white
+                      : scheme.primary.withValues(alpha: 0.8);
+                  return Center(
+                    child: external == null
+                        ? Text(
+                            fallbackBadge,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: fg,
+                            ),
+                          )
+                        // The same glyphs the detail sheet's link chips
+                        // use, so one icon means one destination.
+                        : Icon(
+                            song.soundcloudUrl != null
+                                ? Icons.cloud_rounded
+                                : Icons.smart_display_rounded,
+                            size: 20,
+                            color: fg,
+                          ),
+                  );
+                },
                 false,
               ),
             ],
+          ),
+        ),
+      );
+      if (external == null) return box;
+      return Semantics(
+        button: true,
+        label: uiStrings['songsListenElsewhere']?[locale] ??
+            'Listen on another site',
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () =>
+                LinkOpener.openOrWarn(context, external, locale: locale),
+            child: box,
           ),
         ),
       );

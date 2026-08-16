@@ -288,8 +288,15 @@ void main() {
           reason: 'SoundCloud exposes no stream URL — must not offer '
               'an inline play button');
       expect(s.hasVideo, isTrue);
+      // NOT the bare api.soundcloud.com/tracks/<id> the id is scraped
+      // from: that endpoint 401s for an unauthenticated visitor, so the
+      // link opened a JSON error page. All 27 ids in the catalogue were
+      // checked live — 27 of 27 401 on the API address, 27 of 27 give a
+      // 200 player page here.
       expect(s.soundcloudUrl,
-          'https://api.soundcloud.com/tracks/1018288369');
+          'https://w.soundcloud.com/player/'
+          '?url=https%3A//api.soundcloud.com/tracks/1018288369');
+      expect(s.soundcloudUrl, isNot(startsWith('https://api.soundcloud.com')));
       expect(s.youtubeUrl,
           'https://www.youtube.com/watch?v=OzGNED4vl70');
     });

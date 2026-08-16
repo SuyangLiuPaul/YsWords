@@ -5403,6 +5403,11 @@ const uiStrings = {
     'zh-Hant': '無法開啟連結，請稍後再試。',
     'en': 'Could not open the link. Please try again.',
   },
+  'songsListenElsewhere': {
+    'zh-Hans': '在其他网站收听',
+    'zh-Hant': '在其他網站收聽',
+    'en': 'Listen on another site',
+  },
   'songsPlaybackFailed': {
     'zh-Hans': '无法播放该音轨。',
     'zh-Hant': '無法播放該音軌。',
