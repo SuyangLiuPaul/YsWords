@@ -90,25 +90,46 @@ void main() {
   testWidgets('the reference and the Read affordance flow as one block',
       (tester) async {
     // The property that fixes the second report. A Row placed its
-    // trailing children beside the whole text BLOCK, so with two
-    // references 「→ 阅读经文」 sat at the end of line one while
-    // 「10:26」 continued underneath it — nothing clipped, and
+    // trailing children beside the whole text BLOCK, so a reference
+    // long enough to wrap left 「→ 阅读经文」 at the end of line one
+    // while the rest continued underneath it — nothing clipped, and
     // unreadable. They must live in a single RichText so they wrap
-    // together and the affordance always follows the LAST reference.
+    // together and the affordance always follows the reference.
+    //
+    // 2026-08-17: this used to be asserted on a TWO-reference citation.
+    // Multi-reference citations now render one chip per passage — each
+    // with its own tap target and its own arrow — so the single flowing
+    // paragraph is the one-reference layout, which is 208 of the 225
+    // entries. See evidence_multi_reference_tap_test.dart for the other
+    // 17. The longest single citation in the corpus is used here
+    // because it is the one that actually wraps.
     addTearDown(tester.view.reset);
-    await _pump(tester, '1 Kings 9:15; 1 Kings 10:26', const Size(375, 812));
+    await _pump(tester, 'Acts 19:11-20, 23-41', const Size(375, 812));
 
     final rich = find.byWidgetPredicate((w) {
       if (w is! RichText) return false;
       final plain = w.text.toPlainText();
       // Whichever locale AppSettings defaults to — the point is that
-      // the label and the last reference share one paragraph.
+      // the label and the reference share one paragraph.
       const readLabels = ['Read', '阅读经文', '閱讀經文'];
-      return plain.contains('10:26') &&
-          readLabels.any(plain.contains);
+      return plain.contains('23-41') && readLabels.any(plain.contains);
     });
     expect(rich, findsOneWidget,
-        reason: 'the last reference and the Read label must be in the '
+        reason: 'the reference and the Read label must be in the '
             'same paragraph, not in sibling widgets');
+  });
+
+  testWidgets('two references give two tap targets, and neither clips',
+      (tester) async {
+    // The v1.4.79 report: 「那个经文其实是两个，但是按了好像只能去一个」.
+    addTearDown(tester.view.reset);
+    await _pump(tester, '1 Kings 9:15; 1 Kings 10:26', const Size(375, 812));
+
+    expect(tester.takeException(), isNull);
+    final chips = find.byWidgetPredicate((w) =>
+        w is InkWell &&
+        w.onTap != null &&
+        w.borderRadius == BorderRadius.circular(8));
+    expect(chips, findsNWidgets(2));
   });
 }

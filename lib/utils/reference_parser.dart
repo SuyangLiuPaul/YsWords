@@ -207,6 +207,68 @@ BibleReference? _buildRef(
   );
 }
 
+/// One `;`-separated part of a citation, paired with the reference a
+/// tap on it should navigate to.
+class CitationSegment {
+  /// The part exactly as the source wrote it, trimmed — never
+  /// re-rendered, so the citation on screen stays the cited one.
+  final String text;
+
+  /// Where a tap goes, or null when nothing navigable resolves.
+  final BibleReference? target;
+
+  const CitationSegment(this.text, this.target);
+}
+
+/// Split a citation like `Isaiah 44:28; Ezra 1:1-4` into its parts and
+/// resolve each one, so a UI can offer every cited passage instead of
+/// only the first. [parseReference] deliberately truncates at the first
+/// `;` — it answers "where does ONE tap go" — which is why the callers
+/// that want all of them need this.
+///
+/// A part with no book name of its own inherits the book of the part
+/// before it, which is what the citation convention means: the one
+/// entry in `assets/bible_evidence.json` with a bookless `;` part,
+/// `peter_raises_tabitha_joppa`, cites `Acts 9:36-43; 10:5-6` and the
+/// second half is Acts 10. Two guards keep that from misattributing a
+/// passage, and both were added because an adversarial read found a
+/// string that broke the rule without them:
+///
+///   * inheritance requires a leading digit, so prose like
+///     `Multiple Books` stays unresolved instead of being attached to
+///     the previous book;
+///   * the book carries forward only from the part IMMEDIATELY before,
+///     so it cannot leak across a part that resolved to nothing.
+///     `Exodus 14:21-22; Ecclesiasticus (Sirach) 44:1; 45:1` would
+///     otherwise hand the deuterocanonical part's `45:1` to Exodus — a
+///     chapter Exodus does not have, offered as if it were the cited
+///     verse. `Ecclesiasticus (Sirach) 39:1` is a real reference value
+///     in that asset (`cairo_genizah`), so the unresolvable middle part
+///     is not a hypothetical shape.
+///
+/// **Commas are deliberately NOT split.** `John 18:31-33, 37-38` means
+/// verses of chapter 18, while `Daniel 2, 7, 8, 11` means chapters, and
+/// nothing in the string distinguishes them — inheriting only the book
+/// would send `37-38` to John 37. See the queue item; it needs its own
+/// design, not a wider separator here.
+List<CitationSegment> splitCitation(String raw) {
+  final out = <CitationSegment>[];
+  String? carriedBook;
+  for (final part in raw.split(';')) {
+    final text = part.trim();
+    if (text.isEmpty) continue;
+    var ref = parseReference(text);
+    if (ref == null &&
+        carriedBook != null &&
+        RegExp(r'^\d').hasMatch(text)) {
+      ref = parseReference('$carriedBook $text');
+    }
+    carriedBook = ref?.englishBook;
+    out.add(CitationSegment(text, ref));
+  }
+  return out;
+}
+
 /// Lookup map from any normalized alias → canonical English book name.
 /// Built lazily once per process.
 Map<String, String>? _aliasIndexCache;

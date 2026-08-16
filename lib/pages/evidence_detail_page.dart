@@ -391,7 +391,8 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
                       _ReferenceChip(
                         reference: evidence.scriptureReference,
                         locale: locale,
-                        onTap: () => _openReference(context),
+                        onOpen: (segment) =>
+                            _openSegment(context, segment),
                       ),
                   ],
                 ),
@@ -455,23 +456,14 @@ class _EvidenceDetailPageState extends State<EvidenceDetailPage> {
   /// reload verses, retry the lookup, then navigate. A SnackBar tells
   /// the user we switched so they're not confused when the version
   /// label changes in the reader header.
-  Future<void> _openReference(BuildContext context) async {
-    // Handle multi-reference strings like "Isaiah 53; Psalm 22; Micah 5:2"
-    // by trying the first semicolon-separated segment first, then the full
-    // string, then each remaining segment until one parses.
-    final raw = evidence.scriptureReference;
-    BibleReference? ref = parseReference(raw);
-    if (ref == null && raw.contains(';')) {
-      for (final part in raw.split(';')) {
-        ref = parseReference(part.trim());
-        if (ref != null) break;
-      }
-    }
+  Future<void> _openSegment(
+      BuildContext context, CitationSegment segment) async {
+    final ref = segment.target;
     if (ref == null) {
       final locale = context.read<AppSettings>().locale;
       final msg = (uiStrings['couldNotParseRef']?[locale] ??
               "Couldn't parse reference: {ref}")
-          .replaceFirst('{ref}', raw);
+          .replaceFirst('{ref}', segment.text);
       ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(
         content: Text(msg),
         duration: const Duration(seconds: 3),
@@ -643,28 +635,61 @@ class _Section extends StatelessWidget {
   }
 }
 
+/// The 「经文对应」 affordance under an evidence entry.
+///
+/// One cited passage renders as ONE flowing chip; two or more render as
+/// a chip each. 2026-08-16, from the phone: 「那个经文其实是两个，但是按了
+/// 好像只能去一个，另个去不了」 — the chip was a single tap target that
+/// always jumped to the first reference, so the second passage of the 17
+/// entries that cite more than one was unreachable. Reading the citation
+/// and not being able to follow it is the same defect class as printing
+/// the wrong one: the card offers a passage it does not actually give.
+///
+/// Separate chips rather than a `TapGestureRecognizer` per span — an
+/// outer `InkWell` and a span recognizer both enter the gesture arena,
+/// and the flowing-paragraph layout below was itself a fix that a `Row`
+/// broke. The single-reference path is left exactly as it was, because
+/// 208 of the 225 entries go down it.
 class _ReferenceChip extends StatelessWidget {
   final String reference;
   final String locale;
-  final VoidCallback onTap;
+  final void Function(CitationSegment) onOpen;
 
   const _ReferenceChip({
     required this.reference,
     required this.locale,
-    required this.onTap,
+    required this.onOpen,
   });
 
   @override
   Widget build(BuildContext context) {
+    final segments = splitCitation(reference);
+    if (segments.length > 1) {
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final segment in segments)
+            _SegmentChip(
+              segment: segment,
+              locale: locale,
+              onTap: segment.target == null ? null : () => onOpen(segment),
+            ),
+        ],
+      );
+    }
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<AppSettings>();
     final currentVersion = context.watch<MainProvider>().currentVersion;
+    final whole = segments.isEmpty
+        ? CitationSegment(reference.trim(), parseReference(reference))
+        : segments.first;
     return Material(
       color: scheme.primary.withValues(alpha: 0.10),
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
-        onTap: onTap,
+        onTap: () => onOpen(whole),
         child: Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -725,6 +750,77 @@ class _ReferenceChip extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// One cited passage of a multi-reference citation.
+///
+/// [onTap] is null when the segment resolves to nothing, so an
+/// unresolvable part is shown as plain text rather than as a tap target
+/// that can only answer "couldn't parse".
+class _SegmentChip extends StatelessWidget {
+  final CitationSegment segment;
+  final String locale;
+  final VoidCallback? onTap;
+
+  const _SegmentChip({
+    required this.segment,
+    required this.locale,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final settings = context.watch<AppSettings>();
+    final currentVersion = context.watch<MainProvider>().currentVersion;
+    final label = Text.rich(
+      TextSpan(
+        children: [
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: Icon(Icons.menu_book_outlined,
+                  size: 16, color: scheme.primary),
+            ),
+          ),
+          TextSpan(
+            text:
+                localizedReferenceLabel(segment.text, locale, currentVersion),
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: settings.fontSize,
+              fontWeight: FontWeight.w700,
+              color: scheme.primary,
+            ),
+          ),
+          if (onTap != null)
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Icon(Icons.arrow_forward,
+                    size: 14, color: scheme.primary),
+              ),
+            ),
+        ],
+      ),
+    );
+    const padding = EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+    if (onTap == null) {
+      return Padding(padding: padding, child: label);
+    }
+    return Material(
+      color: scheme.primary.withValues(alpha: 0.10),
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onTap,
+        child: Padding(padding: padding, child: label),
       ),
     );
   }

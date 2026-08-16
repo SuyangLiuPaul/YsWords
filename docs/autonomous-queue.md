@@ -1421,13 +1421,66 @@ has never seen this repo.
       for a symptom nobody has reproduced yet; ask the user which
       surface they played from first.
 
-- [ ] **Two references, only one is reachable.**
+- [x] **Two references, only one is reachable — each cited passage now
+      has its own tap target.** v1.4.79.
       User, 2026-08-16: "那个经文其实是两个，但是按了好像只能去一个，另个去
       不了". The evidence card's 经文对应 chip is now one flowing
       paragraph (v1.4.59) but is still a SINGLE tap target that jumps
       to the first reference. Make each reference its own tap target —
       `TapGestureRecognizer` per TextSpan, or separate chips — so
       「以赛亚书 44:28; 以斯拉记 1:1-4」 offers both.
+
+      Done with separate chips, as the note below recommended: the 208
+      one-reference entries keep the flowing paragraph untouched and
+      only two-or-more switches to a `Wrap` of chips. `splitCitation`
+      (new, in `reference_parser.dart`) resolves each `;` part;
+      `parseReference` itself still truncates at the first `;`, which is
+      right for "where does ONE tap go" and is why the multi case needed
+      its own function. A part that resolves to nothing renders as plain
+      text, so there is no tap target that can only answer "couldn't
+      parse". **Verified against the pre-fix code**: tapping 「10:26」
+      landed on chapter 9.
+
+      **An adversarial pass before committing broke two of the claims
+      this was written on, and both mattered.**
+
+      1. *"The digit guard means inheritance cannot misattribute."*
+         False. The first draft carried the last SUCCESSFUL book forward
+         indefinitely, so `Exodus 14:21-22; Ecclesiasticus (Sirach)
+         44:1; 45:1` handed `45:1` to **Exodus** — a chapter Exodus does
+         not have, offered as the cited verse. `Ecclesiasticus (Sirach)
+         39:1` is a real reference value in the asset (`cairo_genizah`),
+         so the shape is not hypothetical. Fixed: the book carries only
+         from the part IMMEDIATELY before, pinned by a test.
+      2. *"`peter_raises_tabitha_joppa` is the only bookless segment."*
+         True only of `;`. Four entries do it with a COMMA — see the new
+         item below.
+
+      Acts 10:5-6 as the inherited reading of `10:5-6` was checked
+      against the text, not assumed: it is Cornelius sending to Joppa
+      for Simon Peter lodging with Simon the tanner, the same narrative
+      as 9:36-43.
+
+- [ ] **Four more citations are read on screen and cannot be opened —
+      the comma case.** Found by the adversarial pass on the item above,
+      which is the only reason it is known.
+      `rylands_papyrus` cites `John 18:31-33, 37-38`,
+      `daniel_prophecies_accuracy` `Daniel 2, 7, 8, 11`,
+      `ephesus_artemis_burning_books` `Acts 19:11-20, 23-41`,
+      `khirbet_qeiyafa_fortress` `1 Samuel 17:1-3, 52`. Since v1.4.78 the
+      card prints all of it correctly; `parseReference` truncates at the
+      first comma, so `37-38`, `7, 8, 11`, `23-41` and `52` are cited and
+      unreachable. Same defect as the item above, different separator.
+
+      **Do not just widen `splitCitation` to commas.** `John 18:31-33,
+      37-38` means VERSES of chapter 18 while `Daniel 2, 7, 8, 11` means
+      CHAPTERS, and nothing in the string distinguishes them — book-only
+      inheritance would send `37-38` to John 37, i.e. offer a chapter
+      John does not have. It needs the preceding part's chapter carried
+      too, and a rule for deciding which of the two shapes a comma part
+      is (a bare number after a `:`-bearing part is a verse; after a
+      chapter-only part it is a chapter). Four entries, so verify all
+      four by hand before shipping.
 
       **Measured, so the next iteration starts from facts: 17 of the 225
       entries carry more than one reference**, and the user's example is
