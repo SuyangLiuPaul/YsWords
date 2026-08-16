@@ -1097,9 +1097,10 @@ has never seen this repo.
         cdx/search/cdx?url=christiandiscipleschurch.org/content/
         124-messages&output=json`.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
-        2026-08-11 (sixth) and 2026-08-12 (seventh through twelfth):
-        still `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged across twelve consecutive iterations, while cgdc.hk and
+        2026-08-11 (sixth), 2026-08-12 (seventh through twelfth) and
+        2026-08-16 (thirteenth): still `connect=0.000000`, curl times
+        out with no TCP connect.
+        Unchanged across thirteen consecutive iterations, while cgdc.hk and
         cahayapengharapan.org answered 200 in the same probe — so it is
         that host, not the probe. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
@@ -1218,15 +1219,33 @@ has never seen this repo.
       Take them in this order — the second is a functional defect, the
       first is only awkward.
 
-      1. **The seek bar fights your finger.** "我发现拖动的时候很难不顺".
-         `now_playing_page.dart:512` — `onChanged: (v) => player.seek(...)`
-         seeks on EVERY drag frame. Each seek makes the position stream
-         emit, which rebuilds the Slider from the ENGINE's position
-         rather than the finger's, so the thumb is dragged backwards
-         while you hold it. The standard shape fixes it: hold a local
-         `_dragValue` in `onChanged`, seek once in `onChangeEnd`, and
-         render `_dragValue ?? position` so the stream cannot overwrite
-         a drag in progress. Needs the widget to be stateful.
+      1. ~~**The seek bar fights your finger.**~~ **Fixed (v1.4.76).**
+         "我发现拖动的时候很难不顺". `onChanged: (v) => player.seek(...)`
+         seeked on EVERY drag frame. Each seek made the position stream
+         emit, which rebuilt the Slider from the ENGINE's position
+         rather than the finger's, so the thumb was dragged backwards
+         while you held it. `_Scrubber` is now stateful: `onChanged`
+         only records where the finger is, and the seek happens once in
+         `onChangeEnd`.
+
+         **The release needed handling too, and the original note did
+         not say so.** `SongPlayerService.position` is fed *only* by the
+         engine's ~200ms `onPosition` stream — `seek()` does not update
+         it synchronously (`song_audio_handler.dart:46`) — so
+         `_dragValue ?? position` alone still shows the OLD position for
+         a frame or two after you let go, which reads as the drag
+         snapping back. The released value stays pinned until the engine
+         reports within 1s of it, with a 3s give-up timer so a seek that
+         never lands cannot leave the thumb lying about the position.
+         The elapsed-time label reads the same pinned value, since a
+         number disagreeing with the thumb is the same complaint moved
+         one line down.
+
+         `test/now_playing_scrubber_test.dart` drags the real Slider on
+         the real page. The engine's position never leaves zero in a
+         widget test, which is what makes it sharp: any non-zero value
+         under the finger proves the thumb is following the drag. It
+         fails on the pre-fix code at that assertion.
 
       2. ~~**Choosing Accompaniment keeps playing the vocal until you
          tap it a second time.**~~ **Two defects found and fixed

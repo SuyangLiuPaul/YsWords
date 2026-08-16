@@ -1,3 +1,5 @@
+import 'dart:async';
+
 // Flutter's material library exports its own RepeatMode (for
 // RepeatingAnimationBuilder), which collides with the player's. Hide
 // it here — this file only ever means the playback one.
@@ -483,19 +485,71 @@ class _Artwork extends StatelessWidget {
       );
 }
 
-class _Scrubber extends StatelessWidget {
+/// The scrubber owns the thumb while a finger is on it.
+///
+/// It used to seek on every drag frame. Each seek made the engine's
+/// position stream emit, the stream rebuilt the Slider from the
+/// ENGINE's position rather than from the finger, and the thumb was
+/// pulled backwards out from under the drag — "拖动的时候很难不顺".
+/// The held value also has to survive the release: [SongPlayerService]
+/// updates `position` only from the player's ~200ms position stream, so
+/// for a frame or two after the seek the engine still reports where the
+/// track WAS, which reads as the drag snapping back.
+class _Scrubber extends StatefulWidget {
   final SongPlayerService player;
   final ColorScheme scheme;
   const _Scrubber({required this.player, required this.scheme});
 
   @override
+  State<_Scrubber> createState() => _ScrubberState();
+}
+
+class _ScrubberState extends State<_Scrubber> {
+  /// Milliseconds the thumb is pinned to: where the finger is while a
+  /// drag runs, then where it was released until the engine catches up.
+  double? _held;
+  bool _dragging = false;
+
+  /// Releases the pin even if the engine never reports arriving —
+  /// a failed seek must not leave the thumb lying about the position.
+  Timer? _giveUp;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.player.addListener(_onPlayerTick);
+  }
+
+  @override
+  void dispose() {
+    widget.player.removeListener(_onPlayerTick);
+    _giveUp?.cancel();
+    super.dispose();
+  }
+
+  void _onPlayerTick() {
+    if (_dragging || _held == null) return;
+    final pos = widget.player.position.inMilliseconds.toDouble();
+    if ((pos - _held!).abs() < 1000) _unpin();
+  }
+
+  void _unpin() {
+    _giveUp?.cancel();
+    _giveUp = null;
+    if (!mounted) return;
+    setState(() => _held = null);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final total = player.duration;
-    final pos = player.position;
+    final scheme = widget.scheme;
+    final total = widget.player.duration;
     final max = total.inMilliseconds.toDouble();
-    final value = max <= 0
-        ? 0.0
-        : pos.inMilliseconds.toDouble().clamp(0.0, max);
+    final shown = Duration(
+        milliseconds: (_held ?? widget.player.position.inMilliseconds.toDouble())
+            .round());
+    final value =
+        max <= 0 ? 0.0 : shown.inMilliseconds.toDouble().clamp(0.0, max);
     return Column(
       children: [
         SliderTheme(
@@ -511,8 +565,21 @@ class _Scrubber extends StatelessWidget {
             // scrubber that jumps back when the user lets go.
             onChanged: max <= 0
                 ? null
-                : (v) =>
-                    player.seek(Duration(milliseconds: v.round())),
+                : (v) => setState(() {
+                      _dragging = true;
+                      _held = v;
+                    }),
+            onChangeEnd: max <= 0
+                ? null
+                : (v) {
+                    setState(() {
+                      _dragging = false;
+                      _held = v;
+                    });
+                    widget.player.seek(Duration(milliseconds: v.round()));
+                    _giveUp?.cancel();
+                    _giveUp = Timer(const Duration(seconds: 3), _unpin);
+                  },
           ),
         ),
         Padding(
@@ -520,7 +587,10 @@ class _Scrubber extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(SongPlayerService.formatDuration(pos),
+              // The elapsed side follows the thumb, not the engine —
+              // a number that disagrees with where you are holding the
+              // thumb is the same complaint in a different place.
+              Text(SongPlayerService.formatDuration(shown),
                   style: TextStyle(
                       fontSize: 12,
                       color: scheme.onSurfaceVariant,
