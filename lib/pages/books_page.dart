@@ -28,7 +28,9 @@ class BooksPage extends StatelessWidget {
     if (providerOverride != null) {
       return ChangeNotifierProvider<MainProvider>.value(
         value: providerOverride!,
-        child: _buildContent(context, providerOverride!),
+        child: Consumer<MainProvider>(
+          builder: (ctx, mainProvider, _) => _buildContent(ctx, mainProvider),
+        ),
       );
     }
     return Consumer<MainProvider>(
@@ -62,8 +64,15 @@ class BooksPage extends StatelessWidget {
                   : double.infinity,
             ),
             child: BookChapterPicker(
-              currentBook: bookIdx,
-              currentChapter: chapterIdx,
+              // Where the reader is NOW, not where it was when this route
+              // was pushed. `bookIdx`/`chapterIdx` are constructor
+              // arguments frozen at push time, and the picker only
+              // re-syncs itself in `didUpdateWidget` — so with frozen
+              // props it can never learn that the reader moved, and it
+              // went on offering the verses of a chapter that was no
+              // longer on screen.
+              currentBook: mainProvider.currentBook ?? bookIdx,
+              currentChapter: mainProvider.currentChapter ?? chapterIdx,
               onChapterSelected: (book, chapter, {int? verse}) {
                 if (!navigateToChapterVerse(mainProvider,
                     book: book, chapter: chapter, verse: verse)) {

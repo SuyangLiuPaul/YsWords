@@ -61,16 +61,76 @@ and quoted.**
       against a PageView whose `itemCount` resizes 1189 ↔ 260 when the
       canon changes (梁家铿 is NT-only).
 
-- [ ] **The verse picker offers a different book from the one being
-      read.**
+- [x] **The verse picker offers a different book from the one being
+      read — the full-screen picker was seeded once and never told the
+      reader had moved.**
       User, 2026-08-16, with a screenshot: the reader is in 列王纪下 3
       while the picker panel is headed 使徒行传 15 and offers verses
       1-41. Picking one would jump somewhere the user did not ask for,
       or silently do nothing.
 
       Same class as the item above — the interface naming one passage
-      while showing another. Check what seeds the picker's book/chapter
-      and whether it survives a navigation that did not go through it.
+      while showing another.
+
+      **What seeds the picker, measured rather than guessed.**
+      `BookChapterPicker` re-syncs itself in exactly one place —
+      `didUpdateWidget` — so it can only learn that the reader moved
+      through NEW PROPS. Its two hosts supply those props differently,
+      and only one of them was correct:
+
+      | host | props | follows the reader |
+      |---|---|---|
+      | docked sidebar (`SidebarPanel`) | `mainProvider.currentBook/currentChapter`, read live under `context.watch` | yes |
+      | full-screen route (`BooksPage`) | `bookIdx`/`chapterIdx`, **constructor arguments frozen at push time** | no |
+
+      Worse, `BooksPage`'s `providerOverride` path — the one the reading
+      pane actually uses — wrapped the page in
+      `ChangeNotifierProvider.value` with **no Consumer**, so the page
+      did not even rebuild when the provider changed. Nothing underneath
+      that route could reach the picker: a web back/forward through
+      `url_sync_service_web`, a queued jump, a restore completing.
+
+      Fixed by making the route read where the reader is NOW —
+      `mainProvider.currentBook ?? bookIdx` — under a Consumer, so both
+      hosts are live and the picker's existing cross-book reset finally
+      fires. `test/verse_picker_follows_reader_test.dart` drives the
+      real widget through both hosts: tap the book, tap the chapter,
+      move the reader, assert the verse grid is gone. The sidebar case
+      passes on the pre-fix code, the route case fails on it — which is
+      the evidence that the two hosts genuinely differed.
+
+      **Two things deliberately left alone, so the next iteration does
+      not "fix" them:**
+      1. Drilling into another book and STAYING there is legitimate — a
+         user browsing 使徒行传 15 from 列王纪下 3 asked for that, and
+         picking a verse now always lands on the reference the grid
+         offered (`navigateToChapterVerse` commits book, chapter and
+         verse together).
+      2. `didUpdateWidget`'s same-book branch makes the grid FOLLOW the
+         pane's chapter — see the new item below.
+
+- [ ] **The verse grid can change chapter under the user's finger —
+      needs the user's call, because the current behaviour was asked
+      for.** Found while fixing the item above.
+      `book_chapter_picker.dart` `didUpdateWidget`: while the verse grid
+      is open for a chapter of the book being read, any chapter change
+      in the pane rewrites the grid's chapter (`_verseStepBook ==
+      currentBook && chapterChanged → newVerseStepChapter =
+      currentChapter`).
+
+      Deliberate, per the v1.2.76 comment: opening the grid and then
+      pressing Prev/Next should slide the grid along rather than bounce
+      out to the chapters strip. But it also means a user who opened
+      使徒行传 3's grid while the pane sits on 使徒行传 15 loses their
+      choice if the pane moves — and then a tap on 「5」 goes to the
+      pane's chapter, not the one they were looking at. That is the
+      "jumps somewhere the user did not ask for" half of the report,
+      and it is the only remaining way to reach it.
+
+      Not fixed unilaterally: the two behaviours are mutually exclusive
+      and the existing one is a recorded user preference. Ask which
+      wins — the pane leading the grid, or the grid holding what the
+      user opened.
 
 - [x] **15 verses of the CUV were blank on screen — the importer had
       filed them as footnotes.** Both editions, so 30 verse instances.
