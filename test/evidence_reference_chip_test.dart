@@ -99,12 +99,15 @@ void main() {
     // 2026-08-17: this used to be asserted on a TWO-reference citation.
     // Multi-reference citations now render one chip per passage — each
     // with its own tap target and its own arrow — so the single flowing
-    // paragraph is the one-reference layout, which is 208 of the 225
+    // paragraph is the one-reference layout, which is 204 of the 225
     // entries. See evidence_multi_reference_tap_test.dart for the other
-    // 17. The longest single citation in the corpus is used here
-    // because it is the one that actually wraps.
+    // 21. The sample moved again the same day: `Acts 19:11-20, 23-41`
+    // was standing in for a long SINGLE citation, and the comma half of
+    // that fix now splits it into two chips. `1 Corinthians 15:36-38` is
+    // the longest citation in the corpus that really is one passage and
+    // resolves, so it is the one that wraps down this path.
     addTearDown(tester.view.reset);
-    await _pump(tester, 'Acts 19:11-20, 23-41', const Size(375, 812));
+    await _pump(tester, '1 Corinthians 15:36-38', const Size(375, 812));
 
     final rich = find.byWidgetPredicate((w) {
       if (w is! RichText) return false;
@@ -112,7 +115,7 @@ void main() {
       // Whichever locale AppSettings defaults to — the point is that
       // the label and the reference share one paragraph.
       const readLabels = ['Read', '阅读经文', '閱讀經文'];
-      return plain.contains('23-41') && readLabels.any(plain.contains);
+      return plain.contains('15:36-38') && readLabels.any(plain.contains);
     });
     expect(rich, findsOneWidget,
         reason: 'the reference and the Read label must be in the '

@@ -640,16 +640,22 @@ class _Section extends StatelessWidget {
 /// One cited passage renders as ONE flowing chip; two or more render as
 /// a chip each. 2026-08-16, from the phone: 「那个经文其实是两个，但是按了
 /// 好像只能去一个，另个去不了」 — the chip was a single tap target that
-/// always jumped to the first reference, so the second passage of the 17
-/// entries that cite more than one was unreachable. Reading the citation
-/// and not being able to follow it is the same defect class as printing
-/// the wrong one: the card offers a passage it does not actually give.
+/// always jumped to the first reference, so every passage after the
+/// first was unreachable. Reading the citation and not being able to
+/// follow it is the same defect class as printing the wrong one: the
+/// card offers a passage it does not actually give.
+///
+/// 21 of the 225 entries cite more than one passage — 17 with `;` and 4
+/// with a comma. A comma continuation is chipped exactly as the source
+/// wrote it (「52」, 「37-38」), not expanded, so the card goes on citing
+/// what the entry cites; the chips sit in source order, which is how the
+/// citation reads on paper.
 ///
 /// Separate chips rather than a `TapGestureRecognizer` per span — an
 /// outer `InkWell` and a span recognizer both enter the gesture arena,
 /// and the flowing-paragraph layout below was itself a fix that a `Row`
 /// broke. The single-reference path is left exactly as it was, because
-/// 208 of the 225 entries go down it.
+/// 204 of the 225 entries go down it.
 class _ReferenceChip extends StatelessWidget {
   final String reference;
   final String locale;

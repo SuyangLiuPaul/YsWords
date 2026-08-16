@@ -1461,44 +1461,70 @@ has never seen this repo.
       for Simon Peter lodging with Simon the tanner, the same narrative
       as 9:36-43.
 
-- [ ] **Four more citations are read on screen and cannot be opened —
-      the comma case.** Found by the adversarial pass on the item above,
-      which is the only reason it is known.
+- [x] **Four more citations are read on screen and cannot be opened —
+      the comma case. Fixed; all four now open.** v1.4.80.
       `rylands_papyrus` cites `John 18:31-33, 37-38`,
       `daniel_prophecies_accuracy` `Daniel 2, 7, 8, 11`,
       `ephesus_artemis_burning_books` `Acts 19:11-20, 23-41`,
       `khirbet_qeiyafa_fortress` `1 Samuel 17:1-3, 52`. Since v1.4.78 the
-      card prints all of it correctly; `parseReference` truncates at the
-      first comma, so `37-38`, `7, 8, 11`, `23-41` and `52` are cited and
-      unreachable. Same defect as the item above, different separator.
+      card printed all of it correctly; `parseReference` truncates at the
+      first comma, so `37-38`, `7, 8, 11`, `23-41` and `52` were cited
+      and unreachable. Exactly 4 of 225 entries, counted, not sampled.
 
-      **Do not just widen `splitCitation` to commas.** `John 18:31-33,
-      37-38` means VERSES of chapter 18 while `Daniel 2, 7, 8, 11` means
-      CHAPTERS, and nothing in the string distinguishes them — book-only
-      inheritance would send `37-38` to John 37, i.e. offer a chapter
-      John does not have. It needs the preceding part's chapter carried
-      too, and a rule for deciding which of the two shapes a comma part
-      is (a bare number after a `:`-bearing part is a verse; after a
-      chapter-only part it is a chapter). Four entries, so verify all
-      four by hand before shipping.
+      **The rule is structural, and it had to be.** A bare comma part is
+      read against what the part IMMEDIATELY before it resolved to: a
+      preceding part that named a verse makes it a verse of that same
+      chapter, a chapter-only one makes it a chapter. So `37-38` is
+      John 18:37-38 and `7, 8, 11` are Daniel's chapters. A part that
+      spells its own `chapter:verse`, or carries its own book, inherits
+      nothing but the book. `;` is unchanged — it starts a new passage,
+      so it never inherits a chapter.
 
-      **Measured, so the next iteration starts from facts: 17 of the 225
-      entries carry more than one reference**, and the user's example is
-      `tomb_of_cyrus` exactly. Separate chips look safer than a
-      recognizer per span — an outer `InkWell` and a span recognizer
-      both enter the gesture arena, and the flowing-paragraph layout in
-      `_ReferenceChip` was itself a fix (2026-08-11) that a `Row` broke.
-      Keep the single flowing chip for the 208 one-reference entries and
-      only switch to a `Wrap` of chips at two or more.
+      **The adversarial pass refuted the justification this was first
+      written on, and the correction is the useful part.** The claim was
+      "existence cannot disambiguate, because in `Acts 19:11-20, 23-41`
+      the wrong reading Acts 23 is a real chapter". False: the chapter
+      reading of `23-41` is the RANGE Acts 23–41 and Acts has 28
+      chapters, so a range-aware canon check does reject it. The case
+      that genuinely cannot be decided by existence is **Daniel** —
+      12 chapters AND 49 verses in chapter 2, so chapters 7/8/11 and
+      verses 2:7/2:8/2:11 are all real scripture, and a rule preferring
+      verses would land a reader on Daniel 2:7: real, plausible on
+      arrival, and not what the card cites. That example is now the one
+      in the code and in the test.
 
-      **One segment has no book name of its own** —
-      `peter_raises_tabitha_joppa` cites `Acts 9:36-43; 10:5-6`, and
-      `parseReference('10:5-6')` returns null. Today that is harmless
-      (the label passes it through verbatim), but giving it its own chip
-      would create a tap target that answers "couldn't parse". Either
-      inherit the book from the preceding segment — which is what the
-      citation convention means — or leave that one segment untappable.
-      Do not let it parse as some other book.
+      All four readings were checked against `assets/kjv.json` and the
+      entries' own text — P52's recto/verso are 18:31-33 and 18:37-38 and
+      the entry says so; the Ephesus summary opens "Acts 19:23-41 records
+      a riot"; the Daniel summary says "chapters 2, 7, 8, 11". The
+      citation is chipped **verbatim** (「52」, 「37-38」), never expanded,
+      so the card goes on citing what the entry cites.
+      `test/evidence_multi_reference_tap_test.dart`, 13 cases including
+      the four asset entries and the counts. 21 of 225 entries now chip,
+      204 keep the single flowing chip — asserted, not estimated.
+
+- [ ] **An inherited verse is not bounds-checked, so a bad citation
+      would offer a verse that does not exist.** Found by the same
+      adversarial pass. `_inheritReference` builds `Book Ch:n` from the
+      preceding part with no idea how long that chapter is, so a
+      citation like `John 18:31-33, 45` would put a live tap target on
+      John 18:45 — the chapter has 40 verses. **No entry in the asset
+      does this** (all four in-range, verified against `assets/kjv.json`),
+      and the jump itself goes through `resolveAndPrepareJump`, which
+      reports failure rather than showing the wrong verse, so today this
+      costs a snackbar and not a false reading. Worth closing if the
+      evidence corpus ever grows: the honest fix is to drop the target
+      when the chapter is too short, not to clamp it to the last verse.
+
+- [ ] **A citation that cannot be parsed still gets a 「→ 阅读经文」
+      chip that can only apologise.** `cairo_genizah` cites
+      `Ecclesiasticus (Sirach) 39:1` and `strabo_geography` cites
+      `Various NT references`; both go down the single-reference path, which wires
+      `onTap` unconditionally and answers "Couldn't parse reference" in a
+      snackbar. The multi-reference path already renders an unresolvable
+      part as plain text with no tap target — the single path should do
+      the same. Deuterocanonical, so there is nothing to navigate to and
+      nothing to fix in the data; it is the affordance that lies.
 
 - [ ] **Bounded scroll boxes are everywhere, not just the AI panel.**
       User, 2026-08-16: "很多时候这些框框都是上下滑动很多地方都是这样是不是

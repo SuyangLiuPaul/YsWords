@@ -246,27 +246,56 @@ class CitationSegment {
 ///     in that asset (`cairo_genizah`), so the unresolvable middle part
 ///     is not a hypothetical shape.
 ///
-/// **Commas are deliberately NOT split.** `John 18:31-33, 37-38` means
-/// verses of chapter 18, while `Daniel 2, 7, 8, 11` means chapters, and
-/// nothing in the string distinguishes them — inheriting only the book
-/// would send `37-38` to John 37. See the queue item; it needs its own
-/// design, not a wider separator here.
+/// Commas are split too, and they mean something different from `;`.
+/// `John 18:31-33, 37-38` means VERSES of chapter 18 while
+/// `Daniel 2, 7, 8, 11` means CHAPTERS, and nothing in the bare part
+/// says which — so the shape is decided by what the part BEFORE it
+/// resolved to: a preceding part that named a verse makes the next bare
+/// number a verse of that same chapter, a chapter-only one makes it a
+/// chapter.
+///
+/// It has to be structural, because asking whether the candidate exists
+/// does not settle it. `Daniel 2, 7, 8, 11` is the case that proves it:
+/// Daniel has 12 chapters AND Daniel 2 has 49 verses, so chapters 7, 8,
+/// 11 and verses 2:7, 2:8, 2:11 are all real scripture. A rule that
+/// preferred verses would send the reader to Daniel 2:7 — a verse that
+/// exists, is not what the card cites, and looks entirely plausible on
+/// arrival.
 List<CitationSegment> splitCitation(String raw) {
   final out = <CitationSegment>[];
-  String? carriedBook;
-  for (final part in raw.split(';')) {
-    final text = part.trim();
-    if (text.isEmpty) continue;
-    var ref = parseReference(text);
-    if (ref == null &&
-        carriedBook != null &&
-        RegExp(r'^\d').hasMatch(text)) {
-      ref = parseReference('$carriedBook $text');
+  BibleReference? previous;
+  for (final chunk in raw.split(';')) {
+    var first = true;
+    for (final part in chunk.split(',')) {
+      final text = part.trim();
+      if (text.isEmpty) continue;
+      var ref = parseReference(text);
+      if (ref == null && previous != null && RegExp(r'^\d').hasMatch(text)) {
+        ref = _inheritReference(text, previous, sameChapter: !first);
+      }
+      previous = ref;
+      out.add(CitationSegment(text, ref));
+      first = false;
     }
-    carriedBook = ref?.englishBook;
-    out.add(CitationSegment(text, ref));
   }
   return out;
+}
+
+/// Resolve a citation part that carries no book of its own against the
+/// part immediately before it.
+///
+/// [sameChapter] is true only for a `,` continuation, where a bare
+/// number continues the previous passage; a `;` starts a new one, so
+/// there it inherits the book alone. A part that spells its own
+/// `chapter:verse` inherits the book alone either way.
+BibleReference? _inheritReference(String text, BibleReference previous,
+    {required bool sameChapter}) {
+  final spellsChapter = text.contains(RegExp(r'[:：.]'));
+  if (sameChapter && !spellsChapter && previous.verseStart != null) {
+    return parseReference(
+        '${previous.englishBook} ${previous.chapter}:$text');
+  }
+  return parseReference('${previous.englishBook} $text');
 }
 
 /// Lookup map from any normalized alias → canonical English book name.
