@@ -1817,12 +1817,64 @@ has never seen this repo.
       not a re-run, it is a rebuild. Put both series in, show the user,
       and let them delete it afterwards if they still want to.
 
-      **Blocked on the user for the media.** No files or links for
-      Standing at the Cross have been supplied. Note also that on the
-      same day they said the featured video "以后我会要变成YouTube link"
-      — if this series is YouTube-hosted, the player, the offline story
-      and the subtitle story all change, and `videoBase` stops being the
-      answer. Ask which before building the player.
+      **UNBLOCKED 2026-08-17. Both open questions are answered.**
+
+      *Hosting:* YouTube. User: "featured video从YouTube那里拿". So
+      `videoBase` and the 238 MB media site are NOT the answer for this
+      series.
+
+      *Source:* `https://yahwehdehua.net/assets/page/easter/`, whose
+      own `<title>` is exactly the series name — "Standing at the Cross
+      : A 10-Part Journey / 在十字架下 : 人生十堂课". **It 403s without
+      a browser User-Agent**; curl with one returns 200.
+
+      27 embeds on that page, read 2026-08-17. Ten parts, each in two
+      languages, numbered on the page itself:
+
+      | # | English | Chinese |
+      |---|---------|---------|
+      | 1 | h7hE0XB3SWs | Voc7M_I1YJw |
+      | 2 | 4WladhGvkAM | omzJLl83zIo |
+      | 3 | GgUiSRBMgj4 | Xee1AhOkiDY |
+      | 4 | xXC3IYb128Q | -JgvZGZ8zmc |
+      | 5 | zCyNjjWhkMg | kuZ8qcAm7UI |
+      | 6 | 483CYa3BjXg | ZzXZmSmMtWs |
+      | 7 | OPzyLFP-TMA | Slng6u-YMsM |
+      | 8 | SjQCm4m-rmk | 5Z1upfO2Ff0 |
+      | 9 | OSKe5G6BW8c | bIJXg7dew2g |
+      | 10 | CincIrfTfDs | J8bBBHIuxjI |
+
+      Also on the page and NOT part of the ten: `1OIZE4HnheE` (sits at
+      the top, next to "Videos / 视频" and "Songs / 诗歌" — probably an
+      intro), `xrHR1ybo1J0` (a teaching clip), and three songs
+      (`s3-qcRZrfZk`, `YTp0Z_TYOns`, `4GBO6CWR6go`). `QXU-gazdgN0` and
+      `4ImxTDU5J0k` also carry part-10 captions and may be alternate
+      cuts — **check before including them; do not guess.**
+
+      **Verify the pairing against the page rather than trusting this
+      table.** It was built by reading the nearest labels before each
+      embed, which is a heuristic. Re-derive it, and if any row
+      disagrees, the page wins.
+
+      **One thing to confirm with the user:** they said the series is
+      "英语广东话", but the page labels the second track only as
+      Chinese — it does not say whether it is Cantonese or Mandarin.
+      Do not label it 廣東話 on the strength of an assumption; ask.
+
+      **The consequences of YouTube, which the design has to absorb:**
+      * `video_player` **cannot play a YouTube URL.** A different
+        package is needed (`youtube_player_iframe` or a webview). That
+        is a real dependency decision — check bundle size and whether
+        it works on all six targets before committing to one.
+      * Subtitles come from YouTube, not from us. The
+        `scripts/align_subtitles.py` pipeline and the `.vtt` files
+        under `assets/subtitles/` apply to 獨一真神 only.
+      * There is no offline download for a YouTube video. If the
+        Songs-style "download for offline" affordance appears anywhere
+        near this section, it must not be offered here.
+      * The position-preserving language switch still matters and is
+        still possible — ask the embed for its current time before
+        swapping, the same idea as today, different API.
 
       **Design notes worth keeping:** the section label becomes the
       series list, not a single video; a series with one episode should
