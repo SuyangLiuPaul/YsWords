@@ -16,30 +16,50 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
-- [ ] **Switching translation silently fails, and you have to try
-      several times.**
+- [x] **Switching translation silently fails, and you have to try
+      several times — the chip was reading a variable the text does not
+      follow, and a failed load had no way of telling anyone.**
       User, 2026-08-16, on macOS AND on the iPhone: "我发现从雅伟版换成梁
       版的时候，为什么没有切换我试多几次就可以了" / "我发现一定要在iphone
       ios version上面换version几次才切换过去".
 
-      **This is a P0 by the user's own rule, not a UI annoyance.** The
-      version chip shows 梁简 while the text on screen is still 雅伟版 —
-      a reader believes they are reading the translation named at the
-      top of the screen. The screenshots show exactly that: chip reads
-      梁简, body text is the 和合本雅伟版 wording, and only after
-      repeated taps does the body change.
+      Two defects, one visible symptom.
 
-      Where to look, in order:
-      * `MainProvider.useCachedVersion` / `preloadVersion` — a switch
-        into a version whose decode has not finished may be dropped
-        rather than queued. The splash pre-load work (v1.4.70) changed
-        when versions finish decoding, so check whether this appeared
-        with it.
-      * The chip's state must never lead the text. Whatever the fix,
-        the label has to be driven by the version actually rendered,
-        so a failed switch looks like a failed switch.
-      Add a test that a switch requested before the target finishes
-      loading still lands.
+      **1. The chip could not do anything BUT lie.** `currentVersion`
+      moves the instant a switch starts — it is the input
+      `FetchVerses.execute` reads to pick an asset — while `verses` only
+      moves when the decode commits, 1–3 s later or never. The header
+      chip, the mini-header and the section-title lookup all read
+      `currentVersion`, so for the whole span of a slow switch the app
+      named 梁简 over 和合本雅伟版 text. Fixed by adding
+      `MainProvider.renderedVersion`, which is written **only** where
+      `verses` is written (`setVerses` and `useCachedVersion`), and
+      pointing all three readers at it. The label now follows the
+      verses by construction, so it cannot lead them again.
+
+      **2. A failed switch threw into the void.** `FetchVerses.execute`
+      rethrows once its final attempt fails (added so the loading page's
+      Retry button could surface a real error). `onVersionSelected`'s
+      `try` had only a `finally` — no `catch` — so the throw jumped past
+      the `verses.isEmpty` recovery below it and escaped an un-awaited
+      async callback. Result: no snackbar, no revert, and
+      `currentVersion` parked on a version whose text never arrived.
+      **That is the "try a few more times and it works":** each tap was a
+      fresh asset fetch and one of them eventually succeeded. The pane
+      now catches, reverts to the version actually on screen, and shows
+      the load-error snackbar.
+
+      `test/version_switch_label_test.dart` asserts the invariant — the
+      label follows the verses — across the optimistic switch, the throw,
+      the warm-cache fast path, the cache miss, and a switch away and
+      back. It checks the fast path from **inside** the listener, so no
+      observer can ever see a frame where label and verses name different
+      translations. Two of the six fail on the pre-fix behaviour.
+
+      If the report recurs after this, the next suspect is
+      `_reanchorPageForVersionSwitch` — its post-frame `jumpToPage` runs
+      against a PageView whose `itemCount` resizes 1189 ↔ 260 when the
+      canon changes (梁家铿 is NT-only).
 
 - [ ] **The verse picker offers a different book from the one being
       read.**

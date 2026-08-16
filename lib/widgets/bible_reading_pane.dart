@@ -1828,7 +1828,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     if (currentVerse != null && !widget.splitViewActive)
                       _MiniReaderHeader(
                         visible: !_chromeVisible,
-                        version: mainProvider.currentVersion,
+                        // renderedVersion, not currentVersion — see the
+                        // field's doc comment. The label must never name a
+                        // translation the body is not showing.
+                        version: mainProvider.renderedVersion,
                         book: currentVerse.book,
                         chapter: currentVerse.chapter,
                         locale: settings.locale,
@@ -1927,7 +1930,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       showBookInfo: currentVerse != null,
                       book: currentVerse?.book ?? '',
                       chapter: currentVerse?.chapter ?? 0,
-                      version: mainProvider.currentVersion,
+                      // renderedVersion, not currentVersion — the chip is
+                      // the app's claim about which translation the reader
+                      // is reading, so it has to follow the verses.
+                      version: mainProvider.renderedVersion,
                       showSidebarToggle: widget.showSidebarToggle,
                       sidebarOpen: widget.sidebarOpen,
                       onToggleSidebar: widget.onToggleSidebar,
@@ -2124,6 +2130,36 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                           // full): force the PageView onto the new
                           // chapter so it doesn't stay on a stale page.
                           _reanchorPageForVersionSwitch(p);
+                        } catch (_) {
+                          // 2026-08-16: `FetchVerses.execute` RETHROWS once
+                          // its last attempt fails (v1.3.x, so the loading
+                          // page's Retry button could surface a real error).
+                          // Nothing caught it here, so the throw jumped
+                          // straight past the empty-verses recovery below
+                          // and out of an un-awaited async callback: no
+                          // snackbar, no revert, and `currentVersion` left
+                          // pointing at a version whose text never arrived
+                          // while `verses` still held the old one.
+                          //
+                          // That is the "switching doesn't switch, try a few
+                          // more times and it works" report — each retry was
+                          // a fresh asset fetch, and one of them eventually
+                          // succeeded. Reverting makes a failed switch look
+                          // like a failed switch instead of a silent lie.
+                          if (prevVersion.isNotEmpty &&
+                              p.currentVersion != prevVersion) {
+                            p.setVersion(prevVersion);
+                          }
+                          messenger?.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                uiStrings['loadErrorBody']
+                                        ?[settings.locale] ??
+                                    'Could not load verses. Please retry.',
+                              ),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
                         } finally {
                           // Always clear the flag so the overlay
                           // disappears even on error.
@@ -6507,7 +6543,10 @@ class _ChapterPageState extends State<_ChapterPage>
               final englishBook =
                   toEnglish(firstVerse.book) ?? firstVerse.book;
               heading = SectionTitleService.headingAt(
-                version: mp.currentVersion,
+                // Headings are printed OVER these verses, so they follow
+                // the version the verses came from, not the one a
+                // still-loading switch has already moved to.
+                version: mp.renderedVersion,
                 englishBook: englishBook,
                 chapter: firstVerse.chapter,
                 verse: firstVerse.verse,

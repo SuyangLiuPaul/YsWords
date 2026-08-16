@@ -98,6 +98,9 @@ class MainProvider extends ChangeNotifier {
 
   void setVerses(List<Verse> list) {
     verses = list;
+    // The list on screen now came from `currentVersion` — this is the one
+    // place a cold load commits, so it is the one place the label may move.
+    renderedVersion = currentVersion;
     _selectedIds.clear();
     // 2026-05-08 (v1.0.1 perf): every change to `verses` invalidates
     // the per-verse caches we use to keep search + paragraph
@@ -278,6 +281,7 @@ class MainProvider extends ChangeNotifier {
     // direct way to land on a wrong verse.
     _pendingJumpChapterVerseIndex = null;
     currentVersion = version;
+    renderedVersion = version;
     verses = cached;
     _selectedIds.clear();
     // Same per-verse caches that setVerses invalidates — these are
@@ -545,6 +549,18 @@ class MainProvider extends ChangeNotifier {
   String? currentBook;
   String currentVersion = 'cuvs-yhwh'; // default version
 
+  /// 2026-08-16: the version the verses in [verses] were actually parsed
+  /// from. [currentVersion] moves the moment a switch STARTS — it is what
+  /// `FetchVerses.execute` reads to pick an asset — so between the tap and
+  /// the decode landing (1–3 s, longer on a slow link, forever if the load
+  /// throws) the two disagree.
+  ///
+  /// Anything that NAMES the translation to the reader must use this, never
+  /// [currentVersion]. The header chip used to read [currentVersion] and so
+  /// announced 梁简 over 和合本雅伟版 text whenever a switch failed — the app
+  /// stating something untrue about which translation the reader is quoting.
+  String renderedVersion = 'cuvs-yhwh';
+
   // Error surfaced from the initial load (e.g. asset read/decode failure).
   // When non-null, the loading screen shows a retry UI.
   String? loadError;
@@ -630,6 +646,7 @@ class MainProvider extends ChangeNotifier {
 
   void setVersion(String version) {
     currentVersion = version;
+
     if (isPrimary) saveCurrentState();
     notifyListeners();
   }
