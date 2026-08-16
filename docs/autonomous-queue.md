@@ -16,6 +16,42 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+- [ ] **Switching translation silently fails, and you have to try
+      several times.**
+      User, 2026-08-16, on macOS AND on the iPhone: "我发现从雅伟版换成梁
+      版的时候，为什么没有切换我试多几次就可以了" / "我发现一定要在iphone
+      ios version上面换version几次才切换过去".
+
+      **This is a P0 by the user's own rule, not a UI annoyance.** The
+      version chip shows 梁简 while the text on screen is still 雅伟版 —
+      a reader believes they are reading the translation named at the
+      top of the screen. The screenshots show exactly that: chip reads
+      梁简, body text is the 和合本雅伟版 wording, and only after
+      repeated taps does the body change.
+
+      Where to look, in order:
+      * `MainProvider.useCachedVersion` / `preloadVersion` — a switch
+        into a version whose decode has not finished may be dropped
+        rather than queued. The splash pre-load work (v1.4.70) changed
+        when versions finish decoding, so check whether this appeared
+        with it.
+      * The chip's state must never lead the text. Whatever the fix,
+        the label has to be driven by the version actually rendered,
+        so a failed switch looks like a failed switch.
+      Add a test that a switch requested before the target finishes
+      loading still lands.
+
+- [ ] **The verse picker offers a different book from the one being
+      read.**
+      User, 2026-08-16, with a screenshot: the reader is in 列王纪下 3
+      while the picker panel is headed 使徒行传 15 and offers verses
+      1-41. Picking one would jump somewhere the user did not ask for,
+      or silently do nothing.
+
+      Same class as the item above — the interface naming one passage
+      while showing another. Check what seeds the picker's book/chapter
+      and whether it survives a navigation that did not go through it.
+
 - [x] **15 verses of the CUV were blank on screen — the importer had
       filed them as footnotes.** Both editions, so 30 verse instances.
       以賽亞書 23:13, 約書亞記 2:6, 撒母耳記上 5:5 / 21:7, 列王紀上 11:32,
@@ -1214,6 +1250,80 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Songs stop instead of advancing to the next track.**
+      User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
+      loading问题". Auto-advance exists (`_onTrackFinished`), so the
+      question is why the NEXT track never starts. Their guess — a load
+      problem — is plausible: the stall watchdog added in v1.4.64 fails
+      a track that produces no audio in 20s, and `_skipPastFailure`
+      then advances, but if the next track also stalls the queue can
+      walk itself into silence. Reproduce with a CDC/fydt song first,
+      since those hosts are the slow ones, and check whether the
+      handler stops because every remaining track is marked failed.
+
+- [ ] **Two references, only one is reachable.**
+      User, 2026-08-16: "那个经文其实是两个，但是按了好像只能去一个，另个去
+      不了". The evidence card's 经文对应 chip is now one flowing
+      paragraph (v1.4.59) but is still a SINGLE tap target that jumps
+      to the first reference. Make each reference its own tap target —
+      `TapGestureRecognizer` per TextSpan, or separate chips — so
+      「以赛亚书 44:28; 以斯拉记 1:1-4」 offers both.
+
+- [ ] **Bounded scroll boxes are everywhere, not just the AI panel.**
+      User, 2026-08-16: "很多时候这些框框都是上下滑动很多地方都是这样是不是
+      全部要找出来fix". Supersedes the narrower AI-panel item: when
+      that was queued I searched only `maxHeight` + scroll view and
+      found one. The user is seeing more, so the search was too narrow
+      — check `SizedBox(height:` and `Expanded` inside sheets too, and
+      list what is found before fixing.
+
+- [ ] **Pull-to-refresh does nothing useful, and the spinner is
+      unnatural.**
+      User, 2026-08-16: "往下滑的时候，感觉并没有用，而且那个转转的也并不
+      自然，你这方面考虑了吗，好好想想". Two questions to answer before
+      touching it: what SHOULD a dashboard refresh do (re-fetch remote
+      data? recompute the daily verse? nothing?), and if the honest
+      answer is "nothing the user can perceive", remove the gesture
+      rather than animate it. A refresh control that always appears to
+      do nothing teaches people the app is unresponsive.
+
+- [ ] **The book-picker blocks look wrong — redesign.**
+      User, 2026-08-16: "我怎么看左边那个blocks其实看起来很奇怪设计能够更好
+      些吗，好好思考". The 66 uniform rounded squares of 1-2 characters
+      read as a keypad rather than a table of contents, and the
+      grid/list toggle does not help. Think about what a reader
+      actually scans for — Old/New, the five divisions, book length —
+      before moving pixels.
+
+- [ ] **macOS: `No Overlay widget found` on the Songs page.**
+      v1.4.75, 800x600, from `_OverlayPortalState.build`. An
+      OverlayPortal is being built outside any Overlay — most likely a
+      tooltip or a menu anchored above `MaterialApp`'s navigator.
+      Reproducible on a small macOS window, so size it down to find it.
+
+- [ ] **Notes need formatting.**
+      User, 2026-08-16: "notes要加format之类的可以做？在chapter里面做笔记的
+      时候". Scope it before building: bold/italic/lists is a different
+      job from a full rich-text editor, and the notes are synced, so
+      the storage format decides whether old notes survive.
+
+- [ ] **The profile photo: should it be tappable?**
+      User, 2026-08-16, asking for an opinion as much as a feature.
+      Local photos can already be changed; a Google-signed-in photo
+      comes from the account. Suggested answer: make it tappable
+      everywhere and open the profile — for a Google photo, say where
+      it comes from and link out rather than pretending it can be
+      edited in-app. A control that looks editable and is not is worse
+      than one that explains itself.
+
+- [ ] **Enable the hidden cahayapengharapan songs.**
+      User, 2026-08-16: "还是enable吧", pointing at
+      `https://cahayapengharapan.org/pujian/` and
+      `.../pujian/video-pujian/`. That host is reachable (200, ~340ms),
+      so this is actionable now. Find why those entries are hidden
+      before un-hiding them — they may have been excluded for a reason
+      the sync recorded.
+
 - [ ] **Now Playing: four things from the phone, 2026-08-12.**
       All four reported together with a screenshot and a crash report.
       Take them in this order — the second is a functional defect, the
@@ -1356,6 +1466,14 @@ has never seen this repo.
       the video's actual title is still 獨一真神. Step 2 — the content
       becoming YouTube links — stays untouched until the user says so.
 
+- [x] **An interactive Bible chronology chart** — REASSIGNED to the
+      SeekSparks session, 2026-08-16, at the user's request ("这个先不
+      做，交给seeksparks那个session做"). Do not start it here. The
+      original write-up, including the copyright and Ussher-chronology
+      constraints, is kept below because whoever picks it up needs it.
+
+<details><summary>original</summary>
+
 - [ ] **An interactive Bible chronology chart — LOW priority, several
       iterations.**
       User, 2026-08-12, with a reference PDF (staged at
@@ -1434,6 +1552,8 @@ has never seen this repo.
       against it.
 
 <details><summary>original</summary>
+
+</details>
 
 - [ ] **The AI exegesis panel cannot be scrolled — a nested scroll view
       inside the sheet.**
