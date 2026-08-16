@@ -289,6 +289,24 @@ and quoted.**
       versification and every id, highlight and note anchored to
       3 John 1:14. The user should decide which edition we follow.
 
+      **Two facts found later that sharpen the decision — the app
+      already answers this question BOTH ways.** Measured while adding
+      `test/citation_target_in_canon_test.dart`:
+      * `assets/nasb.json` and `assets/leb.json` each print 3 John 1:15
+        as its own verse (「Peace be to you. The friends greet you…」),
+        while `kjv.json` and `cuvs-yhwh.json` end at 14. So a reader who
+        looks up 3 John 15 finds it on NASB or LEB and does not on the
+        Chinese — the same book, two verse counts, inside one app.
+      * `assets/cross_references.json` has a source key `3 John 1:15`
+        carrying John 10:3 (「he calleth his own sheep by name」, against
+        「Greet the friends by name」). On NASB/LEB that cross-reference
+        is reachable; on the CUV editions the sentence is inside verse
+        14 and its cross-reference cannot be opened at all.
+
+      So the cost of leaving it is not "3 John 15 is missing" — it is
+      that the two halves of the app disagree, and the Chinese reader
+      quietly loses one cross-reference. Still the user's call.
+
 - [x] **185 verses printed the importer's own Strong's markers as
       scripture.** Found while measuring the 約伯記 10:20/10:21 item
       below, which asked whether `assets/tagged/` and the reading asset
@@ -1268,9 +1286,9 @@ has never seen this repo.
       - Retried 2026-08-10 (fourth and fifth iterations) and again
         2026-08-11 (sixth), 2026-08-12 (seventh through twelfth),
         2026-08-16 (thirteenth) and 2026-08-17 (fourteenth through
-        sixteenth): still
+        seventeenth): still
         `connect=0.000000`, curl times out with no TCP connect.
-        Unchanged across sixteen consecutive iterations, while cgdc.hk and
+        Unchanged across seventeen consecutive iterations, while cgdc.hk and
         cahayapengharapan.org answered 200 in the same probe — so it is
         that host, not the probe. **Tell the user** — they can probably reach Bentley
         faster than the server will come back, and nothing else about
@@ -1537,18 +1555,72 @@ has never seen this repo.
       the four asset entries and the counts. 21 of 225 entries now chip,
       204 keep the single flowing chip — asserted, not estimated.
 
-- [ ] **An inherited verse is not bounds-checked, so a bad citation
-      would offer a verse that does not exist.** Found by the same
-      adversarial pass. `_inheritReference` builds `Book Ch:n` from the
-      preceding part with no idea how long that chapter is, so a
-      citation like `John 18:31-33, 45` would put a live tap target on
-      John 18:45 — the chapter has 40 verses. **No entry in the asset
-      does this** (all four in-range, verified against `assets/kjv.json`),
-      and the jump itself goes through `resolveAndPrepareJump`, which
-      reports failure rather than showing the wrong verse, so today this
-      costs a snackbar and not a false reading. Worth closing if the
-      evidence corpus ever grows: the honest fix is to drop the target
-      when the chapter is too short, not to clamp it to the last verse.
+- [x] **An inherited verse is not bounds-checked, so a bad citation
+      would offer a verse that does not exist — closed with a standing
+      data check, and it now covers the whole app, not just evidence.**
+      `_inheritReference` builds `Book Ch:n` from the preceding part with
+      no idea how long that chapter is, so `John 18:31-33, 45` puts a
+      live tap target on John 18:45 in a chapter with 40 verses.
+
+      **Not fixed in the parser, deliberately.** Bounds-checking there
+      needs a canon table compiled into the app — 1,189 numbers that can
+      themselves be wrong — spent defending against data that does not
+      exist. That is the same trade the timeline/family-tree chip item
+      below refused, and it is refused the same way here:
+      `test/citation_target_in_canon_test.dart` checks the DATA and
+      fails with the offending id.
+
+      **Measured over every citation corpus in the app, not just the one
+      this item was about — 251,320 tap targets, 0 outside the canon:**
+
+      | asset | citations | resolved targets | out of canon |
+      |---|---|---|---|
+      | `bible_evidence.json` | 225 entries | 250 | 0 |
+      | `bible_timeline.json` | 123 refs | 124 | 0 |
+      | `family_tree.json` | 665 refs | 667 | 0 |
+      | `cross_references.json` | 29,318 sources | 250,279 | 0 |
+
+      `cross_references.json` is the find worth recording: 4.4 MB, two
+      orders of magnitude larger than anything else, the surface that
+      tells a reader 「this verse relates to that one」 — and it had no
+      bounds check at all. Every target is parsed with the same
+      `parseReference` call `CrossReferenceService._load` makes, so the
+      test also proves 0 of the 250,279 are silently dropped.
+
+      **A refuter broke the first version of this and both corrections
+      are in the file.** (1) The claim "KJV and NASB/LEB disagree on
+      exactly two chapter ends" was wrong — there are five, and
+      Revelation 12:18 is LEB alone, not NASB. (2) The timeline and
+      family-tree walk used `parseReference`, which truncates at the
+      first comma, so `Luke 1:5-25, 57-80` and `Genesis 4:19, 22` had
+      their second span unchecked — live instances of the very shape the
+      item is about. Both now go through `splitCitation`.
+
+      **The ruler is the union of KJV + NASB + LEB and has to be.**
+      Against `kjv.json` alone the check reports one false alarm,
+      `3 John 1:15` — see the next note on that item.
+
+- [ ] **A cited range in a single-chapter book loses its end: `Jude
+      14-15` resolves to Jude 1:14 with no `verseEnd`.** Found by the
+      refuter on the item above, and pinned by an expectation in
+      `test/citation_target_in_canon_test.dart` so it cannot be fixed
+      without this being noticed.
+
+      `_buildRef`'s single-chapter branch re-reads `Jude 14-15` as
+      chapter 1 verse 14 and passes `verseEnd: verseStart`, which is
+      null on that path — the 15 is dropped at parse time. Same class as
+      the label defect already fixed at the top of this file (**shows a
+      narrower passage than the one cited**), but one layer lower, so it
+      reaches every surface that renders the RANGE rather than the
+      citation text: `passage_localizer`, the verse popup's
+      `verseStart..verseEnd` span, `version_mapper`, the search cards.
+      `Jude 14-15` is cited in both `bible_evidence.json` and
+      `family_tree.json`, so this is live, not hypothetical.
+
+      Not fixed in this iteration because it changes navigation and
+      highlighting behaviour, not a test, and one item at a time. When
+      taken: carry the range through, then widen the canon check, which
+      cannot currently see the dropped end.
 
 - [x] **A citation that cannot be parsed still gets a 「→ 阅读经文」
       chip that can only apologise — fixed on BOTH evidence surfaces.**
