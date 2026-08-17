@@ -16,6 +16,109 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+- [x] **The Traditional Bible had no 隻 in it — 548 measure words printed
+      in the Simplified form.** 以賽亞書 2:16 read 「他施的船只」;
+      馬太福音 18:12 read 「一百只羊」; 「兩只眼」, 「那幾只羊」,
+      「一只公牛」 all the same. `assets/cuvs-yhwh-tr.json` is a script
+      conversion of the Simplified edition, and whatever produced it had
+      no mapping for 只 → 隻 **at all**: the file carried **zero** 隻
+      across 31,102 verses. In Traditional Chinese 只 is the adverb
+      "only" and 隻 is the classifier; they are separate characters in
+      both the Taiwan and Hong Kong standards. This is not a variant
+      preference, it is a hole.
+
+      Every structural check the repo has passed on it, because they ask
+      whether a verse exists, not whether its characters belong to the
+      script the edition claims.
+
+      **Not fixed by re-running a converter.** `opencc -c s2t` disagrees
+      with our Traditional in 27,361 positions and in the great majority
+      **ours is right** — it prefers 爲/“”/着/衆/喫/羣 where this edition
+      sets 為/「」/著/眾/吃/群, and it rewrites 海裏 to 海里 and the place
+      name 迦斐托 to 迦斐託. Re-converting would trade one defect for
+      thousands. opencc was used only as an **oracle for one character**,
+      and all 543 of its verdicts were read: 541 genuine, and **2 wrong**
+      — 詩篇 17:14 「脫離那只在今生有福分的世人」 and 以賽亞書 29:17
+      「不是只有一點點時候嗎」 are the adverb, so applying it unreviewed
+      would have introduced two new defects.
+
+      **The refuter earned its keep — it broke the first version of this
+      fix.** The repair was staged as 547 substitutions on a rule that a
+      classifier always follows a numeral, 每, 那, 幾 or 船. One hides
+      with no numeral in front of it: **民數記 15:12 「按著只數都要這樣
+      辦理」**, where 隻數 is a head count of animals. 著 is not a cue and
+      opencc's phrase table does not carry 隻數 either, so both the rule
+      and the oracle missed it. Caught only by comparing the whole corpus
+      against another edition, which is the lesson worth keeping: a rule
+      that is right 547 times out of 548 still ships a wrong verse.
+
+      **The witness, and where to find it again.** `assets/cuv-tr.json`,
+      the plain 和合本 Traditional (耶和華, not 雅偉), was a separately
+      imported edition of the same base text; it was dropped from the
+      repo at v1.4.5 but is permanently readable as git blob **`7a2dc43`**
+      (`git cat-file -p 7a2dc43`, equivalently `69307c7^:assets/cuv-tr.json`).
+      It has **548 隻 / 670 只**. After the repair ours is 548 / 671, and
+      every verse agrees with it on the 只/隻 sequence except five, all
+      explained: 馬可福音 9:43-46, where our edition splits vv.44/46 into
+      「有些抄本」 notes and the witness does not, and the note wording at
+      路加福音 11:2 (「有古卷只作」, the adverb — which is the one extra
+      只). 梁家鏗's independently produced Traditional NT
+      (`assets/biblexg-v2-tr.json`) corroborates 17 of the NT verses.
+
+      The diff is character-for-character **only** 只→隻 across 309
+      verses — ids, books, chapters, verse numbers and every text length
+      unchanged. `tools/repair_tr_classifier.py` (re-runnable);
+      `test/traditional_classifier_test.dart` pins the counts, the two
+      adverbs and 隻數, and fails on the pre-fix data.
+
+- [ ] **The same converter left ~1,100 more Simplified characters in the
+      Traditional Bible.** Found by the comparison above, and it is the
+      rest of the same defect — queued rather than fixed inline because
+      each class needs its own evidence and one of them is genuinely
+      one-to-many.
+
+      Counted in `assets/cuvs-yhwh-tr.json`. **Unambiguous** — these
+      glyphs have no Traditional use at all, so every occurrence is a
+      leftover: **凈 519** (→淨), **墻 234** (→牆), **余 230** (→餘),
+      **镕 11**, **鸮 3**, **飖 3**, **腌 2**, **珰 1**, **鹯 1**. The
+      witness `7a2dc43` writes the Traditional form in every one it was
+      compared against.
+
+      **Needs per-occurrence review, do NOT blanket-substitute** — one
+      Simplified glyph, several Traditional characters: **幹 319** splits
+      into 乾 (dry), 干 (offend) and the names 亞幹 / 亞多尼幹 / 隱幹寧 /
+      斯利幹 plus 才幹, 枝幹, 若幹 which must not move; **發 1375** is
+      overwhelmingly correct as 發 (issue/send) but 頭髮/白髮 came out as
+      發 because the converter never produced 髮 at all; **谷 244** is
+      穀 (grain) or 谷 (valley, and place names 以拉谷/音谷); **松 51** is
+      鬆 (loosen) or the pine tree; **采 3**.
+
+      `tools/fix_traditional_conversion.py` already carries drafted rules
+      and the exclusion lists for all of these, and
+      `tools/render_tr_fix_review.py` renders them as a reviewable page
+      (the rendered HTML is a regenerable artifact and is not committed).
+      **The script has never been applied and carries a banner saying so**
+      — its cue rule is the very one that missed 民數記 15:12, so do not
+      run `--apply` on it as it stands. **Do the unambiguous nine first**,
+      verify each against `7a2dc43` occurrence by occurrence, and take the
+      one-to-many ones one character at a time.
+
+      Caution when reading the witness: it is a *different edition*, so
+      many differences are not defects — 裏/裡, 麽/麼, 什/甚, 的/地, 那/哪,
+      它/牠 and the transliterations 侖/崙, 瑪/馬, 毗/毘 are conventions
+      this edition is entitled to, and 雅偉/耶和華 is the whole point of
+      ours. Only glyphs with no Traditional existence are safe to take on
+      the witness's word alone.
+
+- [ ] **梁家鏗's Traditional NT has the same classifier defect, smaller.**
+      `assets/biblexg-v2-tr.json` has 398 只 against only 50 隻, and at
+      least one is certainly wrong: **路加福音 5:7 「把兩只船裝得滿滿的」**
+      — a classifier after 兩, which its own 「一隻羊」 elsewhere shows it
+      knows how to set. Found while using it as a witness for the CUV fix.
+      It is a different pipeline and a much smaller file, so it needs its
+      own count before anything is applied. Note it has **none** of the
+      凈/墻/余 leftovers, so its converter was not the same one.
+
 - [x] **20 Bible Evidence cards printed a narrower passage than the one
       they cite.** Found while investigating the 「两个经文只能去一个」
       report below, and it outranks it: that item is about a link you
