@@ -145,7 +145,7 @@ and quoted.**
       | 凶 | 37 | 兇 | 47 | 11 |
       | 佔 | 30 | 占 | 56 | 26 |
       | 颳 | 26 | 刮 | 34 | 8 |
-      | 症 | 26 | 癥 | 26 | 0 |
+      | ~~症~~ | ~~26~~ | ~~癥~~ | ~~26~~ | ~~0~~ | **DONE 2026-08-18** |
       | 冑 | 26 | 胄 | 26 | 0 |
       | 樑 | 25 | 梁 | 27 | 2 |
       | 繫 | 24 | 系 | 34 | 4 |
@@ -159,11 +159,50 @@ and quoted.**
 
       **Take the exact partitions first — they are the cheapest instalments
       left and need no judgement at all.** ~~恆/恒 79~~ **DONE**, ~~卜/蔔 42~~ **DONE**,
-      ~~凌/淩 37~~ **DONE**, 症/癥 26 and 冑/胄 26 each have ours-count == witness-count
-      and the witness holding **zero** of our form, so they are whole-class 1:1
-      replacements rather than a split. Next up: 症/癥 26 (癥 is an
-      abdominal mass, not a symptom), then 冑/胄 26 (甲冑 is a helmet, 胄 is a
-      descendant).
+      ~~凌/淩 37~~ **DONE**, ~~症/癥 26~~ **DONE**, and 冑/胄 26 each have
+      ours-count == witness-count and the witness holding **zero** of our form, so
+      they are whole-class 1:1 replacements rather than a split. Next up: 冑/胄 26
+      (甲冑 is a helmet, 胄 is a descendant), then 愈/癒 35 — a fifth partition the
+      refuter turned up on 2026-08-18 that the inventory table above missed, because
+      愈 is a real Traditional character in 愈來愈 and so is not a hole by the
+      "ours holds zero" test. Ours has 35 愈 and **zero** 癒; the witness 35 癒 and
+      **zero** 愈; and all 35 of ours are 痊愈, none 愈來愈, so the class still moves
+      whole. 利未記 15:13 reads 「患漏症的人痊愈了」.
+
+      **症/癥 is done — 26 substitutions, 2026-08-18.** The fourth true partition,
+      and the same converter accident as 蔔 for 卜: 症 and 癥 are two different
+      words sharing one Simplified form, and the table picked the rarer expansion
+      everywhere. 症 is the illness (病症, 漏症); 癥 is zhēng, an abdominal mass,
+      surviving in modern Traditional essentially only in 癥結 — which scripture
+      never says. So the whole of 利未記 15, the chapter on 漏症, read 「人若身患漏癥」,
+      and 馬太福音 4:23 had Jesus healing 各樣的病癥.
+
+      Ours held 26 癥 and **ZERO** 症; the witness 26 症 and **ZERO** 癥, agreeing
+      count-for-count on all 31,102 verses with **zero** mismatches — the refuter
+      swept it in **both** directions (witness→ours as well as ours→witness) so an
+      offsetting pair could not hide in a verse ours lacks. The four readings are
+      漏癥 ×20 (利未記 ×18, 民數記 5:2, 撒母耳記下 3:29), 病癥 ×4 (申 7:15,
+      太 4:23, 9:35, 10:1), 火癥 ×1 (申 28:22), 熱癥 ×1 (哈 3:5). All 26 confirmed
+      two-sided against the witness's same-id verse, none one-sided — but the window
+      is narrow in seven places and the figure is worthless without it: 19 at ≥3
+      characters each side, four 利未記 at 2, and three at **1** (太 4:23, 9:35,
+      10:1 all end 各樣的病癥。 so there is nothing to the right but the stop).
+      Corroborated by 新譯本 `57c4686` (39 症, zero 癥) and by our own Simplified
+      asset and the tagged Strong's corpus, both already 26 症 / zero 癥.
+      梁家鏗's Traditional NT gives **no** corroboration and is not claimed as any:
+      it holds neither character, wording 各樣的病症 as 各種疾病.
+      `tools/repair_tr_ailment_glyph.py` (re-runnable, idempotent) refuses eight
+      ways, including refusing outright if the corpus ever contains 癥結;
+      `test/traditional_ailment_glyph_test.dart` fails four ways on the pre-fix data.
+
+      **Scope was the interesting part, and the refuter broke my first version of
+      it.** Unlike 淩 or 蔔, 癥 is CORRECT elsewhere in this repo:
+      `assets/sermons/zh-TW/105.txt` reads 「真正的癥結」 — one 癥 against 171 症 in
+      that corpus — so a repo-wide sweep would have corrupted it. I had also written
+      that no other tracked file carries the character; `HANDOFF.md` and this queue
+      both do, in our own notes about the pair. Now pinned by the test.
+      SeekSparks' tracked copy of `cuvs-yhwh-tr.json` carries the identical 26 癥;
+      **its own loop writes there and this repo must not**, as with 五壳 above.
 
       **凌/淩 is done — 37 substitutions, 2026-08-18.** The third true partition,
       and the one that shows most clearly that this class is a converter defect
