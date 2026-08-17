@@ -44,7 +44,7 @@ void main() {
   test('no collocation that can only be flour is left reading 面', () {
     const cues = <String>[
       '細面', '麥面', '磨面', '粗面', '新面', '面酵', '面餅', '面伊法',
-      '摶面', '面摶', '把面', '面撒', '點面來', '剩下的面', '壇內的面',
+      '摶面', '面摶', '把面', '面撒', '點面來', '剩下的面', '罈內的面',
     ];
     final offenders = <String>[];
     for (final v in verses) {
@@ -75,7 +75,7 @@ void main() {
     expect(textOf('創世紀', '18', '6'), contains('三細亞細麵'));
     expect(textOf('出埃及記', '8', '3'), contains('摶麵盆'));
     expect(textOf('申命記', '28', '5'), contains('你的筐子和你的摶麵盆都必蒙福'));
-    expect(textOf('列王紀上', '17', '12'), contains('壇內只有一把麵'));
+    expect(textOf('列王紀上', '17', '12'), contains('罈內只有一把麵'));
     expect(textOf('列王紀上', '4', '22'), contains('細麵三十歌珥，粗麵六十歌珥'));
     expect(textOf('以賽亞書', '47', '2'), contains('要用磨磨麵'));
     expect(textOf('馬太福音', '13', '33'), contains('天國好像麵酵'));

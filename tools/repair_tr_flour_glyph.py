@@ -87,7 +87,7 @@ SIMP, TRAD = "面", "麵"
 # decide it.
 FLOUR_CUES = (
     "細面", "麥面", "磨面", "粗面", "新面", "面酵", "面餅", "面伊法",
-    "摶面", "面摶", "把面", "面撒", "點面來", "剩下的面", "壇內的面",
+    "摶面", "面摶", "把面", "面撒", "點面來", "剩下的面", "罈內的面",
 )
 # …and the readings that make a cue fire on a genuine 面.
 CUE_EXCEPTIONS = ("著面來", "裏面必", "裡面必")

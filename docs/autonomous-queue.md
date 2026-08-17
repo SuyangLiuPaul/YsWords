@@ -273,27 +273,46 @@ and quoted.**
 
       Use **both** witnesses now (`7a2dc43` and the 新譯本 `57c4686`).
 
-- [ ] **A fifth converter hole, found by the refuter 2026-08-17 while it
-      was attacking the 麵 claim: 罈.** Simplified 坛 collapses 壇 (altar)
-      and 罈 (jar), and the converter resolved every one to 壇. So the jar
-      of meal in the Elijah narrative is an *altar*: 列王紀上 17:12 reads
-      「壇內只有一把麵」 and 17:14, 17:16 「壇內的麵必不減少／果不減少」.
+- [x] **The fifth converter hole: 罈 — DONE, 6 substitutions across 5
+      verses, 2026-08-17.** Simplified 坛 collapses 壇 (altar) and 罈 (jar),
+      and the converter resolved every one to 壇. So the jar of meal in the
+      Elijah narrative was an *altar*: 列王紀上 17:12 read 「壇內只有一把
+      麵」 and 17:14, 17:16 「壇內的麵必不減少／果不減少」; 耶利米書 13:12
+      filled altars with wine and 48:12 broke Moab's 壇子.
 
-      **Counted before queueing, and it is the same signature: ours has
-      613 壇 and ZERO 罈; the witness `7a2dc43` has 607 壇 and 6 罈, and
-      613 = 607 + 6 exactly.** So it is a hole, not a preference, and the
-      corpus arithmetic already partitions. 6 occurrences across 5 verses:
-      列王紀上 17:12, 17:14, 17:16 (KJV "the barrel of meal"), 耶利米書
-      13:12, which holds **two** 「各罈都要盛滿了酒」 (KJV "Every bottle
-      shall be filled with wine"), and 耶利米書 48:12.
+      Same signature as every previous instalment: ours had 613 壇 and
+      **ZERO** 罈; the witness `7a2dc43` has 607 壇 and 6 罈, and
+      613 = 607 + 6 exactly. Fixed: 列王紀上 17:12, 17:14, 17:16 (KJV "the
+      barrel of meal"), 耶利米書 13:12, which holds **two** 「各罈都要盛滿
+      了酒」 (KJV "Every bottle shall be filled with wine"), and 耶利米書
+      48:12 (KJV "break their bottles"). 607 of the 613 are the genuine
+      altar, so this was the 發/髮 shape, not the 淨/牆 shape; each of the
+      6 was decided against the witness by `tools/repair_tr_jar_glyph.py`
+      (re-runnable, idempotent) and all 6 resolved on a two-sided context
+      match, none ambiguous.
 
-      **None of the five holds both glyphs** — every 壇 in them is a jar,
-      so the swap-hiding case that had to be checked for 麵 does not exist
-      here at all. Small, but do it the same way: 607 of the 613 are the
-      genuine altar, so this is the 發/髮 shape, not the 淨/牆 shape.
-      Decide each occurrence against the witness exactly as
-      `tools/repair_tr_flour_glyph.py` does. Do NOT blanket-substitute:
-      築壇, 祭壇, 香壇, 燒香的壇 must not move.
+      **A cue rule would have desecrated two altars, which is why the
+      audit spells its cues out in full.** 「各壇」 occurs four times and
+      only the two in 耶利米書 13:12 are jars — 歷代志下 33:15 「所築的各壇
+      都拆毀」 and 阿摩司書 2:8 「在各壇旁鋪人所當的衣服」 are altars. Both
+      are now pinned by `test/traditional_jar_glyph_test.dart`, which fails
+      three ways on the pre-fix data and also fails on a blanket
+      substitution.
+
+      **The refuter failed to break it and made the case stronger.** It
+      abandoned the KJV word list and ran the complement instead: of all
+      613 壇 verses only 77 lack "altar" in KJV *and* NASB *and* LEB, and
+      reading all 77 found 71 邱壇 (high place) and 6 pronoun-referenced
+      altars — no further jar. A per-`id` diff against the witness shows
+      exactly 5 ids differing and all in one direction, so the aggregate
+      613 = 607 + 6 cannot be hiding offsetting errors. The three rows the
+      two files do not share (ours-only 約翰福音 7:53; witness-only two)
+      contain neither glyph. 新譯本 `57c4686` words all five with
+      缸/酒瓶/酒缸, and its single 罈 (約翰福音 19:29) is a verse where the
+      CUV reads 器皿 and has no 壇 to repair. 希伯來書 9:4's 壇 is a
+      footnote gloss for the golden incense altar and is correct.
+      The bundled CJK subset `assets/fonts/NotoSansSC-YsWords.otf` already
+      covers U+7F48, so 罈 renders rather than tofu.
 
 - [ ] **梁家鏗's Traditional NT has the same classifier defect, smaller.**
       `assets/biblexg-v2-tr.json` has 398 只 against only 50 隻, and at
