@@ -2215,7 +2215,7 @@ const String kAppVersion = _envAppVersion == '' ? '1.3.113' : _envAppVersion;
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-08-17T12:15:51Z',
+  defaultValue: '2026-08-17T13:39:22Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses
