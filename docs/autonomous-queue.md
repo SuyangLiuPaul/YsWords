@@ -1735,9 +1735,22 @@ has never seen this repo.
          the URL lands on the page, and Back returns to where the user
          actually was.
 
-      **Ask before starting.** It touches every navigation site in the
-      app, so it is the kind of change that wants the user's agreement
-      on timing, not just on the goal.
+      **Approved to start, 2026-08-17** ("loop加进去吧"). The user has
+      agreed to the timing as well as the goal, so do not ask again —
+      but do it in the staged order above, and land each stage on its
+      own so a bad stage can be reverted without taking the scheme with
+      it.
+
+      **Do not fan out on this one.** Every stage touches navigation,
+      which every other queue item also touches; four agents converting
+      different pages in parallel would each rewrite the same router.
+      One agent, one stage per iteration.
+
+      **Stop and report rather than half-convert.** If a stage cannot
+      reach green, revert that stage and write what blocked it into
+      this item. A build where some pages are addressable and others
+      silently are not is harder to reason about than today's, where
+      the rule is at least consistent.
 
 - [ ] **Songs stop instead of advancing to the next track.**
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
