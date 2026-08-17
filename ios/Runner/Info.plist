@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Yswords</string>
+	<string>YsWords</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIcons</key>
@@ -31,7 +31,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>yswords</string>
+	<string>YsWords</string>
 	<!-- 2026-06-28: opt the native app into LEGACY iPadOS 26 windowing.
 	     With this YES, iPadOS 26 gives the window its own system title bar
 	     to hold the traffic-light controls, so app content sits below them
