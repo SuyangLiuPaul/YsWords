@@ -146,7 +146,7 @@ and quoted.**
       | 佔 | 30 | 占 | 56 | 26 |
       | 颳 | 26 | 刮 | 34 | 8 |
       | ~~症~~ | ~~26~~ | ~~癥~~ | ~~26~~ | ~~0~~ | **DONE 2026-08-18** |
-      | 冑 | 26 | 胄 | 26 | 0 |
+      | ~~冑~~ | ~~26~~ | ~~胄~~ | ~~26~~ | ~~0~~ | **NOT A DEFECT 2026-08-18 — needs the user** |
       | 樑 | 25 | 梁 | 27 | 2 |
       | 繫 | 24 | 系 | 34 | 4 |
       | 籤 | 24 | 簽 | 26 | 2 |
@@ -159,15 +159,81 @@ and quoted.**
 
       **Take the exact partitions first — they are the cheapest instalments
       left and need no judgement at all.** ~~恆/恒 79~~ **DONE**, ~~卜/蔔 42~~ **DONE**,
-      ~~凌/淩 37~~ **DONE**, ~~症/癥 26~~ **DONE**, and 冑/胄 26 each have
+      ~~凌/淩 37~~ **DONE**, ~~症/癥 26~~ **DONE**, and ~~冑/胄 26~~ each have
       ours-count == witness-count and the witness holding **zero** of our form, so
-      they are whole-class 1:1 replacements rather than a split. Next up: 冑/胄 26
-      (甲冑 is a helmet, 胄 is a descendant), then 愈/癒 35 — a fifth partition the
+      they are whole-class 1:1 replacements rather than a split. ~~Next up: 冑/胄 26
+      (甲冑 is a helmet, 胄 is a descendant)~~ — **冑/胄 turned out NOT to be a
+      converter hole at all; see the block below, it is now the user's call.**
+      Next up: 愈/癒 35 — a fifth partition the
       refuter turned up on 2026-08-18 that the inventory table above missed, because
       愈 is a real Traditional character in 愈來愈 and so is not a hole by the
       "ours holds zero" test. Ours has 35 愈 and **zero** 癒; the witness 35 癒 and
       **zero** 愈; and all 35 of ours are 痊愈, none 愈來愈, so the class still moves
       whole. 利未記 15:13 reads 「患漏症的人痊愈了」.
+
+      **冑/胄 is NOT a converter hole — 26 substitutions NOT applied, and the
+      decision belongs to the user. 2026-08-18.** The first row of this table to
+      fail on inspection, and worth reading before the next instalment, because the
+      "ours holds **zero** of the Traditional form" signature fired here for an
+      entirely benign reason and would have printed 26 wrong characters.
+
+      All 26 take one reading, **貴胄** — a noble scion. Nothing is a helmet. That
+      is the whole of it: 胄 (U+80C4, 肉/月 radical) is the descendant, 冑 (U+5191,
+      冂 radical) is the helmet, and **和合本 never says 甲冑** — it renders helmet
+      as 盔 (15), 頭盔 (4), 盔甲, 鎧甲 (6) and 頂盔貫甲, with **zero** 甲冑 and zero
+      甲胄 in 31,102 verses. So our asset holds no 冑 because the sense that needs
+      one never occurs, not because a converter could not produce it. Every other
+      row in this table has a hole to undo; this one has nothing to undo.
+
+      **A correct converter agrees with us.** `opencc -c s2t` renders 贵胄 → 貴胄
+      and 甲胄 → 甲冑 — it distinguishes the two senses and keeps 胄 for the scion.
+      `s2tw` and `s2twp` do the same. Taiwan 教育部《重編國語辭典》heads the entry
+      **貴胄**, and 教育部《異體字字典》lists 胄 (35895) and 冑 (3002) as two
+      independent 正字, neither a variant of the other, so there is no
+      one-to-many expansion here to get wrong. Our Simplified twin writes 胄 26
+      times, which is also the only mainland-standard form.
+
+      **But the print tradition is split, and that is why this is not ours to
+      settle.** The witness `7a2dc43` sets 貴冑 in all 26, and the refuter
+      downloaded an independent published 新標點和合本 (ebible `cmn-cu89t`) which
+      also reads **26 冑 / 0 胄**, the same verses — joined by 信望愛 `unv` and
+      catholicgallery CUVT. So 貴冑 is a mainstream printed CUV reading and the
+      witness is reproducing its edition faithfully, not corrupting it. It is not
+      unanimous either: the refuter found Wikisource 和合本 and cnbible's CUV
+      setting 貴胄, and 新譯本 `57c4686` is internally inconsistent — 4 貴胄
+      (士 5:13, 王上 21:8, 21:11, 尼 2:16) against 1 貴冑 (傳 10:17). 梁家鏗's
+      Traditional NT sets 貴冑 at 路 19:12 where its own Simplified sets 贵胄.
+      Even 康熙字典 concedes the confusion under 冑: 「冑與胄子之胄不同，經典多混，
+      傳寫譌也」.
+
+      **The refuter's real contribution was not breaking the character analysis —
+      that survived every attack — but catching that the analysis answers a
+      different question than the previous five instalments did.** In 隻, 恆, 卜,
+      凌 and 症 the witness, the orthographic standard, opencc and every other
+      edition all pointed the same way, so "match the witness" and "match the
+      standard" never had to be told apart. Here they diverge for the first time,
+      and choosing between them is choosing a contract:
+
+        * **fidelity to the printed 和合本** → apply the 26, print 貴冑;
+        * **modern Traditional orthography** → change nothing, ours is right.
+
+      **Do not apply it on an autonomous iteration either way.** Nothing here is
+      untrue about scripture — same word, same sound, same meaning, no verse or
+      reference affected — so it does not carry the P0 override, and the repo
+      already treats edition-fidelity questions as the user's (see "Proofread the
+      TRADITIONAL against the printed 註釋本" and the 427 wording differences).
+      **The question for the user is in "Blocked on the user".**
+
+      **The lesson generalises, so check the next one:** an inventory diff finds
+      characters we lack, and "we lack it" has two causes — the converter could not
+      write it, or scripture never needed it. Only the first is a defect. 冑 was the
+      last remaining row whose "witness also has" column is 0, so the exposure is
+      bounded; the open rows below are all splits, where the witness holding both
+      forms already proves the character is in play. For **愈/癒 35**, the next
+      instalment, both tests do agree: opencc renders 痊愈 → 痊癒 under s2t, s2tw
+      and s2twp, and the queue's own count has the witness at 35 癒 / 0 愈 — so
+      unlike 冑 it is a genuine hole. Still cross-check it against a published
+      edition before applying, which is the habit this row should leave behind.
 
       **症/癥 is done — 26 substitutions, 2026-08-18.** The fourth true partition,
       and the same converter accident as 蔔 for 卜: 症 and 癥 are two different
@@ -3533,6 +3599,16 @@ so the bundle-size answer stays on the record.
 - **prod deploy.** Every prod push needs explicit permission in the
   moment; it does not carry over. prod is on v1.4.11 and still serves
   the broken LEB and the wrong sermon attribution.
+- **貴胄 or 貴冑? And more generally: when the printed 和合本 and modern
+  Traditional orthography disagree, which wins?** Raised 2026-08-18. The
+  Traditional Bible sets 貴胄 in 26 places (士 5:13, 王上 21:8/11, 尼希米記 ×8,
+  以賽亞書 ×3, 耶利米書 ×3, 但 1:3, 路 19:12 …). Printed 新標點和合本 and the
+  witness edition both set 貴冑; Taiwan 教育部 and opencc both say 胄 is the
+  character for a scion and 冑 is a helmet, which scripture never mentions.
+  Both spellings appear in published CUV editions, so this is a choice, not a
+  defect — and the answer decides more than these 26, because it is the rule
+  the remaining glyph instalments should follow whenever the two disagree.
+  Full evidence in the 冑/胄 block under "P0 — scripture accuracy".
 - **NASB licensing** — `assets/nasb.json` is 7.2 MB and publicly
   fetchable from both prod sites. The user's stated position is that
   NASB needs permission; nothing has been done about it. Ask before
