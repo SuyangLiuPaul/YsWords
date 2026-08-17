@@ -2206,6 +2206,42 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Sweep the CDC network's country sites for songs we do not have.**
+      User, 2026-08-18, pointing at the "WHERE WE MEET" menu on
+      `christiandiscipleschurch.org`: Australia, Canada, Hong Kong,
+      India, Indonesia, Malaysia, Nepal, The Philippines, Singapore,
+      Thailand, United Kingdom, Southeast Asia — "看下所有网站里面有没有
+      其他的歌也加进这个app里面".
+
+      **Cannot be started from this machine, and not for the usual
+      reason.** `christiandiscipleschurch.org`, `christiandc.org` and
+      `christiandc.com` all resolve to the SAME IP (149.248.15.146) —
+      they are one server, not mirrors — and it answers
+      **ECONNREFUSED**, not a timeout. It refuses datacenter IPs: this
+      Mac, WebFetch and the GitHub runner are all turned away, while
+      the user's phone opens it. So this needs either a residential
+      connection or the pages pasted in.
+
+      **Two findings from search that change the shape of the job:**
+
+      1. **The CDC's Chinese songs are fydt.org's.** Their own site says
+         the Chinese songs are taken from fydt.org, which the sync
+         already covers. So a country page carrying Chinese hymns is
+         probably the SAME catalogue, not a new source. Check for
+         duplicates by audio URL before adding anything, or the app
+         gains 200 songs it already has under different titles.
+      2. **`Classic Piano Hymns` has 15 hymns and our sync reports 0.**
+         Every run logs `cdc hymns: 0 classic piano hymns`. That is a
+         scraper gap on a page we already know about, and unlike the
+         country sweep it is testable the moment the host answers.
+         Do this one first — it is smaller, certain, and already
+         scoped.
+
+      **What to ask the user for**, if the host stays unreachable: the
+      country pages that actually list a local site of their own. Most
+      congregations will have no separate website; the sweep is only
+      worth doing for the few that do.
+
 - [ ] **The daily "Refresh songs" failure email is now noise — quiet it
       without going deaf.**
       `SuyangLiuPaul/yswords-data` → Refresh songs has failed every day
