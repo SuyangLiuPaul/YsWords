@@ -122,10 +122,46 @@ and quoted.**
       斯利幹 plus 才幹, 枝幹, 若幹 which must not move; ~~**發 1375**~~
       **DONE — 88 of the 1,375 發 were hair and now read 髮** (see below);
       ~~**谷 244**~~ **DONE — 67 were grain and now read 穀** (see below);
-      **松 51** is 鬆 (loosen) or the pine tree — ours has **0 鬆** against the
-      witness's 24, and 51 = 27 松 + 24 鬆 exactly, so it partitions like 罈 and
-      is the obvious next instalment; ~~**采 3**~~ **DONE — all three were the
+      ~~**松 51**~~ **DONE — 24 were the verb and now read 鬆** (see below);
+      ~~**采 3**~~ **DONE — all three were the
       verb and now read 採**.
+
+      **松/鬆 is done — 24 substitutions, 2026-08-17.** The cheapest instalment so
+      far, and the only one whose central claim can be checked *without* the
+      witness: all 51 occurrences sit in one of ten fixed collocations, the two
+      groups are disjoint and exhaustive — pine 松香 1 / 松木 8 / 松類 3 / 松樹 13 /
+      杜松 2 = 27, loosen 松緩 1 / 松手 2 / 松開 7 / 輕松 6 / 放松 8 = 24 — and every
+      one of the 51 verses holds exactly **one** occurrence, so no verse mixes the
+      readings and an offsetting pair inside a verse is arithmetically impossible
+      rather than merely unlikely. Ours had 51 松 + 0 鬆; the witness 27 + 24.
+      申命記 15:8 read 「總要向他松開手」, 約伯記 27:6 「必不放松」, 以賽亞書 58:6
+      「松開兇惡的繩」, 使徒行傳 16:26 「鎖鏈也都松開了」, 歷代志下 10:4 「輕松些」.
+      The traps are on the *keep* side and none is a tree name a rule would spot:
+      杜松 is the KJV "heath", 松類 the parenthetical gloss on 羅騰樹 ("juniper")
+      and 松香 the pitch of the ark. 約伯記 30:11 is the one position with no
+      left-hand context — 鬆 opens the verse — so it is pinned in full.
+      Corroborated by the 新譯本 `57c4686` (none of the 27 has 鬆, none of the 24
+      has 松), by KJV at all 24 (loosed / slack / release / ease / let it go /
+      weakeneth / respite) and by 梁家鏗's independent NT at 使徒行傳 27:40
+      (「鬆脫錨鏈，同時鬆開舵繩」). Nothing to do on the Simplified or tagged side:
+      Simplified 松 is the correct single form for both meanings and the tagged
+      corpus is Simplified-only, never offered on the Traditional version.
+      `tools/repair_tr_loosen_glyph.py` (re-runnable, idempotent) refuses seven
+      ways; `test/traditional_loosen_glyph_test.dart` fails four ways on the
+      pre-fix data.
+
+      **The refuter earned its keep again — it found the same hole one asset
+      over.** It could not break any of the seven claims, but while checking
+      whether some other Traditional asset carried an unfixed 松 it turned up
+      `assets/biblexg-v2-tr.json` id `47005010`, a study note on καταλύω
+      glossing 「λύω （松開、解開、摧毀、結束）」 — Simplified 松 inside a
+      Traditional asset, and the only 松開 in the file against **five** correct
+      鬆開 (太 16:19, 18:18, 徒 27:40). The asset's own internal convention
+      settles it without any witness. Fixed in the same commit; its remaining
+      three 松 are 甘松/甘松香膏 (spikenard) and are correct. **Worth repeating
+      on the earlier instalments:** those were all verified against
+      `cuvs-yhwh-tr.json` alone, so the other Traditional assets may still
+      carry 髮/麵/穀/鬍/鬚 holes nobody has counted — see the new item below.
 
       **谷/穀 is done — 68 substitutions, 2026-08-17.** The 發/髮 shape again:
       谷 is *correct* 176 times here, so the claim was "these positions are 穀",
@@ -370,6 +406,33 @@ and quoted.**
       It is a different pipeline and a much smaller file, so it needs its
       own count before anything is applied. Note it has **none** of the
       凈/墻/余 leftovers, so its converter was not the same one.
+
+      Update 2026-08-17: it did carry **one** 松/鬆 leftover, in a study note
+      rather than in the translation — `47005010` glossed λύω as 松開 against
+      five correct 鬆開 elsewhere in the file. Fixed with the CUV 松 instalment.
+      So its converter was not the same one, but it was not clean either, and
+      **the notes are as reader-visible as the verses**.
+
+- [ ] **Audit every OTHER Traditional asset for the eight glyph holes already
+      fixed in the CUV.** Every instalment so far (隻, 淨/牆/餘, 髮, 鬍/鬚/採,
+      麵, 罈, 穀, 鬆) was counted in `assets/cuvs-yhwh-tr.json` and nowhere
+      else, so the same holes may sit unfixed in the other Traditional-bearing
+      assets — and the 松 instalment proved the risk is real rather than
+      theoretical by turning one up in `biblexg-v2-tr.json`.
+
+      Scope it first, then fix one asset at a time. Candidates: the exegesis
+      notes and `blockNotes` in `biblexg-v2-tr.json`, `book_introductions.json`,
+      `section_titles.json`, `misconceptions.json`, `bible_evidence.json`,
+      `songs.json`, `daily_verses.json`, `cross_references.json` and the
+      Traditional strings in `lib/constants/ui_strings.dart`. **Search
+      structurally, not just in `text` fields** — the 松 defect was found in a
+      `blockNotes` list, which a `text`-only scan walks straight past. The
+      cheap first pass is: for each of the 17 Traditional forms, count it and
+      its Simplified counterpart across the whole JSON of each asset; a file
+      holding the Simplified form and **zero** of the Traditional one has the
+      same hole signature the CUV had. Do NOT blanket-substitute — several of
+      these (松/杜松, 谷/山谷, 發/出發, 面/前面, 余/其余) are correct far more
+      often than not.
 
 - [x] **20 Bible Evidence cards printed a narrower passage than the one
       they cite.** Found while investigating the 「两个经文只能去一个」
