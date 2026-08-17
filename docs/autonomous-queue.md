@@ -113,7 +113,7 @@ and quoted.**
       pins the nine counts and nine reader-visible verses, and fails on
       the pre-fix data.
 
-- [ ] **The one-to-many Simplified leftovers — 25 classes still open, one
+- [ ] **The one-to-many Simplified leftovers — 24 classes still open, one
       character at a time.** The rest of the same defect. Every enumerated
       class is now done: ~~**幹 319**~~ **DONE — 199 were dry and now read 乾,
       111 were offence or a name and now read 干** (see below, and it is what
@@ -140,7 +140,7 @@ and quoted.**
       | 准 | 54 | 準 | 94 | 40 |
       | 捨 | 53 | 舍 | 317 | 264 |
       | 姦 | 46 | 奸 | 107 | 61 |
-      | 卜 | 42 | 蔔 | 42 | 0 |
+      | ~~卜~~ | ~~42~~ | ~~蔔~~ | ~~42~~ | ~~0~~ | **DONE 2026-08-18** |
       | 凌 | 37 | 淩 | 37 | 0 |
       | 凶 | 37 | 兇 | 47 | 11 |
       | 佔 | 30 | 占 | 56 | 26 |
@@ -157,14 +157,65 @@ and quoted.**
       | 併 | 12 | 並 | 2144 | 2133 |
       | 鬨 | 10 | 哄 | 49 | 39 |
 
-      **Take the five exact partitions first — they are the cheapest
-      instalments left and need no judgement at all.** 恆/恒 79, 卜/蔔 42,
+      **Take the exact partitions first — they are the cheapest instalments
+      left and need no judgement at all.** 恆/恒 79, ~~卜/蔔 42~~ **DONE**,
       凌/淩 37, 症/癥 26 and 冑/胄 26 each have ours-count == witness-count and
       the witness holding **zero** of our form, so they are whole-class 1:1
-      replacements rather than a split. 卜 is the most reader-visible: every
-      one of the 42 divinations prints 「占蔔」, which is a radish. Then
-      症/癥 (癥 is an abdominal mass, not a symptom), 冑/胄 (甲冑 is a helmet,
-      胄 is a descendant) and 淩/凌.
+      replacements rather than a split. Next up: 恆/恒 (the largest of the four
+      left), then 症/癥 (癥 is an abdominal mass, not a symptom), 冑/胄 (甲冑 is
+      a helmet, 胄 is a descendant) and 淩/凌.
+
+      **卜/蔔 is done — 42 substitutions, 2026-08-18.** The first true partition
+      of the whole class and the cheapest instalment yet: 蔔 is correct in
+      exactly one word in the language, 蘿蔔, and no radish occurs in scripture,
+      so unlike 發/髮 or 谷/穀 there was no correct-in-our-form side to protect.
+      Ours held 42 蔔 and **ZERO** 卜; the witness 42 卜 and **ZERO** 蔔, agreeing
+      count-for-count on all 31,102 verses with **zero** mismatches — so no
+      offsetting pair could hide, because no verse holds both readings.
+      申命記 18:10 read 「不可有占蔔的、觀兆的」, 以西結書 13:6 「是謊詐的占蔔」,
+      彌迦書 3:11 「先知為銀錢行占蔔」. The positions a divination-only rule would
+      have missed are the transliterations — 別西蔔/巴力西蔔 ×8 (Beelzebub /
+      Baal-zebub), 巴蔔 ×2 (Bakbuk), 押蔔 (Azbuk) and 蔔士 (亞 10:2, the diviners)
+      — and they need no rule here because the class moves whole.
+      梁家鏗's independently translated Traditional NT corroborates: 別西卜 ×8,
+      占卜 at 使徒行傳 16:16, zero 蔔. Nothing to do on the Simplified side or in
+      the tagged corpus — both already write 卜, which is the correct single
+      Simplified form. **占 was deliberately left alone** (56 here, of which the
+      witness says 30 should be 佔): 占 is correct inside 占卜, so 卜 had to be
+      settled first and 佔/占 is now unblocked.
+      `tools/repair_tr_divination_glyph.py` (re-runnable, idempotent) refuses
+      seven ways, including refusing outright if the witness holds even one 蔔 —
+      because that would mean this is a split and not a partition;
+      `test/traditional_divination_glyph_test.dart` fails three ways on the
+      pre-fix data and pins 占/佔 so the next instalment cannot silently
+      overshoot into this one.
+
+      **The refuter earned its keep again, and this time on scope.** It could
+      not break the claim — it confirmed zero 蘿/萝/菔 anywhere in the corpus
+      (民數記 11:5's produce list is 黃瓜、西瓜、韭菜、蔥、蒜, no radish), matched
+      all 42 on a ±2-character window, and added two witnesses nobody had used:
+      新譯本 `57c4686` (44 卜 / 0 蔔) and the sermon corpus below. But it caught
+      that **"no 蔔 belongs in this repo" is false** — `assets/sermons/zh-TW/`
+      holds **seven correct 蔔**, all 蘿蔔/胡蘿蔔, which a repo-wide sweep would
+      have printed as 蘿卜. The claim is true of scripture and had to be scoped
+      to the verse asset. Now pinned by the test.
+
+- [ ] **`assets/sermons/zh-TW/` is a DIFFERENT and much smaller defect — do not
+      treat it as another instalment of the converter hole.** Found 2026-08-18
+      while scoping 卜/蔔. 289 files. It was produced by a **phrase-aware**
+      converter that does **not** have the hole at all: it holds 隻 453, 淨 358,
+      牆 257, 餘 190, 髮 121, 穀 17, 鬆 133, 佔 148 and all three of
+      干 41 / 乾 164 / 幹 142 — and **zero** of the Simplified forms 凈, 墻, 余.
+      So none of the repair tools in `tools/` applies here and running one would
+      do damage.
+
+      What it has instead is **spot errors**, and only a handful are known so
+      far: `751.txt` reads 「幹蘿蔔」 four times where it means 乾蘿蔔 (dried
+      radish). Needs its own measured pass — count first, and there is no
+      witness edition for sermon text, so each has to rest on the sentence.
+      Lower priority than the verse assets: this is a preacher's illustration,
+      not scripture, so a wrong glyph here is not quoted as the text of the
+      Bible.
 
       The other 20 are splits and must be done the way every instalment since
       隻 has been done — position by position against the witness, refusing
