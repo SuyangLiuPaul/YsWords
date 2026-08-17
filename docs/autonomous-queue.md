@@ -132,7 +132,7 @@ and quoted.**
       | Traditional | witness has | ours writes | ours has | witness also has |
       |---|---|---|---|---|
       | 制 | 90 | 製 | 157 | 67 |
-      | 恆 | 79 | 恒 | 79 | 0 |
+      | ~~恆~~ | ~~79~~ | ~~恒~~ | ~~79~~ | ~~0~~ | **DONE 2026-08-18** |
       | 託 | 73 | 托 | 82 | 9 |
       | 痲 | 65 | 麻 | 237 | 172 |
       | 慾 | 65 | 欲 | 75 | 10 |
@@ -158,12 +158,55 @@ and quoted.**
       | 鬨 | 10 | 哄 | 49 | 39 |
 
       **Take the exact partitions first — they are the cheapest instalments
-      left and need no judgement at all.** 恆/恒 79, ~~卜/蔔 42~~ **DONE**,
+      left and need no judgement at all.** ~~恆/恒 79~~ **DONE**, ~~卜/蔔 42~~ **DONE**,
       凌/淩 37, 症/癥 26 and 冑/胄 26 each have ours-count == witness-count and
       the witness holding **zero** of our form, so they are whole-class 1:1
-      replacements rather than a split. Next up: 恆/恒 (the largest of the four
-      left), then 症/癥 (癥 is an abdominal mass, not a symptom), 冑/胄 (甲冑 is
-      a helmet, 胄 is a descendant) and 淩/凌.
+      replacements rather than a split. Next up: 凌/淩 37, then 症/癥 26 (癥 is an
+      abdominal mass, not a symptom) and 冑/胄 26 (甲冑 is a helmet, 胄 is a
+      descendant).
+
+      **恆/恒 is done — 79 substitutions, 2026-08-18.** The second true partition
+      and the one with the widest reader surface: **54 of the 79 are Bethlehem**,
+      so a Traditional Bible spelt the nativity 伯利恒 at 彌迦書 5:2
+      「伯利恒、以法他啊」, 路加福音 2:4, 馬太福音 2:1 and every reference in Ruth.
+      The other 25 are 恒久 ×8, 恒心 ×8, 恒切 ×4, 恒常, 恒守, 恒忍, the name
+      雅叔比利恒 (代上 4:22, Jashubi-lehem) and 詩篇 89:36 「如日之恒一般」, where
+      the character stands alone. 箴言 11:19 「恒心為義的」, 哥林多前書 13:4
+      「愛是恒久忍耐」, 使徒行傳 1:14 「恒切禱告」.
+
+      Ours held 79 恒 and **ZERO** 恆; the witness 79 恆 and **ZERO** 恒, agreeing
+      count-for-count on all 31,102 verses with **zero** mismatches — so no
+      offsetting pair could hide. Easier than 卜/蔔 in one respect: 恆 and 恒 are
+      the same word rather than two words sharing a Simplified form (恒 is the
+      mainland standard, 恆 the Taiwan 教育部 and Hong Kong form), so there was no
+      meaning to decide anywhere. All 79 still confirmed position by position
+      against the witness's same-id verse: 74 on a two-sided window of up to 8
+      characters, 5 on one side only — 箴言 11:19 and 箴言 25:15 are verse-initial
+      so there is no left context (and 25:15 also loses its right window, the
+      witness dropping two commas), 彌迦書 5:2 reads 「伯利恒、以法他」 against the
+      witness's 「伯利恆的以法他」, 使徒行傳 1:14 「的恒切」 against 「地恆切」, and
+      創世紀 48:7 brackets its gloss `(以法他就是伯利恒)` where the witness sets
+      〈…〉. Corroborated by 梁家鏗's independent Traditional NT (32 恆, zero 恒,
+      all 伯利恆) and by 新譯本 `57c4686` (zero 恒). Nothing to do on the
+      Simplified side or in the tagged corpus — both already write 恒, the
+      correct single Simplified form.
+      `tools/repair_tr_constancy_glyph.py` (re-runnable, idempotent) refuses
+      seven ways, including refusing outright if the witness holds even one 恒;
+      `test/traditional_constancy_glyph_test.dart` fails four ways on the
+      pre-fix data.
+
+      **The refuter could not break the fix but broke three things I wrote about
+      it, which is why the description above is not the one I first drafted.**
+      It independently recounted all seven claims and confirmed them, then found
+      (a) I had called 彌迦書 5:2 verse-initial — it is not, the glyph sits at
+      index 2 of 伯利恒 and its *right* side differs, a 、/的 variant; only the two
+      Proverbs are verse-initial; (b) the tool's cue audit reached **78 of 79**,
+      because 伯利恒 is not a substring of 雅叔比利恒 — the cue is now 利恒, and
+      the same off-by-one was about to go into the test; (c) 創世紀 48:7 uses
+      ASCII parentheses, not fullwidth. It also confirmed the scope: it swept
+      every tracked file and found every other 恒 sitting in a `zh-Hans` key or
+      Simplified prose, with `section_titles.json` cleanly split (cuv 8 恒 / 0 恆
+      against cuv-tr 0 恒 / 8 恆).
 
       **卜/蔔 is done — 42 substitutions, 2026-08-18.** The first true partition
       of the whole class and the cheapest instalment yet: 蔔 is correct in
@@ -200,6 +243,32 @@ and quoted.**
       have printed as 蘿卜. The claim is true of scripture and had to be scoped
       to the verse asset. Now pinned by the test.
 
+- [ ] **`assets/bible_evidence.json` has zh-Hant fields holding wholly SIMPLIFIED
+      prose — not a glyph hole, an untranslated field.** Found 2026-08-18 while
+      scoping 恆/恒, and confirmed independently by the refuter: the 42 恒 in
+      `zh-Hant` values mirror the 44 in `zh-Hans` field for field, because for
+      those entries the zh-Hant value *is* the zh-Hans value. Evidence 24 reads
+      「古代伯利恒泥印」 and 「这枚直径约1.5厘米的小型黏土泥印，是2012年以色列文物
+      管理局…」 under `zh-Hant` — 这/圣经/约旦 and all.
+
+      **Deliberately NOT fixed as part of the 恆/恒 instalment**, and the reason
+      matters: every repair tool in `tools/` is a single-character substitution
+      justified by a witness edition, and there is no witness for this — fixing
+      it means converting whole paragraphs, which is a different kind of change
+      needing a different kind of evidence. Sweeping 恒→恆 here would have
+      "fixed" one character in a paragraph that is Simplified from end to end and
+      made the defect harder to see.
+
+      **Measure first:** count how many of the entries have `zh-Hant == zh-Hans`
+      (or are Simplified by character inventory) before deciding — it may be a
+      handful of entries or most of the file. This is apologetics copy, not
+      scripture, so it ranks below the verse assets; but it is reader-visible in
+      Traditional mode. Check `songs.json` and `section_titles.json` in the same
+      pass: both hold untagged Simplified-only strings (14 and 8 恒), and it is
+      not yet established whether those are converted at render time or shown
+      as-is to Traditional readers — `section_titles.json` at least has a proper
+      `cuv` / `cuv-tr` split, so it is probably fine.
+
 - [ ] **`assets/sermons/zh-TW/` is a DIFFERENT and much smaller defect — do not
       treat it as another instalment of the converter hole.** Found 2026-08-18
       while scoping 卜/蔔. 289 files. It was produced by a **phrase-aware**
@@ -211,7 +280,12 @@ and quoted.**
 
       What it has instead is **spot errors**, and only a handful are known so
       far: `751.txt` reads 「幹蘿蔔」 four times where it means 乾蘿蔔 (dried
-      radish). Needs its own measured pass — count first, and there is no
+      radish), and two stray 恒 against 276 correct 恆 — `156.txt`
+      「背景中恒常存在的」 and `327.txt` 「永恒生命」 (found 2026-08-18 while doing
+      恆/恒; left alone deliberately, and now pinned at 276/2 by
+      `test/traditional_constancy_glyph_test.dart`, so fixing them has to be a
+      deliberate act rather than a side effect of some later sweep).
+      Needs its own measured pass — count first, and there is no
       witness edition for sermon text, so each has to rest on the sentence.
       Lower priority than the verse assets: this is a preacher's illustration,
       not scripture, so a wrong glyph here is not quoted as the text of the
