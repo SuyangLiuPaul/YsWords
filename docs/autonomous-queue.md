@@ -141,7 +141,7 @@ and quoted.**
       | 捨 | 53 | 舍 | 317 | 264 |
       | 姦 | 46 | 奸 | 107 | 61 |
       | ~~卜~~ | ~~42~~ | ~~蔔~~ | ~~42~~ | ~~0~~ | **DONE 2026-08-18** |
-      | 凌 | 37 | 淩 | 37 | 0 |
+      | ~~凌~~ | ~~37~~ | ~~淩~~ | ~~37~~ | ~~0~~ | **DONE 2026-08-18** |
       | 凶 | 37 | 兇 | 47 | 11 |
       | 佔 | 30 | 占 | 56 | 26 |
       | 颳 | 26 | 刮 | 34 | 8 |
@@ -159,11 +159,53 @@ and quoted.**
 
       **Take the exact partitions first — they are the cheapest instalments
       left and need no judgement at all.** ~~恆/恒 79~~ **DONE**, ~~卜/蔔 42~~ **DONE**,
-      凌/淩 37, 症/癥 26 and 冑/胄 26 each have ours-count == witness-count and
-      the witness holding **zero** of our form, so they are whole-class 1:1
-      replacements rather than a split. Next up: 凌/淩 37, then 症/癥 26 (癥 is an
-      abdominal mass, not a symptom) and 冑/胄 26 (甲冑 is a helmet, 胄 is a
+      ~~凌/淩 37~~ **DONE**, 症/癥 26 and 冑/胄 26 each have ours-count == witness-count
+      and the witness holding **zero** of our form, so they are whole-class 1:1
+      replacements rather than a split. Next up: 症/癥 26 (癥 is an
+      abdominal mass, not a symptom), then 冑/胄 26 (甲冑 is a helmet, 胄 is a
       descendant).
+
+      **凌/淩 is done — 37 substitutions, 2026-08-18.** The third true partition,
+      and the one that shows most clearly that this class is a converter defect
+      rather than an editorial preference: **凌 is the correct form in BOTH
+      scripts.** Taiwan 教育部, the Hong Kong list and the mainland standard all
+      set 凌 in 凌辱/欺凌/凌遲; 淩 is a rare variant used essentially only as a
+      surname and in water senses, and it appears in no name in scripture. So
+      unlike 隻, 淨 or 恆 there was no simplification to undo here — the converter
+      mangled a character that needed no conversion at all, and our own
+      Simplified asset writes the correct 凌 in the same 37 places.
+
+      Ours held 37 淩 and **ZERO** 凌; the witness 37 凌 and **ZERO** 淩, agreeing
+      count-for-count on all 31,102 verses with **zero** mismatches. All 37 take
+      exactly three readings — 凌辱 ×32, 欺凌 ×3 (代下 28:20, 詩 69:19, 箴 26:18)
+      and 凌遲 ×2 (但 2:5, 3:29) — and all 37 were confirmed position by position
+      against the witness's same-id verse on a **two-sided** context window, the
+      first instalment with no one-sided or bare-count confirmations at all.
+      士師記 19:25 read 「終夜淩辱她」, 撒母耳記上 31:4 「淩辱我」, 詩篇 44:15
+      「我的淩辱終日在我面前」, 路加福音 6:28 「淩辱你們的，要為他禱告」.
+      Corroborated by 梁家鏗's independent Traditional NT (10 凌 in verse text,
+      zero 淩) and 新譯本 `57c4686` (30 凌, zero 淩).
+
+      **The narrowest scope of any instalment so far:** 淩 occurs in no other
+      text file tracked in the repo — the sermons (23 凌), `section_titles.json`
+      and `bible_evidence.json` already write it correctly — so nothing outside
+      the verse asset needed touching.
+      `tools/repair_tr_insult_glyph.py` (re-runnable, idempotent) refuses seven
+      ways; `test/traditional_insult_glyph_test.dart` fails four ways on the
+      pre-fix data. The test also caught a miscount of my own before it was
+      committed: 梁家鏗's file holds 15 凌, not 10, because five sit in
+      `blockNotes` (凌晨, the Roman watches) which a `text`-field count skips.
+
+      **The refuter confirmed all four load-bearing claims** — including that it
+      could find no position among the 37 where 淩 could legitimately stand, no
+      name and no genealogy — and independently recounted the biblexg number the
+      test had already caught. It added one piece of scope worth keeping: the
+      **retired LJK1 `assets/biblexg-tr.json` carries the same hole** (10 淩,
+      zero 凌). It is deleted from the tree and dropped from the bundle as of
+      v1.4.5 (commit `69307c7`), so nothing ships it and there is nothing to fix
+      — but **if that version is ever revived it is unrepaired**, and it will
+      need this instalment and probably every other one in the class. The same
+      goes for any other retired Traditional asset brought back from history.
 
       **恆/恒 is done — 79 substitutions, 2026-08-18.** The second true partition
       and the one with the widest reader surface: **54 of the 79 are Bethlehem**,
