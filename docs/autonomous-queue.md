@@ -119,11 +119,39 @@ and quoted.**
       phrase was fixed above and half is here. **Do NOT blanket-substitute** — one
       Simplified glyph, several Traditional characters: **幹 319** splits
       into 乾 (dry), 干 (offend) and the names 亞幹 / 亞多尼幹 / 隱幹寧 /
-      斯利幹 plus 才幹, 枝幹, 若幹 which must not move; **發 1375** is
-      overwhelmingly correct as 發 (issue/send) but 頭髮/白髮 came out as
-      發 because the converter never produced 髮 at all; **谷 244** is
-      穀 (grain) or 谷 (valley, and place names 以拉谷/音谷); **松 51** is
-      鬆 (loosen) or the pine tree; **采 3**.
+      斯利幹 plus 才幹, 枝幹, 若幹 which must not move; ~~**發 1375**~~
+      **DONE — 88 of the 1,375 發 were hair and now read 髮** (see below);
+      **谷 244** is 穀 (grain) or 谷 (valley, and place names 以拉谷/音谷);
+      **松 51** is 鬆 (loosen) or the pine tree; **采 3**.
+
+      **發/髮 is done — 88 substitutions, 2026-08-17.** It was the largest
+      one-to-many class by raw count and the smallest by damage: 發 is
+      *correct* 1,287 times here, so the claim was never "發 is 髮" but
+      "these 88 positions are 髮", and each was decided against the
+      witness rather than against a rule. The obvious rule is wrong —
+      詩篇 6:2 「我的骨頭發戰」 and 羅馬書 7:8 「在我裏頭發動」 both contain
+      the string 頭發 and are the verb; both are now pinned by the test so
+      a later blanket substitution cannot pass. In all 80 verses where the
+      witness has 髮 our 發 count equalled its 發+髮 count, and the 88
+      confirmed positions matched its 88 髮 exactly, with none ambiguous.
+      A separate whole-corpus sweep for hair collocations still reading 發
+      (白發, 鬚發, 剃發, 發綹, 發辮, 發網, 毫發 …) went 85 → 0.
+      `tools/repair_tr_hair_glyph.py` (re-runnable, idempotent);
+      `test/traditional_hair_glyph_test.dart` fails four ways on the
+      pre-fix data.
+
+      **A third witness exists, and the next iteration should use it.**
+      The refuter turned it up while trying to break the 發 claim:
+      `assets/cnv-tr.json`, the **新譯本 Traditional**, also 31,102 verses,
+      dropped from the repo but permanently readable as git blob
+      **`57c4686`** (`git cat-file -p 57c4686`, from commit `6e93fed`).
+      It is a *different translation*, so its wording will not context-match
+      — but it is a genuinely independent vote on whether a passage is
+      about hair, flour or a wall, which is exactly what the remaining
+      one-to-many classes need. It carries 髮 93 / 麵 113 / 鬍 22.
+      It agreed on all 88: of its twelve 髮 verses outside our 80, every
+      one words the phrase without 發 at all (利 19:27 頭的周圍不可剃,
+      王上 2:6 白頭, 賽 22:12 頭上光禿, 徒 21:24 剃頭 …).
 
       `tools/fix_traditional_conversion.py` already carries drafted rules
       and the exclusion lists for all of these, and
@@ -145,6 +173,41 @@ and quoted.**
       this edition is entitled to, and 雅偉/耶和華 is the whole point of
       ours. Only glyphs with no Traditional existence are safe to take on
       the witness's word alone.
+
+- [ ] **Two more converter holes nobody had counted: 麵 and 鬍 — and 採,
+      which is unambiguous and takes three minutes.** Found 2026-08-17 by
+      the refuter while it was attacking the 發/髮 claim, so they are
+      measured but NOT yet reviewed occurrence by occurrence.
+
+      Counts, ours against witness `7a2dc43`, verified independently
+      before being written here:
+
+      | glyph | ours | witness | what ours prints instead |
+      |---|---|---|---|
+      | 麵 flour | **0** | 107 | 面 — 「細面」 for 細麵 all through 利未記 |
+      | 鬍 beard | **0** | 21 | 胡 — 「胡須」 for 鬍鬚 |
+      | 採 gather | **0** | 3 | 采 |
+
+      Same signature as every previous instalment: our file contains
+      **zero** of the Traditional form, so it is a hole and not a
+      preference. Order to do them in:
+
+      1. **採** first — a true partition, so it is the easy one: the
+         witness has 0 采 against our 3, and 3 採 against our 0. One-to-one
+         with no competing sense, exactly the shape
+         `tools/repair_tr_leftover_glyphs.py` already handles.
+      2. **鬍** — 21 of our 28 胡 are the beard; the other 7 are genuine
+         (胡亂, and 胡 as a surname/transliteration). Needs per-occurrence
+         confirmation. Reader-visible everywhere 利未記 13-14, 以西結書 5:1
+         and 以斯拉記 9:3 describe shaving.
+      3. **麵** — the big one, 107, and the one most worth getting right:
+         「細麵」 (fine flour) is the substance of the grain offering, so
+         「一伊法細面」 currently reads as a measure of *face*. But 面 is
+         correct ~2,073 times (face, surface, 前面, 面前), so this is the
+         發/髮 shape, not the 淨/牆 shape — decide each of the 107 against
+         the witness, never by rule.
+
+      Use **both** witnesses now (`7a2dc43` and the 新譯本 `57c4686`).
 
 - [ ] **梁家鏗's Traditional NT has the same classifier defect, smaller.**
       `assets/biblexg-v2-tr.json` has 398 只 against only 50 隻, and at
