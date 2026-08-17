@@ -113,18 +113,111 @@ and quoted.**
       pins the nine counts and nine reader-visible verses, and fails on
       the pre-fix data.
 
-- [ ] **The one-to-many Simplified leftovers — ~2,000 to review, one
-      character at a time.** The rest of the same defect, and the reason
-      詩篇 51:7 still reads 「幹淨」 rather than 「乾淨」: half of that
-      phrase was fixed above and half is here. **Do NOT blanket-substitute** — one
-      Simplified glyph, several Traditional characters: **幹 319** splits
-      into 乾 (dry), 干 (offend) and the names 亞幹 / 亞多尼幹 / 隱幹寧 /
-      斯利幹 plus 才幹, 枝幹, 若幹 which must not move; ~~**發 1375**~~
-      **DONE — 88 of the 1,375 發 were hair and now read 髮** (see below);
-      ~~**谷 244**~~ **DONE — 67 were grain and now read 穀** (see below);
-      ~~**松 51**~~ **DONE — 24 were the verb and now read 鬆** (see below);
-      ~~**采 3**~~ **DONE — all three were the
-      verb and now read 採**.
+- [ ] **The one-to-many Simplified leftovers — 25 classes still open, one
+      character at a time.** The rest of the same defect. Every enumerated
+      class is now done: ~~**幹 319**~~ **DONE — 199 were dry and now read 乾,
+      111 were offence or a name and now read 干** (see below, and it is what
+      finally made 詩篇 51:7 read 「乾淨」); ~~**發 1375**~~ **DONE — 88 were
+      hair and now read 髮**; ~~**谷 244**~~ **DONE — 67 were grain and now
+      read 穀**; ~~**松 51**~~ **DONE — 24 were the verb and now read 鬆**;
+      ~~**采 3**~~ **DONE — all three were the verb and now read 採**.
+
+      **The "~2,000 to review" estimate this item used to carry was a guess,
+      and it has now been measured — 25 classes, ~1,000 positions.** The
+      measurement is a character-inventory diff: every character the witness
+      `7a2dc43` uses that our asset does not contain **at all**. Each row
+      below is the same hole signature every fixed instalment had — ours holds
+      **zero** of the Traditional form across 31,102 verses:
+
+      | Traditional | witness has | ours writes | ours has | witness also has |
+      |---|---|---|---|---|
+      | 制 | 90 | 製 | 157 | 67 |
+      | 恆 | 79 | 恒 | 79 | 0 |
+      | 託 | 73 | 托 | 82 | 9 |
+      | 痲 | 65 | 麻 | 237 | 172 |
+      | 慾 | 65 | 欲 | 75 | 10 |
+      | 飢 | 58 | 饑 | 157 | 99 |
+      | 准 | 54 | 準 | 94 | 40 |
+      | 捨 | 53 | 舍 | 317 | 264 |
+      | 姦 | 46 | 奸 | 107 | 61 |
+      | 卜 | 42 | 蔔 | 42 | 0 |
+      | 凌 | 37 | 淩 | 37 | 0 |
+      | 凶 | 37 | 兇 | 47 | 11 |
+      | 佔 | 30 | 占 | 56 | 26 |
+      | 颳 | 26 | 刮 | 34 | 8 |
+      | 症 | 26 | 癥 | 26 | 0 |
+      | 冑 | 26 | 胄 | 26 | 0 |
+      | 樑 | 25 | 梁 | 27 | 2 |
+      | 繫 | 24 | 系 | 34 | 4 |
+      | 籤 | 24 | 簽 | 26 | 2 |
+      | 杆 | 21 | 桿 | 26 | 5 |
+      | 閒 | 18 | 閑 | 19 | 1 |
+      | 扎 | 17 | 紮 | 21 | 4 |
+      | 儘 | 16 | 盡 | 407 | 391 |
+      | 併 | 12 | 並 | 2144 | 2133 |
+      | 鬨 | 10 | 哄 | 49 | 39 |
+
+      **Take the five exact partitions first — they are the cheapest
+      instalments left and need no judgement at all.** 恆/恒 79, 卜/蔔 42,
+      凌/淩 37, 症/癥 26 and 冑/胄 26 each have ours-count == witness-count and
+      the witness holding **zero** of our form, so they are whole-class 1:1
+      replacements rather than a split. 卜 is the most reader-visible: every
+      one of the 42 divinations prints 「占蔔」, which is a radish. Then
+      症/癥 (癥 is an abdominal mass, not a symptom), 冑/胄 (甲冑 is a helmet,
+      胄 is a descendant) and 淩/凌.
+
+      The other 20 are splits and must be done the way every instalment since
+      隻 has been done — position by position against the witness, refusing
+      the whole run rather than guessing at one. Note **儘/盡 and 併/並** are
+      the 發/髮 shape at its most extreme: our form is correct 391 and 2,133
+      times respectively, so only 16 and 12 positions move.
+
+      Two rows worth flagging before someone tries a rule on them: 梁 is also
+      the surname (and 梁家鏗 is a version name in this app), and 占 is correct
+      in 占卜 while 佔 belongs in 佔領 — so 卜 and 佔 interact and should be
+      done in the same pass or in that order.
+
+      **幹 is done — 310 substitutions, 2026-08-18.** The only three-way split
+      in the whole class, and the largest instalment since the 1,004: Simplified
+      干 collapses 干 (offend/concern/name), 乾 (dry) and 幹 (trunk/ability), and
+      the converter had two branches where three were needed — 319 幹 + 22 乾 and
+      **ZERO 干**. 199 were dry (詩篇 22:15 「我的精力枯幹」, 出埃及記 14:21
+      「海就成了幹地」, 以西結書 37:4 「枯幹的骸骨」, 約翰福音 13:10 「全身就幹淨了」)
+      and 111 were offence or a name (民數記 5:6 「幹犯雅偉」, 約書亞記 7:1
+      「迦米的兒子亞幹」, 使徒行傳 18:6 「與我無幹」). Only 9 were genuine 幹:
+      the lampstand shaft (出 25:31, 37:17), the stump (伯 14:8), 枝幹 ×5
+      (結 19:11-14) and 才幹 (太 25:15) — all pinned, all cross-voted against KJV
+      ("his shaft", "the stock thereof", "strong rods", "ability").
+
+      **The queue was wrong about this one and it is worth saying why.** This
+      item used to warn that 亞幹 / 亞多尼幹 / 隱幹寧 / 斯利幹 and 若幹 "must not
+      move". They all move — the published Traditional writes 亞干, 隱干寧,
+      若干. The warning came from reasoning about the language rather than
+      counting the corpus, which is exactly the failure the measure-first rule
+      exists to prevent.
+
+      Decided position by position by folding 幹/乾 → 干 on **both** sides and
+      reading the witness's unfolded glyph at the aligned position, so nothing
+      rests on a cue — and a cue could not work here anyway: 以西結書 19:12
+      「東風吹乾其上的果子，堅固的枝幹折斷枯乾」 holds two readings four
+      characters apart, and 使徒行傳 18:6 holds 「與我無干」 and the note
+      「我卻乾淨」 in one verse. 233 of 310 resolved on the widest 8-character
+      two-sided window, 7 on ordinal position, and **one** had no aligned
+      witness text at all: 使徒行傳 8:27 干大基 (Candace), where the witness
+      transliterates the whole clause differently (衣索匹亞女王甘大基). Settled
+      instead by 新譯本 `57c4686`, by 梁家鏗's independent NT and by our own
+      Simplified, all three of which spell it 干大基.
+
+      **The matching 341 totals are NOT corroboration** — the refuter caught
+      that. They match only because the two edition differences cancel
+      (使徒行傳 8:27 is +1 here, 希伯來書 2:2 is −1). The load-bearing evidence
+      is the per-verse ordered-sequence check, which the refuter re-ran with a
+      ±4-character context window over every occurrence: 60 deltas, every one
+      a known edition convention (雅偉/耶和華, 裏/裡, 什麽/甚麼, 約但/約旦).
+      `tools/repair_tr_dry_glyph.py` (re-runnable, idempotent) refuses seven
+      ways; `test/traditional_dry_glyph_test.dart` fails six ways on the
+      pre-fix data and also fails on a blanket substitution in either
+      direction.
 
       **松/鬆 is done — 24 substitutions, 2026-08-17.** The cheapest instalment so
       far, and the only one whose central claim can be checked *without* the
@@ -398,6 +491,86 @@ and quoted.**
       The bundled CJK subset `assets/fonts/NotoSansSC-YsWords.otf` already
       covers U+7F48, so 罈 renders rather than tofu.
 
+- [ ] **The Strong's glosses have the same converter hole, and they carry
+      their own witness.** Found 2026-08-18 by the refuter attacking the
+      幹 instalment, which had claimed no other asset needed the repair —
+      that claim was wrong, and this is the better half of what it found.
+
+      `assets/strongs/hebrew.json` and `greek.json` hold BOTH a Simplified
+      field and an explicitly Traditional one for every entry (`defZh` /
+      `defZhTw`, `glossZh` / `glossZhTw`), so **the Simplified twin is a
+      per-string witness sitting in the same file** — no git blob, no second
+      edition, no alignment. That makes this the cheapest-to-verify item in
+      the whole P0 section.
+
+      Confirmed defects in the `*ZhTw` fields, each with its `*Zh` twin
+      showing the intended reading:
+
+      | Strong's | Traditional field reads | should read | twin |
+      |---|---|---|---|
+      | H374, H1324, H6894 | 幹物 | 乾物 (dry measure) | 干物 |
+      | H650, H1308, G5493 | 幹河 / 幹河谷 | 乾河 / 乾河谷 | 干河 |
+      | H926 | 被幹擾 | 被干擾 | 被干扰 |
+      | H2717 | 幹掉 | 乾掉 | 干掉 |
+      | H5405 | 被幹涸 | 被乾涸 | 被干涸 |
+      | H467 | 亞多尼幹 | 亞多尼干 | 亚多尼干 |
+      | H4445 | 瑪拉幹 | 瑪拉干 | 玛拉干 |
+      | H5911 | 亞幹 (Achan) | 亞干 | 亚干 |
+
+      **This is the 發/髮 shape — most 幹 there are correct** (樹幹 H1503,
+      H3657, H3661, H6086, H6136; 枝幹 H6056; 幹活 G2038), so do NOT
+      blanket-substitute. H5911 is the one to check first: it glosses 亞割谷
+      as where 亞干's family was stoned, and the app prints Strong's glosses
+      on the Originals sheet, so a reader looking up the name is shown a
+      spelling the Bible text itself no longer uses.
+
+      **Scope it for all 17 glyphs, not just 幹.** Nothing has ever counted
+      隻/淨/牆/餘/髮/鬍/鬚/採/麵/罈/穀/鬆 in these two files, and the same
+      converter signature is likely. The twin-field witness makes a
+      whole-sweep script practical in one pass.
+
+- [ ] **17 wrong 幹 in the Traditional sermon assets.** `assets/sermons/zh-TW/`
+      holds 142 幹 across 60 files and **the great majority are correct** —
+      才幹 (~40), 幹活, 幹什麼, 幹部, 樹幹, 軀幹, 主幹道, 幹掉. The 發/髮 shape
+      again. The wrong ones are dryness: 哭幹了眼淚, 排幹了, 水庫幹了,
+      溪也幹了, 幹枯, 幹蘿蔔 ×4, 嘴幹, 一把幹沙, 凍幹食品, 幹淨 ×2, plus
+      幹擾 ×2 which is 干. Lower priority than the Strong's item — these are
+      sermon transcripts, not scripture — but they are reader-visible prose
+      and there is no witness for them, so each has to be read.
+
+- [ ] **`丶` stands in for the enumeration comma 、 in 53 places, in BOTH
+      editions.** 出埃及記 15:4 reads 「法老的車輛丶軍兵」, 15:25 「定了律例丶
+      典章」, 24:1 「你和亞倫丶拿答丶亞比戶」. `丶` is U+4E36, the CJK *stroke
+      radical* — a dictionary head component, not punctuation.
+
+      Ours holds 53 in the Traditional asset and 53 in the Simplified one;
+      the witness `7a2dc43` holds **zero** and writes 、 at those positions.
+      Equal counts on both sides say this is **upstream of the Traditional
+      conversion**, not caused by it, so it must be fixed in both assets (and
+      the tagged corpus checked). Low risk — 丶 has no legitimate use in
+      running text — but count it in the tagged Strong's corpus first, and
+      check the bundled CJK subset covers nothing that would change.
+
+- [ ] **出埃及記 25:35 has a doubled comma before a full stop, in both
+      editions.** 「有球與枝子接連一塊，，。燈臺出的六個枝子都是如此。」 The
+      witness reads 「接連一塊。燈臺出的…」. Found 2026-08-18 by the refuter.
+      Same signature as the 丶 item — present identically in
+      `cuvs-yhwh-tr.json` and `cuvs-yhwh.json`, so upstream. Worth a
+      whole-corpus sweep for other doubled or orphaned punctuation before
+      fixing this one verse, per the measure-before-concluding rule.
+
+- [ ] **希伯來書 2:2 may be missing 干犯 — needs the user, or a third
+      witness.** Ours reads 「凡犯悖逆的都受了該受的報應」; the witness
+      `7a2dc43` and the 新譯本 `57c4686` both read 「凡干犯悖逆的」, which is
+      also the standard CUV. **Our own Simplified asset drops it too**, so it
+      is upstream of the Traditional conversion and not a glyph defect.
+
+      Not fixed, deliberately: restoring it means *writing a character into
+      scripture*, which the standing rule forbids doing on inference. Check
+      the tagged Strong's corpus for 希伯來書 2:2 first — if the tagged runs
+      carry the word, that settles it from inside the repo the way H1715 did
+      for 五穀 at 以賽亞書 36:17.
+
 - [ ] **梁家鏗's Traditional NT has the same classifier defect, smaller.**
       `assets/biblexg-v2-tr.json` has 398 只 against only 50 隻, and at
       least one is certainly wrong: **路加福音 5:7 「把兩只船裝得滿滿的」**
@@ -420,7 +593,14 @@ and quoted.**
       assets — and the 松 instalment proved the risk is real rather than
       theoretical by turning one up in `biblexg-v2-tr.json`.
 
-      Scope it first, then fix one asset at a time. Candidates: the exegesis
+      Update 2026-08-18: **two of the candidates are now confirmed, not
+      hypothetical** — `assets/strongs/*.json` and `assets/sermons/zh-TW/`
+      both carry the 幹 hole (see the two items above, which have the counts).
+      The Strong's files have a Simplified twin field per entry, so they can
+      be swept for all 17 glyphs in one pass without any external witness;
+      do that one first and it will answer most of this item.
+
+      Scope the rest, then fix one asset at a time. Candidates: the exegesis
       notes and `blockNotes` in `biblexg-v2-tr.json`, `book_introductions.json`,
       `section_titles.json`, `misconceptions.json`, `bible_evidence.json`,
       `songs.json`, `daily_verses.json`, `cross_references.json` and the
