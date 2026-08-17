@@ -1638,6 +1638,55 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Only the Bible reader has a URL. Every other page is
+      unshareable, and Back does the wrong thing.**
+      Reported 2026-08-17 by a reader of the CN site, forwarded by the
+      user: reading sermon #019「你们是世上的光」the address bar still
+      read `.../#/micah/2:1?v=cuvs-yhwh`, so forwarding that link sends
+      someone to Micah 2:1. Also: "用浏览器的 forward/backward 的时候
+      体验不对".
+
+      **Not CN-specific** — both sites are the same build; `CHINA_MODE`
+      changes data hosts, not routing.
+
+      **Cause.** `lib/services/url_sync_service_web.dart` syncs the URL
+      to `MainProvider`'s book / chapter / verse / version and to
+      nothing else. Every other page — 72 `pushPage` call sites —
+      goes through GetX `Get.to`, which pushes a Flutter route but does
+      not write the address bar. `main.dart` sets only `home:`, with no
+      `routes` or `onGenerateRoute`, so Flutter web has nothing to
+      derive a URL from.
+
+      That single fact explains both symptoms, and the second one is
+      the worse of the two: `popstate` is wired to apply URL → Bible
+      state. Pressing Back inside a sermon therefore does not pop the
+      sermon — it jumps the reader to a passage. There are two
+      histories, the browser's (Bible positions only) and Flutter's
+      (pages), and they are not the same stack.
+
+      **This is a design change, not a patch.** Making 72 pages
+      addressable means adopting a real router — `go_router` or
+      Navigator 2.0 — and moving the hand-rolled hash sync into it.
+      Do NOT bolt `pushState` calls onto `pushPage`: that would put
+      entries in the browser history that the app cannot pop correctly,
+      which is the current bug with more URLs.
+
+      Sequence worth following:
+      1. **Decide the URL scheme first**, on paper, for every
+         destination — sermon, song, evidence entry, misconception,
+         playlist, Strong's number. A scheme invented per-page while
+         converting will not be stable enough to share.
+      2. Keep the existing Bible URLs working exactly as they are.
+         They are the ones already in circulation; breaking a shared
+         `/#/john/3:16` link to fix sharing would be a poor trade.
+      3. Convert pages in batches with a test per batch: a cold load of
+         the URL lands on the page, and Back returns to where the user
+         actually was.
+
+      **Ask before starting.** It touches every navigation site in the
+      app, so it is the kind of change that wants the user's agreement
+      on timing, not just on the goal.
+
 - [ ] **Songs stop instead of advancing to the next track.**
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
       loading问题". Auto-advance exists (`_onTrackFinished`), so the
