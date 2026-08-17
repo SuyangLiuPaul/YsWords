@@ -71,20 +71,52 @@ and quoted.**
       `test/traditional_classifier_test.dart` pins the counts, the two
       adverbs and 隻數, and fails on the pre-fix data.
 
-- [ ] **The same converter left ~1,100 more Simplified characters in the
-      Traditional Bible.** Found by the comparison above, and it is the
-      rest of the same defect — queued rather than fixed inline because
-      each class needs its own evidence and one of them is genuinely
-      one-to-many.
+- [x] **The unambiguous nine of the ~1,100 remaining Simplified
+      characters are fixed — 1,004 substitutions.** Same converter, same
+      defect as 隻 above: **凈 519** (→淨), **墻 234** (→牆), **余 230**
+      (→餘), **镕 11** (→鎔), **鸮 3** (→鴞), **飖 3** (→颻), **腌 2**
+      (→醃), **珰 1** (→璫), **鹯 1** (→鸇). 尼希米記 4:6 read
+      「修造城墻」, 歷代志上 11:8 「其余的是約押修理」, 詩篇 51:7
+      「潔凈我」.
 
-      Counted in `assets/cuvs-yhwh-tr.json`. **Unambiguous** — these
-      glyphs have no Traditional use at all, so every occurrence is a
-      leftover: **凈 519** (→淨), **墻 234** (→牆), **余 230** (→餘),
-      **镕 11**, **鸮 3**, **飖 3**, **腌 2**, **珰 1**, **鹯 1**. The
-      witness `7a2dc43` writes the Traditional form in every one it was
-      compared against.
+      **A partition, which is stronger evidence than a rule.** Before the
+      repair our asset held **zero** of all nine Traditional forms, and
+      the witness `7a2dc43` holds **zero** of all nine Simplified ones. A
+      converter that never once wrote 淨, 牆 or 餘 in 31,102 verses did
+      not choose them — it could not produce them, so there is no
+      editorial-preference hypothesis left to rule out.
 
-      **Needs per-occurrence review, do NOT blanket-substitute** — one
+      Still not applied on the strength of the rule, because two of the
+      nine are real Traditional characters and the claim is about this
+      corpus rather than about the language: **余** is the classical
+      pronoun and a surname, **腌** is 腌臢. Every one of the 1,004 was
+      confirmed individually against the witness's same-id verse —
+      977 with up to 8 characters of context either side, 25 on one side
+      only (where the editions legitimately differ: 雅偉/耶和華, 裏/裡,
+      胡/鬍, our `<note: …>` against their （…）), and 2 on equal
+      per-verse counts alone (哈巴谷書 2:11 「墻裏」 vs 「牆裡」 with the
+      glyph first in the verse; 使徒行傳 18:6 inside note markup).
+      `tools/repair_tr_leftover_glyphs.py` refuses if even one cannot be
+      confirmed. All 230 余 read 其餘/餘剩/有餘/餘民/餘種/餘地/餘怒/
+      餘火/餘福/餘力; both 腌 are 鹽醃.
+
+      The two count differences against the witness were read and are
+      edition differences, not defects: 民數記 35:33 repeats the word
+      inside an inline note here and not there (519 淨 vs 518), and
+      耶利米書 9:7 sets 融化 here where the witness sets 鎔化 (11 鎔
+      vs 12).
+
+      The refuter ran a full `difflib` alignment of every affected verse
+      after substitution and put 1,003 of 1,004 inside an `equal` region;
+      the exception is the 民數記 35:33 note, which has no witness
+      counterpart at all. `test/traditional_leftover_glyphs_test.dart`
+      pins the nine counts and nine reader-visible verses, and fails on
+      the pre-fix data.
+
+- [ ] **The one-to-many Simplified leftovers — ~2,000 to review, one
+      character at a time.** The rest of the same defect, and the reason
+      詩篇 51:7 still reads 「幹淨」 rather than 「乾淨」: half of that
+      phrase was fixed above and half is here. **Do NOT blanket-substitute** — one
       Simplified glyph, several Traditional characters: **幹 319** splits
       into 乾 (dry), 干 (offend) and the names 亞幹 / 亞多尼幹 / 隱幹寧 /
       斯利幹 plus 才幹, 枝幹, 若幹 which must not move; **發 1375** is
@@ -99,9 +131,13 @@ and quoted.**
       (the rendered HTML is a regenerable artifact and is not committed).
       **The script has never been applied and carries a banner saying so**
       — its cue rule is the very one that missed 民數記 15:12, so do not
-      run `--apply` on it as it stands. **Do the unambiguous nine first**,
-      verify each against `7a2dc43` occurrence by occurrence, and take the
-      one-to-many ones one character at a time.
+      run `--apply` on it as it stands. Take one character per iteration,
+      and follow the shape of `tools/repair_tr_leftover_glyphs.py`: decide
+      each occurrence against `7a2dc43` and refuse the whole run rather
+      than guess at one. Start with **發/髮**, which is the most
+      reader-visible (頭髮, 白髮) and the easiest to bound — the
+      Traditional 髮 does not occur in our asset at all, and the witness
+      says where it belongs.
 
       Caution when reading the witness: it is a *different edition*, so
       many differences are not defects — 裏/裡, 麽/麼, 什/甚, 的/地, 那/哪,
