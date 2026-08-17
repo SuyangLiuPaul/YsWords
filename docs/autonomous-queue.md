@@ -2834,19 +2834,27 @@ has never seen this repo.
       embed, which is a heuristic. Re-derive it, and if any row
       disagrees, the page wins.
 
-      **One thing to confirm with the user:** they said the series is
-      "英语广东话", but the page labels the second track only as
-      Chinese — it does not say whether it is Cantonese or Mandarin.
-      Do not label it 廣東話 on the strength of an assumption; ask.
+      **Answered 2026-08-17.** The second track IS Cantonese, and there
+      is no Mandarin: "如果没有普通话就空着没问题". So this series ships
+      English + Cantonese, and the Mandarin slot stays empty rather than
+      being filled with the Cantonese file or hidden. Two series with
+      different language coverage is the case the model has to handle
+      anyway — 獨一真神 has three, this has two — so an empty slot is
+      the normal state, not an error to paper over.
 
       **The consequences of YouTube, which the design has to absorb:**
       * `video_player` **cannot play a YouTube URL.** A different
         package is needed (`youtube_player_iframe` or a webview). That
         is a real dependency decision — check bundle size and whether
         it works on all six targets before committing to one.
-      * Subtitles come from YouTube, not from us. The
-        `scripts/align_subtitles.py` pipeline and the `.vtt` files
-        under `assets/subtitles/` apply to 獨一真神 only.
+      * **No subtitles for this series at all.** User, 2026-08-17:
+        "因为我们换成YouTube所以不要做字幕". Do not build a caption
+        track, do not run `scripts/align_subtitles.py` against these,
+        and do not add a subtitle toggle to this series' player —
+        YouTube carries its own captions and the viewer can turn them
+        on there. The `.vtt` files under `assets/subtitles/` and that
+        script stay where they are: they belong to 獨一真神, which is
+        still self-hosted and still needs them.
       * There is no offline download for a YouTube video. If the
         Songs-style "download for offline" affordance appears anywhere
         near this section, it must not be offered here.
