@@ -984,10 +984,34 @@ and quoted.**
       "jumps somewhere the user did not ask for" half of the report,
       and it is the only remaining way to reach it.
 
-      Not fixed unilaterally: the two behaviours are mutually exclusive
-      and the existing one is a recorded user preference. Ask which
-      wins — the pane leading the grid, or the grid holding what the
-      user opened.
+      **ANSWERED 2026-08-18: the pane wins. The grid follows the text.**
+      Asked after the user hit the other half of it on a tablet — the
+      picker headed 创世纪 41 (its grid ran to 57, which is that
+      chapter's verse count) while the pane sat on 创世纪 1. Their call:
+      "网格跟着正文走".
+
+      So the rule is now simple and one-directional: **whatever chapter
+      the reading pane is on, that is the chapter the verse grid offers
+      — always, including across a book change, a search jump, a
+      restored session and a Home round-trip.** The v1.2.76 preference
+      is superseded; it was only ever about Prev/Next sliding the grid
+      along, and following the pane does that too.
+
+      What this buys, and it is the reason to prefer it: the panel can
+      no longer name one chapter while the text shows another. That is
+      the same class as the version chip naming one translation while
+      the verses are another (P0, fixed 2026-08-17) — an interface
+      saying something that is not so.
+
+      The cost the user accepted: opening 創世紀 41's grid to hunt for a
+      verse, then moving the pane, loses that grid. Do not try to soften
+      this with a "hold" heuristic — a rule that sometimes follows and
+      sometimes holds is exactly the ambiguity being removed.
+
+      Write the test as the invariant, not as a sequence: after ANY
+      navigation, `picker.chapter == pane.chapter`. Cover the paths the
+      previous fix found were separate — the docked sidebar, the
+      full-screen route, and its `providerOverride` path.
 
 - [x] **15 verses of the CUV were blank on screen — the importer had
       filed them as footnotes.** Both editions, so 30 verse instances.
