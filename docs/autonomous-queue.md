@@ -122,7 +122,8 @@ and quoted.**
       斯利幹 plus 才幹, 枝幹, 若幹 which must not move; ~~**發 1375**~~
       **DONE — 88 of the 1,375 發 were hair and now read 髮** (see below);
       **谷 244** is 穀 (grain) or 谷 (valley, and place names 以拉谷/音谷);
-      **松 51** is 鬆 (loosen) or the pine tree; **采 3**.
+      **松 51** is 鬆 (loosen) or the pine tree; ~~**采 3**~~ **DONE — all
+      three were the verb and now read 採**.
 
       **發/髮 is done — 88 substitutions, 2026-08-17.** It was the largest
       one-to-many class by raw count and the smallest by damage: 發 is
@@ -174,33 +175,66 @@ and quoted.**
       ours. Only glyphs with no Traditional existence are safe to take on
       the witness's word alone.
 
-- [ ] **Two more converter holes nobody had counted: 麵 and 鬍 — and 採,
-      which is unambiguous and takes three minutes.** Found 2026-08-17 by
-      the refuter while it was attacking the 發/髮 claim, so they are
-      measured but NOT yet reviewed occurrence by occurrence.
+- [ ] **The last counted converter hole: 麵.** 鬍/鬚 and 採 are **done**
+      (see the instalment note below); 麵 is what remains of this item.
+      All three were found 2026-08-17 by the refuter while it was
+      attacking the 發/髮 claim.
 
       Counts, ours against witness `7a2dc43`, verified independently
       before being written here:
 
-      | glyph | ours | witness | what ours prints instead |
+      | glyph | ours was | witness | what ours printed instead |
       |---|---|---|---|
       | 麵 flour | **0** | 107 | 面 — 「細面」 for 細麵 all through 利未記 |
-      | 鬍 beard | **0** | 21 | 胡 — 「胡須」 for 鬍鬚 |
-      | 採 gather | **0** | 3 | 采 |
+      | 鬍 beard | **0** | 21 | 胡 — 「胡須」 for 鬍鬚 ✅ fixed |
+      | 鬚 beard | **0** | 20 | 須 — the other half of 「胡須」 ✅ fixed |
+      | 採 gather | **0** | 3 | 采 ✅ fixed |
 
       Same signature as every previous instalment: our file contains
       **zero** of the Traditional form, so it is a hole and not a
       preference. Order to do them in:
 
-      1. **採** first — a true partition, so it is the easy one: the
-         witness has 0 采 against our 3, and 3 採 against our 0. One-to-one
-         with no competing sense, exactly the shape
-         `tools/repair_tr_leftover_glyphs.py` already handles.
-      2. **鬍** — 21 of our 28 胡 are the beard; the other 7 are genuine
-         (胡亂, and 胡 as a surname/transliteration). Needs per-occurrence
-         confirmation. Reader-visible everywhere 利未記 13-14, 以西結書 5:1
-         and 以斯拉記 9:3 describe shaving.
-      3. **麵** — the big one, 107, and the one most worth getting right:
+      1. ~~**採**~~ and ~~**鬍/鬚**~~ — **DONE, 44 substitutions across 25
+         verses, 2026-08-17** (胡→鬍 21, 須→鬚 20, 采→採 3). The table
+         above understates it: 鬚 was a **fourth** hole nobody had counted,
+         0 against the witness's 20, so 「胡須」 was wrong in *both*
+         characters.
+
+         Neither 胡 nor 須 is a partition — 7 胡 are genuine (基列胡瑣,
+         伊胡得, 胡巴, 胡言亂語 ×3, 胡寫亂畫) and 86 須 are 必須/須要 — and
+         **撒母耳記上 21:13 carries one of each in the same verse**
+         (「在城門的門扇上胡寫亂畫，使唾沫流在鬍子上」), so this could not be
+         decided a verse at a time, let alone by a rule. 鬍鬚 also defeats
+         the substitute-and-look-for-it method used for 淨/牆/餘, because two
+         glyphs under repair sit side by side and neither can be confirmed
+         until the other has been. `tools/repair_tr_beard_glyph.py` therefore
+         **folds both texts** (鬍→胡, 鬚→須, 採→采), aligns on the widest
+         context that matches unambiguously, and reads the *unfolded*
+         witness at that position. It refuses the whole run three ways: on
+         a per-verse count mismatch, on corpus totals missing the witness's
+         21/20/3, and on any beard collocation still reading 胡/須 (21
+         before → 0 after, a sweep that does not depend on the witness).
+
+         **A cross-language check settled it independently of any witness:**
+         all 19 KJV verses containing "beard" now have 鬍/鬚 on our side,
+         and every verse where we now write 鬍/鬚 has "beard" in its KJV
+         verse bar three that are explainable (利未記 13:33 "He shall be
+         shaven", 歷代志上 19:4 "shaved them", 以賽亞書 50:6 "plucked off
+         the hair"). The 新譯本 witness `57c4686` agrees on all 22 verses;
+         its three extra are 以西結書 5:2-4, where the CUV simply does not
+         repeat the noun. All 3 採 are the verb, matching KJV "cut up
+         mallows" / "gathered" / "gather", and 梁家鏗's independent
+         Traditional NT draws the same line (採摘/採納 but 興高采烈/風采).
+         `test/traditional_beard_glyph_test.dart` pins both sides — a
+         blanket substitution and a revert each fail it.
+
+         **Worth knowing for the remaining instalments:** the converter
+         *was* one-to-many capable (干 341 → 幹 319 + 乾 22; 后 1289 → 后 51
+         + 後 1238), it simply had no entry for these. And it was **not**
+         vanilla OpenCC — stock `s2t` produces 鬍鬚 and 採 here, and 沉
+         where this edition sets 沈. So it is a custom or older map, which
+         is why "the converter could not produce it" keeps holding.
+      2. **麵** — the big one, 107, and the one most worth getting right:
          「細麵」 (fine flour) is the substance of the grain offering, so
          「一伊法細面」 currently reads as a measure of *face*. But 面 is
          correct ~2,073 times (face, surface, 前面, 面前), so this is the
