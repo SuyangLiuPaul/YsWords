@@ -121,9 +121,57 @@ and quoted.**
       into 乾 (dry), 干 (offend) and the names 亞幹 / 亞多尼幹 / 隱幹寧 /
       斯利幹 plus 才幹, 枝幹, 若幹 which must not move; ~~**發 1375**~~
       **DONE — 88 of the 1,375 發 were hair and now read 髮** (see below);
-      **谷 244** is 穀 (grain) or 谷 (valley, and place names 以拉谷/音谷);
-      **松 51** is 鬆 (loosen) or the pine tree; ~~**采 3**~~ **DONE — all
-      three were the verb and now read 採**.
+      ~~**谷 244**~~ **DONE — 67 were grain and now read 穀** (see below);
+      **松 51** is 鬆 (loosen) or the pine tree — ours has **0 鬆** against the
+      witness's 24, and 51 = 27 松 + 24 鬆 exactly, so it partitions like 罈 and
+      is the obvious next instalment; ~~**采 3**~~ **DONE — all three were the
+      verb and now read 採**.
+
+      **谷/穀 is done — 68 substitutions, 2026-08-17.** The 發/髮 shape again:
+      谷 is *correct* 176 times here, so the claim was "these positions are 穀",
+      not "谷 is 穀". Ours had 244 谷 + 1 殼 and ZERO 穀; the witness has 177 +
+      68, and 245 = 245 exactly. 創世紀 27:28 read 「許多五谷新酒」, 申命記 25:4
+      and its two NT citations 「牛在場上踹谷的時候」, 何西阿書 9:1 「在各谷場上」,
+      馬可福音 4:28 「地生五谷是出於自然的」. The traps are the names — 亞谷
+      (Akkub), 谷歌大 (Gudgodah), 哈巴谷 (Habakkuk), 谷何西 (Colhozeh) carry no
+      valley in their English at all, and 詩篇 65:13 「谷中也長滿了五穀」 is the
+      only verse in the corpus holding both readings; all are pinned by
+      `test/traditional_grain_glyph_test.dart`.
+      `tools/repair_tr_grain_glyph.py` (re-runnable, idempotent) refuses six
+      ways, and on the refuter's suggestion now compares the ordered **sequence**
+      of 谷/穀 against the witness verse by verse, not just the counts — which is
+      what makes an offsetting pair inside one verse impossible rather than
+      merely unlikely. The refuter also corrected the arithmetic being claimed:
+      67 of the substitutions are 谷→穀 and one is 殼→穀, and 3 of the 68 sit at
+      a verse boundary so their "two-sided" match was really one-sided.
+
+- [x] **以賽亞書 36:17 promised a land of husks — 「五殼」/「五壳」 in all three
+      assets, 2026-08-17.** Not a conversion defect but a plain textual
+      corruption, and the only 殼 in the Traditional corpus, the only 壳 in the
+      Simplified one and the only 壳 in the tagged corpus. Found because it is
+      the one verse where the 谷/穀 arithmetic ran one short.
+
+      **The tagging settles it without leaving the repo:** the run reading
+      「就是有五壳」 is tagged **H1715**, דָּגָן, *"properly, increase, i.e.
+      grain"* — so the Strong's number attached to the word says it is grain.
+      The parallel Rabshakeh speech at 列王紀下 18:32 is the same sentence with
+      the same H1715 run and reads 五谷; the witness reads 五穀; KJV "a land of
+      corn and wine"; NASB and LEB "a land of grain and new wine". 殼 is needed
+      nowhere else in the corpus — the husk and shell passages read 核…皮
+      (民 6:4), 新穗子 (王下 4:42), 不結實 (何 8:7), 豆莢 (路 15:16).
+
+      Fixed in `assets/cuvs-yhwh-tr.json`, `assets/cuvs-yhwh.json` **and**
+      `assets/tagged/cuvs-yhwh/isaiah.json` — the last because the Originals
+      sheet prints the tagged runs *instead of* the verse, so a reader tapping
+      the verse would still have been shown 五壳. `tagged_verse_coverage_test`
+      caught exactly that: fixing two assets and not the third pushed its
+      pinned disagreement 236 → 237.
+
+      **The error is older than this repo:** SeekSparks' separately imported
+      `assets/cuvs-plus.json` carries 五壳 at the same verse. That copy may share
+      an upstream e-text with ours, so it says where the error is *not* — not
+      where it came from. **SeekSparks has the same defect and its own loop
+      writes there; this repo must not.**
 
       **發/髮 is done — 88 substitutions, 2026-08-17.** It was the largest
       one-to-many class by raw count and the smallest by damage: 發 is
