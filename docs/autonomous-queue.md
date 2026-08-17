@@ -2167,6 +2167,46 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **The daily "Refresh songs" failure email is now noise — quiet it
+      without going deaf.**
+      `SuyangLiuPaul/yswords-data` → Refresh songs has failed every day
+      since 2026-08-12; last success 08-11. Six identical failures, six
+      identical emails.
+
+      **The job is not broken. The guard is working.** Every run fetches
+      all four sources fine and then refuses to write:
+
+          ERROR: a source lost a tenth of its AUDIO while keeping its
+          songs — that is what a refused fetch looks like, not an
+          upstream deletion. Refusing to write.
+                 cdc: 286 → 247 with audio
+
+      `christiandiscipleschurch.org` keeps returning all 283 CDC song
+      pages while withholding the media on ~39 of them. The guard exists
+      because on 2026-08-10 exactly that shipped: the song count never
+      moved, the old count-only guard saw nothing, and the app published
+      36 hymns with a dead play button. **Do not weaken or bypass this
+      guard** — failing loudly with the previous catalogue in place is
+      the correct outcome, and the emails are it doing its job.
+
+      **What to change is the notification, not the check.** Six
+      identical mails teach the reader to ignore the seventh, which is
+      the one that will say something new. Suppress a repeat when the
+      failure reason is unchanged from the previous run, and speak up
+      when either the reason changes or the same reason has persisted
+      past a threshold (a week is a fair first guess — by then it is
+      news again, not noise).
+
+      Store the last failure reason next to the catalogue and compare;
+      the guard messages are already stable, single-line and specific
+      enough to compare on.
+
+      **Root cause is not ours to fix from here.** The same host is
+      unreachable from the maintainer's Mac for an unrelated reason (a
+      managed-device policy — see the host note above), so this is two
+      different blocks on one site. Getting the runner unblocked needs
+      the church, not code.
+
 - [ ] **Only the Bible reader has a URL. Every other page is
       unshareable, and Back does the wrong thing.**
       Reported 2026-08-17 by a reader of the CN site, forwarded by the
