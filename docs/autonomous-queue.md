@@ -175,24 +175,24 @@ and quoted.**
       ours. Only glyphs with no Traditional existence are safe to take on
       the witness's word alone.
 
-- [ ] **The last counted converter hole: 麵.** 鬍/鬚 and 採 are **done**
-      (see the instalment note below); 麵 is what remains of this item.
-      All three were found 2026-08-17 by the refuter while it was
-      attacking the 發/髮 claim.
+- [x] **The last counted converter hole: 麵 — DONE, 107 substitutions
+      across 90 verses, 2026-08-17.** All four holes in this item are now
+      closed (麵, 鬍, 鬚, 採). They were found 2026-08-17 by the refuter
+      while it was attacking the 發/髮 claim.
 
       Counts, ours against witness `7a2dc43`, verified independently
       before being written here:
 
       | glyph | ours was | witness | what ours printed instead |
       |---|---|---|---|
-      | 麵 flour | **0** | 107 | 面 — 「細面」 for 細麵 all through 利未記 |
+      | 麵 flour | **0** | 107 | 面 — 「細面」 for 細麵 all through 利未記 ✅ fixed |
       | 鬍 beard | **0** | 21 | 胡 — 「胡須」 for 鬍鬚 ✅ fixed |
       | 鬚 beard | **0** | 20 | 須 — the other half of 「胡須」 ✅ fixed |
       | 採 gather | **0** | 3 | 采 ✅ fixed |
 
       Same signature as every previous instalment: our file contains
       **zero** of the Traditional form, so it is a hole and not a
-      preference. Order to do them in:
+      preference. Order they were done in:
 
       1. ~~**採**~~ and ~~**鬍/鬚**~~ — **DONE, 44 substitutions across 25
          verses, 2026-08-17** (胡→鬍 21, 須→鬚 20, 采→採 3). The table
@@ -234,14 +234,66 @@ and quoted.**
          vanilla OpenCC — stock `s2t` produces 鬍鬚 and 採 here, and 沉
          where this edition sets 沈. So it is a custom or older map, which
          is why "the converter could not produce it" keeps holding.
-      2. **麵** — the big one, 107, and the one most worth getting right:
+      2. ~~**麵**~~ — **DONE, 107 substitutions across 90 verses,
+         2026-08-17.** The big one, and the one most worth getting right:
          「細麵」 (fine flour) is the substance of the grain offering, so
-         「一伊法細面」 currently reads as a measure of *face*. But 面 is
-         correct ~2,073 times (face, surface, 前面, 面前), so this is the
-         發/髮 shape, not the 淨/牆 shape — decide each of the 107 against
-         the witness, never by rule.
+         「一伊法細面」 read as a measure of *face* all through 利未記,
+         民數記 and 以西結書; 摶麵盆 (kneadingtrough) read 摶面盆 and
+         「一點麵酵能使全團發起來」 read 面酵.
+
+         The 發/髮 shape, not the 淨/牆 shape — 面 is **correct 2,077
+         times** here (面前 alone is 1,186), so the claim was never "面 is
+         麵" but "these 107 positions are 麵". Each was decided against
+         witness `7a2dc43` by substituting and looking for the result
+         verbatim: 104 resolved on a two-sided 6–8 character window, 3 on
+         the left only, **none ambiguous**, and no verse fell short of the
+         witness's count. `tools/repair_tr_flour_glyph.py` (re-runnable,
+         idempotent) refuses the whole run four ways, including a
+         witness-independent sweep for flour collocations still reading
+         面 — 118 before → 0 after.
+
+         **The refuter closed the one hole in that arithmetic.** A false
+         convert at a face position plus a miss at a flour position in the
+         *same* verse would balance the per-verse count and pass. That
+         needs a verse holding both glyphs, and in the whole corpus there
+         is exactly **one**: 士師記 6:19 「用一伊法細麵做了無酵餅 … 獻在
+         使者面前」. The repair converts 細麵 and leaves 面前. It also
+         blind-aligned all 90 verses with 面/麵 masked — 56 byte-identical,
+         34 differing only in known orthographic noise (裏/裡, 壇/罈,
+         谷/穀 …) — so no 麵 position is unaligned.
+
+         Two independent votes: **KJV** has flour/meal/leaven/dough/bread/
+         kneadingtrough/lump/cake/wafer in 83 of the 90, and the other 7
+         are still flour on inspection (利 5:13 "the remnant", 申 28:5/17
+         摶麵盆 = "thy store", 結 45:24 / 46:5, 7, 11 "a meat offering of an
+         ephah"). **新譯本** `57c4686` has 麵 in 86 of the 90; the four it
+         lacks word the phrase without the noun at all.
+         `test/traditional_flour_glyph_test.dart` pins both directions and
+         fails three ways on the pre-fix data.
 
       Use **both** witnesses now (`7a2dc43` and the 新譯本 `57c4686`).
+
+- [ ] **A fifth converter hole, found by the refuter 2026-08-17 while it
+      was attacking the 麵 claim: 罈.** Simplified 坛 collapses 壇 (altar)
+      and 罈 (jar), and the converter resolved every one to 壇. So the jar
+      of meal in the Elijah narrative is an *altar*: 列王紀上 17:12 reads
+      「壇內只有一把麵」 and 17:14, 17:16 「壇內的麵必不減少／果不減少」.
+
+      **Counted before queueing, and it is the same signature: ours has
+      613 壇 and ZERO 罈; the witness `7a2dc43` has 607 壇 and 6 罈, and
+      613 = 607 + 6 exactly.** So it is a hole, not a preference, and the
+      corpus arithmetic already partitions. 6 occurrences across 5 verses:
+      列王紀上 17:12, 17:14, 17:16 (KJV "the barrel of meal"), 耶利米書
+      13:12, which holds **two** 「各罈都要盛滿了酒」 (KJV "Every bottle
+      shall be filled with wine"), and 耶利米書 48:12.
+
+      **None of the five holds both glyphs** — every 壇 in them is a jar,
+      so the swap-hiding case that had to be checked for 麵 does not exist
+      here at all. Small, but do it the same way: 607 of the 613 are the
+      genuine altar, so this is the 發/髮 shape, not the 淨/牆 shape.
+      Decide each occurrence against the witness exactly as
+      `tools/repair_tr_flour_glyph.py` does. Do NOT blanket-substitute:
+      築壇, 祭壇, 香壇, 燒香的壇 must not move.
 
 - [ ] **梁家鏗's Traditional NT has the same classifier defect, smaller.**
       `assets/biblexg-v2-tr.json` has 398 只 against only 50 隻, and at
