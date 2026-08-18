@@ -45,44 +45,103 @@ and quoted.**
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
-- [ ] **Characters are silently MISSING from verses, with no marker left
-      behind — 士師記 12:13 reads 「作以色的士師」 for 以色列.** Found
-      2026-08-19 by the refuter while it was trying to break the `??` claim
-      below, which is the best possible provenance for it: it went looking for
-      evidence that this corpus loses characters, and found some.
+- [x] **Characters were silently MISSING from verses — 士師記 12:13 read
+      「作以色的士師」 for 以色列. 15 verses restored, in all three assets.**
+      Found 2026-08-19 by the refuter while it was trying to break the `??`
+      claim below, which is the best possible provenance for it: it went
+      looking for evidence that this corpus loses characters, and found some.
 
-      **Verified by hand at four positions, ours against both witnesses
-      (blob `7a2dc43` and the independent Simplified import):**
+      **Measured before concluding, as the standing rule says.** Every verse
+      aligned against both witnesses on CJK ideographs only, so punctuation
+      and spacing never register: 31,102 verses, **31** where both witnesses
+      read more than we do. Not the 14 the refuter guessed, and it was right
+      not to be quoted. Reading all 31 individually split them three ways —
+      **15 real losses, 9 transpositions** (the characters are all there, in
+      the wrong order — filed as its own item below), **7 explained**
+      (verse-boundary placement of a trailing 說, note-marker restructuring,
+      and two edition variants). `tools/audit_dropped_characters.py` carries
+      the triage and now fails only on hits it has never seen.
 
-      | ref | ours | both witnesses read |
+      **The 15, each one or two characters short in BOTH editions:**
+      創 45:1 弟兄**們** · 創 45:15 弟兄**們** · 創 50:11 一場**極**大的哀哭 ·
+      出 15:7 像燒碎**秸** · 士 12:13 以色**列** · 詩 59:12 **因**他們口中 ·
+      詩 78:44 河**汊** · 詩 102:26 就**都**改變了 · 亞 11:15 愚昧**牧**人 ·
+      可 11:17 教訓**他們**說 · 徒 26:29 是少**勸**是多勸 · 徒 27:44
+      **零碎**東西 · 林後 10:9 免得**你們**以為 · 林後 12:17 他**們**一個人 ·
+      來 2:2 **干**犯悖逆.
+
+      **Restoring is the dangerous direction, so it took four lines of
+      evidence, not two.** The two witnesses (blob `7a2dc43` and the
+      independent Simplified import) disagree with EACH OTHER in 5,338 of
+      31,101 verses, so their agreeing means something — but not enough. The
+      refuter added the **Wikisource transcription of the printed 1919 text**
+      and the **import module's own Strong's tags**, which outlived the
+      characters they were attached to and point straight at the gaps:
+      以色`<WH3478>` is tagged *Israel*, 燒碎`<WH7179>` *stubble*,
+      愚昧人`<WH7462x>` *shepherd*. A word cannot be tagged with a Strong's
+      number it no longer spells.
+
+      **The refuter earned its keep again — it broke 2 of the 17 proposed.**
+      創 39:22「都交在約瑟手下」 and 創 41:30「甚至埃及地都忘了」 look
+      identical to the rest, and both witnesses read longer (約瑟**的**手下,
+      甚至**在**埃及地). The printed 1919 reads exactly as ours, and the
+      module's tagging shows no gap (約瑟`<WH3130>`手下`<WH3027>`). Both
+      witnesses descend from a later revision at those two points. **Two
+      witnesses agreeing is not proof when they share an ancestor** — that is
+      the lesson, and it is why the third and fourth lines were worth
+      getting. Both are pinned in the test as verses that must stay SHORT.
+
+      **The word-tap corpus had the same 15 losses** and renders its own copy
+      of the verse, so 「作以色」 was on screen there too. Repaired in the same
+      pass, which put `tagged_verse_coverage_test` back to 236 instead of
+      forcing its bound up to 241. There, the Strong's tag decided where each
+      character goes — better placement evidence than the running text.
+
+      Not part of the deferred 繁體 glyph class: the loss is upstream of the
+      Traditional conversion and of this repo — it is already in the MySword
+      module the corpus was imported from. `tools/repair_dropped_characters.py`
+      (re-runnable, idempotent); `test/dropped_characters_test.dart` fails on
+      the pre-fix data. 干 counts in `traditional_dry_glyph_test` moved 111 →
+      112 because 來 2:2 got its 干犯 back.
+
+- [ ] **Nine verses have the right characters in the WRONG ORDER.** Found by
+      the same 2026-08-19 measurement pass, set aside from the restoration
+      above because a transposition is two edits rather than an insertion and
+      deserves its own reading. Both witnesses agree against us at all nine,
+      and the refuter checked them against the printed 1919 text:
+
+      | ref | ours | should read |
       |---|---|---|
-      | 士師記 12:13 | 作**以色**的士師 | 作以色**列**的士師 — *Israel*, misspelt |
-      | 出埃及記 15:7 | 像燒**碎**一樣 | 像燒碎**秸**一樣 |
-      | 詩篇 78:44 | 江河並**河**的水 | 江河並河**汊**的水 |
-      | 詩篇 102:26 | 天地就改變了 | 天地就**都**改變了 |
+      | 創 9:11 | 毀壞**了地** | 毀壞**地了** |
+      | 尼 8:4 | 木臺上。**站**瑪他提雅…和瑪西雅**在**他的右邊 | 瑪他提雅…和瑪西雅**站在**他的右邊 |
+      | 箴 22:11 | 因他嘴的恩言，王必與他為**上**友 | 因他嘴**上**的恩言，王必與他為友 |
+      | 俄 1:5 | 摘葡萄的若**到來**你那裏 | 若**來到**你那裏 |
+      | 太 6:2 | 不可在你**面前**吹號 | 在你**前面**吹號 |
+      | 太 25:20 | 那另外**五千的**來 | 那另外**的五千**來 |
+      | 徒 24:16 | **因此我**自己勉勵 | **我因此**自己勉勵 |
+      | 羅 4:23 | 「算為他**的義**」這句話 | 「算為他**義**」**的**這句話 |
 
-      The refuter reported **14 such verses in total** and named eight more
-      (亞 11:15 牧, 詩 59:12 因, 創 39:22 的, 創 41:30 在 …). **That count is
-      NOT verified — re-measure it before quoting it anywhere.** Measure the
-      whole corpus first, the way the standing rule says: align every verse
-      against both witnesses and enumerate every position where ours is the
-      shorter side. 31,102 verses, so it is a scripted pass, not a reading
-      pass — but every hit then has to be read individually, because our
-      edition legitimately differs from the CUV in places (the publisher's
-      427 wording differences) and a shorter reading is not automatically a
-      loss.
+      箴 22:11 and 尼 8:4 are the two worth doing first — a character has
+      jumped clauses in both, and 為上友 is not Chinese.
 
-      **This is a restoration, not a deletion, so it is the dangerous
-      direction.** Writing a character into scripture on inference is exactly
-      what the standing rule forbids. What makes it defensible here is that
-      two independently digitised witnesses agree on the character, which is
-      the same footing every glyph instalment stood on. Where the witnesses
-      disagree, or where only one has the word, **stop and queue it for the
-      user** — do not reconstruct.
+      **耶 7:14 was on this list and came off it.** Ours reads 稱**我為**名下
+      where both witnesses read 稱**為我**名下, and the printed 1919 sides
+      with **ours**. Do not "fix" it. Recorded in
+      `tools/audit_dropped_characters.py` with the other explained hits.
 
-      Note this is upstream of the Traditional conversion: 士 12:13 is short
-      in the Simplified asset too. It is not part of the deferred glyph class
-      and must not be filed with it.
+- [ ] **那鴻書 3:4 attaches the 「原文是賣」 note to the wrong 誘惑.** Ours
+      prints 「藉淫行誘惑\<note: 原文是賣\>列國，用邪術誘惑多族」; both
+      witnesses and the print put the note on the SECOND one, 「用邪術誘惑
+      （原文是賣）多族」. The note is telling the reader which Hebrew word
+      underlies which Chinese word, so on the wrong verb it states something
+      untrue about the text. Found 2026-08-19 in the dropped-character pass.
+
+- [ ] **哥林多後書 13:5 reads 在你們裏面 where the print reads 在你們心裏.**
+      Not a dropped character — a substitution, which is why it was kept out
+      of the restoration above. Both witnesses and the printed 1919 read
+      心裏. Small, but it is the difference between "among you" and "in your
+      hearts". Found 2026-08-19; needs the same four-witness check the 15 got
+      before anything is written.
 
 - [x] **The Traditional Bible had no 隻 in it — 548 measure words printed
       in the Simplified form.** 以賽亞書 2:16 read 「他施的船只」;

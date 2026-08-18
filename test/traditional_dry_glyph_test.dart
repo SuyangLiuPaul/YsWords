@@ -42,13 +42,18 @@ void main() {
 
   test('the three forms stand in the numbers the witness has', () {
     // Witness 7a2dc43 (the plain 和合本 Traditional dropped at v1.4.5) holds
-    // 111 + 221 + 9; the pre-fix file held 0 + 22 + 319. The totals agreeing
-    // at 341 is an accident — the two edition differences cancel — so it is
-    // pinned as a conservation check, not offered as corroboration.
-    expect(count('干'), 111);
+    // 111 + 221 + 9; the pre-fix file held 0 + 22 + 319.
+    //
+    // 干 sits one AHEAD of the witness, and both sides of that are named:
+    // ours spells Candace 干大基 at 使徒行傳 8:27 where the witness reads
+    // 甘大基 (pinned separately below), and the witness's 干犯 at 希伯來書 2:2
+    // was missing here until the dropped-character repair put it back. Until
+    // then the two cancelled and this read 111 — a coincidence, not
+    // corroboration, which is why each side is now accounted for by name.
+    expect(count('干'), 112);
     expect(count('乾'), 221);
     expect(count('幹'), 9);
-    expect(count('干') + count('乾') + count('幹'), 341);
+    expect(count('干') + count('乾') + count('幹'), 342);
   });
 
   test('nothing that can only be dryness is left setting 幹', () {
@@ -145,7 +150,10 @@ void main() {
         (json.decode(File('assets/cuvs-yhwh.json').readAsStringSync()) as List)
             .cast<Map<String, dynamic>>();
     final plain = simplified.map((v) => v['text'] as String).join();
-    expect(plain.split('干').length - 1, 341);
+    // 342, not 341, since 希伯來書 2:2 got its 干犯 back — the Simplified file
+    // was short there too, so the two editions still agree character for
+    // character on this glyph.
+    expect(plain.split('干').length - 1, 342);
     expect(plain.contains('幹'), isFalse);
     expect(plain.contains('乾'), isFalse);
   });
