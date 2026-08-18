@@ -160,26 +160,82 @@ and quoted.**
       箴言 1:9. It was decisive here because its errors are uncorrelated with
       the two imports', not because it is always right.
 
-- [ ] **NOTHING HAS EVER CHECKED FOR TEXT WE ADD.** `audit_dropped_characters.py`
-      compares us against two witnesses and reports only where THEY read more
-      than we do. The opposite direction — where WE read more — has never been
-      measured, and it is the direction that puts words into scripture rather
-      than taking them out.
+- [x] **NOTHING HAD EVER CHECKED FOR TEXT WE ADD — now something does, and it
+      found two verses printing a word twice.** Done 2026-08-19.
+      `tools/audit_inserted_characters.py` is the mirror of the deletion audit
+      and the direction that puts words INTO scripture rather than taking them
+      out. **419 of 31,102 verses read longer than both witnesses.**
 
-      Found 2026-08-19 by the refuter, incidentally, while attacking the
-      transpositions. **尼希米記 1:2** reads 「我問他們**關於**那些被擄歸回、
-      剩下逃脫的猶大人和**關於**耶路撒冷的光景」. Both witnesses read
-      「我問他們那些被擄歸回…的猶大人和耶路撒冷的光景」 — no 關於 at all,
-      twice. Verified in this repo, both scripts.
+      **387 of the 419 are this edition's own editorial apparatus** — `<note:…>`
+      markers, `主[雅偉]` bracket glosses, `（原文是…）` parentheses — which the
+      witnesses simply do not carry. The audit separates them mechanically by
+      masking apparatus regions, so they never have to be read again. **32 are in
+      the running text**, and every one was read individually.
 
-      Do this the way the deletion pass was done: **count the whole corpus
-      first**, then read every hit individually before writing anything. Expect
-      the same three-way split (real insertions / edition variants / explained),
-      and expect the printed 1919 text to be needed again — two witnesses
-      agreeing is not proof, as 創世記 39:22 and 41:30 already showed.
+      **傳道書 7:1 read 「名譽強如美好的的膏油」** — the particle written twice.
+      Repaired in all three assets. It is the only doubled particle in the
+      corpus: all 1,749 immediate single-character repetitions across 206
+      distinct characters were counted, and every other one is real
+      reduplication (大大, 實實在在, 戰戰兢兢) or a name straddling the pair
+      (加利利 → 利利, 各各他 → 各各).
 
-      Cheapest route: the `deletions()` helper in the audit already computes
-      this; running it with the arguments swapped gives insertions.
+      **The refuter earned its keep twice over.** It broke the claim that 的的
+      was the only one: **歷代志上 15:3 read 「招聚以色列眾人眾人到耶路撒冷」**,
+      a duplicated two-character WORD that a single-character scan cannot see.
+      More important than the verse is *why this audit could never have found
+      it* — witness A reads 眾人眾人 as well, so the two-witness test is blind to
+      anything we inherited from our shared ancestor. It was caught by a third
+      witness that is **internal to this repo**: our own tagged corpus holds one
+      run `{"w":"以色列众人","s":"H3605"}`, and ויקהל דויד את־כל־ישראל says "all
+      Israel" once. Filed below as its own audit.
+
+      It also broke the reasoning for **which** 的 to drop. The claim was that
+      the corpus writes the genitive 的 at the head of the following run; that is
+      a 20,060/11,649 tendency, not a convention, and 以賽亞書 runs the other way
+      (430/914). The token settles it instead: of the 14 places the corpus splits
+      a run at 美好, **12 keep 美好的 together**, including 傳道書 4:9 — same
+      book, same lemma H2896. So 的膏油 lost the particle, the opposite of the
+      first attempt. `tools/repair_duplicated_particle.py`;
+      `test/duplicated_word_test.dart` fails on the pre-fix data.
+
+      **The remaining 26 are NOT repaired and must not be** on the strength of
+      two witnesses — 創世記 39:22 and 41:30 are the standing warning. They are
+      listed with their exact characters in the audit's `PENDING` dict so it
+      stays a working regression detector while they wait, and are filed as the
+      item below.
+
+- [ ] **26 running-text insertions await the printed 1919 — including
+      尼希米記 1:2's 「我問他們關於…和關於耶路撒冷」.** Enumerated in the
+      `PENDING` dict of `tools/audit_inserted_characters.py`, each with the
+      exact characters we add and the witnesses' reading.
+
+      **Do not fix them one at a time until the clustering is explained.**
+      14 of the 26 sit in just two books — 使徒行傳 (6) and 哥林多後書 (8) —
+      which is far more concentrated than 31,102 verses spread over 66 books
+      would give by chance. Several also look like a systematically *later*
+      revision rather than a slip: 「就開始控告他說」 for 「就告他說」,
+      「所需用的東西」 for 「所需用的」, 「發見你們」 for 「見你們」,
+      「也沒有缺少」 for 「也沒有缺」. A whole-book source difference and 26
+      independent typos need different fixes, and guessing wrong writes into
+      scripture. Settle the source question first, then the printed 1919 per
+      verse.
+
+- [ ] **Audit the running text against our OWN tagged corpus — a third witness
+      nothing has ever consulted.** `assets/tagged/cuvs-yhwh/` stores each verse
+      as runs whose `w` fields concatenate back to the verse, so it is an
+      independent copy of the text sitting inside this repo — and it is
+      independent in exactly the way the external witnesses are not, because it
+      does not share their ancestor.
+
+      This is not speculative: it is the only thing that caught 歷代志上 15:3,
+      where witness A carries the same defect we do. A first pass by the refuter
+      on 2026-08-19, normalising punctuation and note markers, found **exactly
+      one** repetition-shaped disagreement (15:3, now repaired) — but it was
+      looking only for repetitions. The general diff has never been run.
+
+      Expect noise: the tagged corpus omits some punctuation and restructures
+      around note markers, so the comparison needs the same normalisation the
+      other audits use before any hit means anything.
 
 - [ ] **那鴻書 3:4 attaches the 「原文是賣」 note to the wrong 誘惑.** Ours
       prints 「藉淫行誘惑\<note: 原文是賣\>列國，用邪術誘惑多族」; both
