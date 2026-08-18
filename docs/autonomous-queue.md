@@ -3642,6 +3642,31 @@ has never seen this repo.
         still possible — ask the embed for its current time before
         swapping, the same idea as today, different API.
 
+      **A SECOND series goes in the same section — the Shema videos.**
+      User, 2026-08-18: `https://www.christiandiscipleschurch.org/content/shema-youtubes`
+      — "这里面的也要加到featured video里面一个系列的".
+
+      This is good news for the model rather than extra work: the
+      section was already being built to hold several series, and now it
+      has three from day one — 獨一真神, Standing at the Cross, and
+      Shema. A design that only looked right with two would have been
+      found out later.
+
+      **Its video IDs are NOT yet known, and must not be guessed.** That
+      host refuses datacenter IPs (ECONNREFUSED from this Mac, from
+      WebFetch and from the GitHub runner alike), and a web search turns
+      up only unrelated Shema material — Ray Vander Laan's course and
+      others — nothing from this church. Putting a plausible-looking
+      YouTube video into a Bible app's featured shelf because the title
+      matched would be exactly the kind of confident error this queue
+      exists to prevent.
+
+      **Ask the user for the list**, the same way the Standing at the
+      Cross IDs were obtained: they can open the page on their phone.
+      What is needed per video is the YouTube URL or ID, the part
+      number if the page numbers them, and the language. Then verify the
+      pairing against the page rather than trusting the transcription.
+
       **Design notes worth keeping:** the section label becomes the
       series list, not a single video; a series with one episode should
       not render a list of one; and the existing position-preserving
