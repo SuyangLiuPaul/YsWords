@@ -381,15 +381,66 @@ and quoted.**
       and 士 20:6 was written 兇淫 to stay consistent with the corpus we
       actually have. Ask the user before flipping 47 positions.
 
-- [ ] **代上 3:20 spells Jushab-hesed 於沙希悉; it should be 于沙希悉. The
-      nineteenth converter hole, and a NAME.** Found 2026-08-18 alongside the
-      instalment above but deliberately not mixed into it — different family,
-      different mechanism. The evidence is unusually clean: our Simplified
-      asset reads 于沙希悉, opencc rewrote that 于 to 於 along with all 1,388
-      genuine 於, and **the Traditional witness holds exactly ONE 于 in 31,102
-      verses — this name**. Our Traditional corpus holds zero 于. One
-      substitution. Already pinned by `test/cuv_typo_corruptions_test.dart` so
-      the next pass finds it.
+- [x] **代上 3:20 spelt Jushab-hesed 於沙希悉; it now reads 于沙希悉. The
+      nineteenth converter hole, and the second one to reach a NAME. DONE
+      2026-08-18, one substitution** (`tools/repair_tr_jushab_hesed.py`,
+      `test/traditional_jushab_hesed_test.dart` — 3 tests fail on the pre-fix
+      data). Found alongside the transcription-error instalment above but
+      deliberately not mixed into it: different family, different mechanism.
+
+      **The mechanism as first written was WRONG, and the refuter broke it.**
+      This entry used to say "opencc rewrote that 于 to 於". These assets were
+      never produced by opencc — `tools/fix_traditional_conversion.py` had
+      already established that (opencc disagrees with them in ~46% of verses,
+      and gets 船隻 *right* where this corpus got it wrong). `echo 于沙希悉 |
+      opencc -c s2t` printing 於沙希悉 shows only that a naive expansion makes
+      this mistake; it is not evidence of provenance. What is: **our Simplified
+      holds 1,388 于 / 0 於 and our Traditional held 1,388 於 / 0 于** — an
+      unconditional 1:1 map, blind by construction to the one position in
+      31,102 verses where the syllable is a name. Right 1,387 times, wrong once.
+
+      **What each witness actually proves**, because the first draft over-claimed
+      here too. The Simplified sources are logically NULL on 于-versus-於 —
+      Simplified merged the two and cannot distinguish them. They are cited for
+      the thing they do settle, which is the load-bearing one: the tagged corpus
+      tags 「于沙希悉，」 as **H3142**, יוּשַׁב חֶסֶד, so the string is a NAME and
+      not a clause containing a preposition. Which Traditional character it takes
+      rests on the two Traditional witnesses — blob `7a2dc43` and published
+      `cmn-cu89t`, each holding **exactly one 于 in the whole Bible, this name** —
+      and those two are **one textual family, not two independent lines**: both
+      set the 新標點 separator 于沙‧希悉, which ours does not. So the honest claim
+      is "no published Traditional CUV available here spells it 於", not "two
+      unrelated editions agree".
+
+      Still decisive, because 於 in modern Traditional is essentially only the
+      preposition: 於沙希悉 spells a man's name with a grammatical particle. That
+      is exactly the distinction that keeps 蹟/跡 and 鍊/鏈 unswept above — there
+      our spelling is one a published edition legitimately sets; here it is not.
+
+      **The fix is complete.** A full per-verse 于/於 sequence diff against the
+      witness returns two disagreements: this one, and 尼 1:2, where our edition
+      reads 「關於那些…和關於耶路撒冷」 against the witness's shorter clause with
+      no 關於 at all — a wording difference, not a character choice, and our own
+      Simplified twin reads 关于 in both places. Pinned by the test so a later 于
+      sweep cannot mistake it for a second instance.
+
+- [ ] **"The Traditional side was produced by opencc" is asserted about the
+      STRONG'S LEXICON and has never been checked.** Found 2026-08-18 by the
+      refuter while it was breaking the same claim about the verse assets.
+      `tools/repair_tr_tail_glyphs.py:72` states it as fact, and the 姪 lexicon
+      repair reasoned from it ("opencc has no 侄 → 姪 mapping, so all 21 came
+      through untouched"). For the VERSE assets the claim is now known false —
+      they were made by a naive per-character map — but `assets/strongs/*.json`
+      are different files with possibly different provenance, so the lexicon
+      claim is neither confirmed nor refuted.
+
+      It is cheap to settle with the same method that settled the verses: run
+      `opencc -c s2t` over every `*Zh` field and measure what fraction of the
+      `*ZhTw` fields it reproduces exactly. ~46% disagreement means a naive map;
+      near-total agreement means opencc. **Nothing false is printed either way**
+      — the 姪 repair was confirmed field-by-field against the Simplified twin,
+      not on the provenance argument — so this is about not reasoning from an
+      unverified premise in the NEXT lexicon instalment.
 
 - [ ] **Eleven word-level differences where our reading is a real word — needs
       a third witness or the user.** Both witnesses disagree with us and

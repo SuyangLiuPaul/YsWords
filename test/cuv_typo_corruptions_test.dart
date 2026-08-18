@@ -226,16 +226,14 @@ void main() {
     expect(count(trBlob, '以士利亞'), 1); // witness: 以土利亞
   });
 
-  test('於沙希悉 is still wrong, and is pinned so the next pass finds it', () {
-    // NOT part of this instalment — it is a converter hole, not a base-text
-    // typo, so it belongs with the eighteen `traditional_*_glyph` fixes rather
-    // than here. It is pinned because the evidence is unusually clean and
-    // should not be lost: our Simplified asset reads 于沙希悉 (代上 3:20,
-    // Jushab-hesed) and opencc rewrote the name's 于 to 於 along with all 1,388
-    // genuine 於. The Traditional witness holds exactly ONE 于 in 31,102
-    // verses, and it is this name.
-    expect(count(trBlob, '於沙希悉'), 1);
+  test('於沙希悉 has been fixed and moved to its own instalment', () {
+    // This used to pin the defect as still-open. It was never part of THIS
+    // family — it is a converter hole, not a base-text typo — and it was
+    // repaired 2026-08-18 as the nineteenth instalment. The assertions now
+    // live in traditional_jushab_hesed_test.dart; what stays here is only the
+    // guard that the two families did not get confused again.
+    expect(count(trBlob, '於沙希悉'), 0);
+    expect(count(trBlob, '于沙希悉'), 1);
     expect(count(scBlob, '于沙希悉'), 1);
-    expect(count(trBlob, '于'), 0);
   });
 }

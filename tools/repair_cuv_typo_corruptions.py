@@ -66,9 +66,9 @@ DELIBERATELY OUT OF SCOPE
   printed today, so they are queued rather than swept.
 
   Also queued, not touched: 自已 in two sermon transcripts and two Strong's
-  glosses, and 於沙希悉 at 代上 3:20, which IS a converter hole — the
-  Traditional witness holds exactly one 于 in 31,102 verses and it is that
-  name.
+  glosses. 於沙希悉 at 代上 3:20 was queued here too and has since been fixed
+  separately by tools/repair_tr_jushab_hesed.py — it is a converter hole
+  rather than a base-text typo, so it did not belong in this family.
 
 Idempotent. Refuses on any drift: every position is verified to hold the bad
 reading (or the good one already) before anything is written.
