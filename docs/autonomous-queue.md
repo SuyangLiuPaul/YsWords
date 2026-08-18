@@ -226,9 +226,10 @@ and quoted.**
 
 - [ ] **The inventory diff has a TAIL the table below never enumerated — it was
       cut off at 10 occurrences, and 咸 was hiding under it.** The two
-      candidates below are **DONE 2026-08-18** (11 verses + 21 lexicon fields);
-      what is left open here is the reverse sweep at the end of this entry, and
-      the 蹟/鍊 correction. Measured
+      candidates below are **DONE 2026-08-18** (11 verses + 21 lexicon fields),
+      and **the reverse sweep at the end of this entry is now DONE too
+      (2026-08-18)** — see the entry immediately below, which is what it found.
+      What is left open here is only the 蹟/鍊 correction. Measured
       2026-08-18 while fixing 書 10:3. The full diff — every character the
       witness `7a2dc43` uses that our asset holds **zero** of — is **109
       characters**, not the 25 the table lists. 咸 sat at the very bottom with a
@@ -299,11 +300,116 @@ and quoted.**
       the two Bible witnesses plus the repo's own hand-authored
       `assets/family_tree.json`, which has always written 姪子.
 
-      And the harder half, which nothing has looked for yet: the 癒 lesson says
-      a merged pair only shows in this diff when the surviving form is the one
-      we lack. **咸 was the mirror case, caught only because a name looked
-      wrong.** A sweep in the other direction — characters the *witness* holds
-      zero of — has still not been run.
+      And the harder half: the 癒 lesson says a merged pair only shows in this
+      diff when the surviving form is the one we lack. **咸 was the mirror
+      case, caught only because a name looked wrong.** The sweep in the other
+      direction — characters the *witness* holds zero of — **was run
+      2026-08-18** and found a defect family nobody suspected. See below.
+
+- [x] **The reverse inventory sweep found a SECOND defect family: 16
+      transcription errors that are wrong in the Simplified asset too. DONE
+      2026-08-18.** Eighteen instalments had all been converter holes, so every
+      one of them used the Simplified twin as the oracle. That method is blind
+      by construction to a defect the converter did not cause — and there were
+      sixteen sitting in the base e-text the whole time.
+
+      The reverse diff (characters WE hold that the witness holds zero of)
+      returns 70 characters. Most is edition preference: ours keeps the older
+      和合本 spellings — 豫備, 儆醒, 沈睡, 擡, 誌, 禦, 輥, 號啕 — where the
+      witness modernises them. Those are correct and were left alone. But at
+      counts of one and two it surfaced characters that are not a variant of
+      anything: **恉, 犰, 菏, 菇, 饃**.
+
+      | ref | printed | should read |
+      |---|---|---|
+      | 士 4:18 | 雅**憶**用被將他遮蓋 | 雅**億** — Jael, and the same verse's first clause already said 雅億 |
+      | 士 15:16 | 我用驢**恉**骨殺人成堆，用驢**腮**骨殺了一千人 | 腮骨 — the right word and a non-word for the same jawbone, one sentence apart |
+      | 士 15:17 | 那**恉**骨 | 那腮骨 |
+      | 士 20:6 | 行了**扔菏**醜惡的事 | 兇淫醜惡 |
+      | 撒下 14:25 | 毫無**暇**疵 | 毫無瑕疵 |
+      | 王上 2:1 | 就囑**吩**他兒子所羅門 | 囑咐 |
+      | 王上 14:5 | 你當**此此**如此告訴她 | 如此如此 |
+      | 代上 11:12 | 亞合人**犰**多 | 朵多 — Dodo |
+      | 詩 80:15, 80:17 | 你為自**已**所堅固的 | 自己 |
+      | 耶 12:14 | 所承**巡菇**業的 | 所承受產業 |
+      | 可 15:25 | 是**已**初的時候 | 巳初 |
+      | 路 2:24 | 一對**班**鳩 | 斑鳩 |
+      | 徒 24:1, 24:2 | 辯士帖**士**羅 | 帖土羅 — Tertullus, wrong at both his occurrences |
+      | 林前 13:12 | **饃**糊不清 | 模糊不清 |
+
+      Plus one that exists only in the tagged corpus: **王上 14:5 read
+      「告她诉」** there, a transposition the verse asset never had.
+
+      **The provenance claim in the first draft was WRONG and the refuter broke
+      it.** It said our asset alone carried these. BibleHub's published CUV
+      reproduces thirteen verbatim. They are transcription errors in the shared
+      *digital* CUV lineage that most Chinese Bible software imported, not
+      readings of the printed 和合本 — which is what makes fixing them a
+      restoration rather than an emendation, and is the version of the story
+      that should be repeated.
+
+      What actually carries the weight is the **corpus ratio**, which needs no
+      outside source: our own text spells every one of these words correctly
+      elsewhere — 囑咐 74:1, 自己 1509:2, 斑鳩 14:1, 雅億 11:1, 如此如此 17:1,
+      瑕疵 9:1, 朵多 4:1, 腮骨 4:2, 巳初 2:1.
+
+      Two things the refuter corrected that are worth not re-learning: the
+      Strong's-tagged corpus is **not** an independent witness (it shares 13 of
+      the 16 and has one error of its own), and neither is `cuvs-plus.json` —
+      it is a *partially repaired* branch of the same lineage, right at 13,
+      still wrong at 雅忆, 馍糊 and 帖士罗 at 徒 24:2 while having fixed 24:1.
+
+      `tools/repair_cuv_typo_corruptions.py` (idempotent, refuses on drift and
+      refuses any tagged replacement that would span tokens and move the
+      Strong's alignment), `test/cuv_typo_corruptions_test.dart` (13 tests, 8
+      of which fail on the pre-fix data).
+
+- [ ] **創 45:10 「你和你我兒子孫子」 — needs the user, do NOT fix unattended.**
+      It was in the first draft of the instalment above and was pulled out.
+      Both witnesses read 你**的**兒子, and 你我 is ungrammatical — but the
+      refuter found that Wikisource's transcription of the printed 1919 和合本
+      reads 你我 there as well. If the printed text says it, changing it is an
+      emendation of the CUV, which is the user's call and not ours. Pinned by
+      the test so it cannot be swept by accident.
+
+- [ ] **Our Traditional corpus holds 47 兇 and zero 凶, where the printed CUV
+      uses 凶 — a likely systematic over-conversion, ~47 positions.** Found by
+      the refuter while checking 士 20:6. The Traditional witness splits 11 兇
+      / 37 凶, and Wikisource's CUV books show 凶 25× and 兇 0×. Nothing false
+      is printed — 兇 is a legitimate Traditional character and reads correctly
+      — so this is an edition-consistency improvement, not a scripture defect,
+      and 士 20:6 was written 兇淫 to stay consistent with the corpus we
+      actually have. Ask the user before flipping 47 positions.
+
+- [ ] **代上 3:20 spells Jushab-hesed 於沙希悉; it should be 于沙希悉. The
+      nineteenth converter hole, and a NAME.** Found 2026-08-18 alongside the
+      instalment above but deliberately not mixed into it — different family,
+      different mechanism. The evidence is unusually clean: our Simplified
+      asset reads 于沙希悉, opencc rewrote that 于 to 於 along with all 1,388
+      genuine 於, and **the Traditional witness holds exactly ONE 于 in 31,102
+      verses — this name**. Our Traditional corpus holds zero 于. One
+      substitution. Already pinned by `test/cuv_typo_corruptions_test.dart` so
+      the next pass finds it.
+
+- [ ] **Eleven word-level differences where our reading is a real word — needs
+      a third witness or the user.** Both witnesses disagree with us and
+      nothing false is printed today, so these were not swept: 意料/**逆料**
+      (賽 64:3, 徒 25:18 — the refuter confirmed the printed CUV reads 逆料, so
+      these two are the most likely to be genuine), 留/等 (徒 27:31),
+      消息/信息 (徒 28:15), **異象/顯現** (林後 12:1 — theologically loaded),
+      銷滅/消滅 (帖前 5:19), 開始/下手 (林後 8:10), 對/愛 (林後 7:15), 在/了
+      (林後 5:19), 歸到/歸他 (創 49:33), and 徒 28:6 and 28:17 where our whole
+      clause differs from both witnesses. The measurement is reproducible: a
+      three-way diff of `cuvs-yhwh-tr.json` against blob `7a2dc43` and
+      SeekSparks' `cuvs-plus.json` yields 53 substitution pairs, of which the
+      high-count ones are conventions and the tail is this list.
+
+- [ ] **自已 → 自己 outside the Bible text: 2 sermon transcripts and 2 Strong's
+      glosses.** `assets/sermons/zh-CN/021.txt` and `029.txt` (+ their zh-TW
+      twins) and `assets/strongs/greek.json` / `hebrew.json` (「不再害怕自已是
+      罪人」, 「對自已仁慈」). Left out of the instalment above because the
+      provenance is different — transcripts and glosses, not scripture — but
+      自已 is not a word in any of them.
 
 - [ ] **SeekSparks' copy of `cuvs-yhwh-tr.json` still carries this whole defect
       family.** Noted by the refuter 2026-08-18: that repo's asset still reads
