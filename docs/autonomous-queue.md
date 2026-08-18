@@ -225,7 +225,10 @@ and quoted.**
       internal check is unavailable stays recorded in code).
 
 - [ ] **The inventory diff has a TAIL the table below never enumerated — it was
-      cut off at 10 occurrences, and 咸 was hiding under it.** Measured
+      cut off at 10 occurrences, and 咸 was hiding under it.** The two
+      candidates below are **DONE 2026-08-18** (11 verses + 21 lexicon fields);
+      what is left open here is the reverse sweep at the end of this entry, and
+      the 蹟/鍊 correction. Measured
       2026-08-18 while fixing 書 10:3. The full diff — every character the
       witness `7a2dc43` uses that our asset holds **zero** of — is **109
       characters**, not the 25 the table lists. 咸 sat at the very bottom with a
@@ -242,27 +245,59 @@ and quoted.**
       | | ours | witness | verdict |
       |---|---|---|---|
       | 歎/嘆 | 0 歎, 53 嘆 | 52 歎, 0 嘆 | both valid; 嘆 is the Taiwan standard |
-      | 祕/秘 | 0 祕, 51 秘 | 51 祕, 0 秘 | both valid |
-      | 蹟/跡 | 0 蹟, 103 跡 | 95 蹟, 8 跡 | 神跡/神蹟, a published edition difference |
-      | 鍊/鏈 | 0 鍊, 金鏈 | 62 鍊, 金鍊 | both valid for a chain |
+      | 祕/秘 | 0 祕, 51 秘 | 51 祕, 0 秘 | both valid — and cmn-cu89t itself MIXES (48 祕 + 3 秘), which settles it |
+      | ~~蹟/跡~~ | 0 蹟, 103 跡 | 95 蹟, 8 跡 | **this verdict was WRONG — see below** |
+      | ~~鍊/鏈~~ | 0 鍊, 60 鏈 | 62 鍊, 1 鏈 | **this verdict was WRONG — see below** |
       | 甦/蘇 | 0 甦, 44 蘇 | 7 甦, 37 蘇 | both valid |
       | 裡/裏, 麼/麽, 牠/它, 毘/毗 | | | long-settled conventions, already known |
 
-      **Two in the tail ARE candidates, and both have the exact-partition shape
-      the cheap instalments had** — ours-count == witness-count, witness holds
-      zero of our form, and our form is the mainland variant rather than a
-      second Traditional option:
+      **蹟/跡 and 鍊/鏈 are NOT edition preferences — the refuter broke that on
+      2026-08-18, and the corrected reading matters.** BOTH witnesses (blob
+      `7a2dc43` and the published cmn-cu89t) read 95 蹟 / 8 跡 and 62 鍊 / 1 鏈,
+      i.e. they actively DISTINGUISH 神蹟 from 痕跡/蹤跡/筆跡, and 金鍊/鐵鍊/
+      鎖鍊 from a 鏈. Ours reads 103 跡 / 0 蹟 and 60 鏈 / 0 鍊 — **the same
+      one-to-many collapse as every fixed instalment**, not two editions
+      choosing differently.
 
-      * **鹼/堿, 6 positions.** Ours reads 堿 at 伯 9:30 「用堿潔淨我的手」,
-        詩 107:34 「使肥地變為堿地」, 箴 25:20 「如堿上倒醋」, 耶 2:22, 耶 17:6,
-        瑪 3:2. Witness reads 鹼 at all six. (Same lye/alkali family as the 咸
-        fix above — found in the same sweep.)
-      * **姪/侄, 5 positions.** Ours reads 侄 at 創 12:5, 14:12, 14:14, 14:16
-        (「亞伯蘭的侄兒羅得」 — Lot) and 代下 22:8 「亞哈謝的眾侄子」. Witness
-        reads 姪 at all five.
+      They are still deliberately NOT swept, but for a narrower reason than the
+      table gave: 跡 and 鏈 are standard Traditional spellings that read
+      correctly, so nothing false is printed today. Restoring the distinction is
+      an improvement to ask the user for (~165 positions), not a scripture
+      defect to fix unattended. `test/traditional_tail_glyphs_test.dart` pins
+      all four counts so a later sweep cannot do it silently.
 
-      Neither is confirmed yet — each still needs the per-position check every
-      instalment has had, and neither should be swept on the table alone.
+      **Two in the tail WERE candidates, and both are now DONE (2026-08-18 —
+      11 verses + 21 lexicon fields, `tools/repair_tr_tail_glyphs.py`,
+      `test/traditional_tail_glyphs_test.dart`).** Eighteenth instalment:
+
+      * ~~**鹼/堿, 6 positions.**~~ **DONE.** Ours read 堿 at 伯 9:30
+        「用堿潔淨我的手」, 詩 107:34 「使肥地變為堿地」, 箴 25:20 「如堿上倒醋」,
+        耶 2:22, 耶 17:6, 瑪 3:2.
+      * ~~**姪/侄, 5 positions.**~~ **DONE** — 創 12:5, 14:12, 14:14, 14:16
+        (「亞伯蘭的姪兒羅得」 — Lot) and 代下 22:8 — **plus 21 more in the
+        Strong's lexicon**, 19 in `hebrew.json` and 2 in `greek.json`, every one
+        侄子/侄女 (Lot H3876/G3091, Bethuel H1328, Iscah H3252, Jonadab H3082/
+        H3122, Jonathan H3083). Left alone, a reader tapping 羅得 on the
+        Originals sheet would have been shown a spelling the verse beside it no
+        longer uses.
+
+      **The discriminator this instalment had to get right**, because the
+      partition alone does NOT separate these two from 蹟/鍊 above: no published
+      Traditional 和合本 sets 堿 or 侄 at these eleven verses — two independent
+      Traditional editions agree against ours alone — whereas 跡 and 鏈 are what
+      other published editions legitimately set. And the thing NOT to claim:
+      **堿 and 侄 are not Simplified-only glyphs.** Both encode in Big5 and the
+      MOE 異體字字典 lists 堿 under 鹼. An earlier draft of the fix asserted "a
+      form no Traditional standard sets" and that assertion was itself wrong.
+
+      Also newly recorded: the converter's fingerprint differs between the two.
+      Our Simplified reads 碱 at all six alkali positions, so there it DID
+      rewrite the character (碱 → 堿); it reads 侄 at all five nephew positions,
+      so there it did nothing at all — opencc has no 侄↔姪 mapping in any
+      direction (s2t, s2twp, t2tw, t2hk, t2s, tw2s all checked). The nephew is
+      therefore the first instalment with **no converter oracle**, resting on
+      the two Bible witnesses plus the repo's own hand-authored
+      `assets/family_tree.json`, which has always written 姪子.
 
       And the harder half, which nothing has looked for yet: the 癒 lesson says
       a merged pair only shows in this diff when the surviving form is the one
