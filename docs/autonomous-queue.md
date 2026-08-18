@@ -1464,26 +1464,111 @@ and quoted.**
       sermon transcripts, not scripture — but they are reader-visible prose
       and there is no witness for them, so each has to be read.
 
-- [ ] **`丶` stands in for the enumeration comma 、 in 53 places, in BOTH
-      editions.** 出埃及記 15:4 reads 「法老的車輛丶軍兵」, 15:25 「定了律例丶
-      典章」, 24:1 「你和亞倫丶拿答丶亞比戶」. `丶` is U+4E36, the CJK *stroke
-      radical* — a dictionary head component, not punctuation.
+- [x] **`丶` stood in for the enumeration comma 、 in 53 places, in BOTH
+      editions. DONE 2026-08-19 — 150 substitutions across 30 verses per
+      edition plus 44 in the tagged corpus.** 出埃及記 15:4 read 「法老的車輛丶
+      軍兵」, 詩篇 146:6 「雅偉造天丶地丶海」, 尼希米記 9:5 seven of them in one
+      verse. `丶` is U+4E36, the CJK *stroke radical* — a dictionary head
+      component, not punctuation.
 
-      Ours holds 53 in the Traditional asset and 53 in the Simplified one;
-      the witness `7a2dc43` holds **zero** and writes 、 at those positions.
-      Equal counts on both sides say this is **upstream of the Traditional
-      conversion**, not caused by it, so it must be fixed in both assets (and
-      the tagged corpus checked). Low risk — 丶 has no legitimate use in
-      running text — but count it in the tagged Strong's corpus first, and
-      check the bundled CJK subset covers nothing that would change.
+      Equal counts on both sides (53 / 53) said this was **upstream of the
+      Traditional conversion**, not caused by it, so it is not part of the
+      deferred glyph class. Two independent witnesses agreed: `7a2dc43` reads
+      、 at all 53 positions, and the tagged Strong's corpus — a separately
+      punctuated edition that uses 〔〕 and “” — reads 、 or ， at the ones it
+      covers and 丶 nowhere. The refuter tried the one objection worth trying,
+      that 丶 might be a name separator like the witness's 伯‧毘珥 (U+2027),
+      and it fails: our corpus holds zero U+2027, writes 伯毗珥 unseparated,
+      and the 丶 in 申命記 34:6 sits at 「摩押地丶伯毗珥」, a list comma.
 
-- [ ] **出埃及記 25:35 has a doubled comma before a full stop, in both
-      editions.** 「有球與枝子接連一塊，，。燈臺出的六個枝子都是如此。」 The
-      witness reads 「接連一塊。燈臺出的…」. Found 2026-08-18 by the refuter.
-      Same signature as the 丶 item — present identically in
-      `cuvs-yhwh-tr.json` and `cuvs-yhwh.json`, so upstream. Worth a
-      whole-corpus sweep for other doubled or orphaned punctuation before
-      fixing this one verse, per the measure-before-concluding rule.
+- [x] **Eight verses carried an orphaned punctuation mark, in both editions —
+      not the one the entry originally recorded. DONE 2026-08-19.** This was
+      filed as a single doubled comma at 出埃及記 25:35 「接連一塊，，。」.
+      Measuring first turned it into eight, all identical in both editions and
+      all confirmed against the witness, and every repair a **deletion** — no
+      character was written into scripture:
+
+      | | ours | witness |
+      |---|---|---|
+      | 出埃及記 25:35 | 接連一塊**，，**。 | 接連一塊。 |
+      | 民數記 26:32 | 有希弗族**；**。 | 有希弗族。 |
+      | 耶利米哀歌 4:15 | 喊著說：**！**不潔淨的 | 喊著說：不潔淨的 |
+      | 撒迦利亞書 3:8 | 作預兆的）。**，**我必使 | 作預兆的。）我必使 |
+      | 阿摩司書 6:10 | 又說：**，**不要作聲 | 又說：「不要作聲 |
+      | 阿摩司書 6:14 | 神說：**，**以色列家啊 | 神說：以色列家啊 |
+      | 希伯來書 13:3 | 同受捆綁；**，**也要 | 同受捆綁；也要 |
+      | 創世紀 21:7 | 一個兒子。**「」** | 一個兒子。」 |
+
+      **The eighth was found by the test, not by the sweep, and that is the
+      lesson.** The adjacency table showed 「：，」 with a count of **2** and the
+      reader took both to be 阿摩司書 6:10; 6:14 was only repaired once the
+      assertion ran over the whole corpus. A count read off a summary table is
+      not the same as a position checked in the data — the table tells you how
+      many there are, not where.
+
+      `tools/repair_stray_punctuation.py` (re-runnable, refuses on mismatch)
+      does both this and the 丶 item; `test/stray_punctuation_test.dart` pins
+      zero 丶, the 、 count at 6324, zero adjacent punctuation pairs anywhere
+      in either edition, and the eight repaired verses by reference.
+
+- [ ] **72 stray or half-width ASCII punctuation marks in running scripture,
+      in BOTH editions — and one sub-class may be LOST TEXT rather than a
+      stray.** Found 2026-08-19 by the refuter, which correctly broke the
+      claim that the CJK adjacency sweep above was a complete enumeration of
+      this defect class: that sweep only looked at CJK marks, and it cannot
+      see a stray that has no punctuation neighbour at all. Counts are for the
+      Traditional asset outside `<note: …>` markup and outside the deliberate
+      `[雅偉]` convention (229 occurrences, which is NOT a defect — it marks
+      where the divine name was substituted, and must be left alone):
+
+      | mark | n | example | class |
+      |---|---|---|---|
+      | `.` | 19 | 創世紀 6:11 「滿了強暴**.**。」, 民數記 24:17 「毀壞擾亂**.**之子」 | stray |
+      | `,` | 14 | 約珥書 1:11 「你們要慚愧**,**修理葡萄園的」 | half-width 、/， |
+      | `!` | 9 | 創世紀 43:14 「就喪了吧**!**」」 | half-width ！ |
+      | `?` | 9 | 士師記 6:33 「在耶斯列**??**平原安營」 | **possibly lost text** |
+      | `"` | 8 | 撒迦利亞書 1:3 「（原文有 **"**萬軍之雅偉說**"**）」 | half-width 「」 |
+      | `(` `)` | 9 | 創世紀 48:7 「路上**(**以法他就是伯利恆**)**」 | half-width （） |
+      | `:` | 3 | 路加福音 18:37 「他們告訴他**:**「是拿撒勒人耶穌」 | half-width ： |
+      | `;` | 1 | 帖前 2:13 「就領受了**;**不以為是人的道」 | half-width ； |
+
+      **Do the `??` one first and do not delete it.** 士師記 6:33, 列王紀下
+      2:5 and 11:2, 以西結書 16:4 read like a character that failed to encode
+      — `??` is the classic mojibake signature, and the witness simply has the
+      word. Deleting the marks would silently conceal a textual loss, which is
+      exactly the failure this queue's standing rule is written against. Read
+      each against the witness and the tagged corpus before touching it.
+
+      The half-width classes are lower risk but are **substitutions, not
+      deletions**, so they need the same per-position confirmation the 余/腌
+      pass used. Verify the bundled CJK font subset covers each full-width
+      replacement before shipping.
+
+- [ ] **`說；「` opens a quotation with a semicolon in 5 verses — a
+      substitution, so deliberately not swept with the deletions above.**
+      列王紀上 22:13, 路加福音 13:2, 約翰福音 7:45, 約翰福音 9:9 and
+      希伯來書 3:11 all read 「說；」 where a quotation opens; the witness reads
+      「說：」 at every one, and this corpus sets 「：「」 2,692 times and 「：『」
+      547 times against these 5.
+
+      **10 of the 15 「說；」 in the corpus are correct** and must not be
+      touched — 約伯記 28:27 「而且述說；他堅定」, 士師記 8:8, 加拉太書 2:2 and
+      the rest are a clause ending in 說 followed by a legitimate semicolon.
+      So this cannot be a blanket substitution; it is 5 confirmed positions.
+      約翰福音 9:9 has a second defect in the same verse — ours 「是他；」」 for
+      the witness's 「是他」；」 — so fix that one by reading, not by rule.
+
+- [ ] **創世紀 21:7 has a displaced closing 』 the 2026-08-19 repair did not
+      touch.** The empty quote pair at the end was removed, but ours still
+      reads 說『撒拉要乳養嬰孩**呢？**』 where the witness and the standard CUV
+      read 說『撒拉要乳養嬰孩』**呢？** — the inner quote wrongly swallows the
+      outer clause's question. `？』` is a legitimate pair, so no adjacency
+      sweep will ever find it; it was caught only by the refuter reading the
+      whole verse. Fixing it MOVES a character rather than deleting one, which
+      is why it was left. **The general lesson is the expensive one: a
+      misplaced-but-well-formed mark is invisible to every structural check
+      this repo has**, so this class can only be found by reading against a
+      witness.
 
 - [ ] **希伯來書 2:2 may be missing 干犯 — needs the user, or a third
       witness.** Ours reads 「凡犯悖逆的都受了該受的報應」; the witness
