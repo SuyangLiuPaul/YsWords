@@ -442,6 +442,18 @@ and quoted.**
       not on the provenance argument — so this is about not reasoning from an
       unverified premise in the NEXT lexicon instalment.
 
+      **Partial evidence arrived 2026-08-18 from the 制/製 instalment, and it
+      points away from "same map as the verses".** Where the verse asset held
+      157 製 / ZERO 制, the lexicon's `*ZhTw` fields already distinguish the
+      pair correctly — 製造/製作/銅製的/皮製的/木製品 against 節制/限制/抑制/
+      轄制/受制於/壓制. A file produced by the map that broke the verses could
+      not have written a single 制. So the lexicon was made by something else,
+      and whatever that was, it is not hole-free either: its Traditional fields
+      are internally inconsistent in the *other* direction (金制飾, 麻制的,
+      布制的, 毛制的 sit beside 銅製的 and 皮製的). Still does not settle
+      whether that something was opencc; the measurement described above is
+      still the way to find out.
+
 - [ ] **Eleven word-level differences where our reading is a real word — needs
       a third witness or the user.** Both witnesses disagree with us and
       nothing false is printed today, so these were not swept: 意料/**逆料**
@@ -517,7 +529,7 @@ and quoted.**
 
       | Traditional | witness has | ours writes | ours has | witness also has |
       |---|---|---|---|---|
-      | 制 | 90 | 製 | 157 | 67 |
+      | ~~制~~ | ~~90~~ | ~~製~~ | ~~157~~ | ~~67~~ | **DONE 2026-08-18** |
       | ~~恆~~ | ~~79~~ | ~~恒~~ | ~~79~~ | ~~0~~ | **DONE 2026-08-18** |
       | 託 | 73 | 托 | 82 | 9 |
       | 痲 | 65 | 麻 | 237 | 172 |
@@ -554,6 +566,53 @@ and quoted.**
       partition the refuter turned up that the inventory table above missed, because
       愈 is a real Traditional character in 愈來愈 and so is not a hole by the
       "ours holds zero" test.
+
+      **制/製 is done — 90 substitutions, 2026-08-18. The FIRST of the splits,
+      and the widest reader surface of any instalment so far.** Every one of the
+      90 was printing a non-word: 加拉太書 5:23 「溫柔、節製」, 彼得後書 1:6
+      「加上節製；有了節製」, 創世紀 4:7 「你卻要製伏它」, 出埃及記 1:11
+      「派督工的轄製他們」, 加拉太書 5:1 「奴僕的軛挾製」, 彼得前書 2:13
+      「人的一切製度」. Simplified merged 製 (manufacture — 製造/製作) onto 制
+      (system, statute, restrain, subdue — 制度/節制/轄制/制伏), and the map
+      expanded it back unconditionally: ours held 157 製 and **ZERO** 制, our
+      Simplified twin 157 制 and **ZERO** 製 in the same places. Right 67 times,
+      wrong 90.
+
+      **Not the 蹟/跡 shape.** There both forms are legitimate Traditional
+      spellings and two editions merely chose differently, which is why those
+      stay unswept. Here 節製 and 轄製 are not variants of anything — no
+      orthography and no published edition sets them.
+
+      The 90 are 轄制 33, 制伏 30, 壓制 9, 節制 8, 克制 6, 按制子 2, 挾制 1,
+      制度 1; the 67 keeps are exactly 62 製造 + 5 製作 and nothing else.
+      **No verse in the corpus holds both readings**, so the two senses never
+      had to be told apart inside one sentence (unlike 幹, where 以西結書 19:12
+      sets a genuine 幹 four characters from a 乾).
+
+      **The refuter did not break it and made the evidence stronger.** It ran a
+      full per-verse join on {book, chapter, verse} across all 31,101 shared
+      verses and found **zero** count mismatches on either character — so the
+      alignment never had to guess anywhere, and the 7 positions that fell back
+      to ordinal matching (民 32:22, 士 16:5/16:6/16:19, 伯 35:9, 哀 1:13,
+      但 2:40 — all blocked by *neighbouring* edition differences: 雅偉/耶和華,
+      克/剋, `<note: …>`/（…）) are exact rather than merely probable. All 7 were
+      also confirmed one by one in the published 新標點 `cmn-cu89t`. It corrected
+      one thing worth keeping: **`cmn-cu89t` is not a clean second witness** —
+      its 66 製 differs from ours by book (賽 8 vs 6, 何 2 vs 3), all on the
+      67-keep side and never among the 90. The load-bearing witness is blob
+      `7a2dc43`; the genuinely independent line is 梁家鏗's Traditional NT,
+      which distinguishes the pair the same way (60 制 / 6 製, 節制 never 節製).
+
+      **Scope — the verse asset only, and two files deliberately left alone.**
+      `assets/strongs/*.json` already distinguish the pair in their `*ZhTw`
+      fields (製造/製作/銅製的/皮製的 against 節制/限制/抑制/轄制/受制於), so
+      they were **not** produced by this map — which is direct evidence for the
+      open provenance question above. `assets/maps_index.json` sets zh-Hant
+      「編製的應許之地地圖」, the correct Traditional word for compiling, and
+      already writes 制伏 correctly. Both pinned by the test.
+      `tools/repair_tr_restraint_glyph.py` (re-runnable, idempotent);
+      `test/traditional_restraint_glyph_test.dart` fails four ways on the
+      pre-fix data.
 
       **愈/癒 is done — 35 substitutions, 2026-08-18.** The fifth true partition,
       and every healing in the Traditional Bible was misspelt: 約翰福音 5:6 read
@@ -824,6 +883,21 @@ and quoted.**
       holds **seven correct 蔔**, all 蘿蔔/胡蘿蔔, which a repo-wide sweep would
       have printed as 蘿卜. The claim is true of scripture and had to be scoped
       to the verse asset. Now pinned by the test.
+
+- [ ] **克/剋 is a new hole the inventory table never listed — ours holds ZERO 剋.**
+      Found 2026-08-18 by the refuter while it was checking 制/製. Both witnesses
+      write 剋制 at five of our six 克制 (士 16:5, 16:6, 16:19, 哀 1:13,
+      但 2:40); the sixth, 克制肉體, is 克 in all three. Simplified merged
+      克/剋, so it is the same class of converter defect.
+
+      **It did not show in the "characters the witness has and we hold zero of"
+      table because that table was cut off at 10 occurrences** — the same reason
+      咸 hid. But it is **weaker than 製/制 and must not be swept on that
+      analogy**: 克制 is itself a standard Traditional word in the Taiwan MOE
+      dictionary, so nothing false is printed today and this is
+      edition-consistency, not a scripture defect. Measure the full 克 inventory
+      before deciding, and ask the user — it belongs with 兇/凶 and 蹟/鍊 above,
+      not with the instalments.
 
 - [ ] **`assets/bible_evidence.json` has zh-Hant fields holding wholly SIMPLIFIED
       prose — not a glyph hole, an untranslated field.** Found 2026-08-18 while
