@@ -104,13 +104,39 @@ and quoted.**
       the pre-fix data. 干 counts in `traditional_dry_glyph_test` moved 111 →
       112 because 來 2:2 got its 干犯 back.
 
-- [ ] **Nine verses have the right characters in the WRONG ORDER.** Found by
-      the same 2026-08-19 measurement pass, set aside from the restoration
-      above because a transposition is two edits rather than an insertion and
-      deserves its own reading. Both witnesses agree against us at all nine,
-      and the refuter checked them against the printed 1919 text:
+- [x] **Nine verses have the right characters in the WRONG ORDER — eight were
+      real and are now reordered.** Done 2026-08-19. 箴言 22:11 no longer reads
+      「王必與他為上友」, 尼希米記 8:4 no longer strands 站 in front of a list of
+      names, and 馬太福音 25:20 now reads the same way in all three of our
+      files instead of three different ways.
 
-      | ref | ours | should read |
+      **The printed 1919 text decided two the witnesses could not.** 馬太福音
+      6:2 and 使徒行傳 24:16 are both ordinary Chinese in either order, and our
+      own corpus argued for keeping ours: 26 of the 42 tagged runs carrying
+      ἔμπροσθεν spell it 面前 against 2 for 前面, and 因此我 outnumbers 我因此
+      25 to 1. The print reads 「不可在你前面吹號」 and 「我因此自己勉勵」.
+      Neither would have been safe on the two witnesses alone.
+
+      **Internal evidence turned out to be the strongest line for three of
+      them**, because it is independent of all three external witnesses:
+      俄巴底亞書 1:5's parallel 耶利米書 49:9 already reads 「若來到」 in our own
+      asset; our Traditional file already had 馬太福音 25:20 right while the
+      Simplified read 五千的 and the tagged corpus read 五的千 — one clause,
+      three of our files, three orders; and 尼希米記 8:4's own second half
+      reads 「和米書蘭站在他的左邊」.
+
+      **The refuter broke the first version of the fix, on a defect that would
+      never have shown on screen.** The repair rebuilt tagged runs from text
+      and Strong's number alone, so four verses came out with the right
+      characters and their parsing data silently gone — 創世記 9:11 lost the
+      infinitive-construct code off its verb, 馬太福音 25:20 lost τάλαντον,
+      使徒行傳 24:16 lost τούτῳ, 俄巴底亞書 1:5 lost a perfect-tense code. The
+      tool now inherits every field from the input run and refuses to split a
+      run that carries `i`/`g`, which would claim the original has a word
+      twice. `tools/repair_transposed_characters.py`;
+      `test/transposed_characters_test.dart` fails on the pre-fix data.
+
+      | ref | was | now reads |
       |---|---|---|
       | 創 9:11 | 毀壞**了地** | 毀壞**地了** |
       | 尼 8:4 | 木臺上。**站**瑪他提雅…和瑪西雅**在**他的右邊 | 瑪他提雅…和瑪西雅**站在**他的右邊 |
@@ -121,13 +147,39 @@ and quoted.**
       | 徒 24:16 | **因此我**自己勉勵 | **我因此**自己勉勵 |
       | 羅 4:23 | 「算為他**的義**」這句話 | 「算為他**義**」**的**這句話 |
 
-      箴 22:11 and 尼 8:4 are the two worth doing first — a character has
-      jumped clauses in both, and 為上友 is not Chinese.
+      **耶利米書 7:14 was the ninth and stayed as it was.** Ours reads
+      稱**我為**名下 where both witnesses read 稱**為我**名下, and the printed
+      1919 sides with **ours**. Do not "fix" it; it is recorded in
+      `audit_dropped_characters.py` with the other explained hits. The eight
+      that were fixed are struck from that list on purpose — if a re-import
+      scrambles them again, the run should report them as new drift.
 
-      **耶 7:14 was on this list and came off it.** Ours reads 稱**我為**名下
-      where both witnesses read 稱**為我**名下, and the printed 1919 sides
-      with **ours**. Do not "fix" it. Recorded in
-      `tools/audit_dropped_characters.py` with the other explained hits.
+      **The print is a witness, not an oracle.** The refuter found the
+      Wikisource transcription has defects of its own where all three other
+      sources agree against it — it drops 的隱密處 at 俄巴底亞書 1:6 and 金 at
+      箴言 1:9. It was decisive here because its errors are uncorrelated with
+      the two imports', not because it is always right.
+
+- [ ] **NOTHING HAS EVER CHECKED FOR TEXT WE ADD.** `audit_dropped_characters.py`
+      compares us against two witnesses and reports only where THEY read more
+      than we do. The opposite direction — where WE read more — has never been
+      measured, and it is the direction that puts words into scripture rather
+      than taking them out.
+
+      Found 2026-08-19 by the refuter, incidentally, while attacking the
+      transpositions. **尼希米記 1:2** reads 「我問他們**關於**那些被擄歸回、
+      剩下逃脫的猶大人和**關於**耶路撒冷的光景」. Both witnesses read
+      「我問他們那些被擄歸回…的猶大人和耶路撒冷的光景」 — no 關於 at all,
+      twice. Verified in this repo, both scripts.
+
+      Do this the way the deletion pass was done: **count the whole corpus
+      first**, then read every hit individually before writing anything. Expect
+      the same three-way split (real insertions / edition variants / explained),
+      and expect the printed 1919 text to be needed again — two witnesses
+      agreeing is not proof, as 創世記 39:22 and 41:30 already showed.
+
+      Cheapest route: the `deletions()` helper in the audit already computes
+      this; running it with the arguments swapped gives insertions.
 
 - [ ] **那鴻書 3:4 attaches the 「原文是賣」 note to the wrong 誘惑.** Ours
       prints 「藉淫行誘惑\<note: 原文是賣\>列國，用邪術誘惑多族」; both

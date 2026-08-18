@@ -42,16 +42,10 @@ EXPLAINED = {
     # A substitution, not a drop — filed separately in the queue.
     "047013005": "ours 在你們裏面 where the print reads 在你們心裏",
     "034003004": "the 原文是賣 note is attached to the wrong 誘惑",
-    # Transpositions: the characters are all present, in the wrong order.
-    # Filed as their own queue item; a swap is two edits, not an insertion.
-    "001009011": "transposed: 毀壞了地 / 毀壞地了",
-    "016008004": "transposed: 站 sits before 瑪他提雅 instead of 站在他的右邊",
-    "020022011": "transposed: 嘴的…為上友 / 嘴上的…為友",
-    "031001005": "transposed: 若到來 / 若來到",
-    "040006002": "transposed: 你面前 / 你前面",
-    "040025020": "transposed: 另外五千的來 / 另外的五千來",
-    "044024016": "transposed: 因此我自己 / 我因此自己",
-    "045004023": "transposed: 算為他的義 / 算為他義的",
+    # The eight transpositions this file used to list are REPAIRED — see
+    # `tools/repair_transposed_characters.py`. They are deliberately not
+    # re-listed here: if a re-import scrambles their order again, this run
+    # should report them as new drift rather than swallow them as known.
 }
 
 
