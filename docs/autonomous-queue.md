@@ -496,12 +496,50 @@ and quoted.**
       SeekSparks' `cuvs-plus.json` yields 53 substitution pairs, of which the
       high-count ones are conventions and the tail is this list.
 
-- [ ] **自已 → 自己 outside the Bible text: 2 sermon transcripts and 2 Strong's
-      glosses.** `assets/sermons/zh-CN/021.txt` and `029.txt` (+ their zh-TW
-      twins) and `assets/strongs/greek.json` / `hebrew.json` (「不再害怕自已是
-      罪人」, 「對自已仁慈」). Left out of the instalment above because the
-      provenance is different — transcripts and glosses, not scripture — but
-      自已 is not a word in any of them.
+- [x] **自已 → 自己 outside the Bible text — DONE 2026-08-18, 8 substitutions
+      across 6 files, and nothing under `assets/` spells 自已 any more.**
+      `assets/sermons/zh-CN/021.txt` 「所以我對自已說」 and `029.txt`
+      「我真的是在對自已說話」 (+ their zh-TW twins), `assets/strongs/greek.json`
+      G3962 「不再害怕自已是罪人」 and `hebrew.json` H2616 「(Hithpael) 對自已仁慈」
+      (each in both `defZh` and `defZhTw`). Left out of the instalment above
+      because the provenance is different — transcripts and glosses, not
+      scripture — so it needed its own evidence rather than that one's.
+
+      **The corpus settles it with no outside source.** 自已 is not a word: 已 is
+      the adverb "already", the reflexive pronoun is 自己. The zh-CN/zh-TW
+      transcripts write 自己 correctly 10,875 times against these 4, the two
+      offending files 39 and 26 times each; `greek.json` is 210:2 and
+      `hebrew.json` 454:2. Both glosses are **inherited, not introduced here** —
+      the upstream CBOL source carries the identical typo at Greek 03962 and
+      Hebrew 02616.
+
+      **The trap, and why the script is anchored rather than global.** A blanket
+      自已 → 自己 over that same upstream lexicon would corrupt **21** correct
+      strings: CBOL's etymology formula 「源自已不使用的字根」 is 源自 + 已不使用
+      and entirely right (4 in `cbol-greek.json`, 17 in `cbol-hebrew.json`).
+      Those fields were never imported — our `assets/strongs/*.json` hold zero
+      源自已 **and** zero over-corrected 源自己 — but the next regex over the
+      lexicon will meet them.
+
+      **The refuter broke a number and corrected another**, both fixed before
+      commit: the ratio was stated as "the sermon corpus" when 10,875 is the
+      zh-CN + zh-TW subtotal (the glob also picks up 58 in `assets/sermons/en/`),
+      and one of the 4 Greek etymology hits is 源自已**廢棄不用** rather than the
+      quoted 已不使用. It also re-ran the sibling scan independently: 己经/知已/
+      而己/律已/正已/利已/舍已/修已/為已 and the 9 巳 are all boundary false
+      positives (自己经历, 誰知已經, 假先知已經, 希律已經, 巳初), so this family
+      is now closed in `assets/`.
+
+      `tools/repair_ziji_typo.py` (idempotent, refuses on any drift);
+      `test/ziji_typo_test.dart` pins zero 自已 anywhere under `assets/sermons`
+      and `assets/strongs`, the four repaired readings, and — the guard that
+      matters — that 「是已與自己和好」 three characters later in the SAME gloss
+      still reads 已. Verified to fail on the pre-fix data.
+
+      Noted while measuring, not a task: `build-cn/` and `build-wasm/` still
+      hold pre-repair copies of `cuvs-yhwh*.json` and `tagged/cuvs-yhwh/psalms.json`
+      carrying this and the earlier typo family. Gitignored build output, so a
+      rebuild clears them — but never deploy from a stale one.
 
 - [ ] **SeekSparks' copy of `cuvs-yhwh-tr.json` still carries this whole defect
       family.** Noted by the refuter 2026-08-18: that repo's asset still reads
