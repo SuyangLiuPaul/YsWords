@@ -45,6 +45,45 @@ and quoted.**
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
+- [ ] **Characters are silently MISSING from verses, with no marker left
+      behind — 士師記 12:13 reads 「作以色的士師」 for 以色列.** Found
+      2026-08-19 by the refuter while it was trying to break the `??` claim
+      below, which is the best possible provenance for it: it went looking for
+      evidence that this corpus loses characters, and found some.
+
+      **Verified by hand at four positions, ours against both witnesses
+      (blob `7a2dc43` and the independent Simplified import):**
+
+      | ref | ours | both witnesses read |
+      |---|---|---|
+      | 士師記 12:13 | 作**以色**的士師 | 作以色**列**的士師 — *Israel*, misspelt |
+      | 出埃及記 15:7 | 像燒**碎**一樣 | 像燒碎**秸**一樣 |
+      | 詩篇 78:44 | 江河並**河**的水 | 江河並河**汊**的水 |
+      | 詩篇 102:26 | 天地就改變了 | 天地就**都**改變了 |
+
+      The refuter reported **14 such verses in total** and named eight more
+      (亞 11:15 牧, 詩 59:12 因, 創 39:22 的, 創 41:30 在 …). **That count is
+      NOT verified — re-measure it before quoting it anywhere.** Measure the
+      whole corpus first, the way the standing rule says: align every verse
+      against both witnesses and enumerate every position where ours is the
+      shorter side. 31,102 verses, so it is a scripted pass, not a reading
+      pass — but every hit then has to be read individually, because our
+      edition legitimately differs from the CUV in places (the publisher's
+      427 wording differences) and a shorter reading is not automatically a
+      loss.
+
+      **This is a restoration, not a deletion, so it is the dangerous
+      direction.** Writing a character into scripture on inference is exactly
+      what the standing rule forbids. What makes it defensible here is that
+      two independently digitised witnesses agree on the character, which is
+      the same footing every glyph instalment stood on. Where the witnesses
+      disagree, or where only one has the word, **stop and queue it for the
+      user** — do not reconstruct.
+
+      Note this is upstream of the Traditional conversion: 士 12:13 is short
+      in the Simplified asset too. It is not part of the deferred glyph class
+      and must not be filed with it.
+
 - [x] **The Traditional Bible had no 隻 in it — 548 measure words printed
       in the Simplified form.** 以賽亞書 2:16 read 「他施的船只」;
       馬太福音 18:12 read 「一百只羊」; 「兩只眼」, 「那幾只羊」,
@@ -1526,23 +1565,43 @@ and quoted.**
       | `.` | 19 | 創世紀 6:11 「滿了強暴**.**。」, 民數記 24:17 「毀壞擾亂**.**之子」 | stray |
       | `,` | 14 | 約珥書 1:11 「你們要慚愧**,**修理葡萄園的」 | half-width 、/， |
       | `!` | 9 | 創世紀 43:14 「就喪了吧**!**」」 | half-width ！ |
-      | `?` | 9 | 士師記 6:33 「在耶斯列**??**平原安營」 | **possibly lost text** |
+      | ~~`?`~~ | ~~9~~ | 士師記 6:33 「在耶斯列**??**平原安營」 | **DONE 2026-08-19 — stray, not lost text** |
       | `"` | 8 | 撒迦利亞書 1:3 「（原文有 **"**萬軍之雅偉說**"**）」 | half-width 「」 |
       | `(` `)` | 9 | 創世紀 48:7 「路上**(**以法他就是伯利恆**)**」 | half-width （） |
       | `:` | 3 | 路加福音 18:37 「他們告訴他**:**「是拿撒勒人耶穌」 | half-width ： |
       | `;` | 1 | 帖前 2:13 「就領受了**;**不以為是人的道」 | half-width ； |
 
-      **Do the `??` one first and do not delete it.** 士師記 6:33, 列王紀下
-      2:5 and 11:2, 以西結書 16:4 read like a character that failed to encode
-      — `??` is the classic mojibake signature, and the witness simply has the
-      word. Deleting the marks would silently conceal a textual loss, which is
-      exactly the failure this queue's standing rule is written against. Read
-      each against the witness and the tagged corpus before touching it.
+      **The `?` row is DONE, 2026-08-19 — and the fear behind it was
+      unfounded, which took three witnesses to establish.** All nine are
+      strays; nothing was lost. The five verses are 士 6:33, 王上 2:5, 結 16:4,
+      結 16:43 and 結 20:9 (the earlier note said 王下 2:5 and 11:2 — wrong
+      references, read off the table rather than the data). Deleted in both
+      editions plus 結 16:43 in the tagged corpus, and 伯 15:12/15:16 in the
+      tagged corpus had a half-width `?` closing a clause where the verse sets
+      ，and ！. `tools/repair_question_mark_artifacts.py`;
+      `test/question_mark_artifacts_test.dart` now asserts **no ASCII `?`
+      anywhere** in either edition or the tagged corpus, and fails on the
+      pre-fix data.
+
+      What settled it: **our own tagged Strong's corpus is a third witness and
+      it is the same 雅偉 edition** — it carries four of the five verses with
+      no character at the slot, so this is not a place where the publisher
+      departs from the CUV. The other two witnesses agree, the Hebrew leaves
+      no room for a word, and 結 20:9 carries an *odd* number of marks, which
+      no double-byte pairing produces. The refuter's parting shot is the entry
+      now at the top of P0: characters ARE dropped in this corpus, but silently
+      and with no marker, so `??` was never the signature to look for.
 
       The half-width classes are lower risk but are **substitutions, not
       deletions**, so they need the same per-position confirmation the 余/腌
       pass used. Verify the bundled CJK font subset covers each full-width
       replacement before shipping.
+
+      **Two non-scripture assets have the same half-width habit** and were
+      left alone: `maps_index.json` 1123 (a 路 18 description, 2 marks, and it
+      uses half-width `,` throughout) and `onegod.json` episode titles
+      (「誰是獨一的真神?」). Reader-visible but not scripture, so they belong
+      with the half-width sweep rather than ahead of it.
 
 - [ ] **`說；「` opens a quotation with a semicolon in 5 verses — a
       substitution, so deliberately not swept with the deletions above.**
