@@ -192,20 +192,91 @@ and quoted.**
       `test/traditional_ridge_glyph_test.dart` (8 tests, 6 of which fail on the
       pre-fix data).
 
-- [ ] **書 10:3 spells Hoham 何鹹 — "salty" — where every witness reads 何咸.
-      Measured, 1 occurrence, same defect family, ready to take.** Found while
-      diffing the 崙 verses on 2026-08-18. opencc's default mapping is 咸 → 鹹
-      (`echo 何咸 咸海 | opencc -c s2t` → 何鹹 鹹海), and 咸 in a name must stay
-      咸, so the converter salted a Canaanite king.
+- [x] **書 10:3 spelt Hoham 何鹹 — "salty" — where every witness reads 何咸.
+      DONE 2026-08-18, 1 substitution.** The seventeenth converter hole, the
+      smallest so far, and the second to reach a proper NAME. opencc's default
+      mapping is 咸 → 鹹 (`echo 何咸 咸信 | opencc -c s2t` → 何鹹 咸信 — its
+      phrase table knows the word 咸信 and does not know the name), and 咸 in a
+      name must stay 咸, so the converter salted a Canaanite king.
 
-      Ours: 7 鹹 / **0** 咸. Witness `7a2dc43`: 6 鹹 / **1** 咸 — and the one 咸
-      is 何咸 at 書 10:3. Published `cmn-cu89t` agrees: 「希伯崙王何咸、耶末王
-      毗蘭」. The other six of ours are genuine salt and must survive —
-      它再鹹 ×3, 中採鹹, 使鹹, 鹹 after 嗎？.
+      Ours was 7 鹹 / **0** 咸. Witness `7a2dc43`: 6 鹹 / **1** 咸 — and the one
+      咸 is 何咸 at 書 10:3. Published `cmn-cu89t` agrees exactly, same seven
+      verses: 「希伯崙王何咸、耶末王毗蘭」. The other six are genuine salt and
+      all six survive — 採鹹草, 使鹹地, 叫它再鹹呢 ×3, 鹹水.
 
-      This is a **split, not a partition** (the witness holds both forms), so
-      it is decided at the one position, not swept. One-character fix, but it
-      is a Bible name printed wrong, so it is P0 by the standing rule.
+      **A split, not a partition** (the witness holds both forms), so it was
+      decided at the one position, not swept — and it is the one instalment
+      where **the Simplified twin cannot arbitrate**. The 崙 fix leaned hardest
+      on that check because 仑/伦 stay distinct in Simplified; 咸 is the
+      opposite case — the merge is on the Simplified side, so our source reads
+      咸 at all seven positions and cannot tell them apart. Evidence had to be
+      external, and two independently produced Traditional editions supplied it.
+
+      Checked and deliberately NOT touched: `assets/strongs/hebrew.json` and
+      `greek.json` came through a different pipeline and are **already right on
+      both readings** (H3458 咸信, H4420 鹹性, G252 鹹的) — a sweep would have
+      broken 咸信. H1944, Hoham's own entry, never spells his name in Chinese.
+      `assets/sermons/zh-TW/018.txt` greps as 何鹹 and is a **false positive**:
+      「不再有任何鹹味」, 任何 + 鹹味.
+
+      `tools/repair_tr_salt_glyph.py` (idempotent, refuses on any drift),
+      `test/traditional_salt_glyph_test.dart` (6 tests, 2 of which fail on the
+      pre-fix data; the last one pins the Simplified merge so the reason the
+      internal check is unavailable stays recorded in code).
+
+- [ ] **The inventory diff has a TAIL the table below never enumerated — it was
+      cut off at 10 occurrences, and 咸 was hiding under it.** Measured
+      2026-08-18 while fixing 書 10:3. The full diff — every character the
+      witness `7a2dc43` uses that our asset holds **zero** of — is **109
+      characters**, not the 25 the table lists. 咸 sat at the very bottom with a
+      count of 1, which is exactly why it was found by hand rather than by the
+      sweep.
+
+      **Most of the tail is NOT a defect, and an earlier draft of this entry got
+      that wrong** — it listed 蹟 95, 鍊 62, 歎 52, 祕 51, 甦 7 as "certainly
+      holes" on the strength of the zero-count signature alone, and checking
+      them broke that. The signature is necessary, not sufficient: it fires just
+      as loudly when **both forms are valid Traditional and the two editions
+      simply chose differently**, which is what these are —
+
+      | | ours | witness | verdict |
+      |---|---|---|---|
+      | 歎/嘆 | 0 歎, 53 嘆 | 52 歎, 0 嘆 | both valid; 嘆 is the Taiwan standard |
+      | 祕/秘 | 0 祕, 51 秘 | 51 祕, 0 秘 | both valid |
+      | 蹟/跡 | 0 蹟, 103 跡 | 95 蹟, 8 跡 | 神跡/神蹟, a published edition difference |
+      | 鍊/鏈 | 0 鍊, 金鏈 | 62 鍊, 金鍊 | both valid for a chain |
+      | 甦/蘇 | 0 甦, 44 蘇 | 7 甦, 37 蘇 | both valid |
+      | 裡/裏, 麼/麽, 牠/它, 毘/毗 | | | long-settled conventions, already known |
+
+      **Two in the tail ARE candidates, and both have the exact-partition shape
+      the cheap instalments had** — ours-count == witness-count, witness holds
+      zero of our form, and our form is the mainland variant rather than a
+      second Traditional option:
+
+      * **鹼/堿, 6 positions.** Ours reads 堿 at 伯 9:30 「用堿潔淨我的手」,
+        詩 107:34 「使肥地變為堿地」, 箴 25:20 「如堿上倒醋」, 耶 2:22, 耶 17:6,
+        瑪 3:2. Witness reads 鹼 at all six. (Same lye/alkali family as the 咸
+        fix above — found in the same sweep.)
+      * **姪/侄, 5 positions.** Ours reads 侄 at 創 12:5, 14:12, 14:14, 14:16
+        (「亞伯蘭的侄兒羅得」 — Lot) and 代下 22:8 「亞哈謝的眾侄子」. Witness
+        reads 姪 at all five.
+
+      Neither is confirmed yet — each still needs the per-position check every
+      instalment has had, and neither should be swept on the table alone.
+
+      And the harder half, which nothing has looked for yet: the 癒 lesson says
+      a merged pair only shows in this diff when the surviving form is the one
+      we lack. **咸 was the mirror case, caught only because a name looked
+      wrong.** A sweep in the other direction — characters the *witness* holds
+      zero of — has still not been run.
+
+- [ ] **SeekSparks' copy of `cuvs-yhwh-tr.json` still carries this whole defect
+      family.** Noted by the refuter 2026-08-18: that repo's asset still reads
+      何鹹 *and* 希伯侖, i.e. it is the pre-repair converted file. It is
+      **read-only from here** (it has its own hourly loop, writing collides), so
+      this is a note, not a task: either that loop replays the same seventeen
+      instalments, or someone copies the repaired assets across once. Worth
+      raising with the user rather than deciding unilaterally.
 
 - [ ] **Two 愈/癒 spin-offs the refuter found, deliberately NOT swept with the
       verse asset on 2026-08-18 — neither is converter-backed.** Small, and each
