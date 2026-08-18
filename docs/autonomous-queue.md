@@ -113,6 +113,100 @@ and quoted.**
       pins the nine counts and nine reader-visible verses, and fails on
       the pre-fix data.
 
+- [x] **The Traditional Bible misspelt Hebron in 69 verses — 崙 was written 侖
+      in all 155 places a NAME needed it. DONE 2026-08-18, 243 substitutions
+      (155 verses + 88 lexicon).** The sixteenth converter hole, and the first
+      one to reach a proper name rather than a common noun.
+
+      `assets/section_titles.json` headed 撒母耳記下 2 with 「大衛在希伯崙作
+      猶大王」 and the verse under it read 希伯侖. Same screen, two spellings.
+
+      The enumeration, by longest match — 希伯崙 69, 希斯崙 17, 伯和崙 15,
+      以弗崙 13, 沙崙 9 standalone + 拉沙崙 1, 亞雅崙 9, 伸崙 7, 耶書崙 4,
+      米崙 2, 米磯崙 2, and one each of 西斐崙, 基撒崙, 施基崙, 哈崙, 何崙,
+      希崙, 義伯崙 = **155**. Derive this by tokenising the positions, never by
+      summing a list of names: the first pass missed 義伯崙 (書 19:28) entirely
+      and double-counted 拉沙崙 (書 12:18) inside 沙崙, two errors that
+      cancelled to the right total and hid each other.
+
+      **This item had to overturn a caution already in this file.** Line ~695
+      warns that 「侖/崙, 瑪/馬, 毗/毘 are transliteration conventions this
+      edition is entitled to」 — a witness difference here need not be a defect.
+      That is right about 瑪利亞/馬利亞, where published editions genuinely
+      differ and each is consistent with itself. It is wrong here, and opencc
+      says why in one line:
+
+          $ echo 希伯仑 亚雅仑 耶书仑 希斯仑 沙仑 加仑 昆仑 | opencc -c s2t
+            希伯侖 亞雅侖 耶書侖 希斯崙 沙崙 加侖 崑崙
+
+      Simplified merges 侖 and 崙 onto 仑; opencc's default single-char mapping
+      is 侖 and its phrase table knows 希斯崙 and 沙崙 but not 希伯崙. So it
+      writes two names right and three wrong in one sentence — and
+      `assets/strongs/hebrew.json` reproduced that split exactly (希斯崙 ×35
+      right, 希伯侖 ×63 wrong). No editor produces that; a phrase-table
+      converter produces it every time. The verse asset shows the same hand
+      with no phrase table at all: 155 侖, 0 崙. **The disagreement is between
+      our machine-converted assets and our authored ones, which is a defect.**
+      Generalise the test, not the verdict: for any 侖/崙-shaped pair, ask
+      whether the two forms are inconsistent WITHIN our own converted file.
+
+      Four independent lines of evidence, all agreeing:
+      * Witness `7a2dc43`: 155 崙, 0 侖. Counts match verse by verse — but
+        counts cannot exclude a transposition, so the tool also compares the
+        three Han characters left of each glyph in order, after normalising
+        three known edition differences (note spans, interpuncts, 耶和華/雅偉).
+        All 155 agree. Proved to have teeth: it rejects a transposition of
+        伸崙/米崙 at 書 12:20 and rejects 希伯崙→希弗崙.
+      * Published 新標點和合本 (ebible `cmn-cu89t`): 158 崙, **0** 侖,
+        希伯崙 ×69 — our count exactly. The gap of 3 was read verse by verse
+        and is edition normalisation, not a defect (below).
+      * **Four** authored Traditional assets — `section_titles.json`,
+        `maps_index.json`, `family_tree.json`, `songs.json` — 崙 throughout,
+        no name-侖. An earlier draft said five and counted 梁家鏗's
+        `biblexg-v2-tr.json`; the refuter broke that. It writes 崙 ×3 but also
+        one 希斯**侖** (路 3:33), so it is a witness against itself and
+        corroborates only weakly. **It is also shipped and user-selectable**
+        (`pubspec.yaml`, `lib/constants/bible_versions.dart`), so the app does
+        NOT now show zero name-侖 — that is true only of the assets that are
+        ours to edit. See the 愈/癒 spin-off item for the same call.
+      * **The best one, and the only one that survives the witness blob being
+        dropped from the tree:** the Simplified source `assets/cuvs-yhwh.json`
+        distinguishes 仑 from 伦 perfectly (155 仑 / 853 伦), and after the fix
+        its per-verse 仑/伦 counts match the Traditional's 崙/倫 on **all
+        31,102 verses, zero mismatches**. Prefer this shape of check in future
+        instalments — it needs no external file.
+
+      **The base text's own inconsistency is preserved, NOT normalised.**
+      和合本 itself spells 希斯倫 at 創 46:12 and 民 26:21 and 亞雅倫 at
+      士 1:35, where 新標點 sets 崙 — and conversely 新標點 has 希斯倫 at
+      出 6:14 where 和合本 has 崙. Ours agrees with witness `7a2dc43` at all of
+      them and still holds 853 倫. Fixing a converter hole is not a licence to
+      edit the base text.
+
+      Scope notes: `assets/strongs/greek.json` was a false alarm and received
+      **no change** — all six of its 侖 are 加侖, a gallon, and it already spelt
+      希斯崙 right. `hebrew.json` is a split, not a partition, so it was fixed
+      by named reading with the 2 gallons pinned as must-survive.
+
+      `tools/repair_tr_ridge_glyph.py` (idempotent, refuses on any drift),
+      `test/traditional_ridge_glyph_test.dart` (8 tests, 6 of which fail on the
+      pre-fix data).
+
+- [ ] **書 10:3 spells Hoham 何鹹 — "salty" — where every witness reads 何咸.
+      Measured, 1 occurrence, same defect family, ready to take.** Found while
+      diffing the 崙 verses on 2026-08-18. opencc's default mapping is 咸 → 鹹
+      (`echo 何咸 咸海 | opencc -c s2t` → 何鹹 鹹海), and 咸 in a name must stay
+      咸, so the converter salted a Canaanite king.
+
+      Ours: 7 鹹 / **0** 咸. Witness `7a2dc43`: 6 鹹 / **1** 咸 — and the one 咸
+      is 何咸 at 書 10:3. Published `cmn-cu89t` agrees: 「希伯崙王何咸、耶末王
+      毗蘭」. The other six of ours are genuine salt and must survive —
+      它再鹹 ×3, 中採鹹, 使鹹, 鹹 after 嗎？.
+
+      This is a **split, not a partition** (the witness holds both forms), so
+      it is decided at the one position, not swept. One-character fix, but it
+      is a Bible name printed wrong, so it is P0 by the standing rule.
+
 - [ ] **Two 愈/癒 spin-offs the refuter found, deliberately NOT swept with the
       verse asset on 2026-08-18 — neither is converter-backed.** Small, and each
       needs a judgement the 35-substitution instalment did not.
@@ -131,6 +225,11 @@ and quoted.**
          **梁家鏗's own translation**, not ours to normalise. The same 4 strings are
          duplicated in `ljk-nt-bible-webapp/public/resources/tw-lk.json` and
          `tw-rev.json`.
+      3. Added 2026-08-18, same call, same file: `assets/biblexg-v2-tr.json`
+         spells 希斯**侖** once (路 3:33, the genealogy) against its own two
+         希斯**崙** (太 1:3) and one 沙崙. Internally inconsistent by exactly
+         the argument used for H6867 — and, again, his text and his call, so it
+         was left alone when our own 155 were repaired.
 
       Also recorded: `build-cn/` and `build-wasm/` still hold a stale
       `biblexg-tr.json` (23 愈 / 0 癒) with no source counterpart — gitignored build
@@ -692,10 +791,20 @@ and quoted.**
 
       Caution when reading the witness: it is a *different edition*, so
       many differences are not defects — 裏/裡, 麽/麼, 什/甚, 的/地, 那/哪,
-      它/牠 and the transliterations 侖/崙, 瑪/馬, 毗/毘 are conventions
+      它/牠 and the transliterations 瑪/馬, 毗/毘 are conventions
       this edition is entitled to, and 雅偉/耶和華 is the whole point of
       ours. Only glyphs with no Traditional existence are safe to take on
       the witness's word alone.
+
+      **Correction, 2026-08-18: 侖/崙 was listed here and it did not
+      belong.** It is not a convention but a converter hole, and it was
+      misspelling Hebron in 69 verses while this line said to leave it be.
+      The test that separates the two cases: a genuine convention is
+      consistent WITHIN each edition, whereas our own converted files
+      spelt 希斯崙 right and 希伯侖 wrong in the same document — the
+      signature of opencc's phrase table, not of an editor. See the
+      completed 崙 item near the top of this file for the full argument.
+      Apply that test before dismissing any other pair listed here.
 
 - [x] **The last counted converter hole: 麵 — DONE, 107 substitutions
       across 90 verses, 2026-08-17.** All four holes in this item are now
@@ -873,6 +982,72 @@ and quoted.**
       隻/淨/牆/餘/髮/鬍/鬚/採/麵/罈/穀/鬆 in these two files, and the same
       converter signature is likely. The twin-field witness makes a
       whole-sweep script practical in one pass.
+
+      ---
+      **SCOPED AND MEASURED 2026-08-18 (while doing 崙). Read this before
+      starting — it changes what the item is.**
+
+      These two files have **no holes at all.** Every `glossZhTw`/`defZhTw` is
+      `opencc -c s2t` of its Simplified twin, character for character, with
+      **ZERO manual edits across all 28,377 field pairs** — verified by
+      re-converting every Simplified field and comparing both directions. So
+      the exposure runs the other way from the verse asset: opencc never fails
+      to convert, it fails by picking the **wrong one-to-many expansion**, and
+      because nobody ever hand-edited the file every such mistake is still in
+      it. **An inventory diff can never find these** — the character written is
+      a perfectly good Traditional character, just not the right one. Do not
+      look for "we hold zero of X" here; look for wrong expansions.
+
+      All 193 source positions of 干 were enumerated and classified against the
+      Simplified twin (乾 dry 146, 干 interfere/name 20, 幹 trunk/do 17 — the
+      17 already correct). Every ambiguous class opencc touched in these files
+      was surveyed the same way: 谷/穀, 发/髮, 里/裏, 松/鬆, 系/係/繫, 台/臺,
+      只/隻, 斗/鬥, 扎/紮, 占/佔, 云/雲, 岳/嶽, 征/徵, 游/遊, 布/佈, 范/範,
+      咸/鹹, 困/睏, 折/摺, 钟/鐘, 术/術, 虫/蟲, 向/嚮, 丑/醜. 岳父/岳母 (×38)
+      and 掙扎 are correctly left alone by opencc, and 谷→穀 is right in all 78.
+      **42 readings came out wrong**, and `tools/repair_strongs_tw_ambiguous.py`
+      already exists (untracked, dry-run only, guards + MUST_SURVIVE list) with
+      the full rule table: the eight rows above plus 亞多尼乾 ×2, 亞乾 ×3,
+      伯・哈幹 ×1, 雅幹 ×1, 變幹 ×2, 被髮出 ×1 (H7972 — 髮 is hair), 徵服 ×1
+      (H8478), 莫丘裏 ×2 (G2060, Mercurius — a name, so 里), 睏倦 ×4 and
+      疲睏 ×2 (睏 is drowsiness, 困 is weariness).
+
+      **One rule in that script is REFUTED and must be deleted before it is
+      run:** 裏海 → 里海 ×4. 裏海/裡海 IS the standard Traditional name for the
+      Caspian ("inner sea"); the safer edit is the opposite direction, and
+      G3934 already reads 里海. Left in the file only so the next iteration
+      sees why it is wrong. **43 rules minus that one = 42.**
+
+      Also found and NOT yet fixed: 闢拉→辟拉 ×7, 併爲→並爲 ×21 + 併成 ×1
+      (but keep 合併 ×3 at H6775/G2957), 回覆→回復 at H5025/H8666/G330×2 (keep
+      G611/612/627), 被複興→被復興 (H7725), 複合→復合 (G604), 蔘加→參加
+      (H4918), ~9 under-converted 里→裏 (G4245, G2491, G4270, G962×2, G4067,
+      H2574), 須→鬚 (H5189, H6538).
+
+      Two more, both separate calls:
+      * **H6867 「傷愈的疤」** — the 愈/癒 spin-off already queued above.
+      * **The 西/希 typo — 4 entries, and it comes in both 崙 and 倫.**
+        H5555 (×2) and H6814 (×1) read 西伯崙 where the name is Hebron the
+        city: H6814 says 「在西伯崙之後7年建立」, which is 民 13:22 「希伯崙城
+        被建造比埃及的鎖安城早七年」 verbatim. **H2811** reads 「可能就是西伯
+        倫族的哈沙比雅 (#代上 26:30|)」 — the same typo, but the Kohathite
+        clan, which our Bible spells 希伯**倫** 12 times. The file writes 希伯
+        105 times against 西伯 4.
+
+        The 崙/倫 glyphs are all correct as they stand (the Simplified twins
+        read 西伯仑 and 西伯伦 respectively, and Simplified distinguishes the
+        two perfectly) — **only the 西/希 letter is wrong**, and it is in the
+        Simplified `glossZh`/`defZh` too, so changing it is an editorial
+        correction to the source rather than a conversion repair. Needs the
+        user, or a third edition of the lexicon.
+
+        **Lesson worth keeping from how this was nearly botched:** the 2026-08-18
+        pass first justified fixing 西伯侖→西伯崙 with the rule 「whichever name
+        is meant, the last character is 崙 and never 侖」. That rule is FALSE —
+        H2811 is the counter-example sitting in the same file. The substitutions
+        were right, but for the wrong reason; what actually licenses them is the
+        Simplified twin reading 仑 rather than 伦. Prefer the twin over a rule
+        about names, always.
 
 - [ ] **17 wrong 幹 in the Traditional sermon assets.** `assets/sermons/zh-TW/`
       holds 142 幹 across 60 files and **the great majority are correct** —
