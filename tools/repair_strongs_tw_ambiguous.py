@@ -1,0 +1,223 @@
+#!/usr/bin/env python3
+"""Fix wrong one-to-many expansions in the Traditional Strong's lexicon.
+
+A DIFFERENT DEFECT FROM THE VERSE ASSET, THOUGH IT LOOKS THE SAME
+  Every fix so far has been a converter HOLE in `assets/cuvs-yhwh-tr.json` — a
+  Traditional form the converter could not write at all (隻, 淨, 牆, 餘, 癒 …),
+  found by "our asset holds zero of it". `assets/strongs/{hebrew,greek}.json`
+  has no holes: `glossZhTw`/`defZhTw` are `opencc -c s2t` of `glossZh`/`defZh`,
+  character for character, with ZERO manual edits in all 28,377 field pairs
+  (verified by re-converting every Simplified field and comparing).
+
+  So the exposure here runs the other way. opencc never fails to convert; it
+  fails by picking the WRONG expansion when one Simplified character maps to
+  several Traditional ones, and because the file was never hand-edited, every
+  one of those mistakes is still in it. An inventory diff cannot see this —
+  the character it wrote is a perfectly good Traditional character, just not
+  the right one.
+
+WHAT IT ACTUALLY PRINTS TODAY
+  Names first, because a study tool that misspells a Bible name is the worst
+  case. 亞干 (Achan, 書 7) is printed THREE different ways across the file —
+  亞乾, 亞幹 and never 亞干 — and 亞多尼干, 雅干, 瑪拉干 are all mangled too.
+  Our own `assets/cuvs-yhwh-tr.json` spells all four with 干 (亞干 ×17,
+  亞多尼干 ×3, 雅干 ×1, 瑪拉干 ×1) and holds ZERO of the 乾/幹 forms, so the
+  app currently contradicts itself between the reader and the lexicon.
+
+  Then plain wrong words: 幹物 for a dry measure (乾), 幹河谷 for a wadi (乾),
+  變幹/幹掉 for drying up (乾), 被幹擾 for being dismayed (干), 被髮出 for
+  being sent out (發 — 髮 is hair), 徵服 for conquest (征), 裏海 for the
+  Caspian Sea and 莫丘裏 for Mercurius (both 里, a name, not the locative 裏),
+  and 睏倦/疲睏 for weariness (困 — 睏 is drowsiness).
+
+HOW EACH POSITION WAS DECIDED — FROM THE SIMPLIFIED SOURCE, NOT FROM A RULE
+  All 193 source positions of 干 were enumerated and classified against the
+  Simplified text that produced them, which is unambiguous about the sense:
+  乾 dry ×146, 干 to interfere / a name ×20, 幹 trunk or to do ×17 (樹幹, 枝幹,
+  主幹, 幹活 — all correct already and left alone). 29 of the 193 were wrong.
+  The remaining 14 corrections are single readings, each read in full context.
+
+  Every ambiguous class opencc touched in these two files was surveyed the
+  same way, not just 干 — 谷/穀, 发/髮, 里/裏, 松/鬆, 系/係/繫, 台/臺, 只/隻,
+  斗/鬥, 扎/紮, 占/佔, 云/雲, 岳/嶽, 征/徵, 游/遊, 布/佈, 范/範, 咸/鹹,
+  困/睏, 折/摺, 钟/鐘, 术/術, 虫/蟲, 向/嚮, 丑/醜. 岳父/岳母 (×38) and
+  掙扎 are correctly left alone by opencc; 谷→穀 is right in all 78 (every one
+  is grain, every valley stayed 谷). Only the readings below came out wrong.
+
+CORROBORATION FOR THE HOUSE ORTHOGRAPHY
+  `assets/cuvs-yhwh-tr.json`, which earlier instalments verified position by
+  position against an independent edition, is the app's own Traditional
+  standard: it writes 困倦 ×9 and ZERO 睏, 發出 ×106 and ZERO 髮出, and the four
+  names with 干. It contains no 里 at all (和合本 has no 公里/里海), so it
+  cannot speak to 里海 or 莫丘里 — those rest on 里 being the standard modern
+  rendering of Caspian/Mercurius in both scripts, and on 裏 being the locative
+  "inside", which neither is.
+
+SCOPE
+  Traditional fields only. The Simplified `glossZh`/`defZh` are the source of
+  truth for the sense and this script refuses if it touches them. Every
+  substitution is one character for one character, so no field changes length.
+
+STATUS: NEVER APPLIED. Committed unapplied, deliberately, like
+`tools/fix_traditional_conversion.py`. It was written on 2026-08-18 alongside
+the 崙 instalment and set aside so that one defect shipped at a time; the
+survey above is the value here. Read `docs/autonomous-queue.md` (the Strong's
+glosses item) before running it, and re-verify the counts first — the guards
+refuse if the data has moved, which is the point.
+
+ONE RULE IN THE FIRST DRAFT WAS WRONG AND IS NOW DISARMED, recorded because
+the reasoning was seductive: 裏海 → 里海 ×4, on the theory that 裏 is only the
+locative "inside" and a sea's name should take 里. False. 裏海/裡海 IS the
+standard Traditional name for the Caspian — literally the "inner sea" — this
+file already sets 裏 273 times, and G3934 already reads 里海, so if anything
+the edit runs the other way. It is commented out below rather than deleted, so
+that a later pass does not rediscover it and re-add it.
+
+Dry-run by default; --apply writes. Re-running after --apply is safe.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+FILES = (ROOT / "assets/strongs/hebrew.json", ROOT / "assets/strongs/greek.json")
+TW_FIELDS = ("glossZhTw", "defZhTw")
+
+# (wrong, right, expected count, why). Counted across both files together.
+# Order matters only in that no rule's output feeds another's input; checked.
+RULES = (
+    # --- proper names: 干 is a name syllable, never 乾 (dry) or 幹 (trunk) ---
+    ("亞多尼幹", "亞多尼干", 1, "Adonikam — 拉 2:13"),
+    ("亞多尼乾", "亞多尼干", 2, "Adonikam — 拉 8:13"),
+    ("亞乾", "亞干", 3, "Achan — 書 7:1"),
+    ("亞幹", "亞干", 1, "Achan — 書 7:24 (亞割谷)"),
+    ("瑪拉幹", "瑪拉干", 3, "Malcam — 代上 8:9"),
+    ("雅幹", "雅干", 1, "Jaakan — 代上 7:34"),
+    ("伯・哈幹", "伯・哈干", 1, "Beth-haggan — 王下 9:27, transliterated gan"),
+    # --- 乾 is dry; 幹 is a trunk or to do ---
+    ("幹物", "乾物", 6, "dry measure — ephah, bath, homer, cab"),
+    ("幹河", "乾河", 5, "wadi / winter torrent — H650, H1308, G5493"),
+    ("變幹", "變乾", 2, "H2717 חָרֵב to become dry"),
+    ("幹掉", "乾掉", 2, "H2717 חָרֵב to dry up"),
+    ("被幹涸", "被乾涸", 1, "H5405 — 賽 19:5"),
+    # --- 干 is to interfere; 幹 is not ---
+    ("被幹擾", "被干擾", 1, "H926 בָּהַל to be dismayed"),
+    # --- 發 is to send forth; 髮 is hair ---
+    ("被髮出", "被發出", 1, "H7972 שְׁלַח to be sent"),
+    # --- 征 is to campaign; 徵 is to levy or a sign ---
+    ("徵服", "征服", 1, "H8478 — conquest"),
+    # --- 里 in a name; 裏 is the locative "inside" ---
+    # REFUTED, DO NOT RE-ADD: ("裏海", "里海", 4, "the Caspian Sea") — 裏海/裡海
+    # is the standard Traditional name for the Caspian, the "inner sea". See the
+    # docstring. Deliberately left visible rather than deleted.
+    ("莫丘裏", "莫丘里", 2, "Mercurius — G2060, 徒 14:12"),
+    # --- 困 is weariness; 睏 is drowsiness ---
+    ("睏倦", "困倦", 4, "H3288, G2872"),
+    ("疲睏", "疲困", 2, "G2577 — 來 12:3"),
+)
+
+EXPECTED_TOTAL = sum(r[2] for r in RULES)
+
+# Readings where the character this script removes is CORRECT and must survive.
+# If any of these stops being present the survey behind the rules is stale.
+MUST_SURVIVE = ("樹幹", "枝幹", "主幹", "幹活", "岳父", "岳母", "掙扎",
+                "打穀場", "頭髮", "船隻", "關係", "介係詞", "紮營", "佔領")
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--apply", action="store_true")
+    args = ap.parse_args()
+
+    docs = {p: json.loads(p.read_text(encoding="utf-8")) for p in FILES}
+    simplified_before = {
+        p: [(k, f, e[f]) for k, e in d.items() for f in ("glossZh", "defZh")
+            if f in e]
+        for p, d in docs.items()
+    }
+    joined_before = "".join(
+        e[f] for d in docs.values() for e in d.values()
+        for f in TW_FIELDS if f in e)
+
+    for reading in MUST_SURVIVE:
+        if reading not in joined_before:
+            print(f"  ✗ {reading} is absent — the survey behind these rules no "
+                  f"longer matches the data — refusing")
+            return 1
+
+    counts = {}
+    for wrong, right, expected, _ in RULES:
+        n = joined_before.count(wrong)
+        counts[wrong] = n
+        if n != expected:
+            print(f"  ✗ {wrong} appears {n} times, expected {expected} — the "
+                  f"data has moved under this script — refusing")
+            return 1
+
+    changed = 0
+    report: list[str] = []
+    for p, d in docs.items():
+        for sid, entry in d.items():
+            for field in TW_FIELDS:
+                text = entry.get(field)
+                if not text:
+                    continue
+                original = text
+                for wrong, right, _, _ in RULES:
+                    if wrong in text:
+                        for _ in range(text.count(wrong)):
+                            i = text.index(wrong)
+                            report.append(
+                                f"{p.name}\t{sid}\t{field}\t{wrong}→{right}\t"
+                                f"…{text[max(0, i - 10):i + len(wrong) + 8]}…"
+                                .replace("\n", "/"))
+                            text = text.replace(wrong, right, 1)
+                        changed += text != original
+                if text != original:
+                    if len(text) != len(original):
+                        print(f"  ✗ {sid} {field} changed length — refusing")
+                        return 1
+                    entry[field] = text
+
+    joined_after = "".join(
+        e[f] for d in docs.values() for e in d.values()
+        for f in TW_FIELDS if f in e)
+
+    if len(joined_before) != len(joined_after):
+        print("  ✗ the Traditional text changed length — refusing")
+        return 1
+    if len(report) != EXPECTED_TOTAL:
+        print(f"  ✗ {len(report)} substitutions against {EXPECTED_TOTAL} "
+              f"expected — refusing")
+        return 1
+    for wrong, _, _, _ in RULES:
+        if wrong in joined_after:
+            print(f"  ✗ {wrong} survives the repair — refusing")
+            return 1
+    for p, d in docs.items():
+        now = [(k, f, e[f]) for k, e in d.items() for f in ("glossZh", "defZh")
+               if f in e]
+        if now != simplified_before[p]:
+            print(f"  ✗ {p.name}: a Simplified field changed — refusing")
+            return 1
+
+    print(f"  {len(report)} substitutions across {changed} fields "
+          f"in {len(FILES)} files")
+    for wrong, right, expected, why in RULES:
+        print(f"    {wrong} → {right}   ×{expected:<2}  {why}")
+
+    if args.apply:
+        for p, d in docs.items():
+            p.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n",
+                         encoding="utf-8")
+            print(f"  written → {p.relative_to(ROOT)}")
+    else:
+        print("  dry run — nothing written")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

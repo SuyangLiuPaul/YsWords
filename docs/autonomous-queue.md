@@ -1005,18 +1005,20 @@ and quoted.**
       只/隻, 斗/鬥, 扎/紮, 占/佔, 云/雲, 岳/嶽, 征/徵, 游/遊, 布/佈, 范/範,
       咸/鹹, 困/睏, 折/摺, 钟/鐘, 术/術, 虫/蟲, 向/嚮, 丑/醜. 岳父/岳母 (×38)
       and 掙扎 are correctly left alone by opencc, and 谷→穀 is right in all 78.
-      **42 readings came out wrong**, and `tools/repair_strongs_tw_ambiguous.py`
-      already exists (untracked, dry-run only, guards + MUST_SURVIVE list) with
-      the full rule table: the eight rows above plus 亞多尼乾 ×2, 亞乾 ×3,
+      **18 rules covering 39 substitutions across 37 fields came out wrong**, and
+      `tools/repair_strongs_tw_ambiguous.py` is committed unapplied (dry-run
+      verified, guards + MUST_SURVIVE list) with the full rule table: the eight
+      rows above plus 亞多尼乾 ×2, 亞乾 ×3,
       伯・哈幹 ×1, 雅幹 ×1, 變幹 ×2, 被髮出 ×1 (H7972 — 髮 is hair), 徵服 ×1
       (H8478), 莫丘裏 ×2 (G2060, Mercurius — a name, so 里), 睏倦 ×4 and
       疲睏 ×2 (睏 is drowsiness, 困 is weariness).
 
-      **One rule in that script is REFUTED and must be deleted before it is
-      run:** 裏海 → 里海 ×4. 裏海/裡海 IS the standard Traditional name for the
-      Caspian ("inner sea"); the safer edit is the opposite direction, and
-      G3934 already reads 里海. Left in the file only so the next iteration
-      sees why it is wrong. **43 rules minus that one = 42.**
+      **A nineteenth rule was REFUTED and is now commented out in the script,
+      not deleted:** 裏海 → 里海 ×4. 裏海/裡海 IS the standard Traditional name
+      for the Caspian, the "inner sea"; the file already sets 裏 273 times and
+      G3934 already reads 里海, so if anything the edit runs the other way. It
+      stays visible so a later pass does not rediscover and re-add it.
+      **43 substitutions in the first draft, minus those 4, = 39.**
 
       Also found and NOT yet fixed: 闢拉→辟拉 ×7, 併爲→並爲 ×21 + 併成 ×1
       (but keep 合併 ×3 at H6775/G2957), 回覆→回復 at H5025/H8666/G330×2 (keep
