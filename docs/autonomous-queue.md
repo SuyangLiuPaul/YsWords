@@ -113,6 +113,30 @@ and quoted.**
       pins the nine counts and nine reader-visible verses, and fails on
       the pre-fix data.
 
+- [ ] **Two 愈/癒 spin-offs the refuter found, deliberately NOT swept with the
+      verse asset on 2026-08-18 — neither is converter-backed.** Small, and each
+      needs a judgement the 35-substitution instalment did not.
+
+      1. `assets/strongs/hebrew.json` **H6867** — `glossZhTw` and `defZhTw` read
+         「痂, 傷愈的疤」 where the Traditional should be 傷癒. The evidence is
+         internal inconsistency: the same file's Traditional fields write 治癒 for
+         a different entry. **But opencc does NOT convert 傷愈 → 傷癒** (verified),
+         so unlike the verse asset there is no converter oracle behind it and it is
+         an editorial call on 2 fields. `greek.json`, `maps_index.json` and the
+         tagged corpus are clean; this is the only Traditional 愈 in `hebrew.json`.
+      2. `assets/biblexg-v2-tr.json` — 4 Traditional-facing 愈 that are **not**
+         痊愈: 治愈 ×2 (路 8:2, in the text and in a note) and 愈合 ×2 (啟 13:3,
+         13:12). opencc converts both, and the same file writes 癒 26 times, so it
+         is internally inconsistent by the same argument as H6867 — but this is
+         **梁家鏗's own translation**, not ours to normalise. The same 4 strings are
+         duplicated in `ljk-nt-bible-webapp/public/resources/tw-lk.json` and
+         `tw-rev.json`.
+
+      Also recorded: `build-cn/` and `build-wasm/` still hold a stale
+      `biblexg-tr.json` (23 愈 / 0 癒) with no source counterpart — gitignored build
+      output, so it needs a rebuild rather than an edit, but do not mistake it for a
+      live asset.
+
 - [ ] **The one-to-many Simplified leftovers — 24 classes still open, one
       character at a time.** The rest of the same defect. Every enumerated
       class is now done: ~~**幹 319**~~ **DONE — 199 were dry and now read 乾,
@@ -164,12 +188,61 @@ and quoted.**
       they are whole-class 1:1 replacements rather than a split. ~~Next up: 冑/胄 26
       (甲冑 is a helmet, 胄 is a descendant)~~ — **冑/胄 turned out NOT to be a
       converter hole at all; see the block below, it is now the user's call.**
-      Next up: 愈/癒 35 — a fifth partition the
-      refuter turned up on 2026-08-18 that the inventory table above missed, because
+      ~~Next up: 愈/癒 35~~ **DONE 2026-08-18 — see the block below.** A fifth
+      partition the refuter turned up that the inventory table above missed, because
       愈 is a real Traditional character in 愈來愈 and so is not a hole by the
-      "ours holds zero" test. Ours has 35 愈 and **zero** 癒; the witness 35 癒 and
-      **zero** 愈; and all 35 of ours are 痊愈, none 愈來愈, so the class still moves
-      whole. 利未記 15:13 reads 「患漏症的人痊愈了」.
+      "ours holds zero" test.
+
+      **愈/癒 is done — 35 substitutions, 2026-08-18.** The fifth true partition,
+      and every healing in the Traditional Bible was misspelt: 約翰福音 5:6 read
+      「你要痊愈嗎？」, 馬可福音 5:34 「你的災病痊愈了」, 利未記 15:13
+      「患漏症的人痊愈了」. 癒 is the healing (痊癒/治癒/癒合); the mainland
+      standard merged it onto 愈, which in Traditional is only the comparative
+      (愈來愈, 愈加, 每況愈下).
+
+      **The lesson is about how it was FOUND, not how it was fixed.** The inventory
+      diff that generated the table above lists characters our asset holds **zero**
+      of — and 愈/癒 never appeared in it, because we hold 35 愈. The hole ran the
+      other way: we held zero 癒. **A merged Simplified pair only shows up in that
+      diff when the surviving form is the one we lack.** When the enumerated rows
+      run out, the remaining exposure is exactly this shape, so the next sweep
+      should diff on characters the *witness* holds zero of as well.
+
+      Ours held 35 愈 and **ZERO** 癒; the witness 35 癒 and **ZERO** 愈, agreeing
+      count-for-count on all 31,102 verses with **zero** mismatches, swept in both
+      directions. But "the witness holds none of our form" was **not sufficient
+      here**, unlike 症 or 凌: 愈 is a live Traditional character, so one 愈來愈
+      among the 35 would have made this a split and a blind replace would have
+      printed 愈來癒. It isn't — all 35 are preceded by 痊 and by nothing else, and
+      the corpus contains no 愈來愈/愈加/愈發/每況愈下 at all. Both facts are
+      enforced by the tool and pinned by the test.
+
+      Corroborated by a **published** 新標點和合本 Traditional (ebible `cmn-cu89t`):
+      34 癒, **zero** 愈, every one 痊癒, reconciling book for book with our 35 —
+      the single difference is 約翰福音 5:4, the bracketed angel-troubling-the-water
+      verse, which we carry in 〔〕 and that edition omits. 梁家鏗's independent
+      Traditional NT writes 痊癒 in all 26 of its healings. opencc s2t/s2tw/s2twp
+      render 痊愈 → 痊癒 while correctly keeping 愈來愈. No published Traditional
+      和合本 printing 痊愈 could be found, so unlike 冑/胄 there is no split and no
+      question for the user. `tools/repair_tr_recovery_glyph.py` (re-runnable,
+      idempotent); `test/traditional_recovery_glyph_test.dart` fails three ways on
+      the pre-fix data.
+
+      **The refuter broke two of my claims and both corrections are worth keeping.**
+      (1) I was going to write that 新譯本 (blob `57c4686`, 37 痊愈 / zero 癒) is a
+      defective conversion to be explained away. It is a conversion, but **新譯本
+      genuinely prints 痊愈** in published Traditional e-texts (信望愛 `ncv`,
+      cnbible CNV) — it is a different translation with a different house style, and
+      it is evidence neither for nor against 和合本. Do not cite it either way.
+      (2) My scope claim was too wide — see the two spin-off items below. It also
+      noted that `cmn-cu89t` words the comparative 越發 and never 愈發, so its
+      zero-愈 does **not** independently prove it would preserve an adverbial 愈;
+      that weight rests on our own recount, not on that edition.
+
+      **Scope was narrower than the fix wanted to be.** 愈 is correct elsewhere and a
+      sweep would have corrupted it: `assets/misconceptions.json` sets zh-Hant
+      「強者愈強、弱者愈弱」 and the zh-TW sermons have 每況愈下 in `CP18.txt`. Both
+      are now pinned by the test.
 
       **冑/胄 is NOT a converter hole — 26 substitutions NOT applied, and the
       decision belongs to the user. 2026-08-18.** The first row of this table to
