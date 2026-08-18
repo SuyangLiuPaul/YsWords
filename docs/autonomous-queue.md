@@ -16,6 +16,32 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+> ### ▶ DO THE FEATURED-VIDEO SERIES FIRST — user, 2026-08-19
+>
+> **Before anything in P0.** The user has asked about it three times
+> and it has not been started; meanwhile P0 keeps growing faster than
+> it is cleared (52 → 62 open, P0 22 → 32 in a day), so "after P0" was
+> becoming "never".
+>
+> The item is in P2: **"Turn the featured video into a SERIES section"**.
+> Take it now, in the staged way that item describes.
+>
+> **What is ready:** the model change (series → episodes → tracks),
+> 獨一真神 staying as one series, and Standing at the Cross with all 20
+> YouTube IDs already recorded in the item.
+>
+> **What is not:** the Shema series' IDs — that host refuses datacenter
+> IPs and the user has to supply them. **Ship without Shema rather than
+> waiting for it**; the section is built to hold N series, so adding a
+> third later is data, not code.
+>
+> The user accepted the trade explicitly: the P0 text defects are real,
+> but they have been wrong in shipped versions for years, and two more
+> days will not make them worse.
+>
+> **When the series section is shipped and deployed, this banner is
+> spent — delete it and go back to the order below.**
+
 > ### ⏸ THE TRADITIONAL GLYPH WORK IS DEFERRED TO LAST — user, 2026-08-18
 >
 > "fantizi 放在最后 do others first".
