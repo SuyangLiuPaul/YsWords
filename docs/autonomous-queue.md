@@ -16,6 +16,35 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
+> ### ⏸ THE TRADITIONAL GLYPH WORK IS DEFERRED TO LAST — user, 2026-08-18
+>
+> "fantizi 放在最后 do others first".
+>
+> **Do not take another 繁體 one-to-many / converter-hole item until
+> every other actionable item in this file is done** — the rest of P0,
+> then P1, then P2. When nothing else is actionable, come back here and
+> resume where it left off.
+>
+> **This overrides the standing "scripture accuracy first" rule for
+> this class only, at the request of the person who set that rule.**
+> Everything else keeps its priority: a verse that renders blank, a
+> citation that opens the wrong passage, an interface naming one
+> translation while showing another — those are still P0 and still lead.
+>
+> **Why they asked, and it is a fair call.** The class has not been
+> converging: P0 went from 12 items to 22 in a day, because each glyph
+> fixed reveals two more, and nobody — including this loop — can say
+> how many classes remain. It is real work on real defects, but it was
+> crowding out everything the user actually reports from their phone.
+>
+> **What is already done stays done.** 隻 髮 恆 凌 症 卜 干/乾 崙 鹹
+> 姪 鹼 and the rest are shipped and pinned by tests; this is a pause on
+> continuing, not a revert.
+>
+> **Resume trigger:** the user says so, or the queue has nothing else
+> actionable. If you reach the second case, say so plainly in the
+> report rather than quietly restarting the glyph work.
+
 - [x] **The Traditional Bible had no 隻 in it — 548 measure words printed
       in the Simplified form.** 以賽亞書 2:16 read 「他施的船只」;
       馬太福音 18:12 read 「一百只羊」; 「兩只眼」, 「那幾只羊」,
