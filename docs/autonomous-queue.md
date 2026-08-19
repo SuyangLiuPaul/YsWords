@@ -3742,11 +3742,45 @@ has never seen this repo.
       actually scans for — Old/New, the five divisions, book length —
       before moving pixels.
 
-- [ ] **macOS: `No Overlay widget found` on the Songs page.**
-      v1.4.75, 800x600, from `_OverlayPortalState.build`. An
-      OverlayPortal is being built outside any Overlay — most likely a
-      tooltip or a menu anchored above `MaterialApp`'s navigator.
-      Reproducible on a small macOS window, so size it down to find it.
+- [ ] **`No Overlay widget found` — an OverlayPortal rebuilding as its
+      route is popped.** Two reports, and the second corrects the first.
+
+      | | report 1 | report 2 |
+      |---|---|---|
+      | when | 2026-08-17 | 2026-08-19 |
+      | version | 1.4.75 | 1.4.113 |
+      | platform | macOS native | **web, Windows** |
+      | window | 800x600 | **1920x1080** |
+      | route | /SongsPage | /minified:ag2 |
+      | reporter | maintainer | **a different user** |
+
+      **The first write-up was wrong and said so confidently**: it
+      called this macOS-specific and small-window-specific, and told
+      whoever picked it up to "size it down to find it". Two platforms,
+      two window sizes and two routes later, neither is true. Do not
+      spend time on window geometry.
+
+      **What both reports actually share is navigation timing.** Each
+      arrives after a burst of push/pop, with `nav:pop` as the last
+      breadcrumb before the throw. The web stack bears that out — the
+      repeated `La.ld` / `La.H0` frames are element-tree walking, i.e.
+      a rebuild or deactivate — so the shape is: **an OverlayPortal is
+      rebuilt after the Overlay it belongs to has gone**, which is what
+      popping a route does to everything inside it.
+
+      Flutter's `Tooltip` is built on OverlayPortal, and the app has
+      seven of them — `bible_reading_pane.dart:6855` and `:7156`,
+      `book_chapter_picker.dart:324` `:331` `:863`,
+      `family_tree_page.dart:1595`,
+      `word_distribution_table.dart:658`. A tooltip inside a sheet or
+      dialog that is dismissed while its timer or hover state is still
+      live is the first thing to check; the breadcrumbs show
+      `minified:ads<void>` being pushed and popped, which is the shape
+      of a modal sheet.
+
+      **Reproduce by popping, not by resizing:** open a sheet
+      containing a tooltip, hover or long-press to arm it, and dismiss
+      the sheet in the same moment.
 
 - [ ] **Notes need formatting.**
       User, 2026-08-16: "notes要加format之类的可以做？在chapter里面做笔记的
