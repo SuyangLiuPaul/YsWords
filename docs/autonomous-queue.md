@@ -16,32 +16,6 @@ and quoted.**
 
 ## P0 — scripture accuracy
 
-> ### ▶ DO THE FEATURED-VIDEO SERIES FIRST — user, 2026-08-19
->
-> **Before anything in P0.** The user has asked about it three times
-> and it has not been started; meanwhile P0 keeps growing faster than
-> it is cleared (52 → 62 open, P0 22 → 32 in a day), so "after P0" was
-> becoming "never".
->
-> The item is in P2: **"Turn the featured video into a SERIES section"**.
-> Take it now, in the staged way that item describes.
->
-> **What is ready:** the model change (series → episodes → tracks),
-> 獨一真神 staying as one series, and Standing at the Cross with all 20
-> YouTube IDs already recorded in the item.
->
-> **What is not:** the Shema series' IDs — that host refuses datacenter
-> IPs and the user has to supply them. **Ship without Shema rather than
-> waiting for it**; the section is built to hold N series, so adding a
-> third later is data, not code.
->
-> The user accepted the trade explicitly: the P0 text defects are real,
-> but they have been wrong in shipped versions for years, and two more
-> days will not make them worse.
->
-> **When the series section is shipped and deployed, this banner is
-> spent — delete it and go back to the order below.**
-
 > ### ⏸ THE TRADITIONAL GLYPH WORK IS DEFERRED TO LAST — user, 2026-08-18
 >
 > "fantizi 放在最后 do others first".
@@ -3880,6 +3854,64 @@ has never seen this repo.
          a crash report — it is an expected condition on a filtered
          network, and burying real crashes under it is the second cost.
 
+- [x] **Turn the featured video into a SERIES section — SHIPPED
+      2026-08-19 (v1.4.110), and the ID table below was WRONG for all
+      ten rows.** The section is now `series[] → episodes[] → tracks[]`
+      with two series: 在十字架下 (10 parts, English + Cantonese) and
+      獨一真神 (1 part, English + Cantonese + Mandarin). All three
+      recordings of the latter moved to YouTube as decided, so nothing
+      streams from the 238 MB media site any more. Shema is not in yet —
+      see the follow-up below — which is the trade the banner asked for.
+
+      **The defect this caught is the reason the item said "verify the
+      pairing rather than trusting this table".** The table further down
+      was built by associating each embed with its NEAREST caption, and
+      on that page **captions FOLLOW their iframe**, not precede it — so
+      every row was one place out. Shipping it would have put an
+      "English" button on the Cantonese recording for all ten parts, and
+      would have filed `J8bBBHIuxjI` — the three-hour full-series
+      compilation — as "part 10, Chinese".
+
+      **Settled on the publisher's own titles, not on page layout.**
+      `youtube.com/oembed` returns each video's title, and the channel
+      states the language outright: `02 Standing at the Cross — …` vs
+      `02 在十字架下：十堂人生課！第二課：…`, with a leading two-digit
+      number that matches the part in both languages.
+
+      **The refuter added a fourth line of evidence and could not break
+      it.** YouTube's own ASR caption track resolves to `a.en` for all
+      ten English ids and `a.yue` (Cantonese, not Mandarin) for nine of
+      the ten Chinese ones; a pulled auto-caption for `4WladhGvkAM` is
+      unmistakably Cantonese (嘅×383, 佢×194, 係×182, 喺×97, 唔×55). All
+      ten Chinese ids carry the keyword `粵語講道` and none carries
+      普通話/國語. **One soft spot, recorded rather than papered over:**
+      `h7hE0XB3SWs` (part 1 Cantonese) has no caption track at all and
+      is DRM-flagged, so its "Cantonese" label rests on the keyword tag
+      and on consistency with its nine siblings. Thirty seconds of
+      listening would close it.
+
+      `test/video_series_test.dart` pins the verified pairing id by id,
+      so re-deriving it from page layout fails the suite rather than
+      shipping.
+
+      **Playback: an iframe on web, a link-out on the five native
+      targets, and no new dependency.** `youtube_player_iframe` and
+      every webview-backed alternative cover Android/iOS/macOS and stop
+      — this app also ships Windows and Linux, and the repo has already
+      chosen six-target packages over better-on-three ones once
+      (audioplayers over just_audio). Flutter web can hand a real
+      `<iframe>` to the compositor with no package at all, so web embeds
+      and native opens YouTube. In-app native playback is queued below
+      as its own decision.
+
+      Subtitles are gone from the app as decided, and `assets/subtitles/`
+      + `scripts/align_subtitles.py` + `SubtitleTrack` and its test all
+      stay in the repo — just out of the bundle. The .vtt timings came
+      from Whisper and their words from the church's .docx; that is a
+      rebuild, not a re-run.
+
+<details><summary>the original write-up, including the table that was wrong</summary>
+
 - [ ] **Turn the featured video into a SERIES section — "Standing at
       the Cross / 在十字架下, A 10-Part Journey / 人生十堂课".**
       User, 2026-08-12: "那个featured video现有的删掉变成这里面的video，
@@ -4085,6 +4117,68 @@ has never seen this repo.
       not render a list of one; and the existing position-preserving
       language switch is the feature most worth carrying over — it is
       why tracks live under an episode rather than beside it.
+
+</details>
+
+- [ ] **Add the Shema series to the video section — needs three answers
+      first, none of which may be guessed.** The section holds N series,
+      so this is data plus a title fetch, not code. All 29 IDs and the
+      four playlist IDs are in the write-up above. The three open
+      questions are unchanged:
+      1. the 4 compilations are each a whole part in one video, so
+         listing them as episodes makes a 7-part series look like 8 —
+         separate "watch it all" affordance, or omit?
+      2. Part 4's own sub-numbering reads "(15) (16) **(12)** (18)"
+         where the sequence wants 17. Show the # number, which is
+         consistent, and let the user decide about the sub-number.
+      3. numbering starts at #7; whether #1–#6 belong in the series is
+         the user's call.
+      **The same lesson applies here:** take each video's language and
+      part number from its YouTube title via oEmbed, never from where it
+      sits on a page.
+
+- [ ] **在十字架下 has two full-series compilations — ask whether to
+      offer them.** `J8bBBHIuxjI` (English) and `QXU-gazdgN0` (Chinese)
+      are the whole 10 parts in one video each. Deliberately excluded
+      from the episode list and pinned as excluded by the test, because
+      an 11th row in a "10-Part Journey" is the app contradicting its
+      own title. A "watch the whole series" button is the obvious home
+      for them if the user wants one.
+
+- [ ] **The five Good Friday / Easter songs on the same page are not in
+      the app.** `4ImxTDU5J0k` `xrHR1ybo1J0` `s3-qcRZrfZk` (Standing at
+      the Cross songs 1–3) and `YTp0Z_TYOns` `4GBO6CWR6go` (Easter songs
+      1–2), all composed by Rosablanca Suen, all with full bilingual
+      lyrics on the church page. They are songs, and this app has a
+      Songs section — so the question is whether they belong there
+      rather than in the video series. Ask before placing them.
+
+- [ ] **Each 在十字架下 episode has scripture references the app does not
+      show.** The church's page prints them under every part — Lk 23:34,
+      Mk 15:30 + Mt 27:42, Mt 27:40 + Mk 15:32 + Lk 23:35/37/39, Lk
+      23:42-43, Ps 22:8, Jn 19:26-27, Mk 15:34, Jn 19:28/30, Lk 23:46.
+      In a Bible app these should be tappable and open the passage.
+      **Transcribe them from the page and verify each against our own
+      text before shipping** — a citation that opens the wrong passage
+      is P0, and this is the exact shape of that defect.
+
+- [ ] **Native targets link out to YouTube instead of playing in-app.**
+      Web embeds a real `<iframe>` with no package; iOS, Android, macOS,
+      Windows and Linux open YouTube externally. `youtube_player_iframe`
+      and the webview-backed alternatives would cover Android/iOS/macOS
+      and leave Windows + Linux with nothing, which is the trade the
+      repo already refused once when it picked audioplayers over
+      just_audio. Options if the user wants in-app native playback:
+      accept a webview on three targets and keep the link-out on the
+      other two, or leave it as is. A user decision, not an inference.
+
+- [ ] **Position-preserving language switch is not carried over.** The
+      self-hosted player kept your place when you switched language;
+      the YouTube embed re-arms the poster instead. `enablejsapi` is
+      already on the iframe, so asking the player for its current time
+      and passing it as `?start=` is the way back to it — worth doing,
+      but it is web-only and needs the native decision above settled
+      first.
 
 - [x] **Rename 獨一真神 to "Featured video"** — folded into the series
       item above, 2026-08-12; doing it alone would be work thrown away.

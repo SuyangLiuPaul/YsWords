@@ -30,7 +30,7 @@ import 'package:yswords/pages/feedback_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/songs_page.dart';
-import 'package:yswords/pages/one_god_page.dart';
+import 'package:yswords/pages/videos_page.dart';
 import 'package:yswords/pages/misconceptions_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
@@ -681,12 +681,13 @@ class _DashboardPageState extends State<DashboardPage> {
             const SizedBox(height: 8),
             _FeaturedCard(
               icon: Icons.play_circle_outline_rounded,
-              title: uiStrings['oneGodTitle']?[locale] ?? 'The Only True God',
-              subtitle: uiStrings['oneGodSubtitle']?[locale] ??
-                  'Video teaching · English / Cantonese / Mandarin',
+              title: uiStrings['videosTitle']?[locale] ?? 'Featured videos',
+              subtitle: uiStrings['videosSubtitle']?[locale] ??
+                  'Video teaching from the church · English / Cantonese / '
+                      'Mandarin',
               scheme: scheme,
               settings: settings,
-              onTap: () => pushPage(const OneGodPage()),
+              onTap: () => pushPage(const VideosPage()),
             ),
             const SizedBox(height: 8),
             _FeaturedCard(
@@ -828,9 +829,9 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                   _LinkTile(
                     icon: Icons.play_circle_outline_rounded,
-                    label: uiStrings['oneGodTitle']?[locale] ??
-                        'The Only True God',
-                    onTap: () => pushPage(const OneGodPage()),
+                    label: uiStrings['videosTitle']?[locale] ??
+                        'Featured videos',
+                    onTap: () => pushPage(const VideosPage()),
                   ),
                 ],
                 // 2026-05-07 (v12): feedback tile -- mailto-driven

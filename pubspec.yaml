@@ -1,7 +1,7 @@
 name: yswords
 description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.4.109
+version: 1.4.110
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -196,9 +196,15 @@ flutter:
     # which copies the published dataset — NOT with sync_songs.py,
     # which would re-scrape all four church sites a second time.
     - assets/songs.json
-    - assets/onegod.json
+    - assets/videos.json
     - assets/misconceptions.json
-    - assets/subtitles/01/
+    # assets/subtitles/01/ and assets/onegod.json are deliberately NOT
+    # bundled since 2026-08-19: 獨一真神 streams from YouTube with
+    # YouTube's own captions, so nothing loads either at runtime. Both
+    # stay in the repo — the .vtt timings came from Whisper and their
+    # words from the church's .docx via scripts/align_subtitles.py, so
+    # regenerating them is a rebuild, not a re-run. Dropping the feature
+    # is not a reason to destroy the data.
     - assets/sermons/en/
     - assets/sermons/zh-CN/
     - assets/sermons/zh-TW/

@@ -5691,34 +5691,32 @@ const uiStrings = {
     'en': 'Thank you. It will be checked against scripture before it is '
         'added.',
   },
+  // The SECTION's own key. Deliberately not `oneGodTitle`: that is the
+  // name of one series inside the section, and it is still used as
+  // such.
+  'videosTitle': {
+    'zh-Hans': '影片系列',
+    'zh-Hant': '影片系列',
+    'en': 'Featured videos',
+  },
+  'videosSubtitle': {
+    'zh-Hans': '教会影片教导 · 英语／广东话／普通话',
+    'zh-Hant': '教會影片教導 · 英語／廣東話／普通話',
+    'en': 'Video teaching from the church · English / Cantonese / Mandarin',
+  },
+  'videosWatchOnYouTube': {
+    'zh-Hans': '在 YouTube 观看',
+    'zh-Hant': '在 YouTube 觀看',
+    'en': 'Watch on YouTube',
+  },
   'oneGodTitle': {
     'zh-Hans': '独一真神',
     'zh-Hant': '獨一真神',
     'en': 'The Only True God',
   },
-  'oneGodSubtitle': {
-    'zh-Hans': '影片教导 · 英语／广东话／普通话',
-    'zh-Hant': '影片教導 · 英語／廣東話／普通話',
-    'en': 'Video teaching · English / Cantonese / Mandarin',
-  },
   'oneGodLangEn': {'zh-Hans': '英语', 'zh-Hant': '英語', 'en': 'English'},
   'oneGodLangYue': {'zh-Hans': '广东话', 'zh-Hant': '廣東話', 'en': 'Cantonese'},
   'oneGodLangCmn': {'zh-Hans': '普通话', 'zh-Hant': '普通話', 'en': 'Mandarin'},
-  'oneGodSubOff': {'zh-Hans': '关闭', 'zh-Hant': '關閉', 'en': 'Off'},
-  'oneGodSubHant': {'zh-Hans': '繁体', 'zh-Hant': '繁體', 'en': 'Traditional'},
-  'oneGodSubHans': {'zh-Hans': '简体', 'zh-Hant': '簡體', 'en': 'Simplified'},
-  'oneGodSubEn': {'zh-Hans': '英语', 'zh-Hant': '英語', 'en': 'English'},
-  'oneGodTranscript': {
-    'zh-Hans': '讲稿全文',
-    'zh-Hant': '講稿全文',
-    'en': 'Transcript',
-  },
-  'oneGodTranscriptNote': {
-    'zh-Hans': '教导的全文。它不会跟着影片走 —— 原稿没有时间轴。',
-    'zh-Hant': '教導的全文。它不會跟著影片走 —— 原稿沒有時間軸。',
-    'en': 'Full text of the teaching. It does not follow the video — the '
-        'source document carries no timings.',
-  },
   'oneGodCredit': {
     'zh-Hans': '基督门徒福音会',
     'zh-Hant': '基督門徒福音會',

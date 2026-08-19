@@ -1,0 +1,172 @@
+{
+  "_meta": {
+    "generatedAt": "2026-08-19T00:00:00Z",
+    "source": "Christian Disciples Church — Sunday Gospel Channel on YouTube",
+    "note": "Every recording is a YouTube video id. Nothing here is self-hosted any more, so the app carries no media and no subtitle files: YouTube supplies its own captions where they exist.",
+    "pairingEvidence": "The language of each id was taken from YouTube's own title via oEmbed, NOT from the position of the embed on the church's page. Reading the page's layout put every Standing-at-the-Cross row one place out, which would have offered 'English' and played Cantonese.",
+    "chineseTitles": "Chinese titles are stored once, under 'zh', exactly as the church wrote them. They are deliberately NOT converted between Simplified and Traditional — this is someone else's copy, and a converted glyph would be our word, not theirs."
+  },
+  "series": [
+    {
+      "id": "cross",
+      "titles": {
+        "en": "Standing at the Cross",
+        "zh": "在十字架下"
+      },
+      "taglines": {
+        "en": "A 10-Part Journey",
+        "zh": "人生十堂课"
+      },
+      "creditKey": "oneGodCredit",
+      "episodes": [
+        {
+          "id": "01",
+          "number": 1,
+          "titles": {
+            "en": "In that moment, where are you?",
+            "zh": "那一刻，你在哪裡？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "1OIZE4HnheE"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "h7hE0XB3SWs"}
+          ]
+        },
+        {
+          "id": "02",
+          "number": 2,
+          "titles": {
+            "en": "What does Jesus' crucifixion have to do with me?",
+            "zh": "耶稣被钉死，和我有什么关系？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "Voc7M_I1YJw"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "4WladhGvkAM"}
+          ]
+        },
+        {
+          "id": "03",
+          "number": 3,
+          "titles": {
+            "en": "Why suffer on the cross?",
+            "zh": "既耶稣可当下脱身，为何甘愿在十架受难？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "omzJLl83zIo"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "GgUiSRBMgj4"}
+          ]
+        },
+        {
+          "id": "04",
+          "number": 4,
+          "titles": {
+            "en": "What is the sting in the temptation on the cross?",
+            "zh": "十字架上最后的试探，究竟其毒钩何在？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "Xee1AhOkiDY"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "xXC3IYb128Q"}
+          ]
+        },
+        {
+          "id": "05",
+          "number": 5,
+          "titles": {
+            "en": "Is our hope anchored in the Messiah and his coming Kingdom?",
+            "zh": "我们的盼望是否在弥赛亚和他的国度？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "-JgvZGZ8zmc"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "zCyNjjWhkMg"}
+          ]
+        },
+        {
+          "id": "06",
+          "number": 6,
+          "titles": {
+            "en": "Is God silent in the darkness of suffering?",
+            "zh": "在苦难的黑暗里，神真的沉默了吗？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "kuZ8qcAm7UI"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "483CYa3BjXg"}
+          ]
+        },
+        {
+          "id": "07",
+          "number": 7,
+          "titles": {
+            "en": "Would Jesus entrust a person to your care?",
+            "zh": "耶稣会把一个人托付给你照顾吗？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "ZzXZmSmMtWs"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "OPzyLFP-TMA"}
+          ]
+        },
+        {
+          "id": "08",
+          "number": 8,
+          "titles": {
+            "en": "Would God abandon me?",
+            "zh": "神会离弃我吗？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "Slng6u-YMsM"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "SjQCm4m-rmk"}
+          ]
+        },
+        {
+          "id": "09",
+          "number": 9,
+          "titles": {
+            "en": "It is finished. Will you take up your cross to follow Jesus?",
+            "zh": "成了！你愿意背起你的十字架来跟随耶稣吗？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "5Z1upfO2Ff0"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "OSKe5G6BW8c"}
+          ]
+        },
+        {
+          "id": "10",
+          "number": 10,
+          "titles": {
+            "en": "Father, into your hands I commit my spirit. What happens after we die?",
+            "zh": "父啊，我將我的靈交在你手中。人死后会怎样？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "bIJXg7dew2g"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "CincIrfTfDs"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "onegod",
+      "titles": {
+        "en": "The Only True God",
+        "zh": "獨一真神"
+      },
+      "taglines": {
+        "en": "Who is the only true God?",
+        "zh": "誰是獨一的真神？"
+      },
+      "creditKey": "oneGodCredit",
+      "episodes": [
+        {
+          "id": "01",
+          "number": 1,
+          "titles": {
+            "en": "Why Jesus said the Father is the only true God",
+            "zh": "誰是獨一真神？"
+          },
+          "tracks": [
+            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "S7VEdxrWcX8"},
+            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "2L4LZ1BNu3Q"},
+            {"lang": "cmn", "labelKey": "oneGodLangCmn", "youtubeId": "xqau2AqNNno"}
+          ]
+        }
+      ]
+    }
+  ]
+}
