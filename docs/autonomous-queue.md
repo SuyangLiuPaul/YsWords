@@ -280,12 +280,87 @@ and quoted.**
       set of `tools/audit_tagged_running_text.py` so it can never be swallowed
       as explained noise.
 
-- [ ] **那鴻書 3:4 attaches the 「原文是賣」 note to the wrong 誘惑.** Ours
-      prints 「藉淫行誘惑\<note: 原文是賣\>列國，用邪術誘惑多族」; both
-      witnesses and the print put the note on the SECOND one, 「用邪術誘惑
-      （原文是賣）多族」. The note is telling the reader which Hebrew word
-      underlies which Chinese word, so on the wrong verb it states something
-      untrue about the text. Found 2026-08-19 in the dropped-character pass.
+- [ ] **那鴻書 3:4 — the 「原文是賣」 note sits on a different 誘惑 than three
+      witnesses use, and NOTHING SETTLES IT. Needs the user. Do not move it.**
+      Taken 2026-08-19 as a wrong-attachment defect; it is not one. Recorded
+      here with both positions because the loop and its refuter disagreed and
+      neither could close it from the data.
+
+      **The premise the item was filed on was wrong.** It said "the print puts
+      the note on the SECOND 誘惑". The printed 1919 does not put it on either:
+      it sets it at the END of the verse and NAMES the word —
+      「…用邪術誘惑多族{{\*|誘惑原文作賣}}」 — and 誘惑 occurs twice, so the
+      printed note covers both. It cannot arbitrate an occurrence.
+
+      | | reads |
+      |---|---|
+      | ours + our tagged corpus | note after the **first** 誘惑 |
+      | SeekSparks `cuvs-plus.json` | after the **second** |
+      | git blob `7a2dc43` (Traditional) | after the **second** |
+      | Yahwehdehua `CUV_LEB/34_那鸿书.pdf` | after the **second** |
+      | printed 1919 | verse-final, worded 誘惑原文作賣 |
+
+      **Neither placement is false**, which is why this is not P0-urgent. The
+      Hebrew has one gapped הַמֹּכֶרֶת (H4376) governing both objects —
+      הַמֹּכֶרֶת גּוֹיִם בִּזְנוּנֶיהָ וּמִשְׁפָּחוֹת בִּכְשָׁפֶיהָ — so both
+      Chinese 誘惑 render the same verb and 賣 is a true gloss of either.
+
+      **Both of the arguments the loop first reached for were broken by the
+      refuter, and they are recorded so nobody rebuilds them.** (1) "Our tagged
+      corpus independently agrees" — it does not independently: the note text
+      sits INSIDE the run it tags (`诱惑〔原文是"卖"` → H4376), so its
+      segmentation inherited the placement it is being cited to support.
+      (2) "The new audit clears it, 0 of 157" — circular, because the adjacency
+      test it used is satisfied by EITHER occurrence of a word that appears
+      twice. The audit was given a second, discriminating pass because of this.
+
+      **What argues for moving, now that it is measured:** of the 18 printed
+      notes naming a word the verse uses more than once, ours follows the same
+      occurrence as the print in 17. This is the only one. And in the three
+      other verse-final printed notes of that kind — 結 33:6, 結 33:8,
+      林後 3:6 — our edition attaches to the LAST occurrence, so this verse
+      breaks our own habit as well as the three witnesses.
+
+      **What argues for leaving it:** moving a note is writing into the
+      apparatus on the strength of a house style, when the note is true where
+      it is, and the one witness that shares neither of the three's lineage
+      (the print) declines to answer. `test/note_attachment_test.dart` pins the
+      current reading so it cannot drift while it waits;
+      `tools/audit_note_placement.py` holds it in UNSETTLED.
+
+      **The question for the user is one line:** should a note the print sets
+      at the end of a verse be attached to the first or the last of a repeated
+      word? Answering it settles this verse and any future one.
+
+- [x] **Audit WHICH WORD every translator's note is attached to, against the
+      printed 1919 — a check nothing in this repo had ever run.** Done
+      2026-08-19, `tools/audit_note_placement.py`. Every other audit strips
+      notes out before comparing the running text, so a note that moved was
+      invisible to all of them, and a note on the wrong word states something
+      untrue while reading perfectly plausibly.
+
+      **1,025 printed notes over all 66 books, and the result is clean.** 263
+      name the word they gloss; 157 of those are ones where our copy dropped
+      the name, so attachment is the reader's only cue. **Zero sit on a
+      different word.** Of the 18 naming a word the verse uses twice, 17 follow
+      the same occurrence as the print; the eighteenth is 那鴻書 3:4 above.
+
+      **The ~200 position differences a naive comparison reports are one
+      convention meeting another, not defects.** The print sets its note after
+      the whole phrase and names the word inside it — 「遮羞的{{\*|羞原文作
+      眼}}」; the digital line ours descends from drops the name and puts the
+      note straight after the word — 「遮羞\<note: 原文作眼\>的」. Both sides
+      are folded to Simplified before comparing, because the print sets
+      爲/衞/喫/裏 where this edition sets 為/衛/吃/裡.
+
+- [ ] **37 printed notes are missing from our text entirely, across 35
+      verses.** Found by the audit above. Two of them name their word, so they
+      are pinpointable: 撒迦利亞書 4:7 「殿或作石」 and 撒迦利亞書 8:23
+      「族原文作方言」. Nothing untrue is on screen — this is apparatus the
+      reader does not get, not text that is wrong — so it sits below the
+      accuracy items. Adding a note is writing into the edition, so each one
+      wants the print open beside it; the printed wording is available per
+      verse from the Wikisource cache the audit builds.
 
 - [ ] **哥林多後書 13:5 reads 在你們裏面 where the print reads 在你們心裏.**
       Not a dropped character — a substitution, which is why it was kept out

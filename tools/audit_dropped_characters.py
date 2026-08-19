@@ -47,7 +47,11 @@ EXPLAINED = {
     "030006008": "萬軍之神 precedes the oath in the print and follows it here",
     # A substitution, not a drop — filed separately in the queue.
     "047013005": "ours 在你們裏面 where the print reads 在你們心裏",
-    "034003004": "the 原文是賣 note is attached to the wrong 誘惑",
+    # No character is missing; the 原文是賣 note sits on a different 誘惑 than
+    # the witnesses use. Read 2026-08-19 and NOT settled either way — the
+    # printed 1919 sets the note at the end of the verse, naming the word, so
+    # it does not arbitrate. See UNSETTLED in audit_note_placement.py.
+    "034003004": "the 原文是賣 note sits on the first 誘惑, witnesses the second",
     # The eight transpositions this file used to list are REPAIRED — see
     # `tools/repair_transposed_characters.py`. They are deliberately not
     # re-listed here: if a re-import scrambles their order again, this run
