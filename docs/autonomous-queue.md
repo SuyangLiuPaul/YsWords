@@ -4120,6 +4120,19 @@ has never seen this repo.
 
 </details>
 
+- [ ] **v1.4.110 is committed but NOT deployed — deploy it next
+      iteration.** All four dev/qat sites were on 1.4.109 when the video
+      series landed. The build was skipped deliberately: another session
+      had uncommitted restorations in `assets/cuvs-yhwh.json` and
+      `-tr.json` (士 9:57 咒诅归到**他**们, 士 12:7 士师**六**年, 撒下
+      5:17 非利士**众**人, 斯 6:7 尊荣的**人**), and a web build bakes
+      the working tree in. Those are almost certainly right — but the
+      **last** pass of that same repair class had 2 of 17 proposals
+      broken by the refuter, so shipping them unverified under this
+      version number would be publishing scripture nobody had checked.
+      Deploy once they are committed; both changes then go out together.
+      Nothing is wrong with 1.4.110 itself — analyze clean, 978 tests.
+
 - [ ] **Add the Shema series to the video section — needs three answers
       first, none of which may be guessed.** The section holds N series,
       so this is data plus a title fetch, not code. All 29 IDs and the
