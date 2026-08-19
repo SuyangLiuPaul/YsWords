@@ -3931,18 +3931,26 @@ has never seen this repo.
       for. For a Chinese-reading audience that is the most useful of the
       three.
 
-      **This is not forced, and the item should not pretend it is.**
-      The current player already overlays our VTT against the video's
-      clock; a YouTube embed also exposes its current time, so the same
-      overlay can sit on top of it. Keeping our subtitles is a few
-      hours' work, not a rewrite. The user said "不要做字幕" about the
-      NEW series, where none exist — that is a different question from
-      throwing away five files that already work.
+      **DECIDED 2026-08-19: drop our subtitles. YouTube's captions
+      only.** Asked explicitly, with the cost above on the table, and
+      the answer was to drop them. So:
 
-      **So: ask once before shipping 獨一真神 without subtitles.** If
-      they say drop them, drop them — but leave the `.vtt` files and
-      `scripts/align_subtitles.py` in the repo. They cost nothing at
-      rest and cannot be regenerated without the church's .docx.
+      * No subtitle overlay, no subtitle picker, no Simplified/
+        Traditional choice on any of the three series.
+      * Accepted consequence, stated so nobody re-reports it as a bug:
+        **the Mandarin 獨一真神 video has no captions at all on
+        YouTube**, so it ships without any. That is expected, not a
+        regression to investigate.
+      * **Keep `assets/subtitles/` and `scripts/align_subtitles.py` in
+        the repo regardless.** They cost nothing at rest, they are the
+        only artefact of the Whisper + church-.docx alignment, and they
+        cannot be regenerated without that source. Removing the FEATURE
+        is not a reason to destroy the DATA — if the decision is ever
+        revisited, rebuilding from these is hours; rebuilding without
+        them is not possible.
+      * Remove `subtitles` from the episode model only if it costs
+        nothing to keep. A field that is empty everywhere is cheaper
+        than a migration, and it is where this would come back.
 
       **ASK BEFORE DELETING 獨一真神.** The user said "现有的删掉", but
       the structure they are asking for makes deletion unnecessary — it
