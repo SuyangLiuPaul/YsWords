@@ -204,21 +204,132 @@ and quoted.**
       stays a working regression detector while they wait, and are filed as the
       item below.
 
-- [ ] **26 running-text insertions await the printed 1919 — including
-      尼希米記 1:2's 「我問他們關於…和關於耶路撒冷」.** Enumerated in the
-      `PENDING` dict of `tools/audit_inserted_characters.py`, each with the
-      exact characters we add and the witnesses' reading.
+- [x] **26 running-text insertions — the printed 1919 has now been read against
+      every one, and 20 of them were never insertions. Nothing is deleted.**
+      Done 2026-08-19. The item asked for the clustering to be explained before
+      any verse was touched. The clustering is **still not explained** — see
+      below, the refuter broke the explanation — but the individual verses are,
+      and that is what the accuracy question needed.
 
-      **Do not fix them one at a time until the clustering is explained.**
-      14 of the 26 sit in just two books — 使徒行傳 (6) and 哥林多後書 (8) —
-      which is far more concentrated than 31,102 verses spread over 66 books
-      would give by chance. Several also look like a systematically *later*
-      revision rather than a slip: 「就開始控告他說」 for 「就告他說」,
-      「所需用的東西」 for 「所需用的」, 「發見你們」 for 「見你們」,
-      「也沒有缺少」 for 「也沒有缺」. A whole-book source difference and 26
-      independent typos need different fixes, and guessing wrong writes into
-      scripture. Settle the source question first, then the printed 1919 per
-      verse.
+      **The print agrees with the two witnesses — against us — in 25 of the 26,
+      and that turned out to be the wrong question to ask.** Where our text
+      reads longer it supplies a Chinese word for a word that is **in the
+      Greek** and that the 1919 print leaves implicit. Our own tagged corpus
+      reads **identically** to the running text at 20 of them (ideographs only,
+      notes stripped), and a Strong's number sits on the very characters the
+      witnesses lack. Checked against `assets/originals` verse by verse:
+
+      | ref | ours | the print | renders |
+      |---|---|---|---|
+      | 徒 24:2 | 就**開始控**告他說 | 就告他說 | ἤρξατο κατηγορεῖν — the print drops ἤρξατο |
+      | 徒 28:6 | **等**了多時，**看**見他無害 | 看了多時、見他無害 | προσδοκώντων **and** θεωρούντων; the print renders one |
+      | 林後 8:4 | 在這**服事**供給聖徒 | 在這供給聖徒 | τῆς διακονίας |
+      | 林後 12:20 | **發**見你們 ×2 | 見你們 | εὑρίσκω, both halves |
+      | 林前 15:31 | 在我**們**主基督耶穌裏 | 在我主基督耶穌裏 | τῷ Κυρίῳ **ἡμῶν** |
+      | 林後 8:23 | 論到**我們**那兩位兄弟 | 論到那兩位兄弟 | ἀδελφοὶ **ἡμῶν** |
+      | 亞 8:14 | **我**並不後悔 | 並不後悔 | the 1cs of נִחָמְתִּי |
+
+      **Deleting any of them would have removed a word the Greek actually
+      has.** 創世記 48:17 needed no argument at all: the print reads
+      以法蓮**的**頭上 with us, and the two witnesses are the ones that
+      shortened it.
+
+      **The refuter broke the explanation, and it was worth the call.** The
+      story reached for first — one deliberate revision pass toward the
+      original, densest in 使徒行傳 and 哥林多後書 — does not cover the file.
+      創世記 48:17 is a witness error, and 民數記 11:30 / 21:20 are bare aspect
+      particles (「回到營裏去了」, 「到了摩押地」) that render nothing at all.
+      A rival it could not exclude: **this edition was keyed from a later CUV
+      printing rather than the 1919 sheets**, which predicts the same scattered
+      corrections and the same clustering with no editorial intent required.
+      Nothing in reach distinguishes the two, so both are recorded in the audit
+      and neither is asserted. The clustering question stays open; the "do not
+      delete" conclusion does not depend on it.
+
+      **It also broke two pieces of evidence, and the lesson generalises: read
+      the tag on the RUN, not on the character.** Runs are multi-character and
+      the tagging is alignment-derived, so an inserted character can ride on a
+      neighbour's number and prove nothing. 撒迦利亞書 8:14's 我 sits in a run
+      tagged **H3808 (לֹא)** — H5162 is on 後悔 — so the 1cs of נִחָמְתִּי is a
+      morphological argument, not a tag one. And **馬可福音 6:33 was pulled back
+      out of the cleared list entirely**: 「就從各城的步行」 is not good Chinese,
+      its 城的 run carries G3588 (the article) while πόλεων is **G4172, which
+      appears in no run of that verse at all**. Off by one, not evidence.
+
+      20 moved from `PENDING` to `EXPLAINED` in
+      `tools/audit_inserted_characters.py`, each with the original word it
+      renders, so the audit stays a regression detector without carrying a
+      backlog it cannot clear. Six are still open, and three of those are new
+      findings filed below.
+
+- [ ] **使徒行傳 26:16 reads 「特意向你我顯現」 — a ninth transposition, not an
+      insertion.** Found 2026-08-19 while clearing the 26 above, and it had
+      been mis-filed there since the audit was written. The print, witness A
+      and witness B all read 「**我**特意向你顯現」; **the ideograph multiset of
+      ours and witness A is identical**, so no character is missing or added —
+      our 我 sits after 你 instead of before 特意, and the clause reads
+      「向你我顯現」.
+
+      It belongs with the eight transpositions repaired the same day and wants
+      the same treatment, but it is **not** a copy of them, so it was filed
+      rather than rushed at the end of an iteration:
+
+      * All three of our files carry it, including the tagged corpus.
+      * The tagged corpus holds one run `{"w":"我显现，","s":"G3700"}` — 我 is
+        inside the ὤφθην run. Moving 我 to the front splits that run into
+        我`G3700` … 顯現`G3700`, and `repair_transposed_characters.py`
+        **refuses** to split a run carrying `i`/`g` precisely because two runs
+        with one Strong's number claim the original has the word twice. This
+        run carries `g: [G5681]`. So the repair needs a decision about the run,
+        not just about the characters.
+      * The last pass of this class had 2 of 17 proposals broken by the
+        refuter. Held in `PENDING` so the audit keeps reporting it.
+
+- [ ] **耶利米哀歌 3:1 reads 「因雅偉神忿怒的杖」 and nothing supports the 神.**
+      The print and both witnesses read 耶和華 alone; our own tagged corpus
+      reads 雅偉 alone and tags it **H0 — supplied, no Strong's number**. The
+      Hebrew is אֲנִי הַגֶּבֶר רָאָה עֳנִי בְּשֵׁבֶט עֶבְרָתוֹ: "the rod of
+      **his** wrath", with **no divine name in the verse at all**. So both
+      readings are the translators' supplement, and ours supplements the
+      supplement.
+
+      **Needs the user, because it is a divine-name decision in a divine-name
+      edition** — the one class of change this loop must not make unattended.
+      The question is one line: where CUV supplies 耶和華 for a bare pronoun,
+      should this edition read 雅偉 or 雅偉神?
+
+- [ ] **Three insertions in 尼希米記 1–3, and 尼 1:2's 關於 is the likeliest
+      contamination in the whole corpus.** 1:2 關於 ×2, 2:19 你們, 3:3 他們.
+      The Hebrew has a word each could render — עַל twice, the second אַתֶּם,
+      הֵמָּה — so they are **not deletable**; but unlike the 20 cleared above,
+      our own tagged corpus lacks all three, so four lines of evidence lack
+      them and one has them.
+
+      **關於 occurs in exactly ONE verse of 31,102 — this one.** A modern
+      connective appearing once, at a flagged verse, in a 1919 translation
+      fits contamination better than it fits any revision. Two more things
+      point the same way and neither is conclusive: 尼 3:3's own tagged import
+      lists H1992 (הֵמָּה) among the **untranslated** words, so this edition's
+      own tagging says it does not render it; and 哥林多後書 12:20's 發見 is
+      likewise a hapax where 發現 occurs 12 times.
+
+      **Whoever takes this needs the print open and a decision from the user
+      about 關於 specifically** — removing it is deleting from scripture on a
+      frequency argument, which is not a call this loop should make alone.
+
+- [ ] **馬可福音 6:33 reads 「就從各城的步行」 — the extra 的 lost its only
+      supporting evidence.** Cleared with the 20 above and then pulled back out
+      by the refuter in the same iteration. The print and both witnesses read
+      「就從各城步行」; the tagged corpus reads 城的 with us, so it is two of our
+      files against three witnesses — not enough to delete a character
+      unattended, and the reading is poor Chinese either way.
+
+      **The tag that looked like evidence is an alignment off-by-one:** the run
+      城的 carries G3588, the article, while πόλεων is **G4172 — a number that
+      appears in no run of this verse at all**. The noun was given the
+      article's number. This is the first measured case of that error in the
+      tagged corpus and it is worth knowing how common it is, because every
+      argument this repo has built on a Strong's tag assumes it is not.
 
 - [x] **Audit the running text against our OWN tagged corpus — a third witness
       nothing has ever consulted. Done 2026-08-19: it found SEVEN more verses
