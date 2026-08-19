@@ -3903,6 +3903,47 @@ has never seen this repo.
       while 獨一真神 has Mandarin too, so language buttons have to come
       from the episode, never from a fixed list.
 
+      **獨一真神 MOVES TO YOUTUBE TOO — user, 2026-08-19.** All three
+      recordings, on "Sunday Gospel Channel", verified via oEmbed:
+
+      | lang | id | title |
+      |---|---|---|
+      | cmn | `xqau2AqNNno` | 一神 01 普通话版本：「父是独一真神」 |
+      | yue | `2L4LZ1BNu3Q` | 一神 01：誰是獨一真神? |
+      | en  | `S7VEdxrWcX8` | One God 01: Why Jesus said the Father is… |
+
+      So **all three series are YouTube** and `videoBase` / the 238 MB
+      media site stop being needed by the app. Do not delete anything
+      from that site in the same change — unshipping and unhosting are
+      separate decisions, and one is reversible.
+
+      **What this costs, measured rather than assumed.** Checked each
+      video's caption tracks:
+
+          en  S7VEdxrWcX8 → ['en']
+          yue 2L4LZ1BNu3Q → ['yue']
+          cmn xqau2AqNNno → NONE
+
+      Ours are five files — `cmn.zh-Hans`, `cmn.zh-Hant`, `en.en`,
+      `yue.zh-Hans`, `yue.zh-Hant` — so switching loses the
+      **Simplified/Traditional choice on all three**, and loses
+      **every subtitle on the Mandarin video**, which YouTube has none
+      for. For a Chinese-reading audience that is the most useful of the
+      three.
+
+      **This is not forced, and the item should not pretend it is.**
+      The current player already overlays our VTT against the video's
+      clock; a YouTube embed also exposes its current time, so the same
+      overlay can sit on top of it. Keeping our subtitles is a few
+      hours' work, not a rewrite. The user said "不要做字幕" about the
+      NEW series, where none exist — that is a different question from
+      throwing away five files that already work.
+
+      **So: ask once before shipping 獨一真神 without subtitles.** If
+      they say drop them, drop them — but leave the `.vtt` files and
+      `scripts/align_subtitles.py` in the repo. They cost nothing at
+      rest and cannot be regenerated without the church's .docx.
+
       **ASK BEFORE DELETING 獨一真神.** The user said "现有的删掉", but
       the structure they are asking for makes deletion unnecessary — it
       becomes one series beside the new one. Deleting it discards 238 MB
