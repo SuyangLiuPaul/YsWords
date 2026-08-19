@@ -220,22 +220,65 @@ and quoted.**
       scripture. Settle the source question first, then the printed 1919 per
       verse.
 
-- [ ] **Audit the running text against our OWN tagged corpus — a third witness
-      nothing has ever consulted.** `assets/tagged/cuvs-yhwh/` stores each verse
-      as runs whose `w` fields concatenate back to the verse, so it is an
-      independent copy of the text sitting inside this repo — and it is
-      independent in exactly the way the external witnesses are not, because it
-      does not share their ancestor.
+- [x] **Audit the running text against our OWN tagged corpus — a third witness
+      nothing has ever consulted. Done 2026-08-19: it found SEVEN more verses
+      that were missing a character, and both external witnesses were blind to
+      every one of them.** `tools/audit_tagged_running_text.py` compares all
+      31,102 verses; `tools/repair_tagged_witness_losses.py` applies the fix;
+      `test/tagged_witness_losses_test.dart` fails four of five on pre-fix data.
 
-      This is not speculative: it is the only thing that caught 歷代志上 15:3,
-      where witness A carries the same defect we do. A first pass by the refuter
-      on 2026-08-19, normalising punctuation and note markers, found **exactly
-      one** repetition-shaped disagreement (15:3, now repaired) — but it was
-      looking only for repetitions. The general diff has never been run.
+      士師記 12:7 read 「作以色列的士師年」 — the NUMBER was gone, so the verse
+      stated no length at all for a judgeship the Hebrew gives as six years, and
+      it still read as a complete Chinese sentence. 以賽亞書 23:1 read 「因為羅
+      變為荒場」, half of Tyre's name. 士師記 9:57 read 「歸到們身上了」, which
+      is not a word. Also 撒下 5:17 非利士**眾**人, 斯 6:7 尊榮的**人**,
+      瑪 2:3 抹**在**你們的臉上, 賽 41:16 **以**以色列的聖者.
 
-      Expect noise: the tagged corpus omits some punctuation and restructures
-      around note markers, so the comparison needs the same normalisation the
-      other audits use before any hit means anything.
+      **Why the existing audit was blind, measured rather than assumed:** it
+      only reports a loss both external witnesses agree on, and witness A reads
+      long at exactly ONE of the seven while B reads long at four — and the one
+      A has is the one B lacks, so the pair never coincides. At 斯 6:7 and
+      瑪 2:3 both are short: they share our lineage's defect. The tagged corpus
+      is a different transcription line, and its Strong's tags name the missing
+      word (六 = H8337, 眾人 = H3605, 人 = H376, 抹在 = H2219, 推羅 = H6865) —
+      a word cannot be tagged with a number it no longer spells. The word-tap
+      sheet has been printing 「士師六年」 all along, over a verse reading
+      「士師年」.
+
+      **The print decided every one, not the witnesses** — 創 39:22 and 41:30
+      taught this repo that two witnesses agreeing is not proof when they share
+      an ancestor. 賽 41:16 was the likeliest false repair, since it DOUBLES a
+      character to 以以色列; the refuter attacked it specifically and could not
+      break it (Hebrew prefixes ב to both objects, the print reads 以以色列 here
+      and one 以 at 41:14/41:20, and the tagged corpus's genuine doubling
+      artifacts are run-boundary concatenations while this is a single run
+      tagged H3478). 41:14 and 41:20 are pinned in the test so nobody can ever
+      write a corpus-wide de-duplication of 以以.
+
+      The refuter also broke two counts in the repair tool's own reasoning
+      before the commit — witness B is long in four, not five; the tagged corpus
+      in all seven, not six. Both were remeasured directly and corrected.
+
+      Follow-on, filed below: 阿摩司書 6:8's word ORDER differs from the print
+      and needs the user, because reordering it would undo this edition's
+      divine-name restoration.
+
+- [ ] **阿摩司書 6:8 — the print puts 萬軍之神 BEFORE the oath and we put it
+      after. Needs the user; do NOT reorder unattended.** We read 「主雅偉指着
+      自己起誓，萬軍之神〈原文有雅偉〉說」. The printed 1919, both external
+      witnesses and our own tagged corpus all read 「主耶和華萬軍之神指着自己
+      起誓說」. No character is missing — the ideographs match as a multiset —
+      so this is order alone.
+
+      **It is filed rather than fixed because the evidence points at a
+      deliberate choice by this edition.** The Hebrew is נִשְׁבַּע אֲדֹנָי
+      יְהוִה בְּנַפְשׁוֹ נְאֻם יְהוָה אֱלֹהֵי צְבָאוֹת, where "YHWH God of
+      hosts" FOLLOWS "by himself" and attaches to נְאֻם — our order, not the
+      print's. The note 「原文有雅偉」 marks exactly the second יְהוָה that the
+      print renders as 神 alone. Reordering it would undo the divine-name
+      restoration this whole edition exists to make. Held in the `UNSETTLED`
+      set of `tools/audit_tagged_running_text.py` so it can never be swallowed
+      as explained noise.
 
 - [ ] **那鴻書 3:4 attaches the 「原文是賣」 note to the wrong 誘惑.** Ours
       prints 「藉淫行誘惑\<note: 原文是賣\>列國，用邪術誘惑多族」; both
