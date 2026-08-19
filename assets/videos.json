@@ -4,7 +4,8 @@
     "source": "Christian Disciples Church — Sunday Gospel Channel on YouTube",
     "note": "Every recording is a YouTube video id. Nothing here is self-hosted any more, so the app carries no media and no subtitle files: YouTube supplies its own captions where they exist.",
     "pairingEvidence": "The language of each id was taken from YouTube's own title via oEmbed, NOT from the position of the embed on the church's page. Reading the page's layout put every Standing-at-the-Cross row one place out, which would have offered 'English' and played Cantonese.",
-    "chineseTitles": "Chinese titles are stored once, under 'zh', exactly as the church wrote them. They are deliberately NOT converted between Simplified and Traditional — this is someone else's copy, and a converted glyph would be our word, not theirs."
+    "chineseTitles": "Chinese titles are stored once, under 'zh', exactly as the church wrote them. They are deliberately NOT converted between Simplified and Traditional — this is someone else's copy, and a converted glyph would be our word, not theirs.",
+    "shemaNote": "The Shema series is the 29 links the church published — 25 numbered messages (#7-#31) plus the 4 whole-part compilations, which sit last within their own part. Ids and titles come from YouTube (oEmbed), not from the church page, which refuses datacenter IPs. Numbering starts at #7 because #1-#6 belong to a different series on the same channel and are deliberately not included. The church's bracketed sub-numbers are not shown: Part 4 reads (15)(16)(12)(18) where the sequence wants 17, and displaying a number we know to be wrong is worse than showing only the # that is consistent."
   },
   "series": [
     {
@@ -27,8 +28,16 @@
             "zh": "那一刻，你在哪裡？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "1OIZE4HnheE"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "h7hE0XB3SWs"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "1OIZE4HnheE"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "h7hE0XB3SWs"
+            }
           ]
         },
         {
@@ -39,8 +48,16 @@
             "zh": "耶稣被钉死，和我有什么关系？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "Voc7M_I1YJw"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "4WladhGvkAM"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "Voc7M_I1YJw"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "4WladhGvkAM"
+            }
           ]
         },
         {
@@ -51,8 +68,16 @@
             "zh": "既耶稣可当下脱身，为何甘愿在十架受难？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "omzJLl83zIo"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "GgUiSRBMgj4"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "omzJLl83zIo"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "GgUiSRBMgj4"
+            }
           ]
         },
         {
@@ -63,8 +88,16 @@
             "zh": "十字架上最后的试探，究竟其毒钩何在？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "Xee1AhOkiDY"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "xXC3IYb128Q"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "Xee1AhOkiDY"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "xXC3IYb128Q"
+            }
           ]
         },
         {
@@ -75,8 +108,16 @@
             "zh": "我们的盼望是否在弥赛亚和他的国度？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "-JgvZGZ8zmc"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "zCyNjjWhkMg"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "-JgvZGZ8zmc"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "zCyNjjWhkMg"
+            }
           ]
         },
         {
@@ -87,8 +128,16 @@
             "zh": "在苦难的黑暗里，神真的沉默了吗？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "kuZ8qcAm7UI"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "483CYa3BjXg"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "kuZ8qcAm7UI"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "483CYa3BjXg"
+            }
           ]
         },
         {
@@ -99,8 +148,16 @@
             "zh": "耶稣会把一个人托付给你照顾吗？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "ZzXZmSmMtWs"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "OPzyLFP-TMA"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "ZzXZmSmMtWs"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "OPzyLFP-TMA"
+            }
           ]
         },
         {
@@ -111,8 +168,16 @@
             "zh": "神会离弃我吗？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "Slng6u-YMsM"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "SjQCm4m-rmk"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "Slng6u-YMsM"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "SjQCm4m-rmk"
+            }
           ]
         },
         {
@@ -123,8 +188,16 @@
             "zh": "成了！你愿意背起你的十字架来跟随耶稣吗？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "5Z1upfO2Ff0"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "OSKe5G6BW8c"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "5Z1upfO2Ff0"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "OSKe5G6BW8c"
+            }
           ]
         },
         {
@@ -135,8 +208,16 @@
             "zh": "父啊，我將我的靈交在你手中。人死后会怎样？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "bIJXg7dew2g"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "CincIrfTfDs"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "bIJXg7dew2g"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "CincIrfTfDs"
+            }
           ]
         }
       ]
@@ -161,9 +242,508 @@
             "zh": "誰是獨一真神？"
           },
           "tracks": [
-            {"lang": "en", "labelKey": "oneGodLangEn", "youtubeId": "S7VEdxrWcX8"},
-            {"lang": "yue", "labelKey": "oneGodLangYue", "youtubeId": "2L4LZ1BNu3Q"},
-            {"lang": "cmn", "labelKey": "oneGodLangCmn", "youtubeId": "xqau2AqNNno"}
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "S7VEdxrWcX8"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "2L4LZ1BNu3Q"
+            },
+            {
+              "lang": "cmn",
+              "labelKey": "oneGodLangCmn",
+              "youtubeId": "xqau2AqNNno"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shema-1",
+      "titles": {
+        "en": "The Shema"
+      },
+      "taglines": {
+        "en": "The Most Important Teaching by Jesus — Mark 12:29-31, Deuteronomy 6:4"
+      },
+      "creditKey": "videoCreditCdc",
+      "playlistId": "PLKdS3C3dQ95RMSBg52aWzdb3KtowWw8AV",
+      "episodes": [
+        {
+          "id": "07",
+          "number": 7,
+          "isCompilation": false,
+          "titles": {
+            "en": "#7 The Shema (1) Jesus prays the Shema - Living out the most important commandment - Deuteronmy 6:4"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "W9qBulKwZZk"
+            }
+          ]
+        },
+        {
+          "id": "08",
+          "number": 8,
+          "isCompilation": false,
+          "titles": {
+            "en": "#8 The Shema (2)   YHWH our God, YHWH one - Calling the Name of YHWH our God"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "bpPV5CVQhtk"
+            }
+          ]
+        },
+        {
+          "id": "09",
+          "number": 9,
+          "isCompilation": false,
+          "titles": {
+            "en": "#9 The Shema (3) O YHWH,YHWH our God - The Shema Prayer taught in Deuteronomy 6:4 - Calling on God"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "mi3Ek9a9Gtg"
+            }
+          ]
+        },
+        {
+          "id": "10",
+          "number": 10,
+          "isCompilation": false,
+          "titles": {
+            "en": "#10 The Shema (4): A Call for Allegiance to YHWH our God - The Shema prayer in Deuteronomy 6:4"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "G1WIG-D0fxU"
+            }
+          ]
+        },
+        {
+          "id": "11",
+          "number": 11,
+          "isCompilation": false,
+          "titles": {
+            "en": "#11 Shema (5) Hear! The Silent Crisis in the Church. What Pastors fail to tell the congregation.."
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "DYJFQ6RfHFs"
+            }
+          ]
+        },
+        {
+          "id": "12",
+          "number": 12,
+          "isCompilation": false,
+          "titles": {
+            "en": "#12 The Shema (6) O Israel, the Israel of God.  Who is Israel? Does Israel include the Church?"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "2b_sqdFnkVI"
+            }
+          ]
+        },
+        {
+          "id": "13",
+          "number": 13,
+          "isCompilation": false,
+          "titles": {
+            "en": "#13 The Shema (7) YHWH Echad, YHWH One. Is \"Echad\" singular one or is \"Echad\" a compound unity?"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "DL0e9xuBTM0"
+            }
+          ]
+        },
+        {
+          "id": "all",
+          "number": 0,
+          "isCompilation": true,
+          "titles": {
+            "en": "The Shema Masterclass Part 1 | 7 Messages on the Shema taught by Jesus. Mark 12:29-31 & Deut 6:4"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "ksDEG_PhuS4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shema-2",
+      "titles": {
+        "en": "Living the Shema — Part 2"
+      },
+      "taglines": {
+        "en": "Loving God with ALL your heart, soul, mind and strength"
+      },
+      "creditKey": "videoCreditCdc",
+      "playlistId": "PLKdS3C3dQ95Qqif5KtfyEZgwkwIv5_SEr",
+      "episodes": [
+        {
+          "id": "14",
+          "number": 14,
+          "isCompilation": false,
+          "titles": {
+            "en": "#14 Living the Shema (1) Love God with All ─ Jesus directs all devotion to Yahweh God"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "NSDI_aVXh48"
+            }
+          ]
+        },
+        {
+          "id": "15",
+          "number": 15,
+          "isCompilation": false,
+          "titles": {
+            "en": "#15 Living the Shema (2) ─ Love God with All ─ From Hearing to Loving"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "pWigf_uuaSw"
+            }
+          ]
+        },
+        {
+          "id": "16",
+          "number": 16,
+          "isCompilation": false,
+          "titles": {
+            "en": "#16 Living the Shema (3) ─ Love God with All ─ A Call to Love: God and Others with Agape Love"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "ardFs31RXrg"
+            }
+          ]
+        },
+        {
+          "id": "17",
+          "number": 17,
+          "isCompilation": false,
+          "titles": {
+            "en": "#17 Living the Shema (4)  Love God with All  ─ My Testimony: Transformed by  Love of Yahweh & Jesus"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "zMPG5fjTT_I"
+            }
+          ]
+        },
+        {
+          "id": "18",
+          "number": 18,
+          "isCompilation": false,
+          "titles": {
+            "en": "#18 Living the Shema (5) ─ Loving God with All  ─ Heart, Soul, Mind, Strength -the first commandment"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "2vsgBwO9MqY"
+            }
+          ]
+        },
+        {
+          "id": "19",
+          "number": 19,
+          "isCompilation": false,
+          "titles": {
+            "en": "#19 Living the Shema (6) Love God with All - A Call to wholehearted devotion to YHWH (Yahweh)"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "cBSPeIJ9by8"
+            }
+          ]
+        },
+        {
+          "id": "20",
+          "number": 20,
+          "isCompilation": false,
+          "titles": {
+            "en": "#20 Living the Shema (7)  Loving God with all  – My All – 100% Total Commitment to YHWH (Yahweh) God"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "dinbK352sW4"
+            }
+          ]
+        },
+        {
+          "id": "all",
+          "number": 0,
+          "isCompilation": true,
+          "titles": {
+            "en": "7 Message Series on Living the Shema Part 2 | Love God with ALL your heart, soul, mind & strength"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "M3zQNM0mhoM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shema-3",
+      "titles": {
+        "en": "Living the Shema — Part 3"
+      },
+      "taglines": {
+        "en": "Love your Neighbour as Yourself"
+      },
+      "creditKey": "videoCreditCdc",
+      "playlistId": "PLKdS3C3dQ95RjguVV6xdtIElP95OOw7Hl",
+      "episodes": [
+        {
+          "id": "21",
+          "number": 21,
+          "isCompilation": false,
+          "titles": {
+            "en": "# 21 Living the Shema (8) Love Your Neighbor as Yourself - To love God is to love others as yourself"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "CAOAR4lrSXI"
+            }
+          ]
+        },
+        {
+          "id": "22",
+          "number": 22,
+          "isCompilation": false,
+          "titles": {
+            "en": "#22 Living the Shema (9) Love your Neighbour as Yourself, I am Yahweh. Lev. 19:18. Yahweh has spoken"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "wytRw17AN4w"
+            }
+          ]
+        },
+        {
+          "id": "23",
+          "number": 23,
+          "isCompilation": false,
+          "titles": {
+            "en": "#23 Living the Shema (10) Love Your Neighbor As Yourself ─ Who is my neighbor? The Good Samaritan"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "ucvTxRq2EP0"
+            }
+          ]
+        },
+        {
+          "id": "24",
+          "number": 24,
+          "isCompilation": false,
+          "titles": {
+            "en": "#24 Living the Shema (11) Love your Neighbour as yourself — Love your Neighbour Today, not tomorrow."
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "61ivlMTRJzM"
+            }
+          ]
+        },
+        {
+          "id": "25",
+          "number": 25,
+          "isCompilation": false,
+          "titles": {
+            "en": "#25 Living the Shema 12 - Love your neighbour as yourself - the Samaritan 7 Acts of Mercy"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "Rht9Sjqr9X8"
+            }
+          ]
+        },
+        {
+          "id": "26",
+          "number": 26,
+          "isCompilation": false,
+          "titles": {
+            "en": "#26 Living the Shema (13) - Love your neighbour as yourself - What does \"as yourself\" mean"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "jK43LNqkBQM"
+            }
+          ]
+        },
+        {
+          "id": "27",
+          "number": 27,
+          "isCompilation": false,
+          "titles": {
+            "en": "#27 Living the Shema (14) Love your Neighbour As yourself — Jonathan loved David as his own soul"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "9oDClt6_veA"
+            }
+          ]
+        },
+        {
+          "id": "all",
+          "number": 0,
+          "isCompilation": true,
+          "titles": {
+            "en": "7 message series on Living the Shema Part 3 | Love Your Neighbour as Yourself - Be a friend of Jesus"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "PnO_OyR3cW8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shema-4",
+      "titles": {
+        "en": "Living the Shema — Part 4"
+      },
+      "taglines": {
+        "en": "Love one another AS I have loved you"
+      },
+      "creditKey": "videoCreditCdc",
+      "playlistId": "PLKdS3C3dQ95RP0tFef-MKOpEp3JWXL3hw",
+      "episodes": [
+        {
+          "id": "28",
+          "number": 28,
+          "isCompilation": false,
+          "titles": {
+            "en": "#28 Living the Shema (15) - Love your neighbour as yourself - Love one another as I have loved you"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "PNr5ozRGZzE"
+            }
+          ]
+        },
+        {
+          "id": "29",
+          "number": 29,
+          "isCompilation": false,
+          "titles": {
+            "en": "#29 Living the Shema (16) — Love your neighbour as yourself — Love one another — the NEW commandment"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "IY3pEDYKv2o"
+            }
+          ]
+        },
+        {
+          "id": "30",
+          "number": 30,
+          "isCompilation": false,
+          "titles": {
+            "en": "#30 Living the Shema (12) Love your neighbour as yourself — As the Father has loved me."
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "ec3T-_0DYXA"
+            }
+          ]
+        },
+        {
+          "id": "31",
+          "number": 31,
+          "isCompilation": false,
+          "titles": {
+            "en": "#31 Living the Shema (18) Love your neighbour as yourself — Love one another in the New Testament"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "NhTgvJ_xOhQ"
+            }
+          ]
+        },
+        {
+          "id": "all",
+          "number": 0,
+          "isCompilation": true,
+          "titles": {
+            "en": "4 message series on Living the Shema Part 4 |  Love one another in the Church - Friendship covenant"
+          },
+          "tracks": [
+            {
+              "lang": "en",
+              "labelKey": "oneGodLangEn",
+              "youtubeId": "GmBlrJYfP84"
+            }
           ]
         }
       ]
