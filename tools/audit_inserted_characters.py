@@ -30,8 +30,9 @@ invisible to it — and we share an ancestor with A. 歷代志上 15:3 read
 「招聚以色列眾人眾人」 and this audit never flagged it, because A reads 眾人眾人
 too. It was caught by a third witness that is internal to this repo and that
 nothing here consults: `assets/tagged/cuvs-yhwh/`, whose runs concatenate back
-to the verse and which held 以色列众人 once. Comparing the running text against
-the tagged corpus is queued as its own audit.
+to the verse and which held 以色列众人 once. That comparison now exists as
+`audit_tagged_running_text.py`, and it found six more losses this hole hid —
+two of which BOTH witnesses share.
 """
 import json
 import re
@@ -64,6 +65,15 @@ EXPLAINED = {
     "064001014": "約翰三書 1:15 is merged into 1:14 behind a 15节 note marker",
     # Filed separately in the queue as a substitution, not an insertion.
     "047013005": "ours 在你們裏面 where the print reads 在你們心裏",
+    # RESTORED text, not inserted text. Both witnesses are short here and the
+    # printed 1919 is not — 「王所喜悅尊榮的人」, 「抹在你們的臉上」 — and our
+    # own tagged corpus tags the restored word (H376 אִישׁ; H2219 抹在 with
+    # H5921 עַל־פְּנֵיכֶם). Found by tools/audit_tagged_running_text.py and
+    # applied by tools/repair_tagged_witness_losses.py. Do NOT "repair" them
+    # back: both witnesses agreeing is not proof, which is the whole reason
+    # this file keeps a PENDING list instead of a fix list.
+    "017006007": "restored 人; the print reads 王所喜悅尊榮的人",
+    "039002003": "restored 在; the print reads 抹在你們的臉上",
 }
 
 # Running-text hits that LOOK like genuine insertions and have not been settled.

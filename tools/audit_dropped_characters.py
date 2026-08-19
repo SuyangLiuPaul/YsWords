@@ -37,8 +37,14 @@ EXPLAINED = {
     # Verse-boundary placement: the trailing 說 opens the NEXT verse here.
     "005005005": "說 sits at the start of 申命記 5:6 in this edition",
     "005032019": "說 sits at the start of 申命記 32:20 in this edition",
-    # Restructured around a <note:…> marker; no character is missing.
-    "030006008": "萬軍之神 moved across the note marker",
+    # No character is missing — the ideographs match as a multiset — but the
+    # ORDER differs from the print, which reads 主耶和華萬軍之神指着自己起誓說.
+    # Not repaired: our order follows the Hebrew (נְאֻם יְהוָה אֱלֹהֵי צְבָאוֹת
+    # comes after בְּנַפְשׁוֹ) and the note marks the second יְהוָה the print
+    # renders as 神 alone, so it reads as this edition's own divine-name
+    # decision rather than a corruption. See UNSETTLED in
+    # audit_tagged_running_text.py; queued for the user.
+    "030006008": "萬軍之神 precedes the oath in the print and follows it here",
     # A substitution, not a drop — filed separately in the queue.
     "047013005": "ours 在你們裏面 where the print reads 在你們心裏",
     "034003004": "the 原文是賣 note is attached to the wrong 誘惑",
