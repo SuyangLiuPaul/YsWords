@@ -3304,6 +3304,60 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Sermon passage filter: highlight the match, and filter by verse.**
+      User, 2026-08-19, after filtering to John 17: "wonder if it is
+      possible to have yellow highlight whenever John 17 appears inside
+      that specific sermon", and "right now you only have the chapter…
+      whether it is possible to have also the verses".
+
+      **Both are far cheaper than they look, because the hard halves
+      already exist.** Measured before writing this down:
+
+      1. **The highlight.** `sermon_detail_page.dart` ALREADY finds
+         every Bible reference in the body with `_refPattern`, parses
+         it with `parseReference`, and builds a tappable span for each
+         one. So the work is not detection — it is passing the active
+         filter down to `_buildSpans` and giving matching spans a
+         background. Match on the PARSED reference, never on the
+         string: the same passage is written "John 17", "Jn 17:3" and
+         「約翰福音 17:3」 in these transcripts, and a string compare
+         would highlight one and miss the others.
+      2. **The verse filter.** `assets/sermons/refs.json` `byVerse`
+         already holds **946 verse-level keys** alongside 351
+         chapter-level ones — 1,297 in total. John 17 alone has seven
+         entries: the whole chapter (5 sermons) plus 17:3, 17:8, 17:19,
+         17:20, 17:22 and 17:23. **The data is there and the picker
+         simply does not offer it.** This is a UI change, not a data
+         project.
+
+      Design notes worth settling first: a chapter filter must still
+      return the verse-level hits inside it (filtering John 17 should
+      not lose the sermon indexed only at John 17:3), and the verse row
+      should show only verses that actually have sermons, not all 26.
+
+- [ ] **Seven sermon references point at chapters that do not exist.**
+      Found while measuring the item above; the index is otherwise
+      sound (7 bad of 1,297).
+
+          2 John 10, 2 John 7      2 John has 1 chapter
+          Jude 6, Jude 11          Jude has 1 chapter
+          Daniel 20, Daniel 48     Daniel has 12 chapters
+          Deuteronomy 43           Deuteronomy has 34 chapters
+
+      The one-chapter books are the tell: **"Jude 6" is almost
+      certainly Jude verse 6 read as a chapter**, and the same for
+      2 John. That is a parser bug in whatever built the index, not a
+      typo in the sermons, and the fix is to treat a bare number in a
+      one-chapter book as a VERSE. Daniel 20/48 and Deuteronomy 43 have
+      no such explanation and need the sermon text read before anything
+      is changed.
+
+      **Do not delete them to make the count clean.** Each one means a
+      sermon is filed under a passage nobody can navigate to, so the
+      sermon is currently unreachable by that reference — deleting the
+      entry hides the loss instead of repairing it. Add a test that
+      every key in `byVerse` resolves against `kjv.json`.
+
 - [ ] **Sweep the CDC network's country sites for songs we do not have.**
       User, 2026-08-18, pointing at the "WHERE WE MEET" menu on
       `christiandiscipleschurch.org`: Australia, Canada, Hong Kong,
