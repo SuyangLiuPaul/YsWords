@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Put eight verses back into the order the CUV prints them in.
+"""Put nine verses back into the order the CUV prints them in.
 
 箴言 22:11 read 「因他嘴的恩言，王必與他為上友」. 為上友 is not a word in
 any register of Chinese; 上 belongs one clause earlier, in 嘴上的恩言.
@@ -8,9 +8,18 @@ stranded in front of a name list, and a prepositional phrase left with
 nothing to govern it, while the SAME VERSE gets the identical clause right
 eight names later: 「和米書蘭站在他的左邊」.
 
-Every one of the eight is a PERMUTATION: no character is added and none is
+使徒行傳 26:16 read 「你起來站著，特意向你我顯現」. 向你我 occurs in exactly
+one verse of 31,102 — this one — and its only natural reading is the compound
+"to you and me", which is false: Jesus is speaking to Paul alone.
+
+Every one of the nine is a PERMUTATION: no character is added and none is
 lost, which is why they survived `audit_dropped_characters.py` — that check
 compares the set of ideographs, and a swap leaves it untouched.
+
+`audit_inserted_characters.py` is the exception, and it was measured rather
+than assumed: it diffs POSITIONALLY, so a moved character reads as an
+insertion where it arrived. 使徒行傳 26:16 was reported there as extra 我@9
+for as long as it was broken, and it is the only one of the nine that was.
 
 WHY THIS IS SAFE TO WRITE
   Reordering scripture is as dangerous as inserting it, so each verse was
@@ -49,6 +58,19 @@ WHY THIS IS SAFE TO WRITE
        箴言 22:11     嘴 is tagged H8193 (שָׂפָה, lip) and 友 H7453 (רֵעַ,
                       friend). 上 attached to neither.
 
+  使徒行傳 26:16 got a FIFTH line, and it is the strongest kind: SeekSparks
+  tags `cuvs-plus` independently of everything above, and its segmentation of
+  this verse is 你起来 / 站着 / ， / 我 / 特意 / 向你 / 显现 — the printed
+  order, with 我 already standing as its own run. Its Strong's number for that
+  run (G1519, εἰς) is an alignment artifact of a strictly left-to-right
+  pairing and is NOT copied here: our own tagger already folds εἰς into 特意
+  as i:["G1519"], so tagging 我 with it would count the preposition twice.
+
+ONE THAT COMES OFF THE LIST BY BEING MEASURED
+  This is the last of the class. Scanning all 31,102 verses for permutations
+  against both witnesses leaves three: 耶利米書 7:14 (below, do not fix),
+  那鴻書 3:4 (a note placement, settled separately) and this one.
+
 ONE THAT WAS ON THIS LIST AND CAME OFF IT — do not "fix" it
   耶利米書 7:14 reads 稱我為名下 where both witnesses read 稱為我名下. The
   printed 1919 sides with OURS. Recorded in `audit_dropped_characters.py`.
@@ -64,6 +86,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 SIMPLIFIED = REPO / "assets/cuvs-yhwh.json"
 TRADITIONAL = REPO / "assets/cuvs-yhwh-tr.json"
+
+# Marks an output run that keeps only `w` and `s` — see TAGGED_REPAIRS.
+BARE = "bare"
 
 # id, reference, (simplified before, after), (traditional before, after)
 REPAIRS = [
@@ -91,6 +116,12 @@ REPAIRS = [
     ("040025020", "馬太福音 25:20", ("那另外五千的来", "那另外的五千来"), ("那另外五千的來", "那另外的五千來")),
     ("044024016", "使徒行傳 24:16", ("因此我自己勉励", "我因此自己勉励"), ("因此我自己勉勵", "我因此自己勉勵")),
     (
+        "044026016",
+        "使徒行傳 26:16",
+        ("特意向你我显现", "我特意向你显现"),
+        ("特意向你我顯現", "我特意向你顯現"),
+    ),
+    (
         "045004023",
         "羅馬書 4:23",
         ("算为他的义”这句话", "算为他义”的这句话"),
@@ -116,7 +147,15 @@ REPAIRS = [
 # So an output run names the INPUT run it inherits from and keeps every field
 # but the text.
 #
-# slug, ref, contiguous run texts before, runs after as (text, index in before)
+# An output may instead be marked BARE, which keeps only `w` and `s`. That is
+# the ONE way a run carrying `i`/`g` may be split: exactly one half stays
+# whole and the rest come out bare, so the parsing data lands on one word
+# instead of being copied onto two. 使徒行傳 26:16 is the case it exists for —
+# 我 and 顯現 together render ὤφθην, one Greek word that carries its subject
+# in the inflection, and the aorist-passive code belongs to the verb.
+#
+# slug, ref, contiguous run texts before, runs after as (text, index in
+# before) or (text, index in before, BARE)
 TAGGED_REPAIRS = [
     ("genesis", "9:11", ["毁坏了", "地。”"], [("毁坏", 0), ("地了。”", 1)]),
     # 上 crosses three runs to get back to 嘴, so the whole span is one edit —
@@ -137,6 +176,16 @@ TAGGED_REPAIRS = [
     # Tagging 我 as G1722 (ἐν τούτῳ) instead would answer "in this" to a reader
     # who taps the pronoun.
     ("acts", "24:16", ["因此", "我自己"], [("我", 1), ("因此", 0), ("自己", 1)]),
+    # 我 renders no Greek word of its own — ὤφθην carries the first person in
+    # its inflection — so it inherits G3700 from the run it is leaving rather
+    # than picking up a number from its new neighbours. The tense code stays
+    # on the verb.
+    (
+        "acts",
+        "26:16",
+        ["特意", "向你", "我显现，"],
+        [("我", 2, BARE), ("特意", 0), ("向你", 1), ("显现，", 2)],
+    ),
     ("romans", "4:23", ["的义”这"], [("义”的这", 0)]),
 ]
 
@@ -195,7 +244,7 @@ def repair_tagged(apply):
         book = dirty.get(slug) or json.loads(path.read_text(encoding="utf-8"))
         dirty[slug] = book
         runs = book[ref]
-        if find_slice(runs, [w for w, _ in after]):
+        if find_slice(runs, [out[0] for out in after]):
             print(f"  {slug} {ref} already in printed order")
             continue
         hits = find_slice(runs, before)
@@ -205,26 +254,33 @@ def repair_tagged(apply):
                 file=sys.stderr,
             )
             return None
-        if not is_permutation("".join(before), "".join(w for w, _ in after)):
+        if not is_permutation("".join(before), "".join(out[0] for out in after)):
             print(f"  FAIL {slug} {ref}: edit is not a permutation", file=sys.stderr)
             return None
         i = hits[0]
         source = runs[i : i + len(before)]
         # Splitting one input run across two outputs would copy its `i`/`g` to
-        # both and claim the original has the word twice. Only a run carrying
-        # nothing but a Strong's number may be split.
-        used = Counter(src for _, src in after)
+        # both and claim the original has the word twice. A run carrying more
+        # than a Strong's number may still be split, but then exactly one half
+        # inherits it and the rest are marked BARE.
+        used = Counter(out[1] for out in after)
         for src, n in used.items():
             extra = set(source[src]) - {"w", "s"}
-            if n > 1 and extra:
+            whole = sum(1 for out in after if out[1] == src and BARE not in out[2:])
+            if n > 1 and extra and whole != 1:
                 print(
                     f"  FAIL {slug} {ref}: run {src} carries {sorted(extra)} and "
-                    f"would be split {n} ways",
+                    f"would be split {n} ways, {whole} of them keeping it",
                     file=sys.stderr,
                 )
                 return None
-        after_runs = [{**source[src], "w": w} for w, src in after]
-        print(f"  {slug} {ref}: {''.join(before)} → {''.join(w for w, _ in after)}")
+        after_runs = [
+            {"w": out[0], "s": source[out[1]].get("s", "")}
+            if BARE in out[2:]
+            else {**source[out[1]], "w": out[0]}
+            for out in after
+        ]
+        print(f"  {slug} {ref}: {''.join(before)} → {''.join(out[0] for out in after)}")
         runs[i : i + len(before)] = after_runs
         changed += 1
     if apply:

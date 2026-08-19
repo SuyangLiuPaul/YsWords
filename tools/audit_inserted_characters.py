@@ -195,14 +195,15 @@ PENDING = {
     # a divine-name edition, which is not an unattended call. Queued.
     "025003001": "耶利米哀歌 3:1  +神  (因雅伟神忿怒的杖 / 因耶和华忿怒的杖)"
                  "  the Hebrew has no divine name here at all",
-    # NOT an insertion — a TRANSPOSITION, which is why the print reading it
-    # differently does not settle it the way it settled the other 21. Ours
-    # reads 特意向你我顯現 and the print, both witnesses read 我特意向你顯現;
-    # the ideograph multiset of ours and witness A is IDENTICAL. Belongs with
-    # the eight transpositions repaired on 2026-08-19, not here. Left in place
-    # so this audit keeps reporting it until it is dealt with.
-    "044026016": "使徒行传 26:16  +我  (特意向你我显现 / 我特意向你显现)"
-                 "  TRANSPOSITION: same characters, different order",
+    # 使徒行傳 26:16 was listed here and is GONE, repaired 2026-08-19 by
+    # `tools/repair_transposed_characters.py`: 特意向你我顯現 → 我特意向你顯現.
+    # It was a TRANSPOSITION rather than an insertion, and it reached this
+    # audit because the comparison is POSITIONAL (SequenceMatcher), not a
+    # multiset — a moved character reads as an insertion at the place it
+    # arrived. That is worth knowing: this file catches reorderings the
+    # multiset argument says it cannot. Removing the entry was checked
+    # against the pre-repair data, where it comes back as NEW rather than
+    # vanishing, so the guard is real.
 }
 
 

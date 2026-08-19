@@ -3,13 +3,16 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// Eight verses printed the right characters in the wrong order.
+/// Nine verses printed the right characters in the wrong order.
 ///
 /// 箴言 22:11 read 「因他嘴的恩言，王必與他為上友」 — 為上友 is not a word,
 /// and the 上 it is holding belongs one clause earlier, in 嘴上的恩言.
 /// 尼希米記 8:4 read 「木臺上。站瑪他提雅…和瑪西雅在他的右邊」, a verb
 /// stranded in front of a list of names while the same verse gets the
 /// identical clause right eight names later: 「和米書蘭站在他的左邊」.
+/// 使徒行傳 26:16 read 「特意向你我顯現」 — 向你我 occurs in exactly one
+/// verse of 31,102, and its only natural reading is "to you and me", which
+/// is false: Jesus is speaking to Paul alone.
 ///
 /// These survived `audit_dropped_characters.py` by construction: that check
 /// compares the multiset of ideographs against two independent witnesses, and
@@ -41,6 +44,7 @@ void main() {
     '040006002': ['不可在你前面吹号', '不可在你前面吹號'],
     '040025020': ['那另外的五千来', '那另外的五千來'],
     '044024016': ['我因此自己勉励', '我因此自己勉勵'],
+    '044026016': ['站着，我特意向你显现', '站著，我特意向你顯現'],
     '045004023': ['算为他义”的这句话', '算為他義」的這句話'],
   };
 
@@ -54,6 +58,7 @@ void main() {
     '040006002': ['不可在你面前吹号', '不可在你面前吹號'],
     '040025020': ['那另外五千的来', '那另外五千的來'],
     '044024016': ['因此我自己勉励', '因此我自己勉勵'],
+    '044026016': ['向你我显现', '向你我顯現'],
     '045004023': ['算为他的义”这句话', '算為他的義」這句話'],
   };
 
@@ -73,7 +78,7 @@ void main() {
           row['id'] as String: row['text'] as String,
       };
 
-  test('the eight verses read in the order the CUV prints them', () {
+  test('the nine verses read in the order the CUV prints them', () {
     final s = load(simplified);
     final t = load(traditional);
     reordered.forEach((id, forms) {
@@ -119,6 +124,8 @@ void main() {
       'matthew': ['6:2', '不可在你前面吹号'],
       'acts': ['24:16', '我因此自己'],
       'romans': ['4:23', '义”的这'],
+      // 使徒行傳 26:16 is keyed separately below, because its run split is
+      // the thing worth pinning and the joined text alone would not show it.
     };
     inTagged.forEach((slug, spec) {
       final book = json.decode(
@@ -153,6 +160,20 @@ void main() {
     final pronoun = runs.firstWhere((r) => r['w'] == '我');
     expect(pronoun['s'], 'G846');
     expect(runs.firstWhere((r) => r['w'] == '因此')['s'], 'G1722');
+
+    // 使徒行傳 26:16 needed the same split for the opposite reason: 我 and
+    // 顯現 render ὤφθην, ONE Greek word that carries its subject in the
+    // inflection, so there is no pronoun in the Greek for 我 to be given.
+    // It keeps the verb's G3700 rather than picking up a number from its
+    // new neighbours — tagging it G1519 as SeekSparks' independent aligner
+    // does would count εἰς twice, since 特意 already carries it as implied.
+    final acts2616 = (acts['26:16'] as List).cast<Map<String, dynamic>>();
+    final words = acts2616.map((r) => r['w'] as String).toList();
+    expect(words.join(), contains('我特意向你显现'));
+    expect(words.join(), isNot(contains('向你我显现')));
+    final me = acts2616[words.indexOf('我')];
+    expect(me['s'], 'G3700');
+    expect(acts2616[words.indexOf('特意')]['i'], ['G1519']);
   });
 
   test('reordering a run kept its parsing data', () {
@@ -190,5 +211,17 @@ void main() {
     // only their Strong's number may be shared.
     expect(run('acts', '24:16', '我').keys.toSet(), {'w', 's'});
     expect(run('acts', '24:16', '自己').keys.toSet(), {'w', 's'});
+
+    // 使徒行傳 26:16 split a run that DID carry parsing data — g:["G5681"],
+    // the aorist passive of ὤφθην. Copying it to both halves would state
+    // the Greek has the verb twice, so it stays on the verb and the pronoun
+    // comes out bare. This is the only reason the repair tool grew a BARE
+    // marker; a plain split of this run is still rejected.
+    final acts2616 = json.decode(
+            File('assets/tagged/cuvs-yhwh/acts.json').readAsStringSync())
+        as Map<String, dynamic>;
+    final split = (acts2616['26:16'] as List).cast<Map<String, dynamic>>();
+    expect(split.firstWhere((r) => r['w'] == '我').keys.toSet(), {'w', 's'});
+    expect(split.firstWhere((r) => r['w'] == '显现，')['g'], ['G5681']);
   });
 }

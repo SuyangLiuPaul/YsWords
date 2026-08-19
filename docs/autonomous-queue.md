@@ -262,28 +262,46 @@ and quoted.**
       backlog it cannot clear. Six are still open, and three of those are new
       findings filed below.
 
-- [ ] **使徒行傳 26:16 reads 「特意向你我顯現」 — a ninth transposition, not an
-      insertion.** Found 2026-08-19 while clearing the 26 above, and it had
-      been mis-filed there since the audit was written. The print, witness A
-      and witness B all read 「**我**特意向你顯現」; **the ideograph multiset of
-      ours and witness A is identical**, so no character is missing or added —
-      our 我 sits after 你 instead of before 特意, and the clause reads
-      「向你我顯現」.
+- [x] **使徒行傳 26:16 read 「特意向你我顯現」 — the ninth and LAST transposition,
+      repaired 2026-08-19.** It now reads 「你起來站著，**我**特意向你顯現」 in
+      all three of our files. 向你我 occurred in exactly **one verse of
+      31,102** — this one — and its only natural reading is the compound "to
+      you and me", which is false: Jesus is speaking to Paul alone. That is
+      the shape of defect this queue exists for, because it reads as ordinary
+      Chinese.
 
-      It belongs with the eight transpositions repaired the same day and wants
-      the same treatment, but it is **not** a copy of them, so it was filed
-      rather than rushed at the end of an iteration:
+      **Five independent lines, and the fifth settled the tagging.** The
+      printed 1919, witness A and witness B all read 我特意向你顯現, and here
+      the print JOINS the two witnesses instead of splitting them — the exact
+      configuration that acquitted 耶利米書 7:14 in the other direction, so
+      the 創世記 39:22 shared-ancestor failure mode does not apply. The CJK
+      multiset of ours and each witness is identical in both directions, so it
+      is a pure permutation. The fifth line is SeekSparks' independent tagging
+      of `cuvs-plus`, which segments the verse 你起来 / 站着 / ， / 我 / 特意 /
+      向你 / 显现 — printed order, with 我 already its own run.
 
-      * All three of our files carry it, including the tagged corpus.
-      * The tagged corpus holds one run `{"w":"我显现，","s":"G3700"}` — 我 is
-        inside the ὤφθην run. Moving 我 to the front splits that run into
-        我`G3700` … 顯現`G3700`, and `repair_transposed_characters.py`
-        **refuses** to split a run carrying `i`/`g` precisely because two runs
-        with one Strong's number claim the original has the word twice. This
-        run carries `g: [G5681]`. So the repair needs a decision about the run,
-        not just about the characters.
-      * The last pass of this class had 2 of 17 proposals broken by the
-        refuter. Held in `PENDING` so the audit keeps reporting it.
+      **The run split the item was blocked on, decided.** 我 and 顯現 render
+      ὤφθην, one Greek word carrying its subject in the inflection, so the
+      repair tool grew a `BARE` marker: exactly one half of a split inherits
+      the `i`/`g` fields and the rest come out with `w` and `s` only. The
+      aorist-passive `g:["G5681"]` stays on the verb; 我 keeps G3700 and takes
+      nothing else. SeekSparks tags that run G1519 (εἰς) and this repo
+      deliberately does not copy it — our own 特意 already carries εἰς as
+      `i:["G1519"]`, so it would count the preposition twice.
+
+      **The refuter corrected the loop on a side claim, which is why it ran.**
+      It reported that `audit_inserted_characters.py` was structurally blind
+      to this verse because a transposition leaves a multiset untouched. That
+      is wrong: the audit diffs POSITIONALLY, and re-running it against the
+      pre-repair data reports `044026016 extra '我'@9` as NEW. The entry left
+      `PENDING` on evidence rather than on the assumption.
+
+      **Measured: this is the last of the class.** Scanning all 31,102 verses
+      for permutations against both witnesses leaves three — 耶利米書 7:14
+      (print sides with us, on the do-not-fix list), 那鴻書 3:4 (a note
+      placement, settled separately) and this one.
+      `test/transposed_characters_test.dart` fails three of its four tests on
+      the pre-fix data.
 
 - [ ] **耶利米哀歌 3:1 reads 「因雅偉神忿怒的杖」 and nothing supports the 神.**
       The print and both witnesses read 耶和華 alone; our own tagged corpus
@@ -4437,6 +4455,13 @@ has never seen this repo.
 
 </details>
 
+- [x] **v1.4.110 is committed but NOT deployed — SUPERSEDED, done.** Checked
+      2026-08-19: all four dev/qat sites serve 1.4.113, which is HEAD, so the
+      video series and the restorations both shipped. Left below as written
+      because the reason the build was skipped is the part worth keeping.
+
+<details><summary>why that iteration deliberately did not build</summary>
+
 - [ ] **v1.4.110 is committed but NOT deployed — deploy it next
       iteration.** All four dev/qat sites were on 1.4.109 when the video
       series landed. The build was skipped deliberately: another session
@@ -4449,6 +4474,8 @@ has never seen this repo.
       version number would be publishing scripture nobody had checked.
       Deploy once they are committed; both changes then go out together.
       Nothing is wrong with 1.4.110 itself — analyze clean, 978 tests.
+
+</details>
 
 - [ ] **Add the Shema series to the video section — needs three answers
       first, none of which may be guessed.** The section holds N series,
