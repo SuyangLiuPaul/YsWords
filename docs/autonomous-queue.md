@@ -3979,30 +3979,57 @@ has never seen this repo.
         still possible — ask the embed for its current time before
         swapping, the same idea as today, different API.
 
-      **A SECOND series goes in the same section — the Shema videos.**
-      User, 2026-08-18: `https://www.christiandiscipleschurch.org/content/shema-youtubes`
-      — "这里面的也要加到featured video里面一个系列的".
+      **A SECOND series goes in the same section — the Shema videos.
+      UNBLOCKED 2026-08-19, with all 29 IDs read off YouTube.**
+      User: "这里面的也要加到featured video里面一个系列的". Bentley, via
+      the user: "All 29 youtube links."
 
-      This is good news for the model rather than extra work: the
-      section was already being built to hold several series, and now it
-      has three from day one — 獨一真神, Standing at the Cross, and
-      Shema. A design that only looked right with two would have been
-      found out later.
+      **Taken from YouTube's RSS feeds, not from the church page.** That
+      page still refuses datacenter IPs, but it turned out not to be
+      needed: `https://www.youtube.com/feeds/videos.xml?playlist_id=<id>`
+      returns clean XML with video IDs and titles, which is a better
+      source than scraping HTML anyway. The channel is `@RRSuen`.
 
-      **Its video IDs are NOT yet known, and must not be guessed.** That
-      host refuses datacenter IPs (ECONNREFUSED from this Mac, from
-      WebFetch and from the GitHub runner alike), and a web search turns
-      up only unrelated Shema material — Ray Vander Laan's course and
-      others — nothing from this church. Putting a plausible-looking
-      YouTube video into a Bible app's featured shelf because the title
-      matched would be exactly the kind of confident error this queue
-      exists to prevent.
+      **The count verifies itself: 25 numbered messages (#7–#31) plus 4
+      series compilations = 29**, exactly the number Bentley gave. That
+      agreement is the reason to trust this table.
 
-      **Ask the user for the list**, the same way the Standing at the
-      Cross IDs were obtained: they can open the page on their phone.
-      What is needed per video is the YouTube URL or ID, the part
-      number if the page numbers them, and the language. Then verify the
-      pairing against the page rather than trusting the transcription.
+      | playlist | numbers | id |
+      |---|---|---|
+      | The Shema Part 1 | #7–#13 | `PLKdS3C3dQ95RMSBg52aWzdb3KtowWw8AV` |
+      | Living the Shema Part 2 | #14–#20 | `PLKdS3C3dQ95Qqif5KtfyEZgwkwIv5_SEr` |
+      | Living the Shema Part 3 | #21–#27 | `PLKdS3C3dQ95RjguVV6xdtIElP95OOw7Hl` |
+      | Living the Shema Part 4 | #28–#31 | `PLKdS3C3dQ95RP0tFef-MKOpEp3JWXL3hw` |
+
+      Part 1 (#7-13): W9qBulKwZZk bpPV5CVQhtk mi3Ek9a9Gtg G1WIG-D0fxU
+      DYJFQ6RfHFs 2b_sqdFnkVI DL0e9xuBTM0 · compilation ksDEG_PhuS4
+      Part 2 (#14-20): NSDI_aVXh48 pWigf_uuaSw ardFs31RXrg zMPG5fjTT_I
+      2vsgBwO9MqY cBSPeIJ9by8 dinbK352sW4 · compilation M3zQNM0mhoM
+      Part 3 (#21-27): CAOAR4lrSXI wytRw17AN4w ucvTxRq2EP0 61ivlMTRJzM
+      Rht9Sjqr9X8 jK43LNqkBQM 9oDClt6_veA · compilation PnO_OyR3cW8
+      Part 4 (#28-31): PNr5ozRGZzE IY3pEDYKv2o ec3T-_0DYXA NhTgvJ_xOhQ
+      · compilation GmBlrJYfP84
+
+      **Re-fetch the titles from the feeds rather than transcribing
+      them here** — they are long, they carry scripture references, and
+      a typo in a title shown next to Scripture is not worth the risk.
+
+      **Three things to decide, not to guess:**
+
+      1. **The 4 compilations are not episodes.** Each is the whole
+         part in one video ("7 Message Series on…"). Putting them in the
+         episode list makes a 7-part series look like 8. They are
+         probably a "watch it all" affordance, or omitted. Ask.
+      2. **The church's own sub-numbering has a mistake.** Part 4 runs
+         #28 #29 #30 #31 but its titles read "(15) (16) **(12)** (18)" —
+         #30 says 12 where the sequence wants 17. **Do not silently
+         correct it**; show the # number, which is consistent, and
+         raise the sub-number with the user.
+      3. **Numbering starts at #7.** #1–#6 exist somewhere — most likely
+         the "Introduction" (4), "God's Name forgotten in the Church:
+         YHWH" (6) and "My Testimony" (6) playlists on the same channel.
+         Whether the Shema series in the app starts at #7 or includes
+         those is the user's call, not an inference.
 
       **Design notes worth keeping:** the section label becomes the
       series list, not a single video; a series with one episode should
