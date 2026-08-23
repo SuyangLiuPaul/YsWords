@@ -14,6 +14,13 @@ be converted, then, after the conversion was written, that the population
 the argument rested on had been drawn wrong and the conversion had to be
 undone. Both times the fix was cheap because nothing had been committed.
 
+On 2026-08-24 two rounds of it cut a Revelation repair from **15 edits to
+5** — the ten it removed would have written quotation marks into the
+edition on an assumption nobody had measured. **Run it twice when the
+first round changes the shape of the claim**, not just once: round one
+here widened the scope and round two shrank it, and only round two
+touched the part that would have done damage.
+
 ---
 
 ## The app
@@ -194,6 +201,22 @@ advances the repo hash is healthy.
     up front and poll `kill -0 "$pid"`. Symptom: `pgrep` says busy while
     `ps aux | grep "dart compile"` shows nothing.
 
+20. **A witness more heavily punctuated than ours turns house style into a
+    defect list. Size the class in OUR text before calling any member of it a
+    defect.** `7a2dc43` carries 5,856 `「` to our 3,425 and 857 `：『` to our
+    548, so a plain diff nominates hundreds of verses. Three of the four edits
+    proposed for Revelation 2–3 on 2026-08-24 died this way: leaving level-2
+    speech after `說：` unmarked is **331 verses**; a verse-initial `「` the
+    witness lacks is a paragraph reopener, **144 verses**; and a `說：『` that
+    never closes is **13–18**. Only the fourth — a `「` opening inside a `「`
+    opened in the *same verse*, exactly 5 in 31,102 — was a defect. The queue
+    entry had asserted the opposite ("leaves a `『` that never closes … a new
+    artefact"), which was the assumption nobody had measured.
+21. **State the SCOPE of a uniqueness claim, because it is usually doing the
+    work.** "These five are the only ones in the Bible" is true per verse and
+    false per chapter, where the same shape occurs 603 times. Both numbers are
+    real; the sentence is only honest with the window attached.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -209,7 +232,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 67 open items across P0 (scripture
+`docs/autonomous-queue.md` — 70 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 

@@ -2568,39 +2568,118 @@ and quoted.**
       stops marking (出埃及記 33:5, 使徒行傳 21:11, 羅馬書 14:11 and the rest),
       and the witness agrees they are unmarked. Those are not defects.
 
-- [ ] **啟示錄 2:1, 2:8, 2:12, 2:18 and 3:1 nest `「` directly inside `「`
-      where the witness uses `『`.** Noted by the refuter 2026-08-23. A
-      level-marking defect rather than a wrong word, but it also breaks every
-      quote-balance parse of those verses, so any future scope audit will
-      mis-read Revelation until it is settled.
+- [x] **啟示錄 2:1, 2:8, 2:12, 2:18 and 3:1 nested `「` directly inside `「` —
+      FIXED 2026-08-24, five substitutions in all three assets, and ONLY five.**
+      The entry below used to call for fifteen edits across all seven letters.
+      Two rounds of the refuter cut it to five, and the ten that were dropped
+      are filed as their own items immediately after this one.
 
-      **Measured properly 2026-08-24, and it is bigger than five verses and
-      more clearly a defect than it looked.** The seven letters of Revelation
-      2–3 share one formula, and the witness `7a2dc43` sets all seven
-      identically: `「你要寫信給…的使者，說：『那…的，說：` … `。』」`. Ours
-      does *four different things* across the same seven, in all three assets:
-        * 2:1, 2:8, 2:12, 2:18, 3:1 — inner opener written `「` (should be `『`)
-        * 3:7, 3:14 — **no inner opening mark at all**
-        * 2:7, 2:11, 2:17, 2:29, 3:6, 3:13, 3:22 — close `」` where the
-          witness closes `』」`, so the inner quotation is never closed
-        * 2:13 — a `「` the witness does not have
+      `說：「那…` → `說：『那…`. `tools/repair_revelation_inner_quotes.py`
+      (idempotent, refuses on drift); `test/revelation_inner_quotes_test.dart`
+      fails three of its four tests on the pre-fix data. Not one Chinese
+      character changed in any file, and in the tagged corpus every edit fell
+      inside one existing run, so no Strong's number or parsing code moved.
 
-      **A first attempt to fix only the five was rejected, on two counts.**
-      Repairing the inner opener alone leaves a `『` that never closes and
-      leaves the seven-letter formula inconsistent *within itself* — a new
-      artefact, not a restoration. And the argument for leaving the rest
-      ("this edition routinely leaves quotations unclosed, 3443 `「` against
-      3124 `」`") is backwards: **1,065 of 1,189 chapters balance exactly
-      (89.6%)**, the surplus concentrates in Deuteronomy +115, Luke +82 and
-      Exodus +59, and *every* chapter of Revelation balances except 2 (9 open,
-      4 close) and 3 (4 open, 3 close). Revelation 2–3 is the outlier, not an
-      instance of house style.
+      **Why these five and not the other ten.** Counted per VERSE — a `「` that
+      opens while a `「` opened *in the same verse* is still open — these are
+      the only five in all 31,102 verses. Counted per CHAPTER the figure is
+      **603**, and that is the whole point: this edition reopens `「` at a
+      paragraph break without closing the previous one, so cross-verse nesting
+      is its convention. Within one verse there is no paragraph break to
+      explain it. `『』` is this edition's own level-2 mark, used 660 times
+      including inside Revelation at 18:7.
 
-      So the repair is all-or-nothing across the seven letters: five
-      substitutions, nine insertions and one deletion, in `cuvs-yhwh-tr.json`,
-      `cuvs-yhwh.json` (as `“`/`‘`) and `assets/tagged/cuvs-yhwh/revelation.json`.
-      That is a bigger editorial act than a substitution and it should be taken
-      as one deliberate item, not folded into another fix.
+      **The refuter earned its keep twice, in opposite directions.** Round one
+      broke the "Revelation contains zero `『`" claim (it contains five) and
+      showed the scope was wider than Revelation — see the new item below.
+      Round two broke the nine insertions and the deletion, which is the part
+      that mattered: the old entry above asserted that leaving `『` unclosed
+      would be "a new artefact". It is not. This edition leaves a `說：『`
+      running to the end of its discourse with no closer at 申命記 32:20,
+      路加福音 15:17, 使徒行傳 7:6 and throughout the 申命記 5 Decalogue —
+      **13 unclosed `『` by a corpus-wide stack, 18 by the raw 660/642
+      difference.** So closing them is an editorial improvement, not a repair.
+
+      The substitution shipped because it is independent of that question:
+      before it, 2:7's single `」` arrives with two `「` open; after it, with a
+      `「` and a `『` open. **It neither creates nor removes an unclosed
+      quotation — it only puts the right mark on the level that was already
+      nested.**
+
+- [ ] **Should the five `『` in Revelation's letters be CLOSED? Both positions
+      recorded, neither settled from the data — needs the user.** 啟示錄 2:7,
+      2:11, 2:17, 2:29 and 3:6 end `…。」`; the witness `7a2dc43` ends `…。』」`.
+      Five insertions, in all three assets.
+
+      **For closing:** the edition closes its inner quotations 642 times, and
+      the shape the five would otherwise keep — a `」` arriving while a `『` is
+      still open — is attested only 6 times (出 12:13, 出 33:3, 亞 3:10,
+      亞 7:7, 太 22:14, 可 5:34). Leaving them nearly doubles a 6-instance
+      anomaly.
+
+      **Against closing:** 13–18 `『` in this edition are never closed at all,
+      and every non-Decalogue one is exactly this shape — `說：『` running to
+      the end of the discourse. By that measure the five are ordinary. And
+      inserting a mark the file does not have is writing into the edition,
+      which the standing rule reserves for the user.
+
+      Nothing false is on screen either way. Pinned as-is by
+      `test/revelation_inner_quotes_test.dart` so it cannot drift while it
+      waits.
+
+- [ ] **啟示錄 3:7 and 3:14 mark no second-level quotation at all, and that is
+      probably house style rather than a defect.** Ours reads `說：那聖潔、真實…`
+      where the witness reads `說：『那聖潔…`. Left alone because the same thing
+      happens in **331 verses** — counted only where the witness's `說：『X` and
+      our `說：X` share the same following character, so the two positions
+      really correspond. The witness is a more heavily punctuated recension
+      (5,856 `「` to our 3,425; 857 `：『` to our 548), so it marks level 2 in
+      hundreds of places where this edition does not.
+
+      Consequence worth stating: the seven letters are now in three states
+      rather than four, not one. If the user answers the closing question above
+      they should be asked about these two in the same breath — one answer
+      could settle both.
+
+- [ ] **啟示錄 2:13's leading `「` is a paragraph reopener, not a stray — do
+      NOT delete it.** An earlier draft of the repair above deleted it because
+      the witness lacks it. The witness lacks it **144 times**: a verse-initial
+      `「` where the witness begins with an ordinary character is this edition's
+      convention for reopening a quotation after a paragraph break (申 32:23,
+      太 5:3, 路 6:24 …), and **five of the 144 are in Revelation itself** —
+      2:13, 4:11, 18:14, 18:16, 22:14. Recorded here so nobody deletes it
+      later on the same reasoning. This is why Revelation ch2 still reads
+      5 `「` to 4 `」` and ch22 reads 10 to 9; that residual is this class, not
+      the one that was fixed. Both verses are pinned by the test.
+
+- [ ] **The wrong-level quotation class is NOT confined to Revelation — the
+      first refuter found eleven more, and nobody has read them.** Found
+      2026-08-24 while attacking the Revelation fix, which is the right
+      provenance for it: it went looking for evidence the scope was wrong.
+      Same detector shape, against the same witness, outside Revelation:
+
+        * missing an inner opener where the witness has `『` — 使徒行傳 23:5,
+          路加福音 13:32, 使徒行傳 25:24, 出埃及記 8:20, 創世記 50:4, 50:16
+        * ends `」` where the witness ends `』」` — 撒迦利亞書 7:7, 11:6,
+          羅馬書 12:19 (使徒行傳 23:5 again, which has both shapes at once)
+        * the INVERSE error — 馬可福音 5:34 reads `『` where the witness
+          reads `「`
+
+      **Start with 馬可福音 5:34 — it is the strongest of the eleven and may
+      be stronger than the five that were just fixed.** Ours reads
+      `耶穌對她說：『女兒，你的信救了你…你的災病痊癒了。」` — it OPENS with the
+      second-level mark and CLOSES with the first-level one, a mismatched pair
+      inside a single verse. And nothing encloses it: 5:31's quotation closes,
+      so there is no open `「` for a level-2 mark to sit inside, and 5:28, 5:30,
+      5:31 and 5:35 all use `「…」`. That is broken against our own text, with
+      no witness needed — which none of the other ten can say.
+
+      **Do not sweep the rest.** Each has to be read against the 331-verse and
+      144-verse house-style classes above before it can be called a defect.
+      出埃及記 33:1 in particular is the *unclosed `『`* question again, not a
+      new class. The two Zechariah verses and 羅馬書 12:19 turn on whether a
+      quotation that spans verses should close, which is the open item three
+      entries up.
 
 - [ ] **約翰福音 9:9's other half: ours reads 「是他；」, the witness reads
       「是他」；.** The semicolon belongs to the outer sentence (有人說…；又有人
