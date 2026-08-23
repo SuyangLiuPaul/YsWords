@@ -4040,8 +4040,17 @@ has never seen this repo.
       congregations will have no separate website; the sweep is only
       worth doing for the few that do.
 
-- [ ] **The daily "Refresh songs" failure email is now noise — quiet it
-      without going deaf.**
+- [x] **The daily "Refresh songs" failure email — SHIPPED 2026-08-23
+      (yswords-data 5bf317a).** Exactly as specified below: the guard is
+      untouched; a `failure_dedup.py` step decides whether its refusal
+      is news. Same reason → suppressed; new reason or non-guard error →
+      loud; same reason 7 days on → one reminder, clock reset. Counts
+      are stripped before comparing (286→247 vs 286→245 is weather, not
+      news). State committed to `.github/refresh-songs-state.json`
+      rather than an Actions cache, which evicts on the very horizon
+      the streak must survive; any success deletes it. All seven paths
+      tested with git stubbed. Original brief below.
+      **SUPERSEDED — quiet it without going deaf.**
       `SuyangLiuPaul/yswords-data` → Refresh songs has failed every day
       since 2026-08-12; last success 08-11. Six identical failures, six
       identical emails.
@@ -5593,7 +5602,17 @@ so the bundle-size answer stays on the record.
 
 </details>
 
-- [ ] **The `git secrets` hooks in this repo are inert, and their
+- [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
+      `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
+      `nfp_[A-Za-z0-9]{20,}` pattern registered. The two broad AWS
+      patterns were REMOVED on purpose — every group in them is
+      optional, so they match any 40-char base64 assignment, and this
+      repo's assets would false-positive constantly, blocking the
+      loop's own commits (the precise AKIA-prefix pattern stays).
+      Verified both ways: a fake nfp_ token commit is refused (in a
+      scratch repo, not the live index), and the five most recent real
+      commits plus the big asset files all scan clean.
+      **SUPERSEDED — the hooks in this repo are inert, and their
       patterns would not catch the secret that actually matters.**
       Found 2026-08-23 while committing: git printed "hook was ignored
       because it's not set as executable" for all three of
