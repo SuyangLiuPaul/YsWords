@@ -5281,6 +5281,34 @@ so the bundle-size answer stays on the record.
 
 </details>
 
+- [ ] **The `git secrets` hooks in this repo are inert, and their
+      patterns would not catch the secret that actually matters.**
+      Found 2026-08-23 while committing: git printed "hook was ignored
+      because it's not set as executable" for all three of
+      `.git/hooks/pre-commit`, `prepare-commit-msg` and `commit-msg`.
+      They are `mode 600`.
+
+      **Do not just `chmod +x` them — that breaks every commit.**
+      `git-secrets` is not installed on this machine, so an executable
+      hook would fail and block the loop's own commits. Installing it is
+      the first half.
+
+      The second half is that `git config --get-all secrets.providers`
+      is only `--aws-provider`. The credential this repo actually
+      handles is a Netlify token (`nfp_…`, passed via
+      `NETLIFY_AUTH_TOKEN` to `tools/release_web.sh`), and no AWS
+      pattern matches that shape. A scanner that runs but cannot see the
+      one secret in play is worse than none, because it reads as
+      coverage.
+
+      **Nothing is leaked today** — `git grep -E 'nfp_[A-Za-z0-9]{20,}'`
+      over tracked files returns nothing. This is a latent gap, which is
+      why it is P3 and not P0: the guard is off, not breached.
+
+      Done when: `git-secrets` is installed, an `nfp_[A-Za-z0-9]{20,}`
+      pattern is registered, the hooks are executable, and a deliberate
+      test commit containing a fake token is refused.
+
 ## P3 — known but blocked or deferred
 
 - [ ] EC018 / EC019 sermon transcripts are raw speech recognition —
