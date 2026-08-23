@@ -2356,28 +2356,94 @@ and quoted.**
       rather than against the repo: all five now read 說：, and exactly the ten
       legitimate `說；` survive.
 
-- [ ] **Three verses put the opening `「` in the MIDDLE of an Old Testament
-      citation, so the first half of the quoted scripture reads as the
-      narrator's own words.** Found 2026-08-23 while measuring the item above.
+- [x] **Three verses put the opening `「` in the MIDDLE of an Old Testament
+      citation, so the first half of the quoted scripture read as the
+      narrator's own words — FIXED 2026-08-23, 8 marks moved in all three
+      files.** Found while measuring the item above.
 
-      | ref | ours | witness `7a2dc43` |
+      | ref | was | now reads |
       |---|---|---|
       | 馬太福音 16:14 | 說：有人說是施洗的約翰；**「**有人說是以利亞…一位。」 | 說：**「**有人說是施洗的約翰；…一位。」 |
-      | 馬太福音 1:23 | 說：必有童女懷孕生子；**「**人要稱他的名為以馬內利。」 | no quotation marks in the clause at all |
-      | 羅馬書 8:36 | 如經上所記：我們為你的緣故終日被殺；**「**人看我們如將宰的羊。」 | no quotation marks in the clause at all |
+      | 馬太福音 1:23 | 說：必有童女懷孕生子；**「**人要稱他的名為以馬內利。」 | 說：**「**必有童女懷孕生子；人要稱… |
+      | 羅馬書 8:36 | 如經上所記：我們為你的緣故終日被殺；**「**人看我們如將宰的羊。」 | 如經上所記：**「**我們為你的緣故…；人看我們… |
 
-      馬太福音 16:14 is settled by the witness directly. The other two are the
-      same shape — the citation is 以賽亞書 7:14 and 詩篇 44:22 respectively,
-      and both run across the `；`, so the mark belongs after 說：/所記： — but
-      the witness declines to answer there, so they rest on our own edition's
-      convention plus the citation boundary. **Moving a mark, not substituting
-      one**, which is the class 創世紀 21:7 below was left for.
+      羅馬書 8:36 is why this was P0 and not typography: both halves are
+      詩篇 44:22, and as it stood the verse said on screen that only the
+      second half is what is written.
 
-      Two neighbours were checked and are CORRECT — do not sweep them in:
-      哥林多前書 1:12 (`「我是屬保羅的」；「我是屬亞波羅的」…`, four quoted
-      claims separated by semicolons) and 哥林多前書 15:33 (`不要自欺；「濫交
-      是敗壞善行。」`, where the `；` closes the preceding clause). The witness
-      is byte-identical to ours at 林前 1:12.
+      **The class is bounded and was fully enumerated first.** `；「`/`；『`
+      stands at exactly 7 positions in 5 verses of the Traditional text. Three
+      were these; the other two are CORRECT and are pinned so no later pass
+      sweeps them — 哥林多前書 1:12 (`」；「`, four quoted claims, byte-identical
+      to the witness) and 哥林多前書 15:33 (a proverb after a semicolon with no
+      introducing colon anywhere in the verse, so there is nowhere to move a
+      mark to). The tagged corpus holds the same shape at the same 4 verses,
+      6 positions.
+
+      **Four lines of evidence, deliberately not the same line three times.**
+      (1) The witness `7a2dc43` settles 馬太福音 16:14 outright, reading
+      說：「有人說是施洗的約翰；…一位。」; it holds `；「` at ONE position in all
+      31,102 verses and is byte-identical to us there. (2) **Our own tagged
+      corpus settles 馬太福音 1:23 — and it is independent on this mark because
+      it DISAGREES with our reading text**, already reading 说：“必有童女懷孕
+      生子；人要称… with no quote before 人要称. It shares our defect at the
+      other two, so it is not a blanket normaliser. (3) 羅馬書 8:36 is the
+      weakest and rests on internal evidence: our own 詩篇 44:22 reads both
+      halves as one sentence, and 18 of the 20 `所記：` in our text are followed
+      by 「 — the only other exception, 哥林多前書 1:31, carries no quotation
+      marks at all. (4) 梁家鏗's independent NT sets the whole citation as one
+      unbroken unit at all three.
+
+      **Moved, not deleted.** The two external witnesses have no quotation
+      marks at all in the clause at 馬太福音 1:23 and 羅馬書 8:36, so deletion
+      is their literal reading; rejected because this edition quotes its
+      citations and deleting discards information it chose to carry.
+
+      `tools/repair_citation_quote_scope.py` (re-runnable, idempotent, and it
+      asserts the repaired verse is a permutation of the original with only the
+      quote relocated); `test/citation_quote_scope_test.dart` fails three of
+      its five tests on the pre-fix data.
+
+      **The refuter was fed contaminated data and "broke" a true claim — the
+      process lesson is the expensive one.** It was launched before the repair
+      and read the tagged files after it, so it reported the tagged corpus had
+      never had the defect. Re-checked against `git show HEAD:` it confirmed
+      the opposite. **Never mutate the files a running refuter is reading**;
+      either finish the edit first or tell it to read from a blob.
+
+- [ ] **The same misattribution defect without the semicolon: 4 verses put a
+      SECOND speaker's words inside the FIRST speaker's quotation marks, and 5
+      more leave the first reply unquoted.** Found by the refuter 2026-08-23
+      while attacking the item above, which is the right provenance for it: it
+      went looking for evidence that fixing the `；` shape left a comparable
+      class untouched, and there is one.
+
+      **Measured, not guessed.** 49 verses have a speech colon followed by
+      unquoted words while another speech in the same verse IS quoted. Most are
+      not defects: 10 of the 13 where a bare `說：` sits inside a balanced
+      「…」 span are third-level nested inner speech that this edition simply
+      stops marking (出埃及記 33:5, 使徒行傳 21:11, 羅馬書 14:11 and the rest),
+      and the witness agrees they are unmarked.
+
+      **The genuine ones, where the app attributes words to the wrong speaker:**
+      馬太福音 15:34 (`耶穌說：「你們有多少餅？他們說：有七個…」` — the
+      disciples' answer sits inside Jesus's quotation), 馬可福音 6:37,
+      約翰福音 13:36, and **馬太福音 17:26**, which a balanced-span filter
+      misses because Peter's `「` does not close until 17:27 — worth
+      remembering, since every quote-scope check this repo writes will have the
+      same cross-verse blind spot.
+
+      **Five more are missing marks rather than misplaced ones** — the first
+      reply carries none at all while the second is quoted, and the witness
+      `7a2dc43` quotes both: 馬可福音 3:22, 馬太福音 21:27, 約翰福音 8:19,
+      13:8, 18:31. Adding a pair is a different act from moving one, which is
+      why they are filed separately here.
+
+- [ ] **啟示錄 2:1, 2:8, 2:12, 2:18 and 3:1 nest `「` directly inside `「`
+      where the witness uses `『`.** Noted by the refuter 2026-08-23. A
+      level-marking defect rather than a wrong word, but it also breaks every
+      quote-balance parse of those verses, so any future scope audit will
+      mis-read Revelation until it is settled.
 
 - [ ] **約翰福音 9:9's other half: ours reads 「是他；」, the witness reads
       「是他」；.** The semicolon belongs to the outer sentence (有人說…；又有人

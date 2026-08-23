@@ -136,6 +136,15 @@ advances the repo hash is healthy.
     caused damage was written with identical confidence and was false. Prefer a
     re-runnable audit to a sentence — `tools/audit_lexicon_provenance.py` now
     enumerates the exceptions instead of asserting there are none.
+15. **Never mutate a file while a refuter is reading it.** On 2026-08-23 a
+    refuter was launched in the background and the repair was applied while it
+    ran; it read the reading text before the change and the tagged corpus
+    after, and reported — confidently and with evidence — that the tagged
+    corpus had never carried the defect. It had. The claim was only recovered
+    by re-checking against `git show HEAD:`. Either finish the edit before
+    launching, or tell the refuter to read from a blob. **A refuter reading a
+    moving working tree is worse than no refuter**, because its output looks
+    exactly like a real refutation.
 
 ## Standing rules from the user
 
