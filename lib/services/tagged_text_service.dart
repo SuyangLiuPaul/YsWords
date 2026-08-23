@@ -313,8 +313,14 @@ class TaggedTextService {
     final out = <TaggedRun>[];
     for (var i = 0; i < runs.length; i++) {
       // A run whose text was entirely gloss has no printed word left to
-      // carry a number. None exist in the shipped assets; dropping is
-      // the honest answer if one ever does.
+      // carry a number, so it is dropped.
+      //
+      // Runs that arrive empty are a different thing and are kept: the
+      // importer gave a number to a Hebrew word this translation does
+      // not render, and throwing the number away here would be a data
+      // change made in a rendering pass. They print nothing either way —
+      // `_taggedVerseLine` skips them so they cannot become invisible
+      // tap targets.
       if (texts[i].isEmpty && runs[i].text.isNotEmpty) continue;
       out.add(TaggedRun(
         text: texts[i],

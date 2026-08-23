@@ -45,6 +45,60 @@ and quoted.**
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
+- [x] **The word-tap corpus printed 14 verses with a stray ASCII bracket in
+      them, and 2 verses were missing a character of scripture. Fixed
+      2026-08-24.** 詩篇 115:17 read 「死人不能)讚美雅偉」, 馬可福音 15:13
+      opened on a bare 「)」, 利未記 11:7 read 「因為{蹄分兩瓣」.
+
+      **Found by widening a census, which is the transferable part.** The
+      queue item below (士 8:24 / 耶 10:11 unmatched 〕) was the one taken.
+      Counting brackets in the READING assets only would have missed this
+      entirely — `assets/tagged/cuvs-yhwh/` is a SECOND transcription, and
+      `originals_sheet.dart` renders it **verbatim in place of** the
+      reader's verse. A defect there is scripture on screen.
+
+      **Why it was invisible.** `coversVerse` compares ideographs only, so
+      it cannot see an ASCII character that was never in the verse — the
+      guard that hides a tagged line which has LOST a word is blind to one
+      that has GAINED junk. All 14 passed it and were being printed. Only
+      `cuvs-yhwh` is tagged and there is no 简→繁 converter, so this was on
+      screen for Simplified readers only.
+
+      **The rule is measured, not chosen:** `(`, `)`, `{`, `}` occur **zero**
+      times in the 62,204 verses of the two reading assets, so in the second
+      transcription they are import damage. 創世記 48:7's balanced pair is
+      converted to `（）` rather than deleted — not because the witnesses
+      agree (blob `7a2dc43` writes `〈〉`, the printed 1919 brackets nothing)
+      but because that line is rendered in place of `cuvs-yhwh.json`'s, and
+      both shipped reading assets write `（）` there. 路加福音 8:45's `)`
+      becomes `〕`: it was the corpus's only unmatched `〔`.
+
+      **And the mirror fault — the importer had SWALLOWED two characters.**
+      耶利米書 4:22 read 「不認識；」 for 「不認識我；」 (the verb lost its
+      object) and 歷代志上 21:17 read 「數點百姓不是我嗎」 for 「數點百姓的不
+      是我嗎」. These had been listed as unsettled for twelve days because
+      moving a character looked like reconstruction. It is not: all three
+      witnesses agree on the clause, and the receiving run in 耶 4:22 already
+      carries `i:["H853"]`, the object marker whose suffix that 我 is. Both
+      were dropped whole by `carriesImporterMarkup`, so no reader saw the
+      markup — the cost was the word-tap gesture on two verses. They now
+      reach the sheet: `dropped` went 2 → 0, `uncovered` unchanged at 223.
+
+      `tools/repair_tagged_stray_brackets.py` (new) and `SWALLOWED_PLACEMENT`
+      in `tools/repair_tagged_markup.py`. Pinned by
+      `test/tagged_stray_brackets_test.dart`. **The importer-markup class is
+      now closed at zero**, which is the audit worth watching: a re-import
+      that brings it back will say so.
+
+      **The refuter earned its keep three times over** — see the new traps in
+      PROJECT_STATE. It broke my framing (I was about to claim the markup was
+      printed to readers; it was not), broke my verdict on 創 48:7 (I had
+      planned to leave it as a style question), and caught a regression I had
+      just introduced: deleting a bracket that WAS a whole run left two
+      zero-width runs carrying a tap recognizer. Fixed in the renderer rather
+      than by dropping Strong's numbers from the data, which also retired ten
+      such dead tap targets that had already shipped.
+
 - [x] **Characters were silently MISSING from verses — 士師記 12:13 read
       「作以色的士師」 for 以色列. 15 verses restored, in all three assets.**
       Found 2026-08-19 by the refuter while it was trying to break the `??`
@@ -602,6 +656,80 @@ and quoted.**
       an insertion into scripture assets, the direction that needs more
       evidence, and the two members disagree on how much. Whoever takes it
       should settle 8:24 first (three lines agree) and treat 10:11 separately.
+
+      **Still open after the 2026-08-24 iteration, which took this item and
+      then left it.** The bracket work that shipped that day was a different
+      class found while measuring this one, and it took priority because two
+      verses were missing scripture. One thing was learned here and is worth
+      not re-deriving: **ask what the print witness CAN express before
+      counting its silence as evidence.** The Wikisource 1919 transcription in
+      `/tmp/wscuv/` carries **zero** `〔〕` but **159 balanced `（）` pairs**, so
+      it can express the class — but its coverage is partial. It brackets only
+      2 of our 4 OT aside pairs, and 士師記 has **zero parentheses in the whole
+      book**. So the print's silence at 士 8:24 is close to no evidence at all,
+      which strengthens the case for 8:24 rather than weakening it. 10:11 is
+      untouched by this and still needs a scope decision.
+
+- [ ] **`主* ` — an editorial mark printed as scripture in 115 verses of the
+      word-tap corpus. Eight times the bracket class, and almost certainly the
+      same defect as `主#`, which is already fixed.** Measured 2026-08-24:
+      `*` occurs **124 times across 115 verses** in `assets/tagged/cuvs-yhwh/`
+      and **zero times** in the 62,204 verses of the two reading assets. Shape:
+      哥林多前書 2:8 reads 「就不把榮耀的主* 釘在十字架上了」 — an asterisk and
+      a trailing space, exactly where `主#` used to stand in the 15 verses that
+      `repair_tagged_markup.py` turned into the edition's own referent gloss
+      `主[基督]`.
+
+      **Do not assume it resolves to the same gloss.** `#` was settled because
+      the reading asset printed 主[基督] at those references and the corpus
+      itself kept 主[雅偉] intact two words away in 徒 2:34 — evidence, not
+      pattern-matching. Check each of the 115 against `cuvs-yhwh.json` the same
+      way; some may be 主[雅偉]. It is the largest known class of non-scripture
+      characters left in a file that is rendered in place of the reader's verse.
+
+- [ ] **The remaining stray ASCII punctuation in the word-tap corpus.**
+      Measured 2026-08-24, against zero occurrences in the reading assets:
+      `,` 27 (21 verses), `.` 16 (13 verses), `!` 11 (11 verses), `;` 4
+      (4 verses). Smaller and less certain than the bracket class — a comma
+      may be a legitimate transcription choice where the reading asset used
+      `，` — so each needs the same three gates the bracket tool used
+      (reading verse clean, Chinese conserved, distance to the reader's verse
+      not increased) rather than a blanket substitution.
+
+      Two things measured that are **not** defects, recorded so nobody re-opens
+      them: `:` ×56 is legitimate, living inside the edition's own
+      cross-reference notes 〔創10:3作"利法"〕; and `<note: …>` in **1147
+      verses of both reading assets** is the edition's translator-note feature,
+      not import damage — it has a renderer.
+
+- [ ] **253 runs are tagged `H0`, which is not a Strong's number.** Mostly
+      雅伟 (1_chronicles 2:3, 16:21, 21:26 …). Measured 2026-08-24 while
+      checking 耶利米書 4:22. Worth one iteration to find what the lexicon
+      sheet does when a reader taps one: if it opens an empty or wrong entry
+      that is a P0 (the app stating something untrue about the original), and
+      if it correctly declines to be tappable it is nothing. **Measure the
+      behaviour before filing it as a defect** — the tag being odd is not
+      itself a user-visible fault.
+
+- [ ] **Twelve runs carry a Strong's number and no word.** Ten shipped that
+      way (the importer numbered a Hebrew word this translation does not
+      render); the 2026-08-24 bracket repair emptied two more whose only
+      character was the stray brace. They no longer render — `_taggedVerseLine`
+      skips empty runs, which also retired ten invisible tap targets — so this
+      is **data tidiness, not a reader-visible defect**, and is filed low
+      deliberately. `test/tagged_stray_brackets_test.dart` pins the count at
+      12; growth means a new import is dropping words.
+
+- [ ] **Unverified lead: `coversVerse`'s own documented fallback rate may be
+      measured on a path production does not use.** Its docstring and
+      `originals_sheet.dart` both cite 238 of 31,102 (0.77%). The test measures
+      via `sanitizeForSearch(verseText)` and now gets **223** (verified
+      2026-08-24 — the pinned ratchet had drifted from 236 and was tightened).
+      A refuter claims production passes the **raw** `verseText` and that the
+      true fallback count is **270** (0.87%). **That 270 is NOT verified** —
+      re-measure it before quoting it. If it holds, the number in the docstring
+      describes the test, not the app, and 47 verses fall back for reasons
+      nobody has looked at.
 
 - [x] **哥林多後書 13:5 (在你們裏面 / 在你們心裏) got its four-witness check
       on 2026-08-23 — and the fourth witness sided with US.** Our own tagged

@@ -83,15 +83,19 @@ void main() {
   });
 
   test('the corpus disagreement does not grow', () {
-    // Measured 2026-08-12 on the repaired assets: 236 of the 31,100
-    // verses that reach the sheet (0.76%) fall back to the plain line.
-    // 238 verses disagree in the files; two of them carry importer
-    // markup and are dropped before this check ever sees them. The
+    // Re-measured 2026-08-24: 223 of the 31,102 verses that reach the
+    // sheet (0.72%) fall back to the plain line, and nothing is dropped
+    // before this check any more — the last two verses carrying importer
+    // markup were settled, so `compared` is now the whole corpus. The
     // figure is pinned rather than asserted at zero because these are
     // two honest imports of the same translation and the wording
     // variants (姊姊/姐姐, 她/它) are not ours to decide — but a
     // re-import that starts dropping clauses must not slip past.
-    const known = 236;
+    //
+    // The ratchet only ever tightens. It stood at 236 while the real
+    // number had already fallen to 223, so it would not have caught
+    // thirteen verses of regression.
+    const known = 223;
 
     final reading = <String, Map<String, String>>{};
     final rows =

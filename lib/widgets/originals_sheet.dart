@@ -302,7 +302,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     return Text.rich(
       TextSpan(
         children: [
-          for (final run in runs)
+          // A run with no text carries a number for a Hebrew word this
+          // translation did not render. Emitted, each is a zero-width span
+          // with a tap recognizer on it — an invisible target that opens a
+          // lexicon entry for a word that is not on the line. Ten shipped
+          // that way; the bracket repair emptied two more whose only
+          // character was the stray brace, so the guard is what keeps the
+          // repair from adding to a fault it was meant to remove.
+          for (final run in runs.where((r) => r.text.isNotEmpty))
             if (!run.isTagged)
               TextSpan(text: run.text, style: base)
             else

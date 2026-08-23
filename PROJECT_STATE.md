@@ -255,6 +255,39 @@ advances the repo hash is healthy.
     of them broken. When an exception list looks tidy, ask what would keep a
     genuine member OFF it, not just whether every entry on it is justified.
 
+25. **A census run over the READING assets is not a census of what the reader
+    sees.** `assets/tagged/cuvs-yhwh/` is a SECOND, independent transcription
+    of the same edition, and `originals_sheet.dart` renders it **verbatim in
+    place of** the reader's verse whenever `coversVerse` passes. On 2026-08-24
+    the loop counted stray brackets in the reading text, found the class small,
+    and only then thought to run the same count over the tagged corpus — where
+    14 verses were printing an ASCII `)` or `{` as scripture (詩 115:17
+    「死人不能)讚美雅偉」). The guard cannot catch these: `coversVerse` compares
+    ideographs only, so it sees a tagged line that has LOST a word and is blind
+    to one that has GAINED junk. Whenever a data claim is made, ask **which of
+    the two transcriptions it was measured on**, and run it on both.
+
+26. **A repair that DELETES a character can leave the run empty, and an empty
+    run is not nothing — it is an invisible tap target.** Removing a stray
+    brace that was a whole run left `{"w":"","s":"H1245"}`, which
+    `_taggedVerseLine` faithfully rendered as a zero-width `TextSpan` carrying
+    a `TapGestureRecognizer`: a lexicon entry opening for a word that is not on
+    the line. Analyze was clean and 1,100 tests were green, because the code
+    rendered exactly the runs it was given. The refuter found it. Two lessons:
+    **after any deletion pass, count what the deletion emptied**; and prefer
+    fixing it in the renderer over deleting the Strong's number from the data,
+    which here also retired ten such dead targets that had already shipped.
+
+27. **When a docstring cites a witness, name the witness precisely enough to
+    be checked — or someone will check the wrong one and conclude you lied.**
+    A claim that "the Traditional import writes `〈〉`" was true of git blob
+    `7a2dc43` and false of the shipped `cuvs-yhwh-tr.json`, which writes `（）`.
+    The refuter checked the shipped file, reported the statement as refuted,
+    and it took a re-measurement to establish the sentence had been right and
+    merely ambiguous. Cite the blob sha or the file path. Related: a refuter's
+    numbers are not privileged either — its "236 uncovered" was the stale
+    constant it had read out of the test, and the measured figure was 223.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -270,7 +303,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 71 open items across P0 (scripture
+`docs/autonomous-queue.md` — 76 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 

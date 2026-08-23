@@ -44,16 +44,21 @@ void main() {
   });
 
   test('the tagged text carries no importer markup', () {
-    // 歷代志上 21:17 stores 「行了恶<WH的8687>」 and 耶利米書 4:22 stores
-    // 「愚昧无知<WH873我7>的儿女」. Both markers ate a Chinese character,
-    // and `assets/cuvs-yhwh.json` shows both belong in a different
-    // clause — 「吩咐數點百姓**的**不是我嗎」, 「不認識**我**」. Deleting
-    // the marker would strand the character where it does not belong
-    // and moving it would be reconstruction, so they are listed here
-    // rather than guessed at, and the loader drops them so neither is
-    // printed to a reader.
-    const unsettled = {'1_chronicles 21:17', 'jeremiah 4:22'};
-
+    // The last two held out for twelve days: 歷代志上 21:17 stored
+    // 「行了恶<WH的8687>」 and 耶利米書 4:22 stored 「愚昧无知<WH873我7>的儿女」,
+    // markers that had each eaten a Chinese character. Deleting the marker
+    // would have stranded the character in the wrong clause, so both were
+    // listed as unsettled rather than guessed at.
+    //
+    // They are settled now, and by measurement rather than reconstruction:
+    // `assets/cuvs-yhwh.json`, the independent Traditional import and the
+    // printed 1919 all read 「不認識我；」 and 「數點百姓的不是我嗎」, and the
+    // receiving run in 耶 4:22 already carries `i:["H853"]` — the object
+    // marker whose suffix that 我 is. `SWALLOWED_PLACEMENT` in
+    // `tools/repair_tagged_markup.py` applies the move, and the tool's
+    // own gate requires the result to reproduce the reader's verse
+    // ideograph for ideograph. Both verses now pass `coversVerse`, so the
+    // word-tap sheet reaches them for the first time.
     final found = <String>[];
     tagged.forEach((book, verses) {
       verses.forEach((ref, runs) {
@@ -64,7 +69,7 @@ void main() {
       });
     });
 
-    expect(found.toSet(), unsettled,
+    expect(found, isEmpty,
         reason: 'a Strong\'s marker left in the printed text is shown to '
             'the reader as scripture');
   });

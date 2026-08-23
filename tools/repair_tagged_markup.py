@@ -33,6 +33,12 @@ the reading text, never further. Anything that does not is left alone
 and reported, because a verse this tool cannot settle from evidence is
 a verse for a human to settle.
 
+Two such verses were reported for twelve days — 歷代志上 21:17 and
+耶利米書 4:22, where the marker had eaten a 的 and a 我 — and both are
+settled as of 2026-08-24 by `SWALLOWED_PLACEMENT`. It now reports
+`left alone: 0`, which is the audit worth watching: a re-import that
+brings the class back will say so.
+
 Usage:
     python3 tools/repair_tagged_markup.py [--write]
 """
@@ -106,11 +112,55 @@ def reading_index() -> dict[str, dict[str, str]]:
     return out
 
 
+# The two verses this tool refused, settled 2026-08-24 — see the note on
+# `swallowed_text`. Moving the character IS the repair, so it is written
+# out run by run rather than inferred, and three things have to hold
+# before it is applied: the character taken out must be the character put
+# back (`_conserved`), the finished verse must reproduce the reader's
+# verse ideograph for ideograph (`distance == 0`), and every rewrite
+# named here must have matched exactly once.
+#
+# Placement is not a judgement call in either verse. The reading asset,
+# the independent Traditional import and the printed 1919 page all read
+# 「吩咐數點百姓的不是我嗎」 and 「不認識我」, and the run that receives the
+# 我 already carries `i: [H853]` — the untranslated object marker whose
+# suffix that 我 is. Nothing else in the verse can take either character
+# without contradicting all three.
+#
+# Until this landed both verses were dropped whole by
+# `TaggedTextService.carriesImporterMarkup`, so the word-tap sheet showed
+# the plain line and no reader ever saw the markup. What was wrong was
+# the asset, and the cost was the gesture on two verses.
+SWALLOWED_PLACEMENT: dict[tuple[str, str], tuple[tuple[str, str], ...]] = {
+    ("1_chronicles", "21:17"): (("百姓", "百姓的"), ("的，但这", "，但这")),
+    ("jeremiah", "4:22"): (("认识；", "认识我；"), ("我的儿女，", "的儿女，")),
+}
+
+
 def repair_run(text: str, *, gloss: bool) -> str:
     out = MARKUP.sub("", text)
     if gloss:
         out = out.replace("#", "[基督]")
     return out
+
+
+def _conserved(before: list[str], after: list[str]) -> bool:
+    """Whether the two run lists hold the same Chinese, in the same count."""
+    keep = lambda s: sorted(c for c in s if re.fullmatch(CJK, c))  # noqa: E731
+    return keep("".join(before)) == keep("".join(after))
+
+
+def place_swallowed(key: tuple[str, str], runs: list[str]) -> list[str] | None:
+    """Move a swallowed character back to the clause the reader's verse puts it in."""
+    rewrites = SWALLOWED_PLACEMENT.get(key)
+    if rewrites is None:
+        return None
+    out = list(runs)
+    for was, now in rewrites:
+        if out.count(was) != 1:
+            return None
+        out[out.index(was)] = now
+    return out if _conserved(runs, out) else None
 
 
 def swallowed_text(text: str) -> bool:
@@ -127,6 +177,8 @@ def swallowed_text(text: str) -> bool:
     the ASCII of a marker, with no bracket between them — because the
     marker itself splits at that character and so cannot be matched
     whole.
+
+    Both are settled now, by `SWALLOWED_PLACEMENT` below.
     """
     return bool(SWALLOWED.search(text))
 
@@ -159,6 +211,9 @@ def main() -> int:
                 else repair_run(r.get("w", ""), gloss=gloss)
                 for r in runs
             ]
+            moved = place_swallowed((path.stem, ref), candidate)
+            if moved is not None:
+                candidate = moved
             after = "".join(candidate)
 
             # A marker that swallowed Chinese is only settled when the
