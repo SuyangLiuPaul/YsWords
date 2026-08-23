@@ -43,17 +43,17 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.135** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.135** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.136** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.136** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**The deploy debt is paid.** v1.4.135 carries both the nine-verse
-speaker-attribution repair (`1760c58`, committed 2026-08-24 but never built)
-and the three word-tap repairs (`d03c81d`). Verified against the assets the
-sites actually serve, not the repo: 馬太福音 15:34, 約翰福音 2:7/2:8/13:36,
-創世紀 30:6 and 哥林多前書 15:45 all read correctly from
-`yswords-dev/assets/assets/cuvs-yhwh.json`, and 撒上 16:11 / 王下 10:13 /
-撒下 15:19 from the live tagged corpus.
+**The deploy debt is paid.** v1.4.136 adds the Revelation second-level
+quotation repair on top of v1.4.135's nine-verse speaker-attribution repair
+(`1760c58`) and three word-tap repairs (`d03c81d`). Verified against the
+assets the sites actually serve, not the repo: 啟示錄 2:1/2:8/2:12/2:18/3:1
+all read `說：『` from `yswords-dev/assets/assets/cuvs-yhwh-tr.json`, and
+馬太福音 15:34, 約翰福音 2:7/2:8/13:36, 創世紀 30:6, 哥林多前書 15:45 and
+撒上 16:11 / 王下 10:13 / 撒下 15:19 still read correctly.
 
 **prod is 122 versions behind and it is not an oversight.** Every prod
 push needs the user to say so in the moment; permission never carries
