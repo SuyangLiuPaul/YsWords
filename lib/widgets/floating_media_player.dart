@@ -82,20 +82,21 @@ class FloatingMediaPlayer {
     hide();
 
     final overlay = Overlay.of(context, rootOverlay: true);
-    final size = MediaQuery.of(context).size;
-    const width = 320.0;
-    final height = width / media.aspectRatio + _kBarHeight;
-    // Bottom-right, a thumb's width clear of the edges — out of the way
-    // of the reading column, and clear of the bottom chrome bar.
-    _position.value = Offset(
-      (size.width - width - 16).clamp(0.0, double.infinity),
-      (size.height - height - 96).clamp(0.0, double.infinity),
-    );
+    // Deliberately NOT positioned from the CALLER's MediaQuery.
+    //
+    // 2026-08-24, caught on the live site: opened from the song-detail
+    // sheet, `MediaQuery.of(context).size` is the sheet's box (it is
+    // capped at 720 wide), so the window was sized and placed against
+    // the wrong rectangle and landed below the fold — present in the
+    // DOM, with the right video, and half off the screen. Overlay
+    // geometry has to come from the overlay, so the first build reads
+    // it there and [_Window] clamps on every build after.
+    _position.value = _unplaced;
 
     final entry = OverlayEntry(
       builder: (ctx) => _Window(
         position: _position,
-        width: width,
+        width: _kWindowWidth,
         aspectRatio: media.aspectRatio,
         provider: media.provider,
         locale: locale,
@@ -117,9 +118,18 @@ class FloatingMediaPlayer {
   }
 
   static final Object _focusToken = Object();
+
+  /// "Not placed yet" — the first build in the overlay replaces it with
+  /// a real bottom-right position measured against the overlay itself.
+  static const Offset _unplaced = Offset(-1e9, -1e9);
 }
 
 const double _kBarHeight = 34;
+
+/// Wide enough for a 16:9 frame to be watchable, narrow enough to leave
+/// most of the page usable underneath — the point of a window you can
+/// push aside rather than a modal.
+const double _kWindowWidth = 320;
 
 class _Window extends StatefulWidget {
   const _Window({
@@ -151,6 +161,25 @@ class _WindowState extends State<_Window> {
     final media = MediaQuery.of(context);
     final height = widget.width / widget.aspectRatio + _kBarHeight;
 
+    // Bottom-right, a thumb's width clear of the edges, measured
+    // against the OVERLAY — and re-clamped on every build so a rotation
+    // or a window resize can never strand it off-screen with the close
+    // button out of reach.
+    final maxX = (media.size.width - widget.width - 12)
+        .clamp(0.0, double.infinity);
+    final maxY = (media.size.height - height - 12)
+        .clamp(0.0, double.infinity);
+    if (widget.position.value == FloatingMediaPlayer._unplaced) {
+      widget.position.value = Offset(maxX, (maxY - 72).clamp(0.0, maxY));
+    } else {
+      final p = widget.position.value;
+      final clamped = Offset(
+        p.dx.clamp(0.0, maxX),
+        p.dy.clamp(media.padding.top, maxY),
+      );
+      if (clamped != p) widget.position.value = clamped;
+    }
+
     return ValueListenableBuilder<Offset>(
       valueListenable: widget.position,
       builder: (context, pos, child) => Positioned(
@@ -181,11 +210,13 @@ class _WindowState extends State<_Window> {
                   // losing the bar means losing the close button, and
                   // the frame below it cannot be dragged at all (the
                   // platform view takes those pointers).
+                  // Clamped so the window is always FULLY on screen:
+                  // losing the title bar means losing the close button,
+                  // and the frame below it cannot be dragged at all
+                  // because the platform view takes those pointers.
                   widget.position.value = Offset(
-                    next.dx.clamp(
-                        -widget.width + 72, media.size.width - 72),
-                    next.dy.clamp(
-                        media.padding.top, media.size.height - _kBarHeight),
+                    next.dx.clamp(0.0, maxX),
+                    next.dy.clamp(media.padding.top, maxY),
                   );
                 },
                 child: Container(
