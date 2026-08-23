@@ -39,14 +39,20 @@ void main() {
     return xml.substring(open + '<string>'.length, close);
   }
 
-  test('iOS shows Yahweh\'s Words on the home screen', () {
+  test('iOS shows 雅伟之言 on the home screen', () {
+    // 2026-08-23, right after the rename: "Yahweh's Words" is 14
+    // characters and the iOS home screen truncates it to "Yahweh's
+    // Wo…", so the user chose the four-character Chinese name for the
+    // icon label ("CFBundleDisplayName 改成雅伟之言吧"). iOS only —
+    // macOS docks and menus do not truncate, so the Mac keeps the full
+    // English name.
     final plist = read('ios/Runner/Info.plist');
-    expect(plistValue(plist, 'CFBundleDisplayName'), wanted);
+    expect(plistValue(plist, 'CFBundleDisplayName'), '雅伟之言');
   });
 
-  test('iOS CFBundleName matches too', () {
-    // Used where the display name is too long to fit; a lowercase
-    // fallback there is exactly as visible as the wrong one was.
+  test('iOS CFBundleName carries the full English name', () {
+    // The fallback shown where a display name cannot be used; the
+    // Latin form is the safer of the two there.
     final plist = read('ios/Runner/Info.plist');
     expect(plistValue(plist, 'CFBundleName'), wanted);
   });
@@ -79,7 +85,11 @@ void main() {
         .toList();
 
     expect(labels, isNotEmpty, reason: 'no app_name resValue found');
-    for (final label in labels) {
+    for (final raw in labels) {
+      // The gradle source carries the apostrophe ESCAPED (\\') so it
+      // survives AAPT's XML-style quoting — un-escape before comparing,
+      // because the home screen shows the unescaped form.
+      final label = raw.replaceAll("\\\\'", "'");
       expect(label.startsWith(wanted), isTrue,
           reason: 'Android flavour label "$label" is not capitalised '
               'like $wanted');
