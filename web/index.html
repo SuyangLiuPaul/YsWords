@@ -216,36 +216,51 @@
       // So: unregister every worker EXCEPT ours, and delete every
       // cache bucket EXCEPT the song-media one. The stale-shell
       // protection is unchanged.
-      var MEDIA_SW = '/song_media_sw.js';
+      //
+      // 2026-08-24: a second exemption, for the same reason. The
+      // app-shell worker's own bucket (`yswords-shell-<version>`) is
+      // its ONLY offline fallback, and this block runs on every load —
+      // without the exemption the shell cache was refilled and deleted
+      // once per visit, i.e. offline never worked. Exempting it is safe
+      // because that worker is network first: nothing in this bucket is
+      // ever served to a user who has a network, and the worker rotates
+      // the bucket itself on activate when the build version changes.
       var MEDIA_CACHE_PREFIX = 'song-media-';
+      var SHELL_CACHE_PREFIX = 'yswords-shell-';
 
       var unregisterCount = 0;
       // 2026-08-24: this used to sweep EVERY worker on EVERY load —
-      // `var stale = regs` with no filter — which included Flutter's
-      // own app-shell worker. That worker is what makes the app
-      // installable and what serves it offline, so tearing it down on
-      // every load meant it could never survive: `getRegistrations()`
-      // returned 0 after a full load, `beforeinstallprompt` therefore
-      // never fired, and the in-app Install button correctly reported
-      // that nothing was available. Reported by the user as
-      // 「网页版安装install也安不上」 and reproduced in a browser before
-      // this change.
+      // `var stale = regs` with no filter — and the first fix that day
+      // narrowed it to spare `flutter_service_worker.js`. Sparing that
+      // one turned out to be pointless: on Flutter 3.44 the build
+      // OVERWRITES that file with a 784-byte stub that unregisters
+      // itself on activate, so there was still no worker left after a
+      // load — `getRegistrations()` returned 0, `beforeinstallprompt`
+      // therefore never fired, and the in-app Install button correctly
+      // reported that nothing was available. Reported by the user as
+      // 「网页版安装install也安不上」 and reproduced in a browser.
       //
-      // The sweep's actual purpose — evicting a STALE shell worker, and
-      // the dead /song-media/ one from installs that still carry it —
-      // is preserved: everything is still unregistered EXCEPT the
-      // current Flutter worker, matched on its script URL. Flutter's
-      // loader already versions that one (`serviceWorkerVersion` in
-      // flutter_bootstrap.js) and replaces it when the build changes,
-      // so it does not need us to delete it to stay fresh.
-      var FLUTTER_SW = 'flutter_service_worker.js';
+      // The app now ships its own worker (web/app_shell_sw.js, network
+      // first — read its header before touching it), so THAT is the one
+      // registration the sweep must leave alone. Matched on a substring
+      // of the script URL because the URL carries a `?v=<version>`
+      // query.
+      //
+      // Everything else still goes, which is the whole point of the
+      // block: a STALE shell worker from an older deploy — including
+      // Flutter's stub and the long-dead /song-media/ one — is exactly
+      // what this was written to evict, and that protection is
+      // unchanged. Ours cannot go stale in the same way: it never
+      // answers from cache while the network is up, and its script URL
+      // rotates with the build version.
+      var OUR_SW = 'app_shell_sw.js';
       var swPromise = ('serviceWorker' in navigator)
         ? navigator.serviceWorker.getRegistrations().then(function(regs) {
             var stale = regs.filter(function(r) {
               var url = (r.active && r.active.scriptURL) ||
                         (r.installing && r.installing.scriptURL) ||
                         (r.waiting && r.waiting.scriptURL) || '';
-              return url.indexOf(FLUTTER_SW) === -1;
+              return url.indexOf(OUR_SW) === -1;
             });
             unregisterCount = stale.length;
             return Promise.all(stale.map(function(r) {
@@ -258,7 +273,8 @@
         ? caches.keys().then(function(keys) {
             return Promise.all(keys
               .filter(function(k) {
-                return k.indexOf(MEDIA_CACHE_PREFIX) !== 0;
+                return k.indexOf(MEDIA_CACHE_PREFIX) !== 0 &&
+                       k.indexOf(SHELL_CACHE_PREFIX) !== 0;
               })
               .map(function(k) {
                 return caches.delete(k).catch(function() {});
@@ -279,11 +295,11 @@
         // `serviceWorker.controller` was null and media came back
         // from Netlify.
         //
-        // Widening it to '/' does not work either: Flutter's own
-        // generated worker claims root scope, and two scripts cannot
-        // share one scope — the later registration simply replaces
-        // the earlier. Competing for it would trade offline media for
-        // a stale app shell.
+        // Widening it to '/' does not work either: the app-shell
+        // worker claims root scope (as Flutter's generated one did
+        // before it), and two scripts cannot share one scope — the
+        // later registration simply replaces the earlier. Competing
+        // for it would trade offline media for a stale app shell.
         //
         // Web offline playback now reads Cache Storage directly and
         // hands the audio element a blob URL (see
@@ -293,6 +309,42 @@
         //
         // The `song-media-` cache exemption in the sweep above stays:
         // that bucket is where downloads live.
+
+        // Now register OUR app-shell worker — web/app_shell_sw.js.
+        //
+        // 2026-08-24 (「网页版安装install也安不上」): Chrome only fires
+        // `beforeinstallprompt` when a service worker with a fetch
+        // handler controls start_url, and this app had none — Flutter
+        // 3.44 replaced its generated worker with a stub that
+        // unregisters itself, so there was nothing to control anything.
+        // This registration is the fix; web/flutter_bootstrap.js stops
+        // the stub being registered over the top of it.
+        //
+        // CHAINED HERE, inside the sweep's `.then`, deliberately: the
+        // sweep unregisters every worker whose script URL is not ours,
+        // so registering in parallel with it would be a race the sweep
+        // could win, tearing down the worker we just asked for.
+        //
+        // `?v=` carries the build's own version (version.json, written
+        // by `flutter build web` from pubspec). A new version means a
+        // new script URL, which is what prompts the browser to install
+        // the new worker at all, and it rotates the worker's cache name
+        // so the previous build's offline shell is dropped.
+        //
+        // Every step is best-effort and silent. Offline support is a
+        // nice-to-have; a failure here must never keep the app from
+        // starting, so a missing version.json degrades to 'dev' and a
+        // refused registration is swallowed.
+        if (!('serviceWorker' in navigator)) return;
+        return fetch('version.json', {cache: 'no-store'})
+          .then(function(r) { return r.json(); })
+          .then(function(v) { return (v && v.version) || 'dev'; })
+          .catch(function() { return 'dev'; })
+          .then(function(v) {
+            return navigator.serviceWorker.register(
+              'app_shell_sw.js?v=' + encodeURIComponent(v));
+          })
+          .catch(function() {});
       });
     })();
   </script>
@@ -305,14 +357,17 @@
        Also exposes `isStandalone` so the same affordance hides
        once the user is already running in installed mode.
 
-       Why this is safe alongside the SW-unregister script above:
-       Chrome only fires beforeinstallprompt when a service worker
-       IS registered, so today (with SW being torn down on every
-       load) the event never fires. The bridge is in place for the
-       future round that re-introduces a versioned-cache SW; for
-       now `isStandalone` still works (detects Add-to-Home-Screen
-       installs on iOS Safari + post-install Chrome) so the
-       "already installed" check stays useful. -->
+       2026-08-24: this bridge was dead for three months for a
+       reason outside itself — Chrome only fires beforeinstallprompt
+       when a service worker with a fetch handler controls
+       start_url, and the app had no surviving worker at all, so the
+       event never arrived and `available` never went true (the
+       user's 「网页版安装install也安不上」). The sweep above now spares
+       web/app_shell_sw.js and registers it, so the precondition
+       finally holds and this code path goes live unchanged.
+       `isStandalone` was always independent of the worker (it
+       detects Add-to-Home-Screen on iOS Safari + post-install
+       Chrome) and keeps working as before. -->
   <script>
     window.yswordsInstall = {
       // True after a beforeinstallprompt event arrives.

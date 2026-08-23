@@ -1,5 +1,18 @@
 // YsWords kill-switch service worker.
 //
+// 2026-08-24: THIS FILE'S CONTENT NO LONGER SHIPS. `flutter build web`
+// on Flutter 3.44 overwrites build/web/flutter_service_worker.js with
+// its own 784-byte stub (see WebServiceWorker in flutter_tools) — a
+// stub that does the same job as everything below: skipWaiting,
+// unregister, reload the tab. Verified by diffing this file against
+// build/web/flutter_service_worker.js after a build. Nothing registers
+// that URL any more either, because web/flutter_bootstrap.js drops the
+// `serviceWorkerSettings` argument; it stays deployed purely as a
+// tombstone for browsers still polling it from an old deploy. The app's
+// real worker is web/app_shell_sw.js. Kept here so the URL still
+// resolves in `flutter run -d chrome`, where the build's overwrite does
+// not happen.
+//
 // We no longer use a service worker — `flutter build web --pwa-strategy=none`
 // stops generating one, and Netlify's no-cache headers handle freshness.
 // But many users have an OLD Flutter service worker installed from earlier

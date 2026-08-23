@@ -127,6 +127,17 @@
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
+# 2026-08-24: the app's own service worker (web/app_shell_sw.js).
+# Registered as `app_shell_sw.js?v=<version.json version>`, so a
+# version bump already gives it a fresh URL — this header is the
+# belt-and-braces half, guaranteeing the worker SCRIPT itself can never
+# be answered from a browser HTTP cache. A stale worker script is the
+# one way a network-first worker could still go wrong.
+[[headers]]
+  for = "/app_shell_sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
 [[headers]]
   for = "/flutter_bootstrap.js"
   [headers.values]
