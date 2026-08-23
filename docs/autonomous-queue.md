@@ -2475,6 +2475,83 @@ and quoted.**
       rather than guess; `test/speaker_attribution_test.dart` fails 3 of its 6
       tests on the pre-fix data (verified in a throwaway worktree at HEAD).
 
+- [x] **The same class again, three more, living ONLY in the word-tap corpus —
+      and the reason the nine missed them is worth more than the fix.**
+      Done 2026-08-24. 撒母耳記上 16:11 showed Samuel asking whether all of
+      Jesse's sons were present and then answering himself 「還有個小的，現在
+      放羊」; 列王紀下 10:13 showed Jehu asking 「你們是誰？」 and answering
+      himself. 撒母耳記下 15:19 carried a stray `“` mid-clause
+      (為什麼**“**與我們同去呢) with no speech verb near it.
+
+      **The nine-verse repair could not have found these, however hard it
+      tried.** Both of its detectors take the READING text as their subject —
+      one looks for a trapped `說：`, the other diffs our quotation marks
+      against the witness. But `assets/tagged/cuvs-yhwh/` is a *separate
+      transcription line*: it carries quotation marks in **4,043 verses where
+      the reading text carries none**, and all three of these are among them.
+      A defect can therefore live on the word-tap sheet and be invisible to
+      anything that reads the reading text, no matter which premise it uses.
+      This is trap 15 one level up — the second detector was built from a
+      different premise but over the *same corpus*, so the corpus itself was
+      the unexamined assumption.
+
+      **The third detector needs no witness and no speech verb:** a `“` that
+      opens while another `“` is still open. This edition sets inner speech
+      with `‘`, never by repeating `“`, so that shape is always either a lost
+      closing mark or a stray opening one. Over all 66 books it returns
+      **eight** — these three and the five Revelation letters below, which are
+      a separate level-marking item. (State the premise when quoting that
+      number: it holds *after* stripping the corpus's `〔…〕` note markup.
+      Unstripped it is eleven, the extra three being quotes inside notes at
+      林前 15:45, 該 2:4 and 路 9:54.)
+
+      **The witness corroborates but is NOT independent, and the refuter was
+      right to force the distinction.** `7a2dc43` reads 「你的兒子都在這裡
+      嗎？」他回答說 and 「你們是誰？」回答說 — a mark at exactly the two
+      positions chosen — and no mark at all before 與我們同去. But its
+      quotation marks sit at the same ideograph offset as this corpus's in
+      **6,461 of the 6,631 verses where both mark (97.4%)**: one punctuated
+      和合本 tradition, not two. That sharpens the repair rather than weakening
+      it — a corpus that agrees with its tradition 97% of the time and then
+      leaves a questioner's quotation open is losing a mark, not exercising an
+      editorial preference. The genuinely independent lines are balance (each
+      verse balances after the edit and did not before; 撒下 15:19's single
+      opening closes at the end of 15:20) and the fact that the reading text
+      has no marks here at all, so nothing behind the sheet ever said
+      otherwise.
+
+      **It is false on screen, not merely mis-marked.**
+      `lib/widgets/originals_sheet.dart` renders each run's text verbatim, and
+      the reading editions carry no quotation marks in these verses — so the
+      word-tap sheet is the *only* surface where a reader sees these words
+      quoted, with no correct copy behind it.
+
+      Only punctuation moved: run counts (23/18/17), every Strong's number and
+      the verse text with `“”‘’` removed are byte-identical to `HEAD`.
+      `tools/repair_tagged_speaker_attribution.py` (idempotent, aborts on
+      drift); the detector is now the third one in
+      `tools/audit_speaker_attribution.py`;
+      `test/speaker_attribution_test.dart` gains four tests, three of which
+      fail on the pre-fix data (the fourth is the only-punctuation-moved
+      invariant, which holds both ways by design).
+
+- [ ] **The word-tap corpus has 2,480 verses with more opening than closing
+      quotation marks, and 35 of its 66 books never reconcile.** Measured by
+      the refuter 2026-08-24 while attacking the three-verse fix above, and it
+      is the honest framing of that fix: three verses is a real repair and a
+      thin slice. Deuteronomy ends +115, Leviticus +90, Luke +83, Ezekiel +70,
+      Exodus +60, and there are 9 close-before-open events.
+
+      **Do not sweep it — most of it is almost certainly this edition's
+      house style**, which routinely leaves a quotation open across verses and
+      sometimes never closes it. The nesting detector above only catches a lost
+      closing mark that happens to be followed by another opening *in the same
+      verse*; the remaining losses are invisible to it.
+
+      The tractable next cut, for whoever takes this: the 9 close-before-open
+      events, which cannot be house style — a `”` with nothing open is either a
+      stray or evidence of an opening mark lost earlier.
+
 - [ ] **The five verses that leave the first reply UNQUOTED are still open** —
       a different act from the nine above, which is why they were filed
       separately and stay that way. 馬可福音 3:22, 馬太福音 21:27,
@@ -2496,6 +2573,34 @@ and quoted.**
       level-marking defect rather than a wrong word, but it also breaks every
       quote-balance parse of those verses, so any future scope audit will
       mis-read Revelation until it is settled.
+
+      **Measured properly 2026-08-24, and it is bigger than five verses and
+      more clearly a defect than it looked.** The seven letters of Revelation
+      2–3 share one formula, and the witness `7a2dc43` sets all seven
+      identically: `「你要寫信給…的使者，說：『那…的，說：` … `。』」`. Ours
+      does *four different things* across the same seven, in all three assets:
+        * 2:1, 2:8, 2:12, 2:18, 3:1 — inner opener written `「` (should be `『`)
+        * 3:7, 3:14 — **no inner opening mark at all**
+        * 2:7, 2:11, 2:17, 2:29, 3:6, 3:13, 3:22 — close `」` where the
+          witness closes `』」`, so the inner quotation is never closed
+        * 2:13 — a `「` the witness does not have
+
+      **A first attempt to fix only the five was rejected, on two counts.**
+      Repairing the inner opener alone leaves a `『` that never closes and
+      leaves the seven-letter formula inconsistent *within itself* — a new
+      artefact, not a restoration. And the argument for leaving the rest
+      ("this edition routinely leaves quotations unclosed, 3443 `「` against
+      3124 `」`") is backwards: **1,065 of 1,189 chapters balance exactly
+      (89.6%)**, the surplus concentrates in Deuteronomy +115, Luke +82 and
+      Exodus +59, and *every* chapter of Revelation balances except 2 (9 open,
+      4 close) and 3 (4 open, 3 close). Revelation 2–3 is the outlier, not an
+      instance of house style.
+
+      So the repair is all-or-nothing across the seven letters: five
+      substitutions, nine insertions and one deletion, in `cuvs-yhwh-tr.json`,
+      `cuvs-yhwh.json` (as `“`/`‘`) and `assets/tagged/cuvs-yhwh/revelation.json`.
+      That is a bigger editorial act than a substitution and it should be taken
+      as one deliberate item, not folded into another fix.
 
 - [ ] **約翰福音 9:9's other half: ours reads 「是他；」, the witness reads
       「是他」；.** The semicolon belongs to the outer sentence (有人說…；又有人
@@ -2538,17 +2643,18 @@ and quoted.**
       this repo has**, so this class can only be found by reading against a
       witness.
 
-- [ ] **希伯來書 2:2 may be missing 干犯 — needs the user, or a third
-      witness.** Ours reads 「凡犯悖逆的都受了該受的報應」; the witness
-      `7a2dc43` and the 新譯本 `57c4686` both read 「凡干犯悖逆的」, which is
-      also the standard CUV. **Our own Simplified asset drops it too**, so it
-      is upstream of the Traditional conversion and not a glyph defect.
+- [x] **希伯來書 2:2 was missing 干犯 — ALREADY FIXED, and this entry was
+      stale.** Closed 2026-08-24 after checking the data rather than the
+      queue: all three assets now read 「凡干犯悖逆的都受了該受的報應」
+      (Simplified, Traditional and `assets/tagged/cuvs-yhwh/hebrews.json`).
 
-      Not fixed, deliberately: restoring it means *writing a character into
-      scripture*, which the standing rule forbids doing on inference. Check
-      the tagged Strong's corpus for 希伯來書 2:2 first — if the tagged runs
-      carry the word, that settles it from inside the repo the way H1715 did
-      for 五穀 at 以賽亞書 36:17.
+      It was repaired as one of the 15 dropped-character restorations at the
+      top of this file — which lists 來 2:2 干犯 explicitly, and notes that the
+      `干` count in `traditional_dry_glyph_test` moved 111 → 112 precisely
+      because this verse got its 干犯 back. So the item was superseded by
+      another item in the same file and nobody closed it. Left open, it would
+      have sent a later iteration to "restore" a character that is already
+      there. **Check the asset before working an item, not just the queue.**
 
 - [ ] **梁家鏗's Traditional NT has the same classifier defect, smaller.**
       `assets/biblexg-v2-tr.json` has 398 只 against only 50 隻, and at

@@ -76,6 +76,29 @@ WITNESS_DIFF_EXPLAINED = {
 }
 
 
+# The word-tap corpus, in canonical order — its files are named, not numbered.
+TAGGED_BOOKS = (
+    'genesis', 'exodus', 'leviticus', 'numbers', 'deuteronomy', 'joshua',
+    'judges', 'ruth', '1_samuel', '2_samuel', '1_kings', '2_kings',
+    '1_chronicles', '2_chronicles', 'ezra', 'nehemiah', 'esther', 'job',
+    'psalms', 'proverbs', 'ecclesiastes', 'song_of_solomon', 'isaiah',
+    'jeremiah', 'lamentations', 'ezekiel', 'daniel', 'hosea', 'joel', 'amos',
+    'obadiah', 'jonah', 'micah', 'nahum', 'habakkuk', 'zephaniah', 'haggai',
+    'zechariah', 'malachi', 'matthew', 'mark', 'luke', 'john', 'acts',
+    'romans', '1_corinthians', '2_corinthians', 'galatians', 'ephesians',
+    'philippians', 'colossians', '1_thessalonians', '2_thessalonians',
+    '1_timothy', '2_timothy', 'titus', 'philemon', 'hebrews', 'james',
+    '1_peter', '2_peter', '1_john', '2_john', '3_john', 'jude', 'revelation',
+)
+
+# Same-level nesting in the tagged corpus that is NOT a misattribution:
+# Revelation's seven-letter formula, filed separately as a level-marking item
+# (the witness sets the inner quotation with 『, we repeat 「).
+TAGGED_EXPLAINED = {
+    '066002001', '066002008', '066002012', '066002018', '066003001',
+}
+
+
 def strip_notes(t):
     return NOTE.sub('', t)
 
@@ -185,6 +208,39 @@ def witness_diff():
     return sorted(hits)
 
 
+def tagged_nesting():
+    """Third detector, over the corpus the other two never read.
+
+    Both detectors above take the READING text as their subject. The word-tap
+    sheet renders `assets/tagged/cuvs-yhwh/` instead, which is a separate
+    transcription line: it carries quotation marks in 4,043 verses where the
+    reading text carries none, so a defect can live there and be invisible to
+    anything that diffs the reading text — however the diff is done.
+
+    The signature here assumes nothing about the trapped text and needs no
+    speech verb and no witness: an opening mark appearing while another is
+    still open. This edition sets inner speech with ‘, never by repeating “,
+    so “…“ is always either a lost closing mark or a stray opening one.
+    """
+    hits = []
+    for num, book in enumerate(TAGGED_BOOKS, start=1):
+        path = os.path.join(REPO, 'assets', 'tagged', 'cuvs-yhwh',
+                            book + '.json')
+        with open(path, encoding='utf-8') as fh:
+            data = json.load(fh)
+        for key, runs in data.items():
+            text = ''.join(r.get('w', '') for r in runs)
+            # Notes are 〔…〕 here, not <note:…> — their quotes are not speech.
+            text = re.sub(r'〔.*?〕', '', text)
+            m = re.search(r'“[^“”]*“', text)
+            if not m:
+                continue
+            chap, verse = key.split(':')
+            vid = '%03d%03d%03d' % (num, int(chap), int(verse))
+            hits.append((vid, f'{book} {key}', m.group(0)[:40]))
+    return sorted(hits)
+
+
 def main():
     unexplained = 0
     for path, o, c, oi, ci in EDITIONS:
@@ -207,6 +263,13 @@ def main():
         flag = '' if vid in WITNESS_DIFF_EXPLAINED else '   <-- UNEXPLAINED'
         print(f'    {vid}  …{ctx}…{flag}')
         if vid not in WITNESS_DIFF_EXPLAINED:
+            unexplained += 1
+
+    print('=== word-tap corpus opens “ while another “ is still open')
+    for vid, where, ctx in tagged_nesting():
+        flag = '' if vid in TAGGED_EXPLAINED else '   <-- UNEXPLAINED'
+        print(f'    {vid}  {where}  …{ctx}…{flag}')
+        if vid not in TAGGED_EXPLAINED:
             unexplained += 1
     return 1 if unexplained else 0
 

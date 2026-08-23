@@ -164,6 +164,25 @@ advances the repo hash is healthy.
     launching, or tell the refuter to read from a blob. **A refuter reading a
     moving working tree is worse than no refuter**, because its output looks
     exactly like a real refutation.
+17. **A second detector built from a different premise over the SAME corpus
+    still shares the corpus as an assumption.** Trap 15 said to build the
+    second detector from a different premise, and the nine-verse repair did —
+    then missed three more verses of the identical defect, because both of its
+    detectors read the *reading* text. `assets/tagged/cuvs-yhwh/` is a separate
+    transcription line that carries quotation marks in **4,043 verses where the
+    reading text carries none**, so a defect can sit on the word-tap sheet and
+    be invisible to anything that reads the reading text however cleverly.
+    Before publishing a count, ask which FILES the detector opened, not just
+    what shape it looked for.
+18. **`7a2dc43` corroborates; it is not independent.** Its quotation marks sit
+    at the same ideograph offset as the tagged corpus's in **6,461 of the 6,631
+    verses where both mark — 97.4%**. One punctuated 和合本 tradition, not two.
+    This does not make it useless: when a corpus agrees with its tradition 97%
+    of the time, the few places it diverges *and* produces a false reading are
+    losses rather than editorial variants. But never write "independently
+    confirmed by the witness" — write what the agreement rate is, and name the
+    lines that really are independent (balance, the reading text, internal
+    parallels).
 
 ## Standing rules from the user
 

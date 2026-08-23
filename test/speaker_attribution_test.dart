@@ -188,4 +188,96 @@ void main() {
     expect(text.indexOf('」'), lessThan(text.indexOf('末後的亞當')),
         reason: 'the citation must close before 末後的亞當');
   });
+
+  // ---------------------------------------------------------------------
+  // Three more of the same class, found 2026-08-24, living ONLY in the
+  // word-tap corpus. The repair above diffed the reading text against the
+  // witness, so it could never see them: the tagged corpus marks up 4,043
+  // verses the reading text leaves unmarked, and these three are among them.
+  // ---------------------------------------------------------------------
+
+  String tagged(String book, String ref) {
+    final data =
+        json.decode(File('assets/tagged/cuvs-yhwh/$book.json').readAsStringSync())
+            as Map<String, dynamic>;
+    return (data[ref] as List)
+        .map((r) => (r as Map<String, dynamic>)['w'] as String)
+        .join();
+  }
+
+  test('the word-tap sheet no longer answers its own questions', () {
+    // Samuel asks whether all Jesse's sons are present; Jesse answers. Before
+    // the fix both sat inside Samuel's quotation, so the sheet showed him
+    // saying 你的儿子都在这里吗？还有个小的，现在放羊 — a question and its
+    // answer in one mouth. Jehu at 列王紀下 10:13 read the same way.
+    expect(tagged('1_samuel', '16:11'), contains('都在这里吗？”他回答说：“还有个小的'),
+        reason: '撒母耳記上 16:11 still puts Jesse\'s reply inside Samuel\'s marks');
+    expect(tagged('2_kings', '10:13'), contains('你们是谁？”回答说：“我们是亚哈谢'),
+        reason: '列王紀下 10:13 still puts the reply inside Jehu\'s marks');
+  });
+
+  test('撒母耳記下 15:19 has no stray quotation mark mid-clause', () {
+    // 为什么“与我们同去呢 — an opening mark with no speech verb anywhere near
+    // it, which the witness and our own reading text both lack.
+    final text = tagged('2_samuel', '15:19');
+    expect(text, contains('为什么与我们同去呢'));
+    expect('“'.allMatches(text).length, 1,
+        reason: 'the speech opens once, at 说：, and closes in 15:20');
+    expect(tagged('2_samuel', '15:20'), endsWith('待你。”'),
+        reason: 'the quotation opened at 15:19 must still close at 15:20');
+  });
+
+  test('only quotation marks moved in the three word-tap repairs', () {
+    const plain = <String, List<String>>{
+      '1_samuel': [
+        '16:11',
+        '撒母耳对耶西说：你的儿子都在这里吗？他回答说：还有个小的，现在放羊。'
+            '撒母耳对耶西说：你打发人去叫他来；他若不来，我们必不坐席。'
+      ],
+      '2_kings': [
+        '10:13',
+        '遇见犹大王亚哈谢的弟兄，问他们说：你们是谁？回答说：我们是亚哈谢的弟兄，'
+            '现在下去要问王和太后的众子安。'
+      ],
+      '2_samuel': [
+        '15:19',
+        '王对迦特人以太说： 你是外邦逃来的人，为什么与我们同去呢？'
+            '你可以回去与新王同住，或者回你本地去吧！'
+      ],
+    };
+    plain.forEach((book, v) {
+      expect(tagged(book, v[0]).replaceAll(RegExp(r'[“”‘’]'), ''), v[1],
+          reason: '$book ${v[0]}: something other than a quotation mark changed');
+    });
+  });
+
+  test('no verse in the word-tap corpus opens “ inside “, bar Revelation', () {
+    // The detector that found the three, kept as a guard. This edition sets
+    // inner speech with ‘, never by repeating “, so “…“ is always either a
+    // lost closing mark or a stray opening one. The five Revelation letters
+    // are a separate, filed level-marking item: the witness sets their inner
+    // quotation with 『 and we repeat 「.
+    const knownRevelation = {'2:1', '2:8', '2:12', '2:18', '3:1'};
+    final nested = <String>[];
+    for (final file in Directory('assets/tagged/cuvs-yhwh')
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.json'))) {
+      final book = file.uri.pathSegments.last.replaceAll('.json', '');
+      final data = json.decode(file.readAsStringSync()) as Map<String, dynamic>;
+      data.forEach((ref, runs) {
+        final text = (runs as List)
+            .map((r) => (r as Map<String, dynamic>)['w'] as String)
+            .join()
+            // Notes are 〔…〕 here; the quotes inside them are not speech.
+            .replaceAll(RegExp(r'〔.*?〕'), '');
+        if (!RegExp('“[^“”]*“').hasMatch(text)) return;
+        if (book == 'revelation' && knownRevelation.contains(ref)) return;
+        nested.add('$book $ref');
+      });
+    }
+    expect(nested, isEmpty,
+        reason: 'a quotation opens while another is still open — either a '
+            'closing mark was lost or an opening one is stray');
+  });
 }
