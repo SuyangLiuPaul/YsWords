@@ -30,8 +30,6 @@ class FloatingMediaPlayer {
   FloatingMediaPlayer._();
 
   static OverlayEntry? _entry;
-  static final ValueNotifier<Offset> _position =
-      ValueNotifier<Offset>(Offset.zero);
 
   /// The one live window, if any. Exposed so a test can assert the
   /// window opened without reaching into the overlay.
@@ -89,13 +87,11 @@ class FloatingMediaPlayer {
     // capped at 720 wide), so the window was sized and placed against
     // the wrong rectangle and landed below the fold — present in the
     // DOM, with the right video, and half off the screen. Overlay
-    // geometry has to come from the overlay, so the first build reads
-    // it there and [_Window] clamps on every build after.
-    _position.value = _unplaced;
+    // geometry has to come from the overlay, so [_Window] derives its
+    // resting place from the overlay's own MediaQuery.
 
     final entry = OverlayEntry(
       builder: (ctx) => _Window(
-        position: _position,
         width: _kWindowWidth,
         frameHeight: media.frameHeight,
         provider: media.provider,
@@ -119,9 +115,6 @@ class FloatingMediaPlayer {
 
   static final Object _focusToken = Object();
 
-  /// "Not placed yet" — the first build in the overlay replaces it with
-  /// a real bottom-right position measured against the overlay itself.
-  static const Offset _unplaced = Offset(-1e9, -1e9);
 }
 
 const double _kBarHeight = 34;
@@ -133,7 +126,6 @@ const double _kWindowWidth = 320;
 
 class _Window extends StatefulWidget {
   const _Window({
-    required this.position,
     required this.width,
     required this.frameHeight,
     required this.provider,
@@ -142,7 +134,6 @@ class _Window extends StatefulWidget {
     required this.child,
   });
 
-  final ValueNotifier<Offset> position;
   final double width;
   final double Function(double width) frameHeight;
   final String provider;
@@ -155,6 +146,16 @@ class _Window extends StatefulWidget {
 }
 
 class _WindowState extends State<_Window> {
+  /// Where the user has dragged the window to, or null while it still
+  /// sits where it opened. Kept in the State rather than in a shared
+  /// notifier: the previous version wrote the notifier from inside
+  /// `build`, which notifies its listener and is a setState during
+  /// build — Flutter threw "markNeedsBuild called during build" the
+  /// first time a second track was opened over a first. Placement is a
+  /// pure function of the overlay's size now, and only a real drag
+  /// writes anything.
+  Offset? _dragged;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -162,37 +163,26 @@ class _WindowState extends State<_Window> {
     final height = widget.frameHeight(widget.width) + _kBarHeight;
 
     // Bottom-right, a thumb's width clear of the edges, measured
-    // against the OVERLAY — and re-clamped on every build so a rotation
-    // or a window resize can never strand it off-screen with the close
-    // button out of reach.
-    final maxX = (media.size.width - widget.width - 12)
-        .clamp(0.0, double.infinity);
-    final maxY = (media.size.height - height - 12)
-        .clamp(0.0, double.infinity);
-    if (widget.position.value == FloatingMediaPlayer._unplaced) {
-      widget.position.value = Offset(maxX, (maxY - 72).clamp(0.0, maxY));
-    } else {
-      final p = widget.position.value;
-      final clamped = Offset(
-        p.dx.clamp(0.0, maxX),
-        p.dy.clamp(media.padding.top, maxY),
-      );
-      if (clamped != p) widget.position.value = clamped;
-    }
+    // against the OVERLAY. Clamped on every build so a rotation or a
+    // resize can never strand the window — and the title bar with it,
+    // which is the only way to close the thing.
+    final maxX =
+        (media.size.width - widget.width - 12).clamp(0.0, double.infinity);
+    final maxY =
+        (media.size.height - height - 12).clamp(0.0, double.infinity);
+    final resting = Offset(maxX, (maxY - 72).clamp(0.0, maxY));
+    final pos = (_dragged ?? resting).clamp(
+      minX: 0,
+      maxX: maxX,
+      minY: media.padding.top,
+      maxY: maxY,
+    );
 
-    return ValueListenableBuilder<Offset>(
-      valueListenable: widget.position,
-      builder: (context, pos, child) => Positioned(
-        left: pos.dx,
-        top: pos.dy,
-        width: widget.width,
-        height: height,
-        // `child` is passed through untouched so the frame is NOT
-        // rebuilt as the window moves. Rebuilding it would tear the
-        // platform view down and back up, restarting playback on every
-        // drag — the one thing a movable player must not do.
-        child: child!,
-      ),
+    return Positioned(
+      left: pos.dx,
+      top: pos.dy,
+      width: widget.width,
+      height: height,
       child: Material(
         elevation: 12,
         borderRadius: BorderRadius.circular(12),
@@ -204,21 +194,9 @@ class _WindowState extends State<_Window> {
               height: _kBarHeight,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onPanUpdate: (d) {
-                  final next = widget.position.value + d.delta;
-                  // Clamped so the bar can never be dragged off-screen;
-                  // losing the bar means losing the close button, and
-                  // the frame below it cannot be dragged at all (the
-                  // platform view takes those pointers).
-                  // Clamped so the window is always FULLY on screen:
-                  // losing the title bar means losing the close button,
-                  // and the frame below it cannot be dragged at all
-                  // because the platform view takes those pointers.
-                  widget.position.value = Offset(
-                    next.dx.clamp(0.0, maxX),
-                    next.dy.clamp(media.padding.top, maxY),
-                  );
-                },
+                onPanUpdate: (d) => setState(() {
+                  _dragged = (_dragged ?? resting) + d.delta;
+                }),
                 child: Container(
                   color: scheme.surfaceContainerHighest,
                   padding: const EdgeInsets.only(left: 10, right: 2),
@@ -240,9 +218,9 @@ class _WindowState extends State<_Window> {
                         ),
                       ),
                       IconButton(
-                        tooltip:
-                            uiStrings['videosWatchOnYouTube']?[widget.locale] ??
-                                'Watch on YouTube',
+                        tooltip: uiStrings['videosWatchOnYouTube']
+                                ?[widget.locale] ??
+                            'Watch on YouTube',
                         icon: const Icon(Icons.open_in_new_rounded, size: 15),
                         visualDensity: VisualDensity.compact,
                         padding: EdgeInsets.zero,
@@ -254,8 +232,7 @@ class _WindowState extends State<_Window> {
                         },
                       ),
                       IconButton(
-                        tooltip:
-                            uiStrings['close']?[widget.locale] ?? 'Close',
+                        tooltip: uiStrings['close']?[widget.locale] ?? 'Close',
                         icon: const Icon(Icons.close_rounded, size: 16),
                         visualDensity: VisualDensity.compact,
                         padding: EdgeInsets.zero,
@@ -268,10 +245,25 @@ class _WindowState extends State<_Window> {
                 ),
               ),
             ),
+            // `widget.child` is the SAME widget object across rebuilds,
+            // so Flutter reuses its element and the frame is never torn
+            // down by a drag — tearing it down would restart playback,
+            // which is the one thing a movable player must not do.
             Expanded(child: widget.child),
           ],
         ),
       ),
     );
   }
+}
+
+extension _ClampOffset on Offset {
+  Offset clamp({
+    required double minX,
+    required double maxX,
+    required double minY,
+    required double maxY,
+  }) =>
+      Offset(dx.clamp(minX, maxX < minX ? minX : maxX),
+          dy.clamp(minY, maxY < minY ? minY : maxY));
 }

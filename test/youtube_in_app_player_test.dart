@@ -129,6 +129,71 @@ void main() {
           reason: 'the frame must survive the move, not be recreated');
     });
 
+    testWidgets('closing the window tears the frame down', (tester) async {
+      // 2026-08-24, from the phone: "为什么关掉那个windows并没有音乐停
+      // soundcloud". The window went away and the audio did not,
+      // because neither embed had ANY teardown: the native one left its
+      // WebViewController holding a live page, and the web one left a
+      // detached iframe. Neither exposes a pause — the frame owns its
+      // own transport — so the teardown IS the stop, and it only
+      // happens if the embed widget is actually disposed.
+      var disposed = false;
+      FloatingMediaPlayer.debugEmbedBuilder =
+          (_) => _DisposeSpy(onDispose: () => disposed = true);
+
+      await tapLink(tester, soundcloudUrl);
+      expect(disposed, isFalse);
+
+      await tester.tap(find.byIcon(Icons.close_rounded));
+      await tester.pumpAndSettle();
+
+      expect(disposed, isTrue,
+          reason: 'no dispose means the page keeps playing with nothing '
+              'left on screen to stop it');
+    });
+
+    testWidgets('opening a second track tears the first one down',
+        (tester) async {
+      // hide() runs before the new entry is inserted, so the previous
+      // frame must go — otherwise two tracks play over each other.
+      // Both taps happen in ONE app: pumping a fresh tree between them
+      // would prove nothing, since that disposes everything anyway.
+      var disposals = 0;
+      FloatingMediaPlayer.debugEmbedBuilder =
+          (_) => _DisposeSpy(onDispose: () => disposals++);
+
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () => LinkOpener.openOrWarn(
+                      context, soundcloudUrl,
+                      locale: 'en'),
+                  child: const Text('first'),
+                ),
+                ElevatedButton(
+                  onPressed: () =>
+                      LinkOpener.openOrWarn(context, videoUrl, locale: 'en'),
+                  child: const Text('second'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ));
+
+      await tester.tap(find.text('first'));
+      await tester.pumpAndSettle();
+      expect(disposals, 0);
+
+      await tester.tap(find.text('second'));
+      await tester.pumpAndSettle();
+      expect(disposals, 1,
+          reason: 'the first frame must be gone before the second plays');
+    });
+
     testWidgets('a video starting silences the hymn', (tester) async {
       var paused = false;
       final hymn = Object();
@@ -229,4 +294,26 @@ void main() {
       expect(soundcloud, greaterThan(0));
     });
   });
+}
+
+/// Reports when it is disposed, standing in for a frame whose teardown
+/// is the only way to stop its audio.
+class _DisposeSpy extends StatefulWidget {
+  const _DisposeSpy({required this.onDispose});
+
+  final VoidCallback onDispose;
+
+  @override
+  State<_DisposeSpy> createState() => _DisposeSpyState();
+}
+
+class _DisposeSpyState extends State<_DisposeSpy> {
+  @override
+  void dispose() {
+    widget.onDispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }

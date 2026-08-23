@@ -74,6 +74,29 @@ iframe{border:0;width:100%;height:100%}</style></head><body>
  allowfullscreen></iframe></body></html>''';
 
   @override
+  void dispose() {
+    // Closing the window MUST stop the sound.
+    //
+    // 2026-08-24, from the phone: "为什么关掉那个windows并没有音乐停
+    // soundcloud". Removing the widget disposes this State, but a
+    // WebViewController is not torn down with it — the platform keeps
+    // the WKWebView (or the Android WebView) and its page alive, and a
+    // page that is playing audio goes on playing it with nothing left
+    // on screen to stop it. There is no pause API to call either: the
+    // frame owns its own transport, which is the same asymmetry the
+    // MediaFocus claim documents.
+    //
+    // Navigating to a blank page is the teardown that exists: it
+    // unloads the document, and the media goes with it. `about:blank`
+    // rather than clearing the cache — the point is to end THIS page,
+    // not to forget every page.
+    _controller.loadRequest(Uri.parse('about:blank')).catchError((_) {
+      // The view may already be gone; nothing left to silence.
+    });
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) =>
       WebViewWidget(controller: _controller);
 }
