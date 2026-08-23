@@ -2348,13 +2348,13 @@ and quoted.**
       mark in a verse that still lacks the marks around the speech itself.
       Adding them is a separate act; filed with the two items below.
 
-      **⚠ COMMITTED (7ac9670) BUT NOT YET DEPLOYED.** The iteration that fixed
-      it declined to publish because `pubspec.yaml` and `lib/constants/
-      app_version.dart` were dirty with another session's uncommitted bump to
-      1.4.128 — trap 11. Nothing is wrong with the fix; it simply has not
-      reached dev/qat, which still serve the semicolon. **Whoever runs the
-      next deploy carries this one out with it**; no separate action needed
-      beyond checking that 路加福音 13:2 reads 說：on dev afterwards.
+      **DEPLOYED and verified 2026-08-23 — v1.4.131 on all four dev/qat
+      sites.** It was committed (7ac9670) and then stranded for several
+      iterations because `pubspec.yaml` and `app_version.dart` were dirty with
+      another session's release (trap 11); that session's own release carried
+      it out. Verified against the asset the live dev site actually serves
+      rather than against the repo: all five now read 說：, and exactly the ten
+      legitimate `說；` survive.
 
 - [ ] **Three verses put the opening `「` in the MIDDLE of an Old Testament
       citation, so the first half of the quoted scripture reads as the
