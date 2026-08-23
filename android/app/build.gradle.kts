@@ -48,7 +48,7 @@ android {
         // below overrides this with its own resValue("app_name", ...)
         // so the home-screen label differs between the international
         // and China-mode coexist builds.
-        resValue("string", "app_name", "Yahweh's Words")
+        resValue("string", "app_name", "Yahweh\\'s Words")
     }
 
     // 2026-05-24 (v1.3.38): product flavors so the international
@@ -72,7 +72,7 @@ android {
         create("cn") {
             dimension = "region"
             applicationIdSuffix = ".cn"
-            resValue("string", "app_name", "Yahweh's Words CN")
+            resValue("string", "app_name", "Yahweh\\'s Words CN")
         }
     }
 
