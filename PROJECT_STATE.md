@@ -36,16 +36,17 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.134** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.134** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.135** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.135** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-⚠️ **dev/qat owe a deploy.** The nine-verse speaker-attribution repair
-(`1760c58`) is committed and pushed but was NOT built: a concurrent session
-was running `flutter test` out of this same checkout, so a `flutter build`
-would have shared `.dart_tool`/`build/` with it and corrupted both. Scripture
-corrections normally deploy the same iteration — this one is the exception and
-should go out first thing next iteration.
+**The deploy debt is paid.** v1.4.135 carries both the nine-verse
+speaker-attribution repair (`1760c58`, committed 2026-08-24 but never built)
+and the three word-tap repairs (`d03c81d`). Verified against the assets the
+sites actually serve, not the repo: 馬太福音 15:34, 約翰福音 2:7/2:8/13:36,
+創世紀 30:6 and 哥林多前書 15:45 all read correctly from
+`yswords-dev/assets/assets/cuvs-yhwh.json`, and 撒上 16:11 / 王下 10:13 /
+撒下 15:19 from the live tagged corpus.
 
 **prod is 122 versions behind and it is not an oversight.** Every prod
 push needs the user to say so in the moment; permission never carries
@@ -183,6 +184,15 @@ advances the repo hash is healthy.
     confirmed by the witness" — write what the agreement rate is, and name the
     lines that really are independent (balance, the reading text, internal
     parallels).
+
+19. **A `pgrep -f` wait loop matches its own command line and hangs forever.**
+    `while pgrep -f "other-build" >/dev/null; do sleep 15; done` never exits,
+    because the shell running it has `other-build` in *its* argv and so finds
+    itself. On 2026-08-24 that idled a deploy for ~50 minutes while the build
+    it was waiting for had already finished. Match on something the waiter
+    cannot contain — a pidfile, `pgrep -f "dart compile"`, or capture the pid
+    up front and poll `kill -0 "$pid"`. Symptom: `pgrep` says busy while
+    `ps aux | grep "dart compile"` shows nothing.
 
 ## Standing rules from the user
 
