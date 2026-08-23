@@ -3541,6 +3541,62 @@ has never seen this repo.
       `test/leb_superscription_test.dart` runs the real asset through
       the real decoder and fails on the pre-fix code.
 
+- [ ] **A search result still does not SCROLL the visible reader —
+      because two reading panes coexist and share one
+      `ItemScrollController`.** 2026-08-23. This is the unfinished half
+      of the "AI search doesn't jump" report; the handshake around it is
+      fixed and shipped (v1.4.123-127), this is what is left.
+
+      **What was fixed and verified.** The jump is prepared correctly,
+      carries the book+chapter it was computed for, is re-announced
+      across the navigation until claimed, and a mounting pane claims
+      one waiting for it. Deep-link and cold-boot jumps land correctly
+      now — Isaiah 40:31, Matthew 12:36 and 1 Corinthians 11:32 all
+      confirmed on dev in a release build.
+
+      **What still fails.** Tapping an AI (or plain) result from the
+      search route opens the right chapter at verse 1, no highlight.
+      Traced with temporary `print()` instrumentation on dev (debugPrint
+      is silenced in release web — convert it, ship to dev, read the
+      browser console; that technique is the reason any of this was
+      findable):
+
+          [YSJ] SET pending=16 target=Ephesians 6
+          [YSJ] PANE BUILD ... route=true      <- pane A
+          [YSJ] PANE BUILD ... route=false     <- pane B, same frame
+          [YSJ] CONSUME-> 16 for Ephesians 6   <- taken
+          ... visible reader stays at 1/24
+
+      **The diagnosis.** Every build logs TWICE, one with
+      `route.isCurrent == true` and one false, and it keeps doing so
+      long after the transition settles — so an old HomePage is never
+      disposed and its reading pane lives on. Both panes read the same
+      `MainProvider`, so both share `mp.itemScrollController`, and an
+      `ItemScrollController` can only be attached to one list at a time.
+      The jump is consumed and scrolled, but the scroll lands on
+      whichever list attached last, which is not necessarily the one on
+      screen.
+
+      Note the pre-existing comment in the pane's post-frame consumer —
+      "the OLD reader still in the navigator stack, plus the NEW reader
+      pushed via Get.off" — someone hit this in Round 56 and worked
+      around it with the `route.isCurrent` guard rather than fixing the
+      leak. `_livePaneFor` (newest pane per provider) was added on top
+      and is still not sufficient.
+
+      **Do not add a third guard.** The fix is to stop leaking the route:
+      find why `Get.off(() => const HomePage())` leaves the previous
+      HomePage mounted, and make the search/library/dashboard jump paths
+      return to the existing reader instead of pushing another one. If
+      two readers genuinely must coexist (split view), they need
+      separate providers and therefore separate scroll controllers —
+      sharing one is the actual bug.
+
+      Done when: from the reader, search → tap a result in a chapter you
+      are not already in → the reader scrolls to that verse and washes
+      it. Check with a verse late in a long chapter so a failure is
+      unmistakable.
+
 ## P1 — Bible study correctness
 
 - [x] **A stale cache outlived every upgrade — fixed in v1.4.39.**

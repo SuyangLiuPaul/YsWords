@@ -90,31 +90,31 @@ void main() {
     });
   });
 
-  group('a jump does not outlive the navigation it belonged to', () {
-    test('moving to another chapter drops it', () {
-      // Without this, a jump nobody took would sit there and fire the
-      // next time the reader happened to open that chapter — a scroll
-      // and a highlight out of nowhere, minutes later.
-      mp.setPendingJump(chapterVerseIndex: 9, book: 'Proverbs', chapter: 18);
-      mp.setCurrentChapter(book: 'Genesis', chapter: 1);
-      expect(mp.hasPendingJump, isFalse);
+  group('a chapter change does NOT drop a pending jump', () {
+    // This was the opposite for one build, and it broke the fix it
+    // shipped with. Things call setCurrentChapter DURING the very
+    // navigation a jump is waiting on — the route/URL sync on a fresh
+    // HomePage, the chapter pager settling — each naming the chapter
+    // being left rather than the one being opened. Clearing on any
+    // mismatch destroyed the jump before the reader that wanted it had
+    // built, and Matthew 12:36 opened at verse 1 exactly as before the
+    // fix. Staleness is bounded by the announcement window instead.
+    test('the jump survives an unrelated chapter being set', () {
+      mp.setPendingJump(chapterVerseIndex: 35, book: 'Matthew', chapter: 12);
+      mp.setCurrentChapter(book: '1 John', chapter: 2);
+      expect(mp.hasPendingJump, isTrue,
+          reason: 'the reader passes through other chapters on its way '
+              'to the one the jump is for');
+      expect(mp.consumePendingJumpFor('1 John', 2), isNull);
+      expect(mp.consumePendingJumpFor('Matthew', 12), 35);
     });
 
-    test('but setting the chapter it targets keeps it', () {
-      // This is the real ordering: prepareJumpToVerse sets the chapter
-      // first and records the jump second. If setCurrentChapter cleared
-      // indiscriminately, every jump would be destroyed on the way in.
-      mp.setCurrentChapter(book: 'Proverbs', chapter: 18);
-      mp.setPendingJump(chapterVerseIndex: 9, book: 'Proverbs', chapter: 18);
-      mp.setCurrentChapter(book: 'Proverbs', chapter: 18);
-      expect(mp.hasPendingJump, isTrue);
-      expect(mp.consumePendingJumpFor('Proverbs', 18), 9);
-    });
-
-    test('an untargeted jump is never dropped by a chapter change', () {
-      mp.setPendingJump(chapterVerseIndex: 3);
-      mp.setCurrentChapter(book: 'Genesis', chapter: 1);
-      expect(mp.hasPendingJump, isTrue);
+    test('and survives its own chapter being set, which is the real order',
+        () {
+      mp.setCurrentChapter(book: 'Matthew', chapter: 12);
+      mp.setPendingJump(chapterVerseIndex: 35, book: 'Matthew', chapter: 12);
+      mp.setCurrentChapter(book: 'Matthew', chapter: 12);
+      expect(mp.consumePendingJumpFor('Matthew', 12), 35);
     });
   });
 }

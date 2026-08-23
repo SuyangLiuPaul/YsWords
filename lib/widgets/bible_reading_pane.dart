@@ -121,6 +121,30 @@ class BibleReadingPane extends StatefulWidget {
 }
 
 class _BibleReadingPaneState extends State<BibleReadingPane> {
+  /// Which pane, of those sharing a [MainProvider], is the live one.
+  ///
+  /// 2026-08-23. `Get.off(HomePage)` from the search page leaves the
+  /// OLD HomePage in the stack while the new one builds, so for a
+  /// stretch of frames two reading panes exist on the same provider —
+  /// and therefore on the same `itemScrollController`, which can only
+  /// be attached to one list at a time. Whichever attached last is the
+  /// one a scroll actually moves.
+  ///
+  /// The existing `route.isCurrent` check does not separate them: mid
+  /// `Get.off` the outgoing HomePage still reports current, so it took
+  /// the pending jump and scrolled a list nobody could see. Measured on
+  /// dev — "CONSUME-> 31 for 1 Corinthians 11" with the visible reader
+  /// sitting at 1/34.
+  ///
+  /// The newest pane is the one whose list attached last, so it is the
+  /// one allowed to take a jump. Keyed per provider so a genuine split
+  /// view — two readers, two providers — keeps one live pane each.
+  static final Map<MainProvider, int> _livePaneFor =
+      <MainProvider, int>{};
+  static int _paneSeq = 0;
+  int _paneId = 0;
+
+  bool _isLivePane(MainProvider mp) => _livePaneFor[mp] == _paneId;
   // ignore: unused_field
   MainProvider? _positionsProvider;
   // 2026-05-24 (v1.3.3): track the LISTENER INSTANCE we subscribed to,
@@ -268,6 +292,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   void initState() {
     super.initState();
     final mp = context.read<MainProvider>();
+    _paneId = ++_paneSeq;
+    _livePaneFor[mp] = _paneId;
     final initialChapterIdx = mp.findChapterIndex(
             mp.currentBook, mp.currentChapter) ??
         0;
@@ -370,6 +396,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
 
   @override
   void dispose() {
+    // Only clear the registry if we are still the live pane; a newer
+    // pane may already have claimed the provider, and the old one
+    // disposing must not erase that claim.
+    _livePaneFor.removeWhere((_, id) => id == _paneId);
     _versePositionTimer?.cancel();
     _scrollOffsetSub?.cancel();
     _pageController.dispose();
@@ -1359,6 +1389,12 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
             // the jump. Any non-topmost reader silently leaves
             // the flag untouched so the visible reader can take
             // it on the next post-frame tick.
+            final mpForPane = context.read<MainProvider>();
+            if (!_isLivePane(mpForPane)) {
+              debugPrint('[YsWords jump] post-frame bail: '
+                  'a newer reading pane owns this provider');
+              return;
+            }
             final route = ModalRoute.of(context);
             if (route != null && !route.isCurrent) {
               debugPrint('[YsWords jump] post-frame bail: '

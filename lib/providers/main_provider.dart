@@ -1158,17 +1158,21 @@ class MainProvider extends ChangeNotifier {
 
   // Method to set the current book and chapter, persist state, and notify listeners
   void setCurrentChapter({required String book, required int chapter}) {
-    // Moving to a chapter the pending jump was not meant for means the
-    // reader has gone somewhere else — drop it rather than let it fire
-    // later and yank someone who has moved on. Note that
-    // `prepareJumpToVerse` sets the chapter BEFORE the jump, so this
-    // never discards the jump it is about to record.
-    if (_pendingJumpBook != null &&
-        (_pendingJumpBook != book || _pendingJumpChapter != chapter)) {
-      _pendingJumpChapterVerseIndex = null;
-      _pendingJumpBook = null;
-      _pendingJumpChapter = null;
-    }
+    // NOTE: a pending jump is deliberately NOT cleared here.
+    //
+    // 2026-08-23: it was, for one build — "the reader moved on, so drop
+    // it" — and that broke the very thing it was added beside. Several
+    // things call setCurrentChapter DURING the navigation that a jump
+    // is waiting on (the route/URL sync on a fresh HomePage, the
+    // chapter pager settling), each briefly naming the chapter being
+    // left rather than the one being opened. Every one of those
+    // destroyed the jump before the reader that wanted it had built,
+    // and Matthew 12:36 opened at verse 1 exactly as before.
+    //
+    // Staleness is bounded by the announcement window instead — see
+    // `_announcePendingJump` — and mis-aiming is prevented by the
+    // target check in [consumePendingJumpFor], which is the part that
+    // actually matters.
     currentBook = book;
     currentChapter = chapter;
     if (isPrimary) saveCurrentState();

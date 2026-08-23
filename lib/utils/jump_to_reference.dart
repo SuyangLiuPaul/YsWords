@@ -351,17 +351,27 @@ void prepareJumpToVerse(Verse verse, MainProvider mp) {
 /// clock ladder leaves timers running after the jump has landed, which
 /// four widget tests correctly objected to. Ninety frames is about a
 /// second and a half at 60 Hz; in practice the reader takes it on the
-/// first or second tick, and this only runs long when it cannot.
+/// first or second tick, and this only runs long when it cannot. The
+/// window is four seconds because it also bounds how long an unclaimed
+/// jump survives, and a fresh HomePage on a cold web start can take
+/// well over a second to have a reading pane with verses in it.
 ///
 /// This is a belt, not the braces. A pane that mounts after the ladder
 /// has run out asks for itself — see `_BibleReadingPaneState.initState`
 /// — which is what covers a cold build slower than the ladder. Both
 /// were needed: 1 John 2:24 still missed with the ladder alone.
-void _announcePendingJump(MainProvider mp, {int framesLeft = 90}) {
-  if (framesLeft <= 0) return;
+void _announcePendingJump(MainProvider mp, {int framesLeft = 240}) {
+  if (framesLeft <= 0) {
+    // Nobody ever claimed it. Drop it rather than leave it lying about
+    // to fire the next time the reader happens to open that chapter.
+    // This is the ONLY thing that expires a jump — see the note in
+    // `MainProvider.setCurrentChapter` for why the obvious alternative
+    // (clear it when the chapter changes) cannot be used.
+    mp.consumePendingJump();
+    return;
+  }
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    // Taken (or invalidated by a chapter change) — stop announcing.
-    if (!mp.hasPendingJump) return;
+    if (!mp.hasPendingJump) return; // taken — stop announcing
     mp.renotifyPendingJump();
     _announcePendingJump(mp, framesLeft: framesLeft - 1);
   });
