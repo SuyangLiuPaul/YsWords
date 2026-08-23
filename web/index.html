@@ -220,12 +220,33 @@
       var MEDIA_CACHE_PREFIX = 'song-media-';
 
       var unregisterCount = 0;
+      // 2026-08-24: this used to sweep EVERY worker on EVERY load —
+      // `var stale = regs` with no filter — which included Flutter's
+      // own app-shell worker. That worker is what makes the app
+      // installable and what serves it offline, so tearing it down on
+      // every load meant it could never survive: `getRegistrations()`
+      // returned 0 after a full load, `beforeinstallprompt` therefore
+      // never fired, and the in-app Install button correctly reported
+      // that nothing was available. Reported by the user as
+      // 「网页版安装install也安不上」 and reproduced in a browser before
+      // this change.
+      //
+      // The sweep's actual purpose — evicting a STALE shell worker, and
+      // the dead /song-media/ one from installs that still carry it —
+      // is preserved: everything is still unregistered EXCEPT the
+      // current Flutter worker, matched on its script URL. Flutter's
+      // loader already versions that one (`serviceWorkerVersion` in
+      // flutter_bootstrap.js) and replaces it when the build changes,
+      // so it does not need us to delete it to stay fresh.
+      var FLUTTER_SW = 'flutter_service_worker.js';
       var swPromise = ('serviceWorker' in navigator)
         ? navigator.serviceWorker.getRegistrations().then(function(regs) {
-            // Sweep EVERY worker, including the old media one — see
-            // the note further down for why that worker is gone. This
-            // is what removes it from installs that already have it.
-            var stale = regs;
+            var stale = regs.filter(function(r) {
+              var url = (r.active && r.active.scriptURL) ||
+                        (r.installing && r.installing.scriptURL) ||
+                        (r.waiting && r.waiting.scriptURL) || '';
+              return url.indexOf(FLUTTER_SW) === -1;
+            });
             unregisterCount = stale.length;
             return Promise.all(stale.map(function(r) {
               return r.unregister().catch(function() {});
