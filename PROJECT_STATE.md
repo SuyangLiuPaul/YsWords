@@ -31,11 +31,11 @@ per-platform places and nothing compared them until
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.123** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.123** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.128** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.128** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**prod is 112 versions behind and it is not an oversight.** Every prod
+**prod is 117 versions behind and it is not an oversight.** Every prod
 push needs the user to say so in the moment; permission never carries
 over from a previous turn. Full wording of what does and does not count
 as permission: `docs/release-policy.md`. prod still serves the broken
