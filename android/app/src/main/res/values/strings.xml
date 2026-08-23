@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The DEFAULT-locale app name. This used to be a gradle resValue,
+     but Android lint does not count generated resources as the default
+     locale, so the values-zh translations next door failed the build
+     as ExtraTranslation orphans. Defining the default here puts the
+     whole name family in one mechanism lint understands. -->
+<resources>
+    <string name="app_name">Yahweh\'s Words</string>
+</resources>

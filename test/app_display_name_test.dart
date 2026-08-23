@@ -99,23 +99,23 @@ void main() {
   });
 
   test('every Android flavour label starts with the new name', () {
-    // Two flavours ship: the international one and the CN one. Both
-    // must carry the same name.
-    final gradle = read('android/app/build.gradle.kts');
-    final labels = RegExp(r'resValue\("string", "app_name", "([^"]+)"\)')
-        .allMatches(gradle)
-        .map((m) => m.group(1)!)
-        .toList();
-
-    expect(labels, isNotEmpty, reason: 'no app_name resValue found');
-    for (final raw in labels) {
-      // The gradle source carries the apostrophe ESCAPED (\\') so it
-      // survives AAPT's XML-style quoting — un-escape before comparing,
-      // because the home screen shows the unescaped form.
-      final label = raw.replaceAll("\\\\'", "'");
-      expect(label.startsWith(wanted), isTrue,
-          reason: 'Android flavour label "$label" is not capitalised '
-              'like $wanted');
+    // The labels moved from gradle resValues into res files on
+    // 2026-08-24: lint does not count generated resources as the
+    // default locale, so the values-zh translations failed the build
+    // as ExtraTranslation orphans. The default-locale name and its
+    // flavour override now live where lint looks.
+    String label(String path) {
+      final m = RegExp(r'<string name="app_name">([^<]+)</string>')
+          .firstMatch(read(path));
+      expect(m, isNotNull, reason: 'no app_name in $path');
+      return m!.group(1)!.replaceAll("\\'", "'");
     }
+
+    expect(label('android/app/src/main/res/values/strings.xml'), wanted);
+    expect(label('android/app/src/cn/res/values/strings.xml'), '$wanted CN');
+    final gradle = read('android/app/build.gradle.kts');
+    expect(gradle.contains('resValue("string", "app_name"'), isFalse,
+        reason: 'a resValue would collide with the res-file definition');
   });
+
 }
