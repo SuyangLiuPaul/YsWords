@@ -176,7 +176,21 @@ class VideoSeriesPage extends StatefulWidget {
 
 class _VideoSeriesPageState extends State<VideoSeriesPage> {
   late VideoEpisode _episode = widget.series.episodes.first;
-  late String _lang = _episode.defaultTrack?.lang ?? 'en';
+
+  /// Set in [initState] from the app language — see
+  /// [VideoEpisode.trackForLocale]. After that the reader owns it: the
+  /// language buttons still switch by hand, and moving between episodes
+  /// keeps the current language whenever that episode has it.
+  late String _lang;
+
+  @override
+  void initState() {
+    super.initState();
+    final locale = context.read<AppSettings>().locale;
+    _lang = _episode.trackForLocale(locale)?.lang ??
+        _episode.defaultTrack?.lang ??
+        'en';
+  }
 
   /// Null until the user asks for a video. The embed is not mounted
   /// before then, so opening the page never autoplays and never costs
@@ -366,7 +380,12 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
         _episode = e;
         _playing = null;
         if (e.trackFor(_lang) == null) {
-          _lang = e.defaultTrack?.lang ?? _lang;
+          // This episode has nothing in the current language. Fall back
+          // the same way the page opened — by locale — rather than to
+          // whichever track happens to be first in the JSON.
+          _lang = e.trackForLocale(locale)?.lang ??
+              e.defaultTrack?.lang ??
+              _lang;
         }
       }),
     );

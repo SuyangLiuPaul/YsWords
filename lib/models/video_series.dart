@@ -87,6 +87,51 @@ class VideoEpisode {
   }
 
   VideoTrack? get defaultTrack => tracks.isEmpty ? null : tracks.first;
+
+  /// The recording to open for a reader whose app is set to [locale].
+  ///
+  /// 2026-08-23, from the user: "featured video里面也要根据用户选择的语
+  /// 言自动改变吧". Before this, the opening track was whichever one
+  /// came first in the JSON — English for every series — so a reader
+  /// using the app in Chinese was always shown English first and had
+  /// to notice the language buttons to get out of it.
+  ///
+  /// Falls through [preferredTrackLangs] and then to [defaultTrack], so
+  /// a series that simply has no recording in the reader's language
+  /// still opens rather than showing an empty player. The language
+  /// buttons are unchanged and still switch by hand — this only
+  /// decides which one starts selected.
+  VideoTrack? trackForLocale(String locale) {
+    for (final lang in preferredTrackLangs(locale)) {
+      final t = trackFor(lang);
+      if (t != null) return t;
+    }
+    return defaultTrack;
+  }
+}
+
+/// Spoken-language preference for an app locale, best first.
+///
+/// The app's locales name a WRITING SYSTEM; the tracks name a spoken
+/// language, and the two do not line up one to one:
+///
+/// * `zh-Hans` → Mandarin. Simplified script and Mandarin go together
+///   closely enough that this is not really a guess.
+/// * `zh-Hant` → **Cantonese first, and that IS a judgement call.**
+///   Traditional script is read both in Hong Kong, which is Cantonese,
+///   and in Taiwan, which is Mandarin. Cantonese leads because this
+///   publisher is a Hong Kong church and its Traditional-reading
+///   audience is mostly theirs. If that turns out to be the wrong bet
+///   for this app's readers, swap these two entries — nothing else
+///   depends on the order.
+///
+/// English never leads for a Chinese locale but always ends the list,
+/// because for several series it is the only recording that exists.
+List<String> preferredTrackLangs(String locale) {
+  if (!locale.startsWith('zh')) return const ['en', 'cmn', 'yue'];
+  return locale == 'zh-Hant'
+      ? const ['yue', 'cmn', 'en']
+      : const ['cmn', 'yue', 'en'];
 }
 
 class VideoSeries {

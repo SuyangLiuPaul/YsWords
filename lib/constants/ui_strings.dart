@@ -5722,6 +5722,17 @@ const uiStrings = {
     'zh-Hant': '基督門徒福音會',
     'en': 'Christian Disciples Church',
   },
+  // 2026-08-23: the four Shema series carry creditKey 'videoCreditCdc'
+  // and this key did not exist, so `uiStrings[s.creditKey]` missed and
+  // the page fell through to its hard-coded English literal — the only
+  // English line on an otherwise Chinese screen. Same publisher as
+  // above; kept as a separate key because the series come from a
+  // different channel and may need to diverge.
+  'videoCreditCdc': {
+    'zh-Hans': '基督门徒福音会',
+    'zh-Hant': '基督門徒福音會',
+    'en': 'Christian Disciples Church',
+  },
   'oneGodEmpty': {
     'zh-Hans': '暂时还没有影片。',
     'zh-Hant': '暫時還沒有影片。',

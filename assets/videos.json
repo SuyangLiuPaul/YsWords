@@ -5,7 +5,8 @@
     "note": "Every recording is a YouTube video id. Nothing here is self-hosted any more, so the app carries no media and no subtitle files: YouTube supplies its own captions where they exist.",
     "pairingEvidence": "The language of each id was taken from YouTube's own title via oEmbed, NOT from the position of the embed on the church's page. Reading the page's layout put every Standing-at-the-Cross row one place out, which would have offered 'English' and played Cantonese.",
     "chineseTitles": "Chinese titles are stored once, under 'zh', exactly as the church wrote them. They are deliberately NOT converted between Simplified and Traditional — this is someone else's copy, and a converted glyph would be our word, not theirs.",
-    "shemaNote": "The Shema series is the 29 links the church published — 25 numbered messages (#7-#31) plus the 4 whole-part compilations, which sit last within their own part. Ids and titles come from YouTube (oEmbed), not from the church page, which refuses datacenter IPs. Numbering starts at #7 because #1-#6 belong to a different series on the same channel and are deliberately not included. The church's bracketed sub-numbers are not shown: Part 4 reads (15)(16)(12)(18) where the sequence wants 17, and displaying a number we know to be wrong is worse than showing only the # that is consistent."
+    "shemaNote": "The Shema series is the 29 links the church published — 25 numbered messages (#7-#31) plus the 4 whole-part compilations, which sit last within their own part. Ids and titles come from YouTube (oEmbed), not from the church page, which refuses datacenter IPs. Numbering starts at #7 because #1-#6 belong to a different series on the same channel and are deliberately not included. The church's bracketed sub-numbers are not shown: Part 4 reads (15)(16)(12)(18) where the sequence wants 17, and displaying a number we know to be wrong is worse than showing only the # that is consistent.",
+    "ourLabelsNote": "Two kinds of Chinese text live in this file and they must not be confused. A 'zh' title is the church's own wording, copied verbatim, and is never converted between scripts. The 'zh-Hans'/'zh-Hant' titles and taglines on shema-1..4 are OURS: the church published that series in English only, and the user asked on 2026-08-23 for a Chinese name for it ('可以 shema系列 shema series之类的'). Because they are our navigational labels rather than someone else's copy, they are written out in both scripts instead of stored once. The episode titles stay English — those are the church's words."
   },
   "series": [
     {
@@ -262,12 +263,50 @@
       ]
     },
     {
-      "id": "shema-1",
+      "id": "purpose",
       "titles": {
-        "en": "The Shema"
+        "en": "God's Purpose in Creating Us",
+        "zh": "神造人的目的"
       },
       "taglines": {
-        "en": "The Most Important Teaching by Jesus — Mark 12:29-31, Deuteronomy 6:4"
+        "en": "Why are we here?",
+        "zh": "人为什么在这里？"
+      },
+      "creditKey": "oneGodCredit",
+      "episodes": [
+        {
+          "id": "01",
+          "number": 1,
+          "titles": {
+            "en": "God's Purpose in Creating Us",
+            "zh": "神造人的目的"
+          },
+          "tracks": [
+            {
+              "lang": "cmn",
+              "labelKey": "oneGodLangCmn",
+              "youtubeId": "-Qn_1kTlOgM"
+            },
+            {
+              "lang": "yue",
+              "labelKey": "oneGodLangYue",
+              "youtubeId": "bTWFB2npS88"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shema-1",
+      "titles": {
+        "en": "The Shema",
+        "zh-Hans": "Shema 系列",
+        "zh-Hant": "Shema 系列"
+      },
+      "taglines": {
+        "en": "The Most Important Teaching by Jesus — Mark 12:29-31, Deuteronomy 6:4",
+        "zh-Hans": "耶稣最重要的教导 —— 马可福音 12:29-31、申命记 6:4",
+        "zh-Hant": "耶穌最重要的教導 —— 馬可福音 12:29-31、申命記 6:4"
       },
       "creditKey": "videoCreditCdc",
       "playlistId": "PLKdS3C3dQ95RMSBg52aWzdb3KtowWw8AV",
@@ -397,10 +436,14 @@
     {
       "id": "shema-2",
       "titles": {
-        "en": "Living the Shema — Part 2"
+        "en": "Living the Shema — Part 2",
+        "zh-Hans": "Shema 系列 第二部",
+        "zh-Hant": "Shema 系列 第二部"
       },
       "taglines": {
-        "en": "Loving God with ALL your heart, soul, mind and strength"
+        "en": "Loving God with ALL your heart, soul, mind and strength",
+        "zh-Hans": "尽心、尽性、尽意、尽力爱神",
+        "zh-Hant": "盡心、盡性、盡意、盡力愛神"
       },
       "creditKey": "videoCreditCdc",
       "playlistId": "PLKdS3C3dQ95Qqif5KtfyEZgwkwIv5_SEr",
@@ -530,10 +573,14 @@
     {
       "id": "shema-3",
       "titles": {
-        "en": "Living the Shema — Part 3"
+        "en": "Living the Shema — Part 3",
+        "zh-Hans": "Shema 系列 第三部",
+        "zh-Hant": "Shema 系列 第三部"
       },
       "taglines": {
-        "en": "Love your Neighbour as Yourself"
+        "en": "Love your Neighbour as Yourself",
+        "zh-Hans": "爱人如己",
+        "zh-Hant": "愛人如己"
       },
       "creditKey": "videoCreditCdc",
       "playlistId": "PLKdS3C3dQ95RjguVV6xdtIElP95OOw7Hl",
@@ -663,10 +710,14 @@
     {
       "id": "shema-4",
       "titles": {
-        "en": "Living the Shema — Part 4"
+        "en": "Living the Shema — Part 4",
+        "zh-Hans": "Shema 系列 第四部",
+        "zh-Hant": "Shema 系列 第四部"
       },
       "taglines": {
-        "en": "Love one another AS I have loved you"
+        "en": "Love one another AS I have loved you",
+        "zh-Hans": "我怎样爱你们，你们也要怎样彼此相爱",
+        "zh-Hant": "我怎樣愛你們，你們也要怎樣彼此相愛"
       },
       "creditKey": "videoCreditCdc",
       "playlistId": "PLKdS3C3dQ95RP0tFef-MKOpEp3JWXL3hw",
