@@ -2113,9 +2113,13 @@ and quoted.**
       zero 丶, the 、 count at 6324, zero adjacent punctuation pairs anywhere
       in either edition, and the eight repaired verses by reference.
 
-- [ ] **72 stray or half-width ASCII punctuation marks in running scripture,
+- [x] **72 stray or half-width ASCII punctuation marks in running scripture,
       in BOTH editions — and one sub-class may be LOST TEXT rather than a
-      stray.** Found 2026-08-19 by the refuter, which correctly broke the
+      stray.** DONE 2026-08-23: the 55 remaining marks (50 verses × 2 editions)
+      are widened or deleted per position by `tools/repair_ascii_punctuation.py`,
+      guarded by `test/ascii_punctuation_test.dart`; the 8 `"` are deliberately
+      NOT swept — see the two follow-ups below. Found 2026-08-19 by the refuter,
+      which correctly broke the
       claim that the CJK adjacency sweep above was a complete enumeration of
       this defect class: that sweep only looked at CJK marks, and it cannot
       see a stray that has no punctuation neighbour at all. Counts are for the
@@ -2165,6 +2169,56 @@ and quoted.**
       uses half-width `,` throughout) and `onegod.json` episode titles
       (「誰是獨一的真神?」). Reader-visible but not scripture, so they belong
       with the half-width sweep rather than ahead of it.
+
+      **How the 55 were decided, 2026-08-23.** Four actions, chosen per
+      position and never by rule. *Width* — 9 `!`→！, 3 `:`→：, 1 `;`→；,
+      11 `,`→，, 2 `()`→（）, each confirmed by a witness carrying the
+      full-width mark in that slot. *Stray* — 18 `.` and 3 `,` and 4 `)` that
+      no witness has, in slots no Chinese punctuation can occupy (a period
+      between 擾亂 and 之子, a comma straight after 「, a `)` with no opener in
+      「我為)我的名」), deleted. *Degraded* — 路加福音 8:12 alone, `.`→。, because
+      both witnesses end the verse 得救。at that exact offset. *Bracket* —
+      路加福音 8:45 closed its 〔有古卷在此有：…〕 with `)`; the other 11 such
+      spans close with 〕. The run asserts the CJK stream of every verse is
+      byte-identical before and after, which is what keeps a punctuation
+      repair from becoming a claim about the text.
+
+      **SeekSparks is NOT a witness for this defect class**, which is worth
+      remembering the next time it is reached for: 222 of its verses hold
+      ASCII marks in running text, and of the 26 it shares with our 50, 25
+      hold a byte-identical mark sequence. It descends from whatever produced
+      the artifact. It IS still testimony at positions it does not share —
+      西番雅書 1:1 is one.
+
+- [ ] **The 8 ASCII `"` in running scripture: sweep the whole 原文 apparatus
+      to full-width, or leave it ASCII? User's call.** A pass on 2026-08-23
+      converted them to 「」/“” and was reverted the same hour when the refuter
+      broke the reasoning. The eight sit in the inline （原文有 "…"）
+      parentheticals of 撒迦利亞書 1:3, 8:14, 10:1 and 10:12. The argument for
+      widening was that running-text parentheticals read 6/6 「」 — but that
+      population is quoted speech and translation glosses (「以馬內利」翻出來就是…),
+      not the 原文 apparatus. Measured against its own kind, the apparatus is
+      **ASCII by 157 to 7** across the 528 notes that cite 原文, so widening
+      the eight would leave them disagreeing with 157 of their own convention.
+      A second argument also failed: `"` being byte-identical at 344 in both
+      editions proves nothing, because a 1:1 S/T map preserves every count —
+      「 and “ stand at 3,439 apiece for the same reason.
+
+      So the real question is not about eight marks, it is whether this corpus
+      should set its 原文 apparatus in ASCII at all — 344 marks in each edition,
+      reader-visible wherever notes are rendered. That is an edition-wide
+      typographic choice, not a defect repair, so it needs the user.
+      `test/ascii_punctuation_test.dart` pins 336-in-notes / 8-in-running-text
+      per edition and fails any future sweep until then.
+
+- [ ] **西番雅書 1:1 may want a ，where the stray `)` was.** The verse read
+      「亞瑪利雅的曾孫)基大利的孫子」; the `)` is deleted and the verse now reads
+      曾孫基大利. Witness 7a2dc43 sets ，there, and our own verse sets ，after
+      the neighbouring links of the same genealogy. Against it: the printed
+      1919 punctuates the whole chain bare, and SeekSparks (which does not
+      carry the `)` here, so it is testimony at this position) reads 曾孫基大利
+      too. Deleting an artifact and adding a mark are separate acts and only
+      the first is a repair, so the ，is left to the user.
 
 - [ ] **`說；「` opens a quotation with a semicolon in 5 verses — a
       substitution, so deliberately not swept with the deletions above.**

@@ -7,6 +7,13 @@ above it.
 
 Last updated: 2026-08-23.
 
+**The refuter earns its keep — do not drop it to save a turn.** On
+2026-08-23 it broke a punctuation repair's stated reasoning twice in one
+iteration, in both directions: first it showed eight ASCII quotes should
+be converted, then, after the conversion was written, that the population
+the argument rested on had been drawn wrong and the conversion had to be
+undone. Both times the fix was cheap because nothing had been committed.
+
 ---
 
 ## The app
@@ -90,6 +97,17 @@ advances the repo hash is healthy.
 10. **The macOS display name is fixed with `CFBundleDisplayName`, never
     `PRODUCT_NAME`** — the latter also names the `.app`, whose path is
     hard-coded in the reinstall script.
+11. **A second Claude session shares this checkout and commits blind.** On
+    2026-08-23 it ran a blanket `git add` mid-iteration and swept two
+    repaired asset files into its own commit. So: stage files by name,
+    never `-A` or `.`; check `git status` right before committing; and if
+    your work has already landed in someone else's commit, say so in your
+    message rather than rewriting theirs. Skip the deploy if `pubspec.yaml`
+    or `app_version.dart` is dirty — they are mid-release.
+12. **`git checkout <sha> -- <path>` stages as well as restores.** Restoring
+    an asset to re-run a repair leaves the index holding the *old* blob, so
+    a later `git commit` can quietly commit the pre-repair file. Re-`git add`
+    after the tool runs.
 
 ## Standing rules from the user
 
@@ -106,7 +124,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 71 open items across P0 (scripture
+`docs/autonomous-queue.md` — 73 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 
@@ -132,3 +150,6 @@ leave the original checked-out; three such duplicates were found on
    anything NASB-shaped.
 4. **約翰三書 1:14 versification** and **路加福音 23:34a sub-verse label**
    — editorial choices, not inferences.
+5. **Should the 原文 apparatus set its quotes full-width?** 344 ASCII `"`
+   per edition, reader-visible wherever notes render. An edition-wide
+   typographic choice, not a defect; a sweep tried and was reverted.
