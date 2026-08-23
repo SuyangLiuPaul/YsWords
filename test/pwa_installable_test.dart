@@ -29,6 +29,7 @@ void main() {
             'unregisters the worker that makes the app installable');
   });
 
+
   test('the manifest still meets the installability bar', () {
     // Chrome needs name, start_url, a standalone-ish display mode and
     // 192 + 512 icons. These were verified live and are cheap to keep
