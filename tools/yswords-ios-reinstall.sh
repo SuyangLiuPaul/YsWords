@@ -316,6 +316,19 @@ fi
 # original com.example.yswords applicationId; the `cn` flavor is
 # installed separately by tools/yswords-cn-install.sh.
 echo ""
+# 2026-08-24: drop the generated plugin registrant before a release
+# build. `flutter pub get` regenerates it listing EVERY plugin, dev
+# dependencies included — and integration_test's Android artifact is
+# only on the debug classpath, so the release compile dies with
+# "package dev.flutter.plugins.integration_test does not exist".
+# A release build does NOT regenerate an existing registrant, so the
+# breakage persists until something clears it. The file is generated
+# and untracked; deleting it costs nothing and the build writes a
+# correct, release-appropriate one. (Found the hard way: the nightly
+# only worked because this file happened to be stale from before
+# integration_test was added.)
+rm -f "$PROJECT/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java"
+
 echo "→ flutter build apk --release --flavor intl ${DEFINES[*]}"
 if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
   # Warm up mDNS — the first poll after `adb start-server` can come
@@ -419,11 +432,20 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
         continue
       fi
     fi
-    if adb -s "$device_id" install -r "$ANDROID_APK"; then
-      echo "✓ installed to $label via $device_id"
+    # 2026-08-24: verify the package is actually THERE afterwards.
+    # `adb install` has been seen to report success while the package
+    # never landed — HyperOS's "Install via USB" toggle, which it turns
+    # itself back off, refuses the install at the system level. The
+    # 2026-08-24 04:00 run logged "✓ installed to Xiaomi Pad" for a
+    # package that was not on the device. A summary that counts a
+    # phantom install as a success is worse than one that fails loudly.
+    if adb -s "$device_id" install -r "$ANDROID_APK" && \
+       adb -s "$device_id" shell pm list packages 2>/dev/null | grep -q "com.example.yswords"; then
+      echo "✓ installed to $label via $device_id (package verified present)"
       successes=$((successes + 1))
     else
-      echo "✗ install to $label FAILED"
+      echo "✗ install to $label FAILED (adb error, or the package is absent afterwards —"
+      echo "   check Settings → Developer options → Install via USB on the device)"
       failures=$((failures + 1))
     fi
   done
