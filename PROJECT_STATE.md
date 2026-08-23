@@ -242,6 +242,17 @@ advances the repo hash is healthy.
     offline half. 約翰三書 1:15 is NOT a fourth — there the page sides with
     NASB and LEB against KJV, a real variant rather than a defect.
 
+24. **A defect can hide a verse from the allowlist written to catch it — so an
+    allowlist's completeness is evidence about the data at the moment it was
+    drawn up, and nothing more.** `bible_version_integrity_test.dart` lists the
+    verses that are legitimately blank on screen (whole text is a `<note: …>`,
+    which renders as an icon). 路加福音 17:36 belonged on it from the start and
+    was not there: a stray `」` sat OUTSIDE its note, the sanitised text was
+    therefore non-empty, and the verse never registered as blank, so nobody ever
+    had to list it. The list read as seven complete cases; it was eight with one
+    of them broken. When an exception list looks tidy, ask what would keep a
+    genuine member OFF it, not just whether every entry on it is justified.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the

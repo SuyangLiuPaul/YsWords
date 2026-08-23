@@ -537,22 +537,71 @@ and quoted.**
       NASB and LEB against KJV, which is a real versification variant rather
       than a defect. Two process lessons are in `PROJECT_STATE.md` traps.
 
-- [ ] **路加福音 17:36 renders as a lone 「」」 beside the note icon.** Six
-      verses in the corpus are note-only — 馬可福音 7:16, 9:44, 9:46,
-      路加福音 17:36, 使徒行傳 8:37, 15:34 — each a variant the CUV omits and
-      records. A standalone `<note:>` draws a tappable book icon and no text,
-      which is the intended design. But five of the six close their quotation
-      INSIDE the note (`…火是不滅的。」>`), while 路加福音 17:36 closes it
-      outside (`…撇下一個。>」`), so that one verse puts a bare closing bracket
-      on screen after the icon.
+- [x] **路加福音 17:36 rendered a bare `」` beside the note icon — deleted from
+      both editions 2026-08-24.** Six verses in the corpus are note-only —
+      馬可福音 7:16, 9:44, 9:46, 路加福音 17:36, 使徒行傳 8:37, 15:34 — each a
+      variant the CUV omits and records. A standalone `<note:>` draws a
+      tappable book icon and no text, which is the intended design. 17:36 alone
+      of 31,102 verses carried a character after the closing `>` (`」`; `”` in
+      the Simplified), so it printed an icon and a bare closing bracket.
 
-      Both `cuvs-yhwh-tr.json` and `cuvs-yhwh.json` have it (`」` and `”`), so
-      it is inherited from the shared source line, not a conversion artifact —
-      and 17:35 already carries its own closing 」, so the stray one is not
-      holding a quotation open. Cosmetic, and it touches a scripture asset, so
-      it wants the print open and both files edited together rather than a
-      one-character sed. Below the accuracy items: nothing untrue is stated,
-      it just looks like a typo.
+      **Which of two marks to delete was the whole question**, and the queue
+      entry had it half right. 17:35 also ends `。」`, so between them Jesus'
+      discourse closes once too often; the entry's reason for keeping 17:35's
+      («it is not holding a quotation open») is not evidence about which is the
+      stray. Three lines put the close at 17:35 and nothing after the note: our
+      own tagged Strong's corpus (a separate transcription line — its 17:36 is
+      `〔有古卷在此有36节："…"〕` with nothing after the `〕`), 梁家鏗's
+      independent NT (omits 17:36, ends 17:35 `。”`), and the five other
+      note-only verses. The printed 1919 page carries no quotation marks at all
+      (trap 13) so it testifies only to the structure, and it agrees: its v35
+      holds the 「有古卷在此有」 marker, its v36 is wholly a note.
+
+      **Blob `7a2dc43` is the witness that reads the other way, and it explains
+      the mark rather than contradicting the fix.** It keeps the variant INLINE
+      across both verses — `（有古卷加：` … `）」` — and so closes after it, with
+      no `」` at 17:35 at all. A different structure, not a dissenting opinion:
+      the stray is most likely a survivor of that older layout, left behind when
+      the variant was demoted into a note. Not "invented", which is what the
+      first draft of the commit message said until the refuter objected.
+
+      Added to `tools/repair_stray_punctuation.py` as a ninth orphan rather
+      than given its own tool — same class, same deletion-only discipline, and
+      the pattern is anchored on the `>` so it can never strip a mark from
+      inside a note. `test/stray_punctuation_test.dart` gains a corpus-wide
+      rule (nothing but CJK may follow a wholly-editorial verse's note) and
+      pins 17:35's mark as the one that stays; four tests fail on pre-fix data.
+
+      **The reason nobody caught it is the part worth keeping.**
+      `bible_version_integrity_test.dart` has an `editorialOnly` allowlist of
+      verses that are legitimately blank on screen, and Luke 17:36 was NOT in
+      it — not by oversight, but because the stray `」` made its sanitised text
+      non-empty, so the verse never registered as blank and never had to be
+      listed. **A defect can hide a verse from the allowlist written to catch
+      it.** Removing the mark took the list from seven to eight.
+
+- [ ] **Two verses print a closing `〕` with no opener: 士師記 8:24 and
+      耶利米書 10:11.** Found 2026-08-24 while measuring the class above.
+      Corpus-wide the CUV assets hold **12 `〔` against 14 `〕`** — eleven of
+      the pairs legitimately span two verses (a variant opens at the end of one
+      and closes at the end of the next: 民 31:43/46, 王上 21:25/26, 耶 26:20/23,
+      耶 27:19/20, 太 18:10/11, 太 23:13/14, 可 15:27/28, 路 23:16/17,
+      約 5:3/4, 徒 24:6/7, 徒 28:28/29, plus 路 8:45 self-contained). Exactly
+      two closers have no partner anywhere, and both are the MIRROR of 17:36:
+      an opening bracket was lost rather than a closing one left behind.
+
+      Both witnesses say where the opener belongs. 士師記 8:24: blob `7a2dc43`
+      and the tagged corpus both read
+      「…耳環給我。」（原來仇敵是以實瑪利人，都是戴金耳環的。）」 — the aside
+      starts at 原來. 耶利米書 10:11: `7a2dc43` brackets the WHOLE verse
+      （…被除滅！）, the tagged corpus brackets nothing and uses quotes instead,
+      and the print has no parentheses at either place — so 8:24 is settled and
+      10:11's scope is not unanimous.
+
+      **Not fixed in the same pass on purpose.** 17:36 was a deletion; this is
+      an insertion into scripture assets, the direction that needs more
+      evidence, and the two members disagree on how much. Whoever takes it
+      should settle 8:24 first (three lines agree) and treat 10:11 separately.
 
 - [x] **哥林多後書 13:5 (在你們裏面 / 在你們心裏) got its four-witness check
       on 2026-08-23 — and the fourth witness sided with US.** Our own tagged

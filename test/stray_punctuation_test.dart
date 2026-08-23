@@ -84,6 +84,31 @@ void main() {
         expect(offenders, isEmpty);
       });
 
+      /// A verse whose whole text is a `<note: …>` renders as a book icon
+      /// and nothing else, so any character left OUTSIDE the note is the
+      /// only thing the reader sees. 路加福音 17:36 left a `」` there and
+      /// printed an icon followed by a bare closing bracket; it was the
+      /// only one of 31,102 verses that did.
+      ///
+      /// The rule is written over the whole corpus rather than as one
+      /// assertion about 17:36, because the eight wholly-editorial verses
+      /// are exactly the ones where a leftover mark is invisible to every
+      /// other check — the verse is non-empty on disk, unique, and carries
+      /// no doubled punctuation. A remainder holding no CJK at all is not
+      /// text; it is debris.
+      test('nothing is left outside a wholly-editorial verse\'s note', () {
+        final cjk = RegExp(r'[㐀-鿿]');
+        final offenders = <String>[];
+        for (final v in loaded[edition]!) {
+          final text = v['text'] as String;
+          if (!text.startsWith('<note:')) continue;
+          final rest = text.substring(text.indexOf('>') + 1);
+          if (rest.trim().isEmpty || cjk.hasMatch(rest)) continue;
+          offenders.add('${v['book']} ${v['chapter']}:${v['verse']} — $rest');
+        }
+        expect(offenders, isEmpty);
+      });
+
       test('the repaired verses read correctly', () {
         expect(textOf(edition, '002015004'), contains('車輛、軍兵'.chars(edition)));
         expect(textOf(edition, '019146006'), contains('造天、地、海'.chars(edition)));
@@ -95,6 +120,13 @@ void main() {
         expect(textOf(edition, '030006010'), contains('又說：不要作聲'.chars(edition)));
         expect(textOf(edition, '030006014'), contains('說：以色列家啊'.chars(edition)));
         expect(textOf(edition, '058013003'), contains('同受捆綁；也要'.chars(edition)));
+        expect(textOf(edition, '042017036'), endsWith('>'));
+        // The mark that stays. Deleting THIS one instead would have left
+        // Jesus' discourse closing after an icon; three lines — the tagged
+        // Strong's corpus, 梁家鏗's independent NT, and the five other
+        // note-only verses — put the close here, at 17:35.
+        expect(textOf(edition, '042017035'),
+            endsWith(edition == 'Simplified' ? '撇下一个。”' : '撇下一個。」'));
       });
     });
   }

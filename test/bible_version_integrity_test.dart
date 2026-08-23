@@ -213,17 +213,27 @@ void main() {
     /// importer turned every parenthesis into a note, so those verses
     /// were blank on screen in both CUV editions.
     ///
-    /// The seven below are not that. Each is a place where the edition
+    /// The eight below are not that. Each is a place where the edition
     /// ITSELF says the text is not there — 「有古卷在此有」, 「見下節」,
     /// 「並入上一節」 — and the independent Eagle's View import of the
-    /// same edition agrees, bracketing exactly these seven `〔…〕` and
-    /// the other fifteen `（…）`. Promoting one of these into the verse
-    /// body would put a disputed reading on screen as scripture.
+    /// same edition brackets every one of them `〔…〕` as well.
+    /// Promoting one of these into the verse body would put a disputed
+    /// reading on screen as scripture.
+    ///
+    /// Luke 17:36 is the eighth, added 2026-08-24, and HOW it was
+    /// missing matters more than that it was. It always belonged here.
+    /// It never appeared because a stray `」` sat OUTSIDE its
+    /// `<note: …>`, which made the sanitised text non-empty — so the
+    /// verse passed this test while showing the reader an icon followed
+    /// by a bare closing bracket. **A defect can hide a verse from the
+    /// very allowlist written to catch it.** The list is only as
+    /// complete as the data was clean when it was drawn up.
     const editorialOnly = <String>{
       'Psalms 63:6',
       'Mark 7:16',
       'Mark 9:44',
       'Mark 9:46',
+      'Luke 17:36',
       'John 7:53',
       'Acts 8:37',
       'Acts 15:34',
