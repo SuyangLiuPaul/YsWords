@@ -3,7 +3,16 @@
      but Android lint does not count generated resources as the default
      locale, so the values-zh translations next door failed the build
      as ExtraTranslation orphans. Defining the default here puts the
-     whole name family in one mechanism lint understands. -->
+     whole name family in one mechanism lint understands.
+
+     THE APOSTROPHE IS \' AND THAT IS BUILDABLE. Please do not "fix"
+     it again: on 2026-08-24 it was rewritten to a numeric entity on
+     the belief that the escape broke the build. It does not. Both
+     flavours were built from this exact file to confirm it. \' is the
+     documented Android escape for an apostrophe in a resource value.
+     A typographic entity builds too, but renders a curly mark where
+     iOS, macOS and the web manifest all show an ASCII one, leaving
+     four surfaces disagreeing about the app's own name. -->
 <resources>
-    <string name="app_name">Yahweh&#8217;s Words</string>
+    <string name="app_name">Yahweh\'s Words</string>
 </resources>
