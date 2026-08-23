@@ -303,6 +303,19 @@ advances the repo hash is healthy.
     numbers are not privileged either — its "236 uncovered" was the stale
     constant it had read out of the test, and the measured figure was 223.
 
+28. **"This matches what the rest of the file does" is a claim, and it is usually
+    the sloppiest sentence in a repair.** The `主*` repair was justified as
+    producing "the shape the other 105 asterisk runs use". Only 23 of them used
+    it, and six of the 105 were not even tagged with the number the argument
+    assumed. The repair was right; the sentence defending it was false, and a
+    false sentence in a tool docstring is how trap 14 happened. The fix is to
+    quote a **corpus-wide** count you measured (`{"w":"主","s":"G2962",
+    "i":["G3588"]}` occurs 125 times) rather than a local impression of the
+    neighbours. Related: the first draft of that same repair merged each
+    orphaned marker into the whole preceding run, which would have made
+    「有人把主」 answer κύριος for 有人把. **Two refuter rounds, two different
+    faults — one in the change, one in its justification.**
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -318,7 +331,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 76 open items across P0 (scripture
+`docs/autonomous-queue.md` — 79 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 

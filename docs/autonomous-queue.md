@@ -684,22 +684,89 @@ and quoted.**
       which strengthens the case for 8:24 rather than weakening it. 10:11 is
       untouched by this and still needs a scope decision.
 
-- [ ] **`主* ` — an editorial mark printed as scripture in 115 verses of the
-      word-tap corpus. Eight times the bracket class, and almost certainly the
-      same defect as `主#`, which is already fixed.** Measured 2026-08-24:
-      `*` occurs **124 times across 115 verses** in `assets/tagged/cuvs-yhwh/`
-      and **zero times** in the 62,204 verses of the two reading assets. Shape:
-      哥林多前書 2:8 reads 「就不把榮耀的主* 釘在十字架上了」 — an asterisk and
-      a trailing space, exactly where `主#` used to stand in the 15 verses that
-      `repair_tagged_markup.py` turned into the edition's own referent gloss
-      `主[基督]`.
+- [x] **`主* ` — an editorial mark printed as scripture in 115 verses of the
+      word-tap corpus. Fixed 2026-08-24: all 124 asterisks gone, and the 19
+      that would have been orphaned keep their word.**
+      `tools/repair_tagged_editorial_asterisk.py`, pinned by
+      `test/tagged_editorial_asterisk_test.dart`.
 
-      **Do not assume it resolves to the same gloss.** `#` was settled because
-      the reading asset printed 主[基督] at those references and the corpus
-      itself kept 主[雅偉] intact two words away in 徒 2:34 — evidence, not
-      pattern-matching. Check each of the 115 against `cuvs-yhwh.json` the same
-      way; some may be 主[雅偉]. It is the largest known class of non-scripture
-      characters left in a file that is rendered in place of the reader's verse.
+      **It resolved to a deletion, not a gloss, and the reason is measured.**
+      The item warned not to assume it was another `主#`, and it was right to.
+      This edition marks a referent with a bracket and uses it freely in the NT
+      — `主[雅偉]` in 197 reading verses, `[基督]` in 15 — and the overlap with
+      these 115 is **zero and zero**. At every one of the 115 the reading verse
+      reads a plain 主, so there was nothing to restore. All 115 are NT, which
+      kills the "asterisk is a divine-name convention" reading rather than
+      supporting it: the convention is demonstrably the bracket.
+
+      **The refuter ran twice and changed the repair both times, which is the
+      transferable part.** Round one broke the design: the first draft merged
+      each orphaned marker run into the whole run before it, which would have
+      tagged 「有人把主」 G2962 and made 有人把 answer κύριος. Round two broke
+      the *justification* — I had written that the resulting shape is "what the
+      other 105 asterisks look like", and only 23 of them carry `i:["G3588"]`
+      while six are not tagged G2962 at all. The honest precedent is
+      corpus-wide: `{"w":"主","s":"G2962","i":["G3588"]}` already occurs **125
+      times**. Neither round was catchable by analyze or the suite.
+
+      Final rule: the 主 the marker sits on moves into the marker's run — it is
+      the last character of the preceding run in all 19, and in all 19 that run
+      is tagged G3588 against the marker's G2962 — so 主 answers κύριος instead
+      of ὁ, and 有人把 / 称呼我 / 是你们的 / 对 keep the number they already had.
+      114 of the 115 now reproduce the reader's verse exactly.
+
+- [ ] **113 verses render a tagged line carrying ideographs the reading line
+      does not, and 馬太福音 9:28 is one confirmed defect: 「耶穌說說：」.**
+      Measured 2026-08-24 while repairing the asterisk class, by reproducing
+      `coversVerse`'s own subsequence test in python over all 31,102 verses:
+      270 verses are hidden by the guard, 30,719 match ideograph for
+      ideograph, and **113 pass the guard while carrying extra ideographs** —
+      78 of them by exactly one. Those 113 are printed to the reader in place
+      of the verse.
+
+      **The count is honest but the class is not triaged, so do not quote 113
+      as "113 wrong verses".** The comparison is the one production makes —
+      raw text, notes included — and this edition writes a note as
+      `<note: …>` in the reading asset and inlines it as `〔…〕` in the tagged
+      corpus, so an unknown share of the 113 will be note formatting rather
+      than scripture. 馬太福音 9:28 is the one member read individually and it
+      is real: the tagged corpus doubles the 說 of 「耶穌說：」. It was left
+      alone on purpose by the asterisk repair — a pass that quietly also fixed
+      it would be undeclared work on scripture — and is pinned in
+      `test/tagged_editorial_asterisk_test.dart` so it cannot be swept.
+
+      Whoever takes this should split the 113 into note-formatting and real
+      insertions **before** repairing any of them, and should expect the
+      single-ideograph 78 to be where the real ones are.
+
+- [ ] **Six runs carry an asterisk's Strong's number that names the wrong
+      word — the same alignment off-by-one as 馬可福音 6:33.** Found by the
+      refuter 2026-08-24 while checking the asterisk repair. 118 of the 124
+      asterisk runs were tagged G2962 (κύριος); the other six are
+      使徒行傳 7:59 **G2532** (καί), 22:18 **G846** (αὐτός), 約翰福音 13:24
+      G2076, 路加福音 9:59 G2010, 17:5 G4369, 22:31 G4613. The asterisk repair
+      neither created these nor touched them, so they still ship: tapping 主 in
+      使徒行傳 7:59 answers "and".
+
+      This is the third measured instance of the class (馬可福音 6:33's 城的
+      carries the article's G3588 while πόλεων's G4172 appears in no run of
+      the verse; the 19 split asterisk runs were a fourth shape of it). **Worth
+      one iteration to size the class corpus-wide rather than fixing six** —
+      every argument this repo builds on a Strong's tag assumes the tagging is
+      aligned, and nobody has measured how often it is not.
+
+- [ ] **182 stray spaces inside the word-tap corpus, low priority.** Measured
+      2026-08-24: 621 spaces in all, of which 429 are the edition's own gloss
+      (`主 [雅偉] 誇口`) and 10 sit before a punctuation mark in a name list
+      (`以巴錄 、`). The remaining 182 look like import residue —
+      使徒行傳 9:5 prints 「主 說：」, 歷代志上 21:20 prints
+      「看見天使 ，就和他 四個兒子」, 列王紀上 15:19 prints 「說 ：」. Filed low
+      deliberately: a space is untidy, not untrue, and `coversVerse` ignores
+      it. Anything done here must not touch the 429.
+
+- [ ] **The remaining stray ASCII punctuation in the word-tap corpus.**
+      Measured 2026-08-24, against zero occurrences in the reading assets:
+      `,` 27 (21 verses), `.` 16 (13 verses), `!` 11 (11 verses), `;` 4
 
 - [ ] **The remaining stray ASCII punctuation in the word-tap corpus.**
       Measured 2026-08-24, against zero occurrences in the reading assets:
