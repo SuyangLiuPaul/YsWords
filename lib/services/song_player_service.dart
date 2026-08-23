@@ -110,6 +110,30 @@ class SongPlayerService extends ChangeNotifier {
     SongAudioHandler.sourceResolver = resolver;
   }
 
+  /// The origin whose `/song-media/*` rules native falls back to when
+  /// a direct stream fails. qat rather than prod on purpose: prod is
+  /// pinned at v1.4.11, which predates the proxy rules entirely — its
+  /// `/song-media/*` returns the SPA's index.html (verified 2026-08-23,
+  /// `content-type: text/html`), which an audio element cannot play.
+  /// qat always carries the same netlify.toml dev just verified.
+  static const String _fallbackProxyOrigin =
+      'https://yswords-qat.netlify.app';
+
+  /// Absolute proxy URL for [url], or null when no rule covers it.
+  /// Native only — web ALWAYS goes through the proxy via
+  /// [resolvePlaybackUrl], so there is no second route to fall to.
+  static String? nativeProxyFallbackUrl(String url) {
+    if (kIsWeb) return null;
+    for (final entry in _webProxyPrefixes.entries) {
+      if (url.startsWith(entry.key)) {
+        return _fallbackProxyOrigin +
+            entry.value +
+            url.substring(entry.key.length);
+      }
+    }
+    return null;
+  }
+
   // ── State ───────────────────────────────────────────────────────
 
   Song? get current => _h.currentSong;

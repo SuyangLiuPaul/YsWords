@@ -5114,7 +5114,17 @@ has never seen this repo.
       exists so the answer can change by itself when the same work is
       run somewhere else, or when the policy does.
 
-- [ ] **Native should fall back to the Netlify media proxy when a host
+- [x] **Native should fall back to the Netlify media proxy when a host
+      — SHIPPED 2026-08-23 (v1.4.129).** One retry per song per session:
+      a failed or stalled native stream is re-tried through the qat
+      `/song-media/*` proxy (qat, NOT prod — prod predates the rules and
+      serves index.html from that path). Both failure paths route through
+      `_tryProxyRetry`; the blocked-host case lands in the stall
+      watchdog, not the catch. `test/song_proxy_fallback_test.dart` pins
+      the URL builder. Probed first: all 888 catalogue audio URLs stream
+      via the proxy, so the failures were route failures, matching the
+      user's VPN-on iPhone. Original brief below.
+      **SUPERSEDED — Native should fall back to the Netlify media proxy when a host
       is unreachable. — DECIDED NOT TO SHIP YET, 2026-08-11.**
       The user chose "先不做，写进队列" after being shown the bandwidth
       cost. **Do not implement this without asking them again.** What

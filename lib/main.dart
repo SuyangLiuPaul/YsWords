@@ -31,6 +31,7 @@ import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/song_download_service.dart';
 import 'package:yswords/widgets/global_mini_player.dart';
+import 'package:yswords/services/song_audio_handler.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
 import 'package:yswords/services/version_preloader.dart';
@@ -74,6 +75,15 @@ void main() {
     // download layer's dart:io dependency. No-ops on web, where
     // `resolveSongSource` just returns the proxy URL.
     SongPlayerService.useSourceResolver(resolveSongSource);
+
+    // 2026-08-23 ("有些歌播放不了"): when a NATIVE direct stream fails
+    // or stalls, retry once through the qat media proxy. Two of the
+    // three church hosts refuse connections they classify as
+    // datacenter traffic — which includes most VPN exits, and the
+    // user's report screenshots show a VPN in the status bar. Web is
+    // unaffected: it always plays through the proxy already.
+    SongAudioHandler.proxyFallback =
+        SongPlayerService.nativeProxyFallbackUrl;
 
     // 2026-08-09 (Songs player): boot the platform media session so
     // playback survives backgrounding and appears on the lock screen /

@@ -117,6 +117,31 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   /// direct URL). Wired in main.dart.
   static String? Function(Song song, String url)? sourceResolver;
 
+  /// Native-only second chance: given the upstream URL of a track that
+  /// just failed, returns a proxied URL to retry with, or null.
+  ///
+  /// 2026-08-23, "有些歌播放不了". Native streams DIRECTLY from the
+  /// church hosts, and two of them (fydt.org and
+  /// christiandiscipleschurch.org — same server) refuse connections
+  /// they classify as datacenter traffic. The user's status bar in the
+  /// report screenshots shows a VPN, whose exit is exactly that. So on
+  /// the same phone, cgdc songs played while cdc/fydt songs sat at
+  /// 0:00 until the stall watchdog killed them — "some songs won't
+  /// play" with no pattern visible to the user.
+  ///
+  /// Wired in main.dart to SongPlayerService.nativeProxyFallbackUrl.
+  /// Web never uses this: it ALWAYS goes through the proxy (see
+  /// resolvePlaybackUrl), so a failure there is not about the route.
+  static String? Function(String url)? proxyFallback;
+
+  /// Songs already retried through the proxy this session — one retry
+  /// each, so a genuinely dead file still fails promptly instead of
+  /// looping between two routes.
+  final Set<String> _proxyRetried = <String>{};
+
+  /// Track-level URL overrides installed by the proxy retry.
+  final Map<String, String> _proxyUrlFor = <String, String>{};
+
   SongQueue _queue = SongQueue.empty;
   bool _playing = false;
   bool _loading = false;
@@ -453,7 +478,8 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     // So the play call is issued FIRST, synchronously, before any
     // state updates or notifications — and the future is awaited
     // afterwards. Everything below this line used to happen before it.
-    final resolved = sourceResolver?.call(item.song, item.url) ?? item.url;
+    final baseUrl = _proxyUrlFor[item.song.id] ?? item.url;
+    final resolved = sourceResolver?.call(item.song, baseUrl) ?? baseUrl;
     final playing = _player.play(resolved);
 
     _loading = true;
@@ -482,6 +508,10 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
       _broadcast();
       return;
     } catch (e) {
+      // Before declaring the track dead, try the other route once.
+      // A refused direct connection and a missing file look identical
+      // from here; the proxy retry is what tells them apart.
+      if (_tryProxyRetry(item, 'error: $e')) return;
       // One dead URL must not end the listening session. Drop it and
       // move on — the catalogue points at four third-party servers and
       // any of them can 404 between syncs.
@@ -521,6 +551,9 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
       final host = Uri.tryParse(item.url)?.host;
       debugPrint('[SongAudioHandler] ${item.song.id} produced no audio in '
           '${_stallTimeout.inSeconds}s (host: $host)');
+      // The blocked-host case usually lands HERE, not in the catch:
+      // the platform accepts the source and then nothing ever arrives.
+      if (_tryProxyRetry(item, 'stall (host: $host)')) return;
       _failed.add(item.song.id);
       // The same wording the engines use for a failed source load, so
       // the mini-player's existing classifier reaches the "cannot reach
@@ -531,6 +564,24 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
       _broadcast();
       unawaited(_skipPastFailure());
     });
+  }
+
+  /// Retry [item] through the media proxy. True when a retry was
+  /// started (the caller must not mark the track failed); false when
+  /// there is nothing left to try.
+  bool _tryProxyRetry(QueueItem item, String why) {
+    final fallback = proxyFallback?.call(item.url);
+    if (fallback == null) return false;
+    if (_proxyRetried.contains(item.song.id)) return false;
+    // A local download never gets here in the first place — the
+    // resolver returns the file path and file playback does not fail
+    // on network grounds.
+    _proxyRetried.add(item.song.id);
+    _proxyUrlFor[item.song.id] = fallback;
+    debugPrint('[SongAudioHandler] ${item.song.id} $why — retrying '
+        'through the media proxy');
+    unawaited(_playCurrent());
+    return true;
   }
 
   void _cancelStallWatchdog() {
