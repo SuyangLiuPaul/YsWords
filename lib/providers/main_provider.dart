@@ -280,6 +280,8 @@ class MainProvider extends ChangeNotifier {
     // against the new version's reading-pane build is the most
     // direct way to land on a wrong verse.
     _pendingJumpChapterVerseIndex = null;
+    _pendingJumpBook = null;
+    _pendingJumpChapter = null;
     currentVersion = version;
     renderedVersion = version;
     verses = cached;
@@ -1156,6 +1158,17 @@ class MainProvider extends ChangeNotifier {
 
   // Method to set the current book and chapter, persist state, and notify listeners
   void setCurrentChapter({required String book, required int chapter}) {
+    // Moving to a chapter the pending jump was not meant for means the
+    // reader has gone somewhere else — drop it rather than let it fire
+    // later and yank someone who has moved on. Note that
+    // `prepareJumpToVerse` sets the chapter BEFORE the jump, so this
+    // never discards the jump it is about to record.
+    if (_pendingJumpBook != null &&
+        (_pendingJumpBook != book || _pendingJumpChapter != chapter)) {
+      _pendingJumpChapterVerseIndex = null;
+      _pendingJumpBook = null;
+      _pendingJumpChapter = null;
+    }
     currentBook = book;
     currentChapter = chapter;
     if (isPrimary) saveCurrentState();
@@ -1251,8 +1264,26 @@ class MainProvider extends ChangeNotifier {
   int get pendingJumpVerseIndex => _pendingJumpChapterVerseIndex ?? -1;
   bool get hasPendingJump => _pendingJumpChapterVerseIndex != null;
 
-  void setPendingJump({required int chapterVerseIndex}) {
+  /// The book + chapter the pending index was computed against.
+  ///
+  /// 2026-08-23: an index alone is a number with no idea which chapter
+  /// it counts into, so a jump prepared for Ezekiel 34 could be
+  /// consumed by a reader still showing 1 Chronicles 29 and would
+  /// scroll+highlight whatever verse happened to sit at that offset.
+  /// Recording the target lets the reader refuse a jump that is not
+  /// its own, which is what makes [renotifyPendingJump] safe to call
+  /// more than once.
+  String? _pendingJumpBook;
+  int? _pendingJumpChapter;
+
+  void setPendingJump({
+    required int chapterVerseIndex,
+    String? book,
+    int? chapter,
+  }) {
     _pendingJumpChapterVerseIndex = chapterVerseIndex;
+    _pendingJumpBook = book;
+    _pendingJumpChapter = chapter;
     // Always notify, even if other state didn't change — round 52
     // bug: when the user tapped a note for a verse in the *current*
     // chapter, [prepareJumpToVerse] called setCurrentChapter (which
@@ -1274,7 +1305,45 @@ class MainProvider extends ChangeNotifier {
   int? consumePendingJump() {
     final v = _pendingJumpChapterVerseIndex;
     _pendingJumpChapterVerseIndex = null;
+    _pendingJumpBook = null;
+    _pendingJumpChapter = null;
     return v;
+  }
+
+  /// Take the pending jump only if it was prepared for [book]/[chapter].
+  ///
+  /// Returns null — and leaves the jump pending — when the reader is
+  /// showing something else, so the right reader can still take it.
+  /// Jumps recorded before targets existed carry no book and are
+  /// consumed unconditionally, exactly as they were before.
+  int? consumePendingJumpFor(String? book, int? chapter) {
+    if (_pendingJumpChapterVerseIndex == null) return null;
+    if (_pendingJumpBook != null &&
+        (book != _pendingJumpBook || chapter != _pendingJumpChapter)) {
+      return null;
+    }
+    return consumePendingJump();
+  }
+
+  /// Re-announce a jump that nobody has taken yet.
+  ///
+  /// 2026-08-23, from the user: "if I search after AI gave me the
+  /// result, I click, it won't jump to the correct place." Measured in
+  /// a release build with the reader's own forensic logging: the tap
+  /// prepared the jump correctly — `relIdx=14` for Ezekiel 34:15 — and
+  /// then the reading pane never rebuilt at all, so the post-frame
+  /// consumer that does the scrolling was never scheduled. The search
+  /// page is a full route; the reader behind it is not listening when
+  /// `setPendingJump` notifies, and `Get.off(HomePage)` afterwards does
+  /// not guarantee a fresh build of that Consumer. One notification,
+  /// delivered to nobody, and the jump sat there forever.
+  ///
+  /// This is a no-op once the jump has been taken, and the reader
+  /// refuses jumps meant for another chapter, so calling it repeatedly
+  /// while a route transition settles is safe.
+  void renotifyPendingJump() {
+    if (_pendingJumpChapterVerseIndex == null) return;
+    notifyListeners();
   }
 
   // Method to scroll to a specific index in the list and notify listeners

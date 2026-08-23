@@ -128,7 +128,12 @@ Future<JumpResolution> resolveAndPrepareJump({
   mp.setCurrentChapter(book: hit.book, chapter: hit.chapter);
   mp.updateCurrentVerse(verse: hit);
   if (relIdx >= 0) {
-    mp.setPendingJump(chapterVerseIndex: relIdx);
+    mp.setPendingJump(
+      chapterVerseIndex: relIdx,
+      book: hit.book,
+      chapter: hit.chapter,
+    );
+    _announcePendingJump(mp);
   }
 
   return JumpResolution._(
@@ -315,9 +320,51 @@ void prepareJumpToVerse(Verse verse, MainProvider mp) {
   debugPrint('[YsWords prepareJumpToVerse] '
       'relIdx=$relIdx chapterVerses.length=${chapterVerses.length}');
   if (relIdx >= 0) {
-    mp.setPendingJump(chapterVerseIndex: relIdx);
+    mp.setPendingJump(
+      chapterVerseIndex: relIdx,
+      book: matchedBook,
+      chapter: verse.chapter,
+    );
+    _announcePendingJump(mp);
   }
 }
+
+/// Keep telling the reader there is a jump waiting until it takes one.
+///
+/// 2026-08-23. Every caller of [prepareJumpToVerse] navigates
+/// immediately afterwards — `Get.off(HomePage)`, `Get.to`, a pop — and
+/// the reader that will perform the jump is usually not mounted yet
+/// when [MainProvider.setPendingJump] notifies. That single
+/// notification goes to nobody, and the reading pane's post-frame
+/// consumer only runs when its Consumer rebuilds, so nothing ever
+/// schedules the scroll. Verified in a release build: for Ezekiel
+/// 34:15 the tap logged `relIdx=14` and then not one further pane
+/// build. The reader opened the right chapter at verse 1.
+///
+/// So re-announce across the navigation instead of assuming one
+/// listener heard it, and stop the moment somebody takes it. The
+/// reader only accepts a jump prepared for the chapter it is actually
+/// showing, so the repeats cannot mis-aim anything.
+///
+/// Counted in FRAMES rather than milliseconds, because what we are
+/// waiting for is a build, not an elapsed time — and because a wall-
+/// clock ladder leaves timers running after the jump has landed, which
+/// four widget tests correctly objected to. Thirty frames is about
+/// half a second at 60 Hz, comfortably past a route transition; in
+/// practice the reader takes it on the first or second.
+void _announcePendingJump(MainProvider mp, {int framesLeft = 30}) {
+  if (framesLeft <= 0) return;
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Taken (or invalidated by a chapter change) — stop announcing.
+    if (!mp.hasPendingJump) return;
+    mp.renotifyPendingJump();
+    _announcePendingJump(mp, framesLeft: framesLeft - 1);
+  });
+  // Nudge the pipeline in case nothing else is asking for frames; the
+  // notify above normally schedules one on its own.
+  WidgetsBinding.instance.scheduleFrame();
+}
+
 
 /// Convenience wrapper that surfaces the result of
 /// [resolveAndPrepareJump] as a SnackBar via the messenger looked up

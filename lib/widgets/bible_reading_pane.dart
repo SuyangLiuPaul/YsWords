@@ -1358,7 +1358,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
             }
 
             final mp = context.read<MainProvider>();
-            final pendingIdx = mp.consumePendingJump();
+            // Only take a jump prepared for the chapter this pane is
+            // actually showing. Anything else belongs to another pane
+            // (or to this one, a moment from now) and must be left
+            // alone rather than scrolled to a same-numbered verse in
+            // the wrong chapter.
+            final pendingIdx = mp.consumePendingJumpFor(
+                mp.currentBook, mp.currentChapter);
             if (pendingIdx == null) {
               debugPrint('[YsWords jump] post-frame bail: '
                   'consumePendingJump returned null (already consumed)');
