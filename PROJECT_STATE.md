@@ -31,11 +31,11 @@ per-platform places and nothing compared them until
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.118** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.118** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.123** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.123** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**prod is 107 versions behind and it is not an oversight.** Every prod
+**prod is 112 versions behind and it is not an oversight.** Every prod
 push needs the user to say so in the moment; permission never carries
 over from a previous turn. Full wording of what does and does not count
 as permission: `docs/release-policy.md`. prod still serves the broken
@@ -49,8 +49,8 @@ dev/qat sites). Native install: `zsh tools/yswords-ios-reinstall.sh`.
 
 A launchd agent works the queue one item at a time.
 
-- `com.yswords.accuracyloop`, `StartInterval 3600` (hourly),
-  `RunAtLoad false`
+- `com.yswords.accuracyloop`, `StartInterval 1800` (every 30 min,
+  set by the user 2026-08-23; was hourly), `RunAtLoad false`
 - Driver: `~/Library/Application Support/yswords-loop/run.sh`
 - Brief: the same directory's `prompt.md`
 - Log: the same directory's `run.log`
