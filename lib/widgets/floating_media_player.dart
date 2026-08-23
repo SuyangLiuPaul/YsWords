@@ -97,7 +97,7 @@ class FloatingMediaPlayer {
       builder: (ctx) => _Window(
         position: _position,
         width: _kWindowWidth,
-        aspectRatio: media.aspectRatio,
+        frameHeight: media.frameHeight,
         provider: media.provider,
         locale: locale,
         onOpenExternally: onOpenExternally,
@@ -135,7 +135,7 @@ class _Window extends StatefulWidget {
   const _Window({
     required this.position,
     required this.width,
-    required this.aspectRatio,
+    required this.frameHeight,
     required this.provider,
     required this.locale,
     required this.onOpenExternally,
@@ -144,7 +144,7 @@ class _Window extends StatefulWidget {
 
   final ValueNotifier<Offset> position;
   final double width;
-  final double aspectRatio;
+  final double Function(double width) frameHeight;
   final String provider;
   final String locale;
   final Future<void> Function() onOpenExternally;
@@ -159,7 +159,7 @@ class _WindowState extends State<_Window> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final media = MediaQuery.of(context);
-    final height = widget.width / widget.aspectRatio + _kBarHeight;
+    final height = widget.frameHeight(widget.width) + _kBarHeight;
 
     // Bottom-right, a thumb's width clear of the edges, measured
     // against the OVERLAY — and re-clamped on every build so a rotation

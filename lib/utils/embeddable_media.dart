@@ -5,7 +5,7 @@ import 'package:yswords/utils/youtube_url.dart';
 class EmbeddableMedia {
   const EmbeddableMedia({
     required this.embedUrl,
-    required this.aspectRatio,
+    required this.frameHeight,
     required this.provider,
   });
 
@@ -13,9 +13,15 @@ class EmbeddableMedia {
   /// not the page a human would visit.
   final String embedUrl;
 
-  /// Video is 16:9. Audio players are short and wide, and giving one a
-  /// video's height would show a strip of player over a lot of nothing.
-  final double aspectRatio;
+  /// How tall the frame wants to be at [width].
+  ///
+  /// Not an aspect ratio: video scales with width, but SoundCloud's
+  /// compact widget has a FIXED minimum — 166 px, below which its own
+  /// play button and scrubber are clipped. 2026-08-24, from the phone:
+  /// "那个播放键在手机上都按不了". The window was ~107 px tall, so the
+  /// controls were simply not on screen; nothing was wrong with the
+  /// touch handling.
+  final double Function(double width) frameHeight;
 
   /// 'youtube' | 'soundcloud'. Shown on the window's title bar so the
   /// user can tell what is playing without reading the frame.
@@ -43,7 +49,7 @@ EmbeddableMedia? embeddableMedia(String url) {
       // fullscreen player.
       embedUrl: 'https://www.youtube-nocookie.com/embed/$videoId'
           '?rel=0&playsinline=1&autoplay=1',
-      aspectRatio: 16 / 9,
+      frameHeight: (w) => w * 9 / 16,
       provider: 'youtube',
     );
   }
@@ -57,21 +63,58 @@ EmbeddableMedia? embeddableMedia(String url) {
     final host = u.host.toLowerCase();
     if (host == 'w.soundcloud.com' && u.path.startsWith('/player')) {
       return EmbeddableMedia(
-        embedUrl: url,
-        // SoundCloud's own recommended height for the compact player is
-        // 166 px; at the widths this window uses that lands near 3:1.
-        aspectRatio: 3,
+        embedUrl: _soundcloudCompact(url),
+        frameHeight: (_) => _kSoundcloudHeight,
         provider: 'soundcloud',
       );
     }
     if (host == 'api.soundcloud.com' || host == 'soundcloud.com') {
       return EmbeddableMedia(
-        embedUrl: 'https://w.soundcloud.com/player/?url='
-            '${Uri.encodeComponent(url)}',
-        aspectRatio: 3,
+        embedUrl: _soundcloudCompact(
+            'https://w.soundcloud.com/player/?url='
+            '${Uri.encodeComponent(url)}'),
+        frameHeight: (_) => _kSoundcloudHeight,
         provider: 'soundcloud',
       );
     }
   }
   return null;
+}
+
+/// SoundCloud's compact widget height. Their own documented minimum:
+/// below it the play button and scrubber are clipped.
+const double _kSoundcloudHeight = 170;
+
+/// Ask SoundCloud for the COMPACT player rather than its default.
+///
+/// 2026-08-24, from the phone: the window showed SoundCloud's site
+/// furniture — the logo, "Sign in", "Listen in app", a row of Home /
+/// Feed / Search / Library / Download — and no usable transport. That
+/// is the `visual=true` player, which SoundCloud serves by default: a
+/// full-bleed artwork unit sized for a page, not a strip. `visual=false`
+/// is the 166 px bar with a play button and a scrubber, which is what a
+/// small floating window can actually show.
+///
+/// The rest trim what a hymn listener has no use for and what would not
+/// fit anyway: related tracks, comments, the uploader header, reposts,
+/// buy and download links.
+String _soundcloudCompact(String playerUrl) {
+  final u = Uri.parse(playerUrl);
+  return u.replace(queryParameters: {
+    ...u.queryParameters,
+    'visual': 'false',
+    'hide_related': 'true',
+    'show_comments': 'false',
+    'show_user': 'false',
+    'show_reposts': 'false',
+    'show_teaser': 'false',
+    'buying': 'false',
+    'download': 'false',
+    'sharing': 'false',
+    // NOT auto_play: mobile browsers refuse to start audio without a
+    // gesture inside the frame, and asking anyway is what produces
+    // SoundCloud's "Play on SoundCloud" interstitial over the player.
+    // Letting the user press the widget's own button is the path that
+    // actually plays.
+  }).toString();
 }

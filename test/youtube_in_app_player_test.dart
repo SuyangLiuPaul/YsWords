@@ -179,12 +179,33 @@ void main() {
       expect(embeddableMedia('mailto:someone@example.com'), isNull);
     });
 
-    test('audio gets an audio-shaped window, video a video-shaped one', () {
-      expect(embeddableMedia(videoUrl)!.aspectRatio, 16 / 9);
-      expect(embeddableMedia(soundcloudUrl)!.aspectRatio,
-          greaterThan(16 / 9),
-          reason: 'a SoundCloud player is short and wide; giving it a '
-              'video height would show a strip of player over nothing');
+    test('the SoundCloud frame is tall enough for its own controls', () {
+      // 2026-08-24, from the phone: "那个播放键在手机上都按不了". The
+      // window was ~107 px tall and SoundCloud's compact widget needs
+      // 166; its play button and scrubber were simply below the
+      // frame. Nothing was wrong with touch handling.
+      expect(embeddableMedia(soundcloudUrl)!.frameHeight(320),
+          greaterThanOrEqualTo(166));
+      // Video still scales with width.
+      expect(embeddableMedia(videoUrl)!.frameHeight(320), 320 * 9 / 16);
+    });
+
+    test('SoundCloud is asked for the COMPACT player', () {
+      // Its default is a full-bleed artwork unit with the site's own
+      // header and nav — which is what the phone showed instead of a
+      // player. visual=false is the 166 px transport bar.
+      final url = embeddableMedia(soundcloudUrl)!.embedUrl;
+      expect(url, contains('visual=false'));
+      expect(url, contains('hide_related=true'));
+      expect(url, contains('show_user=false'));
+      // And NOT auto_play: asking for it on mobile is what puts
+      // SoundCloud's "Play on SoundCloud" interstitial over the player.
+      expect(url.contains('auto_play=true'), isFalse);
+      // The track must survive the rewrite. Uri.replace re-encodes the
+      // slashes in the nested url (%2F), which SoundCloud accepts —
+      // assert on the id rather than on a slash spelling that is an
+      // implementation detail of the rewrite.
+      expect(Uri.decodeComponent(url), contains('tracks/123456'));
     });
 
     test('every catalogue row that offers one resolves', () {
