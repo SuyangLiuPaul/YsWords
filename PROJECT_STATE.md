@@ -51,6 +51,13 @@ A launchd agent works the queue one item at a time.
 
 - `com.yswords.accuracyloop`, `StartInterval 1800` (every 30 min,
   set by the user 2026-08-23; was hourly), `RunAtLoad false`
+- **It stops itself on 2026-09-21 20:30.** `STOP_AT` in `run.sh` is a
+  dead-man switch: past that instant the job logs and calls
+  `launchctl bootout` on itself rather than idling forever. Set to 29
+  days by the user on 2026-08-23; before that it was two weeks and
+  would have unloaded on 2026-08-24. The value is re-read every tick,
+  so extending it needs no reload — but **edit `run.sh` only via
+  `.new` + `bash -n` + atomic `mv`** (see trap 2 below).
 - Driver: `~/Library/Application Support/yswords-loop/run.sh`
 - Brief: the same directory's `prompt.md`
 - Log: the same directory's `run.log`
