@@ -21,7 +21,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/widgets/youtube_player_sheet.dart';
+import 'package:yswords/widgets/floating_media_player.dart';
 
 import 'link_opener_stub.dart'
     if (dart.library.js_interop) 'link_opener_web.dart' as impl;
@@ -57,15 +57,23 @@ class LinkOpener {
   /// 2026-08-24, the same argument a second time, for a second thing:
   /// "歌曲里面有几个是YouTube如果按了去YouTube了，但是web 和ios能不能不跳
   /// 转出去，好像WhatsApp那样YouTube对话框在播放音乐，其实整个app都要这样".
-  /// A YouTube link now opens the in-app player instead of leaving the
-  /// app — and it does so HERE, once, so "整个app" is a property of the
-  /// chokepoint rather than a promise 17 call sites have to keep. Not
-  /// one of them changed to get it.
+  /// Embeddable media now opens the floating in-app player instead of
+  /// leaving the app — and it does so HERE, once, so "整个app" is a
+  /// property of the chokepoint rather than a promise 17 call sites
+  /// have to keep. Not one of them changed to get it.
   ///
-  /// Everything that is not a playable YouTube video takes exactly the
-  /// path it took before: [inAppYoutubeId] returns null for a non-video
-  /// URL, and also on Windows and Linux, where there is no webview to
-  /// embed into.
+  /// 2026-08-24, second round. The first version put the video in a
+  /// modal sheet and the user was blunt about it: "现在是有youtube在song
+  /// 里面但是就不能退出去了，能不能好像WhatsApp一样窗口可以移动一样可以
+  /// 用app". A modal is a trap by construction. It is a draggable
+  /// window now, and the same message widened the scope — "另外
+  /// soundcloud也是一样的概念…其他如果有的话也是一样一并做了" — so what
+  /// counts as embeddable is decided in one place, [embeddableMedia],
+  /// and this asks it rather than testing for YouTube itself.
+  ///
+  /// Everything else takes exactly the path it took before: a link that
+  /// is not embeddable media, and every link at all on Windows and
+  /// Linux, where there is no webview to embed into.
   ///
   /// Safe to call without awaiting; it guards `context.mounted` itself.
   static Future<bool> openOrWarn(
@@ -73,10 +81,18 @@ class LinkOpener {
     String url, {
     String? locale,
   }) async {
-    final videoId = inAppYoutubeId(url);
-    if (videoId != null) {
-      await showYoutubeSheet(context, videoId, watchUrl: url, locale: locale);
-      // The sheet opened; nothing to warn about. The bool means "the
+    if (FloatingMediaPlayer.canPlay(url)) {
+      final loc = locale ?? Localizations.localeOf(context).toLanguageTag();
+      FloatingMediaPlayer.show(
+        context,
+        url,
+        locale: loc,
+        // openExternally, not openOrWarn: openOrWarn is what routed the
+        // link into this player, so asking it again would hand it back
+        // to the thing the user is escaping.
+        onOpenExternally: () => openExternally(context, url, locale: loc),
+      );
+      // The window opened; nothing to warn about. The bool means "the
       // tap was honoured", which it was — see [open] on why this
       // deliberately does not claim the user is watching.
       return true;

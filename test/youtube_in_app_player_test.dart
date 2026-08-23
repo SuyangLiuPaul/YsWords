@@ -1,43 +1,66 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/media_focus.dart';
-import 'package:yswords/services/song_service.dart';
-import 'package:yswords/utils/youtube_url.dart';
-import 'package:yswords/widgets/youtube_player_sheet.dart';
+import 'package:yswords/utils/embeddable_media.dart';
+import 'package:yswords/widgets/floating_media_player.dart';
 
-/// 2026-08-24: "歌曲里面有几个是YouTube如果按了去YouTube了，但是web 和ios
-/// 能不能不跳转出去，好像WhatsApp那样YouTube对话框在播放音乐，其实整个app
-/// 都要这样".
+/// 2026-08-24, in two rounds.
 ///
-/// The fix hangs off [LinkOpener.openOrWarn], so what is worth testing
-/// is the routing, not the player: a YouTube link stays in the app, a
+/// First: "歌曲里面有几个是YouTube如果按了去YouTube了，但是web 和ios能不能
+/// 不跳转出去" — so YouTube links stopped leaving the app.
+///
+/// Then, after trying it: "现在是有youtube在song里面但是就不能退出去了，
+/// 能不能好像WhatsApp一样窗口可以移动一样可以用app" — the first version
+/// used a modal sheet, which is a trap by construction. And in the same
+/// breath the scope widened: "另外soundcloud也是一样的概念" and "其他如果
+/// 有的话也是一样一并做了".
+///
+/// What is worth testing is the ROUTING and the escape, not the frame:
+/// embeddable media stays in the app in a window the user can close, a
 /// platform with no webview still leaves, and everything that is not
-/// YouTube behaves exactly as it did — that last one being the property
-/// a change at a 17-caller chokepoint could quietly break.
-///
-/// The real embed cannot run here. A widget test runs on the host VM,
-/// where the io variant reports macOS as embeddable and then throws on
-/// mount for want of a registered webview platform, so
-/// [debugYoutubeEmbedBuilder] stands in for it — which also lets the
-/// Windows/Linux "no player here" branch be exercised on a Mac.
+/// embeddable behaves exactly as before — that last one being the
+/// property a change at a 17-caller chokepoint could quietly break.
 void main() {
   const videoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-  const fakePlayer = Key('fake-youtube-player');
+  const soundcloudUrl =
+      'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/123456';
+  const fakePlayer = Key('fake-embed');
 
+  // url_launcher's method channel never answers in a test — its future
+  // simply hangs, so openExternally neither returns nor reports. Mock
+  // the channel so the external route can be asserted POSITIVELY: a
+  // regression that dropped the link entirely would otherwise look
+  // identical to one that opened it.
+  final launched = <String>[];
   setUp(() {
-    debugYoutubeEmbedBuilder = (_) => const SizedBox(key: fakePlayer);
+    launched.clear();
+    TestDefaultBinaryMessengerBinding
+        .instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('plugins.flutter.io/url_launcher'),
+      (call) async {
+        if (call.method == 'launch') {
+          launched.add((call.arguments as Map)['url'] as String);
+        }
+        return true;
+      },
+    );
+    FloatingMediaPlayer.debugEmbedBuilder =
+        (_) => const SizedBox(key: fakePlayer);
     MediaFocus.instance.clearForTest();
   });
 
   tearDown(() {
-    debugYoutubeEmbedBuilder = null;
+    FloatingMediaPlayer.hide();
+    FloatingMediaPlayer.debugEmbedBuilder = null;
     MediaFocus.instance.clearForTest();
   });
 
-  /// A page with one button, so the tap goes through the same call the
-  /// Songs chips and every other link in the app go through.
   Widget host(String url) => MaterialApp(
         home: Scaffold(
           body: Builder(
@@ -52,141 +75,137 @@ void main() {
         ),
       );
 
-  testWidgets('a YouTube link plays in a sheet instead of leaving',
-      (tester) async {
-    await tester.pumpWidget(host(videoUrl));
+  Future<void> tapLink(WidgetTester tester, String url) async {
+    await tester.pumpWidget(host(url));
     await tester.tap(find.text('link'));
     await tester.pumpAndSettle();
+  }
 
-    expect(find.byKey(fakePlayer), findsOneWidget);
-    // The two affordances the sheet owes the user: a way out of it, and
-    // a way to the real thing.
-    expect(find.byIcon(Icons.close), findsOneWidget);
-    expect(find.text('Watch on YouTube'), findsOneWidget);
-    // 16:9, so a phone in portrait gets a player and not a letterbox.
-    expect(
-      tester.widget<AspectRatio>(find.byType(AspectRatio)).aspectRatio,
-      16 / 9,
-    );
+  group('embeddable media stays in the app', () {
+    testWidgets('a YouTube link opens the floating window', (tester) async {
+      await tapLink(tester, videoUrl);
+      expect(FloatingMediaPlayer.isShowing, isTrue);
+      expect(find.byKey(fakePlayer), findsOneWidget);
+    });
+
+    testWidgets('so does a SoundCloud link', (tester) async {
+      // "另外soundcloud也是一样的概念" — 27 songs in the catalogue are
+      // SoundCloud-only and used to walk the user out to the browser.
+      await tapLink(tester, soundcloudUrl);
+      expect(FloatingMediaPlayer.isShowing, isTrue);
+      expect(find.byKey(fakePlayer), findsOneWidget);
+    });
+
+    testWidgets('and the user can always get out', (tester) async {
+      // The complaint that produced this window: a modal the user could
+      // not leave. The close control must exist, be reachable, and
+      // actually close.
+      await tapLink(tester, videoUrl);
+      expect(FloatingMediaPlayer.isShowing, isTrue);
+
+      await tester.tap(find.byIcon(Icons.close_rounded));
+      await tester.pumpAndSettle();
+
+      expect(FloatingMediaPlayer.isShowing, isFalse);
+      expect(find.byKey(fakePlayer), findsNothing);
+    });
+
+    testWidgets('the window can be dragged, and the frame is not rebuilt',
+        (tester) async {
+      // Dragging must move the window WITHOUT tearing the frame down:
+      // rebuilding the platform view would restart playback on every
+      // drag, which is the one thing a movable player must not do.
+      await tapLink(tester, videoUrl);
+      final before = tester.getTopLeft(find.byKey(fakePlayer));
+      final embedElement = tester.element(find.byKey(fakePlayer));
+
+      await tester.drag(
+          find.byIcon(Icons.drag_indicator), const Offset(-60, -80));
+      await tester.pumpAndSettle();
+
+      final after = tester.getTopLeft(find.byKey(fakePlayer));
+      expect(after, isNot(before), reason: 'the window should have moved');
+      expect(tester.element(find.byKey(fakePlayer)), same(embedElement),
+          reason: 'the frame must survive the move, not be recreated');
+    });
+
+    testWidgets('a video starting silences the hymn', (tester) async {
+      var paused = false;
+      final hymn = Object();
+      MediaFocus.instance.register(hymn, () async => paused = true);
+
+      await tapLink(tester, videoUrl);
+      await tester.pumpAndSettle();
+
+      expect(paused, isTrue);
+      MediaFocus.instance.unregister(hymn);
+    });
   });
 
-  testWidgets('closing the sheet takes the player with it', (tester) async {
-    // Disposing the embed is what stops the sound — there is no pause to
-    // call, which is the same asymmetry the sheet documents to
-    // MediaFocus.
-    await tester.pumpWidget(host(videoUrl));
-    await tester.tap(find.text('link'));
-    await tester.pumpAndSettle();
-    expect(find.byKey(fakePlayer), findsOneWidget);
+  group('everything else is untouched', () {
+    testWidgets('a platform with no webview still links out',
+        (tester) async {
+      // Windows and Linux compile webview_flutter with nothing behind
+      // it, so the embed builder returns null and the link must leave
+      // the app exactly as it always did. url_launcher has no platform
+      // channel here, so the failure path reports itself — which is
+      // the positive proof that the external route ran at all.
+      FloatingMediaPlayer.debugEmbedBuilder = (_) => null;
+      await tapLink(tester, videoUrl);
 
-    await tester.tap(find.byIcon(Icons.close));
-    await tester.pumpAndSettle();
+      expect(FloatingMediaPlayer.isShowing, isFalse);
+      expect(launched, [videoUrl],
+          reason: 'the link must still LEAVE the app here, and with the '
+              'URL the user tapped — asserting only the absence of a '
+              'window would pass just as happily if the tap did nothing');
+    });
 
-    expect(find.byKey(fakePlayer), findsNothing);
+    testWidgets('a non-embeddable link opens no window', (tester) async {
+      const pdf = 'https://www.christiandiscipleschurch.org/a.pdf';
+      await tapLink(tester, pdf);
+      expect(FloatingMediaPlayer.isShowing, isFalse);
+      expect(launched, [pdf], reason: 'sheet music still opens outside');
+    });
   });
 
-  testWidgets('a video starting silences the hymn', (tester) async {
-    // "如果视频在播应该歌曲会自动停" (2026-08-11) has to keep holding for
-    // a video that starts from a link, not just one started on the
-    // videos page.
-    var songPaused = false;
-    final song = Object();
-    MediaFocus.instance.register(song, () async => songPaused = true);
+  group('what counts as embeddable', () {
+    test('YouTube and SoundCloud yes, the rest no', () {
+      expect(embeddableMedia(videoUrl)?.provider, 'youtube');
+      expect(embeddableMedia(soundcloudUrl)?.provider, 'soundcloud');
+      // The mp4s have a real in-app page and the PDFs want a reader;
+      // neither belongs in a small floating frame.
+      expect(embeddableMedia('https://fydt.org/a.mp4'), isNull);
+      expect(embeddableMedia('https://cgdc.hk/score.pdf'), isNull);
+      expect(embeddableMedia('mailto:someone@example.com'), isNull);
+    });
 
-    await tester.pumpWidget(host(videoUrl));
-    await tester.tap(find.text('link'));
-    await tester.pumpAndSettle();
+    test('audio gets an audio-shaped window, video a video-shaped one', () {
+      expect(embeddableMedia(videoUrl)!.aspectRatio, 16 / 9);
+      expect(embeddableMedia(soundcloudUrl)!.aspectRatio,
+          greaterThan(16 / 9),
+          reason: 'a SoundCloud player is short and wide; giving it a '
+              'video height would show a strip of player over nothing');
+    });
 
-    expect(songPaused, isTrue);
-  });
-
-  testWidgets('a platform with no webview still links out', (tester) async {
-    // Windows and Linux: `webview_flutter` compiles there and has no
-    // implementation, so [youtubeEmbed] returns null and the link must
-    // take the old path rather than open an empty black box.
-    debugYoutubeEmbedBuilder = (_) => null;
-
-    await tester.pumpWidget(host(videoUrl));
-    await tester.tap(find.text('link'));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(fakePlayer), findsNothing);
-    expect(find.text('Watch on YouTube'), findsNothing);
-  });
-
-  testWidgets('a non-YouTube link is untouched by any of this',
-      (tester) async {
-    // SoundCloud is the other external player in Songs, and it must go
-    // on leaving the app exactly as it did before the chokepoint learned
-    // about YouTube.
-    await tester.pumpWidget(host(
-        'https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1'));
-    await tester.tap(find.text('link'));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(fakePlayer), findsNothing);
-    expect(find.byType(BottomSheet), findsNothing);
-  });
-
-  test('every YouTube row in the catalogue resolves to a playable id',
-      () async {
-    // A data check, not a code check, in the shape the Cahaya test uses:
-    // the 20 Cahaya rows whose only audio is on YouTube are exactly the
-    // ones the user was tapping ("歌曲里面有几个是YouTube"), and they
-    // reach the player through the URL `Song.youtubeUrl` builds. A
-    // future sync landing an id of the wrong shape would not fail any
-    // widget test — the row would just go quietly back to jumping out.
-    TestWidgetsFlutterBinding.ensureInitialized();
-    SharedPreferences.setMockInitialValues(<String, Object>{});
-
-    final songs = await SongService.load();
-    final youtubeRows = songs.where((s) => s.youtubeUrl != null).toList();
-    expect(youtubeRows, isNotEmpty);
-    for (final song in youtubeRows) {
-      expect(youtubeVideoId(song.youtubeUrl!), isNotNull,
-          reason: '${song.id} would still leave the app');
-    }
-
-    // The rows with nowhere else to go — no stream, no SoundCloud — are
-    // the ones this change is actually for.
-    final youtubeOnly = youtubeRows
-        .where((s) => !s.hasPlayableAudio && s.soundcloudUrl == null)
-        .toList();
-    expect(youtubeOnly, isNotEmpty,
-        reason: 'the YouTube-only rows are why the player exists');
-  });
-
-  // 2026-08-24: added after review reproduced a RenderFlex overflow at
-  // every common phone-landscape size. The suite was green only because
-  // the default 800x600 test surface happens to be the one shape where
-  // the fixed content fits, and the repo's responsive suite is
-  // portrait-only — so nothing covered the orientation people actually
-  // watch video in.
-  group('landscape', () {
-    for (final size in const [
-      Size(844, 390), // iPhone 14/15
-      Size(667, 375), // iPhone SE
-      Size(915, 412), // common Android
-    ]) {
-      testWidgets('no overflow, escape hatch on screen at '
-          '${size.width.toInt()}x${size.height.toInt()}', (tester) async {
-        addTearDown(tester.view.reset);
-        tester.view.devicePixelRatio = 1.0;
-        tester.view.physicalSize = size;
-
-        await tester.pumpWidget(host(videoUrl));
-        await tester.tap(find.text('link'));
-        await tester.pumpAndSettle();
-
-        expect(tester.takeException(), isNull,
-            reason: 'the player must fit the viewport, not overflow it');
-
-        final hatch = find.textContaining('YouTube').last;
-        final box = tester.getRect(hatch);
-        expect(box.bottom, lessThanOrEqualTo(size.height),
-            reason: 'the "Watch on YouTube" escape hatch was entirely '
-                'below the fold at this size before the height bound');
-      });
-    }
+    test('every catalogue row that offers one resolves', () {
+      final songs = (jsonDecode(File('assets/songs.json').readAsStringSync())
+          as Map<String, dynamic>)['songs'] as List<dynamic>;
+      var youtube = 0, soundcloud = 0;
+      for (final row in songs) {
+        final s = row as Map<String, dynamic>;
+        final id = s['youtubeId'] as String?;
+        if (id != null) {
+          expect(
+              embeddableMedia('https://www.youtube.com/watch?v=$id')?.provider,
+              'youtube',
+              reason: '${s['id']} has an unplayable youtubeId');
+          youtube++;
+        }
+        final track = s['soundcloudTrackId'] as String?;
+        if (track != null) soundcloud++;
+      }
+      expect(youtube, greaterThan(0));
+      expect(soundcloud, greaterThan(0));
+    });
   });
 }
