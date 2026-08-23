@@ -23,19 +23,24 @@ study app in Chinese and English — translations, sermons, songs, a
 Bible-evidence (archaeology) section, a misconceptions section, and a
 featured-video section.
 
-The name is **YsWords** — capital Y, capital W. It lives in five
-per-platform places and nothing compared them until
-`test/app_display_name_test.dart` did; that test is why it stays right.
+The name is **Yahweh's Words**（雅伟之言）— renamed from "YsWords" at
+the user's instruction on 2026-08-23. It lives in five per-platform
+places that `test/app_display_name_test.dart` pins. Three YsWords
+tokens survive on purpose and must NOT be renamed: every URL and
+identifier ("link不要变"), the `NotoSansSC-YsWords` font family, and
+the `# YsWords export` / `YsWords.json` format markers — an old backup
+must import into the renamed app. AI features say "AI", never the app
+name. On Android the apostrophe must reach values.xml escaped (\').
 
 ## Where each tier is
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.130** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.130** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.132** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.132** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**prod is 119 versions behind and it is not an oversight.** Every prod
+**prod is 121 versions behind and it is not an oversight.** Every prod
 push needs the user to say so in the moment; permission never carries
 over from a previous turn. Full wording of what does and does not count
 as permission: `docs/release-policy.md`. prod still serves the broken
