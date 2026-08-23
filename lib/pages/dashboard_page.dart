@@ -453,32 +453,46 @@ class _DashboardPageState extends State<DashboardPage> {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxW),
-          child: RefreshIndicator(
-            onRefresh: _pullToRefresh,
-            child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        children: [
-          // ── DASHBOARD SECTIONS (customizable order + visibility) ──
-          // The user controls both the render order and which blocks
-          // are visible via Settings → "Dashboard layout" (round 55).
-          // We walk `settings.dashboardSectionOrder` and emit each
-          // section that is both explicitly enabled AND has content
-          // to show. Spacing is inserted between non-null blocks.
-          ..._buildOrderedSections(
-            order: settings.dashboardSectionOrder,
-            settings: settings,
-            mainProvider: mainProvider,
-            scheme: scheme,
-            locale: locale,
-            isWide: isWide,
-            headerSize: headerSize,
+          // 2026-08-16: pull-to-refresh REMOVED (was a RefreshIndicator
+          // around this ListView). User: "往下滑的时候，感觉并没有用，
+          // 而且那个转转的也并不自然，你这方面考虑了吗，好好想想" — right
+          // on both counts. Every block on this page is either
+          // live-reactive (counts / recent bookmarks watch MainProvider;
+          // resume-sermon re-resolves via the profile/auth/RTDB-sync
+          // listeners — and cloud sync itself is a realtime `onValue`
+          // subscription, so there is nothing to manually pull) or a
+          // deterministic-by-date pick from a bundled asset (daily
+          // verse, today's evidence — same answer until midnight no
+          // matter how often it reloads). The gesture re-ran two asset
+          // loads into warm caches and the spinner collapsed having
+          // changed nothing visible. A refresh control that always
+          // appears to do nothing teaches people the app is
+          // unresponsive, so the honest fix is no gesture — not a
+          // nicer spinner. `AlwaysScrollableScrollPhysics` went with
+          // it: it existed only so the pull worked when the content
+          // fit on screen.
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // ── DASHBOARD SECTIONS (customizable order + visibility) ──
+              // The user controls both the render order and which blocks
+              // are visible via Settings → "Dashboard layout" (round 55).
+              // We walk `settings.dashboardSectionOrder` and emit each
+              // section that is both explicitly enabled AND has content
+              // to show. Spacing is inserted between non-null blocks.
+              ..._buildOrderedSections(
+                order: settings.dashboardSectionOrder,
+                settings: settings,
+                mainProvider: mainProvider,
+                scheme: scheme,
+                locale: locale,
+                isWide: isWide,
+                headerSize: headerSize,
+              ),
+              const SizedBox(height: 28),
+              _HomeFooter(locale: locale, scheme: scheme),
+            ],
           ),
-          const SizedBox(height: 28),
-          _HomeFooter(locale: locale, scheme: scheme),
-        ],
-      ),
-        ),
         ),
       ),
     );
@@ -862,15 +876,12 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  /// Pull-to-refresh: re-pull every dynamic dashboard tile from its
-  /// remote source. Returns when all done so the spinner can collapse.
-  /// Cheap when network is up, graceful when down.
-  Future<void> _pullToRefresh() async {
-    await Future.wait<void>([
-      _loadDailyEvidence(),
-      _loadDailyVerse(),
-    ]);
-  }
+  // Removed: _pullToRefresh (2026-08-16). Its doc comment claimed
+  // "re-pull every dynamic dashboard tile from its remote source",
+  // but neither load it awaited touches the network: both re-read a
+  // bundled asset through a warm in-memory cache and re-pick the same
+  // date-deterministic item. See the comment where the
+  // RefreshIndicator used to wrap the body ListView.
 
   /// Most-recently-bookmarked verses, newest first.
   /// `_bookmarks` is a `LinkedHashSet` (constructed by `List.toSet()`
