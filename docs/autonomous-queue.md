@@ -945,19 +945,36 @@ and quoted.**
       the **printed 1919** (built for the note audit) and **our own tagged
       corpus**, which is what the word-tap sheet renders.
 
-      **Repaired, 4 lines of evidence to 1: 意料 → 逆料** at 以賽亞書 64:3
-      (「你曾行我們不能逆料可畏的事」) and 使徒行傳 25:18 (「並沒有我所逆料的
-      那等惡事」). The print, both external witnesses **and our own tagged
-      corpus** all read 逆料 — so the sheet has been printing 逆料 over a verse
-      that read 意料, the same internal contradiction as 「士師六年」 over
-      「士師年」. Counted rather than assumed: our two reading files held 意料
-      twice and 逆料 zero times; every other line holds 逆料 twice and 意料
-      zero times, so there is no third verse where the two spellings compete
-      and this is not a convention applied unevenly.
+      **意料 at 以賽亞書 64:3 and 使徒行傳 25:18 is NOT a defect — it is the
+      user's own edit, and this loop wrongly "repaired" it before catching
+      that.** The repair was made, committed, deployed to dev/qat, and then
+      REVERTED in the same iteration. Recorded in full because the mistake is
+      more instructive than the fix would have been.
 
-      **意料 is not nonsense Chinese, which is exactly why it needed catching**
-      — the refuter found 恢復本 and 新譯本 both read 意料 at 徒 25:18. It
-      reads plausibly and is not what this edition says.
+      Five independent lines read 逆料 — the printed 1919, witness A, witness
+      B, our own tagged corpus, and the publisher's own site — against our two
+      reading files alone. Four-to-one is normally decisive, and it was still
+      the wrong conclusion. `git log -S"不能意料可畏的事"` names commit
+      **`81db105`** (Paul Liu, 2025-08-10, *"Updated verses in 和合本 and
+      fixed text selection"*), which changed 逆料 → 意料 in **exactly these
+      two verses** in both editions, in the same pass that normalised 汙 → 污
+      across 210 verses of the Traditional file. A targeted two-verse
+      substitution inside a hand-made editorial commit is a decision by the
+      repo's owner, not corruption.
+
+      **The lesson, which generalises past this verse:** external witnesses
+      can tell you that our text differs from theirs. They cannot tell you
+      whether the difference is a corruption or an intentional change. Only
+      the history can. **Run `git log -S` over the asset before touching
+      scripture** — it costs one command, and no amount of manuscript
+      evidence substitutes for it. The refuter did not catch this either,
+      because it was given the readings and not the provenance.
+
+      **What is genuinely open, and it is a real defect:** the user's edit
+      never reached `assets/tagged/cuvs-yhwh/`, which still reads 逆料. So the
+      word-tap sheet prints 逆料 over a verse reading 意料 — the app
+      contradicts itself on screen. Filed for the user below, because which
+      side should move is their call, not this loop's.
 
       **帖撒羅尼迦前書 5:19 is the one where OURS IS RIGHT, and it is the more
       useful finding.** 銷滅 occurs in exactly ONE verse of 31,102 against 43
@@ -975,12 +992,38 @@ and quoted.**
       **Why no audit had ever seen this class.** Both corpus audits report
       only text a witness has and we do not, because that is the direction
       that can mean a LOSS. A SUBSTITUTION of equal length drops nothing and
-      fires nothing. `tools/repair_niliao.py` (idempotent, refuses on drift);
-      `test/niliao_test.dart` fails two of its four tests on the pre-fix data
-      and pins the 帖前 5:19 non-change against a future sweep.
+      fires nothing — which is why the class needed a hand pass at all.
+
+      `test/niliao_test.dart` now pins BOTH results: the 帖前 5:19 non-change
+      against a future frequency sweep, and 意料 as the user's reading against
+      a future iteration re-running the repair this one had to undo. There is
+      no repair tool; the one written here was deleted with the revert.
 
       The remaining ten are filed immediately below — they are a 2-against-3
       split and are NOT settleable from anything available here.
+
+- [ ] **The app contradicts itself on screen at 以賽亞書 64:3 and 使徒行傳
+      25:18: the verse reads 意料, the word-tap sheet reads 逆料. Needs the
+      user — do NOT resolve it by editing either side.** Found 2026-08-23.
+      This is the one real defect in that pass, and it is P0 by the standing
+      rule: a reader who taps the word sees a different word from the one
+      printed in the verse, and both look authoritative.
+
+      **Cause is known and is not corruption.** Commit `81db105` (Paul Liu,
+      2025-08-10) changed 逆料 → 意料 in both reading editions and did not
+      touch `assets/tagged/cuvs-yhwh/`, which the sheet renders. The edit was
+      simply never propagated.
+
+      **Two ways to close it, and they are not equivalent** — which is exactly
+      why the user picks:
+        1. propagate the edit into the tagged corpus, so both read 意料 and
+           the edition keeps the user's wording; or
+        2. drop the edit, so both read 逆料 and the edition matches the
+           printed 1919, both external witnesses and the publisher's own site.
+
+      An autonomous iteration took route 2 unasked, deployed it to dev/qat and
+      reverted it in the same hour. Do not repeat that. The queue entry above
+      carries the full account.
 
 - [ ] **Ten word-level differences where our text and our tagged corpus agree
       AGAINST the print and both witnesses. Needs the user. Do NOT sweep
@@ -1027,10 +1070,24 @@ and quoted.**
       deliberate wording choices, or corruption to be undone? One answer
       settles all ten. Until then they stay exactly as they are.
 
-      **A witness this repo has not yet used could narrow it**: the
-      Yahwehdehua export's `CUV_LEB/` PDFs, already cited as a fourth line in
-      the 那鴻書 3:4 write-up above. It is a separate transcription line from
-      all three used here.
+      **Do NOT count the Yahwehdehua export as a witness here — it is the
+      ANCESTOR.** The extracted dataset at `~/Documents/New project/
+      yahwehdehua_bible/output/checkpoints/` carries the publisher's own
+      `cuv2017_strongs`, and it reads OUR way at all ten. That looks like
+      independent confirmation and is not: spot-checked on CJK ideographs, it
+      is character-identical to our tagged corpus and to our reading text
+      across whole chapters (Acts 25, 2 Cor 13, Isaiah 64 — 53 of 53 verses).
+      Our corpus was imported from it. Citing it would repeat the 創世記
+      39:22 / 41:30 mistake in a worse form: there, two witnesses shared an
+      ancestor; here the "witness" IS the ancestor.
+
+      **But that identity is itself the useful finding, and it reframes the
+      question for the user.** All ten readings are the publisher's own, live
+      on their site — so nothing was corrupted in this repo, and the decision
+      is not "restore the text" but "which edition should the app follow".
+      The question becomes: *at these ten places your edition departs from the
+      printed 1919 和合本 — are those your intended wording, or would you
+      rather the app matched the print?* One answer settles all ten.
 
 - [x] **自已 → 自己 outside the Bible text — DONE 2026-08-18, 8 substitutions
       across 6 files, and nothing under `assets/` spells 自已 any more.**
@@ -1085,12 +1142,14 @@ and quoted.**
       instalments, or someone copies the repaired assets across once. Worth
       raising with the user rather than deciding unilaterally.
 
-      **It is not only the glyph family.** Checked 2026-08-23: that copy also
-      reads 意料 at 以賽亞書 64:3 and 使徒行傳 25:18, so it carries the
-      substitution defect repaired here as well. Its 帖前 5:19 correctly reads
-      銷滅. Every scripture repair this loop makes widens the gap between the
-      two copies, which strengthens the case for copying across once rather
-      than replaying instalments.
+      **Checked again 2026-08-23 and it is CORRECT on the two verses this
+      loop briefly got wrong**: that copy reads 意料 at 以賽亞書 64:3 and
+      使徒行傳 25:18, matching the user's edit in `81db105`, and 銷滅 at
+      帖前 5:19. So the divergence between the two repos is the glyph family
+      and nothing more — had the 意料 "repair" survived here, it would have
+      created a NEW divergence rather than closing one. Worth remembering
+      when someone finally syncs the assets: a difference between the two
+      copies is not automatically a defect in one of them.
 
 - [ ] **Two 愈/癒 spin-offs the refuter found, deliberately NOT swept with the
       verse asset on 2026-08-18 — neither is converter-backed.** Small, and each
