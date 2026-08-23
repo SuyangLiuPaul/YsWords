@@ -217,6 +217,31 @@ advances the repo hash is healthy.
     false per chapter, where the same shape occurs 603 times. Both numbers are
     real; the sentence is only honest with the window attached.
 
+22. **A finding about a witness may be a finding about YOUR PARSER. Reproduce
+    it with a second reader before writing it down.** `audit_note_placement.py`
+    anchors `{{verse|…}}` at the start of a line, which is right for the 31,032
+    printed verses that begin one. But the page writes a merged pair as
+    `{{verse|1|20}} {{verse|1|21}}以色列的長子…` — two markers over one block —
+    so exactly 70 markers are mid-line and were silently dropped. That is
+    exactly the size of our 「見上節」 class, so on 2026-08-24 the loop was one
+    commit from publishing "the print does not number those 69 verses at all",
+    when counting every marker gives 31,102 — our verse count exactly, and the
+    print merges the same 69 we do. The artifact was shaped like the claim.
+    A refuter caught it; nothing in analyze or the suite could have.
+
+23. **The printed-1919 Wikisource witness MIS-DIVIDES verses in three places,
+    and in all three OUR division is the standard one.** 歷代志上 22 (the page
+    numbers our 22:1 as 21:31 and slides 22:2–19 down to 22:1–18),
+    馬可福音 9:43 and 9:45 (each split, the remainder given the number of the
+    bracketed variant at our 9:44/9:46), and 約翰福音 7:53 (folded into 8:1 and
+    not numbered). KJV, LEB and NASB agree with us in all three. This matters
+    because "the print reads …" has decided repairs before: inside those
+    chapters the citation is off by a verse, and acting on it would move real
+    scripture under real verse numbers. `tools/audit_print_witness.py` holds
+    all 43 exceptions; `test/print_witness_alignment_test.dart` pins the
+    offline half. 約翰三書 1:15 is NOT a fourth — there the page sides with
+    NASB and LEB against KJV, a real variant rather than a defect.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -232,7 +257,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 70 open items across P0 (scripture
+`docs/autonomous-queue.md` — 71 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 
@@ -256,8 +281,12 @@ leave the original checked-out; three such duplicates were found on
    fetchable from both prod sites. The user's position is that NASB
    needs permission; nothing has been done. Ask before investing in
    anything NASB-shaped.
-4. **約翰三書 1:14 versification** and **路加福音 23:34a sub-verse label**
-   — editorial choices, not inferences.
+4. **約翰三書 1:14 versification**, **路加福音 23:34a sub-verse label**, and
+   **路加福音 21:30** — editorial choices, not inferences. 21:30 joined them
+   on 2026-08-24: it is the only one of our 70 「見上節」 stubs the print does
+   not also merge, but every witness in our own lineage merges it, so this is
+   a division the two editions disagree on rather than a defect. Splitting it
+   moves every id, highlight and note anchored to 21:29.
 5. **Should the 原文 apparatus set its quotes full-width?** 344 ASCII `"`
    per edition, reader-visible wherever notes render. An edition-wide
    typographic choice, not a defect; a sweep tried and was reverted.

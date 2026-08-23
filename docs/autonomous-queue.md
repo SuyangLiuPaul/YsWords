@@ -303,6 +303,29 @@ and quoted.**
       `test/transposed_characters_test.dart` fails three of its four tests on
       the pre-fix data.
 
+- [ ] **路加福音 21:30 is a 「見上節」 stub, and it is the only one of our 70
+      the print does NOT also merge.** Found 2026-08-24 by
+      `tools/audit_print_witness.py`. The printed 1919 page numbers 21:30 and
+      gives it text — 「他發芽的時候、你們一看見自然曉得夏天近了。」 — while
+      our 21:29 carries those words merged in and 21:30 shows only the stub.
+      For the other 69 the print merges exactly as we do, so this is a genuine
+      one-off rather than a class.
+
+      **Not repairable by this loop, and not for lack of evidence — it is a
+      versification change.** Every witness in our own lineage merges it: the
+      Traditional import blob `7a2dc43` (which reads a corrupt bare `'a'`
+      there), the tagged corpus, and SeekSparks' `cuvs-plus.json`. So nothing
+      is *wrong* on screen; the two editions divide the verse differently and
+      ours is the inherited division. Splitting it moves every id, highlight,
+      bookmark and note anchored to 21:29, which by the 約翰三書 1:14
+      precedent below is the user's call, not the loop's.
+
+      **The question for the user is one line:** leave 21:30 as a stub
+      pointing at 21:29, or split 21:29 so 21:30 carries 「他發芽的時候…」 on
+      its own? Held in the tool's `MERGE_ONLY` table as HELD FOR THE USER, and
+      pinned by `test/print_witness_alignment_test.dart` so a sweep cannot
+      quietly resolve it either way.
+
 - [ ] **耶利米哀歌 3:1 reads 「因雅偉神忿怒的杖」 and nothing supports the 神.**
       The print and both witnesses read 耶和華 alone; our own tagged corpus
       reads 雅偉 alone and tags it **H0 — supplied, no Strong's number**. The
@@ -482,14 +505,54 @@ and quoted.**
       are folded to Simplified before comparing, because the print sets
       爲/衞/喫/裏 where this edition sets 為/衛/吃/裡.
 
-- [ ] **37 printed notes are missing from our text entirely, across 35
-      verses.** Found by the audit above. Two of them name their word, so they
-      are pinpointable: 撒迦利亞書 4:7 「殿或作石」 and 撒迦利亞書 8:23
-      「族原文作方言」. Nothing untrue is on screen — this is apparatus the
-      reader does not get, not text that is wrong — so it sits below the
-      accuracy items. Adding a note is writing into the edition, so each one
-      wants the print open beside it; the printed wording is available per
-      verse from the Wikisource cache the audit builds.
+- [x] **"37 printed notes are missing from our text entirely" — measured on
+      2026-08-24, and it is false. None is missing.** The count was of notes
+      our `<note:>` MARKUP does not carry, which is not the same question as
+      whether the reader sees them. 32 of the 37 are inline in the same verse,
+      as a parenthetical 「（殿：或譯石）」 or a bracketed variant
+      「〔有古卷在此有：…〕」; 5 are in the adjacent verse; 0 are absent. Both
+      of the two the item called pinpointable losses are on screen right now —
+      撒迦利亞書 4:7 ends 「歸與這殿（殿：或譯石）！」 and 8:23 reads
+      「列國諸族（原文是方言）中」. Nothing to write. Pinned by
+      `test/print_witness_alignment_test.dart` so the count cannot be
+      rediscovered and acted on. The folding that closes the gap is
+      原文作/原文是/原文用 → 原文 and 或作/或譯 → 或; the earlier count
+      compared the two wordings literally.
+
+- [x] **Before trusting the print witness further, check that its verse ids
+      address the same verses ours do — 2026-08-24, `tools/audit_print_witness.py`.**
+      They do in 31,059 of 31,102. All 43 exceptions are enumerated in the
+      tool. The finding that matters: **the transcription mis-divides verses in
+      three places, and in all three OUR division is the standard one**, so a
+      future repair that cites "the print reads …" inside them would move real
+      scripture under real verse numbers.
+      - 歷代志上 22 — the page numbers our 22:1 as 21:31 and slides our
+        22:2–19 down to its 22:1–18. KJV, LEB and NASB all end 1 Chr 21 at
+        verse 30 and open 22:1 with 「大衛說」 / "Then David said".
+      - 馬可福音 9:43 and 9:45 — the page splits each and gives the remainder
+        the number belonging to the bracketed variant at our 9:44 and 9:46.
+      - 約翰福音 7:53 — we number it and stub it 「見下節」; the page folds it
+        into 8:1 and numbers nothing. KJV, LEB and NASB number it.
+      約翰三書 1:15 looks like a fourth and is not: there the page agrees with
+      NASB and LEB against KJV, which is a real versification variant rather
+      than a defect. Two process lessons are in `PROJECT_STATE.md` traps.
+
+- [ ] **路加福音 17:36 renders as a lone 「」」 beside the note icon.** Six
+      verses in the corpus are note-only — 馬可福音 7:16, 9:44, 9:46,
+      路加福音 17:36, 使徒行傳 8:37, 15:34 — each a variant the CUV omits and
+      records. A standalone `<note:>` draws a tappable book icon and no text,
+      which is the intended design. But five of the six close their quotation
+      INSIDE the note (`…火是不滅的。」>`), while 路加福音 17:36 closes it
+      outside (`…撇下一個。>」`), so that one verse puts a bare closing bracket
+      on screen after the icon.
+
+      Both `cuvs-yhwh-tr.json` and `cuvs-yhwh.json` have it (`」` and `”`), so
+      it is inherited from the shared source line, not a conversion artifact —
+      and 17:35 already carries its own closing 」, so the stray one is not
+      holding a quotation open. Cosmetic, and it touches a scripture asset, so
+      it wants the print open and both files edited together rather than a
+      one-character sed. Below the accuracy items: nothing untrue is stated,
+      it just looks like a typo.
 
 - [x] **哥林多後書 13:5 (在你們裏面 / 在你們心裏) got its four-witness check
       on 2026-08-23 — and the fourth witness sided with US.** Our own tagged
