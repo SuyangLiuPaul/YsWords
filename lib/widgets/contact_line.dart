@@ -80,7 +80,7 @@ class ContactLine extends StatelessWidget {
   }
 
   Future<void> _open(BuildContext context) async {
-    final uri = 'mailto:$email?subject=YsWords%20feedback';
+    final uri = 'mailto:$email?subject=Yahweh\'s Words%20feedback';
     if (LinkOpener.isAvailable) {
       final ok = await LinkOpener.open(uri);
       if (ok) return;

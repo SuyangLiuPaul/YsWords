@@ -599,7 +599,7 @@ class _LoadingPageState extends State<LoadingPage> {
                   Column(
                     children: [
                       Text(
-                        'YsWords',
+                        'Yahweh\'s Words',
                         style: TextStyle(
                           fontSize: settings.fontSize * 1.2,
                           fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
@@ -805,7 +805,7 @@ class _LoadingPageState extends State<LoadingPage> {
             ),
             SizedBox(height: 24 * s),
             Text(
-              'YsWords',
+              'Yahweh\'s Words',
               style: TextStyle(
                 fontSize: settings.fontSize * 1.2,
                 fontFamily: settings.fontFamily,

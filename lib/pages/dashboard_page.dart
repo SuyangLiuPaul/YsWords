@@ -946,7 +946,7 @@ class _HomeFooter extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              '© ${DateTime.now().year} ${uiStrings['appName']?[locale] ?? 'YsWords'} · $tagline',
+              '© ${DateTime.now().year} ${uiStrings['appName']?[locale] ?? 'Yahweh\'s Words'} · $tagline',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11.5,

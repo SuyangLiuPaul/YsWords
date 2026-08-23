@@ -1,11 +1,11 @@
 {
-    "name": "YsWords",
-    "short_name": "YsWords",
+    "name": "Yahweh's Words",
+    "short_name": "Yahweh's Words",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#ffffff",
-    "description": "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily.",
+    "description": "Yahweh's Words 雅伟之言 — a bilingual Bible app to help you listen to His voice and abide in Him daily.",
     "prefer_related_applications": false,
     "icons": [
         {

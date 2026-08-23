@@ -72,10 +72,10 @@ class ImportService {
       rethrow;
     }
     if (decoded is! Map) {
-      throw const FormatException('Not a YsWords export file.');
+      throw const FormatException('Not a Yahweh\'s Words export file.');
     }
     if (decoded['schema'] != _schema) {
-      throw const FormatException('Not a YsWords export file.');
+      throw const FormatException('Not a Yahweh\'s Words export file.');
     }
     final version = decoded['schemaVersion'];
     if (version != _schemaVersion) {

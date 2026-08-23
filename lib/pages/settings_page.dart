@@ -2263,7 +2263,7 @@ class _NotificationsCardState extends State<_NotificationsCard> {
           // they look like.
           await NotificationService.show(
             title: uiStrings['appName']?[widget.settings.locale] ??
-                'YsWords',
+                'Yahweh\'s Words',
             body: uiStrings['notificationsEnabledBody']
                     ?[widget.settings.locale] ??
                 'Notifications are on. You\'ll get gentle daily reminders.',
@@ -2352,7 +2352,7 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                       final messenger = ScaffoldMessenger.of(context);
                       try {
                         await NotificationService.show(
-                          title: uiStrings['appName']?[locale] ?? 'YsWords',
+                          title: uiStrings['appName']?[locale] ?? 'Yahweh\'s Words',
                           body: uiStrings['notificationsTestBody']
                                   ?[locale] ??
                               'This is a test notification.',
@@ -2387,7 +2387,7 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                                     ?[locale] ??
                                 "Test notification sent. If you don't see a "
                                     'banner, check your {platform} '
-                                    'notification settings for YsWords (or '
+                                    'notification settings for Yahweh\'s Words (or '
                                     'Focus / Do Not Disturb).')
                             .replaceAll('{platform}', plat);
                         messenger.showSnackBar(
@@ -2810,7 +2810,7 @@ class _AboutCard extends StatelessWidget {
                     size: settings.fontSize + 4),
                 SizedBox(width: 8 * s),
                 Text(
-                  uiStrings['appName']?[locale] ?? 'YsWords',
+                  uiStrings['appName']?[locale] ?? 'Yahweh\'s Words',
                   style: TextStyle(
                     fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                     fontSize: settings.fontSize + 2,
@@ -3759,7 +3759,7 @@ class _InstallAppCardState extends State<_InstallAppCard> {
     });
     if (outcome == 'accepted') {
       messenger.showSnackBar(const SnackBar(
-        content: Text('Installing YsWords…'),
+        content: Text('Installing Yahweh\'s Words…'),
         duration: Duration(seconds: 2),
       ));
     }
@@ -3782,10 +3782,10 @@ class _InstallAppCardState extends State<_InstallAppCard> {
 
     switch (_flow) {
       case InstallFlowKind.nativePrompt:
-        title = isZh ? '安装 YsWords' : 'Install YsWords';
+        title = isZh ? '安装雅伟之言' : "Install Yahweh's Words";
         body = isZh
-            ? '把 YsWords 安装到主屏幕,获得更快的启动速度和离线访问。'
-            : 'Install YsWords to your home screen for faster launch + offline access.';
+            ? '把雅伟之言安装到主屏幕,获得更快的启动速度和离线访问。'
+            : 'Install Yahweh\'s Words to your home screen for faster launch + offline access.';
         action = FilledButton.icon(
           onPressed: _busy ? null : _onInstallPressed,
           icon: const Icon(Icons.install_mobile_outlined, size: 18),
@@ -3795,14 +3795,16 @@ class _InstallAppCardState extends State<_InstallAppCard> {
       case InstallFlowKind.iosManual:
         title = isZh ? '添加到主屏幕' : 'Add to Home Screen';
         body = isZh
-            ? '1. 点击 Safari 底部的「分享」按钮（⬆️）\n2. 选择「添加到主屏幕」\n3. 点击「添加」 — YsWords 就会像原生 App 一样运行。'
-            : '1. Tap the Safari Share button at the bottom (⬆️)\n2. Choose "Add to Home Screen"\n3. Tap "Add" — YsWords runs like a native app.';
+            ? '1. 点击 Safari 底部的「分享」按钮（⬆️）\n2. 选择「添加到主屏幕」\n3. 点击「添加」 — 雅伟之言就会像原生 App 一样运行。'
+            : '1. Tap the Safari Share button at the bottom (⬆️)\n2. Choose "Add to Home Screen"\n3. Tap "Add" — Yahweh\'s Words runs like a native app.';
         break;
       case InstallFlowKind.desktopManual:
-        title = isZh ? '安装 YsWords 桌面版' : 'Install YsWords as a desktop app';
+        title = isZh
+            ? '安装雅伟之言桌面版'
+            : "Install Yahweh's Words as a desktop app";
         body = isZh
-            ? '在地址栏右侧找到「安装」图标（⊕）, 或者打开浏览器菜单 → 「安装 YsWords」。安装后 YsWords 会有自己的窗口和 Dock / 开始菜单图标。'
-            : 'Look for the install icon (⊕) on the right side of the address bar, or open the browser menu → "Install YsWords". Once installed YsWords gets its own window + Dock / Start Menu icon.';
+            ? '在地址栏右侧找到「安装」图标（⊕）, 或者打开浏览器菜单 → 「安装雅伟之言」。安装后雅伟之言会有自己的窗口和 Dock / 开始菜单图标。'
+            : 'Look for the install icon (⊕) on the right side of the address bar, or open the browser menu → "Install Yahweh\'s Words". Once installed Yahweh\'s Words gets its own window + Dock / Start Menu icon.';
         break;
       case InstallFlowKind.alreadyInstalled:
       case InstallFlowKind.notApplicable:

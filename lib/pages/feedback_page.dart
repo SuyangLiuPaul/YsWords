@@ -142,13 +142,13 @@ class _FeedbackPageState extends State<FeedbackPage> {
     if (mp.currentBook != null && mp.currentChapter != null) {
       lines.add('Last position: ${mp.currentBook} ${mp.currentChapter}');
     }
-    lines.add('App: YsWords (web)');
+    lines.add('App: Yahweh\'s Words (web)');
     return lines.join('\n');
   }
 
   String _composeSubject(String locale) {
     final tag = _categoryShort(_category);
-    return 'YsWords feedback [$tag]';
+    return 'Yahweh\'s Words feedback [$tag]';
   }
 
   /// Compose a position-line metadata snippet ("创世纪 1") for the

@@ -235,7 +235,7 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
         _Slide(
           icon: Icons.menu_book_rounded,
           title: uiStrings['onboardWelcomeTitle']?[locale] ??
-              'Welcome to YsWords',
+              'Welcome to Yahweh\'s Words',
           body: uiStrings['onboardWelcomeBody']?[locale] ??
               'A bilingual Bible reader with 14 translations across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
         ),

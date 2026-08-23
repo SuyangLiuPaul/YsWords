@@ -276,7 +276,7 @@ class SetupInstructionsCard extends StatelessWidget {
   /// thing that *can* be automated for the developer.
   Widget _quickActions(BuildContext ctx) {
     const cloudShellUrl =
-        'https://shell.cloud.google.com/?cloudshell_print=https%3A%2F%2Fraw.githubusercontent.com%2FSuyangLiuPaul%2FYsWords%2Fmain%2Fscripts%2Fenable-cloud-apis.sh';
+        'https://shell.cloud.google.com/?cloudshell_print=https%3A%2F%2Fraw.githubusercontent.com%2FSuyangLiuPaul%2FYahweh\'s Words%2Fmain%2Fscripts%2Fenable-cloud-apis.sh';
     // 2026-05-06: Drive API removed from the gcloud command when sync
     // moved off Drive onto Firebase Realtime Database. Only the Gemini
     // API needs CLI enablement now; RTDB is enabled inside the Firebase

@@ -104,7 +104,7 @@ class _SearchPageState extends State<SearchPage> {
   // keyword results take. Always tagged "for reference only" since
   // LLM-generated references can be wrong.
   bool _aiBusy = false;
-  String? _aiNotice; // YsWords-AI status / "no matches" — small inline note.
+  String? _aiNotice; // Yahweh\'s Words-AI status / "no matches" — small inline note.
   bool _lastResultsFromAi = false; // toggles header above _results.
 
   // 2026-05-10 (v1.2.31): cached verse-index map for the AI-refs
@@ -494,9 +494,9 @@ class _SearchPageState extends State<SearchPage> {
                   label: Text(
                     _aiBusy
                         ? (uiStrings['aiSearching']?[locale] ??
-                            'YsWords AI searching…')
+                            'AI searching…')
                         : (uiStrings['askAiForVerses']?[locale] ??
-                            'Search with YsWords AI (reference only)'),
+                            'Search with AI (reference only)'),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -753,7 +753,7 @@ class _SearchPageState extends State<SearchPage> {
         _resetSearchState();
         _lastResultsFromAi = true;
         _aiNotice = uiStrings['aiBibleSearchNoMatches']?[settings.locale] ??
-            'YsWords AI didn\'t find any matching passages for that '
+            'AI didn\'t find any matching passages for that '
                 'query (reference only).';
         searchPerformed = true;
       });
@@ -839,14 +839,14 @@ class _SearchPageState extends State<SearchPage> {
       final notes = <String>[];
       if (outOfScope > 0) {
         notes.add((uiStrings['aiBibleSearchOutOfScope']?[settings.locale] ??
-                'YsWords AI also suggested {n} passages outside your '
+                'AI also suggested {n} passages outside your '
                     'current filter scope.')
             .replaceAll('{n}', outOfScope.toString()));
       }
       if (missing.isNotEmpty) {
         notes.add(
             (uiStrings['aiBibleSearchSomeMissing']?[settings.locale] ??
-                    'YsWords AI also suggested {n} passages not in your '
+                    'AI also suggested {n} passages not in your '
                         'current Bible version (reference only).')
                 .replaceAll('{n}', missing.length.toString()));
       }
@@ -1049,8 +1049,8 @@ class _SearchPageState extends State<SearchPage> {
                     _SearchHelpRow(
                       icon: Icons.auto_awesome,
                       label: uiStrings['searchHelpAdvAi']?[locale] ??
-                          'YsWords AI search: when keyword search '
-                              'returns nothing, tap "Search with YsWords '
+                          'AI search: when keyword search '
+                              'returns nothing, tap "Search with Yahweh\'s Words '
                               'AI" for fuzzy / thematic queries (e.g. '
                               '"the love chapter"). Results are for '
                               'reference only — verify before use.',
@@ -1115,7 +1115,7 @@ class _SearchPageState extends State<SearchPage> {
       // bubbles into the console with a CLEAR marker. The user's
       // recent screenshot shows search() printing "start" + "mp"
       // and then nothing — most likely an uncaught exception.
-      debugPrint('[YsWords search] EXCEPTION: $e\n$st');
+      debugPrint('[Yahweh\'s Words search] EXCEPTION: $e\n$st');
       if (mounted) {
         setState(() {
           _versesLoadError = 'Search crashed: $e';
@@ -1134,21 +1134,21 @@ class _SearchPageState extends State<SearchPage> {
     // the separate StrongsEntryPage via parseStrongsNumber inside
     // the TextField onSubmitted handler, before _searchImpl runs.
     final query = _textEditingController.text.trim();
-    debugPrint('[YsWords search] start query="$query"');
+    debugPrint('[Yahweh\'s Words search] start query="$query"');
     if (query.isEmpty) {
       setState(() => _resetSearchState());
       return;
     }
 
     final mp = Provider.of<MainProvider>(context, listen: false);
-    debugPrint('[YsWords search] mp=${mp.hashCode} '
+    debugPrint('[Yahweh\'s Words search] mp=${mp.hashCode} '
         'verses=${mp.verses.length} ver=${mp.currentVersion} '
         'curBook=${mp.currentBook}');
-    debugPrint('[YsWords search] CHECKPOINT-1');
+    debugPrint('[Yahweh\'s Words search] CHECKPOINT-1');
 
     // Load corpus if missing. Direct, no latch.
     if (mp.verses.isEmpty) {
-      debugPrint('[YsWords search] verses empty, loading...');
+      debugPrint('[Yahweh\'s Words search] verses empty, loading...');
       setState(() {
         _isLoadingVerses = true;
         _versesLoadError = null;
@@ -1156,7 +1156,7 @@ class _SearchPageState extends State<SearchPage> {
       try {
         await FetchVerses.execute(mainProvider: mp);
       } catch (e) {
-        debugPrint('[YsWords search] load failed: $e');
+        debugPrint('[Yahweh\'s Words search] load failed: $e');
         if (!mounted) return;
         setState(() {
           _isLoadingVerses = false;
@@ -1167,11 +1167,11 @@ class _SearchPageState extends State<SearchPage> {
       if (!mounted) return;
       setState(() => _isLoadingVerses = false);
       debugPrint(
-          '[YsWords search] loaded; verses=${mp.verses.length}');
+          '[Yahweh\'s Words search] loaded; verses=${mp.verses.length}');
     }
     if (mp.verses.isEmpty) {
       debugPrint(
-          '[YsWords search] still empty after load attempt — bail');
+          '[Yahweh\'s Words search] still empty after load attempt — bail');
       setState(() {
         _resetSearchState();
         _versesLoadError =
@@ -1181,7 +1181,7 @@ class _SearchPageState extends State<SearchPage> {
     }
     _lastVersesLength = mp.verses.length;
     _lastLoadedVersion = mp.currentVersion;
-    debugPrint('[YsWords search] CHECKPOINT-2');
+    debugPrint('[Yahweh\'s Words search] CHECKPOINT-2');
 
     // 2026-05-07 (v8): Word Study removed at user request. Text
     // search no longer redirects to Strong's / lemma views. The
@@ -1193,7 +1193,7 @@ class _SearchPageState extends State<SearchPage> {
     // end so there is exactly one rebuild cycle and zero window
     // for state to drift.
     final verses = mp.verses;
-    debugPrint('[YsWords search] for-loop verses=${verses.length} '
+    debugPrint('[Yahweh\'s Words search] for-loop verses=${verses.length} '
         'searchAll=$searchAll filter=$filterBook curBook=${mp.currentBook}');
 
     // 2026-05-08 (v1.0.1 perf): walk the parallel `verses` /
@@ -1221,7 +1221,7 @@ class _SearchPageState extends State<SearchPage> {
         localCounts[verse.book] = (localCounts[verse.book] ?? 0) + 1;
       }
     }
-    debugPrint('[YsWords search] matches.length=${matches.length}');
+    debugPrint('[Yahweh\'s Words search] matches.length=${matches.length}');
 
     // 2026-05-08 (v1.0.1 perf): bookOrder is cached on MainProvider
     // and only rebuilt when `setBooks` runs.
@@ -1752,7 +1752,7 @@ class _SearchPageState extends State<SearchPage> {
                               // matches.
                               ? (uiStrings['aiBibleSearchHeader']
                                           ?[settings.locale] ??
-                                      'YsWords AI found {count} passages for '
+                                      'AI found {count} passages for '
                                           '"{query}" (reference only)')
                                   .replaceAll(
                                       '{count}', _results.length.toString())
@@ -1800,7 +1800,7 @@ class _SearchPageState extends State<SearchPage> {
                   child: Text(
                     (uiStrings['aiBibleSearchHeader']
                                 ?[settings.locale] ??
-                            'YsWords AI found {count} passages for '
+                            'AI found {count} passages for '
                                 '"{query}" (reference only)')
                         .replaceAll(
                             '{count}', _aiRefs.length.toString())

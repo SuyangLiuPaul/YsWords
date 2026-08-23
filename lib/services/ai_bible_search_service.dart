@@ -63,7 +63,7 @@ class AiBibleSearchService {
       Duration(milliseconds: 700),
       Duration(milliseconds: 1800),
     ];
-    var transientReason = 'YsWords AI is busy right now. Please try again.';
+    var transientReason = 'AI is busy right now. Please try again.';
     for (var attempt = 0; attempt < backoffs.length; attempt++) {
       if (backoffs[attempt] > Duration.zero) {
         await Future<void>.delayed(backoffs[attempt]);
@@ -79,10 +79,10 @@ class AiBibleSearchService {
             .timeout(const Duration(seconds: 60));
       } on TimeoutException {
         transientReason =
-            'YsWords search took too long. Please try again or rephrase.';
+            'Yahweh\'s Words search took too long. Please try again or rephrase.';
         continue; // transient → retry
       } catch (_) {
-        transientReason = 'YsWords search is not available right now.';
+        transientReason = 'Yahweh\'s Words search is not available right now.';
         continue; // transient → retry
       }
       final code = resp.statusCode;
@@ -99,18 +99,18 @@ class AiBibleSearchService {
           return AiBibleSearchResult.fromJson(body);
         } catch (_) {
           return AiBibleSearchResult.unavailable(
-              'YsWords search returned an unexpected response.');
+              'Yahweh\'s Words search returned an unexpected response.');
         }
       }
       if (code == 404) {
         return AiBibleSearchResult.unavailable(
-            'YsWords search is not available yet (function not deployed).');
+            'Yahweh\'s Words search is not available yet (function not deployed).');
       }
       if (code == 429) {
         return AiBibleSearchResult.unavailable(
           serverError() ??
               uiStrings['aiQuotaExhaustedFallback']?[locale] ??
-              'YsWords AI quota for the developer\'s shared key is used '
+              'AI quota for the developer\'s shared key is used '
                   'up for today. Try again tomorrow, or paste your own '
                   'Gemini API key in Settings → AI to use your own quota.',
         );
@@ -124,7 +124,7 @@ class AiBibleSearchService {
         continue;
       }
       return AiBibleSearchResult.unavailable(
-        serverError() ?? 'YsWords search returned $code.',
+        serverError() ?? 'Yahweh\'s Words search returned $code.',
       );
     }
     return AiBibleSearchResult.unavailable(transientReason); // retries exhausted

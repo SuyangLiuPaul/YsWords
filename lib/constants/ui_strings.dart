@@ -1694,9 +1694,9 @@ const uiStrings = {
   // for any localizations downstream that might still reference
   // them.
   'onboardWelcomeTitle': {
-    'zh-Hans': '欢迎使用 YsWords',
-    'zh-Hant': '歡迎使用 YsWords',
-    'en': 'Welcome to YsWords',
+    'zh-Hans': '欢迎使用雅伟之言',
+    'zh-Hant': '歡迎使用雅偉之言',
+    'en': 'Welcome to Yahweh\'s Words',
   },
   'onboardWelcomeBody': {
     'zh-Hans': '双语圣经阅读应用，14 个译本（英文／简体／繁体）。主页的「读经」卡片会带你回到上次离开的位置。',
@@ -1726,8 +1726,8 @@ const uiStrings = {
     'en': 'AI study helpers',
   },
   'onboardAiBody': {
-    'zh-Hans': '按主题搜经文（"爱"、"信心"），点希腊文／希伯来文原文看 BDAG 级深度释义，对考古和手稿提具体问题。AI 由 Gemini 驱动——可在 设置 → YsWords AI 粘贴自己的免费密钥（按 Test 验证），用自己的额度跳过共享池。',
-    'zh-Hant': '按主題搜經文（「愛」、「信心」），點希臘文／希伯來文原文看 BDAG 級深度釋義，對考古和手稿提具體問題。AI 由 Gemini 驅動——可在 設定 → YsWords AI 貼上自己的免費密鑰（按 Test 驗證），用自己的額度跳過共享池。',
+    'zh-Hans': '按主题搜经文（"爱"、"信心"），点希腊文／希伯来文原文看 BDAG 级深度释义，对考古和手稿提具体问题。AI 由 Gemini 驱动——可在 设置 → AI 粘贴自己的免费密钥（按 Test 验证），用自己的额度跳过共享池。',
+    'zh-Hant': '按主題搜經文（「愛」、「信心」），點希臘文／希伯來文原文看 BDAG 級深度釋義，對考古和手稿提具體問題。AI 由 Gemini 驅動——可在 設定 → AI 貼上自己的免費密鑰（按 Test 驗證），用自己的額度跳過共享池。',
     'en':
         'Search the Bible by theme ("love", "faith"), tap any Greek or Hebrew word for a BDAG-style deep dive, or ask questions about archaeology and manuscripts. Powered by Gemini — paste your own free key in Settings → AI (and tap Test to verify) to skip the shared developer pool.',
   },
@@ -1952,14 +1952,14 @@ const uiStrings = {
   },
   // ── AI BYOK + Drive sync (2026-05-06) ────────────────────────
   'settingsSectionAi': {
-    'zh-Hans': 'YsWords AI 释义',
-    'zh-Hant': 'YsWords AI 釋義',
-    'en': 'YsWords AI',
+    'zh-Hans': 'AI 释义',
+    'zh-Hant': 'AI 釋義',
+    'en': 'AI',
   },
   'aboutSectionAi': {
-    'zh-Hans': 'YsWords AI（高级 · 可选）',
-    'zh-Hant': 'YsWords AI（進階 · 可選）',
-    'en': 'YsWords AI (advanced · optional)',
+    'zh-Hans': 'AI（高级 · 可选）',
+    'zh-Hant': 'AI（進階 · 可選）',
+    'en': 'AI (advanced · optional)',
   },
   'cloudDiagSection': {
     'zh-Hans': '云端配置自检（开发者 / 诊断用）',
@@ -1981,7 +1981,7 @@ const uiStrings = {
     'en':
         'Probes Firebase Auth, Drive sync, and the AI proxy. End '
             'users never need to enable anything — these are '
-            'developer-side checks for the YsWords project. The app '
+            'developer-side checks for the Yahweh\'s Words project. The app '
             'keeps working in degraded mode either way (sync goes '
             'local-only, AI shows "not available").',
   },
@@ -2477,19 +2477,19 @@ const uiStrings = {
   // Older "ask AI" wording across the search page maps to the new
   // "search with YsWords AI" copy.
   'askAiForVerses': {
-    'zh-Hans': '用 YsWords AI 智能搜索（仅供参考）',
-    'zh-Hant': '用 YsWords AI 智慧搜尋（僅供參考）',
-    'en': 'Search with YsWords AI (reference only)',
+    'zh-Hans': '用 AI 智能搜索（仅供参考）',
+    'zh-Hant': '用 AI 智慧搜尋（僅供參考）',
+    'en': 'Search with AI (reference only)',
   },
   'aiSearching': {
-    'zh-Hans': 'YsWords 正在搜索…',
-    'zh-Hant': 'YsWords 正在搜尋…',
-    'en': 'YsWords AI searching…',
+    'zh-Hans': 'AI 正在搜索…',
+    'zh-Hant': 'AI 正在搜尋…',
+    'en': 'AI searching…',
   },
   'aiBibleSearchHeader': {
-    'zh-Hans': 'YsWords 为「{query}」找到了 {count} 处经文（仅供参考）',
-    'zh-Hant': 'YsWords 為「{query}」找到了 {count} 處經文（僅供參考）',
-    'en': 'YsWords AI found {count} passages for "{query}" (reference only)',
+    'zh-Hans': 'AI 为「{query}」找到了 {count} 处经文（仅供参考）',
+    'zh-Hant': 'AI 為「{query}」找到了 {count} 處經文（僅供參考）',
+    'en': 'AI found {count} passages for "{query}" (reference only)',
   },
   'aiBibleSearchNoMatches': {
     'zh-Hans': 'AI 没有找到相关经文，换个说法再试一下吧。',
@@ -2526,20 +2526,20 @@ const uiStrings = {
   // a parseable `error` body — in normal operation the backend
   // sends a user-locale message that's surfaced directly.
   'aiQuotaExhaustedFallback': {
-    'zh-Hans': 'YsWords AI 今天的共享配额已用完。明天再试，或在「设置 → '
-        'YsWords AI」粘贴您自己的 Gemini API Key 用您的配额。',
-    'zh-Hant': 'YsWords AI 今天的共享配額已用完。明天再試，或在「設定 → '
-        'YsWords AI」貼上您自己的 Gemini API Key 用您的配額。',
+    'zh-Hans': 'AI 今天的共享配额已用完。明天再试，或在「设置 → '
+        'AI」粘贴您自己的 Gemini API Key 用您的配额。',
+    'zh-Hant': 'AI 今天的共享配額已用完。明天再試，或在「設定 → '
+        'AI」貼上您自己的 Gemini API Key 用您的配額。',
     'en':
-        'YsWords AI quota for the developer\'s shared key is used up for today. Try again tomorrow, or paste your own Gemini API key in Settings → AI to use your own quota.',
+        'AI quota for the developer\'s shared key is used up for today. Try again tomorrow, or paste your own Gemini API key in Settings → AI to use your own quota.',
   },
   'aiNotConfiguredFallback': {
-    'zh-Hans': 'YsWords AI 还没有配置。开发者需要在 Netlify 环境变量里设置 '
+    'zh-Hans': 'AI 还没有配置。开发者需要在 Netlify 环境变量里设置 '
         'GEMINI_API_KEY。',
-    'zh-Hant': 'YsWords AI 還沒有配置。開發者需要在 Netlify 環境變數裡設置 '
+    'zh-Hant': 'AI 還沒有配置。開發者需要在 Netlify 環境變數裡設置 '
         'GEMINI_API_KEY。',
     'en':
-        'YsWords AI is not configured. The developer needs to set GEMINI_API_KEY in Netlify env.',
+        'AI is not configured. The developer needs to set GEMINI_API_KEY in Netlify env.',
   },
   // 2026-05-09 (v1.2.0): tag appended to the AboutPage footer when
   // the build was compiled with `--dart-define=CHINA_MODE=true`.
@@ -2562,10 +2562,10 @@ const uiStrings = {
         "Cloud sync isn't available in the China build. Highlights, notes, and bookmarks stay on this device.",
   },
   'aiBibleSearchSomeMissing': {
-    'zh-Hans': 'YsWords AI 还找到 {n} 处经文，但您当前圣经版本中没有匹配（仅供参考）。',
-    'zh-Hant': 'YsWords AI 還找到 {n} 處經文，但您當前聖經版本中沒有匹配（僅供參考）。',
+    'zh-Hans': 'AI 还找到 {n} 处经文，但您当前圣经版本中没有匹配（仅供参考）。',
+    'zh-Hant': 'AI 還找到 {n} 處經文，但您當前聖經版本中沒有匹配（僅供參考）。',
     'en':
-        'YsWords AI also suggested {n} passages not in your current '
+        'AI also suggested {n} passages not in your current '
             'Bible version (reference only).',
   },
   // 2026-05-07 (post-fix v3): AI-result note when the active search
@@ -2574,10 +2574,10 @@ const uiStrings = {
   // aiBibleSearchSomeMissing which is for refs not present in the
   // user's loaded Bible version at all.
   'aiBibleSearchOutOfScope': {
-    'zh-Hans': 'YsWords AI 还推荐了 {n} 处经文，但当前筛选范围之外（仅供参考）。',
-    'zh-Hant': 'YsWords AI 還推薦了 {n} 處經文，但當前篩選範圍之外（僅供參考）。',
+    'zh-Hans': 'AI 还推荐了 {n} 处经文，但当前筛选范围之外（仅供参考）。',
+    'zh-Hant': 'AI 還推薦了 {n} 處經文，但當前篩選範圍之外（僅供參考）。',
     'en':
-        'YsWords AI also suggested {n} passages outside your current '
+        'AI also suggested {n} passages outside your current '
             'filter scope.',
   },
   // 2026-05-07: italic caveat shown directly below the AI search
@@ -2700,7 +2700,7 @@ const uiStrings = {
     'zh-Hans': '深入 · Gemini 3 Flash Preview。带"思考"模式的高速推理模型——接近 Pro 级别的释经深度，但速度快得多（约 4-8 秒）。**免费配额可用**：~250 RPD，独立于 Standard / Fast 配额池。Google 在 2026 年 4 月把 gemini-2.5-pro 收费了——所以我们改用这款，免费即可使用，不需要 BYOK。BYOK 仍然推荐用于高频使用（您自己的密钥有独立配额，更稳定）。',
     'zh-Hant': '深入 · Gemini 3 Flash Preview。帶「思考」模式的高速推理模型——接近 Pro 級別的釋經深度，但速度快得多（約 4-8 秒）。**免費配額可用**：~250 RPD，獨立於 Standard / Fast 配額池。Google 在 2026 年 4 月把 gemini-2.5-pro 收費了——所以我們改用這款，免費即可使用，不需要 BYOK。BYOK 仍然推薦用於高頻使用（您自己的密鑰有獨立配額，更穩定）。',
     'en':
-        'Deep · Gemini 3 Flash Preview. High-speed thinking model with near-Pro reasoning quality — substantially faster than Pro (~4-8 s). **Free-tier compatible** at ~250 RPD, with quota separate from the Standard / Fast pools. Google moved gemini-2.5-pro behind a paywall in April 2026, so YsWords switched Deep to this model — free, no BYOK needed. BYOK still recommended for heavy use (your own key has its own quota pool).',
+        'Deep · Gemini 3 Flash Preview. High-speed thinking model with near-Pro reasoning quality — substantially faster than Pro (~4-8 s). **Free-tier compatible** at ~250 RPD, with quota separate from the Standard / Fast pools. Google moved gemini-2.5-pro behind a paywall in April 2026, so Yahweh\'s Words switched Deep to this model — free, no BYOK needed. BYOK still recommended for heavy use (your own key has its own quota pool).',
   },
   // 2026-05-11 (v1.2.42): three short-lived strings were removed
   // here as dead code:
@@ -3431,9 +3431,9 @@ const uiStrings = {
     'en': 'This is a test notification.',
   },
   'appName': {
-    'zh-Hans': 'YsWords 雅伟之言',
-    'zh-Hant': 'YsWords 雅偉之言',
-    'en': 'YsWords',
+    'zh-Hans': '雅伟之言',
+    'zh-Hant': '雅偉之言',
+    'en': 'Yahweh\'s Words',
   },
   'startReading': {
     // Hero CTA shown when the user has no saved reading position
@@ -3638,13 +3638,13 @@ const uiStrings = {
             '"Did you mean…" card alongside text results.',
   },
   'searchHelpAdvAi': {
-    'zh-Hans': 'YsWords AI 搜索：当关键字搜索没有结果时，可以点击「用 YsWords AI 智能搜索」'
+    'zh-Hans': 'AI 搜索：当关键字搜索没有结果时，可以点击「用 AI 智能搜索」'
         '让 AI 帮你查找主题或模糊查询（如「最爱的章节」）。结果仅供参考，使用前请自行核对。',
-    'zh-Hant': 'YsWords AI 搜尋：當關鍵字搜尋沒有結果時，可以點擊「用 YsWords AI 智慧搜尋」'
+    'zh-Hant': 'AI 搜尋：當關鍵字搜尋沒有結果時，可以點擊「用 AI 智慧搜尋」'
         '讓 AI 幫你查找主題或模糊查詢（如「最愛的章節」）。結果僅供參考，使用前請自行核對。',
     'en':
-        'YsWords AI search: when keyword search returns nothing, tap '
-            '"Search with YsWords AI" for fuzzy or thematic queries '
+        'AI search: when keyword search returns nothing, tap '
+            '"Search with AI" for fuzzy or thematic queries '
             '(e.g. "the love chapter"). Results are for reference '
             'only — verify before use.',
   },
@@ -3702,17 +3702,17 @@ const uiStrings = {
             'concordance.',
   },
   'searchModeAi': {
-    'zh-Hans': 'YsWords AI',
-    'zh-Hant': 'YsWords AI',
-    'en': 'YsWords AI',
+    'zh-Hans': 'AI',
+    'zh-Hant': 'AI',
+    'en': 'AI',
   },
   'searchModeAiTip': {
-    'zh-Hans': '通过 YsWords AI 进行模糊或主题搜索（如「最爱的章节」）。结果仅供参考，'
+    'zh-Hans': '通过 AI 进行模糊或主题搜索（如「最爱的章节」）。结果仅供参考，'
         '使用前请自行核对。',
-    'zh-Hant': '透過 YsWords AI 進行模糊或主題搜尋（如「最愛的章節」）。結果僅供參考，'
+    'zh-Hant': '透過 AI 進行模糊或主題搜尋（如「最愛的章節」）。結果僅供參考，'
         '使用前請自行核對。',
     'en':
-        'Fuzzy / thematic search via YsWords AI (e.g. "the love '
+        'Fuzzy / thematic search via AI (e.g. "the love '
             'chapter"). Results are reference-only — verify before use.',
   },
   'searchWordStudyNoMatch': {
@@ -3958,9 +3958,9 @@ const uiStrings = {
   // user instead of a generic "AI" label, with reference-only caveat
   // surfaced via the disclaimer strings.
   'askAi': {
-    'zh-Hans': '问 YsWords',
-    'zh-Hant': '問 YsWords',
-    'en': 'Ask YsWords',
+    'zh-Hans': '问 AI',
+    'zh-Hant': '問 AI',
+    'en': 'Ask Yahweh\'s Words',
   },
   'ask': {
     'zh-Hans': '提问',
@@ -4059,12 +4059,12 @@ const uiStrings = {
   // filled in with the actual device (iOS/Android/macOS/Windows/Linux/
   // browser) — it used to hardcode "iOS" on every device.
   'notificationsTestSent': {
-    'zh-Hans': '测试通知已发送。如果没有看到横幅，请在 {platform} 的通知设置中查看 YsWords'
+    'zh-Hans': '测试通知已发送。如果没有看到横幅，请在 {platform} 的通知设置中查看雅伟之言'
         '（以及系统的专注 / 勿扰模式）。',
-    'zh-Hant': '測試通知已發送。如果沒有看到橫幅，請在 {platform} 的通知設定中查看 YsWords'
+    'zh-Hant': '測試通知已發送。如果沒有看到橫幅，請在 {platform} 的通知設定中查看雅偉之言'
         '（以及系統的專注 / 勿擾模式）。',
     'en': "Test notification sent. If you don't see a banner, check your "
-        '{platform} notification settings for YsWords (or Focus / Do Not '
+        '{platform} notification settings for Yahweh\'s Words (or Focus / Do Not '
         'Disturb).',
   },
   'platformBrowser': {
@@ -4319,9 +4319,9 @@ const uiStrings = {
     'en': 'SIL OFL · loaded via google_fonts.',
   },
   'aboutAi': {
-    'zh-Hans': 'YsWords AI 经文释义（仅供参考）',
-    'zh-Hant': 'YsWords AI 經文釋義（僅供參考）',
-    'en': 'YsWords AI explanations (reference only)',
+    'zh-Hans': 'AI 经文释义（仅供参考）',
+    'zh-Hant': 'AI 經文釋義（僅供參考）',
+    'en': 'AI explanations (reference only)',
   },
   'aboutLicenseAi': {
     'zh-Hans': 'Google Gemini API · 输出可在 API 条款下重新分发。',
@@ -6177,9 +6177,9 @@ const uiStrings = {
     'en': 'Save to note',
   },
   'aiNoteAttribution': {
-    'zh-Hans': '——YsWords AI 生成，仅供参考',
-    'zh-Hant': '——YsWords AI 生成，僅供參考',
-    'en': '— generated by YsWords AI, for reference',
+    'zh-Hans': '——AI 生成，仅供参考',
+    'zh-Hant': '——AI 生成，僅供參考',
+    'en': '— generated by AI, for reference',
   },
   'aiExplainAsking': {
     'zh-Hans': 'AI 正在生成解释…',
@@ -6273,9 +6273,9 @@ const uiStrings = {
   // canonical pattern / theological weight). Free-tier substitute
   // for what Logos+BDAG charges $200+ for.
   'aiScopeDeepExegesis': {
-    'zh-Hans': '深度释经（BDAG 级 · YsWords 智能分析，仅供参考）',
-    'zh-Hant': '深度釋經（BDAG 級 · YsWords 智慧分析，僅供參考）',
-    'en': 'Deep exegesis (BDAG-level · YsWords AI, reference only)',
+    'zh-Hans': '深度释经（BDAG 级 · AI 智能分析，仅供参考）',
+    'zh-Hant': '深度釋經（BDAG 級 · AI 智慧分析，僅供參考）',
+    'en': 'Deep exegesis (BDAG-level · AI, reference only)',
   },
   'familyTree': {
     'zh-Hans': '圣经家谱',
@@ -6618,9 +6618,9 @@ const uiStrings = {
     'zh-Hant': '講道尚未載入完成 — 請等待內容顯示',
   },
   'sermonAttribution': {
-    'en': "From YsWords (Yahweh's Words) — bilingual Bible app",
-    'zh-Hans': '来自 YsWords 雅伟之言 — 双语圣经应用',
-    'zh-Hant': '來自 YsWords 雅偉之言 — 雙語聖經應用',
+    'en': "From Yahweh's Words (雅伟之言) — bilingual Bible app",
+    'zh-Hans': '来自雅伟之言 — 双语圣经应用',
+    'zh-Hant': '來自雅偉之言 — 雙語聖經應用',
   },
   // Verse popup sheet
   'versePopupExpand': {

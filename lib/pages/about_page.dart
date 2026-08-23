@@ -216,7 +216,7 @@ class _Header extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    uiStrings['appName']?[locale] ?? 'YsWords',
+                    uiStrings['appName']?[locale] ?? 'Yahweh\'s Words',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -284,7 +284,7 @@ class _ContactCard extends StatelessWidget {
   static const _email = 'paul.sy.liu@gmail.com';
 
   Future<void> _open(BuildContext context) async {
-    final uri = 'mailto:$_email?subject=YsWords%20copyright%20enquiry';
+    final uri = 'mailto:$_email?subject=Yahweh\'s Words%20copyright%20enquiry';
     if (LinkOpener.isAvailable) {
       final ok = await LinkOpener.open(uri);
       if (ok) return;
@@ -661,7 +661,7 @@ class _AppLicenseCard extends StatelessWidget {
   Future<void> _openRepo(BuildContext context) async {
     if (!LinkOpener.isAvailable) return;
     await LinkOpener.openOrWarn(
-        context, 'https://github.com/SuyangLiuPaul/YsWords');
+        context, 'https://github.com/SuyangLiuPaul/Yahweh\'s Words');
   }
 
   @override

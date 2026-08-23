@@ -86,7 +86,7 @@ class AiSearchService {
       Duration(milliseconds: 1800),
     ];
     var transientReason =
-        'YsWords AI is busy right now. Showing keyword matches — tap Ask to '
+        'AI is busy right now. Showing keyword matches — tap Ask to '
         'try again.';
     for (var attempt = 0; attempt < backoffs.length; attempt++) {
       if (backoffs[attempt] > Duration.zero) {
@@ -110,7 +110,7 @@ class AiSearchService {
         // Network / DNS / CORS / not-deployed. No runtimeType — release
         // builds minify it to meaningless names.
         transientReason =
-            'YsWords search is not available right now. Showing keyword '
+            'Yahweh\'s Words search is not available right now. Showing keyword '
             'matches instead.';
         continue; // transient → retry
       }
@@ -128,14 +128,14 @@ class AiSearchService {
           return AiSearchResult.fromJson(body);
         } catch (_) {
           return AiSearchResult.unavailable(
-            'YsWords search returned an unexpected response. Showing '
+            'Yahweh\'s Words search returned an unexpected response. Showing '
             'keyword matches instead.',
           );
         }
       }
       if (code == 404) {
         return AiSearchResult.unavailable(
-          'YsWords search is not available yet. Showing keyword matches '
+          'Yahweh\'s Words search is not available yet. Showing keyword matches '
           'instead.',
         );
       }
@@ -143,7 +143,7 @@ class AiSearchService {
         return AiSearchResult.unavailable(
           serverError() ??
               uiStrings['aiQuotaExhaustedFallback']?[locale] ??
-              'YsWords AI quota for the developer\'s shared key is used '
+              'AI quota for the developer\'s shared key is used '
                   'up for today. Try again tomorrow, or paste your own '
                   'Gemini API key in Settings → AI.',
         );
@@ -157,7 +157,7 @@ class AiSearchService {
       // Other terminal non-2xx.
       return AiSearchResult.unavailable(
         serverError() ??
-            'YsWords search returned an error ($code). Showing keyword '
+            'Yahweh\'s Words search returned an error ($code). Showing keyword '
                 'matches instead.',
       );
     }

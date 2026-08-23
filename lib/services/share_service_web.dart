@@ -44,7 +44,7 @@ Future<bool> shareText({
     // Build a plain JS object (the shape navigator.share expects).
     final data = JSObject()
       ..setProperty('text'.toJS, text.toJS)
-      ..setProperty('title'.toJS, (title ?? 'YsWords').toJS);
+      ..setProperty('title'.toJS, (title ?? 'Yahweh\'s Words').toJS);
     if (url != null && url.isNotEmpty) {
       data.setProperty('url'.toJS, url.toJS);
     }

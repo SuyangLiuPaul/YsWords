@@ -495,7 +495,7 @@ class _CloudSetupDiagnosticState extends State<CloudSetupDiagnostic> {
               uiStrings['cloudDiagBody']?[widget.locale] ??
                   'Probes Firebase Auth, Drive REST, and the AI proxy. '
                       'End users never need to enable anything — these '
-                      'are developer-side checks for the YsWords '
+                      'are developer-side checks for the Yahweh\'s Words '
                       'project. Failures here are fixable in Cloud '
                       'Console; the app keeps working in degraded '
                       'mode either way (sync goes local-only, AI shows '

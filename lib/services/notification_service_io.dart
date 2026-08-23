@@ -192,7 +192,7 @@ Future<void> showNotification({
   const androidDetails = AndroidNotificationDetails(
     'yswords_general',
     'General',
-    channelDescription: 'General YsWords notifications',
+    channelDescription: 'General Yahweh\'s Words notifications',
     importance: Importance.high,
     priority: Priority.high,
   );

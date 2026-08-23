@@ -508,7 +508,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   /// Copy the full sermon — title + metadata + body + attribution
   /// footer — to the clipboard so users can paste into their
   /// notes / Word / messaging apps. Always appends a "From
-  /// YsWords (Yahweh's Words)" line with the deep-link URL so
+  /// YsWords (Yahweh\'s Words)" line with the deep-link URL so
   /// recipients know the source. Floating toast confirms.
   Future<void> _copySermonBody(Sermon s, String locale) async {
     final body = _body ?? '';
@@ -528,7 +528,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
     final url =
         'https://yswords.netlify.app/?sermon=${Uri.encodeComponent(s.id)}';
     final attribution = uiStrings['sermonAttribution']?[locale] ??
-        'From YsWords (Yahweh\'s Words)';
+        'From Yahweh\'s Words (Yahweh\'s Words)';
     final buf = StringBuffer();
     buf.writeln(title);
     // Whose sermon it is travels with the text. A quotation pasted into

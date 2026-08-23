@@ -115,7 +115,7 @@ Future<void> rescheduleAll(AppSettings settings) async {
 
 const _kAndroidChannel = AndroidNotificationDetails(
   'yswords_scheduled',
-  'Scheduled YsWords notifications',
+  'Scheduled Yahweh\'s Words notifications',
   channelDescription:
       'Daily Bible verse, sermon, and evidence digests',
   importance: Importance.high,
@@ -231,7 +231,11 @@ String _label(String categoryId, String locale) {
       m = const {'en': 'Bedtime Verse', 'zh-Hans': '睡前经文', 'zh-Hant': '睡前經文'};
       break;
     default:
-      m = const {'en': 'YsWords', 'zh-Hans': 'YsWords', 'zh-Hant': 'YsWords'};
+      m = const {
+        'en': "Yahweh's Words",
+        'zh-Hans': '雅伟之言',
+        'zh-Hant': '雅偉之言',
+      };
   }
   return m[locale] ?? m['en']!;
 }
@@ -239,9 +243,9 @@ String _label(String categoryId, String locale) {
 /// Localized "tap to open" body, used when only a reference is available.
 String _openPrompt(String locale) {
   const m = {
-    'en': "Tap to read today's verse in YsWords",
-    'zh-Hans': '点按在 YsWords 中阅读今日经文',
-    'zh-Hant': '點按在 YsWords 中閱讀今日經文',
+    'en': "Tap to read today's verse in Yahweh's Words",
+    'zh-Hans': '点按在雅伟之言中阅读今日经文',
+    'zh-Hant': '點按在雅偉之言中閱讀今日經文',
   };
   return m[locale] ?? m['en']!;
 }

@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// The app is called **YsWords** — capital Y, capital W.
+/// The app is called **Yahweh's Words** (雅伟之言).
 ///
-/// 2026-08-17, from the user after a fresh install: "app name应该是
-/// YsWords不是Yswords". The home screen read "Yswords" on iOS and
-/// "yswords" on macOS, while web and Android already had it right.
+/// Renamed 2026-08-23 at the user's instruction: "整个app要改名，叫做
+/// Yahweh's Words雅伟之言". Before that it was "YsWords", and on
+/// 2026-08-17 the same user had to correct the CAPITALISATION of that
+/// name because it lived in five per-platform places that nothing
+/// compared — which is why this test exists and why it now pins the
+/// new name the same way.
 ///
 /// It survived because the name lives in five different places, one per
 /// platform, and nothing compared them:
@@ -22,7 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// `tools/yswords-ios-reinstall.sh`. Renaming it there would install to
 /// a new path and leave the old app sitting on the Mac.
 void main() {
-  const wanted = 'YsWords';
+  const wanted = "Yahweh's Words";
 
   String read(String path) => File(path).readAsStringSync();
 
@@ -36,7 +39,7 @@ void main() {
     return xml.substring(open + '<string>'.length, close);
   }
 
-  test('iOS shows YsWords on the home screen', () {
+  test('iOS shows Yahweh\'s Words on the home screen', () {
     final plist = read('ios/Runner/Info.plist');
     expect(plistValue(plist, 'CFBundleDisplayName'), wanted);
   });
@@ -48,7 +51,7 @@ void main() {
     expect(plistValue(plist, 'CFBundleName'), wanted);
   });
 
-  test('macOS shows YsWords, without renaming the bundle', () {
+  test('macOS shows the new name, without renaming the bundle', () {
     final plist = read('macos/Runner/Info.plist');
     expect(plistValue(plist, 'CFBundleDisplayName'), wanted);
 
@@ -66,9 +69,9 @@ void main() {
     expect(manifest, contains('"short_name": "$wanted"'));
   });
 
-  test('every Android flavour label starts with YsWords', () {
-    // Two flavours ship: the international one and "YsWords CN". Both
-    // must carry the same capitalisation.
+  test('every Android flavour label starts with the new name', () {
+    // Two flavours ship: the international one and the CN one. Both
+    // must carry the same name.
     final gradle = read('android/app/build.gradle.kts');
     final labels = RegExp(r'resValue\("string", "app_name", "([^"]+)"\)')
         .allMatches(gradle)
