@@ -6,7 +6,6 @@
     "background_color": "#ffffff",
     "theme_color": "#ffffff",
     "description": "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily.",
-    "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
         {

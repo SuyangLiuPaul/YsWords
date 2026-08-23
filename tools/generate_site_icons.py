@@ -202,7 +202,16 @@ def build_manifest(name: str, short_name: str) -> dict:
             "YsWords means Yahweh's words. A bilingual Bible app to help "
             "you listen to His voice and abide in Him daily."
         ),
-        "orientation": "portrait-primary",
+        # No "orientation" key. It used to say "portrait-primary", and
+        # Android honours that lock for an installed PWA while iOS/iPadOS
+        # ignore the field entirely (Safari does not implement it) — so an
+        # Android tablet held in landscape got a portrait window with black
+        # bars while the identical build filled an iPad. Reported
+        # 2026-08-12 from a Xiaomi Pad: "webapp打开两边是黑的不能像ipad
+        # webapp一样吗". These manifests are what deploy_site.py actually
+        # ships (they overlay web/manifest.json), so the key must stay out
+        # HERE, not just in web/. test/web_manifest_test.dart sweeps the
+        # generated files to keep it out.
         "prefer_related_applications": False,
         "icons": [
             {"src": "icons/Icon-192.png", "sizes": "192x192", "type": "image/png"},
