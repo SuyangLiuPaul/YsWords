@@ -5,5 +5,5 @@
      as ExtraTranslation orphans. Defining the default here puts the
      whole name family in one mechanism lint understands. -->
 <resources>
-    <string name="app_name">Yahweh\'s Words</string>
+    <string name="app_name">Yahweh&#8217;s Words</string>
 </resources>
