@@ -6,13 +6,25 @@ A DIFFERENT DEFECT FROM THE VERSE ASSET, THOUGH IT LOOKS THE SAME
   Traditional form the converter could not write at all (隻, 淨, 牆, 餘, 癒 …),
   found by "our asset holds zero of it". `assets/strongs/{hebrew,greek}.json`
   has no holes: `glossZhTw`/`defZhTw` are `opencc -c s2t` of `glossZh`/`defZh`,
-  character for character, with ZERO manual edits in all 28,377 field pairs
-  (verified by re-converting every Simplified field and comparing).
+  character for character, in 28,276 of the 28,377 field pairs. Remeasured
+  2026-08-23 by `tools/audit_lexicon_provenance.py`, which also rules out
+  s2tw/s2twp/s2hk — each matches only ~89%, so the configuration is pinned and
+  not merely the tool.
+
+  CORRECTION, 2026-08-23. This paragraph used to end "with ZERO manual edits in
+  all 28,377 field pairs (verified by re-converting every Simplified field and
+  comparing)", and that was already false when it was written. 109 characters
+  in 101 fields disagree with opencc: 88 侖 → 崙 (cf0782d, 14:03) and 21
+  侄 → 姪 (ca09531), both of which landed hours before this file did at 14:15
+  the same afternoon. Nothing was damaged, because none of the rules below
+  touches either character — but a later pass reasoning "the lexicon has never
+  been hand-edited, so reconverting it is safe" would spell Hebron 希伯侖 again.
+  The audit enumerates the exceptions instead of assuming there are none.
 
   So the exposure here runs the other way. opencc never fails to convert; it
   fails by picking the WRONG expansion when one Simplified character maps to
-  several Traditional ones, and because the file was never hand-edited, every
-  one of those mistakes is still in it. An inventory diff cannot see this —
+  several Traditional ones, and apart from those two repairs the file has never
+  been hand-edited, so every one of those mistakes is still in it. An inventory diff cannot see this —
   the character it wrote is a perfectly good Traditional character, just not
   the right one.
 

@@ -907,9 +907,55 @@ and quoted.**
       Simplified twin reads 关于 in both places. Pinned by the test so a later 于
       sweep cannot mistake it for a second instance.
 
-- [ ] **"The Traditional side was produced by opencc" is asserted about the
-      STRONG'S LEXICON and has never been checked.** Found 2026-08-18 by the
-      refuter while it was breaking the same claim about the verse assets.
+- [x] **"The Traditional side was produced by opencc" is asserted about the
+      STRONG'S LEXICON — MEASURED 2026-08-23, and it is TRUE. opencc `s2t`
+      specifically. But the version of the claim already written down was
+      false in its second half, and that half was the dangerous one.**
+      `tools/audit_lexicon_provenance.py` settles it and re-checks on demand.
+
+      **28,276 of 28,377 field pairs are byte-identical to `opencc -c s2t`
+      output — 99.64%.** The other configurations match ~89% (s2tw 89.23,
+      s2twp 88.33, s2hk 89.02), so the configuration is pinned and not just
+      the tool. The conversion is nowhere near identity: s2t rewrites 101,659
+      characters drawn from 1,242 distinct source characters across 24,611 of
+      the fields.
+
+      **The refuter's best attack was that any competent converter would score
+      99.6%, and it broke its own attack.** It built a naive per-character map
+      from opencc's OWN single-character table and applied it unconditionally —
+      the verse asset's failure mode — and scored **92.93%**, missing 1,919
+      fields (裏/里 201, 幹/乾 137, 制/製 118, 回/迴 116). So the 99.64% is
+      measuring the phrase dictionary, which a per-character map cannot fake.
+      That also explains the 制/製 evidence noted below, which pointed away
+      from "the same map as the verses" and was right to.
+
+      **The correction that matters more than the confirmation.**
+      `tools/repair_strongs_tw_ambiguous.py` (bd78f14) already stated this as
+      settled — "character for character, with ZERO manual edits in all 28,377
+      field pairs (verified by re-converting every Simplified field and
+      comparing)". The provenance half is right. The zero-manual-edits half was
+      **already false when it was written**: 109 characters in 101 fields
+      disagree with opencc — 88 侖 → 崙 (cf0782d, 82 fields / 53 entries) and
+      21 侄 → 姪 (ca09531, 21 fields / 14 entries) — and cf0782d landed at
+      14:03 against bd78f14 at 14:15 the same afternoon. Nothing was damaged;
+      that script's rules touch neither character. But it is committed
+      unapplied and explicitly invites a later pass to run it, and a pass that
+      reasons "the lexicon has never been hand-edited, so reconverting it is
+      safe" would spell Hebron 希伯侖 again in 82 fields. The audit now
+      **enumerates** the exceptions rather than asserting there are none, and
+      fails if either count moves in either direction (verified against a
+      scratch copy with the 崙 repair reverted).
+
+      Also corrected while here: the 崙 instalment edited **88 positions across
+      82 fields**, not "88 lexicon fields" as `repair_tr_tail_glyphs.py:78`
+      said. Small, but the next person counts from it.
+
+      Follow-on filed immediately below: being s2t output has a reader-visible
+      consequence nobody had looked for.
+
+      **As originally filed, 2026-08-18** — kept because the reasoning that got
+      here is worth more than the answer. Found by the refuter while it was
+      breaking the same claim about the verse assets.
       `tools/repair_tr_tail_glyphs.py:72` states it as fact, and the 姪 lexicon
       repair reasoned from it ("opencc has no 侄 → 姪 mapping, so all 21 came
       through untouched"). For the VERSE assets the claim is now known false —
@@ -936,6 +982,43 @@ and quoted.**
       布制的, 毛制的 sit beside 銅製的 and 皮製的). Still does not settle
       whether that something was opencc; the measurement described above is
       still the way to find out.
+
+- [ ] **The lexicon and the Bible are set in two different Traditional
+      orthographies, and the word-tap sheet shows them side by side — 2,816
+      positions. Nothing is false; it is an edition-wide typographic choice and
+      it needs the user.** Found 2026-08-23 as a direct consequence of the
+      provenance measurement above: `s2t` writes OpenCC's own standard-
+      Traditional forms, and the Bible asset — made by something else entirely
+      — writes the forms this edition prefers. Neither file mixes them, so this
+      is not drift, it is two clean conventions meeting on one screen.
+
+      | | lexicon (`*ZhTw`) | Traditional Bible |
+      |---|---|---|
+      | 爲 / 為 | 1883 / 0 | 0 / 7952 |
+      | 着 / 著 | 419 / 0 | 0 / 2651 |
+      | 羣 / 群 | 195 / 0 | 0 / 323 |
+      | 衆 / 眾 | 195 / 0 | 0 / 1895 |
+      | 喫 / 吃 | 77 / 5 | 0 / 1043 |
+      | 牀 / 床 | 47 / 0 | 0 / 80 |
+
+      **It really is side by side**, checked in the code rather than assumed:
+      `lib/models/strongs.dart` hands `zh-Hant` the raw `glossZhTw`/`defZhTw`
+      with no render-time conversion, and `originals_sheet.dart` prints the
+      version's verse text in the same sheet as the gloss. A Traditional reader
+      tapping a word sees 作爲 in the gloss above 作為 in the verse.
+
+      **Not swept, and not by oversight.** Every character above is legitimate
+      Traditional Chinese, so nothing untrue is printed — this is the same
+      shape as the 兇/凶 question (47 positions) and the full-width-quotes
+      question, both already waiting on the user. The question is one line:
+      *should the Strong's lexicon be re-set in this edition's orthography
+      (為/著/群/眾/吃/床), or is OpenCC's standard Traditional fine there?*
+      One answer settles all 2,816. Note the lexicon is not internally uniform
+      either — 5 吃 against 77 喫 — so a sweep would tidy that too.
+      `test/lexicon_traditional_orthography_test.dart` pins every count in
+      both directions so this cannot be harmonised as a side effect of some
+      other pass, which is exactly how this repo has lost decisions before.
+
 
 - [x] **The eleven word-level differences got their third witness — and it
       split them three ways: 2 repaired, 1 where OURS IS RIGHT and both

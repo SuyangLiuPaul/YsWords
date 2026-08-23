@@ -70,12 +70,19 @@ TWO INDEPENDENT TRADITIONAL WITNESSES, AND THEY AGREE AT ALL ELEVEN POSITIONS
 THE LEXICON MOVES WITH THE TEXT — 21 MORE
   `assets/strongs/*.json` hold a Simplified field and a Traditional one per
   entry, and the Traditional side was produced by opencc, which has no 侄 → 姪
-  mapping. So all 21 Traditional 侄 came through untouched, in 14 entries, and
+  mapping. (Asserted here without proof when this was written; MEASURED and
+  confirmed 2026-08-23 by `tools/audit_lexicon_provenance.py` — 28,276 of
+  28,377 field pairs are byte-identical to `opencc -c s2t`, against ~89% for
+  s2tw/s2twp/s2hk. It matters that this is now measured rather than assumed,
+  because the neighbouring VERSE asset was NOT made by opencc and the two files
+  therefore need different arguments.)
+  So all 21 Traditional 侄 came through untouched, in 14 entries, and
   every one of them is 侄子 or 侄女 — Lot (H3876, G3091), Bethuel (H1328),
   Iscah (H3252), Jonadab (H3082, H3122), Jonathan (H3083). A reader who taps
   羅得 on the Originals sheet would otherwise be shown a spelling the Bible
   text beside it no longer uses. The 崙 instalment set this precedent, editing
-  155 verses and 88 lexicon fields together.
+  155 verses and 88 lexicon positions together — 82 fields across 53 entries,
+  recounted 2026-08-23; "88 lexicon fields" as written here was positions.
 
   There is no alkali in the lexicon at all (0 堿, 0 鹼, 0 碱), so nothing to do
   there.

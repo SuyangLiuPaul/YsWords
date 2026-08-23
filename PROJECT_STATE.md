@@ -122,6 +122,15 @@ advances the repo hash is healthy.
     shape: it has no `：` and no quote marks at all, so it can say a
     quotation begins but never which modern mark opens it. A witness that
     cannot represent the distinction is not evidence either way.
+14. **A tool docstring saying "verified" is not evidence that anything was
+    verified.** `tools/repair_strongs_tw_ambiguous.py` stated the Strong's
+    lexicon had "ZERO manual edits in all 28,377 field pairs (verified by
+    re-converting every Simplified field and comparing)". It was committed
+    **12 minutes after** the commit that hand-edited 88 of them. The provenance
+    half of that sentence turned out to be true; the half that would have
+    caused damage was written with identical confidence and was false. Prefer a
+    re-runnable audit to a sentence — `tools/audit_lexicon_provenance.py` now
+    enumerates the exceptions instead of asserting there are none.
 
 ## Standing rules from the user
 
@@ -167,3 +176,9 @@ leave the original checked-out; three such duplicates were found on
 5. **Should the 原文 apparatus set its quotes full-width?** 344 ASCII `"`
    per edition, reader-visible wherever notes render. An edition-wide
    typographic choice, not a defect; a sweep tried and was reverted.
+6. **Should the Strong's lexicon be re-set in this edition's Traditional
+   orthography?** It is `opencc -c s2t` output, so it writes 爲/着/羣/衆/
+   喫/牀 where the Bible text writes 為/著/群/眾/吃/床 — 2,816 positions,
+   shown side by side on the word-tap sheet. Same shape as 4 and 5: every
+   character is legitimate, nothing false is printed, so it is a choice
+   and not a repair. Pinned by test until answered.
