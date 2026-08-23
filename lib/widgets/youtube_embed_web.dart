@@ -21,13 +21,27 @@ Widget? youtubeEmbed(String videoId) {
     ui_web.platformViewRegistry.registerViewFactory(viewType, (int _) {
       final frame = web.document.createElement('iframe')
           as web.HTMLIFrameElement
-        ..src = 'https://www.youtube-nocookie.com/embed/$videoId?rel=0'
+        // playsinline + autoplay: 2026-08-24, "好像WhatsApp那样YouTube
+        // 对话框在播放音乐" — the embed only ever mounts after a tap (the
+        // videos page's poster, or the link that opened the player
+        // sheet), so starting immediately is honouring that tap rather
+        // than ambushing anyone, and iOS Safari needs playsinline or it
+        // hands the video to the system fullscreen player, which is the
+        // jump-out this whole path exists to remove. The io variant has
+        // said the same since 2026-08-23; these two are meant to mirror
+        // each other.
+        ..src = 'https://www.youtube-nocookie.com/embed/$videoId'
+            '?rel=0&playsinline=1&autoplay=1'
         // clipboard-write: 2026-08-23, the player's own "copy link"
         // showed "Unable to copy link to clipboard" — a cross-origin
         // iframe cannot touch the clipboard unless the embedding page
-        // delegates that permission explicitly.
-        ..allow = 'accelerometer; encrypted-media; picture-in-picture; '
-            'fullscreen; clipboard-write'
+        // delegates that permission explicitly. autoplay is delegated
+        // for the same reason: without it in the allow list the browser
+        // refuses the autoplay above and shows the poster instead —
+        // which is exactly today's behaviour, so the worst case here is
+        // no worse than before.
+        ..allow = 'accelerometer; autoplay; encrypted-media; '
+            'picture-in-picture; fullscreen; clipboard-write'
         ..allowFullscreen = true;
       frame.style
         ..border = 'none'

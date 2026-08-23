@@ -1840,17 +1840,16 @@ class _SongDetailSheet extends StatelessWidget {
     required this.locale,
   });
 
-  Future<void> _open(BuildContext context, String url) async {
-    final ok = await LinkOpener.open(url);
-    if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-          uiStrings['songsOpenFailed']?[locale] ??
-              'Could not open the link. Please try again.',
-        ),
-      ));
-    }
-  }
+  /// 2026-08-24: this was a hand-copied [LinkOpener.openOrWarn] —
+  /// `open` plus the same snackbar, written out again because the sheet
+  /// already had `locale` to hand. Harmless while the only difference
+  /// was where the string came from, and then not: the in-app YouTube
+  /// player hangs off `openOrWarn`, so the YouTube chip on these three
+  /// rows was the one place in the app that still walked out to Safari
+  /// after "web 和ios能不能不跳转出去". A local copy of a chokepoint is
+  /// a chokepoint with a hole in it.
+  Future<void> _open(BuildContext context, String url) =>
+      LinkOpener.openOrWarn(context, url, locale: locale);
 
   @override
   Widget build(BuildContext context) {

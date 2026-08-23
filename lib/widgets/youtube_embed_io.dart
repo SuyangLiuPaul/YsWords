@@ -89,7 +89,7 @@ class _YoutubeEmbedState extends State<_YoutubeEmbed> {
 <style>html,body{margin:0;height:100%;background:#000}
 iframe{border:0;width:100%;height:100%}</style></head><body>
 <iframe src="https://www.youtube-nocookie.com/embed/$id?rel=0&playsinline=1&autoplay=1"
- allow="accelerometer; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
+ allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
  allowfullscreen></iframe></body></html>''';
 
   @override
