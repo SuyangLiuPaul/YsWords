@@ -5,7 +5,7 @@ right now and the traps that have already cost real time. The per-item
 work list is `docs/autonomous-queue.md`; this file is the orientation
 above it.
 
-Last updated: 2026-08-23.
+Last updated: 2026-08-24.
 
 **The refuter earns its keep — do not drop it to save a turn.** On
 2026-08-23 it broke a punctuation repair's stated reasoning twice in one
@@ -136,7 +136,19 @@ advances the repo hash is healthy.
     caused damage was written with identical confidence and was false. Prefer a
     re-runnable audit to a sentence — `tools/audit_lexicon_provenance.py` now
     enumerates the exceptions instead of asserting there are none.
-15. **Never mutate a file while a refuter is reading it.** On 2026-08-23 a
+15. **A detector shaped around the defect you already found will only ever
+    find that shape.** On 2026-08-24 a queue item said four verses put one
+    speaker's words inside another's quotation marks. The detector behind it
+    looked for a trapped `說：`, so it could only find a trapped voice that
+    announces itself. The real count was **nine**: at 約翰福音 2:7 the trapped
+    voice is the NARRATOR — `耶穌對用人說：「把缸倒滿了水。他們就倒滿了，直到
+    缸口。」` — and it carries no speech verb at all. The second detector that
+    found them makes no assumption about the trapped text: it diffs our
+    quotation marks against a witness across the whole corpus and asks where
+    the witness closes and we do not. **When a count is going to be published,
+    build the second detector from a different premise, not a widened regex** —
+    a widened regex is the same premise with more branches.
+16. **Never mutate a file while a refuter is reading it.** On 2026-08-23 a
     refuter was launched in the background and the repair was applied while it
     ran; it read the reading text before the change and the tagged corpus
     after, and reported — confidently and with evidence — that the tagged
@@ -161,7 +173,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 75 open items across P0 (scripture
+`docs/autonomous-queue.md` — 67 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 

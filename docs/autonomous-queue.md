@@ -2421,33 +2421,75 @@ and quoted.**
       asset the live site actually serves, not the repo**, the way the
       `說；` item above was: 羅馬書 8:36 must read 所記：「我們為你的緣故.
 
-- [ ] **The same misattribution defect without the semicolon: 4 verses put a
-      SECOND speaker's words inside the FIRST speaker's quotation marks, and 5
-      more leave the first reply unquoted.** Found by the refuter 2026-08-23
-      while attacking the item above, which is the right provenance for it: it
-      went looking for evidence that fixing the `；` shape left a comparable
-      class untouched, and there is one.
+- [x] **The same misattribution defect without the semicolon — filed as 4
+      verses, measured as NINE, and all nine are fixed. Done 2026-08-24.**
+      A reader no longer sees the disciples' answer attributed to Jesus at
+      馬太福音 15:34, the narrator's words attributed to him at 約翰福音 2:7,
+      or Paul's sentence attributed to the Old Testament at 哥林多前書 15:45.
 
-      **Measured, not guessed.** 49 verses have a speech colon followed by
-      unquoted words while another speech in the same verse IS quoted. Most are
-      not defects: 10 of the 13 where a bare `說：` sits inside a balanced
-      「…」 span are third-level nested inner speech that this edition simply
+      **The count in this item was wrong, and the refuter is why it is right
+      now.** It was filed as 4 on a detector that looked for a trapped `說：`.
+      Asked to break "exactly four", the refuter ignored that shape entirely
+      and diffed our quotation marks against the witness `7a2dc43` across all
+      31,102 verses — no speech verb, no colon, no assumption about what the
+      trapped text looks like. That found five more, because **the trapped
+      voice is often the narrator, who announces nothing**: 約翰福音 2:7 read
+      `耶穌對用人說：「把缸倒滿了水。他們就倒滿了，直到缸口。」`. Jesus cannot
+      be the speaker of 他們就倒滿了, and no `說：` detector will ever see it.
+
+      **The nine:** 創世紀 30:6, 馬太福音 15:34, 馬太福音 17:26, 馬可福音 6:37,
+      約翰福音 2:7, 2:8, 13:29, 13:36, 哥林多前書 15:45.
+
+      **哥林多前書 15:45 is the one that mattered most.** 經上也是這樣記著說
+      introduced a quotation that ran on past the end of Genesis 2:7 to swallow
+      末後的亞當成了叫人活的靈 — Paul's own sentence. The app was printing, as
+      scripture, an Old Testament citation of something the Old Testament does
+      not say. Four lines close it at the same place: the witness, LEB (with its
+      own footnote "A quotation from Gen 2:7"), 梁家鏗 (footnote 參創2.7), and
+      our own 創世紀 2:7, whose wording the quoted words match and stop at.
+
+      **創世紀 30:6 was settled from inside the corpus.** 因此給他起名叫但 is
+      the narrator, and this edition sets the identical naming formula OUTSIDE
+      the quotation ten times in the same passage — eight after the closing mark
+      (29:33, 29:35, 30:8, 30:11, 30:13, 30:18, 30:20, 30:24) and two before the
+      opening one (29:32, 29:34) — and inside it only here.
+
+      **Only quotation marks moved**, verified across all 31,102 verses in both
+      editions and all five affected tagged books: strip 「」『』“”‘’ from the
+      old and new text and every one of the nine is byte-identical, run counts
+      and Strong's sequences unchanged.
+
+      **Three were flagged and deliberately NOT changed, and the evidence there
+      is not symmetric — worth saying plainly.** 創世紀 2:23 is a false positive
+      (the witness has no speech quotation at all there; its 「」 mark the words
+      「女人」/「男人」). At 創世紀 26:7 and 啟示錄 19:10 the witness disagrees
+      with us, but LEB — and at 啟 19:10 梁家鏗 too — read our way. So the
+      witness that was decisive for the nine was overruled for two. That is
+      defensible only because those two are clauses with no speech verb that
+      either speaker could plausibly own, whereas the nine put a NAMED second
+      speaker inside the first one's marks. Pinned so no later sweep takes them.
+
+      `tools/audit_speaker_attribution.py` carries both detectors and the triage
+      of all 39 + 3 positions left alone, and exits non-zero only on a hit it has
+      never seen; `tools/repair_speaker_attribution.py` is idempotent and aborts
+      rather than guess; `test/speaker_attribution_test.dart` fails 3 of its 6
+      tests on the pre-fix data (verified in a throwaway worktree at HEAD).
+
+- [ ] **The five verses that leave the first reply UNQUOTED are still open** —
+      a different act from the nine above, which is why they were filed
+      separately and stay that way. 馬可福音 3:22, 馬太福音 21:27,
+      約翰福音 8:19, 13:8, 18:31: the first reply carries no marks at all while
+      the second is quoted, and the witness `7a2dc43` quotes both. Nothing false
+      is on screen — no reader attributes the words to the wrong person, they
+      are simply unmarked — so this sits below the accuracy items. Adding a pair
+      is writing marks the edition never had, so it wants the same four-line
+      treatment the nine got, not a sweep.
+
+      Also still open from the original measurement: of the 49 verses with a
+      speech colon followed by unquoted words, 10 of the 13 with a bare `說：`
+      inside a balanced 「…」 span are third-level inner speech this edition
       stops marking (出埃及記 33:5, 使徒行傳 21:11, 羅馬書 14:11 and the rest),
-      and the witness agrees they are unmarked.
-
-      **The genuine ones, where the app attributes words to the wrong speaker:**
-      馬太福音 15:34 (`耶穌說：「你們有多少餅？他們說：有七個…」` — the
-      disciples' answer sits inside Jesus's quotation), 馬可福音 6:37,
-      約翰福音 13:36, and **馬太福音 17:26**, which a balanced-span filter
-      misses because Peter's `「` does not close until 17:27 — worth
-      remembering, since every quote-scope check this repo writes will have the
-      same cross-verse blind spot.
-
-      **Five more are missing marks rather than misplaced ones** — the first
-      reply carries none at all while the second is quoted, and the witness
-      `7a2dc43` quotes both: 馬可福音 3:22, 馬太福音 21:27, 約翰福音 8:19,
-      13:8, 18:31. Adding a pair is a different act from moving one, which is
-      why they are filed separately here.
+      and the witness agrees they are unmarked. Those are not defects.
 
 - [ ] **啟示錄 2:1, 2:8, 2:12, 2:18 and 3:1 nest `「` directly inside `「`
       where the witness uses `『`.** Noted by the refuter 2026-08-23. A
