@@ -4396,7 +4396,9 @@ has never seen this repo.
 
 <details><summary>the original write-up, including the table that was wrong</summary>
 
-- [ ] **Turn the featured video into a SERIES section — "Standing at
+- [x] **SUPERSEDED — shipped as the [x] entry above (v1.4.110/111).**
+      Original brief kept for the record. Turn the featured video into a
+      SERIES section — "Standing at
       the Cross / 在十字架下, A 10-Part Journey / 人生十堂课".**
       User, 2026-08-12: "那个featured video现有的删掉变成这里面的video，
       放成一个系列。暂时只有英语广东话… 因为以后可能更多板块，好好设计一下".
@@ -4611,8 +4613,8 @@ has never seen this repo.
 
 <details><summary>why that iteration deliberately did not build</summary>
 
-- [ ] **v1.4.110 is committed but NOT deployed — deploy it next
-      iteration.** All four dev/qat sites were on 1.4.109 when the video
+- [x] **v1.4.110 is committed but NOT deployed — deploy it next
+      iteration.** (Historical; closed by the [x] above.) All four dev/qat sites were on 1.4.109 when the video
       series landed. The build was skipped deliberately: another session
       had uncommitted restorations in `assets/cuvs-yhwh.json` and
       `-tr.json` (士 9:57 咒诅归到**他**们, 士 12:7 士师**六**年, 撒下
@@ -4626,7 +4628,13 @@ has never seen this repo.
 
 </details>
 
-- [ ] **Add the Shema series to the video section — needs three answers
+- [x] **Add the Shema series to the video section — SHIPPED.**
+      `assets/videos.json` carries shema-1..4 (8+8+8+5 = 29), pinned by
+      `test/shema_series_test.dart`. The user answered all three
+      questions on 2026-08-19: (1) compilations go last within their own
+      part, (2) show the # number, (3) fold #1–#6 in so all 29 links are
+      covered. Original brief below.
+      **Superseded — needed three answers
       first, none of which may be guessed.** The section holds N series,
       so this is data plus a title fetch, not code. All 29 IDs and the
       four playlist IDs are in the write-up above. The three open
