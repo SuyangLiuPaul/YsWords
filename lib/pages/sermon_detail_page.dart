@@ -10,8 +10,10 @@ import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/passage_filter.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
+import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/passage_localizer.dart'
     show localizePassage, passageRefPattern;
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
@@ -39,7 +41,18 @@ import 'package:yswords/widgets/localized_back_button.dart';
 /// reader.
 class SermonDetailPage extends StatefulWidget {
   final Sermon sermon;
-  const SermonDetailPage({super.key, required this.sermon});
+
+  /// The passage the reader filtered the list by, if they arrived from
+  /// a filtered list. Every mention of it in the body is highlighted.
+  /// Null when the sermon was opened without a filter — then nothing
+  /// is highlighted, which is the pre-existing behaviour.
+  final PassageFilter? highlight;
+
+  const SermonDetailPage({
+    super.key,
+    required this.sermon,
+    this.highlight,
+  });
 
   @override
   State<SermonDetailPage> createState() => _SermonDetailPageState();
@@ -459,6 +472,16 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
               onSelect: _switchTo,
             ),
             const SizedBox(height: 16),
+            // Say what the yellow means. Unexplained highlighting in a
+            // transcript reads as the preacher's own emphasis, which
+            // would be putting our stress on his words.
+            if (widget.highlight != null) ...[
+              _HighlightNotice(
+                filter: widget.highlight!,
+                locale: settings.locale,
+              ),
+              const SizedBox(height: 12),
+            ],
             if (_loading)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 32),
@@ -470,7 +493,11 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
                 child: Text(_error!, style: TextStyle(color: scheme.error)),
               )
             else
-              _SermonBody(text: _body ?? '', settings: settings),
+              _SermonBody(
+                text: _body ?? '',
+                settings: settings,
+                highlight: widget.highlight,
+              ),
             ],
           ),
         ),
@@ -613,6 +640,59 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   }
 }
 
+/// The line above a sermon opened from a filtered list: "Highlighting
+/// John 17:3", so the yellow marks below are attributed to the filter
+/// and not read as the preacher's own emphasis.
+class _HighlightNotice extends StatelessWidget {
+  final PassageFilter filter;
+  final String locale;
+
+  const _HighlightNotice({required this.filter, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final book = localeAwareBookName(filter.book, locale);
+    final passage = filter.chapter == null
+        ? book
+        : filter.verse == null
+            ? '$book ${filter.chapter}'
+            : '$book ${filter.chapter}:${filter.verse}';
+    final text =
+        (uiStrings['sermonHighlightingPassage']?[locale] ??
+                'Highlighting {passage}')
+            .replaceAll('{passage}', passage);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      children: [
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: dark ? const Color(0xFF6B5A12) : const Color(0xFFFFF176),
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: 0.6)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            text,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: 12,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _MetaChip extends StatelessWidget {
   final String label;
   final Color? color;
@@ -726,7 +806,14 @@ class _SermonBody extends StatelessWidget {
   final String text;
   final AppSettings settings;
 
-  const _SermonBody({required this.text, required this.settings});
+  /// See [SermonDetailPage.highlight].
+  final PassageFilter? highlight;
+
+  const _SermonBody({
+    required this.text,
+    required this.settings,
+    this.highlight,
+  });
 
   /// Pattern for inline Bible references — shared with the sermon
   /// list and any other surface that wants to detect/rewrite refs.
@@ -848,10 +935,17 @@ class _SermonBody extends StatelessWidget {
           }
           displayText = '$localizedBook${tail.toString()}';
         }
+        // The passage the reader filtered by, wherever it is mentioned.
+        // Highlighting is on top of the existing link styling rather
+        // than instead of it — a highlighted reference is still a
+        // reference and must stay tappable and still look tappable.
+        final marked = highlight?.covers(parsed) ?? false;
         spans.add(TextSpan(
           text: displayText,
           style: TextStyle(
             color: scheme.primary,
+            backgroundColor: marked ? _highlightColor(context) : null,
+            fontWeight: marked ? FontWeight.w700 : null,
             decoration: TextDecoration.underline,
             decorationColor: scheme.primary.withValues(alpha: 0.4),
             decorationStyle: TextDecorationStyle.dotted,
@@ -867,6 +961,16 @@ class _SermonBody extends StatelessWidget {
     }
     return TextSpan(children: spans);
   }
+
+  /// Highlighter yellow, adjusted for the dark theme.
+  ///
+  /// A flat #FFFF00 behind light-on-dark text is unreadable, so the
+  /// dark variant is a deep gold that keeps the link colour legible on
+  /// top of it while still reading as "marked".
+  Color _highlightColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF6B5A12)
+          : const Color(0xFFFFF176);
 
   /// Tap a verse-ref chip in a sermon → show a [VersePopupSheet]
   /// modal so the user can peek at the cited verse(s) without

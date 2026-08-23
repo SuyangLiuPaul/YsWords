@@ -6683,6 +6683,26 @@ const uiStrings = {
     'zh-Hant': '全部章節',
     'en': 'All chapters',
   },
+  // 2026-08-23: the passage filter gained a third step. "Right now, you
+  // only have the chapter. Wonder whether it is possible to have also
+  // the verses also."
+  'sermonFilterVerseLabel': {
+    'zh-Hans': '节',
+    'zh-Hant': '節',
+    'en': 'Verse',
+  },
+  'sermonFilterAllVerses': {
+    'zh-Hans': '全部',
+    'zh-Hant': '全部',
+    'en': 'All',
+  },
+  // Shown at the top of a sermon opened from a filtered list, to say
+  // what the yellow marks are.
+  'sermonHighlightingPassage': {
+    'zh-Hans': '已标出 {passage}',
+    'zh-Hant': '已標出 {passage}',
+    'en': 'Highlighting {passage}',
+  },
   'sermonNoMatches': {
     'zh-Hans': '没有讲道符合当前筛选条件。',
     'zh-Hant': '沒有講道符合當前篩選條件。',

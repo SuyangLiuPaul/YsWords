@@ -10,6 +10,7 @@ import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/widgets/press_scale.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/passage_filter.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
@@ -46,8 +47,13 @@ class _SermonsPageState extends State<SermonsPage> {
   /// Currently-active passage filter. Both null = no filter; book set
   /// alone = filter to any sermon citing that book; book + chapter =
   /// filter to that specific chapter.
-  String? _filterBook;
-  int? _filterChapter;
+  /// The passage filter, or null for "no filter". Was two loose fields
+  /// (`_filterBook` + `_filterChapter`); one value because it is now
+  /// also handed to the sermon page so the same passage can be
+  /// highlighted there, and passing three nullable arguments that only
+  /// make sense together invites exactly the bug where one of them is
+  /// forgotten.
+  PassageFilter? _filter;
 
   /// Last-read sermon id, loaded from SharedPreferences on init and
   /// re-fetched whenever this page becomes visible. Drives the
@@ -142,7 +148,9 @@ class _SermonsPageState extends State<SermonsPage> {
       _lastReadSermonId = sermon.id;
       _flashActive = false; // Don't flash the tile they're leaving
     });
-    await pushPage(SermonDetailPage(sermon: sermon));
+    await pushPage(
+      SermonDetailPage(sermon: sermon, highlight: _filter),
+    );
     // Returned from detail — re-arm the flash for THIS sermon's row
     // so the user immediately sees where they were.
     if (!mounted) return;
@@ -272,7 +280,7 @@ class _SermonsPageState extends State<SermonsPage> {
                     OutlinedButton.icon(
                       onPressed: () => _openFilterSheet(data, locale),
                       icon: Icon(
-                        _filterBook == null
+                        _filter == null
                             ? Icons.filter_list
                             : Icons.filter_list_alt,
                         size: 18,
@@ -286,7 +294,7 @@ class _SermonsPageState extends State<SermonsPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         shape: const StadiumBorder(),
                         side: BorderSide(color: scheme.outlineVariant),
-                        backgroundColor: _filterBook == null
+                        backgroundColor: _filter == null
                             ? null
                             : scheme.primaryContainer
                                 .withValues(alpha: 0.4),
@@ -295,7 +303,7 @@ class _SermonsPageState extends State<SermonsPage> {
                   ],
                 ),
               ),
-              if (_filterBook != null)
+              if (_filter != null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                   child: Align(
@@ -304,10 +312,7 @@ class _SermonsPageState extends State<SermonsPage> {
                       avatar: Icon(Icons.bookmark, size: 16,
                           color: scheme.primary),
                       label: Text(_activeFilterLabel(locale)),
-                      onDeleted: () => setState(() {
-                        _filterBook = null;
-                        _filterChapter = null;
-                      }),
+                      onDeleted: () => setState(() => _filter = null),
                       backgroundColor:
                           scheme.primaryContainer.withValues(alpha: 0.5),
                     ),
@@ -373,7 +378,7 @@ class _SermonsPageState extends State<SermonsPage> {
     for (final e in data.groups.entries) {
       final hits = e.value.where((s) {
         // Passage filter (refs index lookup)
-        if (_filterBook != null && !_passageMatches(s, data.refs)) {
+        if (_filter != null && !_passageMatches(s, data.refs)) {
           return false;
         }
         // Free-text query
@@ -392,19 +397,11 @@ class _SermonsPageState extends State<SermonsPage> {
   }
 
   bool _passageMatches(Sermon s, SermonRefs refs) {
-    final book = _filterBook!;
-    final ch = _filterChapter;
+    final f = _filter!;
     final list = refs.bySermon[s.id];
     if (list == null) return false;
     for (final ref in list) {
-      // refs are "Book chapter" or "Book chapter:verse"
-      if (!ref.startsWith('$book ')) continue;
-      if (ch == null) return true;
-      final tail = ref.substring(book.length + 1);
-      // tail is "<chapter>" or "<chapter>:<verse>"
-      final colonIdx = tail.indexOf(':');
-      final chPart = colonIdx == -1 ? tail : tail.substring(0, colonIdx);
-      if (int.tryParse(chPart.trim()) == ch) return true;
+      if (f.matchesRefKey(ref)) return true;
     }
     return false;
   }
@@ -422,12 +419,13 @@ class _SermonsPageState extends State<SermonsPage> {
   }
 
   String _activeFilterLabel(String locale) {
-    final book = _filterBook;
-    if (book == null) return '';
-    final localBook = _displayBookName(book, locale);
-    return _filterChapter == null
-        ? localBook
-        : '$localBook $_filterChapter';
+    final f = _filter;
+    if (f == null) return '';
+    final book = _displayBookName(f.book, locale);
+    if (f.chapter == null) return book;
+    return f.verse == null
+        ? '$book ${f.chapter}'
+        : '$book ${f.chapter}:${f.verse}';
   }
 
   String _displayBookName(String englishBook, String locale) {
@@ -439,7 +437,15 @@ class _SermonsPageState extends State<SermonsPage> {
     // any sermon's refs — so the chapter chooser shows only chapters
     // that actually have sermons. Books with no sermons get dimmed
     // and become non-tappable.
-    final perBook = <String, Set<int>>{};
+    //
+    // 2026-08-23: this now records the VERSES too, so the sheet can
+    // offer a third step. Same principle as the chapter step — only
+    // verses some sermon actually cites are offered, because a filter
+    // that can be set to a passage nobody preached on is a filter that
+    // can only disappoint. A `refs.json` key is "John 17" or
+    // "John 17:3"; the whole-chapter form contributes a chapter and no
+    // verse.
+    final perBook = <String, Map<int, Set<int>>>{};
     for (final refs in data.refs.bySermon.values) {
       for (final ref in refs) {
         final spaceIdx = ref.lastIndexOf(' ');
@@ -450,7 +456,13 @@ class _SermonsPageState extends State<SermonsPage> {
         final chStr = colon == -1 ? tail : tail.substring(0, colon);
         final ch = int.tryParse(chStr);
         if (ch == null) continue;
-        perBook.putIfAbsent(book, () => <int>{}).add(ch);
+        final verses =
+            perBook.putIfAbsent(book, () => <int, Set<int>>{})
+                .putIfAbsent(ch, () => <int>{});
+        if (colon != -1) {
+          final v = int.tryParse(tail.substring(colon + 1).trim());
+          if (v != null) verses.add(v);
+        }
       }
     }
     showModalBottomSheet<void>(
@@ -468,21 +480,14 @@ class _SermonsPageState extends State<SermonsPage> {
       builder: (sheetCtx) {
         return _PassageFilterSheet(
           locale: locale,
-          chaptersByBook: perBook,
-          initialBook: _filterBook,
-          initialChapter: _filterChapter,
-          onApply: (book, chapter) {
-            setState(() {
-              _filterBook = book;
-              _filterChapter = chapter;
-            });
+          versesByBook: perBook,
+          initial: _filter,
+          onApply: (filter) {
+            setState(() => _filter = filter);
             Navigator.of(sheetCtx).pop();
           },
           onClear: () {
-            setState(() {
-              _filterBook = null;
-              _filterChapter = null;
-            });
+            setState(() => _filter = null);
             Navigator.of(sheetCtx).pop();
           },
         );
@@ -499,17 +504,19 @@ class _PageData {
 
 class _PassageFilterSheet extends StatefulWidget {
   final String locale;
-  final Map<String, Set<int>> chaptersByBook;
-  final String? initialBook;
-  final int? initialChapter;
-  final void Function(String book, int? chapter) onApply;
+
+  /// book → chapter → the verses any sermon cites in that chapter.
+  /// A chapter with an empty verse set is cited only as a whole.
+  final Map<String, Map<int, Set<int>>> versesByBook;
+
+  final PassageFilter? initial;
+  final void Function(PassageFilter filter) onApply;
   final VoidCallback onClear;
 
   const _PassageFilterSheet({
     required this.locale,
-    required this.chaptersByBook,
-    required this.initialBook,
-    required this.initialChapter,
+    required this.versesByBook,
+    required this.initial,
     required this.onApply,
     required this.onClear,
   });
@@ -521,22 +528,34 @@ class _PassageFilterSheet extends StatefulWidget {
 class _PassageFilterSheetState extends State<_PassageFilterSheet> {
   String? _selectedBook;
   int? _selectedChapter;
+  int? _selectedVerse;
 
   @override
   void initState() {
     super.initState();
-    _selectedBook = widget.initialBook;
-    _selectedChapter = widget.initialChapter;
+    _selectedBook = widget.initial?.book;
+    _selectedChapter = widget.initial?.chapter;
+    _selectedVerse = widget.initial?.verse;
+  }
+
+  List<int> get _chapters {
+    final b = _selectedBook;
+    if (b == null) return const [];
+    return (widget.versesByBook[b]?.keys.toList() ?? <int>[])..sort();
+  }
+
+  List<int> get _verses {
+    final b = _selectedBook, c = _selectedChapter;
+    if (b == null || c == null) return const [];
+    return (widget.versesByBook[b]?[c]?.toList() ?? <int>[])..sort();
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final locale = widget.locale;
-    final chapters = _selectedBook == null
-        ? <int>[]
-        : (widget.chaptersByBook[_selectedBook!]?.toList() ?? <int>[])
-      ..sort();
+    final chapters = _chapters;
+    final verses = _verses;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
@@ -555,7 +574,7 @@ class _PassageFilterSheetState extends State<_PassageFilterSheet> {
                       fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 const Spacer(),
-                if (widget.initialBook != null)
+                if (widget.initial != null)
                   TextButton(
                     onPressed: widget.onClear,
                     child: Text(
@@ -577,7 +596,7 @@ class _PassageFilterSheetState extends State<_PassageFilterSheet> {
             const SizedBox(height: 6),
             ConstrainedBox(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.35,
+                maxHeight: MediaQuery.of(context).size.height * 0.30,
               ),
               child: SingleChildScrollView(
                 child: Wrap(
@@ -588,17 +607,16 @@ class _PassageFilterSheetState extends State<_PassageFilterSheet> {
                       _BookChip(
                         book: book,
                         locale: locale,
-                        hasSermons:
-                            widget.chaptersByBook.containsKey(book),
+                        hasSermons: widget.versesByBook.containsKey(book),
                         selected: _selectedBook == book,
                         onTap: () => setState(() {
                           if (_selectedBook == book) {
                             _selectedBook = null;
-                            _selectedChapter = null;
                           } else {
                             _selectedBook = book;
-                            _selectedChapter = null;
                           }
+                          _selectedChapter = null;
+                          _selectedVerse = null;
                         }),
                       ),
                   ],
@@ -616,7 +634,7 @@ class _PassageFilterSheetState extends State<_PassageFilterSheet> {
               const SizedBox(height: 6),
               ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.18,
+                  maxHeight: MediaQuery.of(context).size.height * 0.16,
                 ),
                 child: SingleChildScrollView(
                   child: Wrap(
@@ -628,15 +646,66 @@ class _PassageFilterSheetState extends State<_PassageFilterSheet> {
                             uiStrings['sermonFilterAllChapters']?[locale] ??
                                 'All'),
                         selected: _selectedChapter == null,
-                        onSelected: (_) =>
-                            setState(() => _selectedChapter = null),
+                        onSelected: (_) => setState(() {
+                          _selectedChapter = null;
+                          _selectedVerse = null;
+                        }),
                       ),
                       for (final ch in chapters)
                         ChoiceChip(
                           label: Text('$ch'),
                           selected: _selectedChapter == ch,
+                          onSelected: (_) => setState(() {
+                            _selectedChapter = ch;
+                            _selectedVerse = null;
+                          }),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            // 2026-08-23, from the user: "Right now, you only have the
+            // chapter. Wonder whether it is possible to have also the
+            // verses also."
+            //
+            // Only offered once a chapter is chosen, and only for
+            // chapters some sermon cites by verse. A chapter that is
+            // only ever cited whole — "he preached on John 17" — has no
+            // verses to choose between, and showing an empty row there
+            // would read as a loading failure.
+            if (_selectedChapter != null && verses.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                uiStrings['sermonFilterVerseLabel']?[locale] ?? 'Verse',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurface.withValues(alpha: 0.65)),
+              ),
+              const SizedBox(height: 6),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.16,
+                ),
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      ChoiceChip(
+                        label: Text(
+                            uiStrings['sermonFilterAllVerses']?[locale] ??
+                                'All'),
+                        selected: _selectedVerse == null,
+                        onSelected: (_) =>
+                            setState(() => _selectedVerse = null),
+                      ),
+                      for (final v in verses)
+                        ChoiceChip(
+                          label: Text('$v'),
+                          selected: _selectedVerse == v,
                           onSelected: (_) =>
-                              setState(() => _selectedChapter = ch),
+                              setState(() => _selectedVerse = v),
                         ),
                     ],
                   ),
@@ -647,7 +716,11 @@ class _PassageFilterSheetState extends State<_PassageFilterSheet> {
             FilledButton(
               onPressed: _selectedBook == null
                   ? null
-                  : () => widget.onApply(_selectedBook!, _selectedChapter),
+                  : () => widget.onApply(PassageFilter(
+                        _selectedBook!,
+                        chapter: _selectedChapter,
+                        verse: _selectedVerse,
+                      )),
               child: Text(uiStrings['apply']?[locale] ?? 'Apply'),
             ),
           ],
