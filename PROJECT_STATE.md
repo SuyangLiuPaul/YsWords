@@ -115,6 +115,13 @@ advances the repo hash is healthy.
     an asset to re-run a repair leaves the index holding the *old* blob, so
     a later `git commit` can quietly commit the pre-repair file. Re-`git add`
     after the tool runs.
+13. **Ask what a witness CAN express before counting it.** SeekSparks'
+    `cuvs-plus.json` strips every quotation mark, so on 2026-08-23 it
+    "agreed" with our defective reading at all 15 verses of a punctuation
+    class — silence read as confirmation. The printed 1919 is the same
+    shape: it has no `：` and no quote marks at all, so it can say a
+    quotation begins but never which modern mark opens it. A witness that
+    cannot represent the distinction is not evidence either way.
 
 ## Standing rules from the user
 
@@ -131,7 +138,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 73 open items across P0 (scripture
+`docs/autonomous-queue.md` — 75 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 

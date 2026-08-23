@@ -2220,19 +2220,102 @@ and quoted.**
       too. Deleting an artifact and adding a mark are separate acts and only
       the first is a repair, so the ，is left to the user.
 
-- [ ] **`說；「` opens a quotation with a semicolon in 5 verses — a
-      substitution, so deliberately not swept with the deletions above.**
-      列王紀上 22:13, 路加福音 13:2, 約翰福音 7:45, 約翰福音 9:9 and
-      希伯來書 3:11 all read 「說；」 where a quotation opens; the witness reads
-      「說：」 at every one, and this corpus sets 「：「」 2,692 times and 「：『」
-      547 times against these 5.
+- [x] **`說；「` opened a quotation with a semicolon in 5 verses — fixed
+      2026-08-23 in all three files.** 列王紀上 22:13, 路加福音 13:2,
+      約翰福音 7:45, 約翰福音 9:9 and 希伯來書 3:11 now read 「說：」.
+      `tools/repair_speech_colon.py` applies it; `test/speech_colon_test.dart`
+      fails four of its five tests on the pre-fix data.
 
-      **10 of the 15 「說；」 in the corpus are correct** and must not be
-      touched — 約伯記 28:27 「而且述說；他堅定」, 士師記 8:8, 加拉太書 2:2 and
-      the rest are a clause ending in 說 followed by a legitimate semicolon.
-      So this cannot be a blanket substitution; it is 5 confirmed positions.
-      約翰福音 9:9 has a second defect in the same verse — ours 「是他；」」 for
-      the witness's 「是他」；」 — so fix that one by reading, not by rule.
+      **10 of the 15 「說；」 in the corpus are correct** and were not touched —
+      約伯記 28:27 「而且述說；他堅定」, 士師記 8:8, 加拉太書 2:2 and the rest
+      are a clause ending in 說 followed by a legitimate semicolon. So this
+      could never be a blanket substitution; it is 5 pinned verse ids, and the
+      other ten are pinned too so no later pass sweeps them.
+
+      **The defect was on screen twice.** The tagged Strong's corpus renders
+      the word-tap sheet from its own copy of the verse and carried the same
+      `说；`, so it was repaired in the same pass.
+
+      **Three lines of evidence, deliberately not the same line twice.**
+      (1) The witness `7a2dc43` reads `：` at exactly these five and `；` at
+      the other ten — perfect discrimination over all 14 comparable verses.
+      It is a separate digital line (那裡/甚麼/毘 against our 那裏/什麽/毗) and
+      not a blanket "colon after 說" normaliser, carrying 325 `說，` and 91
+      bare `說「` of its own. (2) Our tagged corpus shares the `；`, so it is
+      **not** independent on the mark — but it carries an opening quotation
+      mark straight after it at all five, and its Strong's tags name the
+      quoted words: 列王紀上 22:13 runs H559 with H2009+H4994 (הִנֵּה־נָא,
+      "behold now") opening the speech, 希伯來書 3:11 runs G1487, the Hebraic
+      oath of 詩篇 95:11. A semicolon cannot introduce direct speech.
+      (3) Frequency: this edition opens a quotation with `：「` 2,689 times
+      and `：『` 547 times.
+
+      **The printed 1919 does NOT arbitrate and was not used as if it did** —
+      it has no `：` and no quotation marks anywhere, only `、` and `．`, and
+      it sets `、` after 說 at three of the TEN legitimate verses
+      (列王紀上 2:19, 約伯記 33:33, 約伯記 37:19). The item as filed said
+      "the witness reads 「說：」 at every one"; that was true of ONE witness.
+      The third digital copy (SeekSparks `cuvs-plus.json`) strips every
+      quotation mark and reads `说；` at all 15, so it is blind to this class
+      and was not counted.
+
+      **列王紀上 22:13 is the one left inconsistent, deliberately.** Our
+      running text has no quotation marks there at all, so it now reads
+      `說：` followed by unquoted speech to the end of the verse — the right
+      mark in a verse that still lacks the marks around the speech itself.
+      Adding them is a separate act; filed with the two items below.
+
+- [ ] **Three verses put the opening `「` in the MIDDLE of an Old Testament
+      citation, so the first half of the quoted scripture reads as the
+      narrator's own words.** Found 2026-08-23 while measuring the item above.
+
+      | ref | ours | witness `7a2dc43` |
+      |---|---|---|
+      | 馬太福音 16:14 | 說：有人說是施洗的約翰；**「**有人說是以利亞…一位。」 | 說：**「**有人說是施洗的約翰；…一位。」 |
+      | 馬太福音 1:23 | 說：必有童女懷孕生子；**「**人要稱他的名為以馬內利。」 | no quotation marks in the clause at all |
+      | 羅馬書 8:36 | 如經上所記：我們為你的緣故終日被殺；**「**人看我們如將宰的羊。」 | no quotation marks in the clause at all |
+
+      馬太福音 16:14 is settled by the witness directly. The other two are the
+      same shape — the citation is 以賽亞書 7:14 and 詩篇 44:22 respectively,
+      and both run across the `；`, so the mark belongs after 說：/所記： — but
+      the witness declines to answer there, so they rest on our own edition's
+      convention plus the citation boundary. **Moving a mark, not substituting
+      one**, which is the class 創世紀 21:7 below was left for.
+
+      Two neighbours were checked and are CORRECT — do not sweep them in:
+      哥林多前書 1:12 (`「我是屬保羅的」；「我是屬亞波羅的」…`, four quoted
+      claims separated by semicolons) and 哥林多前書 15:33 (`不要自欺；「濫交
+      是敗壞善行。」`, where the `；` closes the preceding clause). The witness
+      is byte-identical to ours at 林前 1:12.
+
+- [ ] **約翰福音 9:9's other half: ours reads 「是他；」, the witness reads
+      「是他」；.** The semicolon belongs to the outer sentence (有人說…；又有人
+      說…) and has migrated inside the quotation. Left when the `說；` item
+      above was fixed, because it MOVES a mark rather than substituting one —
+      the same class as 創世紀 21:7 below, and the same class as the three
+      citations above. Pinned as-is by `test/speech_colon_test.dart` so it
+      cannot drift while it waits. May be an edition-wide typographic
+      question rather than a defect, in which case it belongs with the
+      full-width-quotes question already blocked on the user.
+
+- [ ] **The wider speech-mark class: 83 positions where 說 is followed by an
+      opening quotation mark, and only 4 of them were the `；` fixed above.**
+      Measured 2026-08-23 over the Traditional text with notes stripped:
+      **59 bare** (`說『天國近了！』`), **20 with `，`** (`誰能說，「我潔淨了
+      我的心」`), 4 with `；`.
+
+      **Most of the 59 are almost certainly CORRECT and this must not become
+      a sweep.** The bare ones are overwhelmingly a quotation embedded as the
+      object of 說 inside a larger sentence — 馬太福音 21:25 「我們若說『從天
+      上來』」, 約翰一書 2:4 「人若說「我認識他」」 — where no mark before the
+      quote is ordinary Chinese. The `，` group is the genuinely open
+      question: 箴言 20:9 「誰能說，「我潔淨了我的心」」 sets a comma where the
+      same construction elsewhere in the edition sets `：`.
+
+      Whoever takes this must measure per POSITION, not per verse: several of
+      these verses contain three or four 說 and a verse-level check of "the
+      witness has 說：somewhere" says nothing. Start from the `，` group, which
+      is 20 positions and bounded.
 
 - [ ] **創世紀 21:7 has a displaced closing 』 the 2026-08-19 repair did not
       touch.** The empty quote pair at the end was removed, but ours still
