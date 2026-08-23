@@ -1085,6 +1085,13 @@ and quoted.**
       instalments, or someone copies the repaired assets across once. Worth
       raising with the user rather than deciding unilaterally.
 
+      **It is not only the glyph family.** Checked 2026-08-23: that copy also
+      reads 意料 at 以賽亞書 64:3 and 使徒行傳 25:18, so it carries the
+      substitution defect repaired here as well. Its 帖前 5:19 correctly reads
+      銷滅. Every scripture repair this loop makes widens the gap between the
+      two copies, which strengthens the case for copying across once rather
+      than replaying instalments.
+
 - [ ] **Two 愈/癒 spin-offs the refuter found, deliberately NOT swept with the
       verse asset on 2026-08-18 — neither is converter-backed.** Small, and each
       needs a judgement the 35-substitution instalment did not.
