@@ -236,6 +236,66 @@ else
   failures=$((failures + ${#IOS_DEVICES[@]}))
 fi
 
+# ─── YAHWEH'S SWORDS (SeekSparks) iOS BUILD + INSTALLS ───────────
+# 2026-08-24: the sister app rides the same nightly so its free-cert
+# 7-day expiry is handled the same way. Its checkout doubles as the
+# SeekSparks unattended loop's working tree, so two guards:
+#   1. skip when the loop's hidden .lock is held — building a tree the
+#      loop is mid-edit in ships a torn binary;
+#   2. pull --ff-only only when the tree is clean, same tolerance as
+#      the yswords pull above.
+# Failures here are isolated like every other device: they never block
+# the yswords installs that already happened above.
+SWORDS_PROJECT="/Users/pliu0036/Documents/CodingProject/SeekSparks"
+SWORDS_APP="$SWORDS_PROJECT/build/ios/iphoneos/Runner.app"
+SWORDS_LOCK="$HOME/Library/Application Support/seeksparks-loop/.lock"
+
+echo ""
+if [ -d "$SWORDS_LOCK" ]; then
+  echo "→ Yahweh's Swords: SKIPPED — the SeekSparks loop is mid-iteration (.lock held)."
+  echo "  The next nightly (or the next manual run) will catch it up."
+else
+  cd "$SWORDS_PROJECT"
+  git fetch origin main --quiet || true
+  git pull --ff-only origin main --quiet || echo "swords git pull skipped (working tree dirty or no fast-forward)"
+  echo "→ flutter build ios --release (Yahweh's Swords)"
+  if "$FLUTTER" build ios --release; then
+    remaining=("${IOS_DEVICES[@]}")
+    for pass in 1 2 3; do
+      [ ${#remaining[@]} -eq 0 ] && break
+      echo ""
+      echo "── Swords iOS install pass $pass — ${#remaining[@]} device(s) ──"
+      next_remaining=()
+      for entry in "${remaining[@]}"; do
+        uuid="${entry%%|*}"
+        label="${entry##*|}"
+        echo "→ pass $pass: installing Swords to $label ($uuid)"
+        if xcrun devicectl device install app --device "$uuid" "$SWORDS_APP"; then
+          echo "✓ Swords installed to $label"
+          successes=$((successes + 1))
+        else
+          echo "✗ pass $pass: $label not ready, will retry"
+          next_remaining+=("$entry")
+        fi
+      done
+      remaining=("${next_remaining[@]}")
+      if [ ${#remaining[@]} -gt 0 ] && [ $pass -lt 3 ]; then
+        echo "  sleeping 45s for WiFi radios to wake…"
+        sleep 45
+      fi
+    done
+    for entry in "${remaining[@]}"; do
+      label="${entry##*|}"
+      echo "✗ Swords install to $label FAILED (3 passes)"
+      failures=$((failures + 1))
+    done
+  else
+    echo "✗ flutter build ios (Swords) FAILED — skipping its installs"
+    failures=$((failures + ${#IOS_DEVICES[@]}))
+  fi
+  cd "$PROJECT"
+fi
+
 # ─── ANDROID BUILD + INSTALLS ────────────────────────────────────
 # 2026-05-24 (v1.3.38): the Android product flavors block in
 # android/app/build.gradle.kts now requires `--flavor` on every
