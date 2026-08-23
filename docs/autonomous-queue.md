@@ -3767,7 +3767,16 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
-- [ ] **Sermon passage filter: highlight the match, and filter by verse.**
+- [x] **Sermon passage filter: highlight the match, and filter by verse
+      — SHIPPED 2026-08-23 (v1.4.119).** The filter travels into the
+      sermon as a `PassageFilter`; every mention is highlighted on top
+      of the existing link styling, with a line above the body saying
+      what the yellow is. The sheet gained a verse step built from the
+      same refs sweep. A whole-chapter citation satisfies a verse
+      filter in BOTH halves — see `test/sermon_passage_filter_test.dart`,
+      which also pins that John 17 still returns the ten sermons in the
+      user's screenshot. Original brief below.
+      **SUPERSEDED — Sermon passage filter: highlight the match, and filter by verse.**
       User, 2026-08-19, after filtering to John 17: "wonder if it is
       possible to have yellow highlight whenever John 17 appears inside
       that specific sermon", and "right now you only have the chapter…
