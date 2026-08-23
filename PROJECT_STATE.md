@@ -36,9 +36,16 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.133** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.133** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.134** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.134** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+⚠️ **dev/qat owe a deploy.** The nine-verse speaker-attribution repair
+(`1760c58`) is committed and pushed but was NOT built: a concurrent session
+was running `flutter test` out of this same checkout, so a `flutter build`
+would have shared `.dart_tool`/`build/` with it and corrupted both. Scripture
+corrections normally deploy the same iteration — this one is the exception and
+should go out first thing next iteration.
 
 **prod is 122 versions behind and it is not an oversight.** Every prod
 push needs the user to say so in the moment; permission never carries
