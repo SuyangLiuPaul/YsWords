@@ -4454,7 +4454,13 @@ has never seen this repo.
       Against `kjv.json` alone the check reports one false alarm,
       `3 John 1:15` — see the next note on that item.
 
-- [ ] **A cited range in a single-chapter book loses its end: `Jude
+- [x] **A cited range in a single-chapter book loses its end — FIXED
+      2026-08-24 (v1.4.134).** The range end now flows into the
+      single-chapter reinterpretation; "Genesis 6-9" whole-chapter
+      behaviour pinned unchanged; the old blind-spot pin became the
+      regression test and the canon check now sees range ends
+      ("Jude 24-26" is caught). Workflow-fixed, adversarially reviewed.
+      **SUPERSEDED — original: `Jude
       14-15` resolves to Jude 1:14 with no `verseEnd`.** Found by the
       refuter on the item above, and pinned by an expectation in
       `test/citation_target_in_canon_test.dart` so it cannot be fixed
@@ -4538,7 +4544,12 @@ has never seen this repo.
       — check `SizedBox(height:` and `Expanded` inside sheets too, and
       list what is found before fixing.
 
-- [ ] **Pull-to-refresh does nothing useful, and the spinner is
+- [x] **Pull-to-refresh removed — DONE 2026-08-24 (v1.4.134).**
+      Verified inert (warm caches, date-deterministic picks, everything
+      else reactive), then removed per this item's own guidance, with a
+      test that swipes and asserts no spinner. Workflow-fixed,
+      adversarially reviewed.
+      **SUPERSEDED — did nothing useful, and the spinner is
       unnatural.**
       User, 2026-08-16: "往下滑的时候，感觉并没有用，而且那个转转的也并不
       自然，你这方面考虑了吗，好好想想". Two questions to answer before
@@ -5206,7 +5217,11 @@ has never seen this repo.
 
 </details>
 
-- [ ] **The AI exegesis panel cannot be scrolled — a nested scroll view
+- [x] **The AI exegesis panel — ALREADY FIXED, entry was stale
+      (verified 2026-08-24).** originals_sheet.dart no longer nests a
+      capped scroll view; test/nested_scrollable_test.dart guards the
+      whole defect class shape-wise across lib/. Nothing to do.
+      **SUPERSEDED — a nested scroll view
       inside the sheet.**
       User, 2026-08-12, with a screenshot of 創世紀 36:3: the AI answer
       is visibly cut mid-sentence ("也削弱了名字本身所承载的家族谱") and
@@ -5256,7 +5271,13 @@ has never seen this repo.
 
 <details><summary>original</summary>
 
-- [ ] **The web app is letterboxed on Android tablets: the manifest
+- [x] **Android-tablet letterbox — FIXED 2026-08-24 (v1.4.134), in
+      tools/site-icons/, not web/.** web/manifest.json was already
+      clean; deploy_site.py overlays the six per-site manifests onto
+      every deploy and THOSE still pinned orientation. All six cleaned,
+      the generator no longer emits the key, and web_manifest_test now
+      checks the overlay files. Workflow-fixed, adversarially reviewed.
+      **SUPERSEDED — the manifest
       locks portrait.**
       User, 2026-08-12, from a Xiaomi Pad: "webapp打开两边是黑的不能像
       ipad webapp一样吗".
@@ -5670,7 +5691,11 @@ so the bundle-size answer stays on the record.
 
 <details><summary>original report</summary>
 
-- [ ] **`release_web.sh` can report success when a site did not deploy.**
+- [x] **`release_web.sh` false-success — ALREADY FIXED, duplicate of
+      the [x] entry above (verified 2026-08-24 against the current
+      script: deploys are foregrounded, per-site rc checked, versions
+      re-fetched).**
+      **SUPERSEDED — can report success when a site did not deploy.**
       Hit on 2026-08-11 during the v1.4.61 release: `deploy_sites` runs
       each `netlify deploy` with `&` and then a bare `wait`, which
       returns 0 whatever the jobs did — so `set -e` never fires. The run
