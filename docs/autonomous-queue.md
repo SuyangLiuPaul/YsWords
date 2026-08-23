@@ -4886,7 +4886,16 @@ has never seen this repo.
       text before shipping** — a citation that opens the wrong passage
       is P0, and this is the exact shape of that defect.
 
-- [ ] **Native targets link out to YouTube instead of playing in-app.**
+- [x] **Native targets link out to YouTube instead of playing in-app —
+      SHIPPED 2026-08-23 (v1.4.130).** iOS/Android/macOS now embed the
+      same youtube-nocookie player via `webview_flutter`
+      (`youtube_embed_io.dart`), gated at RUNTIME so Windows/Linux
+      compile the same file and keep the link-out. `playsinline=1` stops
+      iOS's fullscreen takeover; `autoplay=1` honours the thumbnail tap.
+      Asked for twice in one evening by the user watching on iPhone.
+      The web iframe also gained `clipboard-write` — the player's own
+      "copy link" was failing without it. Original brief below.
+      **SUPERSEDED — Native targets link out to YouTube instead of playing in-app.**
       Web embeds a real `<iframe>` with no package; iOS, Android, macOS,
       Windows and Linux open YouTube externally. `youtube_player_iframe`
       and the webview-backed alternatives would cover Android/iOS/macOS

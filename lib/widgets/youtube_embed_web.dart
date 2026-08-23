@@ -22,8 +22,12 @@ Widget? youtubeEmbed(String videoId) {
       final frame = web.document.createElement('iframe')
           as web.HTMLIFrameElement
         ..src = 'https://www.youtube-nocookie.com/embed/$videoId?rel=0'
-        ..allow =
-            'accelerometer; encrypted-media; picture-in-picture; fullscreen'
+        // clipboard-write: 2026-08-23, the player's own "copy link"
+        // showed "Unable to copy link to clipboard" — a cross-origin
+        // iframe cannot touch the clipboard unless the embedding page
+        // delegates that permission explicitly.
+        ..allow = 'accelerometer; encrypted-media; picture-in-picture; '
+            'fullscreen; clipboard-write'
         ..allowFullscreen = true;
       frame.style
         ..border = 'none'
