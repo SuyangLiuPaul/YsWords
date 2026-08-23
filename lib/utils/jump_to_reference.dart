@@ -349,10 +349,15 @@ void prepareJumpToVerse(Verse verse, MainProvider mp) {
 /// Counted in FRAMES rather than milliseconds, because what we are
 /// waiting for is a build, not an elapsed time — and because a wall-
 /// clock ladder leaves timers running after the jump has landed, which
-/// four widget tests correctly objected to. Thirty frames is about
-/// half a second at 60 Hz, comfortably past a route transition; in
-/// practice the reader takes it on the first or second.
-void _announcePendingJump(MainProvider mp, {int framesLeft = 30}) {
+/// four widget tests correctly objected to. Ninety frames is about a
+/// second and a half at 60 Hz; in practice the reader takes it on the
+/// first or second tick, and this only runs long when it cannot.
+///
+/// This is a belt, not the braces. A pane that mounts after the ladder
+/// has run out asks for itself — see `_BibleReadingPaneState.initState`
+/// — which is what covers a cold build slower than the ladder. Both
+/// were needed: 1 John 2:24 still missed with the ladder alone.
+void _announcePendingJump(MainProvider mp, {int framesLeft = 90}) {
   if (framesLeft <= 0) return;
   WidgetsBinding.instance.addPostFrameCallback((_) {
     // Taken (or invalidated by a chapter change) — stop announcing.

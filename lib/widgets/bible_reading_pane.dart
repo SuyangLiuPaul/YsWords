@@ -276,6 +276,15 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final mainProvider = context.read<MainProvider>();
+      // A jump may have been prepared while this pane did not exist —
+      // that is the whole shape of the search bug: the page that
+      // prepares it is a full route, so it announces to an empty room
+      // and then navigates here. `_announcePendingJump` keeps calling
+      // for a while, but a cold mount can outlast it, so a pane also
+      // asks on its own behalf the moment it has a frame. The provider
+      // only hands over a jump prepared for the chapter being shown,
+      // so this cannot claim someone else's.
+      mainProvider.renotifyPendingJump();
       _attachPositionsListener(mainProvider);
       // 2026-05-24 (v1.3.1): warm adjacent chapters on first mount
       // too — otherwise the user's first swipe out of the
