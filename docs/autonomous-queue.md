@@ -90,6 +90,20 @@ and quoted.**
       now closed at zero**, which is the audit worth watching: a re-import
       that brings it back will say so.
 
+      **⚠ COMMITTED AND PUSHED (`c2d679c`) BUT NOT DEPLOYED.** A scripture
+      correction normally always ships, and this one did not, on purpose: a
+      second Claude session shares this checkout and had uncommitted work in
+      `web/index.html`, `web/flutter_service_worker.js`, `netlify.toml`,
+      `pubspec.yaml` and `lib/constants/app_version.dart`, plus untracked
+      `web/app_shell_sw.js` and `web/flutter_bootstrap.js` — an unfinished PWA
+      / service-worker rework. `flutter build web` would have baked all of it
+      into the bundle and published it to dev and qat, and a half-finished
+      service worker is the one artifact that can persistently break returning
+      users until their cache clears. **Next iteration: if the tree is clean,
+      deploy this to dev + qat (China-mode build first, intl second).** It may
+      already have ridden along with the other session's deploy — check
+      `version.json` before rebuilding.
+
       **The refuter earned its keep three times over** — see the new traps in
       PROJECT_STATE. It broke my framing (I was about to claim the markup was
       printed to readers; it was not), broke my verdict on 創 48:7 (I had
