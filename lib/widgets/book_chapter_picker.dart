@@ -1156,19 +1156,38 @@ class _VersePickerChip extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         constraints: const BoxConstraints(minWidth: 38, minHeight: 36),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        // horizontal was 10: on a narrow panel tileW lands near 44, so
+        // 20 px of padding left 24 px for a label like "176".
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: fg,
-            fontFeatures: const [FontFeature.tabularFigures()],
+        // 2026-08-23, from iPad and web: 詩篇 119 rendered every verse
+        // number down a column — "125" became 1/2/5 on three lines,
+        // and on the iPad even two-digit numbers broke in half. The
+        // chip is laid out at an exact `tileW` by the Wrap above, so
+        // when the tile is narrower than the number the Text simply
+        // wrapped, one character per line, and the row grew instead.
+        //
+        // Chip labels are 1-3 characters; they must never wrap. Say so
+        // (`softWrap: false`, `maxLines: 1`) and let FittedBox shrink
+        // the rare 3-digit number instead of breaking it. Same remedy
+        // as the dashboard quick-link tiles — a character count is not
+        // a width, so do not try to predict which numbers fit.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            maxLines: 1,
+            softWrap: false,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: fg,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
       ),

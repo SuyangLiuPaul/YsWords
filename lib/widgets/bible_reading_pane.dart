@@ -3076,7 +3076,32 @@ class _SelectionActionBar extends StatelessWidget {
                 //   [Clear] [count] [Copy]
                 //   [Original Cross-ref Note Bookmark Highlight]
                 // On wider screens keep everything on one row.
-                final isNarrow = constraints.maxWidth < 560;
+                //
+                // 2026-08-23, from an iPad split-view pane: the count
+                // read "已选择 …" and the Copy button had lost its word
+                // and become a bare icon. Both are Expanded/Flexible
+                // siblings of a row that had quietly outgrown the
+                // threshold — 560 was set when this row carried FIVE
+                // action icons and it never moved when AI-explain and
+                // related-sermons brought it to seven. At ~600 dp the
+                // fixed children ate everything and the two flexible
+                // ones were left splitting the crumbs.
+                //
+                // So derive it from the row's real contents instead of
+                // picking another number that will rot the next time an
+                // icon is added: clear + the action icons + share are
+                // fixed-width, and the count and Copy each need a floor
+                // to stay readable. Below that, use the two-row layout —
+                // it already degrades properly, scrolling the icons.
+                const iconButtonWidth = 48.0;
+                const copyButtonMinWidth = 116.0;
+                const countLabelMinWidth = 96.0;
+                final oneRowNeeds =
+                    iconButtonWidth * (actionButtons.length + 2) +
+                        copyButtonMinWidth +
+                        countLabelMinWidth +
+                        4;
+                final isNarrow = constraints.maxWidth < oneRowNeeds;
                 if (isNarrow) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
