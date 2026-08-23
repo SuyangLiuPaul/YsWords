@@ -491,12 +491,13 @@ and quoted.**
       wants the print open beside it; the printed wording is available per
       verse from the Wikisource cache the audit builds.
 
-- [ ] **哥林多後書 13:5 reads 在你們裏面 where the print reads 在你們心裏.**
-      Not a dropped character — a substitution, which is why it was kept out
-      of the restoration above. Both witnesses and the printed 1919 read
-      心裏. Small, but it is the difference between "among you" and "in your
-      hearts". Found 2026-08-19; needs the same four-witness check the 15 got
-      before anything is written.
+- [x] **哥林多後書 13:5 (在你們裏面 / 在你們心裏) got its four-witness check
+      on 2026-08-23 — and the fourth witness sided with US.** Our own tagged
+      corpus reads 里面 and tags it G1722 (ἐν), against the print and both
+      external witnesses reading 心裏. That is a 2-against-3 split, not the
+      4-against-1 the 15 restorations had, so nothing was written. Folded into
+      the ten-verse item above and referred to the user with the other nine of
+      its class; the Greek is ἐν ὑμῖν, which both readings render.
 
 - [x] **The Traditional Bible had no 隻 in it — 548 measure words printed
       in the Simplified form.** 以賽亞書 2:16 read 「他施的船只」;
@@ -936,18 +937,100 @@ and quoted.**
       whether that something was opencc; the measurement described above is
       still the way to find out.
 
-- [ ] **Eleven word-level differences where our reading is a real word — needs
-      a third witness or the user.** Both witnesses disagree with us and
-      nothing false is printed today, so these were not swept: 意料/**逆料**
-      (賽 64:3, 徒 25:18 — the refuter confirmed the printed CUV reads 逆料, so
-      these two are the most likely to be genuine), 留/等 (徒 27:31),
-      消息/信息 (徒 28:15), **異象/顯現** (林後 12:1 — theologically loaded),
-      銷滅/消滅 (帖前 5:19), 開始/下手 (林後 8:10), 對/愛 (林後 7:15), 在/了
-      (林後 5:19), 歸到/歸他 (創 49:33), and 徒 28:6 and 28:17 where our whole
-      clause differs from both witnesses. The measurement is reproducible: a
-      three-way diff of `cuvs-yhwh-tr.json` against blob `7a2dc43` and
-      SeekSparks' `cuvs-plus.json` yields 53 substitution pairs, of which the
-      high-count ones are conventions and the tail is this list.
+- [x] **The eleven word-level differences got their third witness — and it
+      split them three ways: 2 repaired, 1 where OURS IS RIGHT and both
+      witnesses are wrong, 10 that genuinely cannot be settled.** Done
+      2026-08-23. The item asked for "a third witness or the user"; two now
+      exist that did not when it was filed — the Wikisource transcription of
+      the **printed 1919** (built for the note audit) and **our own tagged
+      corpus**, which is what the word-tap sheet renders.
+
+      **Repaired, 4 lines of evidence to 1: 意料 → 逆料** at 以賽亞書 64:3
+      (「你曾行我們不能逆料可畏的事」) and 使徒行傳 25:18 (「並沒有我所逆料的
+      那等惡事」). The print, both external witnesses **and our own tagged
+      corpus** all read 逆料 — so the sheet has been printing 逆料 over a verse
+      that read 意料, the same internal contradiction as 「士師六年」 over
+      「士師年」. Counted rather than assumed: our two reading files held 意料
+      twice and 逆料 zero times; every other line holds 逆料 twice and 意料
+      zero times, so there is no third verse where the two spellings compete
+      and this is not a convention applied unevenly.
+
+      **意料 is not nonsense Chinese, which is exactly why it needed catching**
+      — the refuter found 恢復本 and 新譯本 both read 意料 at 徒 25:18. It
+      reads plausibly and is not what this edition says.
+
+      **帖撒羅尼迦前書 5:19 is the one where OURS IS RIGHT, and it is the more
+      useful finding.** 銷滅 occurs in exactly ONE verse of 31,102 against 43
+      reading 消滅 — and the print reads 銷滅, our tagged corpus reads 銷滅,
+      and it is **both external witnesses that modernised it**. A
+      "hapax at a flagged verse is contamination" argument, which this repo
+      has used elsewhere (尼 1:2 關於), gives the WRONG answer here. The
+      refuter strengthened it: across the whole printed text 銷 appears only
+      in 銷化 (彼後 3:10-12, fire melting) and here, a fire/quench field, so
+      銷滅 and 消滅 are two words in this edition and not orthographic
+      variants. It also found FHL's `unv` reads 消滅 too — three digital CUVs
+      erring identically, which points at one shared bad digitisation
+      ancestor and is why this non-change is now pinned by a test.
+
+      **Why no audit had ever seen this class.** Both corpus audits report
+      only text a witness has and we do not, because that is the direction
+      that can mean a LOSS. A SUBSTITUTION of equal length drops nothing and
+      fires nothing. `tools/repair_niliao.py` (idempotent, refuses on drift);
+      `test/niliao_test.dart` fails two of its four tests on the pre-fix data
+      and pins the 帖前 5:19 non-change against a future sweep.
+
+      The remaining ten are filed immediately below — they are a 2-against-3
+      split and are NOT settleable from anything available here.
+
+- [ ] **Ten word-level differences where our text and our tagged corpus agree
+      AGAINST the print and both witnesses. Needs the user. Do NOT sweep
+      them.** Measured 2026-08-23 in the pass above. Every one is the same
+      shape as 馬可福音 6:33, which was referred to the user for the same
+      reason: two of our files against three outside lines is not enough to
+      rewrite a word, and **nothing false is on screen today** — in each case
+      both readings render the same Greek or Hebrew.
+
+      | ref | ours + our tagged corpus | print + witness A + witness B |
+      |---|---|---|
+      | 創 49:33 | **歸到**列祖那裏去了 | **歸他**列祖 |
+      | 徒 27:31 | 這些人若不**留**在船上 | 若不**等**在船上 |
+      | 徒 28:6 | **等**了多時，**看見**他無害 | **看**了多時、**見**他無害 |
+      | 徒 28:15 | 一聽見我們的**消息** | 我們的**信息** |
+      | 徒 28:17 | **或**我們祖宗…卻**做為囚犯**…**被交在**羅馬人手裏 | **和**我們祖宗…卻**被鎖綁**…**解在** |
+      | 林後 5:19 | 將這和好的道理託付**在**我們 | 託付**了**我們 |
+      | 林後 7:15 | 他**對**你們的心腸 | 他**愛**你們的心腸 |
+      | 林後 8:10 | 你們**開始**辦這事 | 你們**下手**辦這事 |
+      | 林後 12:1 | 說到主的**異象**和啟示 | 主的**顯現**和啟示 |
+      | 林後 13:5 | 有耶穌基督在你們**裏面** | 在你們**心裏** |
+
+      **The original languages were checked and rule nothing out** — in two
+      places they argue for OUR reading. 林後 5:19 is θέμενος **ἐν ἡμῖν** τὸν
+      λόγον, and 託付**在**我們 mirrors ἐν more closely than the print's
+      託付**了**; 林後 7:15 is τὰ σπλάγχνα αὐτοῦ περισσοτέρως **εἰς ὑμᾶς**,
+      with no verb "to love" in the Greek at all, so 他**對**你們 is the
+      literal rendering and the print's 他**愛**你們 is the free one. A
+      reading that is less idiomatic is not the same as one that is wrong,
+      which is precisely why this loop must not decide these.
+
+      **A root cause was proposed and BROKEN — recorded so nobody rebuilds
+      it.** The hypothesis was that our text had been contaminated by the 2010
+      和合本修訂版 (RCUV). The refuter checked all ten: RCUV agrees with us at
+      five and partially at two, but **contradicts us at three** (徒 28:17
+      和我們祖宗, 林後 7:15 他愛你們的心, 林後 5:19 託付了我們), siding with
+      the print. 恢復本 covers some of the misfits but not all, and 林後 5:19
+      託付**在**我們 and 林後 7:15 他**對**你們 match **no** published version
+      it could query. So this is not one revision bleeding in; it looks like a
+      hand-edited text, and "looks like" is as far as the evidence goes.
+
+      **The question for the user is one line:** at these ten places our
+      edition departs from the printed 1919 — are those the publisher's own
+      deliberate wording choices, or corruption to be undone? One answer
+      settles all ten. Until then they stay exactly as they are.
+
+      **A witness this repo has not yet used could narrow it**: the
+      Yahwehdehua export's `CUV_LEB/` PDFs, already cited as a fourth line in
+      the 那鴻書 3:4 write-up above. It is a separate transcription line from
+      all three used here.
 
 - [x] **自已 → 自己 outside the Bible text — DONE 2026-08-18, 8 substitutions
       across 6 files, and nothing under `assets/` spells 自已 any more.**
