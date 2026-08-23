@@ -251,10 +251,23 @@ SWORDS_APP="$SWORDS_PROJECT/build/ios/iphoneos/Runner.app"
 SWORDS_LOCK="$HOME/Library/Application Support/seeksparks-loop/.lock"
 
 echo ""
+# With the loop's off-peak gate removed (2026-08-24) it runs around the
+# clock, so 04:00 lands on a held .lock more often than not. The
+# nightly has nowhere else to be: wait for the iteration to finish —
+# median 42 min, MAX_RUN kills at 90 — and only skip if 50 minutes of
+# patience wasn't enough. First rehearsal skipped for exactly this
+# reason; a skip a night is no way to hold a 7-day certificate.
+waited=0
+while [ -d "$SWORDS_LOCK" ] && [ "$waited" -lt 3000 ]; do
+  [ "$waited" -eq 0 ] && echo "→ Yahweh's Swords: loop mid-iteration — waiting for .lock (up to 50 min)"
+  sleep 60
+  waited=$((waited + 60))
+done
 if [ -d "$SWORDS_LOCK" ]; then
-  echo "→ Yahweh's Swords: SKIPPED — the SeekSparks loop is mid-iteration (.lock held)."
+  echo "→ Yahweh's Swords: SKIPPED — .lock still held after ${waited}s."
   echo "  The next nightly (or the next manual run) will catch it up."
 else
+  [ "$waited" -gt 0 ] && echo "  lock freed after ${waited}s — proceeding"
   cd "$SWORDS_PROJECT"
   git fetch origin main --quiet || true
   git pull --ff-only origin main --quiet || echo "swords git pull skipped (working tree dirty or no fast-forward)"
