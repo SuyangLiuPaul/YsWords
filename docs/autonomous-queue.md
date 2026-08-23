@@ -4057,7 +4057,36 @@ has never seen this repo.
       not lose the sermon indexed only at John 17:3), and the verse row
       should show only verses that actually have sermons, not all 26.
 
-- [ ] **Seven sermon references point at chapters that do not exist.**
+- [x] **Seven sermon references point at chapters that do not exist —
+      REPAIRED 2026-08-23, in refs.json directly.** The one-chapter four
+      re-keyed (Jude 6 → Jude 1:6 etc., sermons intact); the three prose
+      numbers removed — 但20/但48 were the CONJUNCTION 但 in 「但20分钟」
+      「但48小时」 read as Daniel, and "Deuteronomy 43" was "occurs in
+      Deuteronomy 43 times". `test/sermon_refs_resolve_test.dart` now
+      pins that every byVerse key resolves against kjv.json, as this
+      item asked. The extractor grew the three guards too (one-chapter
+      verse rule, unit-word rejection, and single-CJK-char aliases now
+      require a verse or 章 — killing the invisible 约20人-class false
+      positives) — but see the NEW item below before regenerating.
+      **SUPERSEDED — original below.**
+
+- [ ] **`scripts/extract_sermon_refs.py` CANNOT rebuild the shipped
+      refs.json — regenerating today silently loses ~32 references.**
+      Found 2026-08-23 while fixing the seven bad keys: a full re-run
+      dropped keys like `Luke 10:19` and `Matthew 6:25` that the
+      current script cannot produce AT ALL — sermon 341 cites it as
+      "in Luke chapter 10 … verse 19", prose the committed extractor
+      has no pattern for. The shipped index was built by a richer,
+      since-lost generation of the script. Measured: 1,297 → 1,269 keys
+      on regeneration, minus the 7 deliberate repairs = ~21 real
+      references lost, all prose-style.
+
+      **Do not run the extractor against the live refs.json until the
+      prose patterns are restored** ("Book chapter N verse M", Chinese
+      「第N章…第M节」). When restoring, verify by regenerating and
+      diffing against the shipped file: the only differences should be
+      additions. `test/sermon_refs_resolve_test.dart` guards validity
+      but not coverage — a regeneration that loses keys passes it.
       Found while measuring the item above; the index is otherwise
       sound (7 bad of 1,297).
 

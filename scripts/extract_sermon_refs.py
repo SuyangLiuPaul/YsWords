@@ -245,6 +245,22 @@ def normalize_alias(s: str) -> str:
     return re.sub(r"[\s\.　]+", "", s.lower())
 
 
+# Books of a single chapter: a bare number after them is a VERSE.
+# 2026-08-23: "Jude 6 confirms this" was indexed as Jude chapter 6 and
+# the sermon became unreachable by that reference — Jude has no
+# chapter 6 to navigate to. Same for 2 John 7/10.
+ONE_CHAPTER = {"Obadiah", "Philemon", "2 John", "3 John", "Jude"}
+
+# An English number that belongs to the following unit, not the book:
+# "the word occurs in Deuteronomy 43 times" indexed Deuteronomy 43,
+# a chapter that does not exist.
+_UNIT_AFTER = re.compile(
+    r"\s*(?:times?|years?|days?|hours?|minutes?|weeks?|months?|"
+    r"verses?|words?|percent|%)\b", re.IGNORECASE)
+
+_CJK = re.compile(r"[\u4e00-\u9fff]")
+
+
 def extract_refs(text: str) -> list[str]:
     """Return canonical "Book chapter:verse" strings (deduped, in
     order of first appearance) found in [text]."""
@@ -261,6 +277,28 @@ def extract_refs(text: str) -> list[str]:
             continue
         if ch <= 0 or ch > 200:
             continue
+        # "Deuteronomy 43 times" — the number is a count, not a chapter.
+        if not verse and _UNIT_AFTER.match(text, m.end()):
+            continue
+        # Single-CJK-character abbreviations are ordinary words far more
+        # often than they are book names: 但20分钟 is "but 20 minutes",
+        # 约20人 is "about 20 people", 传 is to pass on, 该 is should.
+        # A real citation in that compressed style carries a verse
+        # (但3:16) or the word 章 right after the number; without either,
+        # the match is prose. Two-character aliases (撒上, 林前…) have
+        # no such second life and pass as before.
+        if _CJK.match(alias_raw) and len(alias_raw) == 1 and not verse:
+            after = text[m.end():m.end() + 1]
+            if after not in ("章", "篇"):
+                continue
+        if canon in ONE_CHAPTER:
+            # Jude 6 means Jude 1:6. A chapter other than 1 with an
+            # explicit verse cannot exist in these books — drop it
+            # rather than index the unreachable.
+            if verse and ch != 1:
+                continue
+            if not verse:
+                verse, ch = chapter, 1
         if verse:
             try:
                 v = int(verse)
