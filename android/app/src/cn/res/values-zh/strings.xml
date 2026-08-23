@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The CN flavour must stay distinguishable from the international
+     one when both are installed; the flavour source set overrides
+     main's values-zh for the same qualifier. -->
+<resources>
+    <string name="app_name">雅伟之言 CN</string>
+</resources>

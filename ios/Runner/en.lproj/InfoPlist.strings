@@ -1,0 +1,4 @@
+/* The home-screen label, in the device language. 2026-08-23, from
+   the user: "app应该显示雅伟之言还是Yahweh's Words…要根据客户手机语言" —
+   a fixed choice in either language reads as wrong to half the users. */
+"CFBundleDisplayName" = "Yahweh's Words";

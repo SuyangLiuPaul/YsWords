@@ -39,22 +39,45 @@ void main() {
     return xml.substring(open + '<string>'.length, close);
   }
 
-  test('iOS shows 雅伟之言 on the home screen', () {
-    // 2026-08-23, right after the rename: "Yahweh's Words" is 14
-    // characters and the iOS home screen truncates it to "Yahweh's
-    // Wo…", so the user chose the four-character Chinese name for the
-    // icon label ("CFBundleDisplayName 改成雅伟之言吧"). iOS only —
-    // macOS docks and menus do not truncate, so the Mac keeps the full
-    // English name.
+  test('iOS home-screen name follows the device language', () {
+    // 2026-08-23, from the user, three requests in one evening that
+    // ended here: rename to Yahweh's Words; then 雅伟之言 because 14
+    // Latin characters truncate on the home screen; then "要根据客户
+    // 手机语言" — follow the phone's language, don't pick for the user.
+    // iOS does that through per-locale InfoPlist.strings, which only
+    // ship if the Xcode project registers the .lproj variants — hence
+    // the pbxproj assertions: an unregistered localization fails
+    // SILENTLY, showing every user the fallback.
+    String lproj(String locale) =>
+        read('ios/Runner/$locale.lproj/InfoPlist.strings');
+    expect(lproj('en'), contains('"CFBundleDisplayName" = "Yahweh\'s Words"'));
+    expect(lproj('zh-Hans'), contains('"CFBundleDisplayName" = "雅伟之言"'));
+    expect(lproj('zh-Hant'), contains('"CFBundleDisplayName" = "雅偉之言"'));
+
+    final pbx = read('ios/Runner.xcodeproj/project.pbxproj');
+    expect(pbx, contains('InfoPlist.strings in Resources'),
+        reason: 'the variant group must be in the Resources build phase');
+    for (final region in ['"zh-Hans"', '"zh-Hant"']) {
+      expect(pbx, contains(region),
+          reason: 'knownRegions must list $region');
+    }
+
+    // The plist value is only the fallback for unmatched languages.
     final plist = read('ios/Runner/Info.plist');
-    expect(plistValue(plist, 'CFBundleDisplayName'), '雅伟之言');
+    expect(plistValue(plist, 'CFBundleDisplayName'), wanted);
+    expect(plistValue(plist, 'CFBundleName'), wanted);
   });
 
-  test('iOS CFBundleName carries the full English name', () {
-    // The fallback shown where a display name cannot be used; the
-    // Latin form is the safer of the two there.
-    final plist = read('ios/Runner/Info.plist');
-    expect(plistValue(plist, 'CFBundleName'), wanted);
+  test('Android app_name follows the device language too', () {
+    expect(read('android/app/src/main/res/values-zh/strings.xml'),
+        contains('雅伟之言'));
+    expect(read('android/app/src/main/res/values-zh-rTW/strings.xml'),
+        contains('雅偉之言'));
+    expect(read('android/app/src/main/res/values-zh-rHK/strings.xml'),
+        contains('雅偉之言'));
+    // The CN flavour stays distinguishable on zh devices.
+    expect(read('android/app/src/cn/res/values-zh/strings.xml'),
+        contains('雅伟之言 CN'));
   });
 
   test('macOS shows the new name, without renaming the bundle', () {

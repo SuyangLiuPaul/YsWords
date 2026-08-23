@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The home-screen label in the device language. 2026-08-23, from the
+     user: the name must follow the phone's language, not be fixed in
+     either. The DEFAULT (English) label comes from the gradle resValue;
+     these qualified buckets win on zh devices at resource-resolution
+     time regardless of source priority, because a matching qualifier
+     always beats the default bucket. -->
+<resources>
+    <string name="app_name">雅伟之言</string>
+</resources>
