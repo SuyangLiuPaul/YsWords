@@ -2411,6 +2411,16 @@ and quoted.**
       the opposite. **Never mutate the files a running refuter is reading**;
       either finish the edit first or tell it to read from a blob.
 
+      **NOT DEPLOYED YET — committed `7bcf6a2`, pushed, and deliberately not
+      released.** The second session was mid-flight in this checkout: it had
+      just deployed 1.4.132 (all four dev/qat sites serve it) with
+      `pubspec.yaml`/`app_version.dart` still uncommitted, and had
+      `assets/sermons/refs.json` and `scripts/extract_sermon_refs.py` dirty.
+      Building would have raced its version bump and published its unreviewed
+      work. Whoever releases next carries this out — then **verify against the
+      asset the live site actually serves, not the repo**, the way the
+      `說；` item above was: 羅馬書 8:36 must read 所記：「我們為你的緣故.
+
 - [ ] **The same misattribution defect without the semicolon: 4 verses put a
       SECOND speaker's words inside the FIRST speaker's quotation marks, and 5
       more leave the first reply unquoted.** Found by the refuter 2026-08-23
