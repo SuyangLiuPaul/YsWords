@@ -43,8 +43,8 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.137** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.137** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.142** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.142** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
 **The deploy debt is paid.** v1.4.137 removes the stray `」` that 路加福音
@@ -57,7 +57,7 @@ while 17:35 still closes `撇下一個。」`; 啟示錄 2:1/2:8/2:12/2:18/3:1 a
 `說：『`; and 馬太福音 15:34, 約翰福音 2:7/2:8/13:36, 創世紀 30:6,
 哥林多前書 15:45 and 撒上 16:11 / 王下 10:13 / 撒下 15:19 still read correctly.
 
-**prod is 123 versions behind and it is not an oversight.** Every prod
+**prod is 131 versions behind and it is not an oversight.** Every prod
 push needs the user to say so in the moment; permission never carries
 over from a previous turn. Full wording of what does and does not count
 as permission: `docs/release-policy.md`. prod still serves the broken
@@ -123,7 +123,22 @@ advances the repo hash is healthy.
    fatigue, not the guard.
 9. **Data and its test ship together.** Stashing data without its test
    turned four tests red.
-10. **The macOS display name is fixed with `CFBundleDisplayName`, never
+10. **Flutter no longer ships an offline service worker.** `flutter
+    build web` emits a 784-byte SELF-UNREGISTERING stub and the
+    generated bootstrap registers it at scope '/'; `--pwa-strategy` is
+    gone from the CLI. The app therefore ships its own network-first
+    worker (`web/app_shell_sw.js`) and overrides
+    `web/flutter_bootstrap.js` to stop Flutter claiming the scope.
+    **Never make that worker cache-first** — this repo has already
+    served users a stale shell once, and the self-heal block in
+    index.html exists because of it.
+11. **Embedded iframes paint ABOVE Flutter widgets on web.** Any
+    control drawn over a platform view is in the tree, invisible on
+    screen, and catches nothing. Put controls outside the frame's rect.
+12. **Never take overlay geometry from the caller's `MediaQuery`.** A
+    caller inside a bottom sheet reports the SHEET's box, which put the
+    floating player off-screen on 2026-08-24. Measure in the overlay.
+13. **The macOS display name is fixed with `CFBundleDisplayName`, never
     `PRODUCT_NAME`** — the latter also names the `.app`, whose path is
     hard-coded in the reinstall script.
 11. **A second Claude session shares this checkout and commits blind.** On
