@@ -47,12 +47,14 @@ import 'package:yswords/utils/reference_parser.dart';
 /// widen anything, so a citation is reachable when ANY shipped version
 /// has it, which is the question the reader is actually asking.
 ///
-/// **Known blind spot, left deliberately:** `_buildRef` drops the end of
-/// a range in a single-chapter book, so `Jude 14-15` resolves to
-/// Jude 1:14 and this check never sees the 15. Both `bible_evidence` and
-/// `family_tree` cite it. Carrying the range through is a change to
-/// navigation behaviour, not to a test — queued rather than smuggled in
-/// here.
+/// **Former blind spot, closed 2026-08-23:** `_buildRef` used to drop
+/// the end of a range in a single-chapter book, so `Jude 14-15` resolved
+/// to Jude 1:14 and this check never saw the 15 — and both
+/// `bible_evidence` and `family_tree` cite it, so the hole was live. The
+/// range now carries through (regression expectations in the teeth test
+/// below), which also widens THIS file exactly as queued: `outOfCanon`
+/// always bounded `verseEnd` when present, so every single-chapter range
+/// end in every corpus below is inside the ruler for the first time.
 void main() {
   final lastChapter = <String, int>{};
   final lastVerse = <String, int>{};
@@ -127,13 +129,34 @@ void main() {
       expect(outOfCanon(seg.target!), isNull, reason: seg.text);
     }
 
-    // The blind spot, pinned rather than described: a range in a
-    // single-chapter book loses its end, so nothing downstream — this
-    // check included — can see the 15 of `Jude 14-15`. If that is ever
-    // fixed, this expectation fails and the range must be bounded here.
+    // Regression (2026-08-23): a range in a single-chapter book used to
+    // lose its end. The chapter-range branch of `parseReference` never
+    // handed the trailing 15 to `_buildRef`, whose single-chapter path
+    // then read the end from a parameter that is always null there — so
+    // `Jude 14-15` resolved to Jude 1:14 and every surface that renders
+    // the RANGE (verse popup span, passage localizer, version mapper,
+    // search cards) showed one verse where two were cited. This very
+    // expectation pinned the defect (`verseEnd, isNull`) until it was
+    // taken from the queue; per the pin's own instruction, the carried
+    // range is bounded here now.
     final jude = parseReference('Jude 14-15')!;
+    expect(jude.chapter, 1);
     expect(jude.verseStart, 14);
-    expect(jude.verseEnd, isNull);
+    expect(jude.verseEnd, 15, reason: 'the cited range keeps its end');
+    expect(outOfCanon(jude), isNull, reason: 'Jude 1 runs to verse 25');
+
+    // …and the end is finally VISIBLE to this check — an end past the
+    // book is caught instead of silently vanishing at parse time.
+    expect(outOfCanon(parseReference('Jude 24-26')!),
+        'Jude 1 has 25 verses, cites 26');
+
+    // The multi-chapter shape is untouched: chapters 6-9 are not verses
+    // of Genesis 6, so the range end must still be discarded there and
+    // "Genesis 6-9" keeps navigating to the start chapter, whole.
+    final gen = parseReference('Genesis 6-9')!;
+    expect(gen.chapter, 6);
+    expect(gen.verseStart, isNull);
+    expect(gen.verseEnd, isNull);
   });
 
   test('every evidence citation resolves inside the canon', () {

@@ -139,7 +139,18 @@ BibleReference? parseReference(String input) {
       cm.group(1)?.trim() ?? '',
       int.tryParse(cm.group(2)!) ?? 0,
       null,
-      null,
+      // 2026-08-23: the range end rides along as `verseEnd` so the
+      // single-chapter branch in `_buildRef` can keep it — in Jude,
+      // "14-15" means VERSES 14-15, and dropping the 15 here (as this
+      // call did until today) narrowed the cited passage on every
+      // surface that renders the range: the verse popup's span, the
+      // passage localizer, the version mapper, the search cards. Found
+      // by the canon-check refuter; `Jude 14-15` is cited by both
+      // bible_evidence.json and family_tree.json, so it was live. For
+      // a multi-chapter book `_buildRef` still discards this value
+      // (verseStart stays null), so "Genesis 6-9" keeps navigating to
+      // the start chapter exactly as before.
+      int.tryParse(cm.group(3)!),
     );
     if (ref != null) return ref;
   }
@@ -186,14 +197,25 @@ BibleReference? _buildRef(
   final canonical = resolveBookName(bookPart);
   if (canonical == null) return null;
 
-  // Single-chapter book: "Jude 14-15" parses as ch 14 ve 15, but Jude
-  // has only 1 chapter — re-interpret as ch 1 vs 14-15.
+  // Single-chapter book: "Jude 14-15" arrives as chapter 14 with the
+  // 15 in [verseEnd], but Jude has only 1 chapter — re-interpret as
+  // ch 1 vs 14-15. Until 2026-08-23 this read the end from
+  // [verseStart], which the chapter-range caller never fills, so the
+  // 15 was dropped at parse time and every range renderer showed a
+  // narrower passage than the cited one (same class as the label
+  // defect fixed in localizedReferenceLabel, one layer lower). The
+  // `?? verseStart` keeps the odd "Jude 14:15" shape resolving to
+  // vs 14-15 as it always has. The collapse rule mirrors the normal
+  // path below: a missing or inverted end becomes the start, never an
+  // inverted range.
   if (_singleChapterBooks.contains(canonical) && chapter > 1) {
+    final start = chapter;
+    final end = verseEnd ?? verseStart;
     return BibleReference(
       englishBook: canonical,
       chapter: 1,
-      verseStart: chapter,
-      verseEnd: verseStart,
+      verseStart: start,
+      verseEnd: (end != null && end >= start) ? end : start,
     );
   }
 
