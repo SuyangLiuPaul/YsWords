@@ -525,6 +525,38 @@ advances the repo hash is healthy.
     losses) and a draft mixed them into "30 of the 39 runs"; the refuter's
     arithmetic was right again (cf. trap 35).
 
+41. **A route pushed by `pushPage` is named `/HomePage` on native and
+    `minified:<mangled>` on release web, so any stack search by route name
+    is correct on five targets and silently wrong on the sixth.** dart2js's
+    `Type.toString()` falls back to `"minified:"+a` for anything absent from
+    `mangledGlobalNames`, and the shipped bundle's table holds only the ten
+    core types. `navigateToReader` finds the existing reader by name, so on
+    web it walked past readers pushed without an explicit `routeName`, popped
+    them, and cold-mounted a replacement. Four call sites already passed the
+    name; eight did not. **Never let a web route name come from
+    `runtimeType`** — `test/reader_route_leak_test.dart` now fails if a
+    `pushPage(const HomePage())` omits it.
+
+42. **`Get.off` is `pushReplacement`, and in this app the reader is almost
+    never the top route.** Search, Library and the lexicon are all pushed ON
+    TOP of the reader, so `Get.off(() => const HomePage())` replaced the
+    search route and left the original reader mounted underneath — two panes
+    on the one `MainProvider`, which is created above the navigator in
+    `main.dart:100`. This was found, fixed and named in v1.3.7 for Library
+    and four other call sites kept it for three months. The lesson is about
+    the fix, not the bug: **when a helper is written to be canonical, grep
+    for the pattern it replaced on the same day**, because a helper cannot
+    protect a path that does not call it.
+
+    The mechanism sentence in the original queue item was wrong and shipped
+    that way for a day: the panes do NOT share an `ItemScrollController` —
+    each `_ChapterPage` mints its own — they share
+    `MainProvider._activeChapterControllers`, a last-writer-wins slot that
+    `mp.itemScrollController` forwards through. `_isLivePane` already stopped
+    the covered pane consuming the jump, so the live pane consumed it
+    correctly and scrolled a list nobody could see. A wrong mechanism aims
+    every subsequent fix at the wrong object.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the

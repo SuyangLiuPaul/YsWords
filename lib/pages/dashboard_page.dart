@@ -557,7 +557,7 @@ class _DashboardPageState extends State<DashboardPage> {
           currentVersion: mainProvider.currentVersion,
           locale: locale,
           settings: settings,
-          onTap: () => pushPage(const HomePage()),
+          onTap: () => pushPage(const HomePage(), routeName: '/HomePage'),
         );
 
       case DashboardSection.resumeSermon:
@@ -591,7 +591,7 @@ class _DashboardPageState extends State<DashboardPage> {
               fromVersionLabel: _dailyVerseFromVersionLabel,
               onTap: () {
                 jumper.prepareJumpToVerse(_dailyVerse!, mainProvider);
-                pushPage(const HomePage());
+                pushPage(const HomePage(), routeName: '/HomePage');
               },
             ),
           ],
@@ -667,7 +667,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 onTap: () {
                   jumper.prepareJumpToVerse(v, mainProvider);
-                  pushPage(const HomePage());
+                  pushPage(const HomePage(), routeName: '/HomePage');
                 },
               ),
           ],

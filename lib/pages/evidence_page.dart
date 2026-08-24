@@ -697,7 +697,7 @@ class _EvidenceCard extends StatelessWidget {
     if (!context.mounted) return;
     final ok = await showJumpResultSnackBar(context, result);
     if (!ok || !context.mounted) return;
-    pushPage(const HomePage());
+    pushPage(const HomePage(), routeName: '/HomePage');
   }
 }
 

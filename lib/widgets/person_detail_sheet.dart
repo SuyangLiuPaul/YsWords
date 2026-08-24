@@ -531,7 +531,7 @@ class PersonDetailSheet extends StatelessWidget {
     final ok = await jumper.showJumpResultSnackBar(context, result);
     if (!ok || !context.mounted) return;
     Navigator.of(context).maybePop();
-    pushPage(const HomePage());
+    pushPage(const HomePage(), routeName: '/HomePage');
   }
 }
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart'
@@ -7,7 +6,7 @@ import 'package:yswords/constants/text_patterns.dart'
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/strongs.dart';
-import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/utils/navigate_to_reader.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
@@ -130,9 +129,17 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
       return;
     }
     prepareJumpToVerse(match.first, mp);
-    // Replace this page with HomePage so the pendingJump lands the user
-    // on the verse regardless of how the lexicon was reached.
-    Get.off(() => const HomePage(), transition: Transition.rightToLeft);
+    // Back to the reader so the pendingJump lands the user on the verse.
+    //
+    // Not Get.off. This page is pushed from SearchPage (its only entry
+    // point, search_page.dart:1447) and from itself via the related-word
+    // links below, so the stack is [Dashboard, HomePage, SearchPage,
+    // StrongsEntryPage, ...] and pushReplacement would leave that
+    // HomePage mounted below a second one. navigateToReader pops the
+    // whole run back to the reader already there — which also means the
+    // search behind it is gone rather than one Back press away, the same
+    // as tapping any other search result.
+    navigateToReader(context);
   }
 
   @override

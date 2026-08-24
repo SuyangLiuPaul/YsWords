@@ -116,7 +116,7 @@ class _MisconceptionsPageState extends State<MisconceptionsPage> {
     if (!mounted) return;
     final ok = await showJumpResultSnackBar(context, result);
     if (!ok || !mounted) return;
-    pushPage(const HomePage());
+    pushPage(const HomePage(), routeName: '/HomePage');
   }
 
   @override

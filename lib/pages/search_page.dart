@@ -10,7 +10,7 @@ import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/strongs_boolean_search.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
-import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/utils/navigate_to_reader.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/services/recent_searches_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart' show ClipboardHelper;
@@ -1846,19 +1846,19 @@ class _SearchPageState extends State<SearchPage> {
                               // launched search did nothing because
                               // Get.back() returned to the dashboard
                               // (which has no pendingJump handler).
-                              // Use Get.off(HomePage) -- the same
-                              // pattern LibraryPage uses -- so the
-                              // user lands at the verse regardless of
-                              // whether search was reached from the
-                              // reader's AppBar OR the dashboard tile.
+                              // Land on the reader either way.
+                              //
+                              // 2026-08-24: that landing was done with
+                              // Get.off(HomePage), which is
+                              // pushReplacement — it replaced only
+                              // SearchPage and left the reader the
+                              // search was opened FROM mounted
+                              // underneath. See navigateToReader.
                               final mainProv = Provider.of<MainProvider>(
                                   context,
                                   listen: false);
                               prepareJumpToVerse(verse, mainProv);
-                              Get.off(
-                                () => const HomePage(),
-                                transition: Transition.rightToLeft,
-                              );
+                              navigateToReader(context);
                             },
                             // v1.3.94: long-press to copy this verse.
                             onLongPress: () => _copyVerseLine(
@@ -2451,12 +2451,10 @@ class _SearchPageState extends State<SearchPage> {
     if (match.isEmpty) return;
     final verse = match.first;
     prepareJumpToVerse(verse, mainProv);
-    // 2026-05-07 (v11): replace SearchPage with HomePage so the
-    // user lands on the verse regardless of how search was reached.
-    Get.off(
-      () => const HomePage(),
-      transition: Transition.rightToLeft,
-    );
+    // Return to the reader the user came from, or push one if search
+    // was reached from the Dashboard. Never Get.off — see the tap
+    // handler above.
+    navigateToReader(context);
   }
 
   /// Navigate to a free-form parsed [BibleReference]. Returns true
@@ -2484,12 +2482,7 @@ class _SearchPageState extends State<SearchPage> {
     );
 
     prepareJumpToVerse(hit, mainProv);
-    // 2026-05-07 (v11): replace SearchPage with HomePage so the
-    // user lands on the verse regardless of how search was reached.
-    Get.off(
-      () => const HomePage(),
-      transition: Transition.rightToLeft,
-    );
+    navigateToReader(context);
     return true;
   }
 
@@ -2578,8 +2571,8 @@ class _SearchPageState extends State<SearchPage> {
               }
               // Use the existing reference-jump path. Walk the local
               // verse list to find the first verse in the ref's
-              // chapter range, then prepareJumpToVerse → swap to
-              // HomePage.
+              // chapter range, then prepareJumpToVerse → back to the
+              // reader.
               final localBook =
                   translateBookName(ref.book, mp.currentVersion);
               final chapterMatches = mp.verses
@@ -2591,10 +2584,7 @@ class _SearchPageState extends State<SearchPage> {
                   .toList();
               if (chapterMatches.isEmpty) return;
               prepareJumpToVerse(chapterMatches.first, mp);
-              Get.off(
-                () => const HomePage(),
-                transition: Transition.rightToLeft,
-              );
+              navigateToReader(context);
             },
             // v1.3.94: long-press to copy the reference (+ AI reason).
             onLongPress: () => _copyVerseLine(

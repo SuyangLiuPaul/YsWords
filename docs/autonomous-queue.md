@@ -45,16 +45,55 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
-- [ ] **AI search results do not jump to the verse when tapped.**
+- [x] **AI search results do not jump to the verse when tapped. Fixed
+      2026-08-24 — the reader route was being leaked, not the jump.**
       2026-08-23, reported by the user ("Can you look into correctly
-      and thoroughly?"). The pending-jump handshake was fixed and is
-      covered by `test/pending_jump_targeting_test.dart`, but the
-      tap-from-search path still fails: two `BibleReadingPane`s coexist
-      (the leaked route behind the search sheet, and the live one) and
-      both attach to the single `mp.itemScrollController`, which can
-      only serve one list at a time. See the P1 entry near line 4634
-      for the full trace. **Do not add a third guard** — the previous
-      two each broke something else. Fix the duplicate-pane lifetime.
+      and thoroughly?"). The pending-jump handshake was already fixed
+      and covered by `test/pending_jump_targeting_test.dart`; what was
+      left was the duplicate pane, and it was one call: every jump path
+      in `search_page.dart` ended in `Get.off(() => const HomePage())`.
+
+      **`Get.off` is `pushReplacement`.** Search is pushed ON TOP of the
+      reader, so the stack is [Dashboard, HomePage, SearchPage] and
+      replacing the top route left the original HomePage mounted
+      underneath. Proved in a widget test before anything was changed:
+      `test/reader_route_leak_test.dart` finds TWO readers in the stack
+      after the old call and one after the new.
+
+      **The mechanism, corrected by the refuter.** Both readers read the
+      one `MainProvider` (`main.dart:100`, above the navigator), but they
+      do NOT double-attach a controller — each `_ChapterPage` mints its
+      own. They contend for `MainProvider._activeChapterControllers`, a
+      single last-writer-wins slot that `mp.itemScrollController`
+      forwards through. `_isLivePane` already stopped the covered pane
+      *consuming* the jump; the live pane consumed it correctly and then
+      scrolled whichever list had registered last. The original
+      "two panes attach to one controller" wording was wrong.
+
+      **The fix was already in the repo and search never got it.**
+      `navigateToReader` was written in v1.3.7 for the identical defect
+      reported against Library ("bible duplicate了"). Four call sites in
+      `search_page.dart` and one in `strongs_entry_page.dart` moved onto
+      it. No third guard was added, as the item asked.
+
+      **Round two found a hole in the fix, on web only.**
+      `navigateToReader` finds the reader by ROUTE NAME, and `pushPage`
+      defaults to `'/${page.runtimeType}'` — `/HomePage` on native, but
+      the release-web bundle carries dart2js's
+      `mangledGlobalNames` table with only the ten core types in it, so
+      `HomePage` resolves to `minified:<mangled>`. A reader pushed from
+      the Dashboard was therefore invisible to the helper, which would
+      have popped it and cold-mounted a replacement. Four sites already
+      passed `routeName: '/HomePage'` explicitly; the eight that did not
+      now do. Pinned by a source guard.
+
+      **One trade, recorded rather than hidden:** from the Strong's
+      lexicon the helper pops SearchPage as well, so the query behind it
+      is gone instead of one Back press away. That matches what tapping
+      any other search result already did.
+
+      Verify on device: reader → search → tap a result in a chapter you
+      are NOT in, late in a long chapter. It must scroll and wash.
 
 - [ ] **`DatabaseException(database is locked (code 5 SQLITE_BUSY))
       sql 'BEGIN EXCLUSIVE'` — crash mailed in twice.** Reported by the
@@ -4748,9 +4787,15 @@ has never seen this repo.
       `test/leb_superscription_test.dart` runs the real asset through
       the real decoder and fails on the pre-fix code.
 
-- [ ] **A search result still does not SCROLL the visible reader —
+- [x] **A search result still does not SCROLL the visible reader —
       because two reading panes coexist and share one
-      `ItemScrollController`.** 2026-08-23. This is the unfinished half
+      `ItemScrollController`. FIXED 2026-08-24** — this is the same item
+      as the BUGS entry at the top of the file, where the full account
+      lives. Short version: the panes did not share a controller, they
+      shared `MainProvider._activeChapterControllers`; the leak was
+      `Get.off(() => const HomePage())` in `search_page.dart`, and the
+      five call sites now use `navigateToReader`. 2026-08-23. This is the
+      unfinished half
       of the "AI search doesn't jump" report; the handshake around it is
       fixed and shipped (v1.4.123-127), this is what is left.
 

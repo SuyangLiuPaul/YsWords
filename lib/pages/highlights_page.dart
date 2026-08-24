@@ -200,7 +200,7 @@ class _HighlightsPageState extends State<HighlightsPage> {
     // 300 ms `Future.delayed` that often missed cold-start and slow
     // devices, leaving the user stranded at the top of the chapter.
     prepareJumpToVerse(v, mp);
-    pushPage(const HomePage());
+    pushPage(const HomePage(), routeName: '/HomePage');
   }
 
   Future<void> _copyAll(
