@@ -57,9 +57,22 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.153** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.153** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.154** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.154** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.154 stops six sermon titles reading as if a word were missing:
+"Regeneration and Renewal — ; Foundational Problems" is what a May
+cleanup left when it deleted the verse reference and kept the
+punctuation, and the sermon list, the detail app-bar, the dashboard and
+the reading pane have all been showing it since. Sermon 339 lost words
+rather than punctuation — its "Mark 1:"…"Mark 4:" enumerate the marks of
+a regenerated Christian and were read as the Gospel — and they are back,
+spelled out as v1.4.153 wrote marks five to seven. Verified against the
+assets the sites serve, not the repo: on both `yswords-dev` and
+`yswords-cn-qat`, `sermons/index.json` has zero titles carrying stranded
+`— ;` / `; :`, 339's English title reads "…Debunked; Mark one: Power to
+Be Sons of God; Mark two:…", and `sermons/en/339.txt` line 1 matches it.
 
 v1.4.153 stops two sermons claiming to expound passages they never open.
 Sermon 339 is "Seven Marks of a Regenerated Christian" and its Part-B
