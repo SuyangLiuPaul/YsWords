@@ -540,8 +540,21 @@ aot_postdates_dart_source() {
     return 0
   fi
 
-  newest="$(tr '\n' '\0' <"$dep_list" \
-    | xargs -0 stat -f '%m %N' 2>/dev/null | sort -rn | head -1)"
+  # BSD stat (macOS, where this script actually runs) and GNU stat
+  # (Linux, where its tests run in CI) spell mtime differently: -f/%m %N
+  # against -c/%Y %n. The `2>/dev/null` on this call hid that completely
+  # — on a Linux runner the batch came back empty, the guard reported
+  # "could not read mtimes" and returned 0, so every freshness test on
+  # CI was measuring nothing while looking green. Probe once: `-c` is
+  # GNU-only and BSD stat rejects it outright, which is a cleaner
+  # discriminator than probing `-f` (GNU accepts -f as --file-system).
+  if stat -c '%Y' . >/dev/null 2>&1; then
+    newest="$(tr '\n' '\0' <"$dep_list" \
+      | xargs -0 stat -c '%Y %n' 2>/dev/null | sort -rn | head -1)"
+  else
+    newest="$(tr '\n' '\0' <"$dep_list" \
+      | xargs -0 stat -f '%m %N' 2>/dev/null | sort -rn | head -1)"
+  fi
   rm -f "$dep_list"
   newest_epoch="${newest%% *}"
   newest_path="${newest#* }"
@@ -556,8 +569,13 @@ aot_postdates_dart_source() {
   for aot in "$intermediates"/*/app.so; do
     [ -f "$aot" ] || continue
     slices=$((slices + 1))
-    [ "$(stat -f '%m' "$aot" 2>/dev/null || echo 0)" -lt "$newest_epoch" ] \
-      || continue
+    # Same BSD/GNU split as the batch above.
+    if stat -c '%Y' . >/dev/null 2>&1; then
+      aot_epoch="$(stat -c '%Y' "$aot" 2>/dev/null || echo 0)"
+    else
+      aot_epoch="$(stat -f '%m' "$aot" 2>/dev/null || echo 0)"
+    fi
+    [ "$aot_epoch" -lt "$newest_epoch" ] || continue
     stale=$((stale + 1))
     echo "✗ ${aot#"$PROJECT/"} predates ${newest_path#"$PROJECT/"}"
   done
@@ -672,8 +690,15 @@ asset_bundle_matches_source() {
 
   # One batched stat over both sides. Per-file stat calls would be ~2,200
   # processes for this build, inside a job that runs at 04:00 unattended.
-  tr "$tab" '\n' <"$pairs" | tr '\n' '\0' \
-    | xargs -0 stat -f '%m %N' 2>/dev/null >"$mtimes"
+  # Same BSD/GNU split as aot_postdates_dart_source; see the comment
+  # there for why the probe uses -c rather than -f.
+  if stat -c '%Y' . >/dev/null 2>&1; then
+    tr "$tab" '\n' <"$pairs" | tr '\n' '\0' \
+      | xargs -0 stat -c '%Y %n' 2>/dev/null >"$mtimes"
+  else
+    tr "$tab" '\n' <"$pairs" | tr '\n' '\0' \
+      | xargs -0 stat -f '%m %N' 2>/dev/null >"$mtimes"
+  fi
 
   awk -F"$tab" -v mt="$mtimes" '
     BEGIN {
