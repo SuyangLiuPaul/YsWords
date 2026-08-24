@@ -3304,6 +3304,26 @@ const uiStrings = {
     'zh-Hant': '常駐顯示 — 應用主入口。',
     'en': 'Always visible — primary entry point.',
   },
+  // 2026-08-25: shown on a Settings → 主页布局 row whose switch is ON but
+  // whose block is not on the home page, because it has no content yet.
+  // Without these the two screens disagree and neither explains itself.
+  'dashboardSection_resumeSermon_emptyReason': {
+    'zh-Hans': '尚未显示 — 你还没有打开过讲道',
+    'zh-Hant': '尚未顯示 — 你還沒有打開過講道',
+    'en': 'Not showing yet — you have not opened a sermon',
+  },
+  'dashboardSection_recentBookmarks_emptyReason': {
+    'zh-Hans': '尚未显示 — 你还没有加过书签',
+    'zh-Hant': '尚未顯示 — 你還沒有加過書籤',
+    'en': 'Not showing yet — you have no bookmarks',
+  },
+  'dashboardLayoutEmptyHint': {
+    'zh-Hans': '开着但标注「尚未显示」的区块，等有内容了会自动出现在主页上，位置就是这里的顺序。',
+    'zh-Hant': '開著但標註「尚未顯示」的區塊，等有內容了會自動出現在主頁上，位置就是這裡的順序。',
+    'en': 'A block marked "not showing yet" is on — it appears on the home '
+        'page as soon as it has something to show, in the position it '
+        'holds here.',
+  },
   'dashboardSection_resumeSermon_label': {
     'zh-Hans': '继续讲道',
     'zh-Hant': '繼續講道',

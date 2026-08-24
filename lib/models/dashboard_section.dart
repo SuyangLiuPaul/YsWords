@@ -150,6 +150,34 @@ List<DashboardSection> normalizeDashboardOrder(List<String> stored) {
   return out;
 }
 
+/// Sections the dashboard drops when they have nothing to show — even
+/// though their Settings switch is ON.
+///
+/// 2026-08-25, reported by the user: "设置里面的主页布局的位置和主页真实
+/// 位置是不一样的，这个不是应该一致吗". They were right, and it is not a
+/// reordering bug — Settings and the dashboard read the SAME
+/// `dashboardSectionOrder`. The mismatch is that
+/// `dashboard_page.dart::_buildSection` returns null for a section with
+/// no content, so on a fresh install Settings lists eight rows, all
+/// switched on, and the home page renders six. Nothing on the Settings
+/// row said why, so a switch that is on and a block that is absent read
+/// as a bug in the ordering.
+///
+/// Deliberately only these two. `dailyVerse` and `todayEvidence` also
+/// return null while their data loads, but that is a transient state
+/// measured in milliseconds, not a durable "you have none of these" —
+/// captioning them would tell the user something that stops being true
+/// before they finish reading it.
+extension DashboardSectionAutoHide on DashboardSection {
+  bool get hidesWhenEmpty =>
+      this == DashboardSection.resumeSermon ||
+      this == DashboardSection.recentBookmarks;
+
+  /// uiStrings key explaining why this section is not on screen right
+  /// now. Only meaningful when [hidesWhenEmpty] and the data is empty.
+  String get emptyReasonKey => 'dashboardSection_${name}_emptyReason';
+}
+
 extension DashboardSectionLabel on DashboardSection {
   /// Short human-readable name shown in the Settings reorder list and
   /// the "Reset to default" confirmation. Locale-aware via

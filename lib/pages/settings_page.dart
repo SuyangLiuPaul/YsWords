@@ -16,6 +16,7 @@ import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForCopy;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/app_style_preset.dart';
 import 'package:yswords/models/dashboard_section.dart';
@@ -1648,10 +1649,36 @@ class _SectionHeader extends StatelessWidget {
 /// honoured at the AppSettings layer (legacy `setShowDailyNews`
 /// etc. mirror into the new map), so Round 54 users keep their
 /// existing toggles after upgrading.
-class _DashboardSectionsCard extends StatelessWidget {
+class _DashboardSectionsCard extends StatefulWidget {
   final AppSettings settings;
   final double s;
   const _DashboardSectionsCard({required this.settings, required this.s});
+
+  @override
+  State<_DashboardSectionsCard> createState() => _DashboardSectionsCardState();
+}
+
+class _DashboardSectionsCardState extends State<_DashboardSectionsCard> {
+  AppSettings get settings => widget.settings;
+  double get s => widget.s;
+
+  /// Whether the user has ever opened a sermon. Read from the same key
+  /// the dashboard reads, so the two screens cannot disagree about it —
+  /// see DashboardSectionAutoHide for why that matters.
+  bool _hasResumeSermon = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadResumeSermonFlag();
+  }
+
+  Future<void> _loadResumeSermonFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getString('sermons_last_read');
+    if (!mounted) return;
+    setState(() => _hasResumeSermon = id != null && id.isNotEmpty);
+  }
 
   IconData _iconFor(DashboardSection section) {
     switch (section) {
@@ -1679,6 +1706,17 @@ class _DashboardSectionsCard extends StatelessWidget {
     final locale = settings.locale;
     final scheme = Theme.of(context).colorScheme;
     final order = settings.dashboardSectionOrder;
+    // watch, not read: adding the first bookmark must clear the
+    // "not showing yet" caption without reopening Settings.
+    final bookmarksEmpty = context.watch<MainProvider>().bookmarks.isEmpty;
+    final anyEmpty = order.any((sec) =>
+        settings.isDashboardSectionVisible(sec) &&
+        sec.hidesWhenEmpty &&
+        switch (sec) {
+          DashboardSection.resumeSermon => !_hasResumeSermon,
+          DashboardSection.recentBookmarks => bookmarksEmpty,
+          _ => false,
+        });
     return Card(
       child: Padding(
         padding: EdgeInsets.fromLTRB(8 * s, 4 * s, 8 * s, 8 * s),
@@ -1699,6 +1737,26 @@ class _DashboardSectionsCard extends StatelessWidget {
                 ),
               ),
             ),
+            // Only when at least one row is actually in that state —
+            // a permanent notice about a condition that is not
+            // currently true is just noise above a list.
+            if (anyEmpty)
+              Padding(
+                padding: EdgeInsets.fromLTRB(12 * s, 0, 12 * s, 6 * s),
+                child: Text(
+                  uiStrings['dashboardLayoutEmptyHint']?[locale] ??
+                      'A block marked "not showing yet" is on — it appears '
+                          'on the home page as soon as it has something to '
+                          'show, in the position it holds here.',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
+                    fontSize: (13 * s).clamp(10.5, 13.0),
+                    color: scheme.onSurfaceVariant,
+                    height: 1.3,
+                  ),
+                ),
+              ),
             // ReorderableListView is the standard drag-handle list
             // widget. shrinkWrap + NeverScrollableScrollPhysics so it
             // sits inside the parent ListView without nested scrolls.
@@ -1719,6 +1777,17 @@ class _DashboardSectionsCard extends StatelessWidget {
               itemBuilder: (ctx, i) {
                 final section = order[i];
                 final visible = settings.isDashboardSectionVisible(section);
+                // A row can be switched ON and still not be on the home
+                // page, because the dashboard drops a section with no
+                // content. Saying so here is what makes the two screens
+                // agree — see DashboardSectionAutoHide.
+                final emptyNow = visible &&
+                    section.hidesWhenEmpty &&
+                    switch (section) {
+                      DashboardSection.resumeSermon => !_hasResumeSermon,
+                      DashboardSection.recentBookmarks => bookmarksEmpty,
+                      _ => false,
+                    };
                 // Read Bible is the app's primary entry point — it
                 // stays mandatory so a user who hides every other
                 // block can still open the Bible. Switch is rendered
@@ -1805,6 +1874,31 @@ class _DashboardSectionsCard extends StatelessWidget {
                                 height: 1.3,
                               ),
                             ),
+                            if (emptyNow) ...[
+                              SizedBox(height: 3 * s),
+                              Row(
+                                children: [
+                                  Icon(Icons.visibility_off_outlined,
+                                      size: 13,
+                                      color: scheme.onSurfaceVariant),
+                                  SizedBox(width: 4 * s),
+                                  Flexible(
+                                    child: Text(
+                                      uiStrings[section.emptyReasonKey]
+                                              ?[locale] ??
+                                          'Not showing yet — nothing to show',
+                                      style: TextStyle(
+                                        fontFamily: settings.fontFamily,
+                                        fontFamilyFallback: kCjkFontFallback,
+                                        fontSize: (12.0 * s).clamp(10.0, 12.5),
+                                        color: scheme.onSurfaceVariant,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
