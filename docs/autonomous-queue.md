@@ -14,6 +14,71 @@ and quoted.**
 
 ---
 
+> ## ⚠️ TIER ORDER CHANGED — 2026-08-24, by the user
+>
+> > 第一个可以推到后面去做，先把功能性的和系统bugs issues之前提到的全部先做完
+> > P2 P3先做完
+>
+> **The order of this file is NOT the order of work.** Take items in
+> this order instead:
+>
+> 1. `## BUGS — reported by the user from their own devices` (below)
+> 2. `## P2 — features the user asked for`
+> 3. `## P3 — known but blocked or deferred`
+> 4. `## P1 — Bible study correctness`
+> 5. `## P0 — scripture accuracy` ← **deferred, take LAST**
+> 6. The Traditional-glyph class inside P0 — dead last (user, 2026-08-18)
+>
+> The one carve-out that keeps P0 precedence: a defect that makes the
+> app **omit or blank actual verse text**. That is data loss, and a
+> reader cannot see scripture that should be there. A wrong Strong's
+> number, a stray space, an unpaired bracket — accuracy work, it waits.
+>
+> Why: P0 was *growing* under the loop (76 → 83 open in a day) because
+> auditing discovers faster than it repairs, while things the user hits
+> on their own phone sat behind it. `~/Library/Application Support/
+> yswords-loop/prompt.md` carries the same order; keep them in step.
+
+## BUGS — reported by the user from their own devices
+
+Highest tier since 2026-08-24. Anything the user hit on the phone, the
+iPad, the Mi Pad or the web build. Crash reports mailed in count as
+reported. Work these top-down before P2.
+
+- [ ] **AI search results do not jump to the verse when tapped.**
+      2026-08-23, reported by the user ("Can you look into correctly
+      and thoroughly?"). The pending-jump handshake was fixed and is
+      covered by `test/pending_jump_targeting_test.dart`, but the
+      tap-from-search path still fails: two `BibleReadingPane`s coexist
+      (the leaked route behind the search sheet, and the live one) and
+      both attach to the single `mp.itemScrollController`, which can
+      only serve one list at a time. See the P1 entry near line 4634
+      for the full trace. **Do not add a third guard** — the previous
+      two each broke something else. Fix the duplicate-pane lifetime.
+
+- [ ] **`DatabaseException(database is locked (code 5 SQLITE_BUSY))
+      sql 'BEGIN EXCLUSIVE'` — crash mailed in twice.** Reported by the
+      user 2026-08-23 from builds 1.4.39 and 1.4.138 (android). Origin
+      is `flutter_cache_manager`'s sqflite store, reached through
+      `audio_service`/`just_audio` artwork caching. Two writers opening
+      the same cache db concurrently is the usual shape — a background
+      isolate plus the UI isolate. Reproduce before changing anything;
+      an untested guess here turns a crash into a silent stall.
+
+- [ ] **The Android release build can ship an APK without the current
+      Dart code, and nothing catches it.** 2026-08-24: an
+      `assembleIntlRelease` that "succeeded" in 5 seconds reused stale
+      Gradle artifacts; `adb install -r` reported Success and the
+      reinstall script's `package verified present` check passed,
+      because it only verifies the package is installed, not that it is
+      current. Result: three Mi Pad bug reports (YouTube window would
+      not open, SoundCloud jumped to the browser, drag did nothing)
+      that were all one stale APK. Add a **content** assertion before
+      install — e.g. grep `build/app/**/libapp.so` for a marker string
+      unique to the commit being shipped, and refuse to install on a
+      miss. Script: `~/.config/yswords/scripts/yswords-ios-reinstall.sh`
+      (note: that copy has DRIFTED from the repo's — see PROJECT_STATE).
+
 ## P0 — scripture accuracy
 
 > ### ⏸ THE TRADITIONAL GLYPH WORK IS DEFERRED TO LAST — user, 2026-08-18
