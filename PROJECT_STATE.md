@@ -26,6 +26,15 @@ repair: round one added two verses, round two removed them **and**
 destroyed the frequency argument the whole list rested on (trap 36).
 Round one widens, round two shrinks — twice observed, so budget for two.
 
+**On the third observation it inverted, and that is the case to be careful
+about.** On the span repair round one shrank (it killed a false docstring
+sentence) and round *two* widened, arguing three more held verses should be
+repaired. So the rule is not "round two shrinks"; it is that the two rounds
+disagree in some direction and you need both to see it. **Act on shrinking
+immediately, record widening and let a later iteration re-derive it** — a
+scripture pass that grows on one round's argument, with nothing yet written
+against it, is how the count outruns the evidence. See trap 38.
+
 ---
 
 ## The app
@@ -48,11 +57,18 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.148** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.148** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.149** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.149** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**The deploy debt is paid.** v1.4.148 stops the word-tap sheet answering
+**The deploy debt is paid.** v1.4.149 stops the word-tap sheet answering 39 words
+with a particle inside their own span — 約翰福音 3:5's 神 answered ὁ, *the*, and
+θεός was reachable nowhere in the verse; 使徒行傳 2:29's 弟兄們 answered ἀνήρ.
+Verified against the assets the sites serve, not the repo: on both `yswords-dev`
+and `yswords-cn-qat`, `john.json` 3:5 stores `{"w":"神","s":"G2316"}` and
+`{"w":"的国。","s":"G932"}`, `matthew.json` 6:8 stores `G3962`, `acts.json` 2:37
+stores `G80`, `jeremiah.json` 52:30 stores `H6242`, and `isaiah.json` 17:3 stores
+`H669` with no `i`. v1.4.148 stops the word-tap sheet answering
 六 runs with the wrong word of their own verse — 民數記 11:8's 百姓 no longer
 returns H8081 שֶׁמֶן, *oil*, and 使徒行傳 12:24 / 20:32's 神 no longer returns
 the bare definite article. Verified against the assets the sites serve, not the
@@ -80,7 +96,7 @@ while 17:35 still closes `撇下一個。」`; 啟示錄 2:1/2:8/2:12/2:18/3:1 a
 `說：『`; and 馬太福音 15:34, 約翰福音 2:7/2:8/13:36, 創世紀 30:6,
 哥林多前書 15:45 and 撒上 16:11 / 王下 10:13 / 撒下 15:19 still read correctly.
 
-**prod is 131 versions behind and it is not an oversight.** Every prod
+**prod is 138 versions behind and it is not an oversight.** Every prod
 push needs the user to say so in the moment; permission never carries
 over from a previous turn. Full wording of what does and does not count
 as permission: `docs/release-policy.md`. prod still serves the broken
