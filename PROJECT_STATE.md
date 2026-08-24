@@ -565,6 +565,54 @@ advances the repo hash is healthy.
     correctly and scrolled a list nobody could see. A wrong mechanism aims
     every subsequent fix at the wrong object.
 
+43. **A build-provenance marker is only as fine-grained as the thing that
+    moves it, and "verified" printed at the wrong granularity is a lie with
+    a tick next to it.** The APK freshness guard greps `lib/*/libapp.so` for
+    `kAppReleaseTime`'s source stamp — sound, and measured: the on-disk APK
+    carries `2026-08-24T02:16:51Z` in all three slices, reads
+    `versionName=1.4.147`, and `4ac245c` is the commit that wrote that stamp.
+    But the stamp moves only when `bump_version.sh` runs, and the 04:00
+    launchd reinstall does **not** bump (`BUMP_VERSION` unset in the plist).
+    So the guard is blind exactly between releases — which is the window the
+    nightly builds in, and the window the three phantom Mi Pad reports came
+    out of. The first draft's comment said "compiled from the current
+    source"; that sentence was false and the refuter killed it. The check
+    was kept (it is real across bumps) and made to **print the drift** —
+    how many commits touched `lib/` since the stamp — so the `✓` cannot be
+    read as an all-clear. Ask what interval your marker resolves, not just
+    whether it is present.
+
+    Two more from the same round, both in code that was being kept rather
+    than written: `pm list packages | grep -q "com.example.yswords"` matches
+    `com.example.yswords.cn` too, so a device holding only the China flavor
+    reported the intl install "verified present"; and the guard depends on a
+    widget still rendering the stamp, because an unread const is shaken out
+    of the AOT snapshot and the guard would then refuse **every** build.
+    A guard whose failure mode is refusing everything needs its own test.
+
+    A second refuter round found the disclosure itself was conditional on a
+    `git log -S` lookup that returns empty right after a bump — because
+    `bump_version.sh` does not commit — so the very state the script's own
+    advice created was the state it stayed silent in. Also: `git rev-list
+    --count` undercounts across merges without `--full-history`, and
+    uncommitted `lib/` work is in the build while being in no commit at all.
+    **A disclosure with a silent branch is not a disclosure.**
+
+    That round also produced one confident claim that was itself false — that
+    a 13:42 intermediate `libapp.so` held stale 1.4.147 bytes, when the
+    v1.4.147 bump was 12:34 and v1.4.148 was 14:48, so 1.4.147 was correct
+    for that moment. The refuter is a source of hypotheses, not verdicts;
+    check its timeline arithmetic before acting, and when it is wrong say so
+    in the queue rather than quietly dropping it.
+
+44. **`tools/yswords-ios-reinstall.sh` is not the file launchd runs.** The
+    plist points at `~/.config/yswords/scripts/yswords-ios-reinstall.sh`, a
+    full copy that exists because macOS TCC blocks the launchd-spawned shell
+    from opening anything under `~/Documents`. `release_web.sh:63-69` re-copies
+    it on every release, so it self-heals — but a change to the repo script
+    is INERT until then. The two were byte-identical before this change
+    (`cmp`), so the older note claiming they had drifted was stale.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -597,6 +645,13 @@ accuracy — **deferred to last**), P1 (Bible study correctness), P2
 (features the user asked for), P3 (blocked or deferred). Read the
 banner at the top of the file before picking anything: the file is
 ordered P0-first for historical reasons and that is NOT the work order.
+
+**BUGS now holds one open item**, the `SQLITE_BUSY` crash mailed in
+twice — and it says to reproduce before changing anything, which nothing
+so far has managed. `flutter_cache_manager` is transitive (nothing in
+`lib/` mentions it); `audio_service` reaches it through `_loadArtwork`
+for the notification artwork of songs whose `artworkUrl` is a network
+URL. That is where to start, not in our own code.
 
 Largest live threads: the 繁體 glyph class (deferred, ~19 items), the 14
 `spans-the-word` Strong's tags still held (39 of the 53 shipped 2026-08-24;

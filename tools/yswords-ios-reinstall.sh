@@ -329,8 +329,146 @@ echo ""
 # integration_test was added.)
 rm -f "$PROJECT/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java"
 
+# 2026-08-24: CONTENT assertion on the APK before it is installed.
+#
+# `assembleIntlRelease` can "succeed" in 5 seconds by reusing stale
+# Gradle artifacts — the Dart AOT task reports up-to-date and libapp.so
+# is never recompiled. Every downstream signal then lies: `adb install
+# -r` says Success, and the `pm list packages` check below passes
+# because it only asks whether the package is PRESENT, not whether it is
+# current. That shipped three phantom bug reports off the Mi Pad on
+# 2026-08-24 (YouTube window, SoundCloud, drag) which were all one stale
+# APK.
+#
+# The assertion reads the compiled code rather than the manifest's
+# versionName on purpose: versionName is written by a different Gradle
+# task from the Dart AOT compile, so agreeing with pubspec says nothing
+# about which Dart went in. (In the one sample on disk here they did
+# agree, at 1.4.147 — that is not evidence they cannot diverge.)
+#
+# The marker is `kAppReleaseTime`'s defaultValue in
+# lib/constants/app_version.dart — a UTC instant to the second, stamped
+# by tools/bump_version.sh on every release. It is a plain const string
+# reached from the About page, so dart2native folds it into the AOT
+# string pool: the APK built at v1.4.147 carries `2026-08-24T02:16:51Z`
+# in all three of its libapp.so slices and nothing else matching that
+# shape, and `4ac245c` ("Record the v1.4.147 bump") is the commit that
+# wrote that stamp into the source. Read through the same two anchors
+# bump_version.sh writes, so reader and writer move together;
+# test/apk_freshness_guard_test.dart fails if that shape drifts.
+#
+# SCOPE — and it is narrower than it looks. This proves the APK was
+# compiled from the source as of the LAST BUMP, not from HEAD. The
+# stamp only moves when bump_version.sh runs, and this script does not
+# bump unless BUMP_VERSION=1, which the 04:00 launchd plist does not
+# set. So a Dart commit that lands between two releases is invisible to
+# the marker — and the nightly is exactly the path the three phantom
+# Mi Pad reports came out of. The drift count printed below turns that
+# blind spot into a stated one instead of a silent "✓ verified".
+#
+# Zip entry timestamps cannot be used instead: every one of this APK's
+# 1699 entries reads 1981-01-01 01:01 (AGP's fixed constant). And the
+# APK's own file mtime proves nothing either — Gradle re-zips on every
+# run whether or not the AOT task was skipped.
+expected_release_stamp="$(awk '
+  /const String kAppReleaseTime = String\.fromEnvironment\(/ { in_block = 1 }
+  in_block && /defaultValue:/ {
+    if (match($0, /'\''[^'\'']*'\''/)) print substr($0, RSTART + 1, RLENGTH - 2)
+    exit
+  }
+' "$PROJECT/lib/constants/app_version.dart" 2>/dev/null)"
+
+# Returns 0 iff every lib/*/libapp.so inside $1 carries the stamp $2.
+apk_carries_release_stamp() {
+  local apk_path want_stamp slice_list stale_slices slice found
+  apk_path="$1"
+  want_stamp="$2"
+  stale_slices=0
+
+  if [ -z "$want_stamp" ]; then
+    echo "✗ APK content check: could not read kAppReleaseTime out of"
+    echo "  lib/constants/app_version.dart — the constant's shape changed."
+    return 1
+  fi
+
+  slice_list="$(mktemp)" || {
+    echo "✗ APK content check: mktemp failed, cannot list the APK's slices"
+    return 1
+  }
+
+  unzip -Z1 "$apk_path" 'lib/*/libapp.so' >"$slice_list" 2>/dev/null
+  if [ ! -s "$slice_list" ]; then
+    echo "✗ APK content check: no lib/*/libapp.so inside $apk_path"
+    rm -f "$slice_list"
+    return 1
+  fi
+
+  while IFS= read -r slice; do
+    [ -n "$slice" ] || continue
+    if unzip -p "$apk_path" "$slice" 2>/dev/null \
+         | LC_ALL=C grep -aq -- "$want_stamp"; then
+      continue
+    fi
+    stale_slices=$((stale_slices + 1))
+    # Report the stamp the slice DOES carry, so the log names the build
+    # that was reused. Matched as a substring, not a whole `strings`
+    # line — in the 32-bit slice the stamp sits inside a longer printable
+    # run, so an anchored match finds nothing. Exactly one ISO instant
+    # occurs per slice.
+    found="$(unzip -p "$apk_path" "$slice" 2>/dev/null \
+      | LC_ALL=C grep -aoE '2[0-9]{3}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z' \
+      | sort -u | head -1)"
+    echo "✗ $slice was built at '${found:-unknown}', not '$want_stamp'"
+  done <"$slice_list"
+
+  rm -f "$slice_list"
+  [ "$stale_slices" -eq 0 ]
+}
+
 echo "→ flutter build apk --release --flavor intl ${DEFINES[*]}"
-if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
+if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}" \
+   && apk_carries_release_stamp "$ANDROID_APK" "$expected_release_stamp"; then
+  echo "✓ APK content verified — libapp.so carries $expected_release_stamp"
+
+  # How much Dart landed AFTER the stamp the check just matched. Those
+  # commits are outside what the marker can see, so name them rather
+  # than letting the ✓ above read as an all-clear.
+  # `-S` matches a commit that changed the occurrence COUNT in either
+  # direction, so for an older stamp it would find the commit that
+  # REMOVED it. Safe here only because the stamp we look up is by
+  # definition the one HEAD's source still holds — nothing has removed
+  # it yet, so the newest such commit is the one that wrote it.
+  stamp_commit="$(git log -1 --format=%H -S"$expected_release_stamp" \
+    -- lib/constants/app_version.dart 2>/dev/null)"
+  # Uncommitted lib/ work is in the build but in no commit, so rev-list
+  # cannot see it. This script tolerates a dirty tree by design (the
+  # `git pull` above is allowed to skip), and a second session shares
+  # this checkout.
+  dirty_lib="$(git status --porcelain -- lib 2>/dev/null | wc -l | tr -d ' ')"
+  if [ -z "$stamp_commit" ]; then
+    # BUMP_VERSION=1 produces exactly this: bump_version.sh edits the
+    # working tree and does NOT commit, so the stamp is in no commit
+    # yet. Staying silent here would let the ✓ above stand unqualified
+    # in the very case the advice below creates.
+    echo "  NOTE: $expected_release_stamp is not in any commit yet (an"
+    echo "  uncommitted bump), so how much Dart post-dates it is unknown."
+  else
+    # --full-history: without it, path-based history simplification drops
+    # merge parents and undercounts. Measured on this repo's merges: 1
+    # simplified against 2 full, and 101 against 102.
+    lib_drift="$(git rev-list --count --full-history "$stamp_commit..HEAD" \
+      -- lib 2>/dev/null)"
+    if [ -n "$lib_drift" ] && [ "$lib_drift" -gt 0 ]; then
+      echo "  NOTE: $lib_drift commit(s) have touched lib/ since that stamp"
+      echo "  was written, and the marker cannot see whether they made it in."
+      echo "  Release first (release_web.sh bumps) for a checkable build."
+    fi
+  fi
+  if [ -n "$dirty_lib" ] && [ "$dirty_lib" -gt 0 ]; then
+    echo "  NOTE: $dirty_lib uncommitted change(s) under lib/ went into this"
+    echo "  build and are outside what the marker can attest to."
+  fi
+
   # Warm up mDNS — the first poll after `adb start-server` can come
   # back empty even when broadcasts are live. A short settle lets
   # the cache populate. Total cost: 3s of one-time wait per run.
@@ -439,8 +577,15 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
     # 2026-08-24 04:00 run logged "✓ installed to Xiaomi Pad" for a
     # package that was not on the device. A summary that counts a
     # phantom install as a success is worse than one that fails loudly.
+    # 2026-08-24: the match must be EXACT. `pm list packages` prints one
+    # `package:<id>` per line, and the `cn` flavor's applicationIdSuffix
+    # (android/app/build.gradle.kts:75) makes it `com.example.yswords.cn`
+    # — which a substring grep for `com.example.yswords` also matches. A
+    # device with only the China build installed would therefore have
+    # reported the intl install "verified present".
     if adb -s "$device_id" install -r "$ANDROID_APK" && \
-       adb -s "$device_id" shell pm list packages 2>/dev/null | grep -q "com.example.yswords"; then
+       adb -s "$device_id" shell pm list packages 2>/dev/null \
+         | tr -d '\r' | grep -qx "package:com.example.yswords"; then
       echo "✓ installed to $label via $device_id (package verified present)"
       successes=$((successes + 1))
     else
@@ -450,7 +595,11 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"; then
     fi
   done
 else
-  echo "✗ flutter build apk FAILED — skipping Android installs"
+  echo "✗ flutter build apk FAILED, or the APK it produced does not carry"
+  echo "  the current code — skipping Android installs. If the content check"
+  echo "  is the one that fired, the Dart AOT task was wrongly up-to-date:"
+  echo "  clear it with \`$FLUTTER clean\` (or delete"
+  echo "  build/app/intermediates/flutter) and re-run."
   failures=$((failures + ${#ANDROID_DEVICES[@]}))
 fi
 

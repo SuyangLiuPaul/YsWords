@@ -104,19 +104,96 @@ reported. Work these top-down before P2.
       isolate plus the UI isolate. Reproduce before changing anything;
       an untested guess here turns a crash into a silent stall.
 
-- [ ] **The Android release build can ship an APK without the current
-      Dart code, and nothing catches it.** 2026-08-24: an
+- [x] **The Android release build can ship an APK without the current
+      Dart code, and nothing catches it. Content assertion added
+      2026-08-24 — and it is narrower than the item assumed.** An
       `assembleIntlRelease` that "succeeded" in 5 seconds reused stale
       Gradle artifacts; `adb install -r` reported Success and the
       reinstall script's `package verified present` check passed,
       because it only verifies the package is installed, not that it is
-      current. Result: three Mi Pad bug reports (YouTube window would
-      not open, SoundCloud jumped to the browser, drag did nothing)
-      that were all one stale APK. Add a **content** assertion before
-      install — e.g. grep `build/app/**/libapp.so` for a marker string
-      unique to the commit being shipped, and refuse to install on a
-      miss. Script: `~/.config/yswords/scripts/yswords-ios-reinstall.sh`
-      (note: that copy has DRIFTED from the repo's — see PROJECT_STATE).
+      current. Three Mi Pad bug reports (YouTube window would not open,
+      SoundCloud jumped to the browser, drag did nothing) were all one
+      stale APK.
+
+      **The marker, and why it is trustworthy.** `kAppReleaseTime`'s
+      `defaultValue` in `lib/constants/app_version.dart` — a UTC instant
+      to the second, re-stamped by `bump_version.sh` on every release.
+      It is a plain const reached from the About page, so it is folded
+      into the AOT snapshot. Measured on the APK sitting on disk: all
+      three `lib/<abi>/libapp.so` slices carry `2026-08-24T02:16:51Z`
+      and exactly one string of that shape, the APK's manifest reads
+      `versionName=1.4.147`, and `4ac245c` ("Record the v1.4.147 bump")
+      is the commit that wrote that stamp into source. So the source
+      constant does reach the compiled Android snapshot, with no
+      dart-define involved. The guard refuses that APK against HEAD's
+      `2026-08-24T09:51:27Z`, verified under both zsh and bash.
+      Manifest `versionName` was rejected as the marker: it is written
+      by a different Gradle task from the Dart AOT compile.
+
+      **The item asked for a marker "unique to the commit". There is no
+      such marker, and that is the honest result.** The stamp moves only
+      on a bump, and the 04:00 launchd job does not bump
+      (`BUMP_VERSION` is unset in the plist). So Dart that lands
+      *between* releases is invisible to it — and the nightly is the
+      path the three phantom reports came out of. Rather than let the
+      `✓` read as an all-clear (trap 31), the script now prints how many
+      commits have touched `lib/` since the stamp it matched, and says
+      the marker cannot see them.
+
+      **That disclosure took two refuter rounds to get right.** The
+      first draft looked the stamp up with `git log -S` and, finding
+      nothing, printed nothing — and `bump_version.sh` does not commit,
+      so the state right after a bump is exactly "stamp in no commit".
+      The advice the script itself printed ("run `BUMP_VERSION=1`")
+      created that hole; it now says "release first" and prints an
+      explicit note when the stamp is uncommitted. `git rev-list
+      --count` also needed `--full-history`: path simplification drops
+      merge parents and undercounts the drift. And uncommitted work
+      under `lib/` goes into the build while being invisible to any
+      commit count, so `git status --porcelain -- lib` is reported too.
+      One more: nothing had ever executed the script's *own* awk — a
+      Dart reimplementation only proves Dart agrees with Dart, and the
+      nested `'\''` quoting is easy to mangle in a file that is copied
+      to `~/.config/yswords/scripts/` on every release. The test now
+      lifts that assignment out of the script and runs it under `sh`.
+
+      **Two adjacent defects the refuter found in code being kept:**
+      `pm list packages | grep -q "com.example.yswords"` also matches
+      `com.example.yswords.cn` (the `cn` flavor's `applicationIdSuffix`),
+      so a device holding only the China build would have reported the
+      intl install "verified present" — now `grep -qx`. And the whole
+      guard depends on a widget still rendering the stamp; drop that
+      call site and AOT shakes the const out, at which point the guard
+      refuses *every* build. Pinned by test.
+
+      `test/apk_freshness_guard_test.dart` (9 tests) pins the source
+      shape both `bump_version.sh` and the guard parse, that the guard
+      gates the install rather than warning, that the native path never
+      injects `--dart-define=APP_RELEASE_TIME` (which would override the
+      marker and refuse every fresh build), and the two items above.
+
+- [ ] **Make the APK freshness marker commit-unique, so the nightly is
+      covered too.** Follow-on from the item above, which can only see
+      staleness across a `bump_version.sh` run. Two candidates, neither
+      free: (a) a `--dart-define=BUILD_COMMIT=<sha>` — but a const no
+      reachable code reads is tree-shaken out of the AOT snapshot, so it
+      needs a live consumer, which means touching app behaviour for a
+      tooling need; (b) compare the mtime of
+      `build/app/intermediates/flutter/intlRelease/jniLibs/*/libapp.so`
+      against the newest file under `lib/`. (b) was drafted and **not**
+      shipped because it is unverified: if `flutter assemble` re-copies
+      that file even when its own AOT cache hits, the mtime is fresh
+      while the content is stale, and the check becomes a false
+      all-clear — worse than no check. Settle that by reproducing one
+      stale build and watching the file, not by reasoning.
+
+      A refuter pass claimed (b) was already disproved — that the
+      intermediate `libapp.so` on disk had a 13:42:23 mtime while
+      carrying stale 1.4.147 content, i.e. fresh mtime over stale
+      bytes. That claim is wrong, and the timeline says so: `git show
+      -s` puts the v1.4.147 bump at 12:34:04 and v1.4.148 at 14:48:30,
+      so a build at 13:42 was *legitimately* at 1.4.147. The question
+      stays open — do not close it on that reading.
 
 ## P0 — scripture accuracy
 
