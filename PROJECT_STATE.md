@@ -843,6 +843,31 @@ advances the repo hash is healthy.
     `test/sermon_refs_resolve_test.dart`, because a rejected repair that
     is not written down gets re-derived.
 
+53. **"Not user-visible" in a queue item is a claim about ONE reader, and
+    a string usually has two.** Sermon 339's mangled H1 was written down
+    as invisible because `sermon_detail_page.dart:825-829` drops line 1
+    of the body. True — and beside the point, because
+    `scripts/ingest_sermons.py` copies every H1 into `index.json`'s
+    per-locale `titles`, which `Sermon.localizedTitle` renders in the
+    sermon list, the detail app-bar, the dashboard and the reading pane.
+    Six sermons had been showing English readers "Regeneration and
+    Renewal — ; Foundational Problems" for four months behind that
+    sentence. Trap 52 is the same lesson from the other side: there two
+    readers of one string meant fixing the extractor would only cure
+    half; here it meant a defect was filed as cosmetic.
+
+    Two more from the round. **A detector built from the defect you can
+    see finds only what has punctuation in it**: the repair's own scan
+    (stranded `— ;`, `; :`, `( )`) found 16 strings and called that the
+    class; the same cleanup pass also left bare numerals ("— 3 —", the
+    tail of a range whose head was deleted), orphan 章, and stranded
+    commas — 36 more strings in 9 more sermons, all invisible to it
+    because they are ordinary characters. And **"regenerating the
+    derived file produced no diff" proves only what that script reads**:
+    `extract_sermon_refs.py` came back byte-identical, which validates
+    the H1 edits and says nothing whatever about the `titles` map, since
+    the map is not one of its inputs.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the

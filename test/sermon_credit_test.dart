@@ -90,4 +90,49 @@ void main() {
               'inline');
     }
   });
+
+  // b8258d5 stripped verse references out of every sermon title and left
+  // the punctuation that had joined them: "Regeneration and Renewal — ;
+  // Foundational Problems". Sixteen strings across six sermons read that
+  // way on screen for four months, because nothing looks at a title once
+  // it is written.
+  //
+  // This only sees STRANDED PUNCTUATION. The same pass also left bare
+  // numerals ("— 3 —"), orphan 章 and stranded commas, which are ordinary
+  // characters and invisible here; those are counted in the queue.
+  test('no sermon title carries stranded ref-stripping punctuation', () {
+    final debris = RegExp(r'[;；]\s*[:：]|—\s*[;；：:]|\s+[;；]|[（(]\s*[)）]');
+    final offenders = <String>[];
+
+    final decoded =
+        json.decode(File('assets/sermons/index.json').readAsStringSync());
+    final items = decoded is List
+        ? decoded
+        : (decoded['sermons'] ?? decoded['items']) as List;
+    for (final s in items) {
+      final titles = (s['titles'] as Map?) ?? const {};
+      titles.forEach((locale, value) {
+        if (debris.hasMatch(value as String)) {
+          offenders.add('index.json ${s['id']}/$locale: $value');
+        }
+      });
+    }
+
+    for (final locale in const ['en', 'zh-CN', 'zh-TW']) {
+      final dir = Directory('assets/sermons/$locale');
+      if (!dir.existsSync()) continue;
+      for (final f in dir.listSync().whereType<File>()) {
+        if (!f.path.endsWith('.txt')) continue;
+        final first = f.readAsLinesSync().firstWhere((l) => l.isNotEmpty,
+            orElse: () => '');
+        if (first.startsWith('#') && debris.hasMatch(first)) {
+          offenders.add('${f.path}: $first');
+        }
+      }
+    }
+
+    expect(offenders, isEmpty,
+        reason: 'a title reading "— ;" or "; :" lost a reference and kept '
+            'its punctuation:\n${offenders.join("\n")}');
+  });
 }

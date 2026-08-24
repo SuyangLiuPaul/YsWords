@@ -5492,8 +5492,86 @@ has never seen this repo.
       `%` now sits outside the `\b`. Corpus-wide, 424 was the only
       survivor and the change removes no genuine reference.
 
-- [ ] **The Part-A heading of `assets/sermons/en/339.txt` was mangled by
-      `b8258d5` and still is.** It reads "…Second Blessing Debunked; :
+- [x] **FIXED 2026-08-25 — and it was 16 strings across 6 sermons, not
+      one heading, and they ARE on screen.** The item said "not
+      user-visible (line 1 is dropped as the title)". That is true of
+      the H1 *inside the body*, and beside the point: `ingest_sermons.py`
+      copies each H1 into `index.json`'s per-locale `titles` map, and
+      `Sermon.localizedTitle` (`lib/models/sermon.dart:89-105`) is what
+      the sermon list (`sermons_page.dart:905`), the detail app-bar
+      (`sermon_detail_page.dart:349`), the dashboard and the reading
+      pane all render. English readers have been shown
+      "Regeneration and Renewal — ; Foundational Problems" since May.
+
+      The other five are the same pass, without the ordinal half: it
+      deleted the reference and kept the punctuation that had joined it
+      — 140, 336, 337, 341, 342, in all three locales. 140's residue was
+      `— ; 23 —`, the tail of "Matthew 22:41–46; 23"; removing it loses
+      nothing navigable, since `index.json` gives 140 `"passage": "Mt 23"`
+      and `refs.json` maps both `Matthew 23` and `Matthew 22:41` to it.
+
+      339's four ordinals are restored spelled out — "Mark one:" …
+      "Mark four:" — matching what v1.4.153 wrote at line 43 for marks
+      five to seven. `extract_sermon_refs.py` needs a digit after the
+      book name, so the words index nothing; `passageRefPattern` never
+      sees the string at all (`sermon_detail_page.dart:825-829` drops the
+      H1 before linkifying). Confirmed b8258d5's intent was verse refs and
+      not ordinals: its own message says it preserved `（一）（二）`, and it
+      spared 标记1：…标记4： in the Chinese titles while stripping their
+      parenthesised references.
+
+      Regenerating `refs.json` afterwards produced a byte-identical file,
+      which checks the 16 H1 edits — the `titles` map is not an input to
+      that script, so it says nothing about the index.json half; that
+      half is checked by the new test in `test/sermon_credit_test.dart`,
+      which fails on the pre-repair data.
+
+- [ ] **The same cleanup left 36 more strings damaged in 9 other
+      sermons, in shapes stranded punctuation cannot detect** — 17
+      `titles` fields and 19 H1 lines. Raised by the refuter 2026-08-25
+      and then measured against `git show
+      b8258d5^:assets/sermons/index.json`, so the table is counted, not
+      asserted. The 2026-08-25 detector looks for stranded punctuation
+      and is structurally blind to all four shapes below, because a bare
+      numeral and a bare 章 are ordinary characters.
+
+          143 (3 loc)  Matthew 23:31–24:3   → "— 3 —"   range tail survives
+          158 (en)     Matthew 24:45-25:30  → "— 30"
+          151 (zh×2)   路加福音21:28，34–36   → "— 36 —"  H1 ONLY
+          117 (en)     "(Matthew 18:21-35, Luke 17:3-4)" → "( , )"
+          393 (3 loc)  2 Peter 3:8–13,      → "— , the Korean…"
+          407 (3 loc)  John 10:10、          → "— 、交通的比喻…"
+          338 (zh×2)   使徒行传5章的警告      → "章的警告"
+          343 (zh×2)   约翰福音15章外在…      → "章外在…"
+          EC015 (zh×2) 路加福音17章桑树…      → "章桑树…"
+
+      151 is the one to look at first, because its two sources disagree:
+      the zh H1 lines read "— 36 —" while its `titles` entries are clean.
+      Something re-edited the index without touching the body file, so
+      whatever regenerates one of them will reintroduce the other's
+      state. The refuter listed 151 as damaged in all three locales; on
+      the index side it is not damaged at all.
+
+      Two of these need a decision rather than a deletion. The orphan
+      `章` cases read correctly once `章` goes ("试金石", "外在与内在的
+      连接"), which is also what the English sibling title already says
+      — but that is a judgement about what reads well, three times over.
+      And 393/407 lost `[Bilingual: English/Chinese]` as well as the
+      reference, because the em-dash collapse rule fired twice; decide
+      whether the bilingual tag should come back before touching them.
+      Not acted on this iteration because a single refuter round WIDENED
+      the class, and the standing rule is to record widening and let a
+      later iteration re-derive it (trap 38).
+
+      Also true and separate: the top-level `title` field was never
+      scanned. 140's still reads "22.41-46 Christ as Lord the remedy for
+      hypocricy" — a filename-derived string with a reference and a typo
+      in it. And H1 and `titles` disagree on 276 of 867 pairs corpus-wide
+      (196-1, 196-2 …), so "the index title equals its H1" is NOT a
+      general invariant; it happens to hold for the six repaired here.
+
+- [x] **SUPERSEDED by the entry above — the original statement, which
+      named one heading and called it invisible.** It reads "…Second Blessing Debunked; :
       Power to Be Sons of God ; : Seeing God's Kingdom ; : Spirit's
       Monopoly ; : Does Righteousness — Cornelius" — the title-cleanup
       pass deleted "Mark 1:"…"Mark 4:" as if they were verse references
