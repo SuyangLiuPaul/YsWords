@@ -661,7 +661,15 @@ advances the repo hash is healthy.
   first", 2026-08-18. This overrides the accuracy rule *for that class
   only*; blank verses, wrong citations and mislabelled translations are
   still P0. What already shipped stays shipped.
-- Commits use an Opus 5 `Co-Authored-By` trailer, never another model's.
+- **No `Co-Authored-By` trailer on anything — commit or PR.** The user,
+  2026-08-25: "我要把coauthored全部去掉". The previous rule ("use the Opus
+  5 one, never another model's") had quietly become unfollowable: this
+  loop invokes `--model claude-opus-5`, but the token does not always
+  resolve to that model, so 123 of the last 342 trailers said Opus 4.7.
+  The only options were a trailer that lies about who wrote the commit
+  or no trailer, and the user chose none. Enforced globally by
+  `attribution: {commit: "", pr: ""}` in `~/.claude/settings.json`, so it
+  holds for any session on this Mac, not only the loop.
 - Credentials are the user's to handle — including the Xcode Apple ID.
 
 ## The queue
