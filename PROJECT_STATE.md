@@ -43,11 +43,14 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.145** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.145** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.146** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.146** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**The deploy debt is paid.** v1.4.145 carries the `主*` removal — verified
+**The deploy debt is paid.** v1.4.146 removes the two orphan `〕` that
+士師記 8:24 and 耶利米書 10:11 printed as scripture — verified against the live
+asset, where `cuvs-yhwh-tr.json` now pairs 12 `〔` to 12 `〕` on both
+`yswords-dev` and `yswords-cn-qat`. v1.4.145 carries the `主*` removal — verified
 against the asset the sites serve, not the repo: `john.json` on both
 `yswords-dev` and `yswords-cn-qat` has zero asterisks, 約翰福音 20:13 stores
 `{"w":"主","s":"G2962","i":["G3588"]}` and 20:2 stores `有人把`/`主` split so
