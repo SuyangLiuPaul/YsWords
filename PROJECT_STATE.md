@@ -57,9 +57,19 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.151** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.151** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.152** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.152** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.152 rebuilds the sermon reference index: 1,294 keys become 2,968 and
+282 sermons become 289, because the extractor finally reads the spoken
+citations these transcripts use. Eight entries it dropped were false — four
+of them an ordinal swallowed from the next book, so sermon 237 was filed
+under `John 1` for a sentence that says `1 John 2:18` (trap 50). Verified
+against the assets the sites serve, not the repo: on both `yswords-dev` and
+`yswords-cn-qat`, `sermons/refs.json` holds 2,968 keys, sermon 237 answers
+only `1 John 2:18`, sermon 325 now reaches `2 Kings 13` and `13:20`, and
+`Revelation 2` no longer names sermon 238.
 
 **The deploy debt is paid.** v1.4.151 was a debt release rather than a fix of
 its own: nine commits had accumulated past the v1.4.150 build and two of them
