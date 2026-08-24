@@ -405,9 +405,11 @@ reported. Work these top-down before P2.
       12:34, next at 14:48), and the file it was reasoning about is no
       longer the one measured.
 
-- [ ] **Three holes the AOT freshness guard does not cover, recorded
-      rather than papered over.** Found by refuters while shipping the
-      item above; none is a reason to withhold the guard, all three
+- [x] **Three holes the AOT freshness guard does not cover. Hole (3)
+      costed out and closed for assets 2026-08-25 —
+      `asset_bundle_matches_source`. (1) and (2) stand, and the rest of
+      (3) is now a much smaller list.** Found by refuters while shipping
+      the item above; none is a reason to withhold the guard, all three
       would make a "✓" read wider than it is. (1) A `lib/` edit landing
       DURING the ~4-minute build is older than the app.so written at the
       end of it and absent from the snapshot — reachable, because a
@@ -420,6 +422,45 @@ reported. Work these top-down before P2.
       the one worth costing out: the same depfile already lists the asset
       inputs, so widening the prefix filter beyond `lib/` may be nearly
       free. Measure before assuming it is.
+
+      **Measured, and the guess was backwards.** Widening the prefix
+      would have refused correct builds, not caught stale ones. Nothing
+      under `assets/` is an input to the chain that writes `app.so`: in
+      the build directory `.last_build_id` names — which is how you pick
+      it, seven siblings declare the same output —
+      `kernel_snapshot_program.d` has 2780 inputs and zero under
+      `assets/`, `android_aot_release_android-arm64` has five (engine
+      and `app.dill`), and the bundle target has one, the AOT `app.so`
+      it copies. Assets feed a separate target, `aot_android_asset_
+      bundle`, whose 1101 outputs are the copies under `flutter_assets/`.
+      So an asset-only commit leaves the source newer than `app.so` in a
+      perfectly correct build — 129 of this repo's 1266 commits, and 9
+      of the 60 before this one.
+
+      **What shipped instead**, as a second function so the comparison
+      can differ: each `assets/` input in the depfile against its copy
+      under `flutter_assets/`, which works because that target copies
+      with Dart's `File.copy` and macOS preserves the source mtime —
+      1093 of 1093 equal to the nanosecond, on distinct inodes. Source
+      newer than copy, then `cmp` to confirm, so the mtime-moved-but-
+      bytes-did-not case that (2) has to live with is dismissed here
+      rather than acted on. 0.38 s over 1093 assets; verified identical
+      under sh, zsh and bash. Both refuter rounds broke something real:
+      round one moved the citation off the bundle stamp onto the kernel
+      depfile, round two found the draft printed a **✓ on a genuinely
+      stale asset** whose path contained a space (`depfile.dart` writes
+      a literal space as `\ `, so splitting on every space sheared the
+      path into fragments that did not exist) and that a `cmp` which
+      could not READ a file was being counted as "the bytes differ",
+      refusing the nightly and naming the wrong cause.
+
+      **Still uncovered, and now the whole list:** (1) and (2) above,
+      plus `pubspec.yaml`, dart-defines and `android/` Kotlin. Assets
+      are no longer on it. `pubspec.yaml` is an input to the same asset
+      target, but it has no copy to compare against and
+      `bump_version.sh` rewrites it on every release, so the cheap
+      version of that check would refuse the nightly rather than catch
+      anything — it needs a different idea, not a wider filter.
 
 ## P0 — scripture accuracy
 

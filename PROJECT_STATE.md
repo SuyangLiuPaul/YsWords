@@ -703,6 +703,42 @@ advances the repo hash is healthy.
     recorded rather than quietly dropped. Measure as close to the shipped
     artifact as the skip rules allow.
 
+49. **"Widen the filter" and "add a second check" look like the same
+    edit and are opposite ones. The question is not what you FILTER, it
+    is what you COMPARE AGAINST.** A queue item guessed the AOT
+    freshness guard could cover assets by widening its depfile prefix
+    past `lib/`, since the depfile lists 1093 assets against 212 `lib/`
+    inputs. It reads as nearly free. But that guard compares against
+    `<abi>/app.so`, and no asset is an input to anything that writes it:
+    `kernel_snapshot_program.d` has 2780 inputs and **zero** under
+    `assets/`. Assets feed a separate target whose outputs are the
+    copies under `flutter_assets/`. So the "free" version would have
+    **refused correct builds on 129 of this repo's 1266 commits** — the
+    asset-only ones, which is precisely what this loop ships. Pick the
+    output that the input actually feeds, then ask what filter it needs.
+
+    Two more from the same round, both about a ✓ rather than a ✗.
+    **`flutter_build.d` escapes a literal space as `\ `** — depfile.dart
+    does `path.replaceAll(r' ', r'\ ')` — so `tr ' ' '\n'` shears such a
+    path into fragments that exist nowhere, and the draft printed
+    **"✓ verified"** over a genuinely stale asset it had silently
+    dropped. The live tree could never have caught it: the only
+    space-containing asset files here are under `assets/fonts_backup/`,
+    which pubspec does not declare. And `cmp` exits 0 identical, 1
+    different, **>1 could not read** — folding the third into the second
+    refuses the unattended nightly while naming the wrong cause. Both
+    hazards produce output that reads like success or like a real
+    finding; neither is visible to analyze or the suite.
+
+    The useful positive result, since a guard needs a signal to exist:
+    that asset target copies with Dart's `File.copy`, and macOS
+    preserves the source mtime through it — **1093 of 1093 inputs equal
+    to their bundled copy to the nanosecond, on distinct inodes**, so
+    they are real copies, not clones. "Source newer than its own copy"
+    is therefore a valid staleness signal, and `cmp` on the handful that
+    trip it removes the false-alarm class the `lib/` check has to live
+    with.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -737,22 +773,24 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 85 open items across BUGS (reported from
+`docs/autonomous-queue.md` — 84 open items across BUGS (reported from
 the user's own devices — the top tier since 2026-08-24), P0 (scripture
 accuracy — **deferred to last**), P1 (Bible study correctness), P2
 (features the user asked for), P3 (blocked or deferred). Read the
 banner at the top of the file before picking anything: the file is
 ordered P0-first for historical reasons and that is NOT the work order.
 
-**BUGS holds two open items, neither startable right now.** The
+**BUGS holds one open item, and it is not startable right now.** The
 `SQLITE_BUSY` crash was reproduced on demand on 2026-08-25 and closed:
 10/10 launches crash with the duplicate engine, 0/10 without, with a
 one-line control holding the Dart constant. What remains is the
 follow-on check that the now-cached FlutterEngine outliving
 MainActivity does not strand the launcher-icon swap — and that one
 needs the Mi Pad, which had no device attached at all on 2026-08-25.
-The other is a recorded list of three holes the new AOT freshness guard
-does not cover; the guard itself shipped the same day.
+The recorded list of three holes in the AOT freshness guard was closed
+the same day for its costed-out member (assets); `lib/` edits landing
+mid-build, mtime-moved-but-content-did-not, and `pubspec.yaml` /
+dart-defines / `android/` Kotlin remain uncovered and are written down.
 
 **The Android nightly now has a freshness guard that carries no version
 in it**, so Dart landing between releases is covered for the first time —

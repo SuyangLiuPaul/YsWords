@@ -496,8 +496,10 @@ apk_carries_release_stamp() {
 #   * a dep whose mtime moved but whose content did not (an edit and a
 #     revert) refuses a build that is legitimately not rebuilt. `git
 #     pull --ff-only` cannot cause it; an interactive session can.
-#   * assets, pubspec.yaml, dart-defines and android/ Kotlin are outside
-#     this check entirely.
+#   * pubspec.yaml, dart-defines and android/ Kotlin are outside this
+#     check entirely. Assets used to be too; asset_bundle_matches_source
+#     below now covers them, by a different comparison and for the
+#     reason given there.
 aot_postdates_dart_source() {
   local intermediates depfile dep_list aot newest newest_epoch newest_path
   local slices stale
@@ -578,10 +580,171 @@ aot_postdates_dart_source() {
   return 0
 }
 
+# Asset freshness — the third hole recorded when the check above shipped.
+# A stale APK does not have to hold stale CODE: this repo ships scripture
+# corrections with no lib/ change at all (9 of the 60 commits before this
+# one touched assets/ and not lib/), and the guard above would pass every
+# one of them while the tablet displayed the uncorrected text.
+#
+# WHY THIS IS NOT JUST A WIDER PREFIX ON THE FUNCTION ABOVE. The queue
+# item guessed it would be, since flutter_build.d lists the assets too —
+# 1093 of them against 212 lib/ inputs. But that function compares
+# against <abi>/app.so, and NOTHING under assets/ can move that mtime.
+# Measured in the build directory .last_build_id names (which is how you
+# pick it — seven sibling directories declare the same app.so output):
+# kernel_snapshot_program.d has 2780 inputs and zero under assets/;
+# android_aot_release_android-arm64 has five, all engine or app.dill;
+# android_aot_bundle_release_android-arm64 has one, the AOT app.so it
+# copies. Assets reach none of them — they are inputs to a separate
+# target, aot_android_asset_bundle, whose 1101 outputs are the copies
+# under flutter_assets/. So a widened prefix would refuse a correct build
+# every time the newest change was an asset — 129 of this repo's 1266
+# commits over its life (10.2%), and 9 of the 60 before this one.
+#
+# WHAT IS COMPARED INSTEAD, and why the signal exists at all. That target
+# copies with Dart's File.copy, which on macOS preserves the source
+# mtime: measured 1093 of 1093 inputs equal to their copy to the
+# nanosecond, on distinct inodes, so these are real copies rather than
+# clones. A source NEWER than its own copy therefore means the copy was
+# not refreshed. cmp then confirms, so an mtime that moved without the
+# bytes moving — the false-refusal case that the lib/ check above has to
+# live with — is dismissed here rather than acted on.
+#
+# Fails safe in both unmeasurable directions: a source the depfile names
+# but that cannot be read is skipped, disclosed, and subtracted from the
+# count the ✓ claims; and a copy NEWER than its source is fine — that is
+# what a transformed or tree-shaken asset looks like.
+asset_bundle_matches_source() {
+  local intermediates depfile bundle pairs mtimes suspect
+  local checked stale skipped kind src copy tab
+  intermediates="$PROJECT/build/app/intermediates/flutter/intlRelease"
+  depfile="$intermediates/flutter_build.d"
+  bundle="$intermediates/flutter_assets"
+  stale=0
+  skipped=0
+  tab="$(printf '\t')"
+
+  if [ ! -f "$depfile" ]; then
+    echo "  NOTE: no flutter_build.d — the asset freshness check did not run."
+    return 0
+  fi
+  if [ ! -d "$bundle" ]; then
+    echo "  NOTE: no flutter_assets/ under build/app/intermediates/flutter/"
+    echo "  intlRelease — the asset freshness check did not run."
+    return 0
+  fi
+
+  pairs="$(mktemp)" && mtimes="$(mktemp)" && suspect="$(mktemp)" || {
+    echo "  NOTE: mktemp failed — the asset freshness check did not run."
+    return 0
+  }
+
+  # Same depfile shape as above: `<outputs...>: <inputs...>`, one line,
+  # the separator glued to the last output token. Emit `<src>\t<copy>`,
+  # the copy being the same path relative to the project, rerooted.
+  #
+  # A literal space in a path is written `\ ` — flutter_tools'
+  # depfile.dart does `path.replaceAll(r' ', r'\ ')` — so splitting on
+  # every space would shear such a path into fragments, none of which
+  # exists, and the asset would drop out of the check while the ✓ still
+  # counted it. Protect the escaped ones, split, then restore. This build
+  # has no such input, so nothing here is exercised by the live tree; the
+  # tests cover it instead.
+  awk -v proj="$PROJECT/" -v bundle="$bundle/" -v tab="$tab" '
+    {
+      gsub(/\\ /, "\001")
+      n = split($0, tok, " ")
+      for (i = 1; i <= n; i++) {
+        t = tok[i]
+        if (!seen) { if (t ~ /:$/) seen = 1; continue }
+        gsub(/\001/, " ", t)
+        if (index(t, proj "assets/") == 1)
+          print t tab bundle substr(t, length(proj) + 1)
+      }
+    }' "$depfile" >"$pairs"
+
+  if [ ! -s "$pairs" ]; then
+    echo "  NOTE: flutter_build.d lists no assets/ inputs — the asset"
+    echo "  freshness check did not run."
+    rm -f "$pairs" "$mtimes" "$suspect"
+    return 0
+  fi
+
+  # One batched stat over both sides. Per-file stat calls would be ~2,200
+  # processes for this build, inside a job that runs at 04:00 unattended.
+  tr "$tab" '\n' <"$pairs" | tr '\n' '\0' \
+    | xargs -0 stat -f '%m %N' 2>/dev/null >"$mtimes"
+
+  awk -F"$tab" -v mt="$mtimes" '
+    BEGIN {
+      while ((getline line < mt) > 0) {
+        gap = index(line, " ")
+        epoch[substr(line, gap + 1)] = substr(line, 1, gap - 1)
+      }
+    }
+    !($1 in epoch) { print "SKIP\t" $1; next }
+    !($2 in epoch) { print "GONE\t" $1 "\t" $2; next }
+    (epoch[$1] + 0) > (epoch[$2] + 0) { print "NEWER\t" $1 "\t" $2 }
+  ' "$pairs" >"$suspect"
+
+  checked="$(wc -l <"$pairs" | tr -d ' ')"
+
+  while IFS="$tab" read -r kind src copy; do
+    case "$kind" in
+      SKIP)
+        skipped=$((skipped + 1))
+        ;;
+      GONE)
+        stale=$((stale + 1))
+        echo "✗ ${src#"$PROJECT/"} is an input to this build but was never"
+        echo "  bundled into flutter_assets/"
+        ;;
+      NEWER)
+        # The bytes decide, not the clock. flutter skips this target on a
+        # content hash, so a touch-and-revert leaves a correct copy with
+        # an older mtime, and refusing on that would be a false alarm.
+        #
+        # cmp exits 0 identical, 1 different, and >1 when it could not
+        # read a side. "Could not read" is not evidence of staleness, and
+        # folding it into the refusal would print a message that names
+        # the wrong cause.
+        cmp -s "$src" "$copy"
+        case "$?" in
+          0) continue ;;
+          1)
+            stale=$((stale + 1))
+            echo "✗ ${src#"$PROJECT/"} changed, but flutter_assets/ still holds"
+            echo "  the previous bytes"
+            ;;
+          *) skipped=$((skipped + 1)) ;;
+        esac
+        ;;
+    esac
+  done <"$suspect"
+
+  rm -f "$pairs" "$mtimes" "$suspect"
+
+  if [ "$stale" -gt 0 ]; then
+    echo "✗ $stale of $checked asset input(s) are not what this build"
+    echo "  bundled — a stale asset bundle was reused."
+    echo "  Refusing to install. Re-run; if it repeats, flutter clean."
+    return 1
+  fi
+
+  if [ "$skipped" -gt 0 ]; then
+    echo "  NOTE: $skipped of $checked asset input(s) could not be read and"
+    echo "  were not checked — the ✓ below covers the rest, not them."
+  fi
+  echo "✓ Asset freshness verified — $((checked - skipped)) of $checked asset"
+  echo "  input(s) flutter_build.d lists match the bundled copy"
+  return 0
+}
+
 echo "→ flutter build apk --release --flavor intl ${DEFINES[*]}"
 if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}" \
    && apk_carries_release_stamp "$ANDROID_APK" "$expected_release_stamp" \
-   && aot_postdates_dart_source; then
+   && aot_postdates_dart_source \
+   && asset_bundle_matches_source; then
   echo "✓ APK content verified — libapp.so carries $expected_release_stamp"
 
   # How much Dart landed AFTER the stamp the check just matched. Those
