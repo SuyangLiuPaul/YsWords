@@ -913,6 +913,38 @@ advances the repo hash is healthy.
   holds for any session on this Mac, not only the loop.
 - Credentials are the user's to handle — including the Xcode Apple ID.
 
+## The loop checks CI now — and why it has to
+
+Since 2026-08-25 the loop's `prompt.md` opens every iteration by asking
+`gh run list --branch main --limit 1` whether CI is green, and closes it
+by watching its own push to a conclusion.
+
+The reason is a measured failure, not a policy preference. On 2026-08-24
+Flutter CI was red for **six hours across roughly a dozen iterations**,
+and every one of those iterations honestly reported "analyze clean, all
+tests green" — because they ran on this Mac and CI runs on
+`ubuntu-latest`. Both failures were things the Mac had and the runner
+did not:
+
+- `tools/yswords-ios-reinstall.sh` reads mtimes with `stat -f '%m %N'`,
+  which is BSD. GNU coreutils wants `-c '%Y %n'`, and every call site
+  sent the difference to `/dev/null`, so the guard reported "could not
+  read mtimes" and returned 0. The guard was fine in production (it only
+  runs here); what was broken was the ability to test it.
+- `apk_freshness_guard_test.dart` executes the guard under `zsh`,
+  deliberately, because that is the script's own `#!` line.
+  `ubuntu-latest` ships bash and dash, not zsh.
+
+The user learned about it by forwarding a pile of failure emails. That
+is the loop's single largest blind spot: **a local green is evidence
+about this Mac, not about the shipped artifact.** The same class
+produced three Mi Pad bug reports (a Gradle build that reused stale
+artifacts) a day earlier.
+
+When a CI failure is environmental, fix it so the test RUNS on Linux.
+Never weaken the test or skip it on CI — that buys green by testing
+something the shipped code never does.
+
 ## The queue
 
 `docs/autonomous-queue.md` — 84 open items across BUGS (reported from
