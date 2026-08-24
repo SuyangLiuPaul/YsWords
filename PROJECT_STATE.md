@@ -462,6 +462,17 @@ advances the repo hash is healthy.
   app states something untrue about scripture jumps the queue. An
   interface that looks wrong is annoying; one that reads plausibly and
   is wrong gets believed and quoted.
+- **BUT on 2026-08-24 the user reordered the WORK, not that rule:**
+  "第一个可以推到后面去做，先把功能性的和系统bugs issues之前提到的全部
+  先做完" / "P2 P3先做完". Tier order is now: device-reported BUGS → P2 →
+  P3 → P1 → P0 → 繁體 glyph class. **The order of the queue FILE is no
+  longer the order of work**; the banner at the top of
+  `docs/autonomous-queue.md` and the loop's `prompt.md` both carry it,
+  and they must be kept in step. One carve-out keeps P0 precedence: a
+  defect that **omits or blanks actual verse text** — a reader unable
+  to see scripture that should be there is data loss, not polish. The
+  reason for the reorder is in the numbers: P0 grew 76 → 83 open in a
+  day, because auditing discovers faster than it repairs.
 - **繁體 glyph work is deferred to last** — "fantizi 放在最后 do others
   first", 2026-08-18. This overrides the accuracy rule *for that class
   only*; blank verses, wrong citations and mislabelled translations are
@@ -471,9 +482,12 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 83 open items across P0 (scripture
-accuracy), P1 (Bible study correctness), P2 (features the user asked
-for), P3 (blocked or deferred).
+`docs/autonomous-queue.md` — 86 open items across BUGS (reported from
+the user's own devices — the top tier since 2026-08-24), P0 (scripture
+accuracy — **deferred to last**), P1 (Bible study correctness), P2
+(features the user asked for), P3 (blocked or deferred). Read the
+banner at the top of the file before picking anything: the file is
+ordered P0-first for historical reasons and that is NOT the work order.
 
 Largest live threads: the 繁體 glyph class (deferred, ~19 items), the 53
 `spans-the-word` Strong's tags (mechanical, enumerated, no per-verse
