@@ -48,11 +48,19 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.147** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.147** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.148** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.148** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**The deploy debt is paid.** v1.4.147 stops the word-tap sheet printing a
+**The deploy debt is paid.** v1.4.148 stops the word-tap sheet answering
+六 runs with the wrong word of their own verse — 民數記 11:8's 百姓 no longer
+returns H8081 שֶׁמֶן, *oil*, and 使徒行傳 12:24 / 20:32's 神 no longer returns
+the bare definite article. Verified against the assets the sites serve, not the
+repo: on both `yswords-dev` and `yswords-cn-qat`, `tagged/cuvs-yhwh/numbers.json`
+11:8 stores `{"w":"百姓","s":"H5971"}`, `acts.json` 12:24 and 20:32 both store
+`"s":"G2316"`, `jeremiah.json` 47:4 stores `H3605`, `1_corinthians.json` 1:14
+stores `G2316` and `1_chronicles.json` 16:39 stores `H1116`. v1.4.147 stops the
+word-tap sheet printing a
 character of scripture twice in seven verses — verified against the assets the
 sites serve, where 馬太福音 9:28 now reads 「耶穌說：」 and none of 若若, 箭箭,
 我們我們, 敵我敵, 你要要, 未未曾 survives. v1.4.146 removes the two orphan `〕` that
