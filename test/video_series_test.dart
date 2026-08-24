@@ -130,10 +130,33 @@ void main() {
               reason: '${s.id}/${e.id} has no title in $locale');
         }
       }
-      // Both Chinese locales resolve to the church's own wording — one
-      // entry, not a converted pair. A Traditional variant produced by
-      // us would be our word, not theirs.
-      expect(s.titleFor('zh-Hant'), s.titleFor('zh-Hans'));
+      // 2026-08-25: the assertion here used to be the OPPOSITE — that
+      // both Chinese locales resolve to one stored string, because a
+      // converted glyph would be our word rather than the church's. The
+      // user asked for two scripts, and the audit showed the old claim
+      // did not hold anyway: the single string was internally mixed
+      // (episode 1 said 哪裡 while episode 6 said 黑暗里) and the file had
+      // drawn different episodes from different sources.
+      //
+      // What matters now is that every locale gets its OWN script, so
+      // no title may fall back and none may be left with a bare 'zh'.
+      expect(s.titles.containsKey('zh'), isFalse,
+          reason: '${s.id}: a bare zh serves both locales and is a trap');
+      //
+      // Note the shape: NOT "every episode has Chinese". The Shema
+      // episodes are English-only because the church published them
+      // that way, and inventing Chinese titles for them would be the
+      // very thing this file refuses to do. The rule is that Chinese,
+      // where it exists, exists in both scripts — never in one, and
+      // never as a bare 'zh' that silently serves both.
+      for (final e in s.episodes) {
+        expect(e.titles.containsKey('zh'), isFalse,
+            reason: '${s.id}/${e.id}: bare zh');
+        expect(e.titles.containsKey('zh-Hans'),
+            e.titles.containsKey('zh-Hant'),
+            reason: '${s.id}/${e.id}: has one Chinese script but not the '
+                'other, so one locale falls back to English');
+      }
     }
   });
 

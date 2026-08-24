@@ -4,20 +4,23 @@
     "source": "Christian Disciples Church — Sunday Gospel Channel on YouTube",
     "note": "Every recording is a YouTube video id. Nothing here is self-hosted any more, so the app carries no media and no subtitle files: YouTube supplies its own captions where they exist.",
     "pairingEvidence": "The language of each id was taken from YouTube's own title via oEmbed, NOT from the position of the embed on the church's page. Reading the page's layout put every Standing-at-the-Cross row one place out, which would have offered 'English' and played Cantonese.",
-    "chineseTitles": "Chinese titles are stored once, under 'zh', exactly as the church wrote them. They are deliberately NOT converted between Simplified and Traditional — this is someone else's copy, and a converted glyph would be our word, not theirs.",
+    "chineseTitles": "Every Chinese title carries an explicit 'zh-Hans' AND 'zh-Hant'. Until 2026-08-25 there was a single 'zh' stored verbatim as the church wrote it, on the principle that a converted glyph would be our word rather than theirs. The user asked for that to change, and the audit behind the decision is worth keeping: _localized() falls BOTH zh-Hans and zh-Hant back to 'zh', so one string served both readers and neither got their own script. Worse, the stored strings were not internally consistent — 在十字架下 episode 1 read 哪裡 while episode 6 read 黑暗里, the same word spelt two ways in one series; episode 10 mixed 將/靈 with 死后; and 獨一真神 was Traditional throughout while eight of the ten cross episodes were Simplified.",
     "shemaNote": "The Shema series is the 29 links the church published — 25 numbered messages (#7-#31) plus the 4 whole-part compilations, which sit last within their own part. Ids and titles come from YouTube (oEmbed), not from the church page, which refuses datacenter IPs. Numbering starts at #7 because #1-#6 belong to a different series on the same channel and are deliberately not included. The church's bracketed sub-numbers are not shown: Part 4 reads (15)(16)(12)(18) where the sequence wants 17, and displaying a number we know to be wrong is worse than showing only the # that is consistent.",
-    "ourLabelsNote": "Two kinds of Chinese text live in this file and they must not be confused. A 'zh' title is the church's own wording, copied verbatim, and is never converted between scripts. The 'zh-Hans'/'zh-Hant' titles and taglines on shema-1..4 are OURS: the church published that series in English only, and the user asked on 2026-08-23 for a Chinese name for it ('可以 shema系列 shema series之类的'). Because they are our navigational labels rather than someone else's copy, they are written out in both scripts instead of stored once. The episode titles stay English — those are the church's words."
+    "ourLabelsNote": "Two kinds of Chinese text live in this file and they must not be confused. A 'zh' title is the church's own wording, copied verbatim, and is never converted between scripts. The 'zh-Hans'/'zh-Hant' titles and taglines on shema-1..4 are OURS: the church published that series in English only, and the user asked on 2026-08-23 for a Chinese name for it ('可以 shema系列 shema series之类的'). Because they are our navigational labels rather than someone else's copy, they are written out in both scripts instead of stored once. The episode titles stay English — those are the church's words.",
+    "chineseTitlesProvenance": "The church's own titles are themselves mixed — checked against YouTube oEmbed, not assumed: its Cantonese title for cross episode 2 is fully Traditional (耶穌被釘死，與我有什麼關係？) while episodes 3-9 pair a Traditional prefix with a Simplified body, and its Mandarin title for episode 1 reads 哪里 where this file had been showing 哪裡. So the old 'verbatim' claim was not even true: the file had taken different episodes from different sources. Where the church published a title in both scripts (cross episode 1, 獨一真神) that wording is used as-is. The rest is ours, converted by hand rather than by a tool so the one-to-many choices are deliberate: 後 for 'after' (最後/死後), 係 for 'relationship' (關係), 裡 for 'inside' (黑暗裡/這裡), 託 for 'entrust' (託付). Wording was never changed, only script — the church writes 和我有什麼關係 where its own Cantonese title says 與我, and 和 was kept."
   },
   "series": [
     {
       "id": "cross",
       "titles": {
         "en": "Standing at the Cross",
-        "zh": "在十字架下"
+        "zh-Hans": "在十字架下",
+        "zh-Hant": "在十字架下"
       },
       "taglines": {
         "en": "A 10-Part Journey",
-        "zh": "人生十堂课"
+        "zh-Hans": "人生十堂课",
+        "zh-Hant": "人生十堂課"
       },
       "creditKey": "oneGodCredit",
       "episodes": [
@@ -26,7 +29,8 @@
           "number": 1,
           "titles": {
             "en": "In that moment, where are you?",
-            "zh": "那一刻，你在哪裡？"
+            "zh-Hans": "那一刻，你在哪里？",
+            "zh-Hant": "那一刻，你在哪裡？"
           },
           "tracks": [
             {
@@ -51,7 +55,8 @@
           "number": 2,
           "titles": {
             "en": "What does Jesus' crucifixion have to do with me?",
-            "zh": "耶稣被钉死，和我有什么关系？"
+            "zh-Hans": "耶稣被钉死，和我有什么关系？",
+            "zh-Hant": "耶穌被釘死，和我有什麼關係？"
           },
           "tracks": [
             {
@@ -71,7 +76,8 @@
           "number": 3,
           "titles": {
             "en": "Why suffer on the cross?",
-            "zh": "既耶稣可当下脱身，为何甘愿在十架受难？"
+            "zh-Hans": "既耶稣可当下脱身，为何甘愿在十架受难？",
+            "zh-Hant": "既耶穌可當下脫身，為何甘願在十架受難？"
           },
           "tracks": [
             {
@@ -91,7 +97,8 @@
           "number": 4,
           "titles": {
             "en": "What is the sting in the temptation on the cross?",
-            "zh": "十字架上最后的试探，究竟其毒钩何在？"
+            "zh-Hans": "十字架上最后的试探，究竟其毒钩何在？",
+            "zh-Hant": "十字架上最後的試探，究竟其毒鉤何在？"
           },
           "tracks": [
             {
@@ -111,7 +118,8 @@
           "number": 5,
           "titles": {
             "en": "Is our hope anchored in the Messiah and his coming Kingdom?",
-            "zh": "我们的盼望是否在弥赛亚和他的国度？"
+            "zh-Hans": "我们的盼望是否在弥赛亚和他的国度？",
+            "zh-Hant": "我們的盼望是否在彌賽亞和他的國度？"
           },
           "tracks": [
             {
@@ -131,7 +139,8 @@
           "number": 6,
           "titles": {
             "en": "Is God silent in the darkness of suffering?",
-            "zh": "在苦难的黑暗里，神真的沉默了吗？"
+            "zh-Hans": "在苦难的黑暗里，神真的沉默了吗？",
+            "zh-Hant": "在苦難的黑暗裡，神真的沉默了嗎？"
           },
           "tracks": [
             {
@@ -151,7 +160,8 @@
           "number": 7,
           "titles": {
             "en": "Would Jesus entrust a person to your care?",
-            "zh": "耶稣会把一个人托付给你照顾吗？"
+            "zh-Hans": "耶稣会把一个人托付给你照顾吗？",
+            "zh-Hant": "耶穌會把一個人託付給你照顧嗎？"
           },
           "tracks": [
             {
@@ -171,7 +181,8 @@
           "number": 8,
           "titles": {
             "en": "Would God abandon me?",
-            "zh": "神会离弃我吗？"
+            "zh-Hans": "神会离弃我吗？",
+            "zh-Hant": "神會離棄我嗎？"
           },
           "tracks": [
             {
@@ -191,7 +202,8 @@
           "number": 9,
           "titles": {
             "en": "It is finished. Will you take up your cross to follow Jesus?",
-            "zh": "成了！你愿意背起你的十字架来跟随耶稣吗？"
+            "zh-Hans": "成了！你愿意背起你的十字架来跟随耶稣吗？",
+            "zh-Hant": "成了！你願意背起你的十字架來跟隨耶穌嗎？"
           },
           "tracks": [
             {
@@ -211,7 +223,8 @@
           "number": 10,
           "titles": {
             "en": "Father, into your hands I commit my spirit. What happens after we die?",
-            "zh": "父啊，我將我的靈交在你手中。人死后会怎样？"
+            "zh-Hans": "父啊，我将我的灵交在你手中。人死后会怎样？",
+            "zh-Hant": "父啊，我將我的靈交在你手中。人死後會怎樣？"
           },
           "tracks": [
             {
@@ -232,11 +245,13 @@
       "id": "onegod",
       "titles": {
         "en": "The Only True God",
-        "zh": "獨一真神"
+        "zh-Hans": "独一真神",
+        "zh-Hant": "獨一真神"
       },
       "taglines": {
         "en": "Who is the only true God?",
-        "zh": "誰是獨一的真神？"
+        "zh-Hans": "谁是独一的真神？",
+        "zh-Hant": "誰是獨一的真神？"
       },
       "creditKey": "oneGodCredit",
       "episodes": [
@@ -245,7 +260,8 @@
           "number": 1,
           "titles": {
             "en": "Why Jesus said the Father is the only true God",
-            "zh": "誰是獨一真神？"
+            "zh-Hans": "谁是独一真神？",
+            "zh-Hant": "誰是獨一真神？"
           },
           "tracks": [
             {
@@ -271,11 +287,13 @@
       "id": "purpose",
       "titles": {
         "en": "God's Purpose in Creating Us",
-        "zh": "神造人的目的"
+        "zh-Hans": "神造人的目的",
+        "zh-Hant": "神造人的目的"
       },
       "taglines": {
         "en": "Why are we here?",
-        "zh": "人为什么在这里？"
+        "zh-Hans": "人为什么在这里？",
+        "zh-Hant": "人為什麼在這裡？"
       },
       "creditKey": "oneGodCredit",
       "episodes": [
@@ -284,7 +302,8 @@
           "number": 1,
           "titles": {
             "en": "God's Purpose in Creating Us",
-            "zh": "神造人的目的"
+            "zh-Hans": "神造人的目的",
+            "zh-Hant": "神造人的目的"
           },
           "tracks": [
             {
