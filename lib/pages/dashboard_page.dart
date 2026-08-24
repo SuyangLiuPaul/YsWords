@@ -747,6 +747,26 @@ class _DashboardPageState extends State<DashboardPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // 2026-08-25: quickLinks was the only section on this page
+            // WITHOUT a _SectionHeader. Its two sub-labels — "常用" and
+            // "更多探索" — were doing double duty as the section title,
+            // in a different colour, a different weight and no icon. So
+            // the page carried two competing header designs, and Settings
+            // listed a block called 快捷入口 that appeared nowhere on the
+            // home page under that name.
+            //
+            // The label comes from the SAME uiStrings key the Settings
+            // row uses, so the two screens cannot drift apart: rename it
+            // once and both follow.
+            _SectionHeader(
+              icon: Icons.apps_rounded,
+              label: uiStrings['dashboardSection_quickLinks_label']?[locale] ??
+                  'Quick links',
+              settings: settings,
+              scheme: scheme,
+              fontSize: headerSize,
+            ),
+            const SizedBox(height: 10),
             _QuickLinksGroupLabel(
               label: uiStrings['quickLinksFrequent']?[locale] ??
                   'Frequently used',
@@ -1015,6 +1035,16 @@ class _FeaturedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 2026-08-25: these were hardcoded 15 / 12. Every other block on this
+    // page derives its sizes from settings.fontSize, so dragging the font
+    // slider up grew Today's Evidence and left Featured behind — the
+    // "布局不一致" the user could feel but not name. Same formulas as
+    // _DashboardEvidenceCard on purpose: two blocks stacked on one screen
+    // must not scale on two different curves. Its caps are reused too, so
+    // a 40pt reader setting still cannot make a row tower over its icon.
+    final fs = settings.fontSize;
+    final titleSize = (fs - 1).clamp(13.0, 18.0).toDouble();
+    final subtitleSize = (fs - 3).clamp(11.0, 15.0).toDouble();
     return Material(
       color: scheme.surfaceContainerLow,
       borderRadius: BorderRadius.circular(12),
@@ -1045,7 +1075,7 @@ class _FeaturedCard extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: settings.fontFamily,
                         fontFamilyFallback: kCjkFontFallback,
-                        fontSize: 15,
+                        fontSize: titleSize,
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
                       ),
@@ -1056,7 +1086,8 @@ class _FeaturedCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontFamilyFallback: kCjkFontFallback,
+                        fontSize: subtitleSize,
                         height: 1.35,
                         color: scheme.onSurfaceVariant,
                       ),
@@ -1130,7 +1161,10 @@ class _QuickLinksGroupLabel extends StatelessWidget {
       style: TextStyle(
         fontFamily: settings.fontFamily,
         fontFamilyFallback: kCjkFontFallback,
-        fontSize: 11.5,
+        // Was a hardcoded 11.5 — the one label on this page that ignored
+        // the font slider entirely, which is the wrong thing to ignore it:
+        // a reader raises that slider because 11.5pt is too small.
+        fontSize: (settings.fontSize - 4).clamp(11.0, 14.0).toDouble(),
         fontWeight: FontWeight.w700,
         letterSpacing: 0.6,
         color: scheme.onSurfaceVariant.withValues(alpha: 0.8),
