@@ -648,8 +648,52 @@ and quoted.**
       listed. **A defect can hide a verse from the allowlist written to catch
       it.** Removing the mark took the list from seven to eight.
 
-- [ ] **Two verses print a closing `〕` with no opener: 士師記 8:24 and
-      耶利米書 10:11.** Found 2026-08-24 while measuring the class above.
+- [x] **Two verses printed a closing `〕` with no opener: 士師記 8:24 and
+      耶利米書 10:11. Fixed 2026-08-24 by DELETING the mark — the opposite of
+      what this item proposed, and the reason is the transferable part.**
+      `tools/repair_orphan_close_bracket.py`, pinned by
+      `test/orphan_close_bracket_test.dart`. Both reading assets now pair to
+      zero unpaired brackets; four edits, one character each, no ideograph
+      moved.
+
+      **The item's own premise was wrong, and two refuter rounds killed it.**
+      It said "an opening bracket was lost rather than a closing one left
+      behind", so the repair should restore `〔`. Two measurements break that:
+
+      1. **SeekSparks' `cuvs-plus.json` is not an independent witness — it is
+         this edition's BASE TEXT.** Normalising 雅伟→耶和华 and 〔〕→（），
+         **23,845 of 31,102 verses are character-identical**, and at both
+         disputed verses our string equals the base's exactly but for `）`→`〕`.
+         So "two lines carry the orphan" was one line counted twice; the orphan
+         was inherited, not attested.
+      2. **This edition had already ruled on the shape three times, and ruled
+         DELETE.** Pair brackets across the base in verse order: it carries
+         **9 unpaired marks — 5 orphan closers, 4 orphan openers** — of which
+         the editorial pass resolved 7. Every orphan OPENER was completed
+         (路 8:45 gained its `〕`, 羅 2:13's aside gained a closer at 2:15,
+         約 4:8's mistyped `〉` became `）`, 來 2:7 became a `<note: …>`); every
+         orphan CLOSER had the mark removed (出 9:32 `…還沒有長成。）` →
+         `…還沒有長成。`, 出 16:32 and 撒上 14:43 became notes). **No completion
+         anywhere rested on a surviving closer alone.** 士 8:24 and 耶 10:11 are
+         simply the two that pass missed.
+
+      The mark would have been wrong too: our edition brackets its other
+      原來-narrator asides `（原來法利賽人…` (可 7:3) and `（原來在神面前…`
+      (羅 2:13) with `（`, so completing the `〕` would have minted a `〔原來`
+      found nowhere else.
+
+      **The 「the aside now reads as Gideon's speech」 objection was raised and
+      measured away:** the reading asset carries **zero `「` in all 618 verses
+      of 士師記**, so no speech boundary was ever marked there and a lone `〕`
+      conveyed no scope to lose. The tagged corpus keeps its `（原來…）`, which
+      is one of **1,268 verses** where it brackets and the reading asset does
+      not — a house difference between the two transcriptions, not a
+      disagreement created here.
+
+      Superseded premise, kept for the record:
+
+- [x] ~~Two verses print a closing `〕` with no opener — restore the opener.~~
+      Found 2026-08-24 while measuring the class above.
       Corpus-wide the CUV assets hold **12 `〔` against 14 `〕`** — eleven of
       the pairs legitimately span two verses (a variant opens at the end of one
       and closes at the end of the next: 民 31:43/46, 王上 21:25/26, 耶 26:20/23,
@@ -763,10 +807,6 @@ and quoted.**
       「看見天使 ，就和他 四個兒子」, 列王紀上 15:19 prints 「說 ：」. Filed low
       deliberately: a space is untidy, not untrue, and `coversVerse` ignores
       it. Anything done here must not touch the 429.
-
-- [ ] **The remaining stray ASCII punctuation in the word-tap corpus.**
-      Measured 2026-08-24, against zero occurrences in the reading assets:
-      `,` 27 (21 verses), `.` 16 (13 verses), `!` 11 (11 verses), `;` 4
 
 - [ ] **The remaining stray ASCII punctuation in the word-tap corpus.**
       Measured 2026-08-24, against zero occurrences in the reading assets:

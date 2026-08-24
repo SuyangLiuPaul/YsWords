@@ -339,6 +339,31 @@ advances the repo hash is healthy.
     「有人把主」 answer κύριος for 有人把. **Two refuter rounds, two different
     faults — one in the change, one in its justification.**
 
+29. **`cuvs-plus.json` is this edition's BASE TEXT, not a witness — and it has
+    been cited as one.** Normalising 雅伟→耶和华 and 〔〕→（), **23,845 of
+    31,102 verses are character-identical** with ours; it has 31,103 verses to
+    our 31,102 and reads the standard 耶和华 where we read the distinctive
+    雅偉, so it is upstream and we are downstream. Any argument of the form
+    "our asset and cuvs-plus both read X, so two lines agree" is **one line
+    counted twice**. Trap 13 already said it cannot express quotation marks;
+    this is the stronger statement — on everything else it is our own ancestor
+    agreeing with itself.
+
+    The useful consequence: where the base carries a defect and our edition
+    FIXED it, the fix records this edition's editorial policy. Pairing brackets
+    across the base gives 9 unpaired marks; the pass resolved 7, completing
+    every orphan **opener** and deleting every orphan **closer**. That is how
+    士 8:24 / 耶 10:11 were settled — by reading what the editor did the other
+    three times, not by asking a witness.
+
+30. **Ask which direction a repair points BEFORE gathering evidence for it.**
+    The 〔 item sat in the queue for days stating "an opening bracket was lost",
+    and an iteration spent its whole evidence-gathering budget locating where
+    the opener belonged. The answer was that no opener was ever lost. A queue
+    item's stated premise is a hypothesis written by someone with less evidence
+    than you now have — re-derive the direction first, because every witness
+    you then consult will be answering the wrong question.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
