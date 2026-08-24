@@ -92,6 +92,10 @@ git pull --ff-only origin main --quiet || echo "git pull skipped (working tree d
 
 successes=0
 failures=0
+# Devices left alone because their screen was on — counted separately so a
+# quiet night does not read as a failed one. See the guard before the
+# Android install.
+skipped_awake=0
 
 # Pull APP_VERSION + APP_RELEASE_TIME from pubspec so the native builds
 # carry the same dart-define values that tools/build_web.py injects for
@@ -913,6 +917,30 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}" \
         continue
       fi
     fi
+    # 2026-08-25: do not reinstall onto a tablet someone is holding.
+    #
+    # The user: "我的mipad一直被控制". An install is not silent — it can
+    # interrupt the foreground app, and this job runs unattended. At its
+    # 04:00 slot the screen is off and this check costs nothing; it only
+    # bites when the run happens while the device is awake and in use,
+    # which is exactly when it should.
+    #
+    # `mWakefulness=Awake` means the display is on. Asleep / Dozing /
+    # Dreaming all mean nobody is looking. If the value cannot be read at
+    # all we install: an unreadable power state must not silently stop
+    # the nightly refresh, which is the job's whole purpose.
+    # Set YSWORDS_FORCE_INSTALL=1 to override for a deliberate,
+    # attended install.
+    wakefulness="$(adb -s "$device_id" shell dumpsys power 2>/dev/null \
+        | tr -d '\r' | sed -n 's/.*mWakefulness=\([A-Za-z]*\).*/\1/p' \
+        | head -1)"
+    if [ "${YSWORDS_FORCE_INSTALL:-0}" != "1" ] && [ "$wakefulness" = "Awake" ]; then
+      echo "⏭ skipped $label — its screen is on, so someone is likely using it."
+      echo "  Re-run with YSWORDS_FORCE_INSTALL=1 to install anyway."
+      skipped_awake=$((skipped_awake + 1))
+      continue
+    fi
+
     # 2026-08-24: verify the package is actually THERE afterwards.
     # `adb install` has been seen to report success while the package
     # never landed — HyperOS's "Install via USB" toggle, which it turns
@@ -990,7 +1018,11 @@ else
 fi
 
 echo ""
-echo "==== summary: $successes ok, $failures failed ===="
+if [ "$skipped_awake" -gt 0 ]; then
+  echo "==== summary: $successes ok, $failures failed, $skipped_awake skipped (in use) ===="
+else
+  echo "==== summary: $successes ok, $failures failed ===="
+fi
 echo "==== done $(date '+%H:%M:%S') ===="
 
 # Exit 0 if at least one device got the build; 1 only if all failed.
