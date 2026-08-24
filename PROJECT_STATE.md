@@ -5,7 +5,7 @@ right now and the traps that have already cost real time. The per-item
 work list is `docs/autonomous-queue.md`; this file is the orientation
 above it.
 
-Last updated: 2026-08-24.
+Last updated: 2026-08-25.
 
 **The refuter earns its keep — do not drop it to save a turn.** On
 2026-08-23 it broke a punctuation repair's stated reasoning twice in one
@@ -640,6 +640,37 @@ advances the repo hash is healthy.
     activity — which collides with this app's icon swap deliberately
     finishing the task. Queued as a device check rather than waved off.
 
+46. **Reproducing a crash on purpose fires the PRODUCTION error reporter,
+    and it mails the user.** On 2026-08-25 this loop provoked the
+    SQLITE_BUSY bug 11 times on an emulator to prove the duplicate-engine
+    fix. Every one was a real report; four identical emails reached
+    lsy95112@gmail.com mid-run, and the user asked why crash mail kept
+    arriving. A parallel session had to trace them back to this Mac
+    (version 1.4.147, OS `android sdk_phone64_arm64-userdebug`, screen
+    0x0 because the emulator is `-no-window`) and teach `_send` to drop
+    synthetic devices (`e381442`). Two things follow. **Before
+    deliberately reproducing a crash, ask what the app does with it** —
+    this one has had an error reporter wired to `FlutterError.onError`,
+    `PlatformDispatcher.instance.onError` and `runZonedGuarded` the whole
+    time. And the guard is **baked into the APK**, so any build made
+    before `e381442` — including every APK now sitting in
+    `build/app/outputs/` and `/tmp` — still mails. Shut the emulator down
+    when the experiment ends rather than leaving it to idle.
+
+    The silver lining is evidence: it proved the async path from
+    `CacheStore`'s unawaited `repo.open()` to an email runs end to end,
+    which the write-up had been about to record as merely inferred.
+
+47. **A concurrent session can move HEAD and rewrite the standing rules
+    underneath a long iteration.** This one started at `9d16cf3` and
+    finished at `058eaa9`, three commits later, and one of them reversed
+    the commit-trailer rule the loop's own brief still states ("use the
+    Opus 5 `Co-Authored-By`" → **no trailer on anything**, user, 2026-08-25).
+    An `Edit` failing with "file has been modified since read" is the
+    cheap warning; take it as a signal to re-read `PROJECT_STATE.md`'s
+    rules and `git log` before committing, not just to re-read the one
+    file. Where the brief and this file disagree, this file is newer.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -674,20 +705,19 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 87 open items across BUGS (reported from
+`docs/autonomous-queue.md` — 85 open items across BUGS (reported from
 the user's own devices — the top tier since 2026-08-24), P0 (scripture
 accuracy — **deferred to last**), P1 (Bible study correctness), P2
 (features the user asked for), P3 (blocked or deferred). Read the
 banner at the top of the file before picking anything: the file is
 ordered P0-first for historical reasons and that is NOT the work order.
 
-**BUGS holds two open items.** The `SQLITE_BUSY` crash mailed in twice
-is still open — the duplicate-engine fix of 2026-08-24 removed the only
-contention mechanism found, but the crash was never reproduced, and the
-item now records what IS measured (it is the app's only sqlite db;
-`BEGIN EXCLUSIVE` fires only on first create; both isolates opened it).
-The second is the follow-on check that the now-cached FlutterEngine
-outliving MainActivity does not strand the launcher-icon swap.
+**BUGS holds one open item.** The `SQLITE_BUSY` crash was reproduced on
+demand on 2026-08-25 and closed: 10/10 launches crash with the duplicate
+engine, 0/10 without, with a one-line control holding the Dart constant.
+What remains is the follow-on check that the now-cached FlutterEngine
+outliving MainActivity does not strand the launcher-icon swap — and that
+one needs the Mi Pad, which has no working wireless ADB right now.
 
 Largest live threads: the 繁體 glyph class (deferred, ~19 items), the 14
 `spans-the-word` Strong's tags still held (39 of the 53 shipped 2026-08-24;

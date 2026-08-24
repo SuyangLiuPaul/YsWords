@@ -134,13 +134,91 @@ reported. Work these top-down before P2.
       Pinned by `test/android_audio_service_engine_test.dart` (source
       guard; no Dart test can exercise Kotlin).
 
-- [ ] **`DatabaseException(database is locked (code 5 SQLITE_BUSY))
-      sql 'BEGIN EXCLUSIVE'` — crash mailed in twice.** Reported by the
-      user 2026-08-23 from builds 1.4.39 and 1.4.138 (android). **Still
-      open: the duplicate-engine fix above removes the only contention
-      mechanism found, but the crash itself was never reproduced.**
+- [x] **`DatabaseException(database is locked (code 5 SQLITE_BUSY))
+      sql 'BEGIN EXCLUSIVE'` — REPRODUCED, then fixed. Closed
+      2026-08-25.** Reported by the user 2026-08-23 from builds 1.4.39
+      and 1.4.138 (android). The duplicate-engine fix (`9d16cf3`) is the
+      cause and the cure, and this is no longer inference: the crash was
+      provoked on demand and then made to stop by one line.
 
-      What is now measured rather than assumed:
+      **The experiment.** Android 34 arm64-v8a emulator, RELEASE APKs,
+      `adb shell pm clear com.example.yswords` before every launch, 30 s
+      watch:
+      * v1.4.147 pre-fix APK — SQLITE_BUSY **5/5**, two
+        `Firebase.initializeApp` markers per launch from one pid,
+        `IllegalStateException: ... AndroidManifest.xml is wrong` 5/5.
+      * **One-line control** — HEAD v1.4.150 with ONLY `MainActivity`'s
+        superclass reverted to `FlutterActivity`, identical Dart, same
+        build command: SQLITE_BUSY **6/6**, two markers 6/6. This is what
+        rules out the three versions of Dart between 1.4.147 and 1.4.150.
+      * HEAD v1.4.150 unmodified — SQLITE_BUSY **0/10** over two blocks
+        of five, separated by reinstalling the control so it is not an
+        ordering effect; ONE marker per launch, wrong-activity 0/10.
+
+      **The negative is not vacuous.** After a FIXED-build launch,
+      `/data/data/com.example.yswords/files/libCachedImageData.db` exists
+      at 16384 bytes with a `-journal` — so `onCreate` and its
+      `BEGIN EXCLUSIVE` really did run, and succeeded. (The db is under
+      `files/`, not `databases/`.)
+
+      **The overlap window, which round one said was unproven.** In
+      RELEASE builds the two isolates start in lockstep: markers 2 ms
+      apart on 1.4.147 (23:44:55.800 / .802) and 1 ms apart on the
+      control (00:12:07.588 / .589). The 1.16 s skew quoted by the
+      previous iteration came from a DEBUG build and is not the release
+      timing.
+
+      **Why ~100% here and only twice in months for the user — settled
+      by a prediction, not a caveat.** `BEGIN EXCLUSIVE` runs only when
+      `oldVersion != options.version` (`sqflite_common-2.5.11/lib/src/
+      database_mixin.dart:1134-1172`; the exclusive transaction is
+      *inside* that `if`), and flutter_cache_manager 3.4.2 passes
+      `version: 3` (`cache_object_provider.dart:32`). `pm clear` makes
+      every launch a first-create, which is the whole reason the repro
+      rate is 100%. Prediction: relaunch the **duplicate-engine** build
+      WITHOUT clearing data and the crash must vanish while the double
+      boot remains. It did — **SQLITE_BUSY 0/3 with two boot markers
+      3/3**. So the defect needs BOTH the second engine AND a
+      first-create, i.e. a fresh install or a cache-schema bump. Two
+      fresh installs, two reports.
+
+      **How it reached the user as mail rather than a dead app.**
+      `CacheStore`'s constructor does
+      `_cacheInfoRepository = config.repo.open().then(...)`
+      (`flutter_cache_manager-3.4.2/lib/src/cache_store.dart:30-33`) —
+      fire-and-forget, so the rethrow at `database_mixin.dart:1186`
+      lands on nobody and becomes an uncaught async error, which
+      `ErrorReporter` hooks via `PlatformDispatcher.instance.onError`.
+      That fits what the emulator showed: sqflite's own
+      `error ... during open, closing...` line, no
+      `[SongPlayerService] media session unavailable` (so
+      `AudioService.init`'s own catch never fired), and the app carrying
+      on to render.
+
+      **And the mailing was observed — by the user, from this very
+      experiment.** A draft of this entry said it was not. It was: the
+      pre-fix reproductions above fired four identical SQLITE_BUSY
+      reports at the production reporter, all carrying version 1.4.147
+      and OS `android sdk_phone64_arm64-userdebug`, and they landed in
+      the user's inbox while the run was still going. A parallel session
+      traced them and taught the reporter to drop synthetic devices
+      (`e381442`, `lib/utils/synthetic_device.dart`). So the async path
+      from `repo.open()` to an email is not inferred — it ran end to
+      end. This session provoked **11** SQLITE_BUSY events in total
+      (1 + 4 pre-fix, 5 one-line control, 1 skew measurement); four
+      identical emails is what the user reported receiving, and how many
+      of the other seven were collapsed by the reporter's own noise
+      filtering was not measured.
+
+      **A refuter round was wrong here and is recorded rather than
+      dropped** (cf. trap 27): round two argued `BEGIN EXCLUSIVE` fires
+      on *every* open, citing `database_mixin.dart:1173`, and concluded
+      a 100%-per-launch defect could not be a twice-in-months report.
+      Line 1173 is the `exclusive: true` argument of the transaction
+      nested inside the version check. Reading the nesting, and then the
+      0/3 prediction test, killed the objection.
+
+      What was already measured before the repro, and still holds:
       * `flutter_cache_manager` is the ONLY package depending on
         `sqflite`, and `audio_service` the only one depending on it.
         Nothing in `lib/` imports either. So audio_service's artwork
@@ -164,11 +242,15 @@ reported. Work these top-down before P2.
         so two opens racing that window both miss and get two native
         connections (WAL off).
 
-      To close it: install a build over a CLEARED app data directory
-      (so the cache db must be created) and watch for the throw. If it
-      cannot be provoked on a build carrying the fix, say that, and say
-      how many attempts — do not tick it on the strength of the
-      mechanism alone.
+      **Residual risk, deliberately not closed.** 0/10 is a bounded
+      sample, and nothing logged two `databaseId`s for one path, so the
+      check-then-act window was inferred from
+      `SqflitePlugin.java` (lookup at :355 under `databaseMapLocker`,
+      the `put` at :435 after `database.open()`) rather than watched.
+      The fix is proven at the level that matters — remove the second
+      engine, remove the concurrency — but if audio_service ever gains a
+      genuine background isolate, this race returns. Reproduce with
+      `pm clear` before each launch; anything else hides it.
 
 - [ ] **Follow-on from the duplicate-engine fix: the FlutterEngine now
       outlives MainActivity, and the launcher-icon swap deliberately
