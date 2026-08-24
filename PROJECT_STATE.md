@@ -57,11 +57,20 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.150** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.150** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.151** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.151** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**The deploy debt is paid.** v1.4.150 stops a search-result tap leaving a SECOND
+**The deploy debt is paid.** v1.4.151 was a debt release rather than a fix of
+its own: nine commits had accumulated past the v1.4.150 build and two of them
+were user-visible and undeployed — the error reporter learning to drop
+synthetic emulator devices, and Standing at the Cross gaining its Mandarin
+episode 1. It also carries the asset freshness guard, which matters beyond the
+web sites: `release_web.sh` re-copies the reinstall script to
+`~/.config/yswords/scripts/`, so per trap 44 the guard stopped being inert the
+moment this shipped. Verified: all four dev/qat sites report 1.4.151, both prod
+sites still report 1.4.11, and the launchd copy is now byte-identical to the
+repo one. v1.4.150 stops a search-result tap leaving a SECOND
 reader mounted under the first — `Get.off(() => const HomePage())` is
 `pushReplacement`, and search is pushed on top of the reader, so it replaced the
 search route and left the original reader alive to overwrite
