@@ -93,6 +93,25 @@ jobs:
         # quality gate.
         run: flutter analyze
 
+      # 2026-08-25: apk_freshness_guard_test.dart lifts functions out of
+      # tools/yswords-ios-reinstall.sh and executes them under `zsh` —
+      # deliberately, because zsh is that script's own `#!` line and a
+      # guard exercised under a different interpreter is a guard nobody
+      # has actually tested. ubuntu-latest ships bash and dash but NOT
+      # zsh, so seven of those tests died with "ProcessException: No such
+      # file or directory" while passing on the macOS that wrote them.
+      #
+      # This is the same blind spot that let CI stay red for six hours:
+      # every local signal was green because the developer's machine had
+      # what the runner lacked. Installing the interpreter is the honest
+      # fix; making the test fall back to `sh` would have made it green
+      # by testing something the script never runs.
+      - name: Install zsh (the reinstall guard's own interpreter)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends zsh
+          zsh --version
+
       - name: Test
         run: flutter test --reporter expanded
 
