@@ -64,6 +64,17 @@ there and the article is SUBSTANTIVAL (Ὁ ποιῶν, Τῷ δυναμένῳ)
 whole phrase with 神. Saying CUV "supplies" the word there is wrong, and it was
 wrong in this docstring for one draft.
 
+**The 71 above is the FIRST measurement and the tool no longer prints it.** The
+decomposition is what the two repairs were built on, so it is kept as written;
+the census since is 71/53/7/15 -> 65/53/7/9 (`repair_strongs_alignment_core.py`,
+six of the core) -> **26/14/3/9** (`repair_strongs_spans.py`, 39 of the 53
+spans). The 14 spans left are held with a reason each in that tool's `HELD`
+table: their Chinese spells BOTH words, so the number shown is partial rather
+than false. `tagged-number-absent` fell 7 -> 3 because four of the seven were
+also spans and the span repair dropped their displaced number rather than
+demoting it into `i`, which would have claimed the original contains a word it
+does not. `test/strongs_alignment_test.dart` pins the current figures.
+
 Usage:
     python3 tools/audit_strongs_alignment.py [--version cuvs-yhwh]
                                              [--min 20] [--dominance 0.95]

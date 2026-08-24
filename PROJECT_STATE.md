@@ -456,6 +456,59 @@ advances the repo hash is healthy.
     verses the FIRST round had persuaded me to add. Round one widening the
     scope and round two shrinking it is now the observed pattern twice running.
 
+37. **A watchdog kill leaves an unverified scripture repair in the working tree,
+    and it looks exactly like finished work.** On 2026-08-24 the 15:19 iteration
+    was killed at `MAX_RUN=5400` with 39 tagged-asset edits applied, a 20 KB
+    repair tool untracked, and nothing committed. The next iteration inherits a
+    dirty tree with no note saying whether it is half-applied or done — and trap
+    11's second session commits blind, so an unverified edit to scripture data
+    can be swept into someone else's commit and deployed. **Read `run.log`
+    before trusting or discarding a dirty tree**: it names the iteration that
+    left it.
+
+    The cause was in the tool. `original_numbers()` re-read
+    `assets/originals/<book>.json` on **every call**, and the completeness gate
+    calls it once per verse: 31,102 loads at ~15 ms is ~10 minutes for one gate,
+    inside a 90-minute budget it did not have. Caching the file took the whole
+    dry run from that to **2.9 s**. Any audit that walks the corpus and opens a
+    per-book file inside the loop has this bug; check for it before blaming the
+    watchdog.
+
+38. **Round two WIDENED, which is the dangerous direction, and the right answer
+    was to record it rather than act.** Traps 20/36 established "round one
+    widens, round two shrinks" — twice observed. On the span repair it inverted:
+    round one found a false docstring sentence and one gate-consistency
+    question, and round *two* argued three more HELD rows should be repaired.
+    Widening on a single round with nothing arguing against it is how a
+    scripture pass grows past its evidence, so the three went into the queue
+    with the evidence for and against, and the 39 that both rounds endorsed were
+    committed. **The asymmetry is deliberate: shrinking is safe to act on
+    immediately, widening needs another round.**
+
+39. **"Mechanical, no per-verse judgement needed" is a claim about the data, and
+    a queue item is the last place that should be trusted.** The 53
+    `spans-the-word` runs were queued as one pass: the right number already sits
+    in the run's own `i`, so promote it. That is a *structural* description, and
+    it is true of all 53 — but where the Chinese spells BOTH words the old `s`
+    is **partial rather than false**, and swapping trades one partial answer for
+    another while writing "this text does not render it" about a character that
+    plainly does. 王下 3:27's 的長子 spells בֵּן in 子 and בְּכוֹר in 長. Adding
+    that gate cut 53 → 39. A structural definition can enumerate a class; it
+    cannot tell you the members are wrong.
+
+40. **A promotion pass has a cost, and "demote the particle" hides it.** Because
+    `i` is inert — no widget reads it (trap 33) — promoting a run's `s` leaves
+    the displaced number reachable by no tap anywhere in its verse. That
+    happened in **30 of the 36 verses** the span pass touched, and **11 of the
+    30 were content words, not particles**: ἀνήρ, פֶּה, מִסְפָּר, עֵת ×2,
+    מִשְׁפָּחָה, שָׁלֹשׁ, בֵּן ×3. A draft said the reader "only gains";
+    約翰福音 3:5 disproves it, since BOTH 神 and 的国。 showed G3588 beforehand,
+    so ὁ was reachable twice while θεός and βασιλεία were reachable nowhere.
+    The trade is worth making — a tap on 弟兄們 must answer ἀδελφοί, not ἀνήρ —
+    but it is a trade. Also: three counts were in play (36 verses, 39 runs, 30
+    losses) and a draft mixed them into "30 of the 39 runs"; the refuter's
+    arithmetic was right again (cf. trap 35).
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -482,16 +535,16 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 86 open items across BUGS (reported from
+`docs/autonomous-queue.md` — 87 open items across BUGS (reported from
 the user's own devices — the top tier since 2026-08-24), P0 (scripture
 accuracy — **deferred to last**), P1 (Bible study correctness), P2
 (features the user asked for), P3 (blocked or deferred). Read the
 banner at the top of the file before picking anything: the file is
 ordered P0-first for historical reasons and that is NOT the work order.
 
-Largest live threads: the 繁體 glyph class (deferred, ~19 items), the 53
-`spans-the-word` Strong's tags (mechanical, enumerated, no per-verse
-judgement needed), URL routing rework (approved, staged, single-agent
+Largest live threads: the 繁體 glyph class (deferred, ~19 items), the 14
+`spans-the-word` Strong's tags still held (39 of the 53 shipped 2026-08-24;
+the remaining 14 each need a per-verse call — see trap 39), URL routing rework (approved, staged, single-agent
 only), sermon passage highlighting with verse-level filtering, seven
 invalid sermon references, and an Overlay crash on route pop.
 

@@ -967,17 +967,71 @@ reported. Work these top-down before P2.
       H376 because the Hebrew opens וְאִישׁ יִשְׂרָאֵל and H376 is the verse's
       first word. Both refuter rounds agree.
 
-- [ ] **The 53 `spans-the-word` runs — the mechanical half, still open.** The
-      number the run should show is already in that same run's own `i`, and `i`
-      is inert, so the reader sees the particle instead of the head:
-      `的子孙` answers מִן, `以色列` answers עַל, `弟兄们` answers ἀνήρ. Six
-      importer conventions (G3588, H3605, H4480, H1121, H5921, H853) cover
-      nearly all of them, so the repair is one pass — promote the head out of
-      `i` into `s`, demote the particle — and unlike the core it needs no
-      per-verse judgement, because the importer has already said which word the
-      run covers. `python3 tools/audit_strongs_alignment.py` enumerates them.
-      **Read the core item above first**: the frequency argument that looks
-      obvious here is the one that was measured and thrown away.
+- [x] **DONE 2026-08-24 — 39 of the 53 repaired, 14 held with a reason each.**
+      `tools/repair_strongs_spans.py`, idempotent, refuses if any member of the
+      class is in neither table. The census went 65/53/7/9 → **26/14/3/9**.
+      約翰福音 3:5's 神 now answers θεός instead of ὁ, 弟兄們 answers ἀδελφοί
+      instead of ἀνήρ, 耶利米書 52:30's 二十 answers עֶשְׂרִים instead of
+      שָׁלֹשׁ. **"Mechanical, no per-verse judgement" was wrong** — the
+      structural shape admits 53, but where the Chinese spells BOTH words the
+      old `s` is *partial rather than false*, and swapping trades one partial
+      answer for another. That gate is what cut 53 → 39; the 14 it refused are
+      in the tool's `HELD` table.
+
+      It is a trade, not a free repair: 30 displaced numbers are now reachable
+      nowhere in their verse (33 of the 39 runs; the other 6 keep theirs on a
+      sibling run), and 11 of the 30 are content words, not particles — ἀνήρ,
+      פֶּה, מִסְפָּר, עֵת ×2, מִשְׁפָּחָה, שָׁלֹשׁ, בֵּן ×3. Pinned by
+      `test/strongs_alignment_test.dart`.
+
+- [ ] **Round two says 3 of the 14 HELD spans should be repaired after all.
+      Recorded, not acted on — one refuter round is not enough to widen a
+      scripture pass.** The hold on 王上 1:35 `和犹大` rests on "bare 和 carries
+      H5921 in 61 runs corpus-wide", i.e. 61/1236 = **4.9%**, and on a
+      *different run text* than the one being judged — which is precisely the
+      frequency-of-the-wrong-pair reasoning the tool's own docstring declares
+      invalid. The canonical test applied to the identical string gives
+      `和犹大` = H3063 in **46 of 47** and `和一切` (民 19:18) = H3605 in
+      **44 of 45**, both clearing the ≥20/≥95% bar, with the held run itself as
+      the lone exception each time.
+
+      By reachability all three are strict improvements, losing nothing:
+      王上 1:35 `和犹大` (H5921 still shown on 我的位上, while H3063 יְהוּדָה is
+      reachable nowhere), 民 19:18 `和一切` (H5921 on three siblings, H3605
+      nowhere), 猶大書 1:25 `永永远远。` (G3956 on 从万古, G165 nowhere).
+      `以斯拉記 7:11 诫命` was checked the same way and is an even trade — that
+      hold survives.
+
+      **Against acting now:** this repo's recorded pattern is round one widens
+      and round two shrinks, and here it is round *two* doing the widening with
+      no third round against it. A later iteration should re-derive it. Note
+      also that repairing 和犹大 would settle 王上 1:35 twice — 以色列 in the
+      same verse was already repaired in this pass.
+
+- [ ] **A draft of the span repair claimed the reader "only gains", and
+      約翰福音 3:5 shows that is false — worth remembering, not fixing.**
+      Pre-repair BOTH 神 and 的国。 showed G3588, so ὁ was reachable twice over
+      while θεός and βασιλεία were reachable nowhere. The promotion is right,
+      but it *removes* the article from that verse's reachable set. The
+      underlying cause is that `i` is inert: any number that is no run's `s`
+      cannot be tapped. Making the word-tap sheet surface `i` would retire this
+      whole cost — but it changes what a widget reads, which
+      `test/strongs_alignment_test.dart` deliberately pins, so it needs the
+      user rather than a loop iteration.
+
+- [x] **SUPERSEDED by the entry above — this is the original item, kept for
+      the record of what it got wrong.** It read: "the number the run should
+      show is already in that same run's own `i` … the repair is one pass …
+      **unlike the core it needs no per-verse judgement**, because the importer
+      has already said which word the run covers."
+
+      The last clause was the mistake. The importer saying a run *covers* a
+      word does not say the run fails to *render* the other one, and in 14 of
+      the 53 the Chinese renders both — 王下 3:27's 的長子 spells בֵּן in 子 and
+      בְּכוֹר in 長. Judging that is per-verse work, and skipping it would have
+      written "this text does not render it" about 14 characters that plainly
+      do. `python3 tools/audit_strongs_alignment.py` still enumerates the
+      class.
 
 - [ ] **Four of the nine remaining core hits are open questions with two
       positions on record. Do NOT sweep them; they are pinned by
