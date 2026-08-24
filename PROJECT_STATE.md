@@ -57,9 +57,24 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.152** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.152** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.153** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.153** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.153 stops two sermons claiming to expound passages they never open.
+Sermon 339 is "Seven Marks of a Regenerated Christian" and its Part-B
+heading enumerates "Mark 5:", "Mark 6:", "Mark 7:" — ordinals, not the
+Gospel — while sermon 424's "Is 50% enough?" reached the index as
+`Isaiah 50`, because `%` sat inside a `\b` that a following space cannot
+satisfy. The tell the queue proposed for the first ("a bare chapter
+followed by a colon carrying no digit is a label") fits 94 matches in
+this corpus and 91 are genuine, so the repair is in the heading — which
+also cures the reader-visible half, since that line is body text and the
+Dart `passageRefPattern` linkified it independently (trap 52). Verified
+against the assets the sites serve, not the repo: on both `yswords-dev`
+and `yswords-cn-qat`, `sermons/refs.json` holds 2,966 keys, `Mark 6` and
+`Isaiah 50` are absent, `Mark 5` answers only 140, `Mark 7` only
+013/104/CP18, and `sermons/en/339.txt` line 43 reads "Mark five:".
 
 v1.4.152 rebuilds the sermon reference index: 1,294 keys become 2,968 and
 282 sermons become 289, because the extractor finally reads the spoken
