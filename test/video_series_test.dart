@@ -100,13 +100,20 @@ void main() {
   });
 
   test('a language a series does not have is absent, not substituted', () {
-    // 在十字架下 was recorded in English and Cantonese only. The user
-    // asked for the Mandarin slot to stay empty — "如果没有普通话就空着
-    // 没问题" — so the app must offer no Mandarin button rather than
-    // quietly playing the Cantonese take under that label.
-    for (final e in byId('cross').episodes) {
-      expect(e.trackFor('cmn'), isNull);
-      expect(e.tracks.map((t) => t.lang), ['en', 'yue']);
+    // 在十字架下 was recorded in English and Cantonese; the Mandarin
+    // version is being made now, one episode at a time. The user's rule
+    // for the gap has not changed — "如果没有普通话就空着没问题" — so an
+    // episode without a Mandarin recording must offer no Mandarin button
+    // rather than quietly playing the Cantonese take under that label.
+    // As of 2026-08-25 exactly episode 01 has one.
+    final crossEpisodes = byId('cross').episodes;
+    expect(crossEpisodes.first.id, '01');
+    expect(crossEpisodes.first.tracks.map((t) => t.lang),
+        ['en', 'yue', 'cmn']);
+    for (final e in crossEpisodes.skip(1)) {
+      expect(e.trackFor('cmn'), isNull, reason: 'episode ${e.id}');
+      expect(e.tracks.map((t) => t.lang), ['en', 'yue'],
+          reason: 'episode ${e.id}');
     }
     // 獨一真神 does have all three.
     expect(byId('onegod').episodes.single.tracks.map((t) => t.lang),

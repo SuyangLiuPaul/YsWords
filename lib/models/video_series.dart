@@ -4,10 +4,14 @@
 /// why it sits under an episode rather than beside it — switching
 /// language mid-watch is a language switch, not a different video.
 ///
-/// Two series must be able to differ in language coverage: 在十字架下 is
-/// English + Cantonese, 獨一真神 has Mandarin as well. So the language
+/// Language coverage differs per EPISODE, not merely per series. 獨一真神
+/// carries Mandarin throughout; 在十字架下 carried none until 2026-08-25,
+/// when the user supplied the 普通话版 of episode 1 only and said they
+/// would make the rest — so within that one series episode 1 has three
+/// languages and episodes 2-10 have two. That is why the language
 /// buttons are built from the episode's own tracks and never from a
-/// fixed list.
+/// fixed list or a series-level union: a button built from the series
+/// would appear on episode 2 and play the Cantonese take.
 class VideoTrack {
   /// 'en' | 'yue' (Cantonese) | 'cmn' (Mandarin).
   ///

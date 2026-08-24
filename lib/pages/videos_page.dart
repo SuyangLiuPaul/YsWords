@@ -322,9 +322,11 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
     );
   }
 
-  /// Built from THIS episode's tracks. 在十字架下 has no Mandarin and
-  /// must therefore show no Mandarin button — offering one that played
-  /// the Cantonese take would be the app saying something untrue.
+  /// Built from THIS episode's tracks, never the series'. 在十字架下 has
+  /// Mandarin on episode 1 and nowhere else (the user is adding the rest
+  /// as they record them), so episodes 2-10 must show no Mandarin button
+  /// — offering one that played the Cantonese take would be the app
+  /// saying something untrue.
   Widget _languageRow(String locale) {
     return Wrap(
       spacing: 8,

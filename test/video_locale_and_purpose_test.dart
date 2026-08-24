@@ -71,10 +71,21 @@ void main() {
       expect(e.trackForLocale('zh-Hant')?.lang, 'en');
     });
 
-    test('在十字架下 has no Mandarin, so Simplified falls to Cantonese', () {
-      final e = byId('cross').episodes.first;
-      expect(e.trackFor('cmn'), isNull);
-      expect(e.trackForLocale('zh-Hans')?.lang, 'yue');
+    test('在十字架下 is mid-recording: ep 1 has Mandarin, the rest fall '
+        'to Cantonese', () {
+      // 2026-08-25: the user supplied the 普通话版 of episode 1 only and
+      // said they would make the rest. Coverage therefore differs
+      // BETWEEN EPISODES OF ONE SERIES — the first case in this file —
+      // so a Simplified reader must get Mandarin on episode 1 and
+      // Cantonese on episode 2 from the same series.
+      final eps = byId('cross').episodes;
+      expect(eps.first.trackFor('cmn')?.youtubeId, 'g-Wk0qbuAkE');
+      expect(eps.first.trackForLocale('zh-Hans')?.lang, 'cmn');
+      for (final e in eps.skip(1)) {
+        expect(e.trackFor('cmn'), isNull, reason: 'episode ${e.id}');
+        expect(e.trackForLocale('zh-Hans')?.lang, 'yue',
+            reason: 'episode ${e.id}');
+      }
     });
 
     test('the preference lists are ordered, and English never leads zh', () {
