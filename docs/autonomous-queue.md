@@ -336,28 +336,90 @@ reported. Work these top-down before P2.
       injects `--dart-define=APP_RELEASE_TIME` (which would override the
       marker and refuse every fresh build), and the two items above.
 
-- [ ] **Make the APK freshness marker commit-unique, so the nightly is
-      covered too.** Follow-on from the item above, which can only see
-      staleness across a `bump_version.sh` run. Two candidates, neither
-      free: (a) a `--dart-define=BUILD_COMMIT=<sha>` — but a const no
-      reachable code reads is tree-shaken out of the AOT snapshot, so it
-      needs a live consumer, which means touching app behaviour for a
-      tooling need; (b) compare the mtime of
-      `build/app/intermediates/flutter/intlRelease/jniLibs/*/libapp.so`
-      against the newest file under `lib/`. (b) was drafted and **not**
-      shipped because it is unverified: if `flutter assemble` re-copies
-      that file even when its own AOT cache hits, the mtime is fresh
-      while the content is stale, and the check becomes a false
-      all-clear — worse than no check. Settle that by reproducing one
-      stale build and watching the file, not by reasoning.
+- [x] **The nightly is covered now, by a second guard that carries no
+      version in it. Shipped 2026-08-25 — and candidate (b) was right
+      about the method and wrong about the file.** The item asked for a
+      marker "commit-unique"; the answer is that no marker was needed.
+      `aot_postdates_dart_source()` in `tools/yswords-ios-reinstall.sh`
+      refuses the install when any Dart file the build itself declared as
+      an input has an mtime newer than the AOT snapshot, and it gates the
+      install in the same `if` as the stamp check.
 
-      A refuter pass claimed (b) was already disproved — that the
-      intermediate `libapp.so` on disk had a 13:42:23 mtime while
-      carrying stale 1.4.147 content, i.e. fresh mtime over stale
-      bytes. That claim is wrong, and the timeline says so: `git show
-      -s` puts the v1.4.147 bump at 12:34:04 and v1.4.148 at 14:48:30,
-      so a build at 13:42 was *legitimately* at 1.4.147. The question
-      stays open — do not close it on that reading.
+      **The open question is settled, by measurement.** Two identical
+      release builds were run back to back. Run A (≈4 min, lib/ had
+      changed since the last build) rewrote all three app.so and
+      libapp.so slices. Run B, same command, zero source changes, exited
+      0 in 1m18s having printed "✓ Built …app-intl-release.apk" and left
+      every mtime and sha256 untouched. So a cache hit does **not**
+      re-stamp — the feared false all-clear does not arise that way.
+
+      **But (b) named the wrong file, and the evidence is on disk.**
+      `jniLibs/` is filled by Gradle's `copyJniLibs<Variant>`, a `Sync`
+      task, and Gradle up-to-dateness is per TASK — so one changed input
+      re-copies the whole set. After run A,
+      `jniLibs/arm64-v8a/libpdfium.so` carried mtime `01:00:18` over
+      bytes byte-identical (sha256 `ef8c440d…`) to a source last written
+      `2026-08-24T07:26:50` — a fresh mtime over 17-hour-old content, in
+      exactly the directory (b) specified. A stale `libapp.so` swept
+      along by that same Sync would have read as fresh.
+
+      **Two refuter rounds, and each broke something real.** Round one
+      killed the rationale — `<abi>/app.so` is *also* a copy
+      (`AndroidAotBundle.copySync`), so "it is flutter's direct output"
+      was false; what actually separates it from jniLibs is that
+      flutter's build_system skips per TARGET on the input's md5 and
+      AndroidAotBundle's only input is the AOT app.so. It also killed the
+      source set: the draft used `find lib -type f`, and `lib/.DS_Store`
+      exists (Finder rewrites it at will) while **22 of 234 lib/*.dart
+      files are not Android inputs at all** — 17 are `*_web.dart`
+      conditional-import stubs. A web-only commit would have refused a
+      correct build every night. It now reads `flutter_build.d`, the
+      depfile the build wrote, so it compares against what the build
+      actually consumed.
+
+      Round two broke the replacement sentence: "re-runs iff the AOT
+      bytes changed" is false in the only-if direction, because
+      `computeChanges` also invalidates on outputMissing / outputChanged
+      / buildKeyChanged. Corrected in place — a fresh mtime proves
+      flutter ran the AOT chain to completion during this build, not that
+      the bytes encode the current source, which no mtime can prove.
+
+      **Round two's own proposal was declined, on purpose.** It argued
+      for measuring `.dart_tool/flutter_build/<hash>/<abi>/app.so`, the
+      AOT's direct output. That is one step FURTHER from the APK: if
+      flutter recompiled and Gradle never copied the result, it would
+      read fresh while the installed APK was stale — the exact failure
+      this guard exists for. Measure as close to the artifact as the skip
+      rules allow.
+
+      `test/apk_freshness_guard_test.dart` grew 5 tests (14 total) that
+      run the real shell function against synthetic trees. One of them
+      discriminates rather than just passing: the depfile names a file
+      written BEFORE the snapshot while `thing_web.dart` and `.DS_Store`
+      are written AFTER, so a `find`-based guard refuses and this one
+      must not. Verified by running both — the old logic refuses on
+      `.DS_Store`, the new one passes.
+
+      The prior refuter claim about a 13:42 `libapp.so` holding stale
+      1.4.147 bytes is moot: 13:42 was legitimately 1.4.147 (bump at
+      12:34, next at 14:48), and the file it was reasoning about is no
+      longer the one measured.
+
+- [ ] **Three holes the AOT freshness guard does not cover, recorded
+      rather than papered over.** Found by refuters while shipping the
+      item above; none is a reason to withhold the guard, all three
+      would make a "✓" read wider than it is. (1) A `lib/` edit landing
+      DURING the ~4-minute build is older than the app.so written at the
+      end of it and absent from the snapshot — reachable, because a
+      second session shares this checkout. (2) A dep whose mtime moved
+      but whose content did not (an edit and a revert) refuses a build
+      that is legitimately not rebuilt; `git pull --ff-only` cannot cause
+      it, an interactive session can. (3) Assets, `pubspec.yaml`,
+      dart-defines and `android/` Kotlin are outside the check entirely —
+      a stale APK caused by a changed asset would still install. (3) is
+      the one worth costing out: the same depfile already lists the asset
+      inputs, so widening the prefix filter beyond `lib/` may be nearly
+      free. Measure before assuming it is.
 
 ## P0 — scripture accuracy
 

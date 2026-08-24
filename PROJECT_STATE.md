@@ -671,6 +671,38 @@ advances the repo hash is healthy.
     rules and `git log` before committing, not just to re-read the one
     file. Where the brief and this file disagree, this file is newer.
 
+48. **"It is a copy" is not what makes an mtime untrustworthy — the SKIP RULE
+    of whatever does the copying is.** Both candidates for the Android
+    freshness marker are copies. `jniLibs/<abi>/libapp.so` is filled by
+    Gradle's `copyJniLibs<Variant>`, a `Sync` task, and Gradle is up-to-date
+    per TASK, so one changed input re-stamps the whole set: measured
+    2026-08-25, `jniLibs/arm64-v8a/libpdfium.so` carried mtime `01:00:18`
+    over bytes byte-identical to a source last written `2026-08-24T07:26:50`.
+    `<abi>/app.so` is `AndroidAotBundle.copySync`, and flutter's build_system
+    skips per TARGET on the input's md5, with the AOT app.so as that target's
+    only input — so an unchanged AOT leaves it alone (two identical builds
+    78s apart: the second returned in 1m18s with every mtime and sha256
+    unchanged). Same file operation, opposite trustworthiness.
+
+    Three further lessons from the same round. **A `find` over a source
+    directory is not the set of inputs to a build**: `lib/.DS_Store` exists
+    and Finder rewrites it whenever it likes, and 22 of 234 `lib/*.dart` are
+    not Android inputs at all (17 `*_web.dart` conditional-import stubs), so
+    a web-only commit would have made the guard refuse a correct build every
+    night. `flutter_build.d` — the depfile the build itself wrote — is the
+    honest source set. **"Re-runs iff X" is almost always too strong**:
+    `computeChanges` also invalidates on outputMissing / outputChanged /
+    buildKeyChanged, so the corrected claim is that a fresh mtime proves
+    flutter ran the AOT chain to completion this build, not that the bytes
+    encode current source — no mtime can prove that. **And a refuter's
+    preferred alternative can be worse than what it refuted**: round two
+    argued for measuring `.dart_tool/flutter_build/<hash>/<abi>/app.so`,
+    which is one step further from the APK — if flutter recompiled and
+    Gradle never copied the result it would read fresh while the installed
+    APK was stale, the exact failure the guard exists for. Declined and
+    recorded rather than quietly dropped. Measure as close to the shipped
+    artifact as the skip rules allow.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -712,12 +744,22 @@ accuracy — **deferred to last**), P1 (Bible study correctness), P2
 banner at the top of the file before picking anything: the file is
 ordered P0-first for historical reasons and that is NOT the work order.
 
-**BUGS holds one open item.** The `SQLITE_BUSY` crash was reproduced on
-demand on 2026-08-25 and closed: 10/10 launches crash with the duplicate
-engine, 0/10 without, with a one-line control holding the Dart constant.
-What remains is the follow-on check that the now-cached FlutterEngine
-outliving MainActivity does not strand the launcher-icon swap — and that
-one needs the Mi Pad, which has no working wireless ADB right now.
+**BUGS holds two open items, neither startable right now.** The
+`SQLITE_BUSY` crash was reproduced on demand on 2026-08-25 and closed:
+10/10 launches crash with the duplicate engine, 0/10 without, with a
+one-line control holding the Dart constant. What remains is the
+follow-on check that the now-cached FlutterEngine outliving
+MainActivity does not strand the launcher-icon swap — and that one
+needs the Mi Pad, which had no device attached at all on 2026-08-25.
+The other is a recorded list of three holes the new AOT freshness guard
+does not cover; the guard itself shipped the same day.
+
+**The Android nightly now has a freshness guard that carries no version
+in it**, so Dart landing between releases is covered for the first time —
+`aot_postdates_dart_source()` refuses the install when a Dart file the
+build declared as an input post-dates the AOT snapshot. Per trap 44 it
+is **inert until the next release**, because launchd runs the copy at
+`~/.config/yswords/scripts/` and `release_web.sh` is what re-copies it.
 
 Largest live threads: the 繁體 glyph class (deferred, ~19 items), the 14
 `spans-the-word` Strong's tags still held (39 of the 53 shipped 2026-08-24;

@@ -164,9 +164,10 @@ void main() {
         script,
         contains(
           'if "\$FLUTTER" build apk --release --flavor intl "\${DEFINES[@]}" \\\n'
-          '   && apk_carries_release_stamp "\$ANDROID_APK" "\$expected_release_stamp"; then',
+          '   && apk_carries_release_stamp "\$ANDROID_APK" "\$expected_release_stamp" \\\n'
+          '   && aot_postdates_dart_source; then',
         ),
-        reason: 'the guard must gate the install loop, not merely warn',
+        reason: 'both guards must gate the install loop, not merely warn',
       );
       // And there is exactly one place the APK is pushed to a device,
       // inside that branch.
@@ -237,6 +238,196 @@ void main() {
             'or a rename silently breaks only one of them',
       );
       expect(bump, contains(anchor));
+    });
+  });
+
+  /// The second guard, added 2026-08-25 to cover the nightly — which the
+  /// stamp above structurally cannot, because the stamp only moves when
+  /// `bump_version.sh` runs and the 04:00 launchd job does not bump.
+  ///
+  /// These run the real shell function, lifted out of the real script,
+  /// against synthetic trees. A Dart reimplementation would only prove
+  /// Dart agrees with Dart, and the file is copied to
+  /// `~/.config/yswords/scripts/` on every release, so the shell is what
+  /// has to keep working.
+  group('the AOT freshness guard', () {
+    late String script;
+
+    setUp(() {
+      script = _repoFile('tools/yswords-ios-reinstall.sh').readAsStringSync();
+    });
+
+    /// Everything from the function header to its closing brace.
+    String function() {
+      const header = 'aot_postdates_dart_source() {';
+      final start = script.indexOf('\n$header');
+      expect(start, greaterThan(-1),
+          reason: 'the script no longer defines aot_postdates_dart_source');
+      final end = script.indexOf('\n}\n', start);
+      expect(end, greaterThan(start));
+      return script.substring(start + 1, end + 3);
+    }
+
+    /// Builds a fake `$PROJECT`, runs the function in it, returns
+    /// (exit code, stdout).
+    (int, String) runIn(Directory project) {
+      final result = Process.runSync('sh', [
+        '-c',
+        "PROJECT='${project.path}'\n${function()}\naot_postdates_dart_source",
+      ]);
+      return (result.exitCode, result.stdout as String);
+    }
+
+    /// A fake `$PROJECT`: `lib/` holding [libFiles], an `<abi>/app.so`,
+    /// and a depfile naming only [depNames] as lib/ inputs.
+    ///
+    /// [aotFirst] writes app.so BEFORE the lib/ files, so everything in
+    /// lib/ post-dates the snapshot — the staleness this guard exists
+    /// to catch.
+    Directory scratch({
+      required bool aotFirst,
+      bool withAot = true,
+      bool withDepfile = true,
+      List<String> libFiles = const ['a.dart'],
+      List<String> depNames = const ['a.dart'],
+    }) {
+      final dir = Directory.systemTemp.createTempSync('aotfresh');
+      final variant =
+          Directory('${dir.path}/build/app/intermediates/flutter/intlRelease')
+            ..createSync(recursive: true);
+      Directory('${dir.path}/lib').createSync(recursive: true);
+      Directory('${variant.path}/arm64-v8a').createSync(recursive: true);
+
+      if (withDepfile) {
+        // The real shape: `<outputs>: <inputs>`, one space-separated
+        // line, the separator glued to the last output token.
+        final inputs = depNames.map((n) => '${dir.path}/lib/$n').join(' ');
+        File('${variant.path}/flutter_build.d').writeAsStringSync(
+            ' ${variant.path}/arm64-v8a/app.so: '
+            '/pub-cache/some_package/lib/x.dart $inputs');
+      }
+      void writeAot() =>
+          File('${variant.path}/arm64-v8a/app.so').writeAsStringSync('so');
+      void writeDart() {
+        for (final name in libFiles) {
+          File('${dir.path}/lib/$name').writeAsStringSync('void');
+        }
+      }
+
+      if (aotFirst) {
+        if (withAot) writeAot();
+        sleep(const Duration(seconds: 1));
+        writeDart();
+      } else {
+        writeDart();
+        sleep(const Duration(seconds: 1));
+        if (withAot) writeAot();
+      }
+      return dir;
+    }
+
+    test('refuses when a build input post-dates the AOT snapshot', () {
+      final dir = scratch(aotFirst: true);
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final (code, out) = runIn(dir);
+      expect(code, isNot(0),
+          reason: 'a snapshot older than its own input cannot contain it');
+      expect(out, contains('predates lib/a.dart'));
+      expect(out, contains('Refusing to install'));
+    });
+
+    test('passes when the AOT snapshot post-dates every build input', () {
+      final dir = scratch(aotFirst: false);
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final (code, out) = runIn(dir);
+      expect(code, 0);
+      expect(out, contains('AOT freshness verified'));
+    });
+
+    test('ignores lib/ files that are not inputs to THIS build', () {
+      // The reason this reads the depfile instead of `find lib`. 22 of
+      // this repo's 234 lib/*.dart files are not Android inputs — 17 are
+      // `*_web.dart` conditional-import stubs — and `lib/.DS_Store`
+      // exists and is rewritten by Finder at arbitrary moments. A
+      // `find`-based check refuses a correct build in both cases, every
+      // night, until something unrelated forces a recompile.
+      //
+      // This has to DISCRIMINATE, or it proves nothing: the depfile
+      // names a.dart, which is written BEFORE app.so, while the two
+      // non-inputs are written AFTER it. A `find lib`-based guard sees
+      // files newer than the snapshot and refuses; this one must pass.
+      // An earlier version of this test passed `depNames: []`, which
+      // exited on the "lists no lib/ inputs" branch and only duplicated
+      // the disclosure test below.
+      final dir = Directory.systemTemp.createTempSync('aotfresh');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final variant =
+          Directory('${dir.path}/build/app/intermediates/flutter/intlRelease')
+            ..createSync(recursive: true);
+      Directory('${dir.path}/lib').createSync(recursive: true);
+      Directory('${variant.path}/arm64-v8a').createSync(recursive: true);
+      File('${variant.path}/flutter_build.d').writeAsStringSync(
+          ' ${variant.path}/arm64-v8a/app.so: ${dir.path}/lib/a.dart');
+
+      File('${dir.path}/lib/a.dart').writeAsStringSync('void');
+      sleep(const Duration(seconds: 1));
+      File('${variant.path}/arm64-v8a/app.so').writeAsStringSync('so');
+      sleep(const Duration(seconds: 1));
+      for (final name in const ['thing_web.dart', '.DS_Store']) {
+        File('${dir.path}/lib/$name').writeAsStringSync('x');
+      }
+
+      final (code, out) = runIn(dir);
+      expect(code, 0,
+          reason: 'the only lib/ INPUT pre-dates the snapshot; the two '
+              'files that post-date it went into no Android build');
+      expect(out, contains('AOT freshness verified'));
+      expect(out, isNot(contains('predates')));
+    });
+
+    test('discloses rather than refuses when it cannot measure', () {
+      // Trap 43: a guard whose failure mode is refusing everything needs
+      // its own test. A Flutter upgrade that moves the intermediates
+      // layout must not block every Android install on a tooling detail.
+      for (final dir in [
+        scratch(aotFirst: false, withAot: false),
+        scratch(aotFirst: false, withDepfile: false),
+      ]) {
+        addTearDown(() => dir.deleteSync(recursive: true));
+        final (code, out) = runIn(dir);
+        expect(code, 0, reason: 'an unrunnable check must not refuse');
+        expect(out, contains('did not run'),
+            reason: 'and it must say so, or the ✓ reads as an all-clear');
+        expect(out, isNot(contains('verified')));
+      }
+    });
+
+    test('measures app.so, not the jniLibs copy of it', () {
+      // BOTH are copies — app.so is AndroidAotBundle's `copySync` out of
+      // .dart_tool/flutter_build/<hash>/. What differs is the skip rule
+      // of whatever does the copying. jniLibs/ is filled by Gradle's
+      // `copyJniLibs<Variant>` Sync task, and Gradle is up-to-date per
+      // TASK, so one changed input re-stamps the whole set: measured
+      // 2026-08-25, jniLibs/arm64-v8a/libpdfium.so carried mtime
+      // 01:00:18 over bytes byte-identical to a source last written
+      // 2026-08-24T07:26:50. flutter's build_system skips per TARGET on
+      // the input's content hash, and AndroidAotBundle's only input is
+      // the AOT app.so — so that copy re-runs iff the AOT bytes changed.
+      expect(script, contains(r'"$intermediates"/*/app.so'));
+      final code = const LineSplitter()
+          .convert(function())
+          .where((l) => !l.trimLeft().startsWith('#'))
+          .join('\n');
+      expect(
+        code.contains('jniLibs'),
+        isFalse,
+        reason: 'a jniLibs mtime records the Sync, not the compile',
+      );
+      expect(
+        code.contains('flutter_build.d'),
+        isTrue,
+        reason: 'the sources compared must be the ones the build declared',
+      );
     });
   });
 }

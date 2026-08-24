@@ -425,9 +425,163 @@ apk_carries_release_stamp() {
   [ "$stale_slices" -eq 0 ]
 }
 
+# 2026-08-25: the SECOND freshness check, and it is the one that covers
+# the nightly.
+#
+# apk_carries_release_stamp above can only see across a bump_version.sh
+# run, because the stamp only moves when that script runs and the 04:00
+# launchd job does not bump. Dart landing BETWEEN two releases is
+# invisible to it — and the nightly is the path the three phantom Mi Pad
+# reports came out of. This check carries no commit or version in it at
+# all: it asks whether the AOT snapshot this build produced post-dates
+# every Dart source file that went into it.
+#
+# WHICH FILE IS MEASURED, and why it is not the obvious one.
+# `<abi>/app.so` and `jniLibs/<abi>/libapp.so` are both COPIES — the
+# first draft of this check exonerated app.so on the false ground that
+# it was flutter assemble's direct output. It is not: AndroidAot writes
+# into `.dart_tool/flutter_build/<hash>/<abi>/app.so` and AndroidAotBundle
+# `copySync`s it here (flutter_tools/…/build_system/targets/android.dart).
+# What separates them is the SKIP RULE of the thing doing the copying:
+#
+#   * jniLibs/ is filled by Gradle's `copyJniLibs<Variant>`, a `Sync`
+#     task (flutter_tools/gradle/…/FlutterPlugin.kt). Gradle is
+#     up-to-date per TASK, so one changed input re-copies the whole set
+#     with fresh mtimes. Measured here 2026-08-25: after one build,
+#     jniLibs/arm64-v8a/libpdfium.so carried mtime 01:00:18 over content
+#     byte-identical (sha256 ef8c440d…) to its source, last written
+#     2026-08-24T07:26:50 — a fresh mtime over 17-hour-old bytes. A
+#     stale libapp.so swept along by that same Sync would read as fresh,
+#     which is worse than no check at all.
+#   * flutter's own build_system skips per TARGET on the input's md5
+#     (file_store.dart), and AndroidAotBundle's only input is the AOT
+#     app.so (targets/android.dart). So an unchanged AOT leaves this
+#     copy alone: measured, a second identical build 78s after the first
+#     returned in 1m18s with all three app.so mtimes AND sha256s
+#     unchanged.
+#
+# What this does NOT prove, because a draft of this comment claimed it
+# and it is false: the copy does not re-run *only* when the AOT bytes
+# change. `computeChanges` also invalidates on outputMissing /
+# outputChanged / buildKeyChanged, so wiping build/ while
+# .dart_tool/flutter_build/ survives re-copies with a fresh mtime. That
+# is still not a false all-clear — AndroidAot is a dependency of that
+# copy, so the graph is evaluated against the current kernel either way
+# — but the honest claim is narrower than "iff". A fresh mtime here
+# means flutter ran the AOT chain to completion during THIS build. It
+# is not, and cannot be, proof that the bytes encode the current source;
+# no mtime can be.
+#
+# Measuring `.dart_tool/flutter_build/<hash>/<abi>/app.so` instead — the
+# AOT's direct output — was considered and rejected. It is one step
+# FURTHER from the APK: if flutter recompiled but Gradle never copied
+# the result, .dart_tool would read fresh while the installed APK was
+# stale, which is the failure this whole guard exists for. It also needs
+# the right <hash> picked out of the several snapshot directories on
+# disk. Measure as close to the artifact as the skip rules allow.
+#
+# WHICH SOURCES ARE COMPARED. `flutter_build.d`, the depfile the build
+# just wrote, not a `find` over lib/. A `find` was the first draft and it
+# was wrong twice over: `lib/.DS_Store` exists and Finder rewrites it at
+# any moment, and 22 of this repo's 234 lib/*.dart files are not inputs
+# to an Android build at all — 17 are `*_web.dart` conditional-import
+# stubs. A web-only commit would therefore have made this refuse a
+# perfectly correct Android build, every night, until something
+# unrelated forced a recompile.
+#
+# KNOWN HOLES, stated so the ✓ is not read wider than it is:
+#   * a lib/ edit landing DURING the ~4-minute build is older than the
+#     app.so written at the end of it, and absent from the snapshot. A
+#     second session shares this checkout, so this is reachable.
+#   * a dep whose mtime moved but whose content did not (an edit and a
+#     revert) refuses a build that is legitimately not rebuilt. `git
+#     pull --ff-only` cannot cause it; an interactive session can.
+#   * assets, pubspec.yaml, dart-defines and android/ Kotlin are outside
+#     this check entirely.
+aot_postdates_dart_source() {
+  local intermediates depfile dep_list aot newest newest_epoch newest_path
+  local slices stale
+  intermediates="$PROJECT/build/app/intermediates/flutter/intlRelease"
+  depfile="$intermediates/flutter_build.d"
+  slices=0
+  stale=0
+
+  # Every branch that cannot measure DISCLOSES and returns 0. A guard
+  # whose failure mode is refusing everything is worse than the
+  # staleness it catches, so a moved layout or a missing depfile must
+  # not block the nightly — but it must never be silent either, or the
+  # ✓ printed after this reads as an all-clear it did not earn.
+  if [ ! -f "$depfile" ]; then
+    echo "  NOTE: no flutter_build.d under build/app/intermediates/"
+    echo "  flutter/intlRelease — the AOT freshness check did not run."
+    return 0
+  fi
+
+  dep_list="$(mktemp)" || {
+    echo "  NOTE: mktemp failed — the AOT freshness check did not run."
+    return 0
+  }
+
+  # A depfile is `<outputs...>: <inputs...>`, one long space-separated
+  # line with no trailing newline. The separator is the LAST output
+  # token with `:` glued to it, so take everything after the first token
+  # ending in `:` and keep the inputs under lib/.
+  tr ' ' '\n' <"$depfile" \
+    | awk -v pfx="$PROJECT/lib/" \
+        '/:$/ { seen = 1; next } seen && index($0, pfx) == 1' \
+    >"$dep_list"
+
+  if [ ! -s "$dep_list" ]; then
+    echo "  NOTE: flutter_build.d lists no lib/ inputs — the AOT"
+    echo "  freshness check did not run."
+    rm -f "$dep_list"
+    return 0
+  fi
+
+  newest="$(tr '\n' '\0' <"$dep_list" \
+    | xargs -0 stat -f '%m %N' 2>/dev/null | sort -rn | head -1)"
+  rm -f "$dep_list"
+  newest_epoch="${newest%% *}"
+  newest_path="${newest#* }"
+  case "$newest_epoch" in
+    ''|*[!0-9]*)
+      echo "  NOTE: could not read mtimes for the depfile's lib/ inputs —"
+      echo "  the AOT freshness check did not run."
+      return 0
+      ;;
+  esac
+
+  for aot in "$intermediates"/*/app.so; do
+    [ -f "$aot" ] || continue
+    slices=$((slices + 1))
+    [ "$(stat -f '%m' "$aot" 2>/dev/null || echo 0)" -lt "$newest_epoch" ] \
+      || continue
+    stale=$((stale + 1))
+    echo "✗ ${aot#"$PROJECT/"} predates ${newest_path#"$PROJECT/"}"
+  done
+
+  if [ "$slices" -eq 0 ]; then
+    echo "  NOTE: no <abi>/app.so under build/app/intermediates/flutter/"
+    echo "  intlRelease — the AOT freshness check did not run."
+    return 0
+  fi
+
+  if [ "$stale" -gt 0 ]; then
+    echo "✗ $stale of $slices AOT slice(s) predate Dart that this build"
+    echo "  was supposed to compile — a stale snapshot was reused."
+    echo "  Refusing to install. Re-run; if it repeats, flutter clean."
+    return 1
+  fi
+
+  echo "✓ AOT freshness verified — all $slices app.so slices post-date"
+  echo "  every lib/ input flutter_build.d lists for this build"
+  return 0
+}
+
 echo "→ flutter build apk --release --flavor intl ${DEFINES[*]}"
 if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}" \
-   && apk_carries_release_stamp "$ANDROID_APK" "$expected_release_stamp"; then
+   && apk_carries_release_stamp "$ANDROID_APK" "$expected_release_stamp" \
+   && aot_postdates_dart_source; then
   echo "✓ APK content verified — libapp.so carries $expected_release_stamp"
 
   # How much Dart landed AFTER the stamp the check just matched. Those
@@ -461,12 +615,13 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}" \
     if [ -n "$lib_drift" ] && [ "$lib_drift" -gt 0 ]; then
       echo "  NOTE: $lib_drift commit(s) have touched lib/ since that stamp"
       echo "  was written, and the marker cannot see whether they made it in."
-      echo "  Release first (release_web.sh bumps) for a checkable build."
+      echo "  The AOT freshness check above covers them by mtime instead."
     fi
   fi
   if [ -n "$dirty_lib" ] && [ "$dirty_lib" -gt 0 ]; then
     echo "  NOTE: $dirty_lib uncommitted change(s) under lib/ went into this"
     echo "  build and are outside what the marker can attest to."
+    echo "  The AOT freshness check above covers them by mtime instead."
   fi
 
   # Warm up mDNS — the first poll after `adb start-server` can come
