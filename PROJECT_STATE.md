@@ -21,6 +21,11 @@ first round changes the shape of the claim**, not just once: round one
 here widened the scope and round two shrank it, and only round two
 touched the part that would have done damage.
 
+Later the same day the identical pattern repeated on a Strong's-tag
+repair: round one added two verses, round two removed them **and**
+destroyed the frequency argument the whole list rested on (trap 36).
+Round one widens, round two shrinks — twice observed, so budget for two.
+
 ---
 
 ## The app
@@ -425,6 +430,24 @@ advances the repo hash is healthy.
     silently filed under the earlier branch. Re-measure the disagreement
     orthogonally rather than assuming the code wins because it is code.
 
+36. **"Rare" is not "wrong". Before a rarity argument decides anything, count
+    how many things in the corpus are equally rare.** Six Strong's-tag repairs
+    were justified on 2026-08-24 by the fact that each (Chinese run text,
+    number) pair occurred **exactly once** in 31,102 verses while the number
+    being written carried the same run text hundreds of times. It sounds
+    decisive. **367 runs have that property**, and 約伯記 3:2 has it and is
+    correct — its lone run 说： is tagged H6030 עָנָה, *answered*, because the
+    Hebrew is וַיַּעַן אִיּוֹב וַיֹּאמַר and the Chinese collapses the pair into
+    one verb. The argument did not even cover two of the six it was advanced
+    for. This is trap 20 in a new coat: there the witness's house style
+    nominated hundreds, here rarity does. **The repairs were right; the reason
+    was worthless**, and a worthless reason in a tool docstring is how trap 14
+    happened. Each entry had to be re-grounded on its own verse.
+
+    The refuter round that broke it was the SECOND one, and it also broke two
+    verses the FIRST round had persuaded me to add. Round one widening the
+    scope and round two shrinking it is now the observed pattern twice running.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -440,14 +463,15 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 79 open items across P0 (scripture
+`docs/autonomous-queue.md` — 83 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 
-Largest live threads: the 繁體 glyph class (deferred, ~19 items), URL
-routing rework (approved, staged, single-agent only), sermon passage
-highlighting with verse-level filtering, seven invalid sermon
-references, and an Overlay crash on route pop.
+Largest live threads: the 繁體 glyph class (deferred, ~19 items), the 53
+`spans-the-word` Strong's tags (mechanical, enumerated, no per-verse
+judgement needed), URL routing rework (approved, staged, single-agent
+only), sermon passage highlighting with verse-level filtering, seven
+invalid sermon references, and an Overlay crash on route pop.
 
 **When closing an item, close the original too.** The loop's habit is to
 add an `[x] SHIPPED/SUPERSEDED` entry *above* the open original and

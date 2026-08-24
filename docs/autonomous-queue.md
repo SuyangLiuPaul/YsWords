@@ -861,22 +861,128 @@ and quoted.**
       already G2962. Most of the rest are a supplied 主 parked on whatever
       neighbour the tagger had, not an off-by-one.
 
-- [ ] **Repair the 15-run core, then the 53 spans. Enumerated, not estimated —
-      the list is `python3 tools/audit_strongs_alignment.py`.** Deliberately not
-      done in the sizing iteration: a 71-row sweep justified by a corpus
-      frequency argument is exactly what traps 20 and 28 warn about, and four of
-      the core are already known to be defensible (出 16:23 and 何 12:8's 所,
-      士 9:48's 我所 — where מָה/כֹּל really is the right word — and 民 33:39's
-      歲 for the בֶּן … שָׁנָה age idiom). Take the core first and read each
-      verse; the 53 spans can then go as one mechanical pass, promoting the head
-      out of `i` into `s` and demoting the particle, because there the importer
-      has already told us which word the run covers.
+- [x] **The 15-run core: six repaired 2026-08-24, nine left standing with
+      reasons.** 民數記 11:8 no longer answers 百姓 ("the people") with H8081
+      שֶׁמֶן, *oil*; 使徒行傳 12:24 and 20:32 no longer answer 神 with the bare
+      definite article. `tools/repair_strongs_alignment_core.py` (idempotent),
+      pinned by `test/strongs_alignment_test.dart`. The census went **71 → 65**
+      and the core **15 → 9**; the 53 spans and 7 absent are untouched.
 
-      **民數記 33:39 is a recorded disagreement, not a decision.** Refuter round
-      one called it a defect (歲 is H8141 in 200 of 207 runs; H8141 appears in
-      neither `s` nor `i` anywhere in that verse, so שָׁנָה is unreachable).
-      Round two called it the age idiom and defensible. Neither settled it from
-      the data. Do not sweep it either way.
+      **The six, each an off-by-one against an adjacent token of its own verse,
+      where the number written is the one whose lemma the Chinese literally
+      translates:** 民 11:8 百姓 H8081→H5971 · 耶 47:4 一切 H853→H3605 (H853 is
+      the object marker, which this translation renders with nothing) ·
+      林前 1:14 神 G3754→G2316 (G3754 is ὅτι, opening the *next* clause) ·
+      徒 12:24 and 徒 20:32 神 G3588→G2316 (the run was carrying the noun's own
+      article) · 代上 16:39 邱坛 H4908→H1116 (邱壇 is בָּמָה and 帳幕 is
+      מִשְׁכָּן — both Chinese words are in the verse and the two numbers sat on
+      the wrong ones). Only `s` moved; no Chinese character was touched and `i`
+      was left alone, so the whole diff is six numbers.
+
+      **Two refuter rounds, and the second destroyed the argument the first had
+      approved — this is the transferable part.** The list was justified by
+      frequency: each pair (run text, number) occurs EXACTLY ONCE in 31,102
+      verses while the proposed number carries the same run text hundreds of
+      times, so a singleton looked like a slip. **367 runs have that property**
+      (371 before the repair), and 約伯記 3:2 has it and is *correct* — its lone
+      run 说： is tagged H6030 עָנָה, *answered*, because the Hebrew is
+      וַיַּעַן אִיּוֹב וַיֹּאמַר and this translation collapses the pair into
+      one verb. Worse, the argument never even covered 徒 12:24 / 20:32, where
+      神 = G3588 occurs ten times. Pinned as its own test so nobody rebuilds it.
+      Round two also killed two verses round one had *added* (below) and a
+      second-run half of the 代上 16:39 fix.
+
+      **民數記 33:39 stays a recorded disagreement, not a decision.** Round one
+      called it a defect (歲 is H8141 in 200 of 207 runs; H8141 is in neither
+      `s` nor `i` anywhere in that verse). Round two called it the
+      בֶּן … שָׁנָה age idiom and defensible. Do not sweep it either way. Same
+      for 出 16:23, 何 12:8, 士 9:48's 所/我所.
+
+      **撒上 13:6 is a plain false positive and is now pinned as one:** 百姓 is
+      H376 because the Hebrew opens וְאִישׁ יִשְׂרָאֵל and H376 is the verse's
+      first word. Both refuter rounds agree.
+
+- [ ] **The 53 `spans-the-word` runs — the mechanical half, still open.** The
+      number the run should show is already in that same run's own `i`, and `i`
+      is inert, so the reader sees the particle instead of the head:
+      `的子孙` answers מִן, `以色列` answers עַל, `弟兄们` answers ἀνήρ. Six
+      importer conventions (G3588, H3605, H4480, H1121, H5921, H853) cover
+      nearly all of them, so the repair is one pass — promote the head out of
+      `i` into `s`, demote the particle — and unlike the core it needs no
+      per-verse judgement, because the importer has already said which word the
+      run covers. `python3 tools/audit_strongs_alignment.py` enumerates them.
+      **Read the core item above first**: the frequency argument that looks
+      obvious here is the one that was measured and thrown away.
+
+- [ ] **Four of the nine remaining core hits are open questions with two
+      positions on record. Do NOT sweep them; they are pinned by
+      `test/strongs_alignment_test.dart` so a sweep cannot.**
+
+      * **代下 4:3 — 海 answers H8478 תַּחַת, "under".** Round one: 海 means
+        "sea", H3220 יָם is in the verse and is no run's `s`, and this is the
+        corpus's only 海 tagged H8478 against 111 tagged H3220 — repair it.
+        Round two: the token sequence is H1823 H1241 H8478 H5439 H5439 H5437
+        H853 … H3220, the H853 at token 7 is אֹתוֹ ("encircling **it**"), so the
+        opening 海 is a supplied referent with as good a claim to H853 as to
+        H3220 — and the verse's *second* 海 (「是鑄海的時候」) is the one adjacent
+        to הַיָּם, and that one is left on H3332. Neither round could close it.
+      * **腓立比書 1:29 — 基督 answers the bare article G3588.** The reason first
+        given for holding it was that 基督 = G3588 also occurs at 加拉太書 1:4,
+        so it looked like a convention. **That reason is false**: 加 1:4 has no
+        G5547 in its Greek at all (τοῦ δόντος ἑαυτόν — the substantival-article
+        type the audit correctly declines to flag), while 腓 1:29 does have
+        Χριστοῦ and no run shows it. What is genuinely unsettled is *which*
+        number belongs there: the Chinese 得以信服基督 renders τὸ εἰς αὐτὸν
+        πιστεύειν, so G846 has a claim, while ὑπὲρ Χριστοῦ is folded into the
+        earlier 蒙恩 clause and G5547 has a claim. Both are unreachable.
+      * **約翰一書 5:3 — 神 answers G846 αὐτός and 他 answers the article.** The
+        two are simply swapped: τὰς ἐντολὰς **αὐτοῦ** τηρῶμεν is 我们遵守神的诫命
+        and ἡ ἀγάπη **τοῦ θεοῦ** is 爱他. Tapping 神 shows "him" and tapping 他
+        shows "the", and G2316 is no run's `s`. Held because neither tag states
+        anything false about the Greek word behind its own chunk — the sharper
+        end is the 他 run, whose `s` is a bare article with G2316 sitting inert
+        in its `i`, which is the 53-span shape and may fall out of that pass.
+        The first dismissal reason offered ("G2316 is rendered by the later 他
+        run") was broken by a refuter for counting `i` as coverage — the exact
+        premise the audit was rebuilt to reject.
+      * **耶利米書 33:1 — 耶利米 answers H1931 הוּא.** Held, but *not* for the
+        reason first given (that it also occurs at 耶 40:1, so it is a pattern —
+        frequency again). The reason it survives is literal: the Hebrew clause
+        is וְהוּא עוֹדֶנּוּ עָצוּר and the Chinese names the prophet where the
+        Hebrew has the pronoun, so H1931 is the word behind that chunk. H3414
+        remains no run's `s`.
+
+- [ ] **代上 16:39's neighbour was deliberately left half-repaired.** 邱坛 now
+      answers H1116, but 的帐幕前 still answers H6440 פָּנִים when it also spans
+      מִשְׁכָּן, so H4908 is now no run's `s` in that verse. That is a coverage
+      gap, not a falsehood, which is why it was not swept in with the six. The
+      audit cannot judge it either way: 的帐幕前 occurs **once** in the whole
+      corpus, far below the ≥20-occurrence ground-truth bar. The honest options
+      are to split the run into 的帐幕 / 前, or to leave it.
+
+- [ ] **The three runs in the `absent` bucket display a number the verse does
+      not contain at all, and 民數記 23:11 is the worst of them.** 巴勒 (Balak)
+      answers H319 אַחֲרִית, "latter end", while H1111 בָּלָק sits untapped;
+      利未記 4:17 血 answers H853 where H1818 דָּם is the word; 詩篇 119:126
+      這是雅偉 answers H3069 where the verse has H3068 (the two YHWH pointings —
+      trivial). Raised by a refuter against the core repair as evidence the
+      scope was arbitrary, and the point is fair: 巴勒 = "latter end" is as false
+      as 百姓 = "oil" was. Left out only because it is
+      `audit_strongs_tagging.py`'s class rather than this one — **check that
+      audit's triage table before repairing, in case one of the three has
+      already been dismissed there for a reason** (trap 31: a dismissal is only
+      as wide as the question that earned it).
+
+- [ ] **Two runs carry G2962 κύριος in `i` for a verse whose Greek has no
+      κύριος — 使徒行傳 12:24, 20:32 and 馬太福音 21:29.** Measured 2026-08-24:
+      13 runs corpus-wide have G2962 in `i` and ten of them are in verses that
+      really do contain it. The other three sit exactly where the manuscript
+      tradition splits θεοῦ / κυρίου, so the import was aligned against a
+      different Greek text at those points. Inert and invisible today, so this
+      is provenance rather than a defect — but it is the only measured evidence
+      in the repo that the tagged corpus's source text is not the one
+      `assets/originals/` ships, and that is worth knowing before the 53-span
+      pass trusts `i` as ground truth.
 
 - [ ] **馬可福音 6:33's 城的 is NOT in the 71 and that is a gap worth closing.**
       It carries the article's G3588 while πόλεων's G4172 appears in no run of
