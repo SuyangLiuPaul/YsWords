@@ -5452,19 +5452,81 @@ has never seen this repo.
       `index.json`'s editor-written `passage` field — the one witness
       the extractor cannot agree with by construction.
 
-- [ ] **Sermon 339 is still filed under `Mark 5`, `Mark 6` and
-      `Mark 7`, and it is not about the Gospel of Mark.** Found by the
-      refuter, 2026-08-25. `assets/sermons/en/339.txt` is "Seven Marks
-      of a Regenerated Christian" and its Part-B heading reads
-      "Mark 5: Does Not Sin (1 John 3:9); Mark 6: Kept by the Son
-      (1 John 5:18); Mark 7: Love (1 John 4:7)" — ordinals of the seven
-      marks. `b8258d5` stripped the same labels from the Part-A heading
-      and missed this one, which is why `Mark 1`–`Mark 4` vanished on
-      regeneration while 5–7 survive. A reader browsing Mark 5–7 is
-      told this sermon expounds them; it never mentions the Gospel.
-      Needs a judgement call on how to tell an ordinal label from a
-      citation — "Mark 5:" followed by prose rather than a verse number
-      is the obvious tell, but measure the class before acting.
+- [x] **DONE 2026-08-25 — sermon 339 no longer claims to expound
+      `Mark 5`–`Mark 7`, and the obvious fix for it was measured and
+      thrown away.** The heading spells its numerals now ("Mark five:"),
+      so REF_RE — which reads a chapter only as digits or a CJK numeral
+      — cannot see them. Regeneration moves exactly four keys: `Mark 6`
+      and `Isaiah 50` go, `Mark 5` keeps 140, `Mark 7` keeps 013/104/CP18.
+      2968 → 2966.
+
+      **The tell this item proposed is false, and that is the finding
+      worth keeping.** "A bare chapter followed by a colon carrying no
+      digit is a label" fits **94** matches in the corpus and only
+      339's three are wrong; the other 91 are citations whose colon
+      introduces what the passage says — "Paul says in Romans 11: 'Note
+      then the goodness and the severity of God'". Writing that rule
+      would have cost 44 genuine sermon-key pairs to repair 3.
+      "Ignore `# ` heading lines" fails the same way: 22 keys come only
+      from headings and 19 are genuine (153, 318, 337, 342, 721, 844,
+      141, 152, 338). Both are pinned by example in
+      `test/sermon_refs_resolve_test.dart` so they are not re-derived.
+
+      Two things the item did not know. The heading is **line 43**, and
+      `sermon_detail_page.dart:829` drops only line 1, so the reader was
+      also seeing "Mark 5:" as a tappable link in the body — the Dart
+      `passageRefPattern` matches it independently of the extractor.
+      And the Chinese parallels were never affected: zh-CN/zh-TW read
+      標記5：/标记5：, which carries no book alias.
+
+- [x] **DONE 2026-08-25 — "Is 50% enough?" filed sermon 424 under
+      `Isaiah 50`.** Found by the census run for the item above, not
+      looked for. `_UNIT_AFTER` ended `…|percent|%)\b`, and `%` followed
+      by a space is **not** a word boundary — both are non-word
+      characters — so the guard that exists to refuse "Deuteronomy 43
+      times" could never see a percentage at all. Sermon 424 asks "How
+      much obedience is sufficient to be called faith? Is 50% enough?";
+      `Is` is the alias for Isaiah. `Isaiah 100` and `Isaiah 99` in the
+      same sentence were stopped only by the canon check, so the
+      `exists()` gate was the one thing between us and three of these.
+      `%` now sits outside the `\b`. Corpus-wide, 424 was the only
+      survivor and the change removes no genuine reference.
+
+- [ ] **The Part-A heading of `assets/sermons/en/339.txt` was mangled by
+      `b8258d5` and still is.** It reads "…Second Blessing Debunked; :
+      Power to Be Sons of God ; : Seeing God's Kingdom ; : Spirit's
+      Monopoly ; : Does Righteousness — Cornelius" — the title-cleanup
+      pass deleted "Mark 1:"…"Mark 4:" as if they were verse references
+      and left the orphan `; :` behind. Not user-visible (line 1 is
+      dropped as the title by `sermon_detail_page.dart:829`) and it
+      indexes nothing, which is why it has sat there since May.
+      Restoring it is **not** invention: `git show b8258d5^:` has the
+      original and the intact Chinese parallel reads 標記1：成爲神兒女的
+      權能；標記2：看見神的國；標記3：聖靈的獨佔；標記4：行義. Spell the
+      numerals as line 43 now does. Held back only because it partially
+      reverts a deliberate, user-approved commit — confirm that
+      `b8258d5`'s intent was to strip *verse references* and not
+      ordinal labels before acting.
+
+- [ ] **"Romans 13, 9" and "Romans 8, 3" — a verse given as a bare
+      comma-separated number — reaches only its chapter.** C174 reads
+      "that is why in Romans 13, 9, when speaking about the central
+      issue" and C175 "Romans 8, 3, says what?"; both index the chapter
+      alone. REF_RE admits a comma before the verse only when a
+      separator word or `:` follows it, which is deliberate — "Romans,
+      5" must stay prose. The narrow form here is `Book N, M,` with a
+      trailing comma and M a valid verse of N. Found 2026-08-25 while
+      measuring the ordinary-word-alias class; **measure how many
+      "Book N, M" pairs in the corpus are NOT verses before writing
+      anything**, because this is exactly the shape trap 20 punishes.
+
+- [ ] **`CP18` says "You can from the Mark 7th chapter 7" and is filed
+      under `Mark 7`.** The sentence before is "the end of Matthew
+      chapter 7, very familiar", so the transcript may have heard Mark
+      where the preacher said Matthew — or may be right. Garbled speech
+      recognition, one sermon, and nothing in the text settles it.
+      Recorded 2026-08-25; do not guess. Needs the audio, which is on
+      the T7.
 
 - [ ] **A range spelled with "and" reaches only its first verse.**
       "2 Kings, chapter 13, verses 20 **and** 21" indexes 13:20 alone,

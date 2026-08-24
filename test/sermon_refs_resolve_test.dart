@@ -198,6 +198,65 @@ void main() {
     }
   });
 
+  // A book name is sometimes an ordinary word, and the number after it
+  // is then an ordinal label rather than a chapter. Both members below
+  // put a sermon under a passage it never opens, which is the one thing
+  // this index must not do.
+  //
+  // The other half of the test is the two repairs that were REJECTED,
+  // pinned by example so the next iteration does not re-derive them:
+  //
+  //  * "a bare chapter followed by a colon carrying no digit is a
+  //    label" — 94 matches in the corpus fit that shape and only
+  //    339's three are false. The other 91 are citations whose colon
+  //    introduces the passage's words ("Paul says in Romans 11: …").
+  //  * "ignore `# ` heading lines" — 22 keys come only from headings
+  //    and 19 of them are genuine.
+  //
+  // Both rules are cheap to write and would each destroy an order of
+  // magnitude more than they repair, so the fix is per-verse instead:
+  // 339's editorial heading spells its numerals, and REF_RE reads a
+  // chapter only as digits or a CJK numeral.
+  test('a book name used as an ordinary word does not index a chapter',
+      () {
+    final bySermon = (refs['bySermon'] as Map).cast<String, dynamic>();
+    final k339 = (bySermon['339'] as List).cast<String>();
+    for (final wrong in ['Mark 5', 'Mark 6', 'Mark 7']) {
+      expect(k339, isNot(contains(wrong)),
+          reason: '339 is "Seven Marks of a Regenerated Christian" — '
+              '$wrong is the Nth mark, and the sermon expounds 1 John');
+    }
+    expect(k339, contains('1 John 3:9'));
+
+    // "How much obedience is sufficient? Is 50% enough?" — the verb,
+    // plus a percentage. `%` used to sit inside a `\b` in the unit-word
+    // guard, and `%` followed by a space is not a word boundary, so the
+    // guard could not see it. Isaiah 100 and Isaiah 99 in the same
+    // sentence were stopped only by the canon check.
+    expect((bySermon['424'] as List).cast<String>(),
+        isNot(contains('Isaiah 50')));
+
+    final bv = (refs['byVerse'] as Map).cast<String, dynamic>();
+    // The 91 the colon rule would have taken.
+    for (final pair in [
+      ('Romans 11', '007'), ('Acts 17', '116'), ('Matthew 7', '083'),
+      ('Isaiah 53', '394'), ('John 18', '122'),
+    ]) {
+      expect(bv[pair.$1], contains(pair.$2),
+          reason: '${pair.$1} is cited with a colon before a quotation, '
+              'not labelled');
+    }
+    // The 19 the heading rule would have taken.
+    for (final pair in [
+      ('1 Thessalonians 5', '153'), ('John 15:1', '342'),
+      ('Luke 9:23', '318'), ('Song of Solomon 1:2', '721'),
+      ('Ephesians 4', '337'),
+    ]) {
+      expect(bv[pair.$1], contains(pair.$2),
+          reason: '${pair.$1} reaches the index only through a heading');
+    }
+  });
+
   // index.json's `passage` is written by an editor and the extractor
   // never reads it, so it is the one witness to coverage that cannot
   // agree with the extractor by construction. It is what caught the

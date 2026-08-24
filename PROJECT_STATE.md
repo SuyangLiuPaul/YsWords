@@ -799,6 +799,35 @@ advances the repo hash is healthy.
     destroyed twelve real references to cure one. Only *John* is ambiguous,
     because it is the one book name shared by a gospel and three letters.
 
+52. **Two independent patterns read the same sermon text, so a fix in the
+    extractor only ever cures half the defect — and `\b` after a non-word
+    character is a silent no-op.** Sermon 339's heading "Mark 5: Does Not
+    Sin" was indexed as the Gospel by `scripts/extract_sermon_refs.py`
+    AND rendered as a tappable link by `passageRefPattern` in
+    `lib/utils/passage_localizer.dart`, which is a separate regex in a
+    separate language that nothing keeps in step. Only line 1 of a sermon
+    is dropped as the title (`sermon_detail_page.dart:829`), and this
+    heading is line 43 of a concatenated Part A + Part B, so it was body
+    text. **Repairing the DATA fixed both surfaces; repairing the
+    extractor would have fixed one and left the visible one alone.** Ask
+    how many readers of a string there are before choosing where to fix
+    it.
+
+    Two more from the same round. **The `\b` hazard**: `_UNIT_AFTER`
+    ended `…|percent|%)\b`, and `%` followed by a space is not a word
+    boundary, so the whole guard was blind to percentages — "Is 50%
+    enough?" (the verb, plus the alias for Isaiah) became `Isaiah 50`.
+    `Isaiah 100` and `Isaiah 99` in the same sentence were stopped only
+    by the canon check, so `exists()` was the only thing standing there.
+    And **trap 20 again, in its sharpest form yet**: the queue item
+    proposed "a bare chapter followed by a colon carrying no digit is a
+    label" as "the obvious tell". It fits 94 matches in this corpus and
+    **91 are genuine** — a colon before a quotation is how a preacher
+    cites. The fallback rule ("ignore `# ` headings") was 19 genuine
+    against 3 false. Both are now pinned by example in
+    `test/sermon_refs_resolve_test.dart`, because a rejected repair that
+    is not written down gets re-derived.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the

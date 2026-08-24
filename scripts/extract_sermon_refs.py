@@ -344,9 +344,13 @@ ONE_CHAPTER = {"Obadiah", "Philemon", "2 John", "3 John", "Jude"}
 # its job: "Jeremiah 12 verse 2" is the most explicit citation English
 # has, and the guard threw all 17 such references away. The verse word
 # is now a SEPARATOR in REF_RE, so a unit-word match cannot reach it.
+# `%` sits outside the `\b`: a per-cent sign is not a word character, so
+# `%\b` only matches when a LETTER follows it, and "Is 50% enough?" —
+# sermon 424, the verb `is` plus a percentage — reached the index as
+# Isaiah 50.
 _UNIT_AFTER = re.compile(
-    r"\s*(?:times?|years?|days?|hours?|minutes?|weeks?|months?|"
-    r"words?|percent|%)\b", re.IGNORECASE)
+    r"\s*(?:(?:times?|years?|days?|hours?|minutes?|weeks?|months?|"
+    r"words?|percent)\b|%)", re.IGNORECASE)
 
 _CJK = re.compile(r"[\u4e00-\u9fff]")
 
