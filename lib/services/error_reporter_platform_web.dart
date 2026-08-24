@@ -44,3 +44,7 @@ Map<String, dynamic> collectDeviceInfo() {
     'ua': ua,
   };
 }
+
+/// Web has no emulator equivalent — a browser is a browser. Present so
+/// `error_reporter.dart` can call it without a conditional.
+bool get isSyntheticDevice => false;

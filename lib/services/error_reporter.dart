@@ -168,6 +168,11 @@ class ErrorReporter {
     if (!_initialised) return;
     // v1.3.x: drop known-benign noise so the inbox stays signal.
     if (_isIgnorableNoise(error, stack)) return;
+    // 2026-08-25: and drop everything from a developer emulator. The
+    // loop reproduces bugs on one deliberately, and each reproduction
+    // was mailing the developer a crash report indistinguishable from a
+    // real user's. See utils/synthetic_device.dart.
+    if (platform.isSyntheticDevice) return;
     // Best-effort: cap payload sizes; never send absurd inputs.
     final payload = <String, dynamic>{
       'error': _trim(error, 2000),

@@ -11,6 +11,8 @@ library;
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:yswords/utils/synthetic_device.dart';
+
 String get platformName {
   if (Platform.isIOS) return 'ios';
   if (Platform.isAndroid) return 'android';
@@ -37,4 +39,23 @@ Map<String, dynamic> collectDeviceInfo() {
     'dpr': dpr,
     'ua': '', // native has no user-agent equivalent
   };
+}
+
+/// True on a developer emulator/simulator, false on a real device.
+/// `ErrorReporter._send` drops reports when this is set — see
+/// `utils/synthetic_device.dart` for why.
+///
+/// iOS and macOS: the Simulator is the only context that sets
+/// `SIMULATOR_DEVICE_NAME`, and it is set for the whole process, so no
+/// plugin is needed. Android: read off the build fingerprint.
+bool get isSyntheticDevice {
+  try {
+    if (Platform.isIOS || Platform.isMacOS) {
+      return Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
+    }
+    if (Platform.isAndroid) {
+      return isSyntheticAndroidOs(Platform.operatingSystemVersion);
+    }
+  } catch (_) {/* best-effort: if we cannot tell, assume real */}
+  return false;
 }
