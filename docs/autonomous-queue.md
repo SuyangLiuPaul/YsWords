@@ -95,14 +95,96 @@ reported. Work these top-down before P2.
       Verify on device: reader → search → tap a result in a chapter you
       are NOT in, late in a long chapter. It must scroll and wash.
 
+- [x] **The Android app booted TWICE, and the Android media session was
+      never live. Fixed 2026-08-24 — `MainActivity` extended the wrong
+      class.** Found while investigating the SQLITE_BUSY item below, and
+      it is the "background isolate plus the UI isolate" that item
+      guessed at — but the second isolate is not a background worker, it
+      is a whole second copy of the app.
+
+      `AudioServicePlugin.onAttachedToActivity` calls
+      `getFlutterEngine(activity)`, which reads
+      `FlutterEngineCache.get("audio_service_engine")` and, on a miss,
+      constructs a `FlutterEngine` and calls
+      `executeDartEntrypoint(DartEntrypoint.createDefault())` — `main()`
+      again, second isolate, same process. `AudioServiceActivity` is the
+      `FlutterActivity` subclass that puts its engine in that cache;
+      ours was a plain `FlutterActivity`, so the cache was always empty
+      and the second engine was always built.
+
+      **Measured on an Android 34 emulator, not reasoned.** A debug
+      build with a marker as the first line of `main()`: TWO markers
+      1.16 s apart from ONE pid (2259), isolates 117306759 / 118841876,
+      plus `IllegalStateException: The Activity class declared in your
+      AndroidManifest.xml is wrong` at `AudioServicePlugin.java:460` and
+      the app's own `[SongPlayerService] media session unavailable`.
+      After the change: one marker, neither error, Firebase initialising
+      once instead of twice.
+
+      **What the user lost.** Not "no media session" — the refuter
+      corrected that. `wrongEngineDetected` is set only in
+      `onAttachedToActivity`, which the headless engine never receives,
+      so isolate B's `AudioService.init` SUCCEEDED and owned the
+      notification. But the user's taps drove isolate A's player, so the
+      lock screen was wired to a second, idle copy of the app. Phantom
+      controls, and no foreground service behind the audio that was
+      actually playing — which is the whole reason audio_service was
+      added ("listen while driving").
+
+      Pinned by `test/android_audio_service_engine_test.dart` (source
+      guard; no Dart test can exercise Kotlin).
+
 - [ ] **`DatabaseException(database is locked (code 5 SQLITE_BUSY))
       sql 'BEGIN EXCLUSIVE'` — crash mailed in twice.** Reported by the
-      user 2026-08-23 from builds 1.4.39 and 1.4.138 (android). Origin
-      is `flutter_cache_manager`'s sqflite store, reached through
-      `audio_service`/`just_audio` artwork caching. Two writers opening
-      the same cache db concurrently is the usual shape — a background
-      isolate plus the UI isolate. Reproduce before changing anything;
-      an untested guess here turns a crash into a silent stall.
+      user 2026-08-23 from builds 1.4.39 and 1.4.138 (android). **Still
+      open: the duplicate-engine fix above removes the only contention
+      mechanism found, but the crash itself was never reproduced.**
+
+      What is now measured rather than assumed:
+      * `flutter_cache_manager` is the ONLY package depending on
+        `sqflite`, and `audio_service` the only one depending on it.
+        Nothing in `lib/` imports either. So audio_service's artwork
+        cache is this app's only sqlite database.
+      * `BEGIN EXCLUSIVE` is NOT an ordinary write. sqflite reads the
+        user_version outside the transaction
+        (`sqflite_common/database_mixin.dart:1134`) and opens the
+        exclusive transaction only when `oldVersion != options.version`.
+        So this fires on the FIRST-EVER open of the cache db (or a
+        version bump) and never again — which fits a crash seen twice,
+        on two distant builds, rather than continuously.
+      * Both isolates really did reach that db. `AudioService.init`
+        assigns `_cacheManager = DefaultCacheManager()`
+        (`audio_service.dart:1012`) BEFORE the `_platform.configure`
+        that threw, and `CacheStore`'s constructor eagerly calls
+        `repo.open()`. The first draft of this analysis had the UI
+        isolate never touching it; that was wrong.
+      * sqflite's same-path dedup does not save two concurrent opens:
+        the `_singleInstancesByPath` lookup happens on the platform
+        thread while the corresponding put happens later on a worker,
+        so two opens racing that window both miss and get two native
+        connections (WAL off).
+
+      To close it: install a build over a CLEARED app data directory
+      (so the cache db must be created) and watch for the throw. If it
+      cannot be provoked on a build carrying the fix, say that, and say
+      how many attempts — do not tick it on the strength of the
+      mechanism alone.
+
+- [ ] **Follow-on from the duplicate-engine fix: the FlutterEngine now
+      outlives MainActivity, and the launcher-icon swap deliberately
+      finishes the task.** `shouldDestroyEngineWithHost()` returns false
+      whenever the host provides the engine, so after
+      `applyIcon()` finishes the task in `onStop`, a relaunch attaches
+      the surviving engine instead of running `main()`. On the emulator
+      the app resumed correctly (warm resume, one boot marker, no
+      exceptions, dashboard rendered), but I could not force a true
+      activity-destroy-with-process-alive there — `always_finish_
+      activities` did not take and recents-dismissal killed the process.
+      Check on the Mi Pad: change the theme colour, leave the app, come
+      back, and confirm it is not stuck on stale state. Related, and
+      probably harmless: `getFlutterEngine` pins the initial route from
+      the first activity only, which is inert here because the Android
+      manifest declares no VIEW/BROWSABLE deep links.
 
 - [x] **The Android release build can ship an APK without the current
       Dart code, and nothing catches it. Content assertion added

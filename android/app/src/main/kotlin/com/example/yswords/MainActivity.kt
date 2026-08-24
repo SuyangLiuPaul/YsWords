@@ -2,11 +2,21 @@ package com.example.yswords
 
 import android.content.ComponentName
 import android.content.pm.PackageManager
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+// 2026-08-24: MUST extend AudioServiceActivity, not FlutterActivity.
+// AudioServiceActivity is a FlutterActivity that hands back the engine
+// audio_service caches under "audio_service_engine". A plain
+// FlutterActivity builds its own engine instead, so audio_service finds
+// the cache empty in onAttachedToActivity and creates a SECOND engine —
+// which runs main() again in a second isolate. Measured on an emulator
+// before this change: two YSWORDS_BOOT_MARKER lines from one pid, and
+// `AudioService.init` failing in the UI isolate with "The Activity class
+// declared in your AndroidManifest.xml is wrong", i.e. no lock-screen
+// controls and no foreground service on Android at all.
+class MainActivity : AudioServiceActivity() {
     // 2026-05-24 (v1.2.97): themed launcher icon variants. Each
     // alias is declared in AndroidManifest.xml and points at this
     // same activity. We enable exactly one alias (or the main

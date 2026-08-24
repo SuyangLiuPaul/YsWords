@@ -613,6 +613,33 @@ advances the repo hash is healthy.
     is INERT until then. The two were byte-identical before this change
     (`cmp`), so the older note claiming they had drifted was stale.
 
+45. **A plugin's "your Activity must extend X" requirement fails SILENTLY
+    and expensively: audio_service answered a plain `FlutterActivity` by
+    building a SECOND FlutterEngine and running `main()` again.** One
+    process, two isolates, two full app boots — Firebase initialised
+    twice, every startup service ran twice, and the lock screen was wired
+    to the second, idle copy while the user's taps drove the first. It
+    had shipped that way since Songs v2 (2026-08-09) and nothing in
+    analyze, the suite, or any log the user sees could show it. Two
+    lessons. **First: a native misconfiguration is invisible to every
+    Dart-side gate, so when a package documents a platform requirement,
+    pin it with a source guard** (`test/android_audio_service_engine_
+    test.dart` reads MainActivity.kt). **Second: the way to find it was
+    to print a marker in `main()` and count the lines** — three minutes
+    on an emulator settled what an hour of reading the plugin source only
+    made plausible. The emulator AVD `spark` plus
+    `/opt/homebrew/share/android-commandlinetools/emulator` works when
+    the Mi Pad's wireless ADB is down, which it usually is.
+
+    The refuter earned its keep twice more here. It broke "the media
+    session was entirely dead" — the headless engine never receives
+    `onAttachedToActivity`, so ITS `AudioService.init` succeeded, making
+    the defect a phantom session rather than none. And it broke the
+    safety claim: with the engine now provided by the host,
+    `shouldDestroyEngineWithHost()` is false, so the engine outlives the
+    activity — which collides with this app's icon swap deliberately
+    finishing the task. Queued as a device check rather than waved off.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -646,12 +673,13 @@ accuracy — **deferred to last**), P1 (Bible study correctness), P2
 banner at the top of the file before picking anything: the file is
 ordered P0-first for historical reasons and that is NOT the work order.
 
-**BUGS now holds one open item**, the `SQLITE_BUSY` crash mailed in
-twice — and it says to reproduce before changing anything, which nothing
-so far has managed. `flutter_cache_manager` is transitive (nothing in
-`lib/` mentions it); `audio_service` reaches it through `_loadArtwork`
-for the notification artwork of songs whose `artworkUrl` is a network
-URL. That is where to start, not in our own code.
+**BUGS holds two open items.** The `SQLITE_BUSY` crash mailed in twice
+is still open — the duplicate-engine fix of 2026-08-24 removed the only
+contention mechanism found, but the crash was never reproduced, and the
+item now records what IS measured (it is the app's only sqlite db;
+`BEGIN EXCLUSIVE` fires only on first create; both isolates opened it).
+The second is the follow-on check that the now-cached FlutterEngine
+outliving MainActivity does not strand the launcher-icon swap.
 
 Largest live threads: the 繁體 glyph class (deferred, ~19 items), the 14
 `spans-the-word` Strong's tags still held (39 of the 53 shipped 2026-08-24;
