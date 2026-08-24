@@ -231,13 +231,98 @@ def build_book_pattern() -> str:
 
 BOOK_RE = build_book_pattern()
 
-# A full reference: <book><opt-space><chapter>(:|.|：<verse>(-<verse>)?)?
-# Stops at sensible boundaries to avoid eating prose.
+
+def build_numbered_tail_pattern() -> str:
+    """The word half of every numbered book — John, Peter, Corinthians …
+    — so that a chapter number can be refused when it is really the
+    ordinal of the book that follows it."""
+    tails = {b.split(" ", 1)[1] for b in CANONICAL_BOOKS
+             if b[0].isdigit() and " " in b}
+    return r"(?:" + "|".join(re.escape(t) for t in sorted(tails)) + r")"
+
+
+NUMBERED_TAIL_RE = build_numbered_tail_pattern()
+
+# Chinese numeral chapters — 「雅歌一章二節」 is a citation, and the
+# sermon titles use this form in preference to digits.
+_CN_DIGIT = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
+             "六": 6, "七": 7, "八": 8, "九": 9}
+_CN_NUM_RE = r"[〇零一二三四五六七八九十百]+"
+
+# Structural rather than accumulating, so that a run which merely
+# CONTAINS numeral characters is rejected instead of yielding a
+# plausible number: 十十 accumulates to 20 and is not a numeral at all.
+_CN_NUM_SHAPE = re.compile(
+    r"^(?:(?P<h>[一二三四五六七八九])百)?"
+    r"(?:(?P<t>[一二三四五六七八九])?(?P<ten>十))?"
+    r"(?:[〇零]?(?P<u>[一二三四五六七八九]))?$")
+
+
+def cn_number(s: str) -> int | None:
+    """Parse 一 / 十二 / 二十三 / 一百一十九 to an int in 1..199, or None
+    when [s] is not a well-formed numeral."""
+    m = _CN_NUM_SHAPE.fullmatch(s)
+    if not m:
+        return None
+    n = 0
+    if m.group("h"):
+        n += _CN_DIGIT[m.group("h")] * 100
+    if m.group("ten"):
+        n += (_CN_DIGIT[m.group("t")] if m.group("t") else 1) * 10
+    if m.group("u"):
+        n += _CN_DIGIT[m.group("u")]
+    return n if 0 < n < 200 else None
+
+
+# A full reference. Beyond `<book> <chapter>:<verse>` this also reads the
+# spelled-out prose these transcripts actually use — "Ezekiel chapter 13
+# verses 10 and 16", 「以西結書第13章10節」, 「雅歌一章二節」 — because a
+# preacher dictating a reference says it in words far more often than he
+# says it in punctuation.
 REF_RE = re.compile(
-    rf"\b({BOOK_RE})"
+    rf"\b(?P<book>{BOOK_RE})"
     rf"\.?\s*"
-    rf"(\d+)"
-    rf"(?:\s*[:：.]\s*(\d+)(?:\s*[-–—]\s*\d+)?)?",
+    # "2 Kings, chapter 13" — the comma is admitted only when a chapter
+    # WORD follows, so a bare "Romans, 5" stays prose.
+    rf"(?:[,，]\s*(?P<chcomma>chapters?|ch\.)\s*"
+    rf"|(?P<chword>chapters?|ch\.|第)\s*)?"
+    # "…the letters of John. 1 John 2 and verse 18" — the 1 is the
+    # ordinal of the NEXT book, not a chapter of this one. Refusing it
+    # here rather than after the match matters: a post-hoc skip would
+    # leave the 1 consumed and the scan would resume mid-name and read
+    # the Gospel. Failing in the pattern makes the engine retry from the
+    # 1 and find 1 John.
+    rf"(?![1-3]\s+{NUMBERED_TAIL_RE}\b)"
+    rf"(?:(?P<ch>\d+)|(?P<chcn>{_CN_NUM_RE}))"
+    rf"(?P<chmark>\s*[章篇])?"
+    rf"(?:"
+    # An explicit separator carries the verse: "17:3", "chapter 10,
+    # verse 19", 「第13章第10節」.
+    rf"\s*[,，、]?\s*(?:and\s+)?"
+    rf"(?:[:：.]|verses?\s+|vv?\.\s*|第\s*)\s*"
+    rf"(?:(?P<v>\d+)|(?P<vcn>{_CN_NUM_RE}))"
+    rf"(?:\s*(?:[-–—]\s*|(?:to|through)\s+|[至到]\s*)"
+    rf"(?:(?P<vend>\d+)|(?P<vendcn>{_CN_NUM_RE}))"
+    # 「馬太福音11:30-12:1-8」 — the number past the dash carries a verse
+    # of its own, which makes it the far CHAPTER and the whole thing one
+    # passage crossing a chapter boundary.
+    rf"(?:\s*[:：.]\s*(?P<echv>\d+)(?:\s*[-–—]\s*(?P<echv2>\d+))?)?)?"
+    # A number that carries its own 章 is a chapter restated, not a
+    # verse: 「馬可福音第九章，第九章的最後部分」 would otherwise read
+    # the second 第九 as Mark 9:9.
+    rf"(?!\s*[章篇])"
+    rf"|"
+    # 「八章五節」 — Chinese puts nothing between the chapter mark and
+    # the verse, so the separator is the 章 behind and the 節 ahead.
+    # The trailing 節 is what does the work: the lookbehind is flush
+    # against 章 but the `\s*` after it still admits a space, so
+    # 「二十四章 1948年」 reaches the number and is turned away only
+    # because 年 is not 節.
+    rf"(?<=[章篇])\s*第?\s*"
+    rf"(?:(?P<v2>\d+)|(?P<vcn2>{_CN_NUM_RE}))"
+    rf"(?:\s*[-–—至到]\s*"
+    rf"(?:(?P<vend2>\d+)|(?P<vendcn2>{_CN_NUM_RE})))?\s*[節节]"
+    rf")?",
 )
 
 
@@ -254,11 +339,77 @@ ONE_CHAPTER = {"Obadiah", "Philemon", "2 John", "3 John", "Jude"}
 # An English number that belongs to the following unit, not the book:
 # "the word occurs in Deuteronomy 43 times" indexed Deuteronomy 43,
 # a chapter that does not exist.
+#
+# `verse(s)` was in this list until 2026-08-25 and did the opposite of
+# its job: "Jeremiah 12 verse 2" is the most explicit citation English
+# has, and the guard threw all 17 such references away. The verse word
+# is now a SEPARATOR in REF_RE, so a unit-word match cannot reach it.
 _UNIT_AFTER = re.compile(
     r"\s*(?:times?|years?|days?|hours?|minutes?|weeks?|months?|"
-    r"verses?|words?|percent|%)\b", re.IGNORECASE)
+    r"words?|percent|%)\b", re.IGNORECASE)
 
 _CJK = re.compile(r"[\u4e00-\u9fff]")
+
+# Immediately before a book alias, and only ever consulted for John.
+_EPISTLE_OF = re.compile(
+    r"(?:letters?|epistles?)\s+of\s+(?:the\s+)?$", re.IGNORECASE)
+
+
+def _load_canon() -> dict[str, dict[int, set[int]]]:
+    """book \u2192 chapter \u2192 verses, from KJV, whose book names are the same
+    canonical English strings this script emits."""
+    out: dict[str, dict[int, set[int]]] = {}
+    for row in json.loads((REPO / "assets" / "kjv.json")
+                          .read_text(encoding="utf-8")):
+        out.setdefault(row["book"], {}).setdefault(
+            int(row["chapter"]), set()).add(int(row["verse"]))
+    return out
+
+
+CANON = _load_canon()
+
+
+def exists(book: str, ch: int, verse: int | None) -> bool:
+    """A reference nobody can navigate to must not enter the index \u2014
+    the sermon would be filed under a passage that does not exist.
+    These are transcription slips, not citation styles: sermon CP37
+    says \u300c\u555f\u793a\u9304\u4e09\u5341\u4e03\u7ae0\u5341\u4e03\u7bc0\u300d two sentences after \u300c\u555f\u793a\u9304\u7b2c\u4e09\u7ae0\u300d,
+    quoting Laodicea, so the chapter is 3 and the \u5341\u4e03 is the verse."""
+    chapters = CANON.get(book)
+    if chapters is None or ch not in chapters:
+        return False
+    return verse is None or verse in chapters[ch]
+
+
+def _int(digits: str | None, numeral: str | None) -> int | None:
+    """A number written either way, or None when neither is present and
+    when a Chinese numeral turns out to be malformed."""
+    if digits is not None:
+        return int(digits)
+    return cn_number(numeral) if numeral is not None else None
+
+
+# All that may stand between two citations for the second to be the far
+# end of the first: "Matthew 24, verse 45, right up to Matthew 25,
+# verse 30" is one passage, and REF_RE can only ever see two.
+_RANGE_LINK = re.compile(
+    r"\s*[,，、]?\s*(?:right\s+)?(?:up\s+|through\s+|clear\s+)?"
+    r"(?:to|through|thru|until|一直到|直到|至|到)\s*[,，、]?\s*",
+    re.IGNORECASE)
+
+
+def _walk(book: str, c1: int, v1: int, c2: int, v2: int):
+    """Every verse from [book] c1:v1 through c2:v2 inclusive, skipping
+    any the canon does not have."""
+    for c in range(c1, c2 + 1):
+        verses = CANON.get(book, {}).get(c)
+        if not verses:
+            continue
+        lo = v1 if c == c1 else min(verses)
+        hi = v2 if c == c2 else max(verses)
+        for v in range(lo, hi + 1):
+            if v in verses:
+                yield c, v
 
 
 def extract_refs(text: str) -> list[str]:
@@ -266,19 +417,40 @@ def extract_refs(text: str) -> list[str]:
     order of first appearance) found in [text]."""
     seen: set[str] = set()
     out: list[str] = []
+    prev: tuple[str, int, int, int] | None = None
     for m in REF_RE.finditer(text):
-        alias_raw, chapter, verse = m.group(1), m.group(2), m.group(3)
+        alias_raw = m.group("book")
         canon = ALIAS.get(normalize_alias(alias_raw))
         if not canon:
             continue
-        try:
-            ch = int(chapter)
-        except ValueError:
-            continue
+        if m.group("ch") is not None:
+            ch = int(m.group("ch"))
+        else:
+            ch = cn_number(m.group("chcn"))
+            if ch is None:
+                continue
+        verse = _int(m.group("v") or m.group("v2"),
+                     m.group("vcn") or m.group("vcn2"))
+        last = _int(m.group("vend") or m.group("vend2"),
+                    m.group("vendcn") or m.group("vendcn2"))
+        # A spelled-out marker — "chapter 13", 「第13章」 — is proof the
+        # number is a chapter, so the prose guards below cannot apply.
+        marked = (m.group("chword") is not None
+                  or m.group("chcomma") is not None
+                  or m.group("chmark") is not None)
         if ch <= 0 or ch > 200:
             continue
+        # "the first letter of John, chapter 2" is 1 John, and the bare
+        # alias resolves to the Gospel. Which of the three letters it is
+        # cannot be recovered from this phrase, so index nothing rather
+        # than the wrong book. Only John is ambiguous this way: every
+        # other "letter of X" names a book with no gospel to be confused
+        # with, and "book of X" / "Gospel of X" are left alone because
+        # all thirteen in this corpus are correct.
+        if canon == "John" and _EPISTLE_OF.search(text[:m.start()]):
+            continue
         # "Deuteronomy 43 times" — the number is a count, not a chapter.
-        if not verse and _UNIT_AFTER.match(text, m.end()):
+        if not verse and not marked and _UNIT_AFTER.match(text, m.end()):
             continue
         # Single-CJK-character abbreviations are ordinary words far more
         # often than they are book names: 但20分钟 is "but 20 minutes",
@@ -287,10 +459,9 @@ def extract_refs(text: str) -> list[str]:
         # (但3:16) or the word 章 right after the number; without either,
         # the match is prose. Two-character aliases (撒上, 林前…) have
         # no such second life and pass as before.
-        if _CJK.match(alias_raw) and len(alias_raw) == 1 and not verse:
-            after = text[m.end():m.end() + 1]
-            if after not in ("章", "篇"):
-                continue
+        if (_CJK.match(alias_raw) and len(alias_raw) == 1 and not verse
+                and m.group("chmark") is None):
+            continue
         if canon in ONE_CHAPTER:
             # Jude 6 means Jude 1:6. A chapter other than 1 with an
             # explicit verse cannot exist in these books — drop it
@@ -298,18 +469,40 @@ def extract_refs(text: str) -> list[str]:
             if verse and ch != 1:
                 continue
             if not verse:
-                verse, ch = chapter, 1
-        if verse:
-            try:
-                v = int(verse)
-            except ValueError:
-                v = None
-            key = f"{canon} {ch}:{v}" if v else f"{canon} {ch}"
-        else:
-            key = f"{canon} {ch}"
-        if key not in seen:
-            seen.add(key)
-            out.append(key)
+                verse, ch = ch, 1
+        if not exists(canon, ch, verse):
+            continue
+        # "Matthew 25 verses 31 to 46" is sixteen verses, and only the 31
+        # used to reach the index — harmless while the same match also
+        # left a bare "Matthew 25" behind, fatal once it stopped.
+        # passage_filter.dart has always described the index as one key
+        # per verse; this is the extractor finally writing that.
+        span = [(ch, verse)]
+        # 200 verses is more than any real citation and stops a misread
+        # pair of numbers from filing a sermon under half a book.
+        far_ch, far_v = ch, last
+        if m.group("echv") is not None and last is not None:
+            far_ch = last
+            far_v = int(m.group("echv2") or m.group("echv"))
+        if (verse is not None and far_v is not None
+                and (far_ch, far_v) > (ch, verse)):
+            walked = list(_walk(canon, ch, verse, far_ch, far_v))
+            if len(walked) <= 200:
+                span = walked
+        # A range the preacher stated as two whole citations.
+        if (prev is not None and prev[0] == canon and verse is not None
+                and (ch, verse) > (prev[1], prev[2])
+                and _RANGE_LINK.fullmatch(text[prev[3]:m.start()])):
+            walked = list(_walk(canon, prev[1], prev[2], ch, verse))
+            if len(walked) <= 200:
+                span = sorted(set(span) | set(walked))
+        if verse is not None:
+            prev = (canon, ch, verse, m.end())
+        for (c, v) in span:
+            key = f"{canon} {c}:{v}" if v else f"{canon} {c}"
+            if key not in seen:
+                seen.add(key)
+                out.append(key)
     return out
 
 

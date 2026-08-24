@@ -748,6 +748,47 @@ advances the repo hash is healthy.
     trip it removes the false-alarm class the `lib/` check has to live
     with.
 
+50. **A book name at the end of a sentence swallows the ordinal of the next
+    one, and the wreckage is a perfectly valid reference.** `extract_sermon_
+    refs.py` tolerates an abbreviating full stop (`Matt. 5:3`), so "…only in
+    the letters of John. **1** John 2 and verse 18" parsed as *John 1* and
+    filed sermon 237 under a chapter it never opens. Three more shipped the
+    same way — `1 Peter 1`→765 from "1 Peter. 1 Peter chapter 4",
+    `Revelation 2`→238 from "the book of Revelation. 2 John, verse 7". None
+    is detectable by a validity check: every one resolves against `kjv.json`,
+    which is exactly why they sat in the index. **The fix has to live inside
+    the pattern, not after the match** — a post-hoc `continue` leaves the
+    ordinal consumed, so the scan resumes mid-name and re-reads the Gospel.
+    A lookahead makes the engine retry from the digit and find `1 John`.
+
+    Two more from the same round. **A coverage diff that clears a lost key
+    because the sermon reappears elsewhere in that chapter is asking whether
+    the sermon is still reachable, not whether it was ever right.** 348 pairs
+    vanished on regeneration; 340 were a bare chapter key re-filed onto verse
+    keys, and all 8 of the remainder turned out to be false positives being
+    *cured*. Reading each against the transcript is what separated them —
+    the aggregate could not. And **"is this a loss?" has a third answer
+    besides yes and no**: `Mark 1`–`Mark 4` → 339 were "the Nth **mark** of
+    a regenerated Christian", and their source text had already been deleted
+    by an earlier title edit, so no regeneration could ever have reproduced
+    them. `Mark 5`–`Mark 7` survive and are the same false-positive class,
+    live in the shipped index today (queued).
+
+51. **A prose-widening fix and the false positive it admits arrive one
+    refuter round apart, and the second is invisible in the aggregate.**
+    Round one showed the pattern could not read a comma after a book name,
+    hiding sermon 325's central exposition behind an aside sixty lines away.
+    The comma fix added 26 keys — and one of them, `John 2:19` for sermon
+    343, came from "the first letter of **John**, chapter 2 and verse 19",
+    an appositive the newly-permissive comma let the pattern reach across.
+    +26 keys reads like unmixed good news at every level above the
+    individual sentence. Trap 38 said widening needs another round; this is
+    what the other round is *for*. Note the corpus decided the shape of the
+    guard: of the 14 "…of ⟨Book⟩, chapter N" phrasings, **13 are correct**
+    ("the book of Revelation, chapter 21"), so a blanket rule would have
+    destroyed twelve real references to cure one. Only *John* is ambiguous,
+    because it is the one book name shared by a gospel and three letters.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the

@@ -51,3 +51,4 @@ netlify/functions/package-lock.json
 .netlify/
 build-wasm/
 tools/__pycache__/
+scripts/__pycache__/

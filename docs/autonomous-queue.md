@@ -5416,8 +5416,83 @@ has never seen this repo.
       positives) — but see the NEW item below before regenerating.
       **SUPERSEDED — original below.**
 
-- [ ] **`scripts/extract_sermon_refs.py` CANNOT rebuild the shipped
-      refs.json — regenerating today silently loses ~32 references.**
+- [x] **DONE 2026-08-25 — the extractor rebuilds refs.json, and the
+      rebuild is bigger and cleaner than the file it replaces.**
+      1,294 → 2,968 keys, 282 → 289 sermons with at least one
+      reference, every key still resolving against `kjv.json`. The
+      extractor now reads spoken citations ("Jeremiah 12 verse 2",
+      "2 Kings, chapter 13", 「羅馬書八章五節」), expands cited ranges
+      into one key per verse, and refuses any reference the canon does
+      not have. Re-running produces byte-identical output.
+
+      **Nothing was lost.** 348 (key, sermon) pairs from the shipped
+      index are gone; 340 are the same sermon re-filed from a bare
+      chapter key onto verse keys within that chapter, which
+      `PassageFilter` still matches when browsing the chapter
+      (`passage_filter.dart:55` — a null verse matches anything). The
+      other 8 are false positives, each verified against the
+      transcript: `Mark 1`–`Mark 4` → 339 were "the Nth **mark** of a
+      regenerated Christian" and their source text was already deleted
+      by `b8258d5`; the remaining four were an ordinal swallowed from
+      the *next* book — "the letters of John. **1** John 2 and verse
+      18" filed 237 under `John 1`, "1 Peter. **1** Peter chapter 4"
+      filed 765 under `1 Peter 1`, "the book of Revelation. **2** John,
+      verse 7" filed 238 under `Revelation 2`.
+
+      **Both refuter rounds broke something real.** Round one found the
+      pattern could not tolerate a comma after the book name, so
+      "2 Kings, chapter 13, verses 20 and 21" — sermon 325's central
+      exposition — was invisible and 325 was filed only under
+      `2 Kings 13:5`, an aside sixty lines away; 19 (sermon, chapter)
+      pairs were unreachable that way. Round two found the comma fix
+      then reached over an appositive: "the first letter of **John**,
+      chapter 2 and verse 19" filed sermon 343 under the Gospel. Both
+      are fixed and pinned by `test/sermon_refs_resolve_test.dart`,
+      which also gained an independent coverage check against
+      `index.json`'s editor-written `passage` field — the one witness
+      the extractor cannot agree with by construction.
+
+- [ ] **Sermon 339 is still filed under `Mark 5`, `Mark 6` and
+      `Mark 7`, and it is not about the Gospel of Mark.** Found by the
+      refuter, 2026-08-25. `assets/sermons/en/339.txt` is "Seven Marks
+      of a Regenerated Christian" and its Part-B heading reads
+      "Mark 5: Does Not Sin (1 John 3:9); Mark 6: Kept by the Son
+      (1 John 5:18); Mark 7: Love (1 John 4:7)" — ordinals of the seven
+      marks. `b8258d5` stripped the same labels from the Part-A heading
+      and missed this one, which is why `Mark 1`–`Mark 4` vanished on
+      regeneration while 5–7 survive. A reader browsing Mark 5–7 is
+      told this sermon expounds them; it never mentions the Gospel.
+      Needs a judgement call on how to tell an ordinal label from a
+      citation — "Mark 5:" followed by prose rather than a verse number
+      is the obvious tell, but measure the class before acting.
+
+- [ ] **A range spelled with "and" reaches only its first verse.**
+      "2 Kings, chapter 13, verses 20 **and** 21" indexes 13:20 alone,
+      and 13:21 is the verse sermon 325's whole exposition turns on
+      (the corpse revived on Elisha's bones). Same in sermon 012,
+      "1 Timothy, chapter 1, verses 13 and 16". `and` is deliberately
+      not in the range-separator set because "verses 12, 14 and 15" is
+      a LIST, not a range — expanding it would invent verse 13. The
+      safe rule is to treat "N and M" as a range only when M == N+1,
+      where a two-item list and a two-verse range are the same set;
+      measure how many cases that covers before writing it. The known
+      members are listed as `listGap` in
+      `test/sermon_refs_resolve_test.dart` so the count cannot grow
+      unnoticed.
+
+- [ ] **`marked` disables the unit-word guard, so "in Genesis, chapter
+      3 times" would index Genesis 3.** Zero occurrences in the corpus
+      today, and the neighbouring "Deuteronomy, chapter 43 times" case
+      is caught only by the canon check rather than by the guard.
+      Recorded by the refuter, 2026-08-25; not acted on, because a
+      spelled-out "chapter" really is proof the number is a chapter and
+      the fix would trade a real class for a hypothetical one.
+
+- [x] **SUPERSEDED by the DONE entry above — the original statement of
+      the problem, kept because its reasoning is what made the fix
+      checkable.** `scripts/extract_sermon_refs.py` CANNOT rebuild the
+      shipped refs.json — regenerating today silently loses ~32
+      references.
       Found 2026-08-23 while fixing the seven bad keys: a full re-run
       dropped keys like `Luke 10:19` and `Matthew 6:25` that the
       current script cannot produce AT ALL — sermon 341 cites it as

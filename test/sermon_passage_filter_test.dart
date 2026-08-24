@@ -112,10 +112,18 @@ void main() {
         ];
 
     test('John 17 still finds the sermons the user saw', () {
-      // The screenshot said "10 sermons across 7 topics". This is the
-      // regression guard on folding two filter fields into one value.
-      expect(matching(const PassageFilter('John', chapter: 17)),
-          hasLength(10));
+      // The screenshot said "10 sermons across 7 topics". Those ten are
+      // the regression guard on folding two filter fields into one
+      // value, so they are asserted by NAME rather than by count —
+      // a count cannot tell a sermon arriving from a sermon leaving.
+      final got = matching(const PassageFilter('John', chapter: 17));
+      expect(got,
+          containsAll(['062', '066', '136', '242', '244', '314', '347',
+                       '397-2', '421', 'EC015']));
+      // 2026-08-25: four more, because the extractor learned to read
+      // "John chapter 17" — 011, 345, 761 and 765 all say it in words
+      // and were invisible while only "John 17" and "John 17:3" parsed.
+      expect(got, hasLength(14));
     });
 
     test('narrowing to a verse never widens the result', () {
