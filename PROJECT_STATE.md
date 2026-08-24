@@ -396,6 +396,35 @@ advances the repo hash is healthy.
     long, against 113 on raw, because sanitising strips the reader's
     `<note: …>` while the tagged line still inlines it as `〔…〕`.
 
+33. **A coverage census must count what the RENDERER reads, not what the data
+    records.** A tagged run's `i` (implied words) is parsed into
+    `TaggedRun.implied` and **no widget in `lib/` ever reads it**. So a census
+    that treats `i` as coverage is measuring the file; the reader can only
+    reach a number that is some run's `s`. On 2026-08-24 that one substitution
+    took a misaligned-tag census from **11 to 71** and pulled in 約翰福音 3:5
+    and 馬太福音 22:37, where 神 is tagged G3588 and θεός is displayed nowhere
+    in the verse. Trap 25 said to ask which transcription a claim was measured
+    on; this is the next question after it — **which FIELD does production
+    display?** `test/strongs_alignment_test.dart` now fails if any widget
+    starts reading `implied`, because that would invalidate the census.
+
+34. **Decompose a defect count before publishing it, or the headline will be
+    false in both directions at once.** "71 misaligned tags" was wrong twice
+    over: 53 of them are one importer convention repeated (the right number is
+    already in that run's own `i`; `s` went on a particle inside the span), so
+    it is not 71 mistakes — and it is simultaneously a FLOOR, because the
+    detector only admits run texts occurring ≥20 times with a ≥95% dominant
+    number, so 馬可福音 6:33's own 城的 cannot be seen by it. A number that is
+    both an overcount and an undercount needs its parts named, not a caveat.
+
+35. **The refuter's arithmetic can beat yours on a figure you actually
+    computed.** Trap 27 says a refuter's numbers are not privileged. That
+    stands, but the converse bit on 2026-08-24: it said 7 hits displayed a
+    number absent from the verse, my script said 3, and **7 was right** — I had
+    bucketed the hits exclusively when the categories overlap, so four were
+    silently filed under the earlier branch. Re-measure the disagreement
+    orthogonally rather than assuming the code wins because it is code.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -411,7 +440,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 78 open items across P0 (scripture
+`docs/autonomous-queue.md` — 79 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 

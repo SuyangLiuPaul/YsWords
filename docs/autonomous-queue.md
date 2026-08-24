@@ -440,6 +440,13 @@ and quoted.**
       tagged corpus and it is worth knowing how common it is, because every
       argument this repo has built on a Strong's tag assumes it is not.
 
+      **How common is now measured: at least 71 runs, sized 2026-08-24** —
+      `tools/audit_strongs_alignment.py`. This verse is not one of the 71 and
+      cannot be: 城的 is too rare a run text for the detector's ground truth.
+      So the answer to "does 可 6:33's tag support deleting the 的" is still no,
+      and the wider answer is that a Strong's tag is weaker evidence than this
+      repo has been treating it as.
+
 - [x] **Audit the running text against our OWN tagged corpus — a third witness
       nothing has ever consulted. Done 2026-08-19: it found SEVEN more verses
       that were missing a character, and both external witnesses were blind to
@@ -802,21 +809,83 @@ and quoted.**
       tagged corpus supplies the whole 「有古卷在此有21節：」 apparatus itself.
       Filed separately below rather than swept into the group.
 
-- [ ] **Six runs carry an asterisk's Strong's number that names the wrong
-      word — the same alignment off-by-one as 馬可福音 6:33.** Found by the
-      refuter 2026-08-24 while checking the asterisk repair. 118 of the 124
-      asterisk runs were tagged G2962 (κύριος); the other six are
-      使徒行傳 7:59 **G2532** (καί), 22:18 **G846** (αὐτός), 約翰福音 13:24
-      G2076, 路加福音 9:59 G2010, 17:5 G4369, 22:31 G4613. The asterisk repair
-      neither created these nor touched them, so they still ship: tapping 主 in
-      使徒行傳 7:59 answers "and".
+- [x] **SIZED 2026-08-24: the misaligned-tag class is at least 71 runs, not
+      six, and the number that matters inside it is 15.** The item below asked
+      for exactly this and it is now measured, not estimated.
+      `tools/audit_strongs_alignment.py` (new, re-runnable) and
+      `test/strongs_alignment_test.dart`, which reimplements the census in Dart
+      and reaches the same 71 / 53 / 7 / 15 independently.
 
-      This is the third measured instance of the class (馬可福音 6:33's 城的
-      carries the article's G3588 while πόλεων's G4172 appears in no run of
-      the verse; the 19 split asterisk runs were a fourth shape of it). **Worth
-      one iteration to size the class corpus-wide rather than fixing six** —
-      every argument this repo builds on a Strong's tag assumes the tagging is
-      aligned, and nobody has measured how often it is not.
+      **The detector's premise had to be corrected before the number meant
+      anything, and the wrong premise gave 11.** The first version asked
+      whether the right word was "unclaimed", counting a run's `i` as coverage.
+      That measures the DATA, not the reader: `tagged_text_service.dart` parses
+      `i` into `TaggedRun.implied` and **no widget anywhere in `lib/` reads
+      it**, so a verse whose θεός sits only in some run's `i` still shows θεός
+      to nobody. Asking the reader's question instead — is the right word any
+      run's `s`? — took the census 11 → 71 and picked up 約翰福音 3:5,
+      馬太福音 22:37 and 民數記 32:11, which are the same defect. The refuter
+      found this; it is trap 25's shape again, one level further in.
+
+      **71 is not 71 mistakes.** It decomposes, and the parts want different
+      fixes: **53** are `spans-the-word`, where the right number is already in
+      that run's own `i` — the importer covered the word and put `s` on a
+      particle or prefix inside the span, in six recurring shapes (G3588,
+      H3605, H4480, H1121, H5921, H853). Those are importer conventions, not 53
+      independent slips, and their repair is mechanical. **7** display a number
+      that is not in the verse's original at all, which is
+      `audit_strongs_tagging.py`'s class reached from the other side. **15**
+      point elsewhere in the verse and are the verified core — 民數記 11:8 tags
+      百姓 "the people" with H8081, שֶׁמֶן, *oil*.
+
+      **It is a floor.** A run text is admitted only at ≥20 occurrences with a
+      ≥95% dominant number, so anything rarer cannot be told from polysemy
+      (耶利米書 35:18's 他的一切 is a known miss). And the six 神 = G3588 runs at
+      提後 1:9, 弗 3:20, 羅 16:25, 羅 4:24, 來 1:7, 徒 7:44 are correctly NOT
+      flagged: θεός is absent from the Greek and the article is **substantival**
+      (Ὁ ποιῶν, Τῷ δυναμένῳ), so 神 renders the phrase. Do not restate that as
+      "CUV supplies it" — a draft of this did and it is wrong.
+
+      **Two refuter rounds, and the second one rewrote the headline.** Round
+      one broke the premise (`i` is inert) and turned 3 verses I had dismissed
+      as "conventions" into defects. Round two broke "71 defects" into the
+      decomposition above, showed 4 more of my core were defensible readings
+      where a Chinese function word maps to a closed Hebrew class, and got the
+      absent-from-original count right where I had it wrong: I said 3, it said
+      7, and 7 is correct — my 3 came from bucketing hits exclusively when the
+      categories overlap. **A refuter's arithmetic beat mine on the one figure
+      I had computed and it had only reasoned about.**
+
+      The original six were not a clean class either. 使徒行傳 22:18's 主 tagged
+      G846 is **correct** — αὐτόν is what 主 renders there — and 路 17:5's 主 is
+      already G2962. Most of the rest are a supplied 主 parked on whatever
+      neighbour the tagger had, not an off-by-one.
+
+- [ ] **Repair the 15-run core, then the 53 spans. Enumerated, not estimated —
+      the list is `python3 tools/audit_strongs_alignment.py`.** Deliberately not
+      done in the sizing iteration: a 71-row sweep justified by a corpus
+      frequency argument is exactly what traps 20 and 28 warn about, and four of
+      the core are already known to be defensible (出 16:23 and 何 12:8's 所,
+      士 9:48's 我所 — where מָה/כֹּל really is the right word — and 民 33:39's
+      歲 for the בֶּן … שָׁנָה age idiom). Take the core first and read each
+      verse; the 53 spans can then go as one mechanical pass, promoting the head
+      out of `i` into `s` and demoting the particle, because there the importer
+      has already told us which word the run covers.
+
+      **民數記 33:39 is a recorded disagreement, not a decision.** Refuter round
+      one called it a defect (歲 is H8141 in 200 of 207 runs; H8141 appears in
+      neither `s` nor `i` anywhere in that verse, so שָׁנָה is unreachable).
+      Round two called it the age idiom and defensible. Neither settled it from
+      the data. Do not sweep it either way.
+
+- [ ] **馬可福音 6:33's 城的 is NOT in the 71 and that is a gap worth closing.**
+      It carries the article's G3588 while πόλεων's G4172 appears in no run of
+      the verse — the exact shape the audit hunts — but 城的 is too rare a run
+      text to reach the ≥20-occurrence bar, so the detector cannot admit it.
+      Every run text below that bar is invisible, and nobody has measured how
+      much of the corpus that is. A second ground truth that does not depend on
+      run-text frequency would find them; the originals' word ORDER is the
+      obvious candidate and has not been tried.
 
 - [ ] **182 stray spaces inside the word-tap corpus, low priority.** Measured
       2026-08-24: 621 spaces in all, of which 429 are the edition's own gloss
