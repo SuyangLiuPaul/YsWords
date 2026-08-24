@@ -43,11 +43,14 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.146** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.146** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.147** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.147** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**The deploy debt is paid.** v1.4.146 removes the two orphan `〕` that
+**The deploy debt is paid.** v1.4.147 stops the word-tap sheet printing a
+character of scripture twice in seven verses — verified against the assets the
+sites serve, where 馬太福音 9:28 now reads 「耶穌說：」 and none of 若若, 箭箭,
+我們我們, 敵我敵, 你要要, 未未曾 survives. v1.4.146 removes the two orphan `〕` that
 士師記 8:24 and 耶利米書 10:11 printed as scripture — verified against the live
 asset, where `cuvs-yhwh-tr.json` now pairs 12 `〔` to 12 `〕` on both
 `yswords-dev` and `yswords-cn-qat`. v1.4.145 carries the `主*` removal — verified
