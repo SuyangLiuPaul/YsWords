@@ -759,29 +759,48 @@ and quoted.**
       of ὁ, and 有人把 / 称呼我 / 是你们的 / 对 keep the number they already had.
       114 of the 115 now reproduce the reader's verse exactly.
 
-- [ ] **113 verses render a tagged line carrying ideographs the reading line
-      does not, and 馬太福音 9:28 is one confirmed defect: 「耶穌說說：」.**
-      Measured 2026-08-24 while repairing the asterisk class, by reproducing
-      `coversVerse`'s own subsequence test in python over all 31,102 verses:
-      270 verses are hidden by the guard, 30,719 match ideograph for
-      ideograph, and **113 pass the guard while carrying extra ideographs** —
-      78 of them by exactly one. Those 113 are printed to the reader in place
-      of the verse.
+- [x] **113 verses rendered a tagged line carrying ideographs the reading line
+      does not. Triaged 2026-08-24: 89 are note formatting, 17 are apparatus or
+      supplied readings, and SEVEN were a character of scripture printed
+      twice. All seven repaired.** 馬太福音 9:28 showed 「耶穌說說：」,
+      撒母耳記上 20:37 「箭箭不是在你前頭嗎」, 列王紀下 10:5
+      「我們我們是你的僕人」, 利未記 5:7 「力量若若不夠」, 列王紀上 19:18
+      「未未曾與巴力親嘴」, 約伯記 31:36 「願那敵我敵者」, 以西結書 36:1
+      「你要要對以色列山發預言」. `tools/audit_tagged_rendered_extras.py` holds
+      the triage, `tools/repair_tagged_rendered_duplication.py` the fix, and
+      `test/tagged_rendered_duplication_test.dart` pins both.
 
-      **The count is honest but the class is not triaged, so do not quote 113
-      as "113 wrong verses".** The comparison is the one production makes —
-      raw text, notes included — and this edition writes a note as
-      `<note: …>` in the reading asset and inlines it as `〔…〕` in the tagged
-      corpus, so an unknown share of the 113 will be note formatting rather
-      than scripture. 馬太福音 9:28 is the one member read individually and it
-      is real: the tagged corpus doubles the 說 of 「耶穌說：」. It was left
-      alone on purpose by the asterisk repair — a pass that quietly also fixed
-      it would be undeclared work on scripture — and is pinned in
-      `test/tagged_editorial_asterisk_test.dart` so it cannot be swept.
+      **The transferable part is that an existing audit had already found all
+      seven and dismissed them, correctly, for the wrong question.**
+      `audit_tagged_running_text.py` compares the same two files with notes
+      stripped and asks whether OUR text lost a character; its table lists
+      「箭箭」 and 「說說」 as "an artifact on the tagged side — ours is right,
+      do not repair towards the tagged copy". Every word of that is true about
+      the reading text and none of it is about what the sheet PRINTS. When an
+      audit dismisses a hit, the dismissal is only as wide as the question it
+      asked.
 
-      Whoever takes this should split the 113 into note-formatting and real
-      insertions **before** repairing any of them, and should expect the
-      single-ideograph 78 to be where the real ones are.
+      **Repairs were confined to duplications, because deleting is the safe
+      direction only when the added text is impossible.** 「若若」 is not
+      Chinese; the print, the reading asset and `cuvs-plus.json` all read the
+      short form. The four verses where the tagged import supplies a whole
+      WORD are readings, not damage, and were left alone — 士師記 15:5's 葡萄園
+      renders H3754 כֶּרֶם, which that verse's Hebrew really has.
+
+      **Two boundary cases were decided by counting the corpus, not by picking
+      the nearer run.** 以西結書 36:1's repeat was assigned to the first run
+      because 「要對」/H413 occurs 7 times corpus-wide and 以西結書 33:10 and
+      33:12 set the identical construction as 「啊！你」/H859 + 「要對」/H413.
+      馬太福音 9:28's two runs were MERGED rather than one deleted, because
+      both carry G3004 and the first holds i:["G846"] — αὐτοῖς, which
+      καὶ λέγει αὐτοῖς ὁ Ἰησοῦς really has and deleting would have thrown away.
+
+      **The refuter broke two things and both mattered.** It found that
+      production does not pass raw text at all (see the settled item below),
+      and that 馬太福音 17:21 is NOT the split-bracket case the other six are —
+      太 17:20 opens no bracket and the print sets 17:21 as plain text, so the
+      tagged corpus supplies the whole 「有古卷在此有21節：」 apparatus itself.
+      Filed separately below rather than swept into the group.
 
 - [ ] **Six runs carry an asterisk's Strong's number that names the wrong
       word — the same alignment off-by-one as 馬可福音 6:33.** Found by the
@@ -841,16 +860,72 @@ and quoted.**
       deliberately. `test/tagged_stray_brackets_test.dart` pins the count at
       12; growth means a new import is dropping words.
 
-- [ ] **Unverified lead: `coversVerse`'s own documented fallback rate may be
-      measured on a path production does not use.** Its docstring and
-      `originals_sheet.dart` both cite 238 of 31,102 (0.77%). The test measures
-      via `sanitizeForSearch(verseText)` and now gets **223** (verified
-      2026-08-24 — the pinned ratchet had drifted from 236 and was tightened).
-      A refuter claims production passes the **raw** `verseText` and that the
-      true fallback count is **270** (0.87%). **That 270 is NOT verified** —
-      re-measure it before quoting it. If it holds, the number in the docstring
-      describes the test, not the app, and 47 verses fall back for reasons
-      nobody has looked at.
+- [x] **SETTLED 2026-08-24: production passes SANITISED text, the fallback is
+      223, and the refuter that claimed otherwise was wrong.** The lead was
+      that `coversVerse`'s documented rate might be measured on a path
+      production does not use; a refuter had claimed production passes the raw
+      `verseText` and the true count is 270.
+
+      **Both numbers are real and they measure different inputs — that is the
+      whole answer.** `originals_sheet.dart:709` reads
+      `final verseText = sanitizeForSearch(vo.verse.text);` and that same
+      value is what line 755 hands to `coversVerse` and what the fallback
+      `Text(verseText)` renders. So production is the sanitised path and 223
+      is its number. The 270 is the RAW census, reproduced exactly this
+      iteration — it is a genuine measurement of a comparison the app never
+      makes. Nobody had read line 709; the claim was inferred.
+
+      The 238 in the `coversVerse` docstring and in `originals_sheet.dart` is
+      stale, from before the ratchet was tightened. It describes neither
+      input. Left as a one-line correction below rather than folded in here,
+      because the number appears in two files and this iteration's commit was
+      already a scripture change.
+
+      `test/tagged_rendered_duplication_test.dart` now pins the production
+      figure directly (`fallback` 223, and 1,153 verses that pass the guard
+      while reading long on sanitised input) so neither can drift again.
+
+- [ ] **Correct the stale 238 in `coversVerse`'s docstring and in
+      `originals_sheet.dart`.** Both say the guard costs the word-tap gesture
+      on "238 of 31,102 (0.77%)". The measured figure on production's own
+      input is **223** (0.72%), pinned by
+      `test/tagged_rendered_duplication_test.dart`. Comment-only, no behaviour
+      change — but it is a number this repo has already reasoned from twice,
+      so it should say what it means. While there, note that the docstring's
+      "compared on ideographs alone… the 〔…〕 the tagged import prints around
+      a note differ freely" is describing the RAW comparison, which is not the
+      one it performs.
+
+- [ ] **馬太福音 17:21's tagged line supplies an apparatus this edition does
+      not print there.** Found 2026-08-24 by the refuter, which broke my
+      grouping of it with six genuine split-bracket verses. The reading asset
+      sets 17:21 as plain scripture with a `<note: 或作：不能趕它出來>`; the
+      tagged corpus renders 「〔有古卷在此有21節：“至於這一類的鬼…”〕」. The
+      other six really are split brackets — 太 18:10, 太 23:13, 可 15:27,
+      路 23:16, 約 5:3 and 徒 24:6 each END with 〔有古卷在此有 and the next
+      verse closes it — but 太 17:20 ends 「…沒有一件不能做的事了。」 and opens
+      nothing, and the printed 1919 sets 17:21 as plain text with a footnote.
+
+      **Filed, not fixed, and the reason is that the added claim is TRUE.**
+      17:21 is absent from the critical text and this edition marks other
+      variant verses exactly that way, so the tagged line is not saying
+      anything false — it is making an editorial decision at a verse where the
+      reading asset made a different one. Deleting nine ideographs of
+      apparatus to make two imports agree is a call for the user, not a
+      repair. Held in `EXPLAINED` in `audit_tagged_rendered_extras.py`.
+
+- [ ] **Four verses print a WORD the tagged import supplies and this edition
+      does not: 士師記 15:2 我請求, 15:5 葡萄園, 15:18 現在, 撒下 21:2 大.**
+      Confirmed 2026-08-24 to be on screen — they pass `coversVerse` and are
+      rendered in place of the reader's verse. Deliberately NOT deleted with
+      the seven duplications: a doubled character is impossible and a supplied
+      word is a reading. Three of the four render something the Hebrew really
+      has — 我請求 = H4994 נָא, 葡萄園 = H3754 כֶּרֶם, 現在 = H6258 עַתָּה —
+      so removing them from the sheet is defensible tidying and removing them
+      from the app's account of the Hebrew is not. 撒下 21:2's 大 carries no
+      Strong's of its own and is the weakest of the four. The print reads the
+      short form in all four. **Needs the user:** should the word-tap sheet
+      show only what this edition prints, or what its tagger saw?
 
 - [x] **哥林多後書 13:5 (在你們裏面 / 在你們心裏) got its four-witness check
       on 2026-08-23 — and the fourth witness sided with US.** Our own tagged

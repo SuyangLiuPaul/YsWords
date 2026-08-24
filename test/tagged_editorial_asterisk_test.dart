@@ -101,12 +101,15 @@ void main() {
     expect(john202.firstWhere((r) => r['w'] == '主')['s'], 'G2962');
   });
 
-  test('馬太福音 9:28 keeps its doubled 說, which is a different defect', () {
-    // Deleting the marker leaves 114 of the 115 reproducing the reader's
-    // verse exactly. This one still reads 「耶穌說說：」 for 「耶穌說：」. It is
-    // left alone deliberately — a repair pass that quietly also fixed it
-    // would be doing undeclared work on scripture.
-    expect(verse('matthew', '9:28'), contains('耶稣说说：'));
+  test('馬太福音 9:28 no longer doubles its 說', () {
+    // Deleting the marker left 114 of the 115 reproducing the reader's verse
+    // exactly; this one still read 「耶穌說說：」 for 「耶穌說：」 and was left
+    // alone deliberately, because a repair pass that quietly also fixed it
+    // would have been undeclared work on scripture. It was then repaired as
+    // one of seven duplications by `repair_tagged_rendered_duplication.py` —
+    // see `tagged_rendered_duplication_test.dart` for the evidence.
+    expect(verse('matthew', '9:28'), contains('耶稣说：“你们信'));
+    expect(verse('matthew', '9:28'), isNot(contains('说说')));
   });
 
   test('every repaired verse still covers the verse the reader is on', () {

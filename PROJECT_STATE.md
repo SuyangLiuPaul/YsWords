@@ -367,6 +367,32 @@ advances the repo hash is healthy.
     than you now have — re-derive the direction first, because every witness
     you then consult will be answering the wrong question.
 
+31. **An audit's DISMISSAL is only as wide as the question it asked, and a
+    dismissal reads exactly like an all-clear.** `audit_tagged_running_text.py`
+    had already found all seven verses where the word-tap sheet printed a
+    character of scripture twice — 「耶穌說說：」, 「箭箭」, 「我們我們」 — and
+    filed each one as "an artifact on the tagged side; ours is right, do not
+    repair towards the tagged copy". Every word true, about the READING text,
+    which was the only thing it asked about. It never asked what the sheet
+    prints, so seven defects sat inside a table of resolved entries for days.
+    Traps 15, 17 and 25 all say to vary the detector; this one is about the
+    OUTPUT. When you inherit a triage table, re-read what question earned each
+    dismissal — an entry that says "not our problem" is a claim about scope,
+    not about the data.
+
+32. **Verify which input production feeds a guard before quoting the guard's
+    rate.** `originals_sheet.dart:709` is
+    `final verseText = sanitizeForSearch(vo.verse.text);`, and that value —
+    not the raw verse — is what reaches `coversVerse`. Two censuses therefore
+    exist and both are honest: 270 verses fall back on RAW input, 223 on the
+    input the app actually uses, and the 238 in the docstring is neither. A
+    refuter once asserted the opposite (that production passes raw) and it
+    went into the queue as an open question for days; nobody had read the
+    line. One `sed -n '709p'` settled it. The class is bigger than the
+    number: on sanitised input 1,153 verses pass the guard while reading
+    long, against 113 on raw, because sanitising strips the reader's
+    `<note: …>` while the tagged line still inlines it as `〔…〕`.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
@@ -382,7 +408,7 @@ advances the repo hash is healthy.
 
 ## The queue
 
-`docs/autonomous-queue.md` — 79 open items across P0 (scripture
+`docs/autonomous-queue.md` — 78 open items across P0 (scripture
 accuracy), P1 (Bible study correctness), P2 (features the user asked
 for), P3 (blocked or deferred).
 
