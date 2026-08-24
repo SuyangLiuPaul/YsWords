@@ -57,11 +57,19 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.149** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.149** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.150** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.150** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**The deploy debt is paid.** v1.4.149 stops the word-tap sheet answering 39 words
+**The deploy debt is paid.** v1.4.150 stops a search-result tap leaving a SECOND
+reader mounted under the first — `Get.off(() => const HomePage())` is
+`pushReplacement`, and search is pushed on top of the reader, so it replaced the
+search route and left the original reader alive to overwrite
+`MainProvider._activeChapterControllers`. The jump was consumed correctly and
+scrolled a list nobody could see. Verified against the bundle the sites serve,
+not the repo: all four dev/qat sites report 1.4.150 and `yswords-dev`'s
+`main.dart.js` now carries 14 `"/HomePage"` route-name literals where 1.4.149
+had 8. v1.4.149 stops the word-tap sheet answering 39 words
 with a particle inside their own span — 約翰福音 3:5's 神 answered ὁ, *the*, and
 θεός was reachable nowhere in the verse; 使徒行傳 2:29's 弟兄們 answered ἀνήρ.
 Verified against the assets the sites serve, not the repo: on both `yswords-dev`
