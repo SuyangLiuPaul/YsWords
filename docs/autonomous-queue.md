@@ -252,21 +252,99 @@ reported. Work these top-down before P2.
       genuine background isolate, this race returns. Reproduce with
       `pm clear` before each launch; anything else hides it.
 
-- [ ] **Follow-on from the duplicate-engine fix: the FlutterEngine now
-      outlives MainActivity, and the launcher-icon swap deliberately
-      finishes the task.** `shouldDestroyEngineWithHost()` returns false
-      whenever the host provides the engine, so after
-      `applyIcon()` finishes the task in `onStop`, a relaunch attaches
-      the surviving engine instead of running `main()`. On the emulator
-      the app resumed correctly (warm resume, one boot marker, no
-      exceptions, dashboard rendered), but I could not force a true
-      activity-destroy-with-process-alive there — `always_finish_
-      activities` did not take and recents-dismissal killed the process.
-      Check on the Mi Pad: change the theme colour, leave the app, come
-      back, and confirm it is not stuck on stale state. Related, and
-      probably harmless: `getFlutterEngine` pins the initial route from
-      the first activity only, which is inert here because the Android
-      manifest declares no VIEW/BROWSABLE deep links.
+- [x] **Verified on the Mi Pad 2026-08-25: no stale state on either
+      branch — and the branch the worry named turns out to be the
+      BETTER one.** The emulator could not force an
+      activity-destroy-with-process-alive; the icon swap does it for
+      free, because disabling the task's rooted component finishes the
+      task while `DONT_KILL_APP` spares the process. Measured on
+      `0907E41001A00540`, intl release v1.4.154, **pid 22221 unchanged
+      for the whole experiment** — so every observation below is one
+      process. Boot marker: `[CloudAuthService] step=init`, one per
+      `main()`, counted from a cleared logcat (the ring buffer rotates,
+      so absolute counts drift — use deltas).
+
+      **There are two branches, and the item assumed only one.**
+
+      *Audio idle.* HOME → swap applies (`enabledComponents=[AliasRed]`,
+      MainActivity + five aliases disabled), app task count 0, pid
+      unchanged, and `AudioService`'s ServiceRecord goes **1 → 0**.
+      Relaunch: marker +1 — `main()` re-runs in the same pid. The
+      engine did NOT survive.
+
+      *Audio playing.* Same swap, same task removal, but the service is
+      `isForeground=true` and **survives** (ServiceRecord stays 1).
+      Relaunch: marker **+0**. The engine survived, the app came back
+      to the exact Settings scroll position with the Navigator stack
+      intact, and "Ask 祈求" kept playing straight through (1:42/4:26).
+      Zero exceptions.
+
+      **Control, run twice:** plain HOME + relaunch with no swap queued
+      never re-runs `main()`. So it is specifically the task removal
+      that matters, not backgrounding.
+
+      **Root cause, corrected by the refuter.** The item's premise —
+      `shouldDestroyEngineWithHost()` is false — is right (Flutter
+      3.44.2 `FlutterActivity.java:1081-1092`; `isFlutterEngineFromHost()`
+      is true, and the destroy-extra defaults false). The activity never
+      destroys the engine. What empties the cache is
+      `AudioServicePlugin.disposeFlutterEngine()`, whose *only* call
+      site is `AudioHandlerInterface.onDestroy()` — and the plugin says
+      so itself in `onDetachedFromActivity`: "This unbinds from the
+      service allowing AudioService.onDestroy to happen which in turn
+      allows the FlutterEngine to be destroyed." So the proximate cause
+      is the **activity detach unbinding the last client from a
+      non-foreground service**, not the task removal killing it. A
+      foreground service does not die on unbind, which is exactly why
+      the playing branch keeps its engine.
+
+      **Not a duplicate-engine regression, by construction.** A second
+      engine can only come from `getFlutterEngine`'s cache-miss branch;
+      a miss needs a prior `remove()`; the only reachable `remove()`
+      destroys the old engine first, inside the same `synchronized`
+      static. Marker 1→2 cannot be two live isolates.
+
+      **What the evidence does NOT show,** recorded so it is not
+      over-read later: the preserved reading position proves nothing —
+      it is in SharedPreferences and looks identical after a genuine
+      cold start. Only the marker delta and the ServiceRecord count
+      carried weight. And "no stale state" in the idle branch is true
+      only vacuously: nothing survives at all. That leaves a real
+      defect, queued separately below.
+
+      The secondary worry is confirmed inert: `AndroidManifest.xml` has
+      no VIEW/BROWSABLE filters at all — only MAIN/LAUNCHER on
+      MainActivity and the six aliases, plus a PROCESS_TEXT activity —
+      so the initial route `getFlutterEngine` pins can never be
+      anything but `/`.
+
+- [ ] **Changing the theme colour silently cold-restarts the app when
+      no audio is playing, and does not when audio is playing.** Found
+      while verifying the item above, 2026-08-25; it is the same
+      mechanism seen from the user's side rather than the engine's.
+      With the service idle, the icon swap finishes the task, the last
+      client unbinds, the service is destroyed and takes the
+      FlutterEngine with it — so the next launch re-runs `main()` and
+      the in-memory Navigator stack is gone. Measured: the user was on
+      the Settings page when they picked red; the relaunch landed on
+      the **Dashboard**. With audio playing the identical action
+      returned to Settings, same scroll offset.
+
+      So picking a colour costs a full cold start and throws away
+      wherever the user was — and whether it does depends on something
+      as unrelated as whether a song is playing. Nothing is lost that
+      is persisted (bookmarks, notes, highlights, reading position all
+      come back), so this is polish, not data loss.
+
+      Not fixed inline because the options all have teeth and want a
+      decision: (a) keep the engine alive across the swap by making the
+      swap not finish the task — e.g. root the task on a component that
+      is never disabled, so the aliases can be toggled freely; (b)
+      accept the restart but persist and restore the Navigator stack;
+      (c) accept it as-is and document it. (a) is the real fix but it
+      changes the manifest's launcher topology, which is the thing that
+      broke in v1.3.85 and again in v1.2.97 — it needs a careful look,
+      not an hour.
 
 - [x] **The Android release build can ship an APK without the current
       Dart code, and nothing catches it. Content assertion added

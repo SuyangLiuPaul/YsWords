@@ -687,6 +687,26 @@ advances the repo hash is healthy.
     activity — which collides with this app's icon swap deliberately
     finishing the task. Queued as a device check rather than waved off.
 
+    **That device check ran on 2026-08-25 and cleared the app** — see
+    the ticked item in BUGS. It also corrected the refuter: the engine
+    outlives the *activity*, but not always the *unbind*. Whether it
+    survives an icon swap depends on whether a song is playing, because
+    the only thing that clears the cache is
+    `AudioServicePlugin.disposeFlutterEngine()`, reachable only from
+    `AudioService.onDestroy()`, and a **foreground** service does not
+    die when its last client unbinds. Neither branch strands the app.
+
+    And a third time, on the evidence rather than the claim:
+    **SharedPreferences makes a cold start look like a warm resume, so
+    "the state came back" proves nothing.** The first draft cited a
+    preserved reading position as evidence the engine had survived; it
+    is identical either way, because it is persisted. What actually
+    discriminated was a `main()` marker counted from a *cleared*
+    logcat, plus the ServiceRecord count. **When asking "did this
+    process restart", only pick signals that live in memory and nowhere
+    else** — and count deltas, because the logcat ring buffer rotates
+    old markers away and absolute counts drift downward mid-experiment.
+
 46. **Reproducing a crash on purpose fires the PRODUCTION error reporter,
     and it mails the user.** On 2026-08-25 this loop provoked the
     SQLITE_BUSY bug 11 times on an emulator to prove the duplicate-engine
@@ -954,13 +974,17 @@ accuracy — **deferred to last**), P1 (Bible study correctness), P2
 banner at the top of the file before picking anything: the file is
 ordered P0-first for historical reasons and that is NOT the work order.
 
-**BUGS holds one open item, and it is not startable right now.** The
-`SQLITE_BUSY` crash was reproduced on demand on 2026-08-25 and closed:
-10/10 launches crash with the duplicate engine, 0/10 without, with a
-one-line control holding the Dart constant. What remains is the
-follow-on check that the now-cached FlutterEngine outliving
-MainActivity does not strand the launcher-icon swap — and that one
-needs the Mi Pad, which had no device attached at all on 2026-08-25.
+**BUGS holds one open item.** The `SQLITE_BUSY` crash was reproduced on
+demand on 2026-08-25 and closed: 10/10 launches crash with the
+duplicate engine, 0/10 without, with a one-line control holding the
+Dart constant. The follow-on check — that the now-cached FlutterEngine
+outliving MainActivity does not strand the launcher-icon swap — ran on
+the Mi Pad later the same day and cleared the app on both branches
+(idle and playing). It left behind the one item now open: **picking a
+theme colour cold-restarts the app when no audio is playing**, losing
+the in-memory Navigator stack but nothing persisted. It is polish, and
+the real fix changes the manifest's launcher topology, so it wants a
+deliberate look rather than an hour.
 The recorded list of three holes in the AOT freshness guard was closed
 the same day for its costed-out member (assets); `lib/` edits landing
 mid-build, mtime-moved-but-content-did-not, and `pubspec.yaml` /
