@@ -43,11 +43,15 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.142** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.142** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.145** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.145** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
-**The deploy debt is paid.** v1.4.137 removes the stray `」` that 路加福音
+**The deploy debt is paid.** v1.4.145 carries the `主*` removal — verified
+against the asset the sites serve, not the repo: `john.json` on both
+`yswords-dev` and `yswords-cn-qat` has zero asterisks, 約翰福音 20:13 stores
+`{"w":"主","s":"G2962","i":["G3588"]}` and 20:2 stores `有人把`/`主` split so
+only 主 answers κύριος. v1.4.137 removes the stray `」` that 路加福音
 17:36 printed after its footnote icon, on top of v1.4.136's Revelation
 second-level quotation repair and v1.4.135's nine-verse speaker-attribution
 repair (`1760c58`) and three word-tap repairs (`d03c81d`). Verified against the
@@ -148,6 +152,25 @@ advances the repo hash is healthy.
     your work has already landed in someone else's commit, say so in your
     message rather than rewriting theirs. Skip the deploy if `pubspec.yaml`
     or `app_version.dart` is dirty — they are mid-release.
+
+    **A clean tree is not enough — two releases can still overlap, and
+    `release_web.sh` is built for it.** On 2026-08-24 the tree was clean, no
+    dart process was running and all four sites agreed on 1.4.143, so a
+    release started; the other session began its own during the build. The
+    first `netlify deploy` of each site returned `JSONHTTPError: no records
+    matched 422` from `options.onPostBuild`, the script's own retry got both
+    live, and then its **verify step aborted the release** — dev and qat were
+    serving 1.4.145, not the 1.4.144 just built — so it never reached the
+    China build and never emptied `build/web`. The 1.4.144 bump was swept into
+    the other session's "Record the v1.4.145 bump".
+
+    **Nothing was lost, and the reason is the thing to remember: their release
+    built from a tree that already held this session's committed asset fix, so
+    the fix shipped inside their version.** When a release aborts this way,
+    check `version.json` *and* fetch the changed asset from the live site
+    before rebuilding — the work is often already live under someone else's
+    version number, and rebuilding only risks publishing a bundle older than
+    what is there.
 12. **`git checkout <sha> -- <path>` stages as well as restores.** Restoring
     an asset to re-run a repair leaves the index holding the *old* blob, so
     a later `git commit` can quietly commit the pre-repair file. Re-`git add`
