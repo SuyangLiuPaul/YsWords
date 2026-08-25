@@ -6585,20 +6585,97 @@ has never seen this repo.
       as C175 and CP18 above: needs the audio, which is on the T7, and
       **do not guess which he meant.**
 
-- [ ] **`passageRefPattern` cannot match a 「第N章」 citation for ANY
+- [x] **`passageRefPattern` cannot match a 「第N章」 citation for ANY
       book, so most Chinese references in the sermon reader are not
-      tappable.** Found 2026-08-26 while measuring the 啓示錄 fix. The
-      Chinese branch of the pattern ends `\s*\d+(?:\s*[:：.]\s*\d+…)?`
-      — it requires a bare digit straight after the book name. The
-      transcripts overwhelmingly write 「馬太福音第5章第7節」 instead,
-      and for Revelation alone that is 63 of 198 occurrences (42 with
-      an ASCII digit after 第, 21 with a Chinese numeral). The Python
-      extractor learned this grammar long ago; the Dart pattern never
-      did, which is why refs.json finds references the reader will not
-      underline. Measure the whole-corpus reach before writing it — and
-      note the two implementations of the same grammar are now the
-      thing most likely to drift apart, the alias table having just
-      stopped being it.
+      tappable. SHIPPED 2026-08-26 — and the chapter-mark form turned
+      out to be the MAJORITY form, not a minority one.** Found while
+      measuring the 啓示錄 fix. The Chinese branch of the pattern ended
+      `\s*\d+(?:\s*[:：.]\s*\d+…)?` — a bare digit had to follow the
+      book name — while the transcripts write 「馬太福音第5章第7節」.
+
+      **Measured over all 578 Chinese transcripts before anything was
+      written: 5,548 chapter-mark citations against 3,516 digit ones,
+      and not one of the 5,548 was matched by the old pattern.** So the
+      reader underlined 39% of what it could, and the majority grammar
+      was ordinary prose on the page. Re-measured independently by the
+      refuter, span-overlap checked rather than counted: 0 overlap, no
+      double counting, zh-CN 2,781 / zh-TW 2,767.
+
+      `zhChapterMarkTailPattern` lives in `reference_parser.dart` and
+      `passageRefPattern` interpolates it, so the pattern detects
+      exactly the shape the parser resolves — a pattern that matched
+      more would underline text that does nothing when tapped. All
+      5,548 resolve; 0 unresolved.
+
+      **`cnNumber` is a port of `cn_number` from
+      `scripts/extract_sermon_refs.py`, structural rather than
+      accumulating** — an accumulating parser answers 20 for 十十, which
+      is not a numeral at all, and a number invented out of a malformed
+      run is exactly what must not reach a verse link. All 168 distinct
+      numeral runs in the corpus were run through both implementations:
+      identical output, no divergence.
+
+      **The 節/节 mark on the verse number is the whole guard**, and it
+      holds against both known traps: 「馬可福音第九章，第九章的最後部
+      分」 stops at the chapter rather than becoming Mark 9:9, and
+      「第二次」 ("a second time") is not verse 2 — 8 real
+      `book 第N章 … N次` sites in the corpus, all stopping at the
+      chapter.
+
+      **Canon-checked against the shipped KJV: 2 of the 5,548 point
+      outside the canon, and they are the same rhetorical sentence in
+      both scripts** — 232's 阿摩司书第12章, where the preacher is
+      mocking the frantic page-flipping and Amos has 9 chapters. Zero
+      resolve to a verse that does not exist in its chapter. A missing
+      chapter yields the popup's explicit empty state; nothing is
+      invented. Recorded below rather than guarded, since the digit
+      branch has carried the identical exposure all along.
+
+      **A chapter-mark citation is left exactly as spoken.** The zh
+      display path rewrites a match into the locale's book name, which
+      for this grammar would restate a preacher's sentence in a
+      notation he did not use — `usesChineseChapterMark` suppresses it
+      in both `localizePassage` and the sermon body.
+
+      **The refuter broke one claim and it was fixed before commit.**
+      "The match cannot run past a sentence boundary because the only
+      thing between the pieces is `\s*`" is false: `\s` includes the
+      newline, and Dart matches 「馬太福音\n第五章第七節」. Zero corpus
+      sites, but the stated reason was wrong, so the joins are now
+      `[^\S\n]*` — newline-free by construction, U+3000 still a join.
+
+- [ ] **A digit chapter carrying 章 without 第 loses its verse — 674
+      matches, 260 of which drop a cited verse.** Found by the refuter
+      2026-08-26 against the fix above, which is incomplete on its own
+      terms: `第` is required on the chapter but optional on the verse,
+      so 「马太福音第3章15节」 resolves to Matthew 3:15 while
+      「马太福音3章15节」 resolves to Matthew 3. The digit branch matches
+      「马太福音3」, stops, and the 章15节 behind it is ordinary text.
+
+      **Measured: 674 digit matches end immediately before 章, and in
+      260 of them a verse follows and is silently dropped**
+      (`哥林多前书15章48节`, `以西结书36章23节`). Not a regression — this
+      is how the digit branch has always behaved — and not an invention
+      either: the tap lands on the right chapter, just not the right
+      verse.
+
+      The fix is to make 第 optional on the chapter when 章/篇 is
+      present, which means the chapter-mark alternative must be tried
+      BEFORE the digit one (alternation is ordered, and `\s*\d+` wins
+      today). That reorders the branch every existing Chinese reference
+      goes through, so it needs its own before/after count over the
+      whole corpus rather than riding along with the item above.
+
+- [ ] **232's 阿摩司书第12章 is now a tappable link to a chapter that
+      does not exist.** Amos has 9. The preacher is not citing it — he
+      is mimicking a new believer hunting for Amos — and nothing in the
+      grammar can tell rhetoric from citation. It is the ONLY
+      out-of-canon reference among the 5,548 chapter-mark matches, and
+      the popup degrades to its empty state rather than showing a wrong
+      verse. Recorded 2026-08-26. Fixing it properly means a canon
+      check at the point of underlining, which the sermon body has no
+      access to today; the same guard would cover the digit branch's
+      identical (currently unexercised) exposure.
 
 - [ ] **Two non-glyph spellings the alias table misses: 約拿記/约拿记
       (Jonah written with 記, 6 sites, sermon 069, including 「約拿記第2

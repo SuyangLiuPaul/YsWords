@@ -69,6 +69,27 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 | qat | `yswords-qat`, `yswords-cn-qat` | **1.4.167** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
+**Trap 60: the sermon↔verse grammar has TWO implementations in two
+languages, and the Dart one had never learned the form the transcripts
+actually speak.** `scripts/extract_sermon_refs.py` decides which
+references the index holds; `passageRefPattern` + `parseReference`
+decide which ones a reader can tap. Until 2026-08-26 the Dart pair
+required a bare digit after a Chinese book name, so 「馬太福音第5章第7
+節」 was ordinary text — **5,548 citations across the 578 Chinese
+transcripts, against 3,516 of the digit form the reader did understand.**
+The majority grammar was invisible for as long as the feature has
+existed, and nothing was red, because a pattern that fails to match
+produces no symptom a test or `flutter analyze` can see.
+
+Both halves now derive from one place — `zhChapterMarkTailPattern` in
+`reference_parser.dart`, interpolated by `passageRefPattern` — and
+Dart's `cnNumber` is a line-for-line port of the script's `cn_number`,
+structural rather than accumulating so a malformed run (十十) is
+rejected instead of yielding a plausible number. When you touch either
+side of this grammar, measure the OTHER side over the corpus in the
+same iteration. Drift here does not crash; it silently un-links
+scripture.
+
 **Trap 59: a negative assertion pinned to a merged artifact is not
 pinning the rule — it is pinning the artifact, and it can have been
 passing for a reason nobody wrote down.** `sermon_refs_resolve_test`

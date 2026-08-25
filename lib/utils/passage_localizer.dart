@@ -54,9 +54,27 @@ final RegExp passageRefPattern = RegExp(
   r'帖撒羅尼迦前書|帖撒羅尼迦後書|提摩太前書|提摩太後書|提多書|'
   r'腓利門書|希伯來書|雅各書|彼得前書|彼得後書|'
   r'約翰一書|約翰二書|約翰三書|猶大書|啟示錄|啓示錄'
-  r')\s*\d+(?:\s*[:：.]\s*\d+(?:\s*[-–]\s*\d+)?)?',
+  r')'
+  // A bare number ("馬太福音 5:7"), or the chapter-mark grammar the
+  // transcripts actually speak ("馬太福音第5章第7節").
+  r'(?:\s*\d+(?:\s*[:：.]\s*\d+(?:\s*[-–]\s*\d+)?)?'
+  '|$zhChapterMarkTailPattern'
+  r')',
   caseSensitive: false,
 );
+
+/// True when [matched] is written in the Chinese chapter-mark grammar
+/// (「羅馬書第八章第二十三節」) rather than in digits.
+///
+/// Such a reference is already in the reader's own language, so there
+/// is nothing to localize — and rewriting it to "羅馬書 8:23" would
+/// restate a preacher's sentence in a notation he did not use. It is
+/// made tappable and left as spoken.
+bool usesChineseChapterMark(String matched) =>
+    _zhMarkShape.hasMatch(matched);
+
+final RegExp _zhMarkShape =
+    RegExp(r'第\s*(?:\d+|[〇零一二三四五六七八九十百]+)\s*[章篇]');
 
 /// Rewrite a free-form passage like `Mt 7:21-27 and Lk 6:46-49` into
 /// the reader's locale (`马太福音 7:21-27 and 路加福音 6:46-49`).
@@ -73,7 +91,7 @@ String localizePassage(String passage, String locale) {
     if (m.start > idx) buf.write(passage.substring(idx, m.start));
     final matched = m.group(0)!;
     final parsed = parseReference(matched);
-    if (parsed == null) {
+    if (parsed == null || usesChineseChapterMark(matched)) {
       buf.write(matched);
     } else {
       final book = localeAwareBookName(parsed.englishBook, locale);

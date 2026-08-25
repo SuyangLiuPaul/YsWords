@@ -107,6 +107,12 @@ BibleReference? parseReference(String input) {
     raw = raw.substring(0, commaIdx).trim();
   }
 
+  // Chinese chapter-mark grammar — 「馬太福音第5章第7節」. Tried before
+  // the digit patterns below, whose `(.*?)\s*(\d+)` would otherwise
+  // read 「第5章第7節」 as book "…第" chapter 5 and fail the lookup.
+  final zh = _zhChapterMarkRef(raw);
+  if (zh != null) return zh;
+
   // Cross-chapter verse range: "Book Ch1:Vs1-Ch2:Vs2"
   // (e.g. "2 Kings 22:8-23:25", "Acts 27:27-28:1").
   // Must be tried before the single-chapter patterns because the
@@ -178,6 +184,97 @@ BibleReference? parseReference(String input) {
   }
 
   return null;
+}
+
+/// A run of Chinese numeral characters, as a pattern fragment.
+const String _cnRun = r'[〇零一二三四五六七八九十百]+';
+
+/// A number written either in ASCII digits or Chinese numerals.
+const String _numRun = r'(?:\d+|' '$_cnRun' r')';
+
+/// The Chinese chapter-mark tail: 「第5章」, 「第十四章」, 「第23篇」,
+/// optionally followed by a verse 「第7節」 / 「10节」 and a range end
+/// 「第7節到第9節」.
+///
+/// Exported so [passageRefPattern] detects exactly the shape
+/// [parseReference] can resolve — a pattern that matched more than the
+/// parser understands would underline text that does nothing when
+/// tapped.
+///
+/// A verse must carry 節/节. That mark is the whole guard: 「第九章，第
+/// 九章的最後部分」 restates the chapter and would otherwise read as
+/// verse 9, and 「第二次」 ("a second time") is not verse 2.
+///
+/// The joins are `[^\S\n]*` rather than `\s*`, so a citation at the end
+/// of a paragraph cannot adopt a number at the start of the next. There
+/// are no such sites in the corpus today; the refuter's point was that
+/// `\s*` is not a sentence boundary and it was wrong to claim it was.
+const String zhChapterMarkTailPattern = r'[^\S\n]*第[^\S\n]*('
+    '$_numRun'
+    r')[^\S\n]*[章篇]'
+    r'(?:[^\S\n]*第?[^\S\n]*('
+    '$_numRun'
+    r')[^\S\n]*[節节]'
+    r'(?:[^\S\n]*[到至\-–—~～][^\S\n]*第?[^\S\n]*('
+    '$_numRun'
+    r')[^\S\n]*[節节])?'
+    r')?';
+
+final RegExp _zhChapterMarkRe = RegExp(r'^\s*(.*?)'
+    '$zhChapterMarkTailPattern'
+    r'\s*$');
+
+const Map<String, int> _cnDigits = {
+  '一': 1, '二': 2, '三': 3, '四': 4, '五': 5,
+  '六': 6, '七': 7, '八': 8, '九': 9,
+};
+
+/// Structural rather than accumulating, so a run that merely *contains*
+/// numeral characters is rejected instead of yielding a plausible
+/// number: 十十 accumulates to 20 and is not a numeral at all.
+final RegExp _cnNumShape = RegExp(
+  r'^(?:([一二三四五六七八九])百)?'
+  r'(?:([一二三四五六七八九])?(十))?'
+  r'(?:[〇零]?([一二三四五六七八九]))?$',
+);
+
+/// Parse 一 / 十二 / 二十三 / 一百一十九 to an int in 1..199, or null when
+/// [s] is not a well-formed numeral.
+///
+/// Ported from `cn_number` in `scripts/extract_sermon_refs.py`. The two
+/// must agree: the script decides which references the sermon index
+/// holds and this decides which ones the reader can tap, so a
+/// divergence shows up as a reference the search finds and the page
+/// will not underline.
+int? cnNumber(String s) {
+  final m = _cnNumShape.firstMatch(s);
+  if (m == null) return null;
+  var n = 0;
+  if (m.group(1) != null) n += _cnDigits[m.group(1)]! * 100;
+  if (m.group(3) != null) {
+    n += (m.group(2) != null ? _cnDigits[m.group(2)]! : 1) * 10;
+  }
+  if (m.group(4) != null) n += _cnDigits[m.group(4)]!;
+  return (n > 0 && n < 200) ? n : null;
+}
+
+int? _number(String? s) {
+  if (s == null || s.isEmpty) return null;
+  return int.tryParse(s) ?? cnNumber(s);
+}
+
+BibleReference? _zhChapterMarkRef(String raw) {
+  if (!raw.contains('第')) return null;
+  final m = _zhChapterMarkRe.firstMatch(raw);
+  if (m == null) return null;
+  final chapter = _number(m.group(2));
+  if (chapter == null) return null;
+  return _buildRef(
+    m.group(1)?.trim() ?? '',
+    chapter,
+    _number(m.group(3)),
+    _number(m.group(4)),
+  );
 }
 
 /// Books that have only one chapter. When a reference like "Jude 14-15"

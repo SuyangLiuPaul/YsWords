@@ -15,7 +15,7 @@ import 'package:yswords/models/sermon.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/passage_localizer.dart'
-    show localizePassage, passageRefPattern;
+    show localizePassage, passageRefPattern, usesChineseChapterMark;
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/reference_parser.dart';
@@ -924,7 +924,7 @@ class _SermonBody extends StatelessWidget {
         // English body in English locale stays as-is).
         final localizedBook = localeAwareBookName(parsed.englishBook, locale);
         var displayText = matched;
-        if (locale.startsWith('zh')) {
+        if (locale.startsWith('zh') && !usesChineseChapterMark(matched)) {
           final tail = StringBuffer();
           tail.write(' ${parsed.chapter}');
           if (parsed.verseStart != null) {
