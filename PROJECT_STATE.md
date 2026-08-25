@@ -65,8 +65,8 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.165** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.165** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.166** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.166** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
 **Trap 58: an inert line is not a free line — it is an unpriced one, and
