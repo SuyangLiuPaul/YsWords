@@ -1,3 +1,41 @@
+import java.util.Properties
+
+// 2026-08-25: optional release signing.
+//
+// Until now the release build was signed with the DEBUG key — the
+// `signingConfig` below still says so when this file is absent, and the
+// template's "TODO: Add your own signing config" had never been done. A
+// release APK carrying a debug certificate is not merely untidy: Play
+// Protect and the OEM scanners on Xiaomi and Huawei treat it as a real
+// signal, which is the difference between a friend seeing the ordinary
+// "install from unknown sources?" prompt and seeing "此应用可能有害".
+//
+// The key itself is a credential and belongs to the user, not to this
+// repo. Create it once:
+//
+//   keytool -genkey -v -keystore ~/yswords-release.jks -storetype JKS \
+//     -keyalg RSA -keysize 2048 -validity 10000 -alias yswords
+//
+// then write android/key.properties (already gitignored, along with
+// *.jks and *.keystore):
+//
+//   storeFile=/Users/<you>/yswords-release.jks
+//   storePassword=<what you chose>
+//   keyAlias=yswords
+//   keyPassword=<what you chose>
+//
+// Absent that file the build falls back to the debug key exactly as
+// before, so CI and `flutter run --release` keep working untouched.
+//
+// KEEP THE .jks AND ITS PASSWORD. Android identifies an app by its
+// signature: lose the key and no future build can ever update an
+// installed copy — every user has to uninstall and lose their local
+// data first.
+val keystoreProperties = Properties().apply {
+    val f = rootProject.file("key.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -76,11 +114,26 @@ android {
         }
     }
 
+    signingConfigs {
+        if (keystoreProperties.getProperty("storeFile") != null) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Real key when android/key.properties exists, debug key when
+            // it does not — see the note at the top of this file. The
+            // fallback is deliberate: CI has no keystore and must still be
+            // able to build, and a build that fails for a missing secret
+            // teaches people to ignore red.
+            signingConfig = signingConfigs.findByName("release")
+                ?: signingConfigs.getByName("debug")
         }
     }
 }
