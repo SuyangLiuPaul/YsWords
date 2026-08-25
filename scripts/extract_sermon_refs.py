@@ -318,25 +318,21 @@ REF_RE = re.compile(
     # fullwidth comma with a space after it is not how the Chinese ones
     # are written — an unmeasured miss is preferred to an invention.
     # A spelled-out chapter word ahead of the number is what makes a
-    # following bare number readable as ANOTHER CHAPTER, so this form
-    # declines them all. "John chapters 12, 14 and 16" (004) is a list
-    # of three chapters and became John 12:14, a verse that exists and
-    # that the sermon never opens.
-    #
-    # Restricting the refusal to the plural was tried and is not
-    # defensible: "Mark chapter 7, 21" (013) and "Hebrews chapter 2, 14
-    # and 15" (848) are genuine only because Mark has 16 chapters and
-    # Hebrews 13, so the far number cannot be one — an accident of those
-    # two books, not a rule. "Romans chapter 8, 1 and 2" (356) is in the
-    # same corpus with a singular word and a far number that IS a
-    # plausible chapter of Romans; it happens to be verses, and nothing
-    # in its shape says so. Losing 848's Hebrews 2:14-15 is the price.
+    # following bare number readable as ANOTHER CHAPTER: "John chapters
+    # 12, 14 and 16" (004) is a list of three chapters and became John
+    # 12:14, a verse that exists and that the sermon never opens. The
+    # pattern therefore admits the form and `extract_refs` decides it,
+    # because the deciding fact is the canon and no regex can see it —
+    # a far number BEYOND the book's chapter count cannot be a chapter,
+    # so the ambiguity that forces the refusal simply is not there.
+    # Restricting it to the plural was tried instead and is not
+    # defensible: "Romans chapter 8, 1 and 2" (356) is singular with a
+    # far number that IS a plausible chapter of Romans.
     # "as we saw in Genesis 1, 2 Peter tells us…" — the 2 is the ordinal
     # of the NEXT book. Same lookahead the chapter position already uses, for
     # the same reason: refuse in the pattern so the engine retries from
     # the 2 and finds 2 Peter, rather than consuming it as a verse.
-    rf"|(?P<vbare>(?(chcomma)(?!))(?(chword)(?!))"
-    rf",\s+(?![1-3]\s+{NUMBERED_TAIL_RE}\b)(?=\d))"
+    rf"|(?P<vbare>,\s+(?![1-3]\s+{NUMBERED_TAIL_RE}\b)(?=\d))"
     rf")"
     rf"(?:(?P<v>\d+)|(?P<vcn>{_CN_NUM_RE}))"
     # Two guards that apply only to the bare-comma form, because it is
@@ -520,6 +516,20 @@ def extract_refs(text: str) -> list[str]:
         marked = (m.group("chword") is not None
                   or m.group("chcomma") is not None
                   or m.group("chmark") is not None)
+        # "John chapters 12, 14 and 16" is a list of CHAPTERS, and a
+        # spelled-out chapter word ahead of the number is what makes the
+        # bare number after the comma readable that way. The one shape
+        # where that reading is impossible is a number past the end of
+        # the book: Hebrews has 13 chapters, so "Hebrews chapter 2, 14
+        # and 15" (848) can only be verses. Everything else keeps the
+        # chapter and drops the number — which is what the pattern used
+        # to do by refusing to match it at all.
+        if (m.group("vbare") is not None
+                and (m.group("chword") is not None
+                     or m.group("chcomma") is not None)
+                and verse is not None
+                and verse <= max(CANON.get(canon, {0}))):
+            verse = last = None
         if ch <= 0 or ch > 200:
             continue
         # "the first letter of John, chapter 2" is 1 John, and the bare

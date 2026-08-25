@@ -293,12 +293,36 @@ void main() {
     // 004: "which Jesus already acknowledges in John chapters 12, 14
     // and 16" — three chapters, and it became John 12:14.
     expect(keys('004'), isNot(contains('John 12:14')));
-    // The refusal covers the singular too, deliberately: 356's "Romans
-    // chapter 8, 1 and 2" has a singular word and a far number that IS
-    // a plausible chapter of Romans, so nothing in its shape says which
-    // it is. Those verses reach the index by their explicit citation
-    // one sentence earlier, not by this branch.
-    expect(keys('356'), containsAll(['Romans 8:1', 'Romans 8:2']));
+    // 004 is the ONLY site in the corpus that discriminates this rule,
+    // and the other three were checked rather than assumed. 164's
+    // "Genesis chapters 1, 2" and 221's "1 Corinthians, chapters 5, 6"
+    // never reach this branch at all — both are three-number lists and
+    // refusal 1's lookahead kills them first, so asserting them would
+    // pass with this rule deleted. 356's "Romans chapter 8, 1 and 2" is
+    // refused here, but its verses reach the index anyway by an
+    // explicit citation one sentence earlier, which masks it.
+    //
+    // The refusal is a chapter-word rule and not a plural rule: 356 is
+    // singular, and its far number IS a plausible chapter of Romans, so
+    // nothing in its shape says which it is.
+
+    // …but it stops where the ambiguity does. Hebrews has 13 chapters,
+    // so the 14 of 848's "the freedom from the fear of death, as I
+    // mentioned in Hebrews chapter 2, 14 and 15" cannot be a chapter of
+    // it, and the only reading left is the one the sentence means.
+    // Before 2026-08-25 this sermon reached Hebrews 2 by the chapter
+    // alone and 2:14-15 by nothing at all, though those two verses are
+    // the passage the whole sentence rests on. This is the assertion
+    // that fails if the canon exception is removed.
+    expect(keys('848'), containsAll(['Hebrews 2:14', 'Hebrews 2:15']));
+    // The chapter-only key it replaces is not a loss: `sermonsForVerse`
+    // treats any key under `'Hebrews 2:'` as a chapter hit, and
+    // `PassageFilter.matchesRefKey` matches a verse key against a
+    // chapter-only filter. Non-regression, not discrimination: 013's
+    // "Mark chapter 7, 21 onwards" is the corpus's only other beyond-
+    // canon site and it moves nothing, because that sermon says "Mark
+    // chapter 7 verses 21 and 22" one sentence earlier.
+    expect(keys('013'), containsAll(['Mark 7:21', 'Mark 7:22']));
 
     // Refusal 3 — a thousands separator is not a citation: EC010's "the
     // Apostle John 2,000 years ago said the day is coming". Not

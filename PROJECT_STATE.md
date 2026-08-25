@@ -57,9 +57,26 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.158** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.158** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.161** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.161** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.161 lets a bare comma-separated verse survive a spelled-out
+chapter word, but only where the number is past the end of the book and
+therefore cannot be a chapter. The blanket refusal exists because "John
+chapters 12, 14 and 16" is a list of three chapters; Hebrews has 13, so
+848's "the freedom from the fear of death, as I mentioned in Hebrews
+chapter 2, 14 and 15" has no such second reading. The whole corpus holds
+6 sites of the shape and the rule splits them 2/4 with nothing left
+over. Exactly four (sermon, key) pairs of 5,175 move — 848 gains
+`Hebrews 2:14` and `2:15`, which it reached by nothing before, and the
+two chapter-only pairs that go cost no reachability because
+`sermonsForVerse` counts any key under `'Hebrews 2:'` as a chapter hit.
+The deciding fact is the canon, so the two regex conditionals came out
+and the decision lives in `extract_refs`. **Two of three new negative
+assertions were vacuous and the refuter caught it** — 164 and 221 never
+reach this branch at all, being refused first by the pre-existing
+three-number list guard; only 004 discriminates on the negative side.
 
 v1.4.158 makes a verse spelled as a bare comma-separated number reach
 that verse instead of only its chapter — "that is why in Romans 13, 9,

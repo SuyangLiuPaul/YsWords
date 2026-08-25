@@ -5812,17 +5812,55 @@ has never seen this repo.
       three above and kills the invented case — but it also kills 015's
       "Matthew 5, 10 to 12", so measure the whole-corpus effect first.
 
-- [ ] **The bare-comma verse could be recovered after a singular
-      chapter word, where M cannot be a chapter of that book.** The fix
-      above declines every `Book chapter N, M` because "Romans chapter
-      8, 1 and 2" is unreadable from its shape alone. Where M exceeds
-      the book's chapter count that ambiguity does not exist: "Mark
-      chapter 7, 21" (Mark has 16) and "Hebrews chapter 2, 14 and 15"
-      (Hebrews has 13) are unambiguous, and the second is the only thing
-      the current refusal actually costs — 848's Hebrews 2:14-15, which
-      that sermon reaches nowhere else. Cheap and principled; left
-      undone because it WIDENS the pass, and PROJECT_STATE's rule is to
-      record widening and let a later iteration re-derive it.
+- [x] **The bare-comma verse is recovered after a chapter word where M
+      cannot be a chapter of that book. SHIPPED 2026-08-25 (v1.4.161) —
+      re-derived, and the estimate held exactly.** The widening was
+      recorded rather than applied when it was found, per PROJECT_STATE's
+      rule; this is the later iteration measuring it from scratch.
+
+      **The whole corpus holds 6 sites of the shape `Book <chapter-word>
+      N, M`, and the canon rule splits them 2/4 with nothing left over.**
+      Beyond the book's chapter count: 013 "Mark chapter 7, 21 onwards"
+      (Mark has 16) and 848 "as I mentioned in Hebrews chapter 2, 14 and
+      15" (Hebrews has 13). Still refused: 004 John, 164 Genesis, 221 1
+      Corinthians, 356 Romans. Two near-misses were checked and are not
+      of the shape — 007's "repeated in chapters 11, 19, and 20" and
+      325's "verse 27 of chapter 14, 2 Kings" have no adjacent book —
+      and the Chinese sites (350's 「第4章，14」, 075) use a fullwidth
+      comma, which this branch has never admitted.
+
+      **The regex conditionals came out and the decision moved into
+      `extract_refs`, because the deciding fact is the canon and no
+      regex can see it.** `verse <= max(CANON[book])` nulls the verse
+      and leaves the chapter, which is what the pattern used to do by
+      refusing to match at all.
+
+      **Regenerating refs.json moves exactly four pairs of 5,175**: adds
+      `848 → Hebrews 2:14` and `2:15`, drops `013 → Mark 7` and
+      `848 → Hebrews 2`. The 3,009 byVerse keys are identical before and
+      after. Neither drop costs reachability — `sermonsForVerse` counts
+      any key under `'Hebrews 2:'` as a chapter hit and
+      `matchesRefKey` matches a verse key against a chapter-only filter
+      — and 848 moves from chapter hit to exact hit at 2:14-15, which is
+      the freedom-from-the-fear-of-death passage the sentence rests on
+      and which it reached by nothing at all before. 013 gains nothing:
+      it says "Mark chapter 7 verses 21 and 22" one sentence earlier.
+
+      **The refuter broke the test before the test shipped.** Two of the
+      three new negative assertions (164's `Genesis 1:2`, 221's
+      `1 Corinthians 5:6`) were vacuous in BOTH directions — those sites
+      never reach this branch, because the pre-existing three-number
+      list guard refuses them first. They were removed rather than left
+      to read as coverage. 004's `John 12:14` is the corpus's only
+      discriminating negative; 848's two keys are the discriminating
+      positive, confirmed by mutating the guard away and watching the
+      extractor fall back to `Hebrews 2`.
+
+      Known and unchanged price, carried over from the blanket refusal:
+      a genuine verse whose number is ≤ the book's chapter count is
+      still dropped after a chapter word — a future "Psalm chapter 119,
+      105" would reach only Psalm 119. 356 is the corpus's instance and
+      it is masked by an explicit citation one sentence earlier.
 
 - [ ] **`CP18` says "You can from the Mark 7th chapter 7" and is filed
       under `Mark 7`.** The sentence before is "the end of Matthew
