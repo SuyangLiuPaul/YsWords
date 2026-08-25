@@ -532,6 +532,117 @@
       }
     };
   </script>
+  <!-- 2026-08-25 (「dev site我加在桌面上就打开一直是白的 webapp」).
+       Until now <body> held nothing but scripts, so from first paint
+       until Flutter's first frame the page was a blank sheet of colour.
+       Measured on an iPhone 17 Pro simulator against yswords-dev, both
+       in Safari and as a home-screen web app: a cold first load takes
+       over twenty seconds — CanvasKit, main.dart.js and the fonts — and
+       shows absolutely nothing for all of it. The app was not broken,
+       which is exactly the problem: twenty blank seconds is
+       indistinguishable from broken, and in standalone mode there is not
+       even a browser progress bar to suggest otherwise. So people wait a
+       few seconds, conclude it is dead, and close it.
+
+       Three independent ways to dismiss it, because a splash that
+       outlives the app it covers would be far worse than no splash:
+         1. `flutter-first-frame`, which the engine dispatches (verified
+            present in this build's main.dart.js, not assumed).
+         2. A poll for the rendered <flutter-view>/<flt-glass-pane>, in
+            case that event ever stops firing.
+         3. A hard 90s deadline that removes it no matter what.
+       Anything inline, nothing fetched: a loading screen that waits on
+       the network is the bug it was written to fix. -->
+  <style>
+    #ys-boot {
+      position: fixed; inset: 0; z-index: 2147483000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 18px;
+      background: #ffffff; color: #0d3b5c;
+      font: 400 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI",
+            "PingFang SC", "Microsoft YaHei", sans-serif;
+      transition: opacity .25s ease; text-align: center; padding: 24px;
+    }
+    #ys-boot.ys-gone { opacity: 0; pointer-events: none; }
+    #ys-boot img { width: 76px; height: 76px; border-radius: 18px; }
+    #ys-boot .ys-name { font-size: 17px; font-weight: 600; }
+    #ys-boot .ys-bar {
+      width: 168px; height: 3px; border-radius: 2px;
+      background: rgba(13, 59, 92, .15); overflow: hidden;
+    }
+    #ys-boot .ys-bar i {
+      display: block; width: 40%; height: 100%; border-radius: 2px;
+      background: #0d3b5c; animation: ys-slide 1.15s ease-in-out infinite;
+    }
+    @keyframes ys-slide {
+      0%   { transform: translateX(-110%); }
+      100% { transform: translateX(310%); }
+    }
+    #ys-boot .ys-slow { font-size: 13px; opacity: .7; max-width: 300px; }
+    #ys-boot .ys-slow a { color: inherit; }
+    @media (prefers-color-scheme: dark) {
+      #ys-boot { background: #0f1418; color: #dbe7f0; }
+      #ys-boot .ys-bar { background: rgba(219, 231, 240, .18); }
+      #ys-boot .ys-bar i { background: #dbe7f0; }
+    }
+  </style>
+  <div id="ys-boot" role="status" aria-live="polite">
+    <img src="icons/Icon-192.png" alt="" />
+    <div class="ys-name">Yahweh's Words 雅伟之言</div>
+    <div class="ys-bar"><i></i></div>
+    <div class="ys-slow" hidden></div>
+  </div>
+  <script>
+    (function () {
+      var el = document.getElementById('ys-boot');
+      if (!el) return;
+      var done = false;
+      function hide() {
+        if (done) return;
+        done = true;
+        el.classList.add('ys-gone');
+        setTimeout(function () {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        }, 300);
+      }
+      // 1. The engine's own signal.
+      window.addEventListener('flutter-first-frame', hide);
+      // 2. Poll for the rendered view, in case that event changes.
+      var poll = setInterval(function () {
+        if (document.querySelector('flutter-view, flt-glass-pane')) {
+          clearInterval(poll);
+          hide();
+        }
+      }, 250);
+      // 3. Deadline. A splash must never be the thing hiding a working app.
+      setTimeout(function () { clearInterval(poll); hide(); }, 90000);
+
+      // After 15s, say so and offer the escape hatch that already exists
+      // for this exact situation, rather than leaving the bar spinning.
+      setTimeout(function () {
+        if (done) return;
+        var slow = el.querySelector('.ys-slow');
+        if (!slow) return;
+        var zh = (navigator.language || '').toLowerCase().indexOf('zh') === 0;
+        slow.textContent = zh
+          ? '首次打开要下载约 2 MB，网络慢时会久一点。若一直停在这里，'
+          : 'The first launch downloads about 2 MB. If it stays here, ';
+        var a = document.createElement('a');
+        a.href = '#';
+        a.textContent = zh ? '清除缓存并重试' : 'clear the cache and retry';
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (window.yswordsClearCacheAndReload) {
+            window.yswordsClearCacheAndReload();
+          } else {
+            location.reload();
+          }
+        });
+        slow.appendChild(a);
+        slow.hidden = false;
+      }, 15000);
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
