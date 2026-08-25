@@ -57,9 +57,21 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.156** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.156** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.157** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.157** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.157 stops 62 sermon titles showing a fragment of the Bible
+reference that was deliberately deleted from them — "The Parables of the
+Second Coming (Part 1) — 30", "Take Up Your Cross — / —", "常在基督里 —
+章外在与内在的连接". 30 index `titles` entries and 32 H1 lines across 13
+sermons, each checked against its own pre-cleanup original in `b8258d5^`
+and repaired by deleting the remnant, never by restoring or rewording.
+20 further strings are measured and held for a user decision (338's
+"章的警告"; the "(Part 1)" markers on 042/043/046/047). Verified against
+the assets the sites serve, not the repo: on both `yswords-dev` and
+`yswords-cn-qat`, `sermons/index.json` serves the repaired titles and no
+title matches the residue shape, while 338 still reads "章的警告".
 
 v1.4.156 makes a range spelled "verses 20 **and** 21" reach both verses
 instead of only the first — 2 Kings 13:21, the corpse revived on
