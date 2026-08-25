@@ -55,10 +55,26 @@ final RegExp passageRefPattern = RegExp(
   r'腓利門書|希伯來書|雅各書|彼得前書|彼得後書|'
   r'約翰一書|約翰二書|約翰三書|猶大書|啟示錄|啓示錄'
   r')'
-  // A bare number ("馬太福音 5:7"), or the chapter-mark grammar the
-  // transcripts actually speak ("馬太福音第5章第7節").
-  r'(?:\s*\d+(?:\s*[:：.]\s*\d+(?:\s*[-–]\s*\d+)?)?'
-  '|$zhChapterMarkTailPattern'
+  // The chapter-mark grammar the transcripts actually speak
+  // ("馬太福音第5章第7節"), or a bare number ("馬太福音 5:7").
+  //
+  // Alternation is ordered and the chapter-mark branch MUST come
+  // first — but only since 第 became optional over in
+  // `zhChapterMarkTailPattern`. The two edits are one fix and neither
+  // half works alone, measured over the corpus:
+  //
+  //   第 required, mark branch first  → 9,064 / 674 truncated (inert:
+  //                                     byte-identical to 第-first)
+  //   第 optional, digit branch first → 9,650 / 674 truncated
+  //   both                            → 9,650 /   0 truncated
+  //
+  // 「馬太福音3章15節」 puts a bare ASCII digit right after the book
+  // name, so with the digit branch in front it matches 「馬太福音3」,
+  // stops, and leaves 章15節 as prose — the tap landed on the chapter
+  // and lost the verse. 674 matches truncated that way, 260 of them
+  // dropping a cited verse.
+  r'(?:' '$zhChapterMarkTailPattern'
+  r'|\s*\d+(?:\s*[:：.]\s*\d+(?:\s*[-–]\s*\d+)?)?'
   r')',
   caseSensitive: false,
 );
@@ -73,8 +89,12 @@ final RegExp passageRefPattern = RegExp(
 bool usesChineseChapterMark(String matched) =>
     _zhMarkShape.hasMatch(matched);
 
+/// 第 is optional here for the same reason it is optional in
+/// [zhChapterMarkTailPattern]: 「羅馬書8章23節」 is the preacher's own
+/// notation just as much as 「羅馬書第8章第23節」, and rewriting it to
+/// 「羅馬書 8:23」 would restate his sentence in a notation he did not use.
 final RegExp _zhMarkShape =
-    RegExp(r'第\s*(?:\d+|[〇零一二三四五六七八九十百]+)\s*[章篇]');
+    RegExp(r'(?:第\s*)?(?:\d+|[〇零一二三四五六七八九十百]+)\s*[章篇]');
 
 /// Rewrite a free-form passage like `Mt 7:21-27 and Lk 6:46-49` into
 /// the reader's locale (`马太福音 7:21-27 and 路加福音 6:46-49`).

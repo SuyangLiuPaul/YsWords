@@ -209,7 +209,14 @@ const String _numRun = r'(?:\d+|' '$_cnRun' r')';
 /// of a paragraph cannot adopt a number at the start of the next. There
 /// are no such sites in the corpus today; the refuter's point was that
 /// `\s*` is not a sentence boundary and it was wrong to claim it was.
-const String zhChapterMarkTailPattern = r'[^\S\n]*第[^\S\n]*('
+///
+/// 第 is optional on the chapter because 章/篇 already proves the number
+/// is a chapter — 「馬太福音3章15節」 is as much a citation as
+/// 「馬太福音第3章15節」, and requiring 第 dropped the verse from 260
+/// sites in the corpus. It is NOT optional in the sense of "no mark at
+/// all": a bare number still has to come through the digit branch of
+/// [passageRefPattern], which cannot read a verse.
+const String zhChapterMarkTailPattern = r'[^\S\n]*(?:第[^\S\n]*)?('
     '$_numRun'
     r')[^\S\n]*[章篇]'
     r'(?:[^\S\n]*第?[^\S\n]*('
@@ -219,6 +226,8 @@ const String zhChapterMarkTailPattern = r'[^\S\n]*第[^\S\n]*('
     '$_numRun'
     r')[^\S\n]*[節节])?'
     r')?';
+
+final RegExp _zhMarkChar = RegExp(r'[章篇]');
 
 final RegExp _zhChapterMarkRe = RegExp(r'^\s*(.*?)'
     '$zhChapterMarkTailPattern'
@@ -264,7 +273,7 @@ int? _number(String? s) {
 }
 
 BibleReference? _zhChapterMarkRef(String raw) {
-  if (!raw.contains('第')) return null;
+  if (!raw.contains('第') && !raw.contains(_zhMarkChar)) return null;
   final m = _zhChapterMarkRe.firstMatch(raw);
   if (m == null) return null;
   final chapter = _number(m.group(2));

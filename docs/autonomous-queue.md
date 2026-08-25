@@ -6644,13 +6644,15 @@ has never seen this repo.
       sites, but the stated reason was wrong, so the joins are now
       `[^\S\n]*` — newline-free by construction, U+3000 still a join.
 
-- [ ] **A digit chapter carrying 章 without 第 loses its verse — 674
-      matches, 260 of which drop a cited verse.** Found by the refuter
-      2026-08-26 against the fix above, which is incomplete on its own
-      terms: `第` is required on the chapter but optional on the verse,
-      so 「马太福音第3章15节」 resolves to Matthew 3:15 while
-      「马太福音3章15节」 resolves to Matthew 3. The digit branch matches
-      「马太福音3」, stops, and the 章15节 behind it is ordinary text.
+- [x] **A digit chapter carrying 章 without 第 loses its verse — 674
+      matches, 260 of which drop a cited verse. SHIPPED 2026-08-26
+      (v1.4.169) — the two numbers reproduced exactly, and the change is
+      strictly additive.** Found by the refuter 2026-08-26 against the
+      fix above, which is incomplete on its own terms: `第` is required
+      on the chapter but optional on the verse, so 「马太福音第3章15节」
+      resolves to Matthew 3:15 while 「马太福音3章15节」 resolves to
+      Matthew 3. The digit branch matches 「马太福音3」, stops, and the
+      章15节 behind it is ordinary text.
 
       **Measured: 674 digit matches end immediately before 章, and in
       260 of them a verse follows and is silently dropped**
@@ -6659,23 +6661,118 @@ has never seen this repo.
       either: the tap lands on the right chapter, just not the right
       verse.
 
-      The fix is to make 第 optional on the chapter when 章/篇 is
-      present, which means the chapter-mark alternative must be tried
-      BEFORE the digit one (alternation is ordered, and `\s*\d+` wins
-      today). That reorders the branch every existing Chinese reference
-      goes through, so it needs its own before/after count over the
-      whole corpus rather than riding along with the item above.
+      **What shipped is both halves the item asked for, and the
+      refuter corrected which half does what — the item's own account,
+      and this entry's first draft, had it backwards.** `第` became
+      optional on the chapter in `zhChapterMarkTailPattern` (章/篇 is
+      already proof the number is a chapter) and the chapter-mark
+      alternative was moved AHEAD of the digit one in
+      `passageRefPattern`. Each variant was built and run over the whole
+      corpus separately:
 
-- [ ] **232's 阿摩司书第12章 is now a tappable link to a chapter that
-      does not exist.** Amos has 9. The preacher is not citing it — he
-      is mimicking a new believer hunting for Amos — and nothing in the
-      grammar can tell rhetoric from citation. It is the ONLY
-      out-of-canon reference among the 5,548 chapter-mark matches, and
-      the popup degrades to its empty state rather than showing a wrong
-      verse. Recorded 2026-08-26. Fixing it properly means a canon
-      check at the point of underlining, which the sermon body has no
-      access to today; the same guard would cover the digit branch's
+      | variant | matches | verse-bearing | still truncated |
+      |---|---|---|---|
+      | before | 9,064 | 5,495 | 674 |
+      | reorder only (第 required) | 9,064 | 5,495 | 674 |
+      | 第 optional only (digit first) | 9,650 | 5,901 | 674 |
+      | both | 9,650 | 6,161 | 0 |
+
+      **The reorder alone is completely inert** — with 第 required the
+      chapter-mark branch cannot match 「马太福音3章15节」 wherever it
+      sits, so moving it forward changes not one byte. The item said the
+      ordering was the cause; it is not, it is a *precondition that only
+      binds once 第 is relaxed*. And relaxing 第 alone is not the fix
+      either: it buys 586 brand-new matches (Chinese-numeral chapters
+      like 「以西結書三章十七節」, which the digit branch could never see)
+      and +406 verses, while leaving all 674 truncations exactly where
+      they were. The reorder is what converts those 674, worth the other
+      +260. Both edits, or half the gain. Mutation-tested both ways.
+
+      **Measured over all 578 Chinese transcripts with the REAL Dart
+      pattern, not a Python model of it.** **Strictly additive**: every
+      one of the 9,064 previous match START offsets is still a match
+      start and no span got shorter, so nothing that was tappable
+      stopped being tappable — and `usesChineseChapterMark` flips on
+      zero unchanged spans, so no reference that used to be rewritten
+      into the reader's locale quietly stops being rewritten.
+
+      At (sermon-ID, key) level: **88 lost, 298 gained** — and note
+      those are per sermon ID, not per file. zh-CN and zh-TW are
+      parallel corpora that happen to share filenames, and each locale
+      independently gives the same 88/298; over the 578 distinct paths
+      it reads 176/596. Every one of the 88 is a chapter-only key
+      (`Ezekiel 36:`) whose sermon still holds a key in that same
+      book+chapter — no book+chapter disappears from any sermon.
+      `assets/sermons/refs.json` is untouched; this is the reader
+      catching up to an index that already held `002 → Matthew 3:15`.
+
+      Three things are pinned in `test/zh_chapter_mark_ref_test.dart`:
+      the branch order (a corpus assertion that ZERO matches now stop in
+      front of a 章/篇 — it read 674 before), that the 節/节 guard still
+      refuses a restated chapter when 第 is absent, and that
+      `usesChineseChapterMark` admits the 第-less form so the preacher's
+      notation is left as spoken instead of being rewritten to
+      「馬太福音 3:15」.
+
+      Two costs, both measured and recorded below rather than hidden:
+      one new out-of-canon link (CP37), and two matches that resolve to
+      nothing (331's 一一九).
+
+- [ ] **Two sermons now link to a chapter that does not exist, and the
+      reader has no canon check to stop them.** 232's 阿摩司书第12章 —
+      Amos has 9. The preacher is not citing it; he is mimicking a new
+      believer hunting for Amos, and nothing in the grammar can tell
+      rhetoric from citation. The popup degrades to its empty state
+      rather than showing a wrong verse. Recorded 2026-08-26.
+
+      **A second site arrived with the 第-less relaxation the same day,
+      so "the ONLY out-of-canon reference" — as this item read until
+      now — is no longer true.** CP37's 「启示录三十七章十七节」 resolves
+      to Revelation 37:17 and Revelation has 22 chapters. It is a
+      garbled transcript and the paragraph settles it: 「让我给你读启示
+      录第三章」 immediately before, and 「启示录三章十七节这样读：
+      "因为你说我是富足的…"」 immediately after — Laodicea, Revelation
+      3:17. The preacher said 三章十七节 and the recognizer heard
+      三十七章. **Do not "fix" the transcript**; the fix is the canon
+      check, which refuses it without anyone having to decide what he
+      said.
+
+      Fixing it properly means a canon check at the point of
+      underlining, which the sermon body has no access to today: there
+      is no chapter-count table anywhere in `lib/`, only
+      `_singleChapterBooks` in `reference_parser.dart`. The Python
+      extractor already has one (`CANON` in
+      `scripts/extract_sermon_refs.py`) and it is exactly why refs.json
+      holds `CP37 → Revelation 3:17` and no Revelation 37 — so this is
+      the Dart side lagging the Python side again (trap 60), and the
+      table can be derived from the bundled Bible asset rather than
+      hand-written. The same guard would cover the digit branch's
       identical (currently unexercised) exposure.
+
+- [ ] **一一九 is 119 read digit-by-digit, and neither implementation
+      admits it — 331's 「诗篇一一九篇103节」 resolves to nothing.**
+      Surfaced 2026-08-26 by the 第-less relaxation, which made the
+      string match `passageRefPattern` for the first time. It costs
+      nothing today: `parseReference` returns null, `_buildSpans` writes
+      a plain TextSpan, and the text renders exactly as it did when the
+      pattern did not reach it at all — so no dead link is underlined.
+      Python's `cn_number` rejects 一一九 identically, and refs.json's
+      `331 → Psalms 119:103` comes from the ENGLISH transcript, not this
+      sentence.
+
+      Both parsers are structural on purpose — that is what rejects 十十
+      rather than accumulating it to 20 — so admitting the digit-string
+      reading is not a one-line relaxation and needs its own measurement
+      over every numeral run in the corpus. The two sites are named
+      explicitly in `test/zh_chapter_mark_ref_test.dart` so that any NEW
+      unresolvable shape still reddens the suite.
+
+      A cheaper alternative was considered and rejected: making `_numRun`
+      itself structural, so the pattern cannot match a numeral the parser
+      will refuse. It would close this exactly, but `_numRun` is shared
+      by the chapter, the verse and the range end, so it re-decides all
+      5,548 existing chapter-mark matches — a large blast radius to buy
+      two sites that already render correctly.
 
 - [ ] **Two non-glyph spellings the alias table misses: 約拿記/约拿记
       (Jonah written with 記, 6 sites, sermon 069, including 「約拿記第2

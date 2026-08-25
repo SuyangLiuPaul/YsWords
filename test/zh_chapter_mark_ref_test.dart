@@ -80,6 +80,26 @@ void main() {
     test('a malformed numeral yields nothing rather than a guess', () {
       expect(parseReference('馬太福音第十十章'), isNull);
     });
+
+    // 第 is optional on the chapter: 章/篇 is already proof the number
+    // is a chapter. Requiring it cost 260 cited verses in the corpus.
+    test('chapter mark with no 第 in front of it', () {
+      final r = parseReference('馬太福音3章15節')!;
+      expect(r.englishBook, 'Matthew');
+      expect(r.chapter, 3);
+      expect(r.verseStart, 15);
+    });
+
+    test('chapter mark with no 第 and a Chinese numeral', () {
+      final r = parseReference('以西結書三章十七節')!;
+      expect(r.englishBook, 'Ezekiel');
+      expect(r.chapter, 3);
+      expect(r.verseStart, 17);
+    });
+
+    test('篇 with no 第 still marks a Psalm chapter', () {
+      expect(parseReference('詩篇23篇')!.chapter, 23);
+    });
   });
 
   group('passageRefPattern', () {
@@ -130,6 +150,29 @@ void main() {
       expect(passageRefPattern.firstMatch('Mt 5:27-30')?.group(0),
           'Mt 5:27-30');
     });
+
+    // Alternation is ordered. With the digit branch first, `\s*\d+`
+    // wins on 「馬太福音3章15節」, the match ends at 「馬太福音3」 and the
+    // verse behind it is prose — the tap landed on the chapter and lost
+    // the verse. This assertion is what fails if the branches are ever
+    // swapped back.
+    test('the chapter-mark branch beats the digit branch', () {
+      expect(passageRefPattern.firstMatch('讀馬太福音3章15節。')?.group(0),
+          '馬太福音3章15節');
+      expect(passageRefPattern.firstMatch('以西結書36章23節')?.group(0),
+          '以西結書36章23節');
+      // Chapter only, no verse — still the whole chapter mark.
+      expect(passageRefPattern.firstMatch('哥林多前書15章')?.group(0),
+          '哥林多前書15章');
+    });
+
+    // The 節/节 guard is the same guard whether or not 第 is present:
+    // dropping 第 must not let a restated chapter read as a verse.
+    test('a restated chapter with no 第 is still not a verse', () {
+      final m = passageRefPattern.firstMatch('馬可福音9章，9章的最後部分');
+      expect(m!.group(0), '馬可福音9章');
+      expect(parseReference(m.group(0)!)!.isWholeChapter, isTrue);
+    });
   });
 
   group('usesChineseChapterMark', () {
@@ -139,6 +182,17 @@ void main() {
       // 詩篇 ends in 篇 but is a book name, not a chapter mark.
       expect(usesChineseChapterMark('詩篇 23:1'), isFalse);
       expect(usesChineseChapterMark('Mt 5:27-30'), isFalse);
+    });
+
+    // 第 is optional here for the same reason it is optional in the
+    // pattern. Were it still required, 「馬太福音3章15節」 would be
+    // rewritten to 「馬太福音 3:15」 — a preacher's sentence restated in
+    // a notation he did not use.
+    test('the 第-less chapter mark is also the preacher\'s own notation',
+        () {
+      expect(usesChineseChapterMark('馬太福音3章15節'), isTrue);
+      expect(usesChineseChapterMark('詩篇23篇'), isTrue);
+      expect(localizePassage('馬太福音3章15節', 'zh-Hant'), '馬太福音3章15節');
     });
 
     // A chapter-mark citation is already in the reader's own language,
@@ -156,22 +210,55 @@ void main() {
   group('the Chinese corpus', () {
     test('every chapter-mark match resolves, and none is invented', () {
       var markMatches = 0;
-      var unresolved = 0;
-      for (final dir in ['assets/sermons/zh-CN', 'assets/sermons/zh-TW']) {
-        for (final f in Directory(dir).listSync().whereType<File>()) {
-          if (!f.path.endsWith('.txt')) continue;
-          for (final m in passageRefPattern.allMatches(f.readAsStringSync())) {
-            final s = m.group(0)!;
-            if (!usesChineseChapterMark(s)) continue;
-            markMatches++;
-            if (parseReference(s) == null) unresolved++;
-          }
-        }
+      final unresolved = <String>{};
+      for (final m in _corpusMatches()) {
+        final s = m.value.group(0)!;
+        if (!usesChineseChapterMark(s)) continue;
+        markMatches++;
+        if (parseReference(s) == null) unresolved.add(s);
       }
       expect(markMatches, greaterThan(5000),
           reason: 'the form the transcripts actually speak');
-      expect(unresolved, 0,
+      // 一一九 is the digit-string reading of 119 and neither this
+      // parser nor `cn_number` in the Python extractor admits it —
+      // both are structural, which is what rejects 十十. The two sites
+      // render as plain text, exactly as they did before the pattern
+      // reached them, so nothing is underlined that does nothing when
+      // tapped. Named rather than counted so that any NEW unresolvable
+      // shape still fails here.
+      expect(unresolved, {'诗篇一一九篇103节', '詩篇一一九篇103節'},
           reason: 'a match the parser cannot resolve underlines nothing');
     });
+
+    // The defect this pattern order was changed for. A match that stops
+    // immediately in front of a 章/篇 has read the chapter number and
+    // left the mark — and any verse behind it — as prose. There were
+    // 674 of those, 260 carrying a cited verse.
+    test('no match stops in front of a chapter mark', () {
+      final stopped = <String>[];
+      for (final e in _corpusMatches()) {
+        final rest = e.key.substring(e.value.end);
+        if (rest.startsWith(RegExp(r'[^\S\n]*[章篇]'))) {
+          stopped.add(e.value.group(0)!);
+        }
+      }
+      expect(stopped, isEmpty,
+          reason: '${stopped.length} matches drop the chapter mark, '
+              'e.g. ${stopped.take(3).toList()}');
+    });
   });
+}
+
+/// Every [passageRefPattern] match in the Chinese sermon corpus, paired
+/// with the text it was found in so a caller can look behind it.
+Iterable<MapEntry<String, RegExpMatch>> _corpusMatches() sync* {
+  for (final dir in ['assets/sermons/zh-CN', 'assets/sermons/zh-TW']) {
+    for (final f in Directory(dir).listSync().whereType<File>()) {
+      if (!f.path.endsWith('.txt')) continue;
+      final text = f.readAsStringSync();
+      for (final m in passageRefPattern.allMatches(text)) {
+        yield MapEntry(text, m);
+      }
+    }
+  }
 }

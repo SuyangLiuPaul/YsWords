@@ -69,6 +69,33 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 | qat | `yswords-qat`, `yswords-cn-qat` | **1.4.168** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
+**Trap 61: a two-part fix will report success after the part that
+measures well, and the part that does not measure at all can be the
+one carrying the gain.** Relaxing 第 in the Chinese chapter-mark
+pattern (2026-08-26) added **586 new matches and 406 verses** on its
+own — a large, obviously-good number that any iteration would have
+written up and shipped. It fixed **none** of the 674 citations the
+defect was actually about, because a cheaper alternative sat in front
+of the branch: on 「马太福音3章15节」 the engine still took `\s*\d+`,
+matched 「马太福音3」, and left 章15节 as prose. Reordering the two
+alternatives is what converts those 674 — and reordering ALONE is
+byte-for-byte inert, because with 第 required the branch could not
+match those sites from any position. Each edit looks like the fix and
+neither is; the queue item, and this file's first draft of this trap,
+both named the wrong one as the cause. **Build each half separately
+and run the corpus through it.** Three runs cost four minutes and are
+the only thing that tells a fix from its neighbour.
+
+The reason it hides so well is that the symptom is a match that is too
+**SHORT**, not one that is missing. The reference was underlined, it
+was tappable, it went to the right chapter — only the end offset was
+wrong, and every assertion of the form "this text is detected" stayed
+green. So: **assert the extent of a match, not its existence.** The
+corpus guard that now protects this counts matches stopping
+immediately in front of a 章/篇 and requires zero; it read 674 the day
+before. A rule about what a pattern *consumes* catches shadowing; a
+rule about what it *finds* never will.
+
 **Trap 60: the sermon↔verse grammar has TWO implementations in two
 languages, and the Dart one had never learned the form the transcripts
 actually speak.** `scripts/extract_sermon_refs.py` decides which
