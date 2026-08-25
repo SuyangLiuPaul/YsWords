@@ -480,14 +480,36 @@ _RANGE_LINK = re.compile(
 # A chapter of its own is what distinguishes this from "verses 20 and
 # 21": that is a range and REF_RE already walks it.
 #
-# The fragment is the bare `C:V` and nothing else. A range tail was
-# tried — 063's "Matthew 11:30 and 12:1–8" is the corpus's only site
-# with one — and taken back out: it costs nothing (063 already reaches
-# 12:1-8 through other prose in the same sermon) and it hands REF_RE a
-# far number with no unit-word guard in front of it, so a plausible
-# "Mark 6:34 and 8:1 to 4000 people" would file the sermon under
-# thirty-eight verses of Mark 8. Two endpoints, never a span.
-_AND_SECOND_REF = re.compile(r"\s*and\s+(\d+\s*[:：]\s*\d+)", re.IGNORECASE)
+# A comma or semicolon does the same job as the `and`, and runs on:
+# "Jeremiah 4:7, 7:11, 7:34, 22:5, 32:4, 51:6, 51:22" (143) is seven
+# citations of one book, and "馬太福音16:21；17:9；17:23；20:19；26:32"
+# (207) is the same sentence in Chinese. So the fragment is consumed in
+# a LOOP, each item resolved on its own with a fresh `prev` — two
+# endpoints per item, never a span between items, because the verses
+# between were never named.
+#
+# What stops it running away is that every item must carry its own
+# colon. A bare number after a comma is not admitted here at all, so a
+# sentence's worth of numerals cannot join the index; only a `C:V` can,
+# and a `C:V` sitting immediately after a citation in a list is a
+# citation. Measured over the whole corpus: 28 sites match, and every
+# consumed item is a real reference — no time of day, no ratio, no
+# score.
+#
+# The range tail is admitted only UNSPACED and only with a hyphen or an
+# en-dash. This is narrower than the `to`/`through`/spaced-dash tail
+# that was tried and removed here on 2026-08-25 — that one handed
+# REF_RE a far number with no unit-word guard in front of it, so "Mark
+# 6:34 and 8:1 to 4000 people" would have filed the sermon under
+# thirty-eight verses of Mark 8. `to` is still refused. The unspaced
+# form cannot be that: all 1,202 occurrences of `C:V[-–]N` in the
+# corpus are genuine ranges, none is spaced, and the em-dash this
+# preacher's prose actually uses (` — `, `——`) is excluded twice over.
+# Without it 057's "Isaiah 29:18–20, 35:5–6, and 61:1" stops dead at
+# the dash and loses 61:1 as well as 35:6.
+_AND_SECOND_REF = re.compile(
+    r"\s*(?:[,;，；]\s*(?:and\s+)?|and\s+)"
+    r"(\d+\s*[:：]\s*\d+(?:[-–]\d+)?)", re.IGNORECASE)
 
 
 def _walk(book: str, c1: int, v1: int, c2: int, v2: int):
@@ -614,17 +636,24 @@ def extract_refs(text: str) -> list[str]:
             if key not in seen:
                 seen.add(key)
                 out.append(key)
-        # The second half of "Book C:V and C2:V2". The fragment is bounded
-        # to the citation itself rather than the rest of the text, so the
-        # recursion cannot re-read the whole sermon out of order, and it
-        # starts with a fresh `prev`, so the two citations cannot be
-        # walked into one span — the verses between them were never named.
-        tail = _AND_SECOND_REF.match(text, m.end())
-        if tail is not None:
+        # The rest of "Book C:V and C2:V2" / "Book C:V, C2:V2, C3:V3".
+        # Each fragment is bounded to the citation itself rather than the
+        # rest of the text, so the recursion cannot re-read the whole
+        # sermon out of order, and it starts with a fresh `prev`, so two
+        # citations cannot be walked into one span. The loop ends the
+        # moment the text stops looking like another `C:V` in the list —
+        # "Matthew 3:11, 21:9, John 11:27" (143) hands 21:9 over and then
+        # stops, leaving John 11:27 to REF_RE's own scan.
+        pos = m.end()
+        while True:
+            tail = _AND_SECOND_REF.match(text, pos)
+            if tail is None:
+                break
             for key in extract_refs(f"{canon} {tail.group(1)}"):
                 if key not in seen:
                     seen.add(key)
                     out.append(key)
+            pos = tail.end()
     return out
 
 

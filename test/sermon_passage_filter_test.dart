@@ -123,7 +123,13 @@ void main() {
       // 2026-08-25: four more, because the extractor learned to read
       // "John chapter 17" — 011, 345, 761 and 765 all say it in words
       // and were invisible while only "John 17" and "John 17:3" parsed.
-      expect(got, hasLength(14));
+      // Later the same day, 331: "he speaks of being filled with joy so
+      // many times. John 15:11, 16:24, 17:13 — all in John." The book
+      // name now carries down a comma list, and 17:13 is the verse where
+      // that joy is fulfilled in them.
+      expect(got,
+          containsAll(['011', '345', '761', '765', '331']));
+      expect(got, hasLength(15));
     });
 
     test('narrowing to a verse never widens the result', () {

@@ -5972,10 +5972,50 @@ has never seen this repo.
       identical exposure already for a time written after a book name,
       so this adds no new class.
 
-- [ ] **A second citation separated by a COMMA LIST loses its book name
+- [x] **A second citation separated by a COMMA LIST loses its book name
       — 24 keys across 8 sermons, and 3 of them are `and` shapes the
-      fix above was supposed to cover.** Measured by the refuter
-      2026-08-25 against the shipped index and spot-verified: 057's
+      fix above was supposed to cover. SHIPPED 2026-08-25 (v1.4.163) —
+      re-measured from scratch and the refuter's count held exactly:
+      +24 pairs, −0, across exactly the 8 sermons it named.**
+      `_AND_SECOND_REF` now admits a comma or semicolon (and 「，」「；」)
+      as well as `and`, and its call site is a LOOP advancing `pos =
+      tail.end()`, so a seven-item list resolves seven citations. Each
+      item is spliced and re-read on its own with a fresh `prev` — two
+      endpoints per item, never a span between items.
+
+      **The stopping condition is the colon, and that is the whole of
+      it.** A bare number after a comma is not admitted, so a sentence's
+      worth of numerals cannot join the index; 147's "Colossians 3:12, 1
+      Peter 1:2" cannot read the book-name "1" as a chapter, and 143's
+      "Matthew 3:11, 21:9, John 11:27" hands over 21:9 and then stops,
+      leaving John to REF_RE's own scan. Instrumented over a real run:
+      **49 firings at 28 sites, corpus-wide — all of them — and every
+      consumed item is a real citation.** No time of day, no ratio, no
+      score, no chapter list. Longest chain 6.
+
+      **The range tail came back, but only unspaced.** The spaced and
+      worded forms stay refused (`8:1 to 4000 people` would file 38
+      verses of Mark 8). Unspaced cannot be prose: all **1,202**
+      occurrences of `C:V[-–]N` in the corpus are genuine ranges, not
+      one is spaced, and none uses an em-dash — while this preacher's
+      prose dash is always ` — ` or `——`. Without it 057's "Isaiah
+      29:18–20, 35:5–6, and 61:1" stops dead at the dash and loses 61:1
+      as well as 35:6. Only two sites ever consume one (057, 063).
+
+      **The refuter's real catch was in the test, not the fix.** Wrapping
+      the pattern over three lines silently disarmed the guard written to
+      pin the range tail: the test read to the end of the FIRST line and
+      got back `_AND_SECOND_REF = re.compile(`, which contains none of
+      the pattern. It now reads to the end of the compile call and
+      asserts the extraction is not vacuous before asserting on it. All
+      three guards are mutation-tested: reverting the loop, spacing the
+      dash, and `.search` for `.match` each turn the suite red.
+
+      Sermon 331 also gains `John 17:13` ("filled with joy so many
+      times. John 15:11, 16:24, 17:13 — all in John"), which moves the
+      John 17 filter from 14 sermons to 15.
+
+- [x] **SUPERSEDED by the entry above — the original statement.** 057's
       "Isaiah 29:18–20, 35:5–6, and 61:1" loses `Isaiah 61:1`, 341's
       "Leviticus 11:44-45, 19:2, and 20:7" loses `Leviticus 20:7`, 342's
       "John 2:17, 2:22, 12:16, 15:20 and 16:4" loses `John 16:4` — all
@@ -6008,6 +6048,39 @@ has never seen this repo.
       the same machinery as `_RANGE_LINK` and wants its own iteration.
       Do not reuse the adjacency rule here — these are two citations,
       so the verses BETWEEN them were never named.
+
+- [ ] **`REF_RE`'s leading `\b` is inert against Chinese, so a book name
+      run onto the previous word never matches at all.** 144 writes
+      「在马太福音2:13，12:14，21:41」 and 「在」 is a word character to
+      Python's `\b`, so there is no boundary before 「马」 and the whole
+      citation — not just the list carry — is invisible. Measured by the
+      refuter 2026-08-25: **2 of the 8 Chinese full-name list sites are
+      blocked this way**, and both are recovered from the same sermon's
+      English body, so nothing is lost from the shipped index today.
+      That is luck, not design: an English-less sermon would lose the
+      lot. The fix is a Chinese-aware boundary, which touches every
+      Chinese match in the corpus — measure the whole-corpus effect
+      before touching it, and expect it to be much larger than this
+      item.
+
+- [ ] **The list carry's `\s*` crosses a newline, so a citation at the
+      end of a paragraph could adopt a number at the start of the next.**
+      "Genesis 1:1\n\nand 2:2" carries. Zero sites in the corpus, and
+      REF_RE has the same exposure in `_RANGE_LINK` already, so it adds
+      no new class — recorded by the refuter 2026-08-25, not acted on.
+      A `[^\S\n]*` would close it; measure first, because a citation
+      wrapped across a line break is a shape the transcripts may well
+      have.
+
+- [ ] **A clock time would be carried if one ever followed a citation.**
+      160 has "Communion at 1:15" and 230 has "9:20 pm", so the corpus
+      does contain times in `C:V` shape; "Luke 4:18, 1:15" would index
+      Luke 1:15. **Zero sites where a time sits after a citation and a
+      separator**, and `REF_RE` has the identical exposure directly after
+      a book name already. Recorded by the refuter 2026-08-25. The guard
+      would be a following am/pm/o'clock refusal, which is cheap — but it
+      is a hypothetical class, so measure before trading anything real
+      for it.
 
 - [ ] **`marked` disables the unit-word guard, so "in Genesis, chapter
       3 times" would index Genesis 3.** Zero occurrences in the corpus

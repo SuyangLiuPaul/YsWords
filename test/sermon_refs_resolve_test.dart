@@ -523,13 +523,9 @@ void main() {
   // so they would pass with the carry deleted and would read as
   // coverage they do not provide.
   //
-  // 12 is NOT the count of everything this rationale covers. Three more
-  // `and` sites lose their second citation to an intervening comma list
-  // — 057's "Isaiah 29:18-20, 35:5-6, and 61:1", 341's "Leviticus
-  // 11:44-45, 19:2, and 20:7", 342's "John 2:17, 2:22, 12:16, 15:20 and
-  // 16:4" — because the carry requires the `and` to be adjacent to a
-  // match and a comma list breaks the adjacency. Measured and left for
-  // its own iteration; see the queue.
+  // Since 2026-08-25 a comma or semicolon carries the book name too, and
+  // the carry repeats — see the comma-list test below. The 12 sites here
+  // are the subset where the separator is a bare `and`.
   test('the book name carries across "and" to a second citation', () {
     final bySermon = refs['bySermon'] as Map<String, dynamic>;
     List<String> keys(String id) => (bySermon[id] as List).cast<String>();
@@ -565,35 +561,117 @@ void main() {
     expect(start, isNot(-1),
         reason: 'the second-citation carry must still be named '
             '_AND_SECOND_REF');
-    final pattern = src.substring(start, src.indexOf('\n', start));
+    // To the end of the compile CALL, not the end of the first line: the
+    // definition is wrapped over three lines, and reading one line gave
+    // back `_AND_SECOND_REF = re.compile(` — which contains none of the
+    // pattern, so the range-tail guard below silently pinned nothing.
+    // Caught by the refuter on 2026-08-25, in the very edit that
+    // introduced the wrapping.
+    final close = src.indexOf('re.IGNORECASE)', start);
+    expect(close, isNot(-1),
+        reason: 'cannot find the end of the _AND_SECOND_REF compile call');
+    final pattern = src.substring(start, close);
+    expect(pattern, contains(r'[,;，；]'),
+        reason: 'the extracted text is not the pattern — every assertion '
+            'below it would be vacuous');
 
-    // 1. The captured fragment is the bare "C:V" and nothing else. A
-    // range tail was tried and taken back out: it hands the parser a
-    // far number with no unit-word guard in front of it, so "Mark 6:34
-    // and 8:1 to 4000 people" would file the sermon under thirty-eight
-    // verses of Mark 8. 063 is the corpus's only site with a range
-    // after the `and` and it reaches 12:1-8 through other prose anyway,
-    // so restoring the tail changes zero keys and every index-level
-    // assertion above passes with it back.
+    // 1. The captured fragment is a "C:V" with at most an UNSPACED
+    // hyphen/en-dash range tail. The spaced and worded forms were tried
+    // and taken back out: they hand the parser a far number with no
+    // unit-word guard in front of it, so "Mark 6:34 and 8:1 to 4000
+    // people" would file the sermon under thirty-eight verses of Mark 8,
+    // and this preacher's prose dash (" — ", "——") sits between clauses
+    // constantly. The unspaced form cannot be prose: all 1,202
+    // occurrences of `C:V[-–]N` in the corpus are ranges and not one of
+    // them is spaced.
     //
     // This is a whole-group literal on purpose. An earlier draft paired
     // it with `isNot(contains('to|through'))`, which was vacuous: Dart
     // stops at the first failing expect, and every widening of group 1
-    // — the `to|through` spelling AND a dash-only spelling — already
-    // breaks the literal below, so the second assertion only ever ran
-    // on edits that were harmless.
-    expect(pattern, contains(r"(\d+\s*[:：]\s*\d+)"),
-        reason: 'a range tail here walks a span the preacher never '
-            'named — the two citations are endpoints, not a passage');
+    // already breaks the literal below, so the second assertion only
+    // ever ran on edits that were harmless.
+    expect(pattern, contains(r"(\d+\s*[:：]\s*\d+(?:[-–]\d+)?)"),
+        reason: 'a spaced or worded range tail here walks a span the '
+            'preacher never named — the citations are endpoints, not a '
+            'passage');
 
-    // 2. The carry starts where the first citation ended. `.search`
-    // instead of `.match` would let it skip forward to any later `and`
-    // in the sermon and attach a far-away number to this book: measured
-    // at 50 carried keys instead of 10, and the whole of this file
-    // still passed, which is why it is asserted rather than assumed.
-    expect(src, contains('_AND_SECOND_REF.match(text, m.end())'),
+    // 2. The carry starts where the first citation ended and then
+    // advances only over what it has consumed. `.search` instead of
+    // `.match` would let it skip forward to any later separator in the
+    // sermon and attach a far-away number to this book: measured at 50
+    // carried keys instead of 10, and the whole of this file still
+    // passed, which is why it is asserted rather than assumed.
+    expect(src, contains('_AND_SECOND_REF.match(text, pos)'),
         reason: 'the fragment must be bounded to the text immediately '
             'after the citation, or the book name carries arbitrarily '
             'far forward');
+    expect(src, contains('pos = m.end()'),
+        reason: 'the list carry must start at the end of the citation '
+            'it belongs to');
+    expect(src, contains('pos = tail.end()'),
+        reason: 'the loop must advance by exactly what it consumed, or '
+            'it either spins forever or re-reads the same item');
+  });
+
+  // A comma or semicolon carries the book name the same way an `and`
+  // does, and unlike the `and` it runs on: 143's "Jeremiah 4:7, 7:11,
+  // 7:34, 22:5, 32:4, 51:6, 51:22" is seven citations of one book and
+  // 207's "馬太福音16:21；17:9；17:23；20:19；26:32" is the same sentence
+  // in Chinese. Until 2026-08-25 only the first survived.
+  //
+  // 24 (sermon, key) pairs of 5,209 depend on this and none is reachable
+  // by any other path, so every assertion below fails if the loop is
+  // removed. Three of the 24 are `and` shapes the adjacency carry was
+  // meant to cover and could not, because a comma list sat in between.
+  test('the book name carries down a comma/semicolon list', () {
+    final bySermon = refs['bySermon'] as Map<String, dynamic>;
+    List<String> keys(String id) => (bySermon[id] as List).cast<String>();
+
+    // The three `and` shapes an intervening comma list used to break.
+    expect(keys('057'), contains('Isaiah 61:1'));
+    expect(keys('341'), contains('Leviticus 20:7'));
+    expect(keys('342'), contains('John 16:4'));
+
+    // Plain lists, including the longest (143, seven items) and the only
+    // one written with semicolons in all three languages (207).
+    expect(keys('143'), contains('Jeremiah 22:5'));
+    expect(keys('143'), contains('Jeremiah 51:22'));
+    expect(keys('207'), contains('Matthew 17:9'));
+    expect(keys('207'), contains('Matthew 20:19'));
+    expect(keys('147'), contains('Daniel 12:11'));
+    expect(keys('331'), contains('John 17:13'));
+
+    // The unspaced range tail. Without it 057 stops dead at the dash in
+    // "Isaiah 29:18–20, 35:5–6, and 61:1" and loses 61:1 as well.
+    expect(keys('057'), contains('Isaiah 35:6'));
+
+    // Two endpoints per item, never a span between items. Walking 207's
+    // list from 16:21 to 17:9 is 17 verses — well under the extractor's
+    // 200-verse cap, so the cap would not have caught it — and walking
+    // 342's from 2:17 to 2:22 is four.
+    expect(keys('207'), isNot(contains('Matthew 16:28')));
+    expect(keys('207'), isNot(contains('Matthew 17:1')));
+    expect(keys('342'), isNot(contains('John 2:18')));
+    expect(keys('342'), isNot(contains('John 2:21')));
+
+    // The loop stops the moment the next item is not a bare "C:V", which
+    // is what keeps a list of DIFFERENT books apart. 143 writes "Matthew
+    // 3:11, 21:9, John 11:27" and 023 writes "Galatians 5:24, 6:14,
+    // Romans 8:13": the second book must reach the index under its own
+    // name and must not be filed under the first.
+    expect(keys('143'), contains('Matthew 21:9'));
+    expect(keys('143'), contains('John 11:27'));
+    expect(keys('143'), isNot(contains('Matthew 11:27')));
+    expect(keys('023'), contains('Galatians 6:14'));
+    expect(keys('023'), contains('Romans 8:13'));
+    expect(keys('023'), isNot(contains('Galatians 8:13')));
+
+    // The same stop, one character tighter: 147's "Colossians 3:12, 1
+    // Peter 1:2, 2:9" puts a number immediately after the comma, and it
+    // is the "1" of a book name. The colon requirement is the whole of
+    // what tells them apart.
+    expect(keys('147'), contains('1 Peter 1:2'));
+    expect(keys('147'), contains('1 Peter 2:9'));
+    expect(keys('147'), isNot(contains('Colossians 1:2')));
   });
 }

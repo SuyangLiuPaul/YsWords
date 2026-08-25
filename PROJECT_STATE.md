@@ -57,9 +57,36 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.162** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.162** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.163** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.163** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.163 lets the book name carry down a comma or semicolon list, not
+just across a single `and`, so "Jeremiah 4:7, 7:11, 7:34, 22:5, 32:4,
+51:6, 51:22" (143) files seven citations instead of one and
+「馬太福音16:21；17:9；17:23；20:19；26:32」(207) files five. The call site
+became a loop advancing `pos = tail.end()`; each item is spliced and
+re-read on its own with a fresh `prev`, so there is never a span between
+items. +24 (sermon, key) pairs of 5,209, −0, across exactly the 8
+sermons the refuter predicted a day earlier — the estimate held to the
+key. **The stopping condition is the colon**: a bare number after a
+comma is not admitted at all, so "Colossians 3:12, 1 Peter 1:2" cannot
+read a book-name "1" as a chapter and "Matthew 3:11, 21:9, John 11:27"
+stops before John. Instrumented over a real run: 49 firings at 28
+sites, corpus-wide, every consumed item a genuine citation.
+
+The range tail returned, **unspaced only** — the spaced and worded forms
+stay refused. All 1,202 `C:V[-–]N` sites in the corpus are real ranges,
+none is spaced, none uses an em-dash, and this preacher's prose dash is
+always ` — ` or `——`.
+
+**Trap 39: wrapping a regex over three lines disarmed the test guarding
+it.** `test/sermon_refs_resolve_test.dart` pulled the pattern with
+`src.substring(start, src.indexOf('\n', start))` — one line — and the
+new definition wraps, so it extracted `_AND_SECOND_REF = re.compile(`
+and pinned nothing. The refuter found it in the same edit that
+introduced it. Any test that reads source text by line offset should
+assert the extraction is non-vacuous before asserting on it.
 
 v1.4.162 lets the book name carry across an `and` to a second citation,
 so "Matthew 14:14 and 15:32 for the feedings of the five and four
