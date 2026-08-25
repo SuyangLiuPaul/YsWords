@@ -941,6 +941,20 @@ advances the repo hash is healthy.
     key the change destroys in one sentence is often cited again in
     another — sermon 101's invented Matthew 14:15 showed up as no diff at
     all. Diff per occurrence, not per index.
+56. **A detector that enumerates the residue shapes it has already seen
+    will keep finding the same fraction of the damage, and keep
+    reporting green.** On 2026-08-25 the half-stripped sermon-title
+    class was counted three times by three passes and came out 42, then
+    60, then 82 strings — each pass wrote regexes for the shapes in
+    front of it, so each was structurally blind to the next. The one
+    that hid longest was two references joined by a slash ("Matthew
+    11:12 / Luke 14:27" → "— / —"): no pass had a rule about slashes,
+    so no pass could see it. What finally held was a rule about
+    STRUCTURE rather than spelling — split the title on its separators
+    and require every segment to open with real words — which catches
+    all 82 with no false positives and did not need to know what the
+    residue looks like. **When a count grows on each adversarial round,
+    the detector is the defect, not the count.**
 
 ## Standing rules from the user
 

@@ -5604,8 +5604,64 @@ has never seen this repo.
       half is checked by the new test in `test/sermon_credit_test.dart`,
       which fails on the pre-repair data.
 
-- [ ] **The same cleanup left 36 more strings damaged in 9 other
-      sermons, in shapes stranded punctuation cannot detect** — 17
+- [x] **62 of them repaired 2026-08-25, and the real class was 82
+      strings in 18 sermons — more than double what this item
+      estimated.** 30 `titles` fields and 32 H1 lines fixed across 059,
+      063, 067, 117, 143, 150, 151, 158, 225, 343, 393, 407, EC015. Each
+      repair was checked against its own pre-cleanup original in `git
+      show b8258d5^:` and is a pure deletion of the surviving fragment,
+      which is what b8258d5's own commit message says it set out to do
+      ("stripped verse references from sermon titles… the detail page
+      already shows the passage as a tappable chip"). Nothing was
+      restored and nothing was reworded.
+
+      **The estimate below was wrong three times over, and the reason is
+      worth keeping: every pass enumerated the shapes it already knew.**
+      Round one of the refuter found 063, whose English read "— 1– 8 —"
+      because "Matthew 11:30–12:1–8" lost only its head. Round two found
+      a whole shape nobody had looked for — two references joined by a
+      slash, "Matthew 11:12 / Luke 14:27", collapsing to a bare "— / —"
+      in 059, 067 and 150 — plus 225, 042, 043, 046 and 047. The count
+      went 42 → 60 → 82 on successive rounds, each addition verified
+      against `b8258d5^` rather than taken on trust.
+
+      So `test/sermon_credit_test.dart`'s new test does NOT enumerate
+      residue spellings. It splits a title on its separators and
+      requires every segment to open with real words — a segment that is
+      wordless, or starts with a digit or punctuation, or is a bare
+      conjunction, or is a lone "(Part 1)", is a reference whose head was
+      deleted. That rule catches all 82 with no false positives across
+      the 289 index entries and 867 H1 lines.
+
+      **20 strings are measured and deliberately NOT repaired**, because
+      each needs a wording decision rather than a deletion. They are
+      listed in the test's `held` set so the green tick is not an
+      all-clear:
+
+        * **338 (zh-CN, zh-TW, index + H1)** — "使徒行传5章的警告" lost its
+          head and reads "章的警告". Deleting 章 alone leaves "的警告",
+          which is ungrammatical; the repair has to drop 的 too, giving
+          "警告". This item previously claimed all three orphan-章 cases
+          "read correctly once 章 goes" — that is true of 343 and EC015,
+          which were repaired, and false of 338.
+        * **042, 043 (en), 046, 047 (en + both zh)** — the residue is a
+          part marker: "Depart from Me, You Evildoers — and (Part 1)".
+          Their Chinese siblings carry a part marker inside the title
+          ("求饼和鱼（上）"), so deleting "(Part 1)" drops something the
+          other locale keeps — but b8258d5's own worked example deleted
+          "(Part A)" along with the reference. **Ask the user which.**
+
+      Also still true and still unscanned by anything: the singular
+      top-level `title` field. 140's reads "22.41-46 Christ as Lord the
+      remedy for hypocricy" — filename-derived, with a reference and a
+      typo in it. Two refuter rounds agree b8258d5 touched 13 of these
+      and left no residue, so this is a pre-existing wart, not damage.
+
+- [x] **SUPERSEDED by the entry above — the original estimate, which
+      said 36 strings in 9 sermons.** It missed 063 and the entire
+      slash shape. Kept for the record of how the count was reached.
+      36 more strings damaged in 9 other
+      sermons, in shapes stranded punctuation cannot detect — 17
       `titles` fields and 19 H1 lines. Raised by the refuter 2026-08-25
       and then measured against `git show
       b8258d5^:assets/sermons/index.json`, so the table is counted, not

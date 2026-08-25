@@ -135,4 +135,101 @@ void main() {
         reason: 'a title reading "— ;" or "; :" lost a reference and kept '
             'its punctuation:\n${offenders.join("\n")}');
   });
+
+  // The other half of the same b8258d5 damage: where the reference was
+  // stripped only PARTLY, what survives is ordinary characters, so the
+  // stranded-punctuation test above cannot see it. "Matthew 24:45-25:30"
+  // became "— 30"; "Matthew 11:30–12:1–8" became "— 1– 8 —"; "约翰福音15章"
+  // became "章"; "(Matthew 18:21-35, Luke 17:3-4)" became "( , )"; and
+  // "Matthew 11:12 / Luke 14:27" — two references joined by a slash —
+  // became a bare "— / —".
+  //
+  // Enumerating shapes is what let this sit for four months — three
+  // separate passes each found a shape the one before had not looked for
+  // — so the rules below work on the SEGMENT a title is built from
+  // rather than on the residue's spelling. A title is "Name — Subtitle"
+  // or "Name — A; B; C"; every segment of it must open with real words.
+  //
+  // `held` is the damage that is measured but deliberately not repaired,
+  // because each needs a wording decision rather than a deletion, and
+  // those are the user's to make (both are in docs/autonomous-queue.md):
+  //
+  //   338     deleting the orphan 章 leaves "的警告", ungrammatical; the
+  //           repair has to drop 的 as well, which is a rewrite.
+  //   042/043/046/047
+  //           the residue is an English part marker, "— and (Part 1)".
+  //           Their Chinese siblings keep a part marker inside the title
+  //           ("求饼和鱼（上）"), so dropping "(Part 1)" loses something
+  //           the other locale keeps — but b8258d5's own worked example
+  //           deleted "(Part A)" along with the reference. Genuinely 50/50.
+  test('no sermon title carries a half-stripped reference', () {
+    const held = {
+      '338/zh-CN', '338/zh-TW',
+      '042/en', '043/en',
+      '046/en', '046/zh-CN', '046/zh-TW',
+      '047/en', '047/zh-CN', '047/zh-TW',
+    };
+    final separators = RegExp(r'[—–;；]');
+    final word = RegExp(r'[A-Za-z㐀-鿿]');
+    // A segment opening with a digit or punctuation is the tail of a
+    // reference whose head was deleted ("— 25: False Spirituality").
+    final leadingFragment = RegExp(r'^\s*[\d/\-‑–,，、:：;；]');
+    // All that is left of "Matthew 7:21-27 and Luke 6:46-49".
+    final bareConjunction =
+        RegExp(r'^\s*(and|or|及|與|与|或)\s*(?:[(（][^)）]*[)）])?\s*$', caseSensitive: false);
+    // "— (Part 1)" with the reference it followed gone.
+    final bracketOnly = RegExp(r'^\s*[(（][^)）]*[)）]\s*$');
+    // A CJK unit word with nothing in front of it to count.
+    final orphanUnit = RegExp(r'(?:^|[—–:：;；,，、(（]\s*)[章節节篇]');
+
+    String? woundIn(String raw) {
+      final s = raw.replaceFirst(RegExp(r'^#+\s*'), '');
+      for (final segment in s.split(separators)) {
+        final t = segment.trim();
+        if (t.isEmpty) continue;
+        if (!word.hasMatch(t)) return 'wordless segment "$t"';
+        if (leadingFragment.hasMatch(segment)) return 'reference tail "$t"';
+        if (bareConjunction.hasMatch(segment)) return 'bare conjunction "$t"';
+        if (bracketOnly.hasMatch(segment)) return 'orphan part marker "$t"';
+      }
+      if (orphanUnit.hasMatch(s)) return 'orphan unit word';
+      return null;
+    }
+
+    final offenders = <String>[];
+
+    final decoded =
+        json.decode(File('assets/sermons/index.json').readAsStringSync());
+    final items = decoded is List
+        ? decoded
+        : (decoded['sermons'] ?? decoded['items']) as List;
+    for (final s in items) {
+      final titles = (s['titles'] as Map?) ?? const {};
+      titles.forEach((locale, value) {
+        if (held.contains('${s['id']}/$locale')) return;
+        final w = woundIn(value as String);
+        if (w != null) offenders.add('index.json ${s['id']}/$locale [$w]: $value');
+      });
+    }
+
+    for (final locale in const ['en', 'zh-CN', 'zh-TW']) {
+      final dir = Directory('assets/sermons/$locale');
+      if (!dir.existsSync()) continue;
+      for (final f in dir.listSync().whereType<File>()) {
+        if (!f.path.endsWith('.txt')) continue;
+        final id = f.uri.pathSegments.last.replaceAll('.txt', '');
+        if (held.contains('$id/$locale')) continue;
+        final first = f
+            .readAsLinesSync()
+            .firstWhere((l) => l.isNotEmpty, orElse: () => '');
+        if (!first.startsWith('#')) continue;
+        final w = woundIn(first);
+        if (w != null) offenders.add('${f.path} [$w]: $first');
+      }
+    }
+
+    expect(offenders, isEmpty,
+        reason: 'a title kept a fragment of the reference that was stripped '
+            'out of it:\n${offenders.join("\n")}');
+  });
 }
