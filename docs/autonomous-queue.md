@@ -5845,17 +5845,60 @@ has never seen this repo.
       through `python3`, not a Dart reimplementation of its regex.
 
 - [ ] **The same chapter-list defect survives when the list is NOT
-      consecutive.** Raised by the refuter 2026-08-25 while checking the
-      fix above. "John 12, 14 and 16 all say this" still yields John
+      consecutive.** "John 12, 14 and 16 all say this" yields John
       12:14, and "Romans 6, 7 and 9" yields Romans 6:7 — 004's and 356's
-      sentences with the chapter word dropped. The counting-on rule
-      cannot see them, and the adjacency rule has already nulled the far
-      number by the time it runs, so nothing downstream knows an `and`
-      was there. Zero occurrences today: all four real counting-on lists
-      in the corpus (164, 221, 247, 356) use a second comma and were
-      already refused. Needs a different discriminator — do NOT reuse
-      "both are plausible chapters", which was measured and rejected
-      above.
+      sentences with the chapter word dropped. Zero occurrences today.
+
+      **Attempted and DELIBERATELY NOT SHIPPED, 2026-08-26. The rule was
+      written, it worked, refs.json was byte-identical — and the refuter
+      killed it anyway. Read this before trying again.** What was tried:
+      keep the `and` tail in `and_last` before the adjacency rule
+      discards it, then refuse when
+      `vbare and ch < verse < and_last - 1 and and_last <= max(CANON)`.
+
+      **The measurement that motivated it is sound and worth keeping.**
+      The corpus holds 187 `verse and <number>` sites: 148 adjacent
+      (genuine ranges) and **39 non-adjacent** — this preacher lists
+      scattered verses constantly. Of those 39, **exactly one drops the
+      unit word and the colon both**, and that one is 004's "John
+      chapters 12, 14 and 16", a chapter list. Every other one is
+      marked: "Psalm 48, verses 1 and 8", "Joshua 10:14 and 42",
+      "Hebrews chapter 9, verses 14 and 26". Bare gapped verse list:
+      **0 of 39**.
+
+      **Why 0-of-39 was not enough.** The base rate describes the
+      sentences that HAPPENED to be spoken; what matters is how wide the
+      rule's firing zone is. Re-measured independently: the corpus holds
+      **20 bare-comma verse matches, and 4 of them ascend from their
+      chapter with room for a gapped tail** — 004 (the chapter list),
+      848's `Matthew 10, 26`, EC013's `Zechariah 2, 5` and 015's
+      `Matthew 5, 10 to 12`. Three genuine verse citations survive the
+      rule only because no gapped `and` happens to follow them. Had 848
+      said "Matthew 10, 26 and 28", the rule would have destroyed
+      Matthew 10:26. Confirmed live: `Matthew 5, 13 and 16 are salt and
+      light` → `Matthew 5` under the rule, `Matthew 5:13` without it,
+      and the canon escape never fires because Matthew has 28 chapters.
+      Same for `Genesis 1, 26 and 28`, `Genesis 2, 7 and 17`,
+      `Jeremiah 1, 5 and 10`. The counting-on rule that DID ship has a
+      firing zone of 0 of 148; this one's is ~16%.
+
+      **Two further corrections to the record.** (a) The old note here
+      said the adjacency rule nulling the tail early is the *cause*.
+      It is not — with both the nulling and the new block removed,
+      "John 12, 14 and 16" gives `John 12:14, 12:15, 12:16`, i.e. worse.
+      No guard covers the gapped bare form at all; the ordering only
+      explains why a fix must keep the tail. (b) refs.json is
+      byte-identical **with the rule and without it**, because 004 is
+      already refused by the spelled-out-chapter-word guard. Identity
+      there is evidence the rule is INERT, not that it is right — and
+      an inert rule cannot be validated by the corpus at all.
+
+      **So this needs data or a decision, not another rule.** Either a
+      real bare gapped VERSE list has to turn up in the corpus to price
+      the trade, or the user decides whether one invented verse is worth
+      three real ones here. Do NOT reuse "both are plausible chapters"
+      (measured and rejected above), and do not fit a threshold such as
+      `and_last - ch <= 4` to 004 — that is one data point.
 
 - [x] **The bare-comma verse is recovered after a chapter word where M
       cannot be a chapter of that book. SHIPPED 2026-08-25 (v1.4.161) —

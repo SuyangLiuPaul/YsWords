@@ -5,7 +5,7 @@ right now and the traps that have already cost real time. The per-item
 work list is `docs/autonomous-queue.md`; this file is the orientation
 above it.
 
-Last updated: 2026-08-25.
+Last updated: 2026-08-26.
 
 **The refuter earns its keep — do not drop it to save a turn.** On
 2026-08-23 it broke a punctuation repair's stated reasoning twice in one
@@ -35,6 +35,14 @@ immediately, record widening and let a later iteration re-derive it** — a
 scripture pass that grows on one round's argument, with nothing yet written
 against it, is how the count outruns the evidence. See trap 38.
 
+**On 2026-08-26 it did the other thing it is for: it killed a change that
+was already green.** Analyze clean, refs.json byte-identical, the measured
+base rate real — and the rule still had to be reverted, because nobody had
+asked what ELSE it would catch (trap 56). A green iteration that commits
+nothing but the reasoning is a good iteration; the alternative was a rule
+that would quietly delete a real citation the first time the preacher put
+an "and" in the wrong place.
+
 ---
 
 ## The app
@@ -60,6 +68,26 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 | dev | `yswords-dev`, `yswords-cn-dev` | **1.4.164** | push freely |
 | qat | `yswords-qat`, `yswords-cn-qat` | **1.4.164** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+**Trap 56: a base rate of zero does not license a rule — the width of
+the firing zone does — and byte-identical output can mean the rule is
+inert rather than right.** A guard against gapped chapter lists ("John
+12, 14 and 16" indexed as John 12:14) was written on a genuinely
+measured 0-of-39: of the 39 non-adjacent `and` verse lists the corpus
+speaks, not one drops the unit word and the colon both. It regenerated
+refs.json byte-identical, and both facts were true. It was still wrong
+to ship. **The base rate describes the sentences that happened to be
+spoken; the exposure is how many existing sites sit one word away from
+the rule.** Here that was 4 of the 20 bare-comma verse matches — 848's
+`Matthew 10, 26` and EC013's `Zechariah 2, 5` survive only because no
+`and` follows them. Compare the counting-on rule that DID ship: 0 of
+148 in its firing zone, not 0 of 39 in a zone holding 16%. And the
+byte-identical result was itself the tell — refs.json is identical with
+the rule AND without it, because the corpus's only instance is already
+refused by another guard, so nothing in the data could ever have
+validated it. **When a change is inert on the corpus, the corpus is not
+evidence for it; say so instead of quoting the md5 as if it were.**
+Ask "what does this rule also catch", not only "what does it catch".
 
 **Trap 55: a factual aside in a queue item becomes the ground truth for
 a later test, so a wrong one is a scripture defect on a delay.** The
