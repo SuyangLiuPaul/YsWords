@@ -6340,9 +6340,57 @@ has never seen this repo.
       writes a splitter — 十六十七 is only unambiguous because 十六 and
       十七 are adjacent, and a general rule here could invent verses.
 
-- [ ] **「<章/篇>N和M节」 parses no verse at all, so eighteen citations
-      of two specific verses are indexed as WHOLE CHAPTERS.** Measured
-      2026-08-26. The verse group at the foot of `REF_RE`
+- [x] **「<章/篇>N和M节」 parses no verse at all, so eighteen citations
+      of two specific verses are indexed as WHOLE CHAPTERS. SHIPPED
+      2026-08-26 — +11 −18, and all eighteen removals are the bare
+      chapter keys themselves.** `_CN_CHAPTER_VERSE_PAIR_RE` is matched
+      in `extract_refs` against the text starting at `m.end("chmark")`,
+      so one rule anchored on the 章/篇 mark covers BOTH spellings —
+      the visible one that fails REF_RE's Chinese branch outright and
+      the 第-marked one that matches the explicit-separator branch and
+      drops its second verse silently. Two endpoints, never a span.
+
+      **Every removal is a narrowing, not a loss, and both readers were
+      checked in the Dart rather than taken from this file.** Each of
+      the eighteen bare keys is replaced by two exact verse keys in the
+      same chapter: 344 `Psalms 48` → `48:1` + `48:8`, 353 `Matthew 5`
+      → `5:29` + `5:30`, EC010 `Revelation 13` → `13:16` + `13:17`, and
+      so on. `PassageFilter.matchesRefKey` returns early `true` for a
+      colon-less key, so the Sermons page stops answering a filter on
+      Psalms 48:3 with a sermon that opens verses 1 and 8 — that IS the
+      fix. `sermonsForVerse` counts any key under `'Psalms 48:'` as a
+      chapter hit, so the reading pane loses nothing and gains two
+      exact hits. The eleven additions are second verses nothing else
+      reached: 239 1 John 2:22, 325 Hebrews 9:26, 331 Hebrews 5:14 /
+      John 4:34 / Revelation 3:10, 344 Exodus 14:25 / Psalms 48:8, plus
+      011 John 6:58, 093 Psalms 22:29, 326 John 12:34, 846 Mark 9:45.
+
+      **The refuter broke two of the five claims and shrank the change.**
+      (a) The firing count was 136 by my instrumentation and is **142**
+      — 39 sermons, zh-CN 73 / zh-TW 69, none English, 27 with a gap
+      wider than one verse. Re-measured independently before the number
+      was written down. (b) The code comment said the guards that null a
+      verse cannot be undone *because they test the chapter mark*. Three
+      of the five do not test it. The conclusion survives on a stronger
+      reason — the separators are disjoint, `vbare` needing an ASCII
+      comma and `vand` the English word — and 0 of the 142 firings has
+      either set. The comment now says the true reason and records that
+      the first one was the comfortable one. (c) Two lines advancing
+      `prev` and `pos` past the pair were reverted: measured inert
+      (refs.json byte-identical with and without, independently), and
+      the `prev` one newly let `_RANGE_LINK` fire across a pair, so on
+      「诗篇48篇1和8节到诗篇48篇12节」 it would have invented 48:9–11.
+      Trap 56 — inert means the corpus cannot validate it, so it goes.
+
+      Five cases in `test/sermon_ref_extraction_test.dart`, and one of
+      them was vacuous first time: the three-item-list case was written
+      with 344's own 「历代志下20章8、29和32节」, which yields nothing at
+      all because 历代志下 is one of the ~90 missing aliases below. It
+      now uses 马太福音 and asserts the pair form alongside, so the 、 is
+      pinned as the thing doing the refusing.
+
+      Original text of this item follows. The verse group at the foot of
+      `REF_RE`
       (`scripts/extract_sermon_refs.py`, the `v2`/`vcn2` branch) wants
       its number flush against 節/节; 和 breaks that, the whole optional
       group fails, and the match degrades to a bare chapter key. The
@@ -6399,6 +6447,17 @@ has never seen this repo.
       book gets filed under its neighbour. Generate it from the Dart
       file and assert in the test that the two agree, so the next
       spelling added to the app cannot silently miss the index.
+
+      Priced a second way, 2026-08-26, while shipping the 「章N和M节」
+      repair above: of that shape's **215** occurrences in the corpus,
+      **73 never reach the extractor at all** because the book name in
+      front of them resolves to nothing — 提摩太后书, 利未记, 申命记,
+      歌罗西书, 以赛亚书, 以西结书, 加拉太书. So a repair to the citation
+      grammar buys about two-thirds of its class and this gap eats the
+      rest, which makes this item worth more than its own +57 suggests.
+      It also cost a vacuous test: the three-item-list case was first
+      written with 344's real 「历代志下20章8、29和32节」 and passed
+      whatever the rule did, because 历代志下 yields `[]`.
 
 - [ ] **The zh-TW transcripts spell Revelation 啓示錄 with the 啓 variant
       (U+5553), and the alias table only has 啟 (U+555F) — so Revelation

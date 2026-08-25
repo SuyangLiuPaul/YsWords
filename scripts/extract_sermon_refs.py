@@ -418,6 +418,15 @@ _CN_VERSE_PAIR_RE = re.compile(
     rf"\s*[和与與及]\s*第?\s*(?:\d+|{_CN_NUM_RE})\s*[節节]")
 
 
+# 「<章/篇>N和M节」 — two verses of the chapter the mark just closed.
+# Applied against the text after the chapter mark by `extract_refs`; the
+# reasoning is there. Both numbers are endpoints, never a span.
+_CN_CHAPTER_VERSE_PAIR_RE = re.compile(
+    rf"\s*第?\s*(?:(?P<p1>\d+)|(?P<p1cn>{_CN_NUM_RE}))"
+    rf"\s*[和与與及]\s*第?\s*"
+    rf"(?:(?P<p2>\d+)|(?P<p2cn>{_CN_NUM_RE}))\s*[節节]")
+
+
 # A number that belongs to the following unit, not to scripture:
 # "Deuteronomy 43 times", "Is 50% enough?". Shared by `_UNIT_AFTER`
 # below and by the bare-comma verse guard inside REF_RE, so the two
@@ -720,6 +729,7 @@ def extract_refs(text: str) -> list[str]:
             ch = cn_number(m.group("chcn"))
             if ch is None:
                 continue
+        pair_verses = False
         verse = _int(m.group("v") or m.group("v2"),
                      m.group("vcn") or m.group("vcn2"))
         last = _int(m.group("vend") or m.group("vend2"),
@@ -846,6 +856,48 @@ def extract_refs(text: str) -> list[str]:
                 and verse == ch + 1 and last == verse + 1
                 and last <= max(CANON.get(canon, {0}))):
             verse = last = None
+        # 「<章/篇>N和M节」 — 344's 「诗篇48篇1和8节」, 149's 「罗马书第12章
+        # 第1和第2节」. REF_RE's verse group wants its number flush against
+        # 節/节 and 和 breaks that, so the whole optional group fails and
+        # the match degrades to a bare chapter key — which is not a weaker
+        # verse key but a WIDER one, matching every verse of the chapter
+        # in passage_filter.dart. Recovered here rather than in the
+        # pattern because the two spellings land in different branches:
+        # 「篇1和8节」 fails the Chinese branch outright, while 「章第1和第2
+        # 节」 matches the explicit-separator branch, keeps verse 1 and
+        # drops verse 2 silently. One rule anchored on the chapter mark
+        # covers both.
+        #
+        # Two ENDPOINTS, never a span. 「第1和8节」 names verses 1 and 8;
+        # walking them would file the sermon under six verses nobody
+        # mentioned. That is also why the obvious repair — letting 和
+        # close REF_RE's verse group — is worse than nothing: measured, it
+        # is −18 +0, because every first verse of every pair is already
+        # indexed elsewhere and the second verses are what is missing.
+        #
+        # The 章/篇 mark is the whole of the evidence, and it has to be:
+        # without it 「哥林多後書第11和12章」 (357) is a CHAPTER pair, and
+        # 009's 「同一诗篇第九和第十节」 is two verses of a psalm whose
+        # number is nowhere in the sentence. Both are handled above and
+        # neither reaches here, because neither carries a mark on the
+        # number this rule reads as the chapter.
+        #
+        # It runs last, after every guard that nulls a verse, and cannot
+        # undo one. Not because those guards test the mark — the `vand`
+        # and `vbare` guards do not — but because their separators are
+        # disjoint from this one's: `vbare` needs an ASCII comma and a
+        # space where this needs 第 or a digit flush against the mark,
+        # and `vand` needs the English word. Measured: of the 142
+        # firings, none has `vand` or `vbare` set. The first draft of
+        # this comment claimed the mark was what kept them apart, which
+        # was a comfortable reason rather than the true one.
+        pair = (_CN_CHAPTER_VERSE_PAIR_RE.match(text, m.end("chmark"))
+                if m.group("chmark") is not None else None)
+        if pair is not None:
+            first = _int(pair.group("p1"), pair.group("p1cn"))
+            second = _int(pair.group("p2"), pair.group("p2cn"))
+            if first is not None and second is not None:
+                verse, last, pair_verses = first, second, True
         if ch <= 0 or ch > 200:
             continue
         # "the first letter of John, chapter 2" is 1 John, and the bare
@@ -886,17 +938,22 @@ def extract_refs(text: str) -> list[str]:
         # passage_filter.dart has always described the index as one key
         # per verse; this is the extractor finally writing that.
         span = [(ch, verse)]
-        # 200 verses is more than any real citation and stops a misread
-        # pair of numbers from filing a sermon under half a book.
-        far_ch, far_v = ch, last
-        if m.group("echv") is not None and last is not None:
-            far_ch = last
-            far_v = int(m.group("echv2") or m.group("echv"))
-        if (verse is not None and far_v is not None
-                and (far_ch, far_v) > (ch, verse)):
-            walked = list(_walk(canon, ch, verse, far_ch, far_v))
-            if len(walked) <= 200:
-                span = walked
+        if pair_verses:
+            if last != verse and exists(canon, ch, last):
+                span.append((ch, last))
+        else:
+            # 200 verses is more than any real citation and stops a
+            # misread pair of numbers from filing a sermon under half a
+            # book.
+            far_ch, far_v = ch, last
+            if m.group("echv") is not None and last is not None:
+                far_ch = last
+                far_v = int(m.group("echv2") or m.group("echv"))
+            if (verse is not None and far_v is not None
+                    and (far_ch, far_v) > (ch, verse)):
+                walked = list(_walk(canon, ch, verse, far_ch, far_v))
+                if len(walked) <= 200:
+                    span = walked
         # A range the preacher stated as two whole citations.
         if (prev is not None and prev[0] == canon and verse is not None
                 and (ch, verse) > (prev[1], prev[2])

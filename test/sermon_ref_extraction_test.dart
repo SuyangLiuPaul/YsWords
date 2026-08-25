@@ -301,7 +301,61 @@ void main() {
     // chapter, so the refusal must not reach 149's shape.
     test('leaves a marked chapter alone', () {
       expect(_extractRefs('使徒保罗在罗马书第12章第1和第2节说我们必须'),
-          ['Romans 12:1']);
+          ['Romans 12:1', 'Romans 12:2']);
+    });
+  });
+
+  group('「<章/篇>N和M节」 names two verses, not a whole chapter', () {
+    // The defect: REF_RE's verse group wants its number flush against
+    // 節/节 and 和 breaks that, so the match degraded to a BARE chapter
+    // key — which `PassageFilter.matchesRefKey` treats as matching every
+    // verse of the chapter. 344 cites Psalm 48:1 and 48:8 and answered a
+    // filter on 48:3.
+    test('the unmarked spelling yields both verses and no chapter key', () {
+      expect(_extractRefs('圣城、神的城是他特别的产业。我们在诗篇48篇1和8节看到'),
+          ['Psalms 48:1', 'Psalms 48:8']);
+    });
+
+    // The gap is the whole reason these are endpoints. Walking 1→8
+    // would file the sermon under six verses nobody mentioned, which is
+    // the failure this repo cannot afford.
+    test('a gapped pair is two endpoints, never a span', () {
+      final got = _extractRefs('你们有例如出埃及记第14章14和25节，神为他的子民争战');
+      expect(got, ['Exodus 14:14', 'Exodus 14:25']);
+      expect(got, isNot(contains('Exodus 14:15')));
+    });
+
+    // 331 writes one number as a digit and the other as a numeral in
+    // the same citation. Both halves of the pair go through `_int`.
+    test('reads a digit and a Chinese numeral in the same pair', () {
+      expect(_extractRefs('也在罗马书十五章13和十四节。让我们读这段经文'),
+          ['Romans 15:13', 'Romans 15:14']);
+    });
+
+    // A list — three numbers with a 、 before the 和 — must not be read
+    // as a pair. Both halves are asserted because only the pair proves
+    // the 、 is what does the refusing rather than something upstream.
+    //
+    // Written with 马太福音 rather than 344's own
+    // 「历代志下20章8、29和32节」: 历代志下 is one of the ~90 Chinese book
+    // names missing from the script's alias table, so the real sentence
+    // yields nothing at all and would have passed no matter what this
+    // rule did. That gap is queued separately.
+    test('refuses a three-item list', () {
+      final got = _extractAll([
+        '马太福音5章8、29和32节。就这样一直列下去',
+        '马太福音5章29和32节。就这样一直列下去',
+      ]);
+      expect(got[0], ['Matthew 5']);
+      expect(got[1], ['Matthew 5:29', 'Matthew 5:32']);
+    });
+
+    // Without the mark, 「第九和第十节」 is two verses of a psalm whose
+    // number is nowhere in the sentence (009 means Psalm 42), and the
+    // refusal above must keep it. Pinned here because this rule reads
+    // the same 和 and would file `Psalms 9` if it ever reached it.
+    test('does not reach an unmarked pair, which stays refused', () {
+      expect(_extractRefs('同一诗篇第九和第十节说：我要对神我的磐石说'), isEmpty);
     });
   });
 

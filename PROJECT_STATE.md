@@ -69,6 +69,21 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 | qat | `yswords-qat`, `yswords-cn-qat` | **1.4.165** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
+**Trap 58: an inert line is not a free line — it is an unpriced one, and
+"it cannot hurt" is the sentence to distrust.** The 「章N和M节」 repair
+(2026-08-26) advanced `prev` and `pos` past the recovered verse pair,
+which is *tidier*: the next citation's range-link should surely measure
+from the end of what was read, not the middle. Reverting both lines
+independently reproduced refs.json byte-for-byte, so the corpus had
+nothing to say about them either way. What the refuter said instead was
+what they would do on text the corpus does not happen to contain:
+`prev[3] = pair_end` newly lets `_RANGE_LINK` reach across the pair, so
+「诗篇48篇1和8节到诗篇48篇12节」 would have invented 48:9, 48:10 and 48:11.
+Trap 56 in the other direction — there, inertness was quoted as evidence
+FOR a rule; here it was the reason there was no evidence at all. Both
+times the answer is the same: **when a change moves nothing, delete it
+and say why, rather than shipping it because it is obviously right.**
+
 **Trap 57: a bare chapter key in `refs.json` is not a weaker verse key —
 it matches EVERY verse in the chapter, and the queue's own reassurances
 are measurements nobody re-ran.** Two lessons from the same iteration
