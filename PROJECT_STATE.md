@@ -57,9 +57,27 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.157** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.157** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.158** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.158** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.158 makes a verse spelled as a bare comma-separated number reach
+that verse instead of only its chapter — "that is why in Romans 13, 9,
+when speaking about the central issue of the law" (C174) and "2
+Corinthians 4, 18. The last verse of the chapter" (EC013) are how this
+preacher restates a reference he has just read out. 6 (sermon, key)
+pairs added, 0 verse-level keys removed; 13 chapter-only keys become
+verse keys, which loses no reachability because `sermonsForVerse`
+prefix-matches and 1,882 (sermon, chapter) pairs were already
+verse-only. The form carries no word saying "verse", so it is admitted
+only under four refusals, each drawn from a real sentence in the corpus:
+a further comma-number is a chapter list ("Matthew 23, 24, 25. They are
+one unit of the Lord's teaching"), a spelled-out chapter word ahead of
+the number is declined outright ("John chapters 12, 14 and 16"), a unit
+word after it is a count, and an ordinal past the comma belongs to the
+book it introduces. **`(?!\d)` is what makes the first guard work** —
+without it `\d+` backtracks, "Matthew 23, 24" matched its verse as the
+bare `2`, and the guard then inspected "4, 25" and passed.
 
 v1.4.157 stops 62 sermon titles showing a fragment of the Bible
 reference that was deliberately deleted from them — "The Parables of the

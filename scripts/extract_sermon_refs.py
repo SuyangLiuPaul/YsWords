@@ -274,6 +274,13 @@ def cn_number(s: str) -> int | None:
     return n if 0 < n < 200 else None
 
 
+# A number that belongs to the following unit, not to scripture:
+# "Deuteronomy 43 times", "Is 50% enough?". Shared by `_UNIT_AFTER`
+# below and by the bare-comma verse guard inside REF_RE, so the two
+# cannot drift apart.
+_UNIT_WORDS = (r"(?:times?|years?|days?|hours?|minutes?|weeks?|months?|"
+               r"words?|percent)\b|%")
+
 # A full reference. Beyond `<book> <chapter>:<verse>` this also reads the
 # spelled-out prose these transcripts actually use — "Ezekiel chapter 13
 # verses 10 and 16", 「以西結書第13章10節」, 「雅歌一章二節」 — because a
@@ -298,9 +305,58 @@ REF_RE = re.compile(
     rf"(?:"
     # An explicit separator carries the verse: "17:3", "chapter 10,
     # verse 19", 「第13章第10節」.
-    rf"\s*[,，、]?\s*(?:and\s+)?"
+    rf"(?:\s*[,，、]?\s*(?:and\s+)?"
     rf"(?:[:：.]|verses?\s+|vv?\.\s*|第\s*)\s*"
+    # …or nothing but a comma and a space. "Romans 13, 9, when speaking
+    # about the central issue of the law" (C174) and "Romans 8, 3, says
+    # what?" (C175) are how this preacher restates a reference he has
+    # just read out, and both reached only their chapter. The space is
+    # load-bearing: it is what tells a verse from a thousands separator,
+    # so "the Apostle John 2,000 years ago" (EC010) cannot become a
+    # citation. ASCII comma only, because every one of the 19 sites of
+    # this shape in the corpus is in an English transcript and a
+    # fullwidth comma with a space after it is not how the Chinese ones
+    # are written — an unmeasured miss is preferred to an invention.
+    # A spelled-out chapter word ahead of the number is what makes a
+    # following bare number readable as ANOTHER CHAPTER, so this form
+    # declines them all. "John chapters 12, 14 and 16" (004) is a list
+    # of three chapters and became John 12:14, a verse that exists and
+    # that the sermon never opens.
+    #
+    # Restricting the refusal to the plural was tried and is not
+    # defensible: "Mark chapter 7, 21" (013) and "Hebrews chapter 2, 14
+    # and 15" (848) are genuine only because Mark has 16 chapters and
+    # Hebrews 13, so the far number cannot be one — an accident of those
+    # two books, not a rule. "Romans chapter 8, 1 and 2" (356) is in the
+    # same corpus with a singular word and a far number that IS a
+    # plausible chapter of Romans; it happens to be verses, and nothing
+    # in its shape says so. Losing 848's Hebrews 2:14-15 is the price.
+    # "as we saw in Genesis 1, 2 Peter tells us…" — the 2 is the ordinal
+    # of the NEXT book. Same lookahead the chapter position already uses, for
+    # the same reason: refuse in the pattern so the engine retries from
+    # the 2 and finds 2 Peter, rather than consuming it as a verse.
+    rf"|(?P<vbare>(?(chcomma)(?!))(?(chword)(?!))"
+    rf",\s+(?![1-3]\s+{NUMBERED_TAIL_RE}\b)(?=\d))"
+    rf")"
     rf"(?:(?P<v>\d+)|(?P<vcn>{_CN_NUM_RE}))"
+    # Two guards that apply only to the bare-comma form, because it is
+    # the only one with no word in it saying "this is a verse".
+    #
+    # A third comma-separated number makes the whole thing a list of
+    # CHAPTERS: "Matthew 23, 24, 25. They are one unit of the Lord's
+    # teaching" (247) and "in Romans 6, 7, and 8, we have three distinct
+    # categories" (356). Both would otherwise have been indexed as
+    # Matthew 23:24 and Romans 6:7 — verses that exist, so the canon
+    # check cannot catch them. "2 Peter 2, 7 and 8" (009) keeps its
+    # range because there is no comma before the `and`.
+    #
+    # And a unit word after the number means it was never scripture.
+    #
+    # `(?!\d)` is not decoration: without it `\d+` backtracks and the
+    # guard is worthless. "Matthew 23, 24, 25" gave up its second digit
+    # and matched the verse as `2`, whose lookahead then saw "4, 25"
+    # and passed — Matthew 23:2, from a sentence naming three chapters.
+    rf"(?(vbare)(?!\d)(?!\s*,\s*(?:and\s+)?\d)(?!\s*(?i:{_UNIT_WORDS})))"
     # "verses 20 and 21" is a two-verse RANGE, but "verses 12, 14 and 15"
     # is a list and walking it would invent verse 13. `vand` marks the
     # `and` so extract_refs can demand the two be adjacent, which is the
@@ -367,9 +423,7 @@ ONE_CHAPTER = {"Obadiah", "Philemon", "2 John", "3 John", "Jude"}
 # `%\b` only matches when a LETTER follows it, and "Is 50% enough?" —
 # sermon 424, the verb `is` plus a percentage — reached the index as
 # Isaiah 50.
-_UNIT_AFTER = re.compile(
-    r"\s*(?:(?:times?|years?|days?|hours?|minutes?|weeks?|months?|"
-    r"words?|percent)\b|%)", re.IGNORECASE)
+_UNIT_AFTER = re.compile(rf"\s*(?:{_UNIT_WORDS})", re.IGNORECASE)
 
 _CJK = re.compile(r"[\u4e00-\u9fff]")
 

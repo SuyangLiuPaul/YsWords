@@ -253,6 +253,79 @@ void main() {
     expect(keys('009').where((k) => k.startsWith('2 Peter 3')), isEmpty);
   });
 
+  // "Romans 13, 9" is how this preacher restates a reference he has
+  // just read out, and until 2026-08-25 it reached only Romans 13. The
+  // form has no word in it saying "verse", so it is admitted only under
+  // four refusals — each one below is a real sentence in the corpus
+  // that would otherwise file a sermon under a passage it never opens.
+  test('a bare comma carries a verse, but only where nothing else fits',
+      () {
+    final bySermon = (refs['bySermon'] as Map).cast<String, dynamic>();
+    List<String> keys(String id) => (bySermon[id] as List).cast<String>();
+
+    // C174: "that is why in Romans 13, 9, when speaking about the
+    // central issue of the law, Paul does not even mention the first
+    // part" — Romans 13:9 lists only the neighbour-facing commandments,
+    // which is exactly the point being made.
+    expect(keys('C174'), contains('Romans 13:9'));
+    expect(keys('C174'), contains('Galatians 5:14'));
+    // EC013 verifies itself: "2 Corinthians 4, 18. The last verse of the
+    // chapter" — and 2 Corinthians 4 ends at verse 18.
+    expect(keys('EC013'),
+        containsAll(['2 Corinthians 4:18', 'Deuteronomy 33:27']));
+
+    // Refusal 1 — a third comma-number makes it a list of CHAPTERS.
+    // 247: "Matthew 23, 24, 25. They are one unit of the Lord's
+    // teaching." Matthew 23:24 exists, so the canon check cannot catch
+    // this; only the lookahead can. The `(?!\d)` that stops `\d+`
+    // backtracking is load-bearing here — without it the verse matched
+    // as the bare `2` of "24" and the guard saw "4, 25" and passed.
+    expect(keys('247'), isNot(contains('Matthew 23:24')));
+    expect(keys('247'), isNot(contains('Matthew 23:2')));
+    // The corpus's other instance of this shape — 356's "in Romans 6,
+    // 7, and 8, we have three distinct categories" — is NOT asserted,
+    // because that sermon says "chapter 6, verse 7" elsewhere and the
+    // invention would be masked at index level. 247 is the one that
+    // discriminates.
+
+    // Refusal 2 — a spelled-out chapter word ahead of the number is
+    // what makes a following bare number readable as another chapter.
+    // 004: "which Jesus already acknowledges in John chapters 12, 14
+    // and 16" — three chapters, and it became John 12:14.
+    expect(keys('004'), isNot(contains('John 12:14')));
+    // The refusal covers the singular too, deliberately: 356's "Romans
+    // chapter 8, 1 and 2" has a singular word and a far number that IS
+    // a plausible chapter of Romans, so nothing in its shape says which
+    // it is. Those verses reach the index by their explicit citation
+    // one sentence earlier, not by this branch.
+    expect(keys('356'), containsAll(['Romans 8:1', 'Romans 8:2']));
+
+    // Refusal 3 — a thousands separator is not a citation: EC010's "the
+    // Apostle John 2,000 years ago said the day is coming". Not
+    // asserted either, and deliberately so: the mandatory space after
+    // the comma refuses it, but "2,000" would yield verse 0 and the
+    // canon check would drop it anyway, so an index-level assertion
+    // would pass with the space requirement deleted. The space earns
+    // its place against "1,500"-shaped numbers, which do not occur.
+
+    // Refusal 4 — "as we saw in Genesis 1, 2 Peter tells us…": the 2 is
+    // the ordinal of the NEXT book. This one has zero occurrences in
+    // the corpus, so no assertion over refs.json can pin it and a
+    // corpus-only test would pass with the guard deleted. It is pinned
+    // at source instead: the bare-comma branch must carry the same
+    // ordinal lookahead the chapter position uses.
+    final src = File('scripts/extract_sermon_refs.py').readAsStringSync();
+    final start = src.indexOf(r'(?P<vbare>');
+    expect(start, isNot(-1),
+        reason: 'the bare-comma verse branch must still be named vbare');
+    // The branch is spelled across two adjacent Python literals, so this
+    // reads a window rather than trying to match balanced parentheses.
+    final vbare = src.substring(start, start + 200);
+    expect(vbare, contains(r'(?![1-3]\s+{NUMBERED_TAIL_RE}\b)'),
+        reason: 'without this an ordinal is consumed as a verse and the '
+            'book it introduces is lost');
+  });
+
   // A book name is sometimes an ordinary word, and the number after it
   // is then an ordinal label rather than a chapter. Both members below
   // put a sermon under a passage it never opens, which is the one thing

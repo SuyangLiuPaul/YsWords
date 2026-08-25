@@ -5720,7 +5720,7 @@ has never seen this repo.
       `b8258d5`'s intent was to strip *verse references* and not
       ordinal labels before acting.
 
-- [ ] **"Romans 13, 9" and "Romans 8, 3" — a verse given as a bare
+- [x] **"Romans 13, 9" and "Romans 8, 3" — a verse given as a bare
       comma-separated number — reaches only its chapter.** C174 reads
       "that is why in Romans 13, 9, when speaking about the central
       issue" and C175 "Romans 8, 3, says what?"; both index the chapter
@@ -5731,6 +5731,98 @@ has never seen this repo.
       measuring the ordinary-word-alias class; **measure how many
       "Book N, M" pairs in the corpus are NOT verses before writing
       anything**, because this is exactly the shape trap 20 punishes.
+
+      **FIXED 2026-08-25, and the tell this item proposed was the wrong
+      one.** Measured, "a trailing comma with M a valid verse of N" is 6
+      sites and **2 of the 6 are chapter lists**: 247's "Matthew 23, 24,
+      25. They are one unit of the Lord's teaching" and 356's "in Romans
+      6, 7, and 8, we have three distinct categories". A trailing comma
+      discriminates nothing. What does is a lookahead for a FURTHER
+      comma-number.
+
+      16 sites survive all four refusals; the branch adds **6 (sermon,
+      key) pairs and removes 0 verse-level keys**. 13 chapter-only keys
+      disappear because the same match now yields the verse instead —
+      every one still answers a reader in that chapter, since
+      `sermonsForVerse` matches `key.startsWith('Book N:')`, and 1,882
+      (sermon, chapter) pairs in the index were already verse-only. The
+      index stops claiming C174 preached the whole of Romans 13 when the
+      transcript says "Romans 13, 9".
+
+      **Four refusals, each from a real sentence in the corpus.** A
+      further comma-number is a chapter list (247, 356). A spelled-out
+      chapter word ahead of the number is refused outright — 004's "John
+      chapters 12, 14 and 16" became John 12:14. A unit word after the
+      number is a count. An ordinal past the comma belongs to the book
+      it introduces.
+
+      **`(?!\d)` is the load-bearing character.** Without it `\d+`
+      backtracks: "Matthew 23, 24, 25" gave up its second digit, matched
+      the verse as `2`, and the list guard then looked at "4, 25" and
+      passed. Matthew 23:2 exists, so the canon check could not catch
+      it. Pinned by `test/sermon_refs_resolve_test.dart`, which fails on
+      the old index.
+
+      **Two refuter rounds, and round two changed the shape of the
+      fix.** Round one showed a plural-"chapters" tell was luck, not
+      logic: "Mark chapter 7, 21" and "Hebrews chapter 2, 14 and 15" are
+      genuine only because Mark has 16 chapters and Hebrews 13, so the
+      far number cannot be one. 356's "Romans chapter 8, 1 and 2" has a
+      singular word and a far number that IS a plausible chapter. So the
+      refusal covers singular too, at the price of 848's Hebrews
+      2:14-15. Round two then argued the 13 chapter-key removals were a
+      regression in `PassageFilter.matchesRefKey`, whose `colon == -1`
+      branch widens a chapter key to every verse in it — correct about
+      the mechanism, wrong about the verdict: that widening is
+      documented as "someone who preached through all of John 17
+      preached verse 3", and these sermons did not preach the chapter.
+
+- [ ] **C175 is filed under 1 Corinthians 10:4 while expounding 2
+      Corinthians 10:4-5, and the fix above promotes the error from a
+      chapter hit to an exact one.** The transcript reads "In 1
+      Corinthians 10, 4, Paul says, that we, the weapons of our warfare,
+      are powerful, to the pulling down, of strongholds" — those words
+      are 2 Corinthians 10:4-5, and "a complete change, of the way of
+      thinking" just before is 10:5's taking every thought captive. 1
+      Corinthians 10:4 is the Rock in the wilderness, which this sermon
+      never opens.
+
+      The misfiling is older than the fix — the index already held
+      `C175 → 1 Corinthians 10` — but it was a `chapterHit`, ranked
+      below every verse-exact sermon, and it is now an `exactHit` at the
+      head of the list for a reader sitting on 1 Corinthians 10:4.
+      Raised by the refuter 2026-08-25.
+
+      **Do not guess which the preacher said.** Either he misspoke or
+      the transcriber dropped the ordinal; nothing in the text settles
+      it, and the argument works either way. Needs the audio, which is
+      on the T7 — same class as the CP18 item above.
+
+- [ ] **"Matthew 5, 6 and 7 are the Sermon on the Mount" would index
+      two verses, and the guard cannot see it.** The chapter-list
+      refusal looks for a further COMMA-number; a list whose second
+      separator is a bare `and` walks straight past it, and the
+      adjacency rule then makes 6 and 7 a two-verse range. Zero
+      occurrences in the corpus today, and it cannot be closed by
+      refusing `Book N, M and M+1` — that is the exact shape of 009's
+      "2 Peter 2, 7 and 8", 327's "1 Corinthians 15, 53 and 54" and
+      353's "Matthew 5, 29 and 30", all genuine. Raised by the refuter
+      2026-08-25. A rule that refuses only when M and M+1 are BOTH
+      plausible chapters of that book would separate them — it keeps all
+      three above and kills the invented case — but it also kills 015's
+      "Matthew 5, 10 to 12", so measure the whole-corpus effect first.
+
+- [ ] **The bare-comma verse could be recovered after a singular
+      chapter word, where M cannot be a chapter of that book.** The fix
+      above declines every `Book chapter N, M` because "Romans chapter
+      8, 1 and 2" is unreadable from its shape alone. Where M exceeds
+      the book's chapter count that ambiguity does not exist: "Mark
+      chapter 7, 21" (Mark has 16) and "Hebrews chapter 2, 14 and 15"
+      (Hebrews has 13) are unambiguous, and the second is the only thing
+      the current refusal actually costs — 848's Hebrews 2:14-15, which
+      that sermon reaches nowhere else. Cheap and principled; left
+      undone because it WIDENS the pass, and PROJECT_STATE's rule is to
+      record widening and let a later iteration re-derive it.
 
 - [ ] **`CP18` says "You can from the Mark 7th chapter 7" and is filed
       under `Mark 7`.** The sentence before is "the end of Matthew
