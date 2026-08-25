@@ -6094,19 +6094,181 @@ has never seen this repo.
       Do not reuse the adjacency rule here — these are two citations,
       so the verses BETWEEN them were never named.
 
-- [ ] **`REF_RE`'s leading `\b` is inert against Chinese, so a book name
-      run onto the previous word never matches at all.** 144 writes
+- [x] **`REF_RE`'s leading `\b` is inert against Chinese, so a book name
+      run onto the previous word never matched at all — fixed
+      2026-08-25, +97 (sermon, key) pairs of 5,209, −0.** 144 writes
       「在马太福音2:13，12:14，21:41」 and 「在」 is a word character to
-      Python's `\b`, so there is no boundary before 「马」 and the whole
-      citation — not just the list carry — is invisible. Measured by the
-      refuter 2026-08-25: **2 of the 8 Chinese full-name list sites are
-      blocked this way**, and both are recovered from the same sermon's
-      English body, so nothing is lost from the shipped index today.
-      That is luck, not design: an English-less sermon would lose the
-      lot. The fix is a Chinese-aware boundary, which touches every
-      Chinese match in the corpus — measure the whole-corpus effect
-      before touching it, and expect it to be much larger than this
-      item.
+      Python's `\b`, so there was no boundary before 「马」 and the whole
+      citation — not just the list carry — was invisible.
+
+      **The boundary could not simply be dropped, and the measurement
+      is the whole story.** A plain `(?<![0-9A-Za-z_])` adds **743**
+      pairs, **616 of them Joshua**, because 「书」 is the standalone
+      alias for Joshua *and* the last character of 腓立比书 / 以弗所书 /
+      歌罗西书 / 罗马书 / 以赛亚书 and every other Chinese epistle name.
+      **1,906** of the match sites the drop opens are 书/書 ones, nearly
+      all of them a longer book name's tail that `\b` was the only thing
+      refusing. `\b` was shielding a defect nobody had written down.
+      (An earlier draft of this note said **743** and read as though all
+      1,906 sites were book tails. Re-measured 2026-08-25: the drop with
+      the infix guards inert is **742** — 743 is reproducible under no
+      reading of "dropped" — and a few dozen of the 1,906 follow 的 /
+      一 / 经 rather than a book name.)
+
+      What ships is `BOOK_START_RE`: either a real word boundary, or a
+      CJK alias of **at least three characters** preceded by a CJK
+      character. Note carefully — refuted and corrected 2026-08-25 — the
+      *three* is not what holds Joshua back: 书, 書, 传, 歌 are all ONE
+      character, so any minimum above one excludes them. The third
+      character buys only the two-character abbreviations, and that is a
+      near-even trade rather than a clear win (see the item below). All
+      37 survivors at three are unambiguous full names. The relaxed
+      branch sets an empty named group `infix`, so `extract_refs` can
+      tell a citation that had a boundary in front of it from one that
+      did not.
+
+      **Four false additions the relaxation would have introduced, each
+      refused with its own measured guard.** (1) A lone Chinese numeral
+      is not a chapter — 一段 / 一直 / 一开始 are ordinary words whose
+      first character is also the numeral one; the infix branch now
+      needs a digit, a 第/章 or a verse. 3 sites, all false. (2) 節 says
+      the number is a VERSE, so it is not the chapter — 016's
+      「在马太福音第十八节」 files nothing rather than guessing Matthew 18;
+      one-chapter books exempt, which is how 012 and 023 stay right.
+      (3) 「第二次」 is "a second TIME": `(?!次)`. (4) A verse may not
+      backtrack a digit to slip past `(?!\s*[章篇])` — 385 stutters
+      「第12章，第12章第10節」 and was filed under 2 Corinthians 12:1;
+      `(?!\d)`, hoisted out of the bare-comma conditional and applied to
+      every form.
+
+      Guard (3) is `次` **alone**, and the reason is minimality, not
+      harm: guarding all thirteen measure words first drafted (次 回 个
+      個 点 點 条 條 位 格 句 段 天) instead moves the index by **+0 −0**,
+      so the other twelve are free — they simply never follow a verse
+      number here. Free is not a reason to carry them, and each begins
+      commonest words in the language (回答, 個人, 點明, 條件, 位格), so
+      the day one does follow a verse number it is as likely to be prose
+      as a measure word. Only 次 has evidence: 3 sites, all 「第二次」.
+      (An earlier draft of this note claimed the other twelve *would*
+      have demoted explicit 「書C:V」 citations — refuted 2026-08-25 by
+      direct measurement. The counter-examples that suggested it were
+      constructed sentences, not corpus ones.)
+
+      Nine cases in `test/sermon_ref_extraction_test.dart`. Two of the
+      first draft's Joshua cases were VACUOUS — the canon check caught
+      them anyway (Joshua 1 has 18 verses), so they passed with the
+      guard removed; replaced with corpus sentences whose Joshua targets
+      actually exist (2:5-11, 4:22-24, 11:4).
+
+- [ ] **Lower the CJK infix minimum from three characters to two — it
+      is worth +3 correct entries and costs 1 wrong one, and the wrong
+      one is separately fixable.** Measured 2026-08-25 against the
+      shipped index: `len(a) >= 2` in `build_cjk_infix_book_pattern()`
+      adds exactly four pairs and removes none. Three are right —
+      092 「诗篇第23篇都知道的」 → `Psalms 23`, 344 「诗篇48篇1和8节」 →
+      `Psalms 48`, 423 「在林后第五章第十六十七节里面」 →
+      `2 Corinthians 5`. One is wrong: 009 「同一诗篇第九和第十节」 →
+      `Psalms 9`, where 第九 and 第十 are **verses 9 and 10 of Psalm 42**,
+      not psalm 9.
+
+      **That psalm number is a correction — this note first said Psalm
+      39, and a guard written from it would have asserted the wrong
+      psalm.** 「同一诗篇」 is "the SAME psalm", and the psalm is the one
+      named in the paragraph immediately before: 009 says 「诗篇第四十二
+      篇」 three times and quotes 「诗篇第四十二篇第三节」. The words that
+      follow 「同一诗篇第九和第十节」 are then CUV Psalm 42:9-10 verbatim
+      — 「我要对神我的磐石说：你为何忘记我呢…我的敌人辱骂我，好像打碎我
+      的骨头」 — checked against the app's own `assets/cuvs-yhwh.json`.
+      Psalm 39:9-10 is 「因我所遭遇的是出于你，我就默然不语」, nothing
+      like it. Psalm 39 IS named in 009, but ~8 paragraphs earlier and
+      quoted at 39:12.
+
+      So do the guard first: 「第N和第M节」 — a 第-number joined by 和 to
+      another 第-number that carries 节/節 — makes the FIRST number a
+      verse too, not a chapter. That is the same shape the English
+      「chapter N, A and B」 rules already reason about. With that in
+      place, lowering the minimum is a clean win. Do not lower it first
+      and plan to guard afterwards; the wrong entry would ship in
+      between and it does not look like a bug.
+
+      The 233 infix match sites at a minimum of two are NOT a hazard —
+      提前 ×16, 撒下 ×6, 帖前 ×2 and the rest produce no pairs at all.
+      The fear that the two-character abbreviations would misfire
+      mid-sentence was refuted 2026-08-25; the only real cost is the one
+      entry above.
+
+- [ ] **90 of the app's 130 Chinese book names are absent from the
+      extraction script's `CHINESE_ALIASES`, including 申命记, 以赛亚书,
+      加拉太书, 以弗所书, 腓立比书, 歌罗西书 and every 提摩太 /
+      帖撒罗尼迦 name.** The script's "Common full Chinese names" block
+      stops at ~24 books; the app's own
+      `lib/constants/book_name_mapping.dart` `_zhAliasToEn` has the
+      complete 66, simplified and traditional. The fix is to make the
+      script read from — or be kept in step with — that table, which is
+      already the app's source of truth and is exercised by the widget
+      suite.
+
+      Measured 2026-08-25 against the post-boundary-fix index:
+      **2,106 sites** in the corpus write one of the missing full names
+      immediately followed by a citation shape (`第` or a digit), 1,054
+      zh-CN + 1,048 zh-TW + 4 en. Adding all 90 gives **+57 (sermon,
+      key) pairs of 5,306, −0** — the gap between 2,106 and 57 is the
+      same luck the boundary item ran on: most of these sermons cite the
+      same passage again in their English body. 9 pairs of
+      1 Thessalonians, 9 Philippians, 5 2 Timothy, 4 1 Timothy,
+      4 2 Kings, 4 Jeremiah.
+
+      Do NOT paste the table by hand — 90 entries typed twice is how a
+      book gets filed under its neighbour. Generate it from the Dart
+      file and assert in the test that the two agree, so the next
+      spelling added to the app cannot silently miss the index.
+
+- [ ] **The zh-TW transcripts spell Revelation 啓示錄 with the 啓 variant
+      (U+5553), and the alias table only has 啟 (U+555F) — so Revelation
+      is invisible in almost the whole Traditional corpus.** Found
+      2026-08-25 while checking which body of 136 the `(?!次)` guard
+      fires in: its zh-TW twin never matched at all. Measured across all
+      867 transcripts — zh-TW writes 啓示錄 **198** times against 啟示錄
+      **3**, and **96 sites in 55 sermons** put the 啓 form immediately
+      before a citation shape (`第` or a digit).
+
+      As with the item above, most of those sermons re-cite the passage
+      in a zh-CN or English body, so the shipped index loses far less
+      than 96 — measure the pair delta before claiming a number. The
+      real lesson is that this is a WHOLE CLASS: the two Unicode
+      codepoints for 啓/啟 are one instance, and 録/錄 and 爲/為 already
+      show up in the same bodies (「爲交賬」 in 136). Before adding 啓 by
+      hand, check the app's `_zhAliasToEn` for the same variant hole and
+      fix both from one table — and fold this into the 90-aliases item's
+      generate-and-assert fix rather than doing it twice.
+
+- [ ] **At a word boundary, a chapter number followed by 节/節 is still
+      read as the chapter — 7 sites, 2 of them wrong in the shipped
+      index.** 016's infix form is refused as of 2026-08-25, but the
+      boundary form is unchanged because those entries ship today and
+      each needs the paragraph read before it is removed. The sites:
+      010 「诗篇第二十七节」 → `Psalms 27`, but the paragraph is
+      expounding Psalm 37 (which the sermon does reach) and 27 is the
+      VERSE; 247 「然后在第19章，启示录12节」 → `Revelation 12`, where
+      the chapter is stated three words earlier and the entry should be
+      Revelation 19:12. Both are in `refs.json` now. The other five —
+      106 and 150's 「但第11节」/「但第30节」 where 但 is the conjunction
+      "but" read as Daniel, and their zh-TW twins — are already refused
+      downstream (`Daniel 30` fails canon) and cost nothing.
+
+      Two entries is small, but the shape is not: the fix is the same
+      infix refusal generalised, plus a way to reach back for a chapter
+      stated earlier in the sentence. Read all 7 paragraphs first.
+
+- [ ] **The 2026-08-25 boundary relaxation is not additive *by
+      construction*, though it is additive on this corpus.**
+      `NUMBERED_TAIL_RE` is full-names-only, so a constructed
+      「在马太福音 2 Cor 5:17」 loses the real reference the boundary form
+      would have found. **Zero sites** — recorded rather than acted on,
+      because closing it means teaching the tail rule about abbreviated
+      names and that is a bigger change than the exposure. If the corpus
+      ever grows a Chinese sentence with an English citation inside it,
+      this is the first thing to check.
 
 - [ ] **The list carry's `\s*` crosses a newline, so a citation at the
       end of a paragraph could adopt a number at the start of the next.**

@@ -232,6 +232,73 @@ def build_book_pattern() -> str:
 BOOK_RE = build_book_pattern()
 
 
+# The aliases that may be preceded directly by a Chinese character.
+#
+# `\b` is inert against Chinese — every CJK ideograph is a word
+# character to Python's `re`, so there is no boundary between 「在」 and
+# 「马」 and 「在马太福音2:13，12:14，21:41」 (144) never matched at all.
+# The whole citation was invisible, not just its list tail.
+#
+# Dropping the boundary outright is far worse than the defect. Measured
+# over all 867 transcripts: a plain `(?<![0-9A-Za-z_])` adds 742
+# (sermon, key) pairs, 616 of them Joshua, because 「书」 is the
+# standalone alias for Joshua AND the last character of 腓立比书,
+# 以弗所书, 歌罗西书, 罗马书, 以赛亚书 and every other Chinese epistle
+# name. 1,906 of the match sites the drop opens up are 书/書 ones, and
+# nearly all of them are a longer book name's tail that the boundary
+# was the only thing refusing.
+#
+# A length minimum is what excludes that, and it does not take three
+# characters to do it: 书, 書, 传, 歌 are all ONE character, so any
+# minimum of two or more keeps them out. Do not read the 3 below as the
+# thing holding Joshua back.
+#
+# What the third character actually buys is the two-character
+# abbreviations — 提前 (1 Timothy, and the everyday adverb "in
+# advance"), 王上 (1 Kings, and 「国王上台」), 林后, 帖前. Measured, that
+# is a near-even trade, not a clear win: at a minimum of two the index
+# gains exactly four pairs, of which THREE are right (092 「诗篇第23篇」,
+# 344 「诗篇48篇1和8节」, 423 「林后第五章第十六十七节」) and one is wrong
+# (009 「同一诗篇第九和第十节」 — 「同一诗篇」 is "the SAME psalm", named
+# 诗篇第四十二篇 in the paragraph before, so these are verses 9 and 10
+# of Psalm 42 and the quotation that follows is 42:9-10 word for word;
+# filed as `Psalms 9`). Three is kept because a wrong entry costs more than
+# a missing one: it does not look like a bug, it looks like the preacher
+# cited that verse. Lowering it is queued, and wants its own guard for
+# 「第N和第M节」 first. All 37 survivors at three are unambiguous full
+# book names (马太福音, 哥林多前书, 启示录 …).
+#
+# A "not a proper suffix of any other alias" condition was written first
+# and removed: at three characters it admits and excludes exactly the
+# same 37, so it was inert code whose comment claimed it was what kept
+# 书 out.
+#
+# Effect on the corpus: +97 (sermon, key) pairs of 5,209, −0. The
+# relaxation on its own reached 102; the refusals below — every one of
+# them written because it reached them — take out seven wrong keys and
+# give back two chapters whose verse was refused rather than the whole
+# match, which is the difference.
+def build_cjk_infix_book_pattern() -> str:
+    def is_cjk(a: str) -> bool:
+        return any("一" <= c <= "鿿" for c in a)
+
+    admitted = {a for a in ALIAS if is_cjk(a) and len(a) >= 3}
+    ordered = sorted(admitted, key=lambda s: (-len(s), s))
+    return r"(?:" + "|".join(re.escape(a) for a in ordered) + r")"
+
+
+CJK_INFIX_BOOK_RE = build_cjk_infix_book_pattern()
+
+# Either a real word boundary, or a Chinese book name whose own spelling
+# is proof enough that it is not the tail of a longer word. The
+# lookahead only decides admission; `BOOK_RE` still does the capturing,
+# so the longest-alias-wins ordering is unchanged. `infix` is an empty
+# group that is set only on the second branch, so `extract_refs` can
+# tell a citation that had a boundary in front of it from one that did
+# not — see the bare-numeral refusal there.
+BOOK_START_RE = (rf"(?:\b|(?<=[一-鿿])(?={CJK_INFIX_BOOK_RE})(?P<infix>))")
+
+
 def build_numbered_tail_pattern() -> str:
     """The word half of every numbered book — John, Peter, Corinthians …
     — so that a chapter number can be refused when it is really the
@@ -287,7 +354,7 @@ _UNIT_WORDS = (r"(?:times?|years?|days?|hours?|minutes?|weeks?|months?|"
 # preacher dictating a reference says it in words far more often than he
 # says it in punctuation.
 REF_RE = re.compile(
-    rf"\b(?P<book>{BOOK_RE})"
+    rf"{BOOK_START_RE}(?P<book>{BOOK_RE})"
     rf"\.?\s*"
     # "2 Kings, chapter 13" — the comma is admitted only when a chapter
     # WORD follows, so a bare "Romans, 5" stays prose.
@@ -335,6 +402,39 @@ REF_RE = re.compile(
     rf"|(?P<vbare>,\s+(?![1-3]\s+{NUMBERED_TAIL_RE}\b)(?=\d))"
     rf")"
     rf"(?:(?P<v>\d+)|(?P<vcn>{_CN_NUM_RE}))"
+    # A verse number may not give up a digit to make the guards below
+    # pass. 385 stutters — 「在哥林多後書第12章，第12章第10節」 — and
+    # the `(?!\s*[章篇])` guard three lines down was defeated exactly
+    # that way: `\d+` handed back the 2, the lookahead then saw "2章"
+    # rather than "章", and the sermon was filed under 2 Corinthians
+    # 12:1 instead of the 12:10 it goes on to read. Same failure the
+    # bare-comma form already documents below, so it is hoisted out of
+    # that conditional and applied to every form. Two sites, both this
+    # sentence in its zh-CN and zh-TW bodies. It is also what makes the
+    # refusal on the next line safe: without it, 「羅馬書8:28次」 hands
+    # back the 8 and files 8:2 instead of declining to guess.
+    rf"(?!\d)"
+    # 「第二次」 is "a second TIME", not verse 2. The English unit-word
+    # guard has no Chinese half, so 「一次在哥林多前書第9章，第二次在加
+    # 拉太書」 (077) became 1 Corinthians 9:2 and 「正如启示录20章第二次
+    # 复活所描述的」 (136) became Revelation 20:2 — the binding of Satan,
+    # which neither sermon opens. Refusing the verse rather than the
+    # whole match leaves the chapter, which is what was actually cited.
+    #
+    # 136 is quoted from its zh-CN body on purpose: its zh-TW twin writes
+    # 啓示錄 with the 啓 variant, which is not in the alias table, so that
+    # body never matched at all. That gap is queued — it is 96 sites.
+    #
+    # 次 alone, and that is minimality rather than caution. The first
+    # draft listed thirteen measure words (次 回 个 個 点 點 条 條 位 格
+    # 句 段 天); guarding all thirteen instead of 次 moves the index by
+    # +0 −0, because the other twelve never follow a verse number here.
+    # They are free, then — but free is not a reason to carry them, and
+    # each one begins some of the commonest words in the language (回答,
+    # 個人, 點明, 條件, 位格), so the day one of them does follow a verse
+    # number it is as likely to be prose as a measure word. Only 次 has
+    # evidence: 3 sites, all three of them 「第二次」.
+    rf"(?!次)"
     # Two guards that apply only to the bare-comma form, because it is
     # the only one with no word in it saying "this is a verse".
     #
@@ -557,6 +657,46 @@ def extract_refs(text: str) -> list[str]:
         marked = (m.group("chword") is not None
                   or m.group("chcomma") is not None
                   or m.group("chmark") is not None)
+        # A book name found mid-sentence, with no boundary in front of
+        # it, needs the citation itself to say it is one. A lone Chinese
+        # numeral does not: 「启示录一段经文」 is "a passage of
+        # Revelation", 「从创世记一直绕到启示录」 is "all the way from
+        # Genesis", 「亚伯拉罕在创世记一开始就被提到」 is "at the very
+        # beginning of Genesis" — 一段 / 一直 / 一开始 are ordinary
+        # words whose first character is also the numeral one. Those
+        # three are the only sites the relaxed boundary reaches this way,
+        # and all three are false. A digit chapter, a 第 or 章, or a
+        # verse is enough; the boundary form keeps its existing (weaker)
+        # behaviour, because the boundary is itself the evidence this
+        # branch has given up.
+        if (m.group("infix") is not None
+                and m.group("chcn") is not None
+                and not marked
+                and m.group("v") is None and m.group("vcn") is None
+                and m.group("v2") is None and m.group("vcn2") is None):
+            continue
+        # 「你看，在馬太福音第十八節」 (016) — 節 says the number is a
+        # VERSE, so it is not the chapter, and the chapter is nowhere in
+        # the sentence. The paragraph is expounding Matthew 15, but that
+        # has to be read to know it, so nothing is filed rather than
+        # guessed. One-chapter books are exempt because the rule above
+        # has already turned their bare number into a verse, which is
+        # how 023's 「以猶大書第七節」 and 012's 「約翰二書第三節」 are
+        # right.
+        #
+        # Restricted to the infix branch on purpose. The class is real
+        # at a boundary too — 7 sites, including 106 and 150's 「但第11節」
+        # where 但 is the conjunction "but" and is read as Daniel — but
+        # only two of those reach the shipped index, and both need their
+        # paragraph read before the entry is removed rather than moved
+        # (010's 「詩篇第二十七節」 belongs to Psalm 37; 247's 「啟示錄12節」
+        # has its chapter three words earlier). Queued; this refuses only
+        # what the relaxed boundary newly introduces.
+        if m.group("infix") is not None and not m.group("chmark"):
+            ch_end = m.end("ch") if m.group("ch") else m.end("chcn")
+            if (text[ch_end:ch_end + 1] in ("节", "節")
+                    and len(CANON.get(canon, {1: 0})) > 1):
+                continue
         # "John chapters 12, 14 and 16" is a list of CHAPTERS, and a
         # spelled-out chapter word ahead of the number is what makes the
         # bare number after the comma readable that way. The one shape

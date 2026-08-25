@@ -125,6 +125,143 @@ void main() {
     });
   });
 
+  group('a Chinese book name run onto the previous character', () {
+    // `\b` is inert against Chinese — every ideograph is a word
+    // character to Python's `re`, so 「在」「马」 has no boundary between
+    // them and 144's whole citation was invisible, not just its tail.
+    test('is found, and carries its list', () {
+      expect(_extractRefs('在马太福音2:13，12:14，21:41'),
+          ['Matthew 2:13', 'Matthew 12:14', 'Matthew 21:41']);
+    });
+
+    // The reason the boundary could not simply be dropped. 「书」 is the
+    // standalone alias for Joshua and also the last character of every
+    // Chinese epistle name; a plain `(?<![0-9A-Za-z_])` files 1,906
+    // sites of 腓立比书 / 以弗所书 / 以赛亚书 under Joshua. What keeps it
+    // out is the LENGTH MINIMUM on the aliases the relaxation admits,
+    // and 书 is one character, so any minimum above one is enough: these
+    // three cases yield Joshua at a minimum of 1 and nothing at 2 or 3.
+    // This case does not pin the shipped value of 3 — the last case in
+    // this group is the one that does.
+    //
+    // These three sentences are from the corpus and were chosen because
+    // they DISCRIMINATE. Most of the class is caught anyway by the canon
+    // check — 歌罗西书1:24 would be Joshua 1:24 and Joshua 1 has 18
+    // verses — so a case like that would pass with the guard removed and
+    // prove nothing. Joshua 2:5-11, 4:22-24 and 11:4 all exist.
+    //
+    // All three reach nothing at all today, because 腓立比书 / 以弗所书 /
+    // 以赛亚书 are not in the alias table — a separate, larger gap, and
+    // queued as one. The assertion is keyed on Joshua rather than on an
+    // empty list so that closing that gap does not fail this test for
+    // being right.
+    test('does not read the tail of a longer book name as its own book',
+        () {
+      final got = _extractAll([
+        '不怕被误解——的原因在腓立比书2:5-11。你们当以基督的心为心',
+        '改变成一个新的人。以弗所书4:22-24把这一点说得很清楚',
+        '地意味着温柔、谦卑。在以赛亚书第十一章第四节，说弥赛亚',
+      ]);
+      for (final refs in got) {
+        expect(refs.where((r) => r.startsWith('Joshua')), isEmpty,
+            reason: 'got $refs');
+      }
+    });
+
+    // 罗马书 IS an alias and is not the tail of anything, so the same
+    // sentence shape must still work — otherwise the test above would
+    // pass by the relaxation never firing at all.
+    test('still finds a full name that is nobody else\'s tail', () {
+      expect(_extractRefs('让我读给你听罗马书第八章'), ['Romans 8']);
+    });
+
+    // Mid-sentence there is no boundary to vouch for the citation, so a
+    // lone Chinese numeral is not enough. 一段 / 一直 / 一开始 are
+    // ordinary words whose first character is also the numeral one, and
+    // these are the corpus's three sites of the shape.
+    test('refuses a bare Chinese numeral with no 第, 章 or verse', () {
+      final got = _extractAll([
+        '这是对启示录一段经文的解释',
+        '它从创世记一直绕到启示录，回到了它一开始开始的地方',
+        '亚伯拉罕在创世记一开始就被提到',
+      ]);
+      expect(got, [<String>[], <String>[], <String>[]]);
+    });
+
+    // …and the refusal must not swallow the marked forms it sits next
+    // to, including 第 without 章, which is how 012 and 023 write it.
+    test('keeps the same numeral when the citation says it is one', () {
+      expect(
+          _extractAll([
+            '这是对启示录一章的解释',
+            '在约翰二书第三',
+            '以犹大书第七',
+          ]),
+          [
+            ['Revelation 1'],
+            ['2 John 1:3'],
+            ['Jude 1:7'],
+          ]);
+    });
+
+    // 節 says the number is a verse, so it is not the chapter — and the
+    // chapter is nowhere in 016's sentence, so nothing is filed. The
+    // one-chapter books are exempt because their bare number is already
+    // a verse, which is how 012 and 023 come out right.
+    test('refuses a chapter that is really a verse, unless the book has '
+        'one chapter', () {
+      expect(
+          _extractAll([
+            '你看，在马太福音第十八节，那里的词是"恶念"',
+            '我们仍然需要平安。在约翰二书第三节也是如此',
+            '||以犹大书第七节为例。它说',
+          ]),
+          [
+            <String>[],
+            ['2 John 1:3'],
+            ['Jude 1:7'],
+          ]);
+    });
+
+    // 第二次 is "a second TIME". The English unit-word guard had no
+    // Chinese half, so both of these indexed a verse the sermon never
+    // opens. The chapter really was cited and is kept.
+    test('a Chinese measure word after the number is not a verse', () {
+      expect(
+          _extractAll([
+            '保罗两次提到基督的律法：一次在哥林多前书第9章，第二次在加拉太书',
+            '正如启示录20章第二次复活所描述的',
+          ]),
+          [
+            ['1 Corinthians 9'],
+            ['Revelation 20'],
+          ]);
+    });
+
+    // 385 stutters. Without `(?!\d)` the verse gives up a digit so that
+    // the following `(?!\s*[章篇])` sees "2章" instead of "章", and the
+    // sermon is filed under 2 Corinthians 12:1 — a verse it never opens.
+    // The chapter is all that survives here; the sermon reaches 12:10
+    // through the rest of its body, which is why this costs nothing.
+    test('a verse may not give back a digit to slip past a guard', () {
+      expect(_extractRefs('让我读给你听。在哥林多后书第12章，第12章第10节："所以我为"'),
+          ['2 Corinthians 12']);
+    });
+
+    // The one case that pins the minimum at three rather than two, so
+    // it is the one to read if that number is ever lowered. 提前 is
+    // 1 Timothy and also the everyday adverb "in advance".
+    //
+    // The sentence is synthetic, and deliberately so: the corpus has 16
+    // sites of 提前 mid-sentence and none is followed by a number, so
+    // nothing in it discriminates. Lowering the minimum to two costs the
+    // corpus one wrong entry (009 「同一诗篇第九和第十节」 → `Psalms 9`)
+    // and gains three right ones — a real trade, argued in the script.
+    test('does not admit a two-character abbreviation mid-word', () {
+      expect(_extractRefs('我们提前3天到达了会场'), isEmpty);
+    });
+  });
+
   test('refs.json is in step with the script that writes it', () {
     // The script is only useful through its output. If someone changes a
     // rule and forgets to regenerate, the app keeps serving the old

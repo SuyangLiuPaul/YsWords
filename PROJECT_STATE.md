@@ -61,6 +61,42 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 | qat | `yswords-qat`, `yswords-cn-qat` | **1.4.163** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
+**Trap 55: a factual aside in a queue item becomes the ground truth for
+a later test, so a wrong one is a scripture defect on a delay.** The
+2026-08-25 boundary work noted, in a code comment *and* in the queued
+follow-up that asks a future iteration to build a guard, that 009's
+「同一诗篇第九和第十节」 means verses 9 and 10 of **Psalm 39**. It does
+not — 「同一诗篇」 is "the SAME psalm", and the psalm is 诗篇第四十二篇,
+named three times in the paragraph before; the words quoted after it are
+CUV **Psalm 42:9-10** verbatim. Nobody would have re-derived that; the
+next iteration would have written the guard's test from the note and
+asserted the wrong psalm with full confidence. Caught by the refuter,
+then settled against the app's own `assets/cuvs-yhwh.json`. **Prose in
+the queue is not commentary — check the claims in it as hard as the
+code, and cite the version you checked against.** Two other numbers in
+the same note were also wrong (743 → **742**; "1,906 match sites" is the
+书/書 subset, not all of them, and a few dozen follow 的 / 一 / 经 rather
+than a book name).
+
+**Trap 54: `\b` is inert against Chinese, and it had been hiding a
+second defect behind the one it caused.** Every CJK ideograph is a word
+character to Python's `re`, so there is no boundary between 「在」 and
+「马」 and 144's 「在马太福音2:13，12:14，21:41」 never matched at all — the
+whole citation invisible, not just its list tail. The fix cannot be to
+drop the boundary: measured, a plain `(?<![0-9A-Za-z_])` adds **742**
+(sermon, key) pairs, **616 of them Joshua**, because 「书」 is Joshua's
+standalone alias *and* the last character of 腓立比书 / 以弗所书 /
+以赛亚书 and every other Chinese epistle name. `\b` was the only thing
+refusing them. What ships is `BOOK_START_RE` — a real boundary, or a CJK
+alias of **at least three characters** after a CJK character — plus four
+measured refusals (a lone Chinese numeral is not a chapter; 節 means the
+number is a verse; 「第二次」 is "a second time"; a verse may not
+backtrack a digit past a guard). **+97 pairs of 5,209, −0.** Note the
+three is not what holds Joshua back — 书 is one character, so any
+minimum above one excludes it; the third character only buys the
+two-character abbreviations, and lowering it to two is queued as a
+near-even trade.
+
 **Trap 53: a rule can survive the whole corpus by luck, and "no site
 changes" does not mean the rule is right.** A chapter list whose second
 separator is a bare `and` — "Matthew 5, 6 and 7 are the Sermon on the
