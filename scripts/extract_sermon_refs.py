@@ -170,27 +170,53 @@ CHINESE_ALIASES = {
     "羅": "Romans",
     "門": "Philemon", "來": "Hebrews",
     "猶": "Jude", "啟": "Revelation",
-    # Common full Chinese names
-    "创世记": "Genesis", "創世記": "Genesis",
-    "出埃及记": "Exodus", "出埃及記": "Exodus",
-    "马太福音": "Matthew", "馬太福音": "Matthew",
-    "马可福音": "Mark", "馬可福音": "Mark",
-    "路加福音": "Luke",
-    "约翰福音": "John", "約翰福音": "John",
-    "使徒行传": "Acts", "使徒行傳": "Acts",
-    "罗马书": "Romans", "羅馬書": "Romans",
-    "哥林多前书": "1 Corinthians", "哥林多前書": "1 Corinthians",
-    "哥林多后书": "2 Corinthians", "哥林多後書": "2 Corinthians",
-    "希伯来书": "Hebrews", "希伯來書": "Hebrews",
-    "雅各书": "James", "雅各書": "James",
-    "彼得前书": "1 Peter", "彼得前書": "1 Peter",
-    "彼得后书": "2 Peter", "彼得後書": "2 Peter",
-    "约翰一书": "1 John", "約翰一書": "1 John",
-    "约翰二书": "2 John", "約翰二書": "2 John",
-    "约翰三书": "3 John", "約翰三書": "3 John",
-    "犹大书": "Jude", "猶大書": "Jude",
-    "启示录": "Revelation", "啟示錄": "Revelation",
 }
+
+
+# The full Chinese book names are NOT listed here. They are read out of
+# the app's own `_zhAliasToEn`, which is the table the reader already
+# resolves a tapped 中文 book name through. Keeping a second hand-typed
+# copy is what left 90 of the app's 130 spellings — 申命记, 以赛亚书,
+# 加拉太书, every 提摩太 / 帖撒罗尼迦 name — invisible to this script
+# while the app understood them perfectly well.
+BOOK_NAME_MAPPING_DART = REPO / "lib" / "constants" / "book_name_mapping.dart"
+
+
+def load_dart_chinese_aliases() -> dict[str, str]:
+    src = BOOK_NAME_MAPPING_DART.read_text(encoding="utf-8")
+    block = re.search(r"const _zhAliasToEn = \{(.*?)\n\};", src, re.S)
+    if not block:
+        raise SystemExit(
+            f"ERROR: could not find `_zhAliasToEn` in {BOOK_NAME_MAPPING_DART}"
+        )
+    aliases = {
+        alias: canon
+        for alias, canon in re.findall(
+            r"'([^']+)'\s*:\s*'([^']+)'", block.group(1)
+        )
+    }
+    unknown = sorted({c for c in aliases.values() if c not in CANONICAL_BOOKS})
+    if unknown:
+        raise SystemExit(
+            f"ERROR: _zhAliasToEn maps to non-canonical books: {unknown}"
+        )
+    missing = [b for b in CANONICAL_BOOKS if b not in set(aliases.values())]
+    if missing:
+        raise SystemExit(
+            f"ERROR: _zhAliasToEn covers only {66 - len(missing)}/66 books; "
+            f"missing {missing}"
+        )
+    return aliases
+
+
+for _alias, _canon in load_dart_chinese_aliases().items():
+    _clash = CHINESE_ALIASES.get(_alias)
+    if _clash is not None and _clash != _canon:
+        raise SystemExit(
+            f"ERROR: {_alias!r} is {_clash} here and {_canon} in "
+            f"{BOOK_NAME_MAPPING_DART.name}"
+        )
+    CHINESE_ALIASES[_alias] = _canon
 
 
 def build_alias_index() -> dict[str, str]:

@@ -69,6 +69,27 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 | qat | `yswords-qat`, `yswords-cn-qat` | **1.4.166** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
+**Trap 59: a negative assertion pinned to a merged artifact is not
+pinning the rule — it is pinning the artifact, and it can have been
+passing for a reason nobody wrote down.** `sermon_refs_resolve_test`
+asserted that sermon 012 is NOT filed under 1 Timothy 1:14/15, with the
+stated reason "verses 13 and 16 names two verses, not a span". Making
+the Chinese book names visible to the extractor (2026-08-26) turned it
+red — because the zh-CN and zh-TW translators wrote that same spoken
+sentence as 「第十三至十六節」, an explicit RANGE, and refs.json is the
+UNION of a sermon's three bodies. The adjacency rule had not changed at
+all; the English sentence still yields `1 Timothy 1:13` alone. The
+assertion had been passing because the body that disagreed with it was
+unreadable, which is not the property it claimed to test.
+
+The rule now lives on the sentence itself, where nothing else can reach
+it. Generally: **assert a rule against the smallest input that
+exercises it.** An index built by merging N sources has N ways for an
+assertion about it to be true, and only one of them is the rule. The
+corollary is the useful half — a red test after a data change is worth
+reading as "the witness was never discriminating" before it is read as
+"the change broke something".
+
 **Trap 58: an inert line is not a free line — it is an unpriced one, and
 "it cannot hurt" is the sentence to distrust.** The 「章N和M节」 repair
 (2026-08-26) advanced `prev` and `pos` past the recovered verse pair,

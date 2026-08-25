@@ -216,13 +216,18 @@ void main() {
           reason: 'the range is exactly the two verses named');
     }
 
-    // Sermon 012 says "1 Timothy, chapter 1, verses 13 and 16". 16 is
-    // not 14, so this stays a list of two and 14/15 are NOT walked.
+    // Sermon 012 was this rule's witness until 2026-08-26, and it was
+    // never a clean one. The English says "1 Timothy, chapter 1, verses
+    // 13 and 16" — a list of two — while the zh-CN and zh-TW translators
+    // rendered the same spoken sentence 「第一章第十三至十六節」, an
+    // explicit RANGE. The index is the union of all three bodies, so
+    // 1:14 and 1:15 are in it on the Chinese transcripts' authority,
+    // not because `and` was ever walked. The negative here passed only
+    // while the Chinese full book names were invisible to the script.
+    //
+    // The rule itself is pinned on the English sentence directly, in
+    // sermon_ref_extraction_test.dart, where no other body can reach it.
     expect(keys('012'), contains('1 Timothy 1:13'));
-    for (final v in [14, 15, 16]) {
-      expect(keys('012'), isNot(contains('1 Timothy 1:$v')),
-          reason: '"verses 13 and 16" names two verses, not a span');
-    }
 
     // The trap: an ordinal past the `and` belongs to the book that
     // follows it. "James 4:10 and 1 Peter 5:5" must not consume the 1 —

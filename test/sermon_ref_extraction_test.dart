@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yswords/utils/passage_localizer.dart' show passageRefPattern;
+import 'package:yswords/utils/reference_parser.dart' show parseReference;
 
 /// 2026-08-25. `scripts/extract_sermon_refs.py` decides which verses each
 /// sermon is filed under, and it is Python — so nothing in `flutter
@@ -39,6 +41,23 @@ json.dump([mod.extract_refs(t) for t in json.loads(sys.argv[1])], sys.stdout)
   return (jsonDecode(process.stdout as String) as List)
       .map((refs) => (refs as List).cast<String>())
       .toList();
+}
+
+/// `_zhAliasToEn` is private, so it is read from source — which is also
+/// what the extraction script does, and pins the shape both rely on.
+Map<String, String> _zhAliasToEnFromSource() {
+  final src =
+      File('lib/constants/book_name_mapping.dart').readAsStringSync();
+  final block =
+      RegExp(r'const _zhAliasToEn = \{(.*?)\n\};', dotAll: true).firstMatch(src);
+  if (block == null) {
+    throw StateError('the _zhAliasToEn block moved or changed shape');
+  }
+  return {
+    for (final m
+        in RegExp(r"'([^']+)'\s*:\s*'([^']+)'").allMatches(block.group(1)!))
+      m.group(1)!: m.group(2)!,
+  };
 }
 
 void main() {
@@ -117,6 +136,23 @@ void main() {
           _extractRefs('in Romans 6, 7, and 8, we have three distinct '
               'categories'),
           ['Romans 6']);
+    });
+
+    // Moved here from sermon_refs_resolve_test.dart on 2026-08-26. It
+    // used to be asserted against sermon 012's merged keys, which stopped
+    // discriminating once the Chinese bodies became visible — their
+    // translator wrote the same sentence as a 13–16 range. Against the
+    // sentence itself nothing else can reach it.
+    //
+    // The second endpoint is DROPPED, not walked: 16 is not adjacent to
+    // 13, so the tail is discarded rather than turned into a span. That
+    // loss is the gapped-list class queued separately; it is asserted
+    // exactly so nobody reads this as "the pair is captured".
+    test('a non-adjacent "verses N and M" is not walked into a span', () {
+      expect(
+          _extractRefs('For example, in 1 Timothy, chapter 1, verses 13 '
+              'and 16, Paul says that he received mercy from God'),
+          ['1 Timothy 1:13']);
     });
 
     test('a bare-comma restatement of one verse still reaches it', () {
@@ -356,6 +392,54 @@ void main() {
     // the same 和 and would file `Psalms 9` if it ever reached it.
     test('does not reach an unmarked pair, which stays refused', () {
       expect(_extractRefs('同一诗篇第九和第十节说：我要对神我的磐石说'), isEmpty);
+    });
+  });
+
+  group('the Chinese book names come from one table', () {
+    // 2026-08-26. There were three hand-typed copies of the 66 Chinese
+    // book names — the app's `_zhAliasToEn`, the extraction script's
+    // `CHINESE_ALIASES`, and `passageRefPattern`. The script's copy had
+    // drifted to ~40 of the app's 130 spellings, so 申命记, 以赛亚书,
+    // 加拉太书 and every 提摩太 / 帖撒罗尼迦 name were invisible to the
+    // sermon index while the reader understood them perfectly well.
+    // The script now reads the app's table; these pin that the other
+    // two cannot drift away from it again.
+    final aliases = _zhAliasToEnFromSource();
+
+    test('the app table still parses and still covers all 66 books', () {
+      expect(aliases.length, greaterThanOrEqualTo(130));
+      expect(aliases.values.toSet().length, 66);
+    });
+
+    test('the extraction script understands every spelling in it', () {
+      // 1:1 rather than 3:16 — Obadiah, Philemon, 2 John, 3 John and
+      // Jude have one chapter, and the canon check would refuse a 3.
+      final names = aliases.keys.toList();
+      final got = _extractAll([for (final n in names) '$n 1:1']);
+      final wrong = <String>[];
+      for (var i = 0; i < names.length; i++) {
+        final want = '${aliases[names[i]]} 1:1';
+        if (!got[i].contains(want)) wrong.add('${names[i]} → ${got[i]} (want $want)');
+      }
+      expect(wrong, isEmpty, reason: wrong.join('\n'));
+    });
+
+    test('passageRefPattern detects every spelling in it', () {
+      // This is the pattern that makes a reference tappable inside a
+      // sermon body. 啓示錄 (U+5553) was missing from it, which is the
+      // spelling the zh-TW transcripts use 198 times against 3 for 啟.
+      final missed = <String>[];
+      for (final entry in aliases.entries) {
+        final m = passageRefPattern.firstMatch('${entry.key} 1:1');
+        if (m == null || m.group(0) != '${entry.key} 1:1') {
+          missed.add(entry.key);
+          continue;
+        }
+        if (parseReference(m.group(0)!)?.englishBook != entry.value) {
+          missed.add('${entry.key} (parsed wrong)');
+        }
+      }
+      expect(missed, isEmpty, reason: missed.join(', '));
     });
   });
 
