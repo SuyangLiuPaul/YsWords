@@ -301,12 +301,31 @@ REF_RE = re.compile(
     rf"\s*[,，、]?\s*(?:and\s+)?"
     rf"(?:[:：.]|verses?\s+|vv?\.\s*|第\s*)\s*"
     rf"(?:(?P<v>\d+)|(?P<vcn>{_CN_NUM_RE}))"
-    rf"(?:\s*(?:[-–—]\s*|(?:to|through)\s+|[至到]\s*)"
+    # "verses 20 and 21" is a two-verse RANGE, but "verses 12, 14 and 15"
+    # is a list and walking it would invent verse 13. `vand` marks the
+    # `and` so extract_refs can demand the two be adjacent, which is the
+    # one case where a two-item list and a two-verse range are the same
+    # set. The lookahead refuses the ordinal of a following book, so
+    # "Romans 8:1 and 2 Corinthians 5:17" cannot become Romans 8:1-2 —
+    # and it is BOOK_RE rather than the NUMBERED_TAIL_RE used for the
+    # chapter position, because that one is built from full names only:
+    # "Psalm 23:1 and 2 Sam 7:14" walks past it and both invents
+    # Psalms 23:2 and loses 2 Samuel 7:14.
+    rf"(?:\s*(?:[-–—]\s*|(?:to|through)\s+"
+    # …and a number carrying a verse of its own is a second citation,
+    # not a far end: "Matthew 14:14 and 15:32" names two feedings. This
+    # has to REFUSE rather than match-then-discard, or the 15 is
+    # consumed and 15:32 never reaches the index — and where the two
+    # happen to be adjacent (14→15) discarding would invent 14:15.
+    rf"|\b(?P<vand>and)\s+(?!{BOOK_RE})(?!\d+\s*[:：]\s*\d)|[至到]\s*)"
     rf"(?:(?P<vend>\d+)|(?P<vendcn>{_CN_NUM_RE}))"
     # 「馬太福音11:30-12:1-8」 — the number past the dash carries a verse
     # of its own, which makes it the far CHAPTER and the whole thing one
-    # passage crossing a chapter boundary.
-    rf"(?:\s*[:：.]\s*(?P<echv>\d+)(?:\s*[-–—]\s*(?P<echv2>\d+))?)?)?"
+    # passage crossing a chapter boundary. Never after `and`: that reads
+    # a sentence stop as a separator, so "verses 7 and 8. 2 Peter 2"
+    # swallowed the next citation's ordinal and lost it (trap 50).
+    rf"(?:(?(vand)(?!))\s*[:：.]\s*(?P<echv>\d+)"
+    rf"(?:\s*[-–—]\s*(?P<echv2>\d+))?)?)?"
     # A number that carries its own 章 is a chapter restated, not a
     # verse: 「馬可福音第九章，第九章的最後部分」 would otherwise read
     # the second 第九 as Mark 9:9.
@@ -437,6 +456,11 @@ def extract_refs(text: str) -> list[str]:
                      m.group("vcn") or m.group("vcn2"))
         last = _int(m.group("vend") or m.group("vend2"),
                     m.group("vendcn") or m.group("vendcn2"))
+        # `and` is only a range separator between adjacent verses. Any
+        # other pair is a list — "verses 12 and 15" names two verses and
+        # walking it would file the sermon under 13 and 14 as well.
+        if m.group("vand") is not None and last != (verse or 0) + 1:
+            last = None
         # A spelled-out marker — "chapter 13", 「第13章」 — is proof the
         # number is a chapter, so the prose guards below cannot apply.
         marked = (m.group("chword") is not None

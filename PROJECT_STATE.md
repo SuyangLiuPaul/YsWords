@@ -57,9 +57,20 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.154** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.154** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.156** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.156** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.156 makes a range spelled "verses 20 **and** 21" reach both verses
+instead of only the first — 2 Kings 13:21, the corpse revived on
+Elisha's bones, is what sermons 320 and 325 turn on and neither could be
+found by it. 95 (sermon, key) pairs added, 44 distinct verse keys, none
+removed. `and` is admitted only between ADJACENT verses, because a
+two-item list and a two-verse range are then the same set; "verses 13
+and 16" stays a list. Verified against the assets the sites serve, not
+the repo: on both `yswords-dev` and `yswords-cn-qat`, `sermons/refs.json`
+holds 3,010 keys, `2 Kings 13:21` answers 320 and 325, and
+`1 Timothy 1:14` answers nobody.
 
 v1.4.154 stops six sermon titles reading as if a word were missing:
 "Regeneration and Renewal — ; Foundational Problems" is what a May
@@ -900,6 +911,36 @@ advances the repo hash is healthy.
     `extract_sermon_refs.py` came back byte-identical, which validates
     the H1 edits and says nothing whatever about the `titles` map, since
     the map is not one of its inputs.
+
+54. **In an extractor, refusing in the PATTERN and discarding after the
+    match are not the same thing, and the difference invents scripture.**
+    Admitting `and` as a verse-range separator was gated by a post-match
+    test (keep the range only when the far verse is exactly one past the
+    near one). That reads as safe and is not: the regex has already
+    CONSUMED the far number by then. "Matthew 14:14 and 15:32" names the
+    two feedings, 15 happens to be 14+1, so the test waved it through and
+    invented Matthew 14:15 while losing 15:32; and in the twelve places
+    the test correctly rejected, the consumed number took its citation
+    with it. Every guard on a separator has to be a lookahead. The same
+    trap in a second costume: the ordinal of a following book ("Psalm
+    23:1 and 2 Sam 7:14") must be refused by `BOOK_RE`, not by the
+    `NUMBERED_TAIL_RE` used for the chapter position, which is built from
+    FULL book names and cannot see an abbreviation.
+
+55. **The two refuter rounds can flatly contradict each other, and when
+    they do neither is evidence — run the experiment.** On 2026-08-25
+    round one said removing a lookahead lost three real keys; round two
+    said removing it changed nothing at all. Both were confident, both
+    cited the corpus. Deciding it took ten lines: recompile the pattern
+    in memory with the lookahead spliced out and diff the extractor's
+    output per transcript. Round one was right (`057 1 Peter 5:5`,
+    `108 1 Peter 2:8`, `235 2 Corinthians 4`); round two had compared
+    totals, and the losses were invisible in a total because other
+    matches moved to fill them. Corollary worth keeping: **a corpus-level
+    diff of a derived index hides both losses and inventions**, because a
+    key the change destroys in one sentence is often cited again in
+    another — sermon 101's invented Matthew 14:15 showed up as no diff at
+    all. Diff per occurrence, not per index.
 
 ## Standing rules from the user
 

@@ -198,6 +198,61 @@ void main() {
     }
   });
 
+  // "verses 20 and 21" is a range; "verses 12, 14 and 15" is a list,
+  // and walking it would invent verse 13. `and` is admitted as a range
+  // separator only between ADJACENT verses, which is the one case where
+  // a two-item list and a two-verse range denote the same set — so this
+  // rule cannot put a sermon under a verse nobody cited.
+  test('"and" joins two verses only when they are adjacent', () {
+    final bySermon = (refs['bySermon'] as Map).cast<String, dynamic>();
+    List<String> keys(String id) => (bySermon[id] as List).cast<String>();
+
+    // 2 Kings 13:21 — the corpse revived on Elisha's bones — is what
+    // sermons 320 and 325 turn on, and "verses 20 and 21" reached only
+    // 13:20 until 2026-08-25.
+    for (final id in ['320', '325']) {
+      expect(keys(id), containsAll(['2 Kings 13:20', '2 Kings 13:21']));
+      expect(keys(id), isNot(contains('2 Kings 13:22')),
+          reason: 'the range is exactly the two verses named');
+    }
+
+    // Sermon 012 says "1 Timothy, chapter 1, verses 13 and 16". 16 is
+    // not 14, so this stays a list of two and 14/15 are NOT walked.
+    expect(keys('012'), contains('1 Timothy 1:13'));
+    for (final v in [14, 15, 16]) {
+      expect(keys('012'), isNot(contains('1 Timothy 1:$v')),
+          reason: '"verses 13 and 16" names two verses, not a span');
+    }
+
+    // The trap: an ordinal past the `and` belongs to the book that
+    // follows it. "James 4:10 and 1 Peter 5:5" must not consume the 1 —
+    // doing so both invents James 4:11 and loses 1 Peter 5:5. The
+    // lookahead that refuses it is BOOK_RE rather than the full-name
+    // NUMBERED_TAIL_RE used for the chapter position, because that one
+    // does not know the abbreviations ("and 2 Sam 7:14").
+    for (final trap in [
+      ('057', 'James 4:10', 'James 4:11', '1 Peter 5:5'),
+      ('108', 'Romans 9:33', 'Romans 9:34', '1 Peter 2:8'),
+    ]) {
+      expect(keys(trap.$1), contains(trap.$2));
+      expect(keys(trap.$1), isNot(contains(trap.$3)),
+          reason: '${trap.$3} was never cited — the number is an ordinal');
+      expect(keys(trap.$1), contains(trap.$4),
+          reason: 'the reference past the `and` must survive');
+    }
+
+    // A sentence stop is a member of the verse-separator class, so the
+    // cross-chapter tail must be unreachable after `and`: in sermon
+    // 009's "verses 7 and 8. 2 Peter 2, 7 and 8" it read the full stop
+    // as a separator, made the 8 a far CHAPTER, and walked 2 Peter
+    // 2:7-3:18 — 32 verses the sermon never opens.
+    expect(keys('009'), containsAll(['2 Peter 2:7', '2 Peter 2:8']));
+    for (final v in [9, 22]) {
+      expect(keys('009'), isNot(contains('2 Peter 2:$v')));
+    }
+    expect(keys('009').where((k) => k.startsWith('2 Peter 3')), isEmpty);
+  });
+
   // A book name is sometimes an ordinary word, and the number after it
   // is then an ordinal label rather than a chapter. Both members below
   // put a sermon under a passage it never opens, which is the one thing

@@ -5684,19 +5684,90 @@ has never seen this repo.
       Recorded 2026-08-25; do not guess. Needs the audio, which is on
       the T7.
 
-- [ ] **A range spelled with "and" reaches only its first verse.**
-      "2 Kings, chapter 13, verses 20 **and** 21" indexes 13:20 alone,
-      and 13:21 is the verse sermon 325's whole exposition turns on
-      (the corpse revived on Elisha's bones). Same in sermon 012,
-      "1 Timothy, chapter 1, verses 13 and 16". `and` is deliberately
-      not in the range-separator set because "verses 12, 14 and 15" is
-      a LIST, not a range — expanding it would invent verse 13. The
-      safe rule is to treat "N and M" as a range only when M == N+1,
-      where a two-item list and a two-verse range are the same set;
-      measure how many cases that covers before writing it. The known
-      members are listed as `listGap` in
-      `test/sermon_refs_resolve_test.dart` so the count cannot grow
-      unnoticed.
+- [x] **A range spelled with "and" reaches only its first verse. Fixed
+      2026-08-25 — the adjacency rule was right, and it needed two
+      guards the item did not anticipate.** "2 Kings, chapter 13,
+      verses 20 **and** 21" indexed 13:20 alone, and 13:21 is the verse
+      sermons 320 and 325 turn on (the corpse revived on Elisha's
+      bones). `and` was deliberately not a range separator because
+      "verses 12, 14 and 15" is a LIST and expanding it would invent
+      verse 13.
+
+      **Measured before writing, as the item asked.** 198 "verse N and
+      M" candidates in the corpus; 144 have M == N+1, which is the one
+      case where a two-item list and a two-verse range denote the same
+      set. Result on the shipped index: **95 (sermon, key) pairs added
+      — 44 distinct `byVerse` keys — and 0 removed.** Every one of the
+      95 traces to a literal "N and N+1" in that sermon's own
+      transcript where the far number neither carries a verse of its
+      own nor begins a book alias. Sermon 012's "verses 13 and 16"
+      correctly stays a list: 16 is not 14, so 14 and 15 are not
+      walked. The `listGap` members are all still gaps — they are
+      genuine non-contiguous lists, so that set needed no edit.
+
+      **Guard 1, and the refuter was needed twice to get it right.**
+      The obvious lookahead is the `(?![1-3]\s+NUMBERED_TAIL_RE\b)`
+      already used for the chapter position — but that pattern is built
+      from FULL book names, so "Psalm 23:1 and 2 Sam 7:14" walks past
+      it, invents Psalms 23:2 and loses 2 Samuel 7:14. It is `BOOK_RE`
+      instead, which knows the abbreviations. Load-bearing, and this
+      was settled by experiment because the two refuter rounds
+      contradicted each other on it: removing it loses `057 1 Peter
+      5:5`, `108 1 Peter 2:8` and `235 2 Corinthians 4`, because
+      adjacency runs POST-match and cannot un-consume the ordinal.
+
+      **Guard 2 — a number carrying its own verse is a second
+      citation.** "Matthew 14:14 and 15:32" (sermon 101) names the two
+      feedings; 15 is 14+1, so the adjacency rule ACCEPTED it and
+      invented Matthew 14:15 while losing 15:32. 12 sites in the corpus
+      have this shape. It has to REFUSE in the pattern rather than
+      discard after the match, or the far number is consumed and its
+      citation never reaches the index. Found by refuter round two, on
+      a version that had already survived round one.
+
+      **Guard 3 — `.` is a member of the verse-separator class**, so
+      the cross-chapter tail is disabled after `and`: in sermon 009's
+      "verses 7 and 8. 2 Peter 2, 7 and 8" it read the full stop as a
+      separator, made the 8 a far CHAPTER and walked 2 Peter 2:7–3:18.
+      Measured: 32 invented verses and one lost key without it.
+
+      Pinned by `test/sermon_refs_resolve_test.dart` ("and" joins two
+      verses only when they are adjacent), which fails on the old
+      index. Guards 1 and 3 are corpus-visible and asserted there;
+      guard 2 is not, because sermon 101 cites Matthew 14:15 legitimately
+      elsewhere and the invention was masked at index level — a
+      coincidence, not a safety net.
+
+- [ ] **The "and" guard over-refuses where a verse number is also a
+      book ordinal, and nobody has decided whether that is right.**
+      Raised by the refuter 2026-08-25 against the fix above. `BOOK_RE`
+      admits very short aliases, so "Psalm 23 verses 1 **and 2 The**
+      Lord is my shepherd" reads "2 The" as 2 Thessalonians and drops
+      verse 2. Same shape for "2 Tim(es)", "2 Ch(apter)", "2 Pe(ople)",
+      "2 Co(ming)", "3 Jo(nathan)". **Zero occurrences in the corpus
+      today**, and the failure is a miss rather than an invention,
+      which is the direction the standing rule prefers — so it was left
+      alone. Fixing it means requiring a chapter or verse number after
+      the alias, which is a change to `BOOK_RE`'s contract and affects
+      far more than this branch. Measure the whole-corpus effect of that
+      before touching it.
+
+- [ ] **12 sites say "Book C:V and C2:V2" and the second citation is
+      lost — 10 of them unreachable by any other path.** The far
+      citation has a chapter of its own, so guard 2 of the fix above
+      correctly refuses to make it a range end — but nothing then picks
+      it up, because a bare "15:32" has no book name in front of it.
+      Pre-existing and unchanged by the 2026-08-25 fix, which is why
+      that fix removed 0 keys. Counted against the shipped index, the
+      ten the sermon cites nowhere else are `059 John 15:17`,
+      `062 John 17:14`, `067 Matthew 12:20`, `068 Acts 24:16`,
+      `101 Matthew 15:32`, `108 1 John 4:16`, `115 Daniel 10:21`,
+      `152 Judges 15:14`, `155 Ephesians 5:6`, `161 John 3:5`; only
+      `005 Matthew 4:17` and `063 Matthew 12:1` are already reachable.
+      The fix is to let the book name carry across an `and`, which is
+      the same machinery as `_RANGE_LINK` and wants its own iteration.
+      Do not reuse the adjacency rule here — these are two citations,
+      so the verses BETWEEN them were never named.
 
 - [ ] **`marked` disables the unit-word guard, so "in Genesis, chapter
       3 times" would index Genesis 3.** Zero occurrences in the corpus
