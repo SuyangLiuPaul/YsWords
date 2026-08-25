@@ -251,38 +251,108 @@ BOOK_RE = build_book_pattern()
 # A length minimum is what excludes that, and it does not take three
 # characters to do it: 书, 書, 传, 歌 are all ONE character, so any
 # minimum of two or more keeps them out. Do not read the 3 below as the
-# thing holding Joshua back.
+# thing holding Joshua back — any minimum above one does that.
 #
-# What the third character actually buys is the two-character
-# abbreviations — 提前 (1 Timothy, and the everyday adverb "in
-# advance"), 王上 (1 Kings, and 「国王上台」), 林后, 帖前. Measured, that
-# is a near-even trade, not a clear win: at a minimum of two the index
-# gains exactly four pairs, of which THREE are right (092 「诗篇第23篇」,
-# 344 「诗篇48篇1和8节」, 423 「林后第五章第十六十七节」) and one is wrong
-# (009 「同一诗篇第九和第十节」 — 「同一诗篇」 is "the SAME psalm", named
-# 诗篇第四十二篇 in the paragraph before, so these are verses 9 and 10
-# of Psalm 42 and the quotation that follows is 42:9-10 word for word;
-# filed as `Psalms 9`). Three is kept because a wrong entry costs more than
-# a missing one: it does not look like a bug, it looks like the preacher
-# cited that verse. Lowering it is queued, and wants its own guard for
-# 「第N和第M节」 first. All 37 survivors at three are unambiguous full
-# book names (马太福音, 哥林多前书, 启示录 …).
+# Two characters was the queued proposal and it was measured and turned
+# down on 2026-08-26. A flat `len(a) >= 2` gains three pairs and costs
+# one — but the one it costs is not the whole cost. The twenty
+# two-character aliases split cleanly in two: seventeen are
+# ABBREVIATIONS whose second character is a positional or ordinal marker
+# (提前 撒下 王上 林后 约一 …) and three are complete book names
+# (诗篇 詩篇 雅歌). Most of the abbreviations are also everyday words, and
+# 提前 ("in advance") is one of the commonest in the language —
+# 「我们提前3天到达了会场」 indexes as 1 Timothy 3 the moment they are
+# admitted, which is why `test/sermon_ref_extraction_test.dart` has
+# pinned that sentence since the minimum was first set.
+#
+# The queued proposal said this costs nothing because "the corpus has 16
+# sites of 提前 mid-sentence and none is followed by a number". Measured,
+# that is wrong twice over, and the truth argues the other way. 提前
+# occurs 88 times and TWELVE are followed directly by a number — 032
+# 「提前八个月」, 365 「提前三天」, EC015 「提前一个月」, 393 「提前一两天」
+# and their zh-TW twins. What keeps all twelve out is neither the length
+# rule nor luck: it is the bare Chinese-numeral refusal further down,
+# which will not read a lone numeral as a chapter without a 第, a 章 or a
+# verse. Zero of the 88 use an ASCII DIGIT, and the digit form is exactly
+# what walks past that refusal. So the sentence shape is already in the
+# corpus twelve times, and all that stands between it and a wrong entry
+# is how the transcriber happened to spell the number. That is a thinner
+# thing to rest on than the base rate of zero it was sold as (trap 56).
+#
+# So the second character is admitted only for a complete name. That is
+# +2 −0: 092 「诗篇第23篇都知道的」 → Psalms 23 and 344 「诗篇48篇1和8节」
+# → Psalms 48. It gives up 423 「林后第五章第十六十七节」 → 2 Corinthians
+# 5, and giving that up is a gain rather than a loss — see below.
+#
+# Honest about what the two keys are worth. Only 092 → Psalms 23 is a
+# NEW reach, and it is a clean one: 092 held no Psalms 23 key of any
+# kind (its English says "the 23rd Psalm", which the extractor does not
+# read), and 「雅伟是我的牧者」 is what its sentence is citing.
+#
+# 344 → Psalms 48 is a BARE chapter key and it is over-broad. A bare
+# chapter key is not a weaker verse key: `passage_filter.dart` treats a
+# colon-less key as matching every verse in the chapter, so filtering
+# the Sermons page on Psalms 48:3 now returns 344, which cites only
+# verses 1 and 8. An earlier draft of this comment called that key
+# invisible. It is not — it is invisible only to `sermonsForVerse`,
+# which already counted 344 a chapter hit through Psalms 48:1, and the
+# two readers do not agree (trap 57).
+#
+# It is admitted anyway because it is not a new KIND of wrongness.
+# 「<章/篇>N和M节」 parses no verse at all — the verse group at the foot
+# of REF_RE wants its number flush against 節/节, and 和 breaks that —
+# so the corpus already carried SEVENTEEN such bare chapter keys before
+# this change (324 Romans 12, 353 Matthew 5, EC010 Revelation 13, …).
+# This makes eighteen, and eighteen want one repair, not a special case
+# for the newest. The obvious repair is a trap and was measured: letting
+# 和 close the verse group is −18 +0, because every FIRST verse of every
+# pair is already indexed by some other site, and it strands seven
+# SECOND verses that nothing else reaches (239 loses 1 John 2:22, 325
+# Hebrews 9:26, 331 Hebrews 5:14 / John 4:34 / Revelation 3:10, 344
+# Exodus 14:25 / Psalms 48:8). The repair has to emit BOTH verses, and
+# the 第-marked spelling 「第1和2节」 loses its second verse the same way.
+# Queued rather than smuggled in here.
+#
+# Giving up 423 「林后第五章第十六十七节」 → 2 Corinthians 5 is a gain on
+# the same reasoning: it is the identical bare-chapter over-breadth, but
+# with no class to be repaired alongside it and with the 提前 hazard
+# riding in beside it.
+#
+# 诗篇 is itself an ordinary word ("psalm"), and 009's 「同一诗篇」 is
+# exactly that usage. What handles it is not the length rule but the
+# 「第N和第M节」 refusal in `extract_refs`, which is load-bearing here:
+# remove it and 009 files `Psalms 9`.
+#
+# 雅歌 is admitted by the same principle and yields nothing. Do not read
+# 721's `Song of Solomon 1:2` as evidence that it works: that line is
+# 「# 雅歌一章二节」 at the start of a line, so the ordinary boundary
+# already matched it and the infix rule never saw it. The two genuinely
+# infix 雅歌 sites are 721 「讲雅歌的哪一部分」 and 327 「雅歌中经常提到
+# 的花」, both followed by 的/中 rather than a number.
 #
 # A "not a proper suffix of any other alias" condition was written first
-# and removed: at three characters it admits and excludes exactly the
-# same 37, so it was inert code whose comment claimed it was what kept
-# 书 out.
+# and removed: it was inert code whose comment claimed it was what kept
+# 书 out. Re-checked while admitting the full names — it admits and
+# excludes exactly the same 40 — so it is still inert.
 #
-# Effect on the corpus: +97 (sermon, key) pairs of 5,209, −0. The
-# relaxation on its own reached 102; the refusals below — every one of
-# them written because it reached them — take out seven wrong keys and
-# give back two chapters whose verse was refused rather than the whole
-# match, which is the difference.
+# Effect on the corpus when the boundary was first relaxed: +97 (sermon,
+# key) pairs of 5,209, −0. The relaxation on its own reached 102; the
+# refusals below — every one of them written because it reached them —
+# take out seven wrong keys and give back two chapters whose verse was
+# refused rather than the whole match, which is the difference.
+#
+# The second character of every two-character ABBREVIATION, and of no
+# complete book name.
+_ABBREV_TAIL = "前后後上下一二三"
+
+
 def build_cjk_infix_book_pattern() -> str:
     def is_cjk(a: str) -> bool:
         return any("一" <= c <= "鿿" for c in a)
 
-    admitted = {a for a in ALIAS if is_cjk(a) and len(a) >= 3}
+    admitted = {a for a in ALIAS if is_cjk(a)
+                and (len(a) >= 3
+                     or (len(a) == 2 and a[1] not in _ABBREV_TAIL))}
     ordered = sorted(admitted, key=lambda s: (-len(s), s))
     return r"(?:" + "|".join(re.escape(a) for a in ordered) + r")"
 
@@ -339,6 +409,13 @@ def cn_number(s: str) -> int | None:
     if m.group("u"):
         n += _CN_DIGIT[m.group("u")]
     return n if 0 < n < 200 else None
+
+
+# 和 joining a bare number to a number that carries 節/节 — 「第九和第十
+# 节」. Applied against the text after a chapter number by `extract_refs`;
+# the reasoning is there.
+_CN_VERSE_PAIR_RE = re.compile(
+    rf"\s*[和与與及]\s*第?\s*(?:\d+|{_CN_NUM_RE})\s*[節节]")
 
 
 # A number that belongs to the following unit, not to scripture:
@@ -696,6 +773,30 @@ def extract_refs(text: str) -> list[str]:
             ch_end = m.end("ch") if m.group("ch") else m.end("chcn")
             if (text[ch_end:ch_end + 1] in ("节", "節")
                     and len(CANON.get(canon, {1: 0})) > 1):
+                continue
+        # 「同一诗篇第九和第十节」 (009) — 和 joins two things of the same
+        # kind, and the 节 on the second says both of them are VERSES, so
+        # the first is not the chapter and the chapter is nowhere in the
+        # sentence. 「同一诗篇」 is "the SAME psalm": 009 names 诗篇第四十二
+        # 篇 three times in the paragraph before and the words quoted here
+        # are CUV Psalm 42:9-10 verbatim. Recovering that needs the
+        # paragraph read, so nothing is filed rather than a plausible
+        # `Psalms 9`.
+        #
+        # A 章/篇 mark on the first number is proof it really is the
+        # chapter — 149's 「罗马书第12章第1和第2节」 — so the mark exempts
+        # it. What is left was measured rather than assumed, because a
+        # base rate of zero is not what licenses a rule (trap 56): the
+        # whole corpus holds SIX sites where a book alias is followed by a
+        # chapter number carrying no 章/篇 and then 和. Four of them are
+        # 357's 「哥林多後書第11和12章」 and 219's 「哥林多前書第二和第三
+        # 章」 in both Chinese bodies — real chapter pairs that ship today
+        # as `2 Corinthians 11` and `1 Corinthians 2` — and the unit word
+        # is the only thing standing between them and this rule. 章 keeps
+        # them; 节 refuses 009's two.
+        if not m.group("chmark"):
+            ch_end = m.end("ch") if m.group("ch") else m.end("chcn")
+            if _CN_VERSE_PAIR_RE.match(text, ch_end):
                 continue
         # "John chapters 12, 14 and 16" is a list of CHAPTERS, and a
         # spelled-out chapter word ahead of the number is what makes the

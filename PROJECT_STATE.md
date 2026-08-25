@@ -65,9 +65,36 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.164** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.164** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.165** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.165** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+**Trap 57: a bare chapter key in `refs.json` is not a weaker verse key —
+it matches EVERY verse in the chapter, and the queue's own reassurances
+are measurements nobody re-ran.** Two lessons from the same iteration
+(2026-08-26), both found by the refuter after the change was green.
+
+`passage_filter.dart` returns true for any key with no colon, so adding
+`2 Corinthians 5` to a sermon that already holds `5:16` and `5:17` is not
+a no-op: it makes that sermon answer Sermons-page filters on 5:2, 5:9,
+5:10, 5:14 and five more verses it never opens. **Before calling a new
+chapter-level key harmless because a verse key already covers it, check
+which reader it reaches — `sermonsForVerse` and `_passageMatches` do not
+agree.** The first treats a bare key and a verse key identically; the
+second does not. The same iteration then shipped one such key knowingly
+(344 `Psalms 48`, from 「诗篇48篇1和8节」) because eighteen identical ones
+were already in the file and they want one repair, not a special case for
+the newest — a decision with a measurement behind it in the queue, not an
+exception to the trap.
+
+And the queue item being worked said, as settled fact, that 提前 has "×16
+sites and produces no pairs at all". It has **88**, twelve of them
+followed directly by a number, and they are refused by a completely
+different guard than the item credited. This is trap 55 a second time:
+**a reassurance in a queue item is a measurement someone took once, in
+some other context, and it decays exactly like the queue's other prose.**
+Re-measure the sentence that tells you not to worry, not just the one
+that tells you to.
 
 **Trap 56: a base rate of zero does not license a rule — the width of
 the firing zone does — and byte-identical output can mean the rule is

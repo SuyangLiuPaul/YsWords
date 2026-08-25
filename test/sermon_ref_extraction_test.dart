@@ -248,17 +248,60 @@ void main() {
           ['2 Corinthians 12']);
     });
 
-    // The one case that pins the minimum at three rather than two, so
-    // it is the one to read if that number is ever lowered. 提前 is
-    // 1 Timothy and also the everyday adverb "in advance".
+    // The case that pins the abbreviation half of the rule. 提前 is
+    // 1 Timothy and also the everyday adverb "in advance"; admitting it
+    // mid-sentence indexes this sentence as 1 Timothy 3.
     //
     // The sentence is synthetic, and deliberately so: the corpus has 16
     // sites of 提前 mid-sentence and none is followed by a number, so
-    // nothing in it discriminates. Lowering the minimum to two costs the
-    // corpus one wrong entry (009 「同一诗篇第九和第十节」 → `Psalms 9`)
-    // and gains three right ones — a real trade, argued in the script.
+    // nothing in the corpus discriminates. That is the point — a base
+    // rate of zero is not evidence, and this phrase is one transcript
+    // away from firing.
     test('does not admit a two-character abbreviation mid-word', () {
       expect(_extractRefs('我们提前3天到达了会场'), isEmpty);
+    });
+
+    // …but a two-character COMPLETE name is admitted, which is what
+    // separates 诗篇 from 提前. 092's sentence reached no Psalms 23 key
+    // of any kind before this.
+    test('admits a two-character complete book name mid-sentence', () {
+      expect(_extractRefs('"雅伟是我的牧者"，正如你们从诗篇第23篇都知道的'),
+          ['Psalms 23']);
+    });
+  });
+
+  group('和 joining two 第-numbers where the second carries 节', () {
+    // 009 「同一诗篇第九和第十节」. 和 joins two things of the same kind
+    // and the 节 says both are VERSES, so the first number is not the
+    // chapter — and the chapter is nowhere in the sentence. It is Psalm
+    // 42, named three times in the paragraph before and confirmed by the
+    // English body's "Verse 9 and 10 of the same psalm"; recovering that
+    // needs the paragraph read, so nothing is filed. Without the refusal
+    // this sentence indexes as `Psalms 9`.
+    test('files nothing rather than reading the first number as a chapter',
+        () {
+      expect(_extractRefs('理解过这种痛苦？同一诗篇第九和第十节："我对神说'),
+          isEmpty);
+    });
+
+    // The four corpus sites that sit one word away from that rule. Both
+    // are real chapter pairs and both ship today; the unit word is the
+    // only thing between them and the refusal, so if 章 ever stops
+    // exempting them these two go silent.
+    test('leaves a chapter pair alone, because it ends in 章 not 节', () {
+      final got = _extractAll([
+        '当我们看哥林多后书第11和12章时，我们看到了那里正在',
+        '这正是保罗在哥林多前书第二和第三章所说的：属灵的人',
+      ]);
+      expect(got[0], contains('2 Corinthians 11'));
+      expect(got[1], contains('1 Corinthians 2'));
+    });
+
+    // A 章/篇 mark on the first number is proof it really is the
+    // chapter, so the refusal must not reach 149's shape.
+    test('leaves a marked chapter alone', () {
+      expect(_extractRefs('使徒保罗在罗马书第12章第1和第2节说我们必须'),
+          ['Romans 12:1']);
     });
   });
 

@@ -6203,9 +6203,70 @@ has never seen this repo.
       guard removed; replaced with corpus sentences whose Joshua targets
       actually exist (2:5-11, 4:22-24, 11:4).
 
-- [ ] **Lower the CJK infix minimum from three characters to two — it
-      is worth +3 correct entries and costs 1 wrong one, and the wrong
-      one is separately fixable.** Measured 2026-08-25 against the
+- [x] **Lower the CJK infix minimum from three characters to two.
+      SHIPPED 2026-08-26 (v1.4.165) — but NOT as a flat lowering, which
+      measurement turned down. The guard shipped with it; +2 pairs, −0.**
+      What ships is the 「第N和第M节」 refusal this item asked for first,
+      plus admission of two-character COMPLETE book names only: `len >= 3
+      or (len == 2 and a[1] not in "前后後上下一二三")`. The twenty
+      two-character aliases split cleanly — seventeen abbreviations whose
+      second character is a positional or ordinal marker (提前 撒下 王上
+      林后 约一 …) against three complete names (诗篇 詩篇 雅歌).
+
+      **The flat lowering was rejected on two counts the item did not
+      have.** First, `test/sermon_ref_extraction_test.dart` has pinned
+      「我们提前3天到达了会场」 since the minimum was set, and admitting
+      the abbreviations indexes it as `1 Timothy 3`. Second — and this is
+      the correction that matters — this item's own reassurance below
+      ("提前 ×16 … produce no pairs at all") is **wrong twice over**. 提前
+      occurs **88** times, and **twelve** are followed directly by a
+      number: 032 「提前八个月」, 365 「提前三天」, EC015 「提前一个月」,
+      393 「提前一两天」 and their zh-TW twins. What refuses all twelve is
+      not the length rule but the bare Chinese-numeral guard, which needs
+      a 第, a 章 or a verse. **Zero of the 88 use an ASCII digit, and the
+      digit form is precisely what walks past that guard.** So the
+      sentence shape is in the corpus twelve times over and only the
+      transcriber's choice of numeral spelling keeps it inert — a far
+      thinner thing to rest on than the "no hazard" this item claimed.
+
+      **Giving up 423 is a gain, not a cost.** The refuter found that a
+      BARE chapter key is not equivalent to a verse key: `passage_filter
+      .dart` matches a colon-less key against every verse in the chapter,
+      so `2 Corinthians 5` would have made 423 answer filters on 5:2,
+      5:7, 5:9, 5:10, 5:14, 5:15, 5:18, 5:19 and 5:21 — all offered by
+      the filter sheet because other sermons cite them, and none of them
+      opened by a sermon that quotes 5:16-17.
+
+      **The +2 are not equally good, and the second one shipped with its
+      eyes open.** Only **092 → `Psalms 23`** is a new reach, and a clean
+      one — 092 held no key of any kind for that psalm, and its English
+      「the 23rd Psalm」 is a spelling the extractor does not read.
+      **344 → `Psalms 48` is a bare chapter key and is over-broad by the
+      very measure that condemns 423 above**: 344 cites 「诗篇48篇1和8节」
+      and now answers a Sermons filter on Psalms 48:3. It ships anyway
+      because it is not a new kind of wrongness — 「<章/篇>N和M节」 parses
+      no verse at all, and `refs.json` already carried **seventeen** such
+      bare chapter keys before this change. Eighteen want one repair, not
+      a special case for the newest; the repair is queued below, together
+      with the measurement showing why the obvious version of it is worse
+      than doing nothing.
+
+      The guard is inert at a minimum of three (+0/−0) and is therefore
+      not validated by the corpus on its own — it shipped in the same
+      commit as the admission that makes it discriminating, and is
+      mutation-tested: remove it and 009 files `Psalms 9`. Its firing
+      zone was measured rather than assumed (trap 56): the whole corpus
+      has **six** sites where a book alias is followed by a chapter
+      number carrying no 章/篇 and then 和, and four of them are 357
+      「哥林多後書第11和12章」 and 219 「哥林多前書第二和第三章」 in both
+      Chinese bodies — real chapter pairs that ship today, kept only by
+      the 章/节 distinction. All three are now pinned by tests.
+
+- [x] **SUPERSEDED by the entry above — the original proposal, kept
+      because two of its numbers were wrong and the correction is the
+      lesson.** Lower the CJK infix minimum from three characters to two
+      — it is worth +3 correct entries and costs 1 wrong one, and the
+      wrong one is separately fixable. Measured 2026-08-25 against the
       shipped index: `len(a) >= 2` in `build_cjk_infix_book_pattern()`
       adds exactly four pairs and removes none. Three are right —
       092 「诗篇第23篇都知道的」 → `Psalms 23`, 344 「诗篇48篇1和8节」 →
@@ -6213,6 +6274,11 @@ has never seen this repo.
       `2 Corinthians 5`. One is wrong: 009 「同一诗篇第九和第十节」 →
       `Psalms 9`, where 第九 and 第十 are **verses 9 and 10 of Psalm 42**,
       not psalm 9.
+
+      **↑ "Three are right" is the third wrong number.** Only 092 is
+      right. 344 `Psalms 48` and 423 `2 Corinthians 5` are both BARE
+      chapter keys standing in for citations of specific verses, and a
+      bare key matches the whole chapter — see the shipped entry above.
 
       **That psalm number is a correction — this note first said Psalm
       39, and a guard written from it would have asserted the wrong
@@ -6239,6 +6305,74 @@ has never seen this repo.
       The fear that the two-character abbreviations would misfire
       mid-sentence was refuted 2026-08-25; the only real cost is the one
       entry above.
+
+      **↑ That last paragraph is the wrong one.** 提前 is 88 sites, not
+      16, and twelve of them ARE followed by a number; they produce no
+      pairs only because a different guard refuses bare Chinese
+      numerals, and the digit spelling defeats it. See the shipped entry
+      above.
+
+- [ ] **The two-character abbreviations lose at least one real citation,
+      and 156 「與帖前四章」 is it.** Raised by the refuter 2026-08-26
+      while arguing against the item above. 帖前 (1 Thessalonians) is not
+      plausibly an everyday word — nor are 帖后, 彼前, 彼后, 代下 — so the
+      blanket exclusion of every two-character abbreviation is broader
+      than the 提前 / 王上 hazard that motivates it. 156's occurrence is a
+      genuine citation and is dropped; it costs nothing today only
+      because 156 reaches 1 Thessalonians 4 by another path.
+
+      Do not fix this by admitting the "safe-looking" ones one at a
+      time: which two-character strings are also ordinary words is a
+      judgement about Chinese, not a measurement, and the corpus cannot
+      settle it. A better shape would be to admit an abbreviation only
+      when the citation that follows is unambiguous — a 第, a 章, or an
+      explicit verse — which is the same evidence the bare-numeral guard
+      already demands. Measure the whole-corpus effect of that before
+      trading anything real for it.
+
+- [ ] **「第十六十七节」 — two verse numbers run together with no
+      separator — parses as neither.** 423 says 「在林后第五章第十六十七
+      节里面」 and its English body confirms "5:16 and 17", but
+      `cn_number` correctly rejects 十六十七 as malformed, so the verse is
+      lost and only the chapter survives. Found 2026-08-26. Zero cost
+      today (423 holds 2 Corinthians 5:16 and 5:17 from the English), but
+      it is a real shape and the corpus should be counted before anyone
+      writes a splitter — 十六十七 is only unambiguous because 十六 and
+      十七 are adjacent, and a general rule here could invent verses.
+
+- [ ] **「<章/篇>N和M节」 parses no verse at all, so eighteen citations
+      of two specific verses are indexed as WHOLE CHAPTERS.** Measured
+      2026-08-26. The verse group at the foot of `REF_RE`
+      (`scripts/extract_sermon_refs.py`, the `v2`/`vcn2` branch) wants
+      its number flush against 節/节; 和 breaks that, the whole optional
+      group fails, and the match degrades to a bare chapter key. The
+      corpus has **82** occurrences of it — that is
+      `[章篇]\s*NUM\s*[和与與及]\s*第?\s*NUM\s*[節节]` with `NUM` allowing
+      ASCII digits or 一二三四五六七八九十百零兩两, counted across all
+      three transcript languages; quote the pattern with the number,
+      because the count moves a lot with the character class. `refs.json`
+      carries eighteen bare chapter keys because of it —
+      324 Romans 12, 353 Matthew 5, EC010 Revelation 13, 344 Psalms 48
+      and the rest. A bare chapter key matches EVERY verse of the
+      chapter in `passage_filter.dart` (trap 57), so filtering Sermons
+      on Psalms 48:3 returns 344, which cites only verses 1 and 8.
+
+      **Do not take the obvious repair.** Letting 和 close the verse
+      group was implemented and measured: it is **−18 +0**. Every FIRST
+      verse of every pair is already indexed by some other site, so the
+      change buys nothing at all, and it strands seven SECOND verses
+      that nothing else reaches — 239 loses 1 John 2:22, 325 loses
+      Hebrews 9:26, 331 loses Hebrews 5:14 / John 4:34 / Revelation
+      3:10, 344 loses Exodus 14:25 / Psalms 48:8. The repair must emit
+      BOTH verses to be worth anything.
+
+      Scope note before starting: the 第-marked spelling loses its
+      second verse the same way but silently — 「第12章第1和2节」 yields
+      `Romans 12:1` and drops verse 2 without leaving a bare chapter key
+      behind, so it is invisible in the key counts. The same pattern
+      with `第` required before the first number finds **133**
+      occurrences — more than the visible case, and none of them shows
+      up as a wrong key. Both spellings want the same rule.
 
 - [ ] **90 of the app's 130 Chinese book names are absent from the
       extraction script's `CHINESE_ALIASES`, including 申命记, 以赛亚书,
