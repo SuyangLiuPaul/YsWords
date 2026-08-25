@@ -5798,19 +5798,64 @@ has never seen this repo.
       it, and the argument works either way. Needs the audio, which is
       on the T7 — same class as the CP18 item above.
 
-- [ ] **"Matthew 5, 6 and 7 are the Sermon on the Mount" would index
-      two verses, and the guard cannot see it.** The chapter-list
-      refusal looks for a further COMMA-number; a list whose second
-      separator is a bare `and` walks straight past it, and the
-      adjacency rule then makes 6 and 7 a two-verse range. Zero
-      occurrences in the corpus today, and it cannot be closed by
-      refusing `Book N, M and M+1` — that is the exact shape of 009's
-      "2 Peter 2, 7 and 8", 327's "1 Corinthians 15, 53 and 54" and
-      353's "Matthew 5, 29 and 30", all genuine. Raised by the refuter
-      2026-08-25. A rule that refuses only when M and M+1 are BOTH
-      plausible chapters of that book would separate them — it keeps all
-      three above and kills the invented case — but it also kills 015's
-      "Matthew 5, 10 to 12", so measure the whole-corpus effect first.
+- [x] **"Matthew 5, 6 and 7 are the Sermon on the Mount" would index
+      two verses, and the guard cannot see it. SHIPPED 2026-08-25 — but
+      NOT by the rule this item proposed, which measurement killed.**
+      The chapter-list refusal looks for a further COMMA-number; a list
+      whose second separator is a bare `and` walks straight past it, and
+      the adjacency rule then makes 6 and 7 a two-verse range.
+
+      **The proposed rule — refuse when M and M+1 are both plausible
+      chapters — was tried and is indefensible.** It keeps the three
+      genuine sites only because they are lucky: 009's "2 Peter 2, 7 and
+      8" (3 chapters), 327's "1 Corinthians 15, 53 and 54" (16) and
+      353's "Matthew 5, 29 and 30" (28) all overshoot the book. Nothing
+      protects the shapes that do not: it would lose "Matthew 28, 19 and
+      20", "Romans 12, 1 and 2", "Genesis 1, 26 and 27", "Isaiah 40, 30
+      and 31", "Hebrews 11, 1 and 2", "Revelation 21, 3 and 4". 91 of
+      the corpus's 154 explicit `Book C verses V and W` sites have both
+      numbers inside the chapter count, and this preacher restates a
+      reference in the bare form in the same breath as the explicit one
+      — 009, 327 and 353 all do it.
+
+      **What actually separates the readings is that a chapter list
+      COUNTS ON from the chapter: 5, 6, 7.** A verse range has no reason
+      to. The shipped rule refuses only `vbare` + `vand` where
+      `verse == ch+1` and `last == verse+1` and `ch+2` is a real chapter.
+      Measured over all 867 transcripts: **148 adjacent `and` verse
+      pairs, and not one counts on from its chapter**, so refs.json
+      regenerates byte-identical (md5 `223c2d85…`, confirmed
+      independently). `to`/`through`/dash are range words and are left
+      alone, which is what keeps 015's "Matthew 5, 10 to 12" and 089's
+      "Luke 14, 7 to 14" — both pairs are plausible chapters of their
+      book. An explicit "Matthew chapter 5, verses 6 and 7" is untouched
+      because `vbare` is not set.
+
+      **Honest about what it costs.** The 0-of-148 is a measured base
+      rate, not structure: `v == ch+1` holds for 2.9% of verse-bearing
+      matches, so a genuine "Book C, C+1 and C+2" would be reduced to
+      its chapter — expected ~0.15 misses per corpus of this size. The
+      trade is deliberate; an invented verse on a study interface costs
+      more than a miss. One incidental gain: "Psalm 117, 118 and 119"
+      used to yield nothing (Psalm 117 has no verse 118) and now yields
+      Psalms 117.
+
+      `test/sermon_ref_extraction_test.dart` is new and is the first
+      test of any kind over this script — it runs the REAL Python
+      through `python3`, not a Dart reimplementation of its regex.
+
+- [ ] **The same chapter-list defect survives when the list is NOT
+      consecutive.** Raised by the refuter 2026-08-25 while checking the
+      fix above. "John 12, 14 and 16 all say this" still yields John
+      12:14, and "Romans 6, 7 and 9" yields Romans 6:7 — 004's and 356's
+      sentences with the chapter word dropped. The counting-on rule
+      cannot see them, and the adjacency rule has already nulled the far
+      number by the time it runs, so nothing downstream knows an `and`
+      was there. Zero occurrences today: all four real counting-on lists
+      in the corpus (164, 221, 247, 356) use a second comma and were
+      already refused. Needs a different discriminator — do NOT reuse
+      "both are plausible chapters", which was measured and rejected
+      above.
 
 - [x] **The bare-comma verse is recovered after a chapter word where M
       cannot be a chapter of that book. SHIPPED 2026-08-25 (v1.4.161) —

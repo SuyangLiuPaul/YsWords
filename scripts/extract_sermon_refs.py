@@ -571,6 +571,40 @@ def extract_refs(text: str) -> list[str]:
                 and verse is not None
                 and verse <= max(CANON.get(canon, {0}))):
             verse = last = None
+        # The same list, one separator further out. REF_RE's chapter-list
+        # refusal looks for a second COMMA, so a list whose second
+        # separator is a bare `and` walks past it — and the adjacency
+        # rule above then turns the pair into a range. "Matthew 5, 6 and
+        # 7 are the Sermon on the Mount" would be filed under Matthew 5:6
+        # and 5:7, verses the sentence never opens.
+        #
+        # What separates the two readings is that a chapter list COUNTS
+        # ON from the chapter it started at: 5, 6, 7. The canon alone
+        # cannot do it. Refusing whenever both numbers are plausible
+        # chapters was tried first and is indefensible — it would lose
+        # "Matthew 28, 19 and 20", "Romans 12, 1 and 2" and "Genesis 1,
+        # 26 and 27", and this preacher demonstrably restates a reference
+        # in the bare form in the same breath as the explicit one: 009,
+        # 327 and 353 all do.
+        #
+        # Measured over the whole corpus: of the 148 adjacent `and` verse
+        # pairs, in every separator form, NOT ONE counts on from its
+        # chapter. That is a measured base rate and not a structural
+        # impossibility — v == ch+1 holds for 2.9% of verse-bearing
+        # matches, so a genuine "Book C, C+1 and C+2" would be reduced to
+        # its chapter. The trade is deliberate: what it refuses is an
+        # invention, what it risks is a miss, and on a study interface an
+        # invented verse is the expensive one.
+        #
+        # Scoped to `and`, which is how a list is spoken. `to`, `through`
+        # and a dash are range words and are left alone, so 015's
+        # "Matthew 5, 10 to 12" and 089's "Luke 14, 7 to 14" keep their
+        # verses.
+        if (m.group("vbare") is not None
+                and m.group("vand") is not None
+                and verse == ch + 1 and last == verse + 1
+                and last <= max(CANON.get(canon, {0}))):
+            verse = last = None
         if ch <= 0 or ch > 200:
             continue
         # "the first letter of John, chapter 2" is 1 John, and the bare

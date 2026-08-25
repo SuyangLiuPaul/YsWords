@@ -61,6 +61,32 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 | qat | `yswords-qat`, `yswords-cn-qat` | **1.4.163** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
 
+**Trap 53: a rule can survive the whole corpus by luck, and "no site
+changes" does not mean the rule is right.** A chapter list whose second
+separator is a bare `and` — "Matthew 5, 6 and 7 are the Sermon on the
+Mount" — slipped past the comma-keyed list refusal and was indexed as
+two verses. The obvious rule, refuse when both numbers are plausible
+chapters of the book, passes every one of the corpus's genuine sites and
+regenerates refs.json unchanged. It is still wrong: those three sites
+pass only because they overshoot the chapter count (2 Peter has 3, 1
+Corinthians 16, Matthew 28), and 91 of the 154 explicit `Book C verses V
+and W` sites do not — so it would have lost "Matthew 28, 19 and 20" the
+day a sermon said it in the bare form. **Ask why each site survives, not
+whether it does.** What ships instead is that a chapter list COUNTS ON
+from its chapter (5, 6, 7) and a verse range has no reason to: 148
+adjacent `and` pairs in the corpus, not one counts on. That is a
+measured base rate (`v == ch+1` holds for 2.9% of verse-bearing
+matches), not an impossibility, and it is a deliberate trade of a
+possible miss against a certain invention.
+
+`test/sermon_ref_extraction_test.dart` is the first test of any kind
+over `scripts/extract_sermon_refs.py` — the file that decides the whole
+sermon↔verse index, in Python, invisible to `flutter analyze`. It runs
+the real script through `python3` rather than reimplementing the regex
+in Dart, which would only prove Dart agrees with Dart. CI's
+ubuntu-latest supplies `python3`; the test does not skip when it is
+missing, per the zsh precedent below.
+
 v1.4.163 lets the book name carry down a comma or semicolon list, not
 just across a single `and`, so "Jeremiah 4:7, 7:11, 7:34, 22:5, 32:4,
 51:6, 51:22" (143) files seven citations instead of one and
