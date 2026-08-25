@@ -120,6 +120,30 @@ void main() {
         ['en', 'yue', 'cmn']);
   });
 
+  test('no two tracks share a YouTube id', () {
+    // 2026-08-25: 獨一真神's English recording had gone (S7VEdxrWcX8,
+    // 404 from oEmbed) and nothing could tell — the card rendered, the
+    // English button appeared, and tapping it played nothing. Liveness
+    // needs the network, so it lives in tools/verify_video_links.py
+    // rather than here; what a unit test CAN catch is the repair going
+    // wrong, by pasting one video over two slots.
+    final ids = [
+      for (final s in series)
+        for (final e in s.episodes)
+          for (final t in e.tracks) t.youtubeId,
+    ];
+    expect(ids.toSet().length, ids.length,
+        reason: 'a duplicated id means two languages play the same file');
+    expect(ids, isNot(contains('S7VEdxrWcX8')),
+        reason: 'that id is dead; it must not come back in a later edit');
+  });
+
+  test('獨一真神 English points at the replacement recording', () {
+    final en = byId('onegod').episodes.single.trackFor('en');
+    expect(en, isNotNull);
+    expect(en!.youtubeId, 'QmTEkPquvcQ');
+  });
+
   test('titles resolve for every locale the app offers', () {
     for (final s in series) {
       for (final locale in ['en', 'zh-Hans', 'zh-Hant']) {
