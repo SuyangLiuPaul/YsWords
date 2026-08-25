@@ -471,6 +471,25 @@ _RANGE_LINK = re.compile(
     re.IGNORECASE)
 
 
+# "Matthew 14:14 and 15:32 for the feedings of the five and four
+# thousand" (101) names two passages, and the second has no book in
+# front of it — REF_RE refuses it as a range end (correctly: the verses
+# between were never named) and then nothing picks it up, because a bare
+# "15:32" is not a citation on its own. The book name carries across the
+# `and`, so the fragment is re-read with the book spliced back in.
+# A chapter of its own is what distinguishes this from "verses 20 and
+# 21": that is a range and REF_RE already walks it.
+#
+# The fragment is the bare `C:V` and nothing else. A range tail was
+# tried — 063's "Matthew 11:30 and 12:1–8" is the corpus's only site
+# with one — and taken back out: it costs nothing (063 already reaches
+# 12:1-8 through other prose in the same sermon) and it hands REF_RE a
+# far number with no unit-word guard in front of it, so a plausible
+# "Mark 6:34 and 8:1 to 4000 people" would file the sermon under
+# thirty-eight verses of Mark 8. Two endpoints, never a span.
+_AND_SECOND_REF = re.compile(r"\s*and\s+(\d+\s*[:：]\s*\d+)", re.IGNORECASE)
+
+
 def _walk(book: str, c1: int, v1: int, c2: int, v2: int):
     """Every verse from [book] c1:v1 through c2:v2 inclusive, skipping
     any the canon does not have."""
@@ -595,6 +614,17 @@ def extract_refs(text: str) -> list[str]:
             if key not in seen:
                 seen.add(key)
                 out.append(key)
+        # The second half of "Book C:V and C2:V2". The fragment is bounded
+        # to the citation itself rather than the rest of the text, so the
+        # recursion cannot re-read the whole sermon out of order, and it
+        # starts with a fresh `prev`, so the two citations cannot be
+        # walked into one span — the verses between them were never named.
+        tail = _AND_SECOND_REF.match(text, m.end())
+        if tail is not None:
+            for key in extract_refs(f"{canon} {tail.group(1)}"):
+                if key not in seen:
+                    seen.add(key)
+                    out.append(key)
     return out
 
 

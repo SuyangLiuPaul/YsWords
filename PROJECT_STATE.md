@@ -57,9 +57,32 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.161** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.161** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.162** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.162** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+v1.4.162 lets the book name carry across an `and` to a second citation,
+so "Matthew 14:14 and 15:32 for the feedings of the five and four
+thousand" (101) reaches both feedings instead of only the first. The
+`and` branch of `REF_RE` correctly refuses to make a number carrying its
+own chapter into a range end — the verses between the two were never
+named — and nothing then picked the second up, because a bare "15:32" is
+not a citation on its own. 10 (sermon, key) pairs added of 5,185, 0
+removed, matching the queue's prediction exactly. Two endpoints, never a
+span: the recursion starts with a fresh `prev`.
+
+**The refuter shrank it twice and both cuts were load-bearing.** Round
+one killed a range tail on the fragment — it hands the parser a far
+number with no unit-word guard, so "Mark 6:34 and 8:1 to 4000 people"
+would file the sermon under 38 verses of Mark 8 — at a measured cost of
+zero keys. Round two found the test pinned that with a **vacuous**
+assertion and pinned the bounded-fragment property nowhere at all:
+`.search` for `.match` carries the book name arbitrarily far forward, 50
+keys instead of 10, and the whole file still passed. Both source guards
+are now mutation-tested rather than asserted. Round two also widened —
+24 keys across 8 sermons lose a second citation to a comma list, 3 of
+them `and` shapes this fix was meant to cover — and that was recorded
+in the queue rather than acted on, per the rule below.
 
 v1.4.161 lets a bare comma-separated verse survive a spelled-out
 chapter word, but only where the number is past the end of the book and

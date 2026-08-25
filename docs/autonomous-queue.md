@@ -5938,8 +5938,62 @@ has never seen this repo.
       far more than this branch. Measure the whole-corpus effect of that
       before touching it.
 
-- [ ] **12 sites say "Book C:V and C2:V2" and the second citation is
-      lost — 10 of them unreachable by any other path.** The far
+- [x] **12 sites say "Book C:V and C2:V2" and the second citation is
+      lost — 10 of them unreachable by any other path. SHIPPED
+      2026-08-25 (v1.4.162) — the estimate held exactly: +10 pairs, −0.**
+      `_AND_SECOND_REF` in `scripts/extract_sermon_refs.py` splices the
+      already-resolved canonical book name onto the fragment after the
+      `and` and re-reads it. Two endpoints, never a span: the recursion
+      starts with a fresh `prev`, so nothing walks the verses between.
+
+      **The refuter shrank the fix twice and both cuts mattered.**
+      Round one killed a range tail (`to`/`through`/dash) on the
+      fragment — it hands the parser a far number with no unit-word
+      guard in front of it, so "Mark 6:34 and 8:1 to 4000 people" would
+      have filed the sermon under 38 verses of Mark 8. It costs
+      nothing: 063 is the corpus's only site with a range after the
+      `and` and it already reaches Matthew 12:1-8 through other prose,
+      so restoring the tail changes zero keys. Round two found the test
+      was pinning that with a **vacuous** assertion (Dart stops at the
+      first failing expect, and the whole-group literal already fires on
+      every harmful widening) and that the "bounded fragment" property
+      was pinned nowhere at all — `.search` for `.match` carries the
+      book name arbitrarily far forward, 50 keys instead of 10, with the
+      entire file still green. Both now mutation-tested.
+
+      One negative assertion was outright FALSE before the suite caught
+      it: 101 already holds `Matthew 14:13-21` from an explicit range,
+      so "must not contain Matthew 14:15" proves nothing about spans.
+      `14:22` and `15:1` are the nearest keys only a walk could produce.
+
+      Known and recorded, not fixed: a time of day would still be read
+      as a verse where the number happens to exist ("Luke 4:16 and 4:30
+      in the afternoon"). Zero sites in the corpus, and `REF_RE` has the
+      identical exposure already for a time written after a book name,
+      so this adds no new class.
+
+- [ ] **A second citation separated by a COMMA LIST loses its book name
+      — 24 keys across 8 sermons, and 3 of them are `and` shapes the
+      fix above was supposed to cover.** Measured by the refuter
+      2026-08-25 against the shipped index and spot-verified: 057's
+      "Isaiah 29:18–20, 35:5–6, and 61:1" loses `Isaiah 61:1`, 341's
+      "Leviticus 11:44-45, 19:2, and 20:7" loses `Leviticus 20:7`, 342's
+      "John 2:17, 2:22, 12:16, 15:20 and 16:4" loses `John 16:4` — all
+      three confirmed absent from `bySermon`. `_AND_SECOND_REF` requires
+      the `and` to sit directly against a resolved match, and a comma
+      list breaks the adjacency.
+
+      The rest are plain comma/semicolon lists: 023 (1), 057 (3),
+      143 (6), 147 (3), 207 (3), 331 (2), 341 (2), 342 (4) — e.g. 207's
+      "Matthew 16:21; 17:9; 17:23; 20:19; 26:32" and 143's "Jeremiah
+      4:7, 7:11, 7:34, 22:5, 32:4, 51:6, 51:22". The counts are the
+      refuter's and were not independently re-derived; **re-measure
+      before acting.** The danger a list carries that a single `and`
+      does not: a comma-separated `C:V` list runs on, so the rule needs
+      a stopping condition or a sentence's worth of numbers joins the
+      index. Two endpoints again — never walk between them.
+
+- [x] **SUPERSEDED by the entry above — the original statement.** The far
       citation has a chapter of its own, so guard 2 of the fix above
       correctly refuses to make it a range end — but nothing then picks
       it up, because a bare "15:32" has no book name in front of it.

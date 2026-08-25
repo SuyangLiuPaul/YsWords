@@ -504,4 +504,96 @@ void main() {
         reason: 'declared passages the index cannot reach:\n  '
             '${unreachable.join('\n  ')}');
   });
+
+  // "Matthew 14:14 and 15:32 for the feedings of the five and four
+  // thousand" (101) names TWO passages. REF_RE's `and` branch correctly
+  // refuses to make the second one a range end — the verses between the
+  // two feedings were never named — but until 2026-08-25 nothing then
+  // picked the second one up, because a bare "15:32" carries no book in
+  // front of it and is not a citation on its own. The book name now
+  // carries across the `and`.
+  //
+  // The corpus holds 12 sites where the `and` sits directly against a
+  // resolved citation, and all 12 are second citations of the same
+  // book. Ten of them are asserted below — every one is a verse the
+  // sermon reaches by NO other path, so each of those ten fails if the
+  // carry is removed. The other two (005's "Matthew 3:15 and 4:17",
+  // 063's "Matthew 11:30 and 12:1-8") are deliberately not asserted:
+  // both sermons already reach the second citation through other prose,
+  // so they would pass with the carry deleted and would read as
+  // coverage they do not provide.
+  //
+  // 12 is NOT the count of everything this rationale covers. Three more
+  // `and` sites lose their second citation to an intervening comma list
+  // — 057's "Isaiah 29:18-20, 35:5-6, and 61:1", 341's "Leviticus
+  // 11:44-45, 19:2, and 20:7", 342's "John 2:17, 2:22, 12:16, 15:20 and
+  // 16:4" — because the carry requires the `and` to be adjacent to a
+  // match and a comma list breaks the adjacency. Measured and left for
+  // its own iteration; see the queue.
+  test('the book name carries across "and" to a second citation', () {
+    final bySermon = refs['bySermon'] as Map<String, dynamic>;
+    List<String> keys(String id) => (bySermon[id] as List).cast<String>();
+
+    expect(keys('059'), contains('John 15:17'));
+    expect(keys('062'), contains('John 17:14'));
+    expect(keys('067'), contains('Matthew 12:20'));
+    expect(keys('068'), contains('Acts 24:16'));
+    expect(keys('101'), contains('Matthew 15:32'));
+    expect(keys('108'), contains('1 John 4:16'));
+    expect(keys('115'), contains('Daniel 10:21'));
+    expect(keys('152'), contains('Judges 15:14'));
+    expect(keys('155'), contains('Ephesians 5:6'));
+    expect(keys('161'), contains('John 3:5'));
+
+    // Two endpoints, never a span. 101 cites the feeding of the five
+    // thousand and the feeding of the four thousand; walking between
+    // them is 55 verses, under the extractor's 200-verse cap, so the
+    // cap would not have caught it. The discriminators had to be read
+    // off the real index rather than guessed: 101 already holds
+    // Matthew 14:13-21 from an explicit range elsewhere in the sermon,
+    // so asserting the absence of 14:15 proves nothing about spans — it
+    // simply fails. 14:22 and 15:1 are the nearest keys on either side
+    // that only a walk could have produced.
+    expect(keys('101'), isNot(contains('Matthew 14:22')));
+    expect(keys('101'), isNot(contains('Matthew 15:1')));
+
+    // Two properties of the carry that no assertion over refs.json can
+    // reach, because no site in the corpus discriminates them. Both are
+    // pinned at source, which is the only place they are visible.
+    final src = File('scripts/extract_sermon_refs.py').readAsStringSync();
+    final start = src.indexOf('_AND_SECOND_REF = re.compile(');
+    expect(start, isNot(-1),
+        reason: 'the second-citation carry must still be named '
+            '_AND_SECOND_REF');
+    final pattern = src.substring(start, src.indexOf('\n', start));
+
+    // 1. The captured fragment is the bare "C:V" and nothing else. A
+    // range tail was tried and taken back out: it hands the parser a
+    // far number with no unit-word guard in front of it, so "Mark 6:34
+    // and 8:1 to 4000 people" would file the sermon under thirty-eight
+    // verses of Mark 8. 063 is the corpus's only site with a range
+    // after the `and` and it reaches 12:1-8 through other prose anyway,
+    // so restoring the tail changes zero keys and every index-level
+    // assertion above passes with it back.
+    //
+    // This is a whole-group literal on purpose. An earlier draft paired
+    // it with `isNot(contains('to|through'))`, which was vacuous: Dart
+    // stops at the first failing expect, and every widening of group 1
+    // — the `to|through` spelling AND a dash-only spelling — already
+    // breaks the literal below, so the second assertion only ever ran
+    // on edits that were harmless.
+    expect(pattern, contains(r"(\d+\s*[:：]\s*\d+)"),
+        reason: 'a range tail here walks a span the preacher never '
+            'named — the two citations are endpoints, not a passage');
+
+    // 2. The carry starts where the first citation ended. `.search`
+    // instead of `.match` would let it skip forward to any later `and`
+    // in the sermon and attach a far-away number to this book: measured
+    // at 50 carried keys instead of 10, and the whole of this file
+    // still passed, which is why it is asserted rather than assumed.
+    expect(src, contains('_AND_SECOND_REF.match(text, m.end())'),
+        reason: 'the fragment must be bounded to the text immediately '
+            'after the citation, or the book name carries arbitrarily '
+            'far forward');
+  });
 }
