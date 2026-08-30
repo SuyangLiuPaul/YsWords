@@ -628,10 +628,31 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
    IPs** — ECONNREFUSED from this Mac and from GitHub runners alike,
    while the user's phone connects fine. Use YouTube RSS/oEmbed instead
    of scraping those pages. (This Mac is separately behind a Monash
-   managed-device stack.)
+   managed-device stack.) **2026-08-30 nuance:** it isn't always an
+   outright refusal — a paired same-minute test showed
+   `christiandiscipleschurch.org` answer the GitHub Actions runner with
+   fast, clean 200s that simply omitted the mp3 links a home IP received
+   for the identical URLs (all 15 hymn pages, and 39 of 283 D/E pages).
+   No connection error, no timeout, just silently thinner content. This
+   is very likely the same datacenter-IP treatment as the ECONNREFUSED
+   case, just a softer form of it, but is an inference from one paired
+   comparison, not confirmed. Practical upshot: the daily
+   `refresh-songs.yml` cron may now be structurally unable to ever
+   refresh the CDC catalogue on its own — every future CDC-side song
+   change likely needs a manual home-IP `sync_songs.py` run + manual
+   `netlify-cli deploy`, same as the 2026-08-30 repair. See
+   `docs/autonomous-queue.md` for the open item tracking confirmation
+   (wait for a second, unpaired day before treating this as settled).
+   **Do not respond by spoofing headers/UA to look less like a bot** —
+   that's evasion, not a fix, and this repo treats CDC/fydt as a
+   neighbour to stay gentle with, not an obstacle to route around.
 8. **The `yswords-data` "Refresh songs" daily failure is the audio
    coverage guard working correctly**, not a break. Fix the alert
-   fatigue, not the guard.
+   fatigue, not the guard. As of 2026-08-30 there is a second guard with
+   the same posture: `sync_songs.py`'s new per-row regression check
+   (any row's only media vanishing, or any row disappearing) also
+   refuses to write rather than publish a stripped catalogue — see 7
+   above for why it may now fire routinely.
 9. **Data and its test ship together.** Stashing data without its test
    turned four tests red.
 10. **Flutter no longer ships an offline service worker.** `flutter

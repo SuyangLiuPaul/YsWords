@@ -1,20 +1,20 @@
 {
  "_meta": {
-  "generatedAt": "2026-08-11T18:53:10Z",
+  "generatedAt": "2026-08-30T11:03:57Z",
   "generator": "scripts/sync_songs.py v2",
-  "count": 609,
+  "count": 621,
   "bySource": {
    "cahaya": 47,
-   "cdc": 286,
+   "cdc": 298,
    "cgdc": 63,
    "fydt": 213
   },
   "byLanguage": {
    "id": 47,
-   "en": 125,
+   "en": 137,
    "zh": 437
   },
-  "withAudio": 587,
+  "withAudio": 599,
   "withVideo": 118,
   "withScore": 580,
   "withLyrics": 213,
@@ -69,7 +69,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:allah-kehidupanku",
@@ -101,7 +101,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:bah-ruilah-tali-kasih-kami",
@@ -131,7 +131,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:dengan-cara-mu",
@@ -159,7 +159,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:dengan-caramu",
@@ -187,7 +187,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:dunia-ini-bukan-rumahku",
@@ -215,7 +215,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:engkau-yang-maha",
@@ -243,7 +243,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:hadavar-yahweh",
@@ -273,7 +273,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:haleluyah",
@@ -301,7 +301,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:hanya-kau-kekuatanku",
@@ -331,7 +331,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:he-is-able",
@@ -359,7 +359,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:he-is-able-dia-sanggup",
@@ -387,7 +387,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:hiduku-t-lah-kau-ubahkan",
@@ -415,7 +415,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:hidup-dengan-rukun",
@@ -446,7 +446,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:hikmat",
@@ -476,7 +476,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:karena-kasih-allah",
@@ -507,7 +507,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:kasih-allah",
@@ -538,7 +538,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:kasih-kekal-selamanya",
@@ -568,7 +568,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:kau-harapanku",
@@ -598,7 +598,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:kau-membuatku-indah",
@@ -626,7 +626,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:ku-mau-memuja-mu",
@@ -656,7 +656,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:kuasa-yahweh-jadi-sempurna",
@@ -687,7 +687,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:k-hendak-yahweh-bagi-kita",
@@ -717,7 +717,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:lagu-berkat",
@@ -745,7 +745,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:love-endures-until-the-end",
@@ -775,7 +775,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:melawan-arus",
@@ -803,7 +803,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:memuja-menyembahmu",
@@ -833,7 +833,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:mendekat-pada-yahweh",
@@ -863,7 +863,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:mulia-bapa",
@@ -893,7 +893,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:mulia-bapa-yahweh",
@@ -924,7 +924,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:orang-yang-lemah-lembut-hidup-oleh-kuasa-roh-yahweh",
@@ -957,7 +957,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:orang-yang-lemah-lembut-hidup-oleh-kuasa-yahweh",
@@ -989,7 +989,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:pandang-mulianya-yahweh-bersinar",
@@ -1020,7 +1020,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:pengharapan-yang-indah",
@@ -1050,7 +1050,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:setiap-hari",
@@ -1078,7 +1078,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:sukacita-umat-yahweh",
@@ -1108,7 +1108,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:s-luruh-bumi-penuh-pengenalan-akan-yahweh",
@@ -1138,7 +1138,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:tak-berarti-tanpa-kasih",
@@ -1168,7 +1168,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:tak-pernah-berhenti",
@@ -1196,7 +1196,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:tak-satupun",
@@ -1224,7 +1224,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:tanpamu-segala-tak-berarti",
@@ -1252,7 +1252,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:the-only-true-god",
@@ -1280,7 +1280,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:tujuanku-adalah-yahweh",
@@ -1310,7 +1310,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:untukmu",
@@ -1338,7 +1338,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:yahweh-allahku-hanya-kau",
@@ -1368,7 +1368,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:yahweh-yang-kekal",
@@ -1398,7 +1398,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cahaya:z-hu-hikmat",
@@ -1428,7 +1428,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0180",
@@ -1630,6 +1630,42 @@
    "updatedAt": "2026-08-09T10:53:53Z"
   },
   {
+   "id": "cdc:h07",
+   "title": "Amazing Grace",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H07",
+   "url": "https://www.christiandiscipleschurch.org/content/h07",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Amazing_Grace.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Amazing_Grace.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [
+    "得胜"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
+  },
+  {
    "id": "cdc:d0375",
    "title": "Arise and Shine",
    "language": "en",
@@ -1715,6 +1751,42 @@
    "updatedAt": "2026-08-09T10:53:53Z"
   },
   {
+   "id": "cdc:h14",
+   "title": "Be Still My Soul",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H14",
+   "url": "https://www.christiandiscipleschurch.org/content/h14",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Be_Still_My_Soul.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Be_Still_My_Soul.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [
+    "平安"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
+  },
+  {
    "id": "cdc:d0204",
    "title": "Be Strong And Very Bold",
    "language": "en",
@@ -1754,6 +1826,40 @@
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "cdc:h08",
+   "title": "Be Thou My Vision",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H08",
+   "url": "https://www.christiandiscipleschurch.org/content/h08",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Be_Thou_My_Vision.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Be_Thou_My_Vision.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0430",
@@ -1842,6 +1948,40 @@
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "cdc:h09",
+   "title": "Blest Be the Tie That Binds",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H09",
+   "url": "https://www.christiandiscipleschurch.org/content/h09",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Blest_Be_the_Tie_That_Binds.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Blest_Be_the_Tie_That_Binds.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0365",
@@ -1959,8 +2099,8 @@
     "神的名"
    ],
    "verse": null,
-   "firstSeenAt": "2026-08-11T18:53:10Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0186",
@@ -2003,6 +2143,40 @@
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "cdc:h11",
+   "title": "Close to Thee",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H11",
+   "url": "https://www.christiandiscipleschurch.org/content/h11",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Close_to_Thee.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Close_to_Thee.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0270",
@@ -3158,8 +3332,8 @@
    "lyrics": null,
    "themes": [],
    "verse": null,
-   "firstSeenAt": "2026-08-11T18:53:10Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0178",
@@ -3355,6 +3529,40 @@
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "cdc:h12",
+   "title": "Immortal Invisible God Only Wise",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H12",
+   "url": "https://www.christiandiscipleschurch.org/content/h12",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Immortal_Invisible_God_Only_Wise.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Immortal_Invisible_God_Only_Wise.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0417",
@@ -3670,8 +3878,8 @@
    "lyrics": null,
    "themes": [],
    "verse": null,
-   "firstSeenAt": "2026-08-11T18:53:10Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0156",
@@ -4078,6 +4286,42 @@
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "cdc:h13",
+   "title": "O Worship the King",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H13",
+   "url": "https://www.christiandiscipleschurch.org/content/h13",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/O_Worship_the_King.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/O_Worship_the_King.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [
+    "敬拜"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0218",
@@ -4898,6 +5142,42 @@
    "updatedAt": "2026-08-09T10:53:53Z"
   },
   {
+   "id": "cdc:h06",
+   "title": "Take My Life and Let it Be",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H06",
+   "url": "https://www.christiandiscipleschurch.org/content/h06",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Take_My_Life_and_Let_it_Be.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Take_My_Life_and_Let_it_Be.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [
+    "生命"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
+  },
+  {
    "id": "cdc:d0558",
    "title": "Teach Me to Do Your Will",
    "language": "en",
@@ -5267,6 +5547,76 @@
    "updatedAt": "2026-08-09T10:53:53Z"
   },
   {
+   "id": "cdc:h04",
+   "title": "There is a Fountain Filled with Blood",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H04",
+   "url": "https://www.christiandiscipleschurch.org/content/h04",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/There_is_a_Fountain_Filled_with_Blood.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/There_is_a_Fountain_Filled_with_Blood.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
+  },
+  {
+   "id": "cdc:h15",
+   "title": "Thine is the Glory",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H15",
+   "url": "https://www.christiandiscipleschurch.org/content/h15",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Thine_is_the_Glory.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Thine_is_the_Glory.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [
+    "赞美"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
+  },
+  {
    "id": "cdc:e0004",
    "title": "To Adore and to Worship You",
    "language": "en",
@@ -5349,6 +5699,42 @@
    "updatedAt": "2026-08-09T10:53:53Z"
   },
   {
+   "id": "cdc:h05",
+   "title": "To God be the Glory",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H05",
+   "url": "https://www.christiandiscipleschurch.org/content/h05",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/To_God_be_the_Glory.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/To_God_be_the_Glory.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [
+    "赞美"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
+  },
+  {
    "id": "cdc:d0300",
    "title": "To Know Christ",
    "language": "en",
@@ -5427,6 +5813,43 @@
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "cdc:h10",
+   "title": "Trust and Obey",
+   "language": "en",
+   "source": "cdc",
+   "sourceLabel": "Christian Disciples Church",
+   "code": "H10",
+   "url": "https://www.christiandiscipleschurch.org/content/h10",
+   "album": "Classic Piano Hymns",
+   "artist": null,
+   "composer": null,
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Trust_and_Obey.mp3",
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [
+    {
+     "url": "https://www.christiandiscipleschurch.org/sites/default/files/hymns/mp3/Trust_and_Obey.mp3",
+     "kind": "vocal",
+     "lang": "en"
+    }
+   ],
+   "videoUrl": null,
+   "youtubeId": null,
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [
+    "信心",
+    "顺服"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-08-30T11:03:57Z",
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0166",
@@ -11779,7 +12202,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e1130",
@@ -11815,7 +12238,7 @@
    ],
    "verse": "Psalms 100",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0365",
@@ -11851,7 +12274,7 @@
    ],
    "verse": "Psalms 23",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0050",
@@ -11887,7 +12310,7 @@
    ],
    "verse": "Psalms 43",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0490",
@@ -11923,7 +12346,7 @@
    ],
    "verse": "Psalms 51",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:d0506",
@@ -11959,7 +12382,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0019",
@@ -12007,7 +12430,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0820",
@@ -12043,7 +12466,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0255",
@@ -12079,7 +12502,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0049",
@@ -12125,7 +12548,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0079",
@@ -12167,7 +12590,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0250",
@@ -12203,7 +12626,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0034",
@@ -12240,7 +12663,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0092",
@@ -12282,7 +12705,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0710",
@@ -12318,7 +12741,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0032",
@@ -12355,7 +12778,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0140",
@@ -12392,7 +12815,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cdc:e0016",
@@ -12438,7 +12861,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-09T10:53:53Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-03",
@@ -12474,7 +12897,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-04",
@@ -12508,7 +12931,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-05",
@@ -12542,7 +12965,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-01",
@@ -12576,7 +12999,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-02",
@@ -12610,7 +13033,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-13",
@@ -12644,7 +13067,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-14",
@@ -12678,7 +13101,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-01",
@@ -12712,7 +13135,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-15",
@@ -12746,7 +13169,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-02",
@@ -12780,7 +13203,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-03",
@@ -12814,7 +13237,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-16",
@@ -12850,7 +13273,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-06",
@@ -12886,7 +13309,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-13",
@@ -12920,7 +13343,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-12",
@@ -12957,7 +13380,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-12",
@@ -12993,7 +13416,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-09",
@@ -13029,7 +13452,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-03",
@@ -13066,7 +13489,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-10",
@@ -13100,7 +13523,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-01",
@@ -13134,7 +13557,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-04",
@@ -13168,7 +13591,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-04",
@@ -13202,7 +13625,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-13",
@@ -13238,7 +13661,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-09",
@@ -13272,7 +13695,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-06",
@@ -13306,7 +13729,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-01",
@@ -13340,7 +13763,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-09",
@@ -13374,7 +13797,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-08",
@@ -13408,7 +13831,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-08",
@@ -13446,7 +13869,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-14",
@@ -13482,7 +13905,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-06",
@@ -13516,7 +13939,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-16",
@@ -13550,7 +13973,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-07",
@@ -13584,7 +14007,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-17",
@@ -13618,7 +14041,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-02",
@@ -13654,7 +14077,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-12",
@@ -13690,7 +14113,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-09",
@@ -13726,7 +14149,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-17",
@@ -13762,7 +14185,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-13",
@@ -13796,7 +14219,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-11",
@@ -13830,7 +14253,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-06",
@@ -13866,7 +14289,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-14",
@@ -13902,7 +14325,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-14",
@@ -13938,7 +14361,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-11",
@@ -13972,7 +14395,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-12",
@@ -14006,7 +14429,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-15",
@@ -14040,7 +14463,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-05",
@@ -14074,7 +14497,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-08",
@@ -14108,7 +14531,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-10",
@@ -14144,7 +14567,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-10",
@@ -14181,7 +14604,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-05",
@@ -14217,7 +14640,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-07",
@@ -14251,7 +14674,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-04",
@@ -14285,7 +14708,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-08",
@@ -14319,7 +14742,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-02",
@@ -14353,7 +14776,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-18",
@@ -14389,7 +14812,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-05",
@@ -14425,7 +14848,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-11",
@@ -14461,7 +14884,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2023-10",
@@ -14497,7 +14920,7 @@
    ],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2026-07",
@@ -14531,7 +14954,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-11",
@@ -14565,7 +14988,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2025-03",
@@ -14599,7 +15022,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "cgdc:2024-07",
@@ -14633,7 +15056,7 @@
    "themes": [],
    "verse": null,
    "firstSeenAt": "2026-08-09T10:53:53Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "fydt:299",
@@ -15786,7 +16209,7 @@
    ],
    "verse": "Matthew 5:14-16",
    "firstSeenAt": "2026-08-09T09:15:52Z",
-   "updatedAt": "2026-08-11T18:53:10Z"
+   "updatedAt": "2026-08-30T11:03:57Z"
   },
   {
    "id": "fydt:569",

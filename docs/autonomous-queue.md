@@ -83,47 +83,106 @@ reported. Work these top-down before P2.
       checks, but at pull time instead of at CI time) so a bad upstream
       publish can no longer reach `main` at all.
 
-- [ ] **Upstream fix still needed: find why yswords-data's CDC audio-URL
-      scrape lost coverage for 18 songs on 2026-08-29.** Opened 2026-08-30
-      as the remainder of the item above, after adding a pull-time guard
-      here (see `[x]` result below) that stops a repeat from reaching
-      `main`, but does not fix the upstream scrape. This needs someone
-      working in `~/Documents/CodingProject/yswords-data`, not this repo.
+- [x] **Upstream fix shipped 2026-08-30 — yswords-data's CDC scrape no
+      longer writes a catalogue that silently lost media; the 18+3 ids are
+      repaired on the live dataset. A NEW, narrower problem was found while
+      shipping it — see the item below.** Opened 2026-08-30 as the
+      remainder of the item above, after adding a pull-time guard here (see
+      the earlier `[x]` result) that stops a repeat from reaching `main`,
+      but did not fix the upstream scrape. Fixed in
+      `~/Documents/CodingProject/yswords-data` commits `6569f903b` +
+      `2f4aaad36`.
 
-      Re-measured 2026-08-30 directly from the guard's own diff of the
-      live regressed snapshot (`generatedAt 2026-08-29T20:14:14Z`) against
-      the last known-good bundled one (`a0ab5f3`): **18 CDC ids** lost
-      their only audio and gained no replacement —
-      `cdc:d0506 e0016 e0019 e0032 e0034 e0049 e0050 e0079 e0092 e0140
-      e0250 e0255 e0365 e0490 e0710 e0820 e0910 e1130` — and **3 CDC ids
-      vanished entirely**, `cdc:h01 h02 h03`. 0 new rows, so this is loss,
-      not churn.
+      **Root cause, established by reading the scraper, not guessed:**
+      `_MEDIA_FIELDS`' merge treats a fresh empty value as authoritative
+      (correct — a page that stopped listing its mp3 should clear the
+      stored link), but nothing defended against the fetch/parse getting a
+      200 that simply didn't carry the media that was actually there.
+      Three concrete holes, all confirmed by reading the code, not
+      inferred: (1) `fetch_cdc_hymns()` treated "0/15 pages had an mp3" the
+      same as a legitimate empty result and let the run continue; (2) the
+      two existing aggregate guards (whole-source collapse, >10%
+      audio-coverage drop) both missed this incident — 7.69% audio-coverage
+      loss came in 6.6 rows under the 10% threshold; (3) `_MEDIA_FIELDS`'
+      own comment claimed a retry-protected prune step defended against
+      exactly this ("head_ok retries, so a blip cannot clear a good URL by
+      itself") — that function, `prune_derived_urls`, and the `verify`
+      parameter that was supposed to invoke it, had not been called from
+      anywhere since `fetch_cdc` stopped guessing URLs on 2026-08-09. The
+      comment was describing protection that did not exist; **the previous
+      queue entry's "guessing filenames again" hypothesis was also
+      checked and is wrong** — `fetch_cdc` parses each song's real page,
+      it does not derive URLs from the code, and the four pages re-tested
+      live all parsed correctly.
 
-      **The queue's own previous hypothesis ("the sync is probably
-      guessing filenames again") looks backwards for this incident, but
-      this is an observation, not a conclusion** — nobody has read the
-      upstream scraper yet. The rows that vanished (`h01`–`h03`) are
-      exactly the *bare-code* ones, not ones the scraper would need to
-      guess a filename for; if anything that suggests the scraper is
-      dropping rows it can't classify by the usual `<letter><4-digit>`
-      code pattern, not fabricating URLs. Whoever picks this up should
-      verify against the actual scraper before asserting either way.
+      **Fix:** `fetch_cdc_hymns()` now raises when every hymn page
+      answered but none contained an mp3. `main()` gained a per-row
+      regression guard — mirrors this repo's `pull_songs_snapshot.py`
+      `check_regression` shape one layer upstream — that refuses to write
+      if any row loses its only audio/video/score, or any row vanishes,
+      unless `--allow-regression` is passed. The dead `prune_derived_urls`/
+      `head_ok`/`--no-prune` code was deleted and the false comment
+      corrected. `http_get` gained a one-time retry on network failure
+      (previously none) because the new guard has zero per-row tolerance,
+      so a routine timeout must not now abort a write that used to just
+      cost one row silently.
 
-      **Result of the guard (this repo, not the fix):**
-      `scripts/pull_songs_snapshot.py` now loads the bundled
-      `assets/songs.json` as a baseline and refuses to write when, versus
-      it, the incoming snapshot (a) drops any row's only audio/video/score
-      with no replacement, (b) loses a source's row entirely, or (c) drops
-      a source's audio-coverage ratio by more than 3 points — printing the
-      specific ids in all three cases. Verified against the real regressed
-      snapshot: it refuses and names exactly the 18+3 ids above, and it
-      still accepts the currently-bundled snapshot fed back to itself.
-      `--allow-regression` overrides for a human who has confirmed a drop
-      is real (a church pulling a file down on purpose). Missing baseline
-      (fresh clone) skips the new checks rather than crashing. `flutter
-      analyze` and the full `flutter test` suite (1290 tests) both stay
-      green; the two Dart tests that went red on 2026-08-29 were not
-      touched.
+      **Shipped end to end:** ran the real sync from a home IP — all 18
+      ids have audio again, `h01`–`h03` are back, 621 songs total.
+      Deployed the corrected `data/songs.json` to
+      `https://yswords-data.netlify.app` directly via `netlify-cli`
+      (verified live afterwards). Then in *this* repo,
+      `python3 scripts/pull_songs_snapshot.py` pulled and **accepted** the
+      repaired snapshot (the guard added for this exact incident, now
+      green against the real fix) — `assets/songs.json` updated,
+      `flutter analyze` clean, full `flutter test` suite (1290 tests)
+      green. (The 18+3 id list and `pull_songs_snapshot.py`'s own
+      per-row/per-source/coverage-ratio contract were already established
+      by the earlier `[x]` entry above and are unchanged here.)
+
+- [ ] **A nuance on the already-known trap, not a new one: CDC's
+      datacenter-IP treatment (`PROJECT_STATE.md` §7/§8) can be a silent
+      200-with-no-media, not only ECONNREFUSED — which means the daily GH
+      Actions cron may be structurally unable to ever refresh the CDC
+      catalogue by itself.** `PROJECT_STATE.md` already documented that
+      `christiandiscipleschurch.org` refuses datacenter IPs and that the
+      audio-coverage guard firing on the daily cron is that protection
+      working, not a break. Found while shipping the fix above: right
+      after confirming a home-IP run produced a fully correct catalogue,
+      `gh workflow run refresh-songs.yml` was triggered to publish it
+      through the normal path — and the new per-row guard correctly
+      refused *that* run too. Its log
+      (`gh run view 33308480754 --repo SuyangLiuPaul/yswords-data --log`)
+      shows the identical symptom as 2026-08-29: all 15 hymn pages
+      answered in ~2.5s with zero `warn: GET … failed` lines (no
+      connection error at all) and **none** contained an mp3, and even the
+      283-page D/E catalogue came back at 244/283 with audio (86%) versus
+      282/283 (99.6%) from the same code run minutes earlier from a home
+      connection. One paired same-day comparison, not a proven cause —
+      the strongest fit given §7 is that this is the SAME datacenter-IP
+      treatment, now manifesting as thinned content rather than a refused
+      connection, but that's an inference and a time-window coincidence
+      hasn't been ruled out.
+
+      **What this means operationally:** the pull-time guard in this repo
+      and the new upstream guard are both doing their job — no bad
+      catalogue reached either `main` or the published dataset from this
+      run. But if the IP-differentiation read is right, the *daily*
+      08-30 18:00 UTC cron in `.github/workflows/refresh-songs.yml` will
+      keep failing this same way indefinitely, safely refusing to write
+      rather than corrupting the catalogue, and every future song addition
+      will need a manual home-IP run + manual `netlify-cli deploy` like
+      this one until that's understood. **Do not try to work around it by
+      changing headers/UA/etc. to look less like a bot** — that is
+      evading anti-bot measures on someone else's site, which this repo's
+      own "gentle neighbour" rule (see the 2026-08-09/2026-08-10 firewall
+      incidents noted in `sync_songs.py`) exists specifically to avoid.
+      **Next step for whoever picks this up:** wait for tomorrow's
+      scheduled run (or trigger `refresh-songs.yml` again no sooner than
+      several hours out, to stay a gentle neighbour) and check whether it
+      fails the same way — a second, unpaired data point on a different
+      day would turn this from "one paired comparison" into a real
+      pattern.
 
 - [x] **AI search results do not jump to the verse when tapped. Fixed
       2026-08-24 — the reader route was being leaked, not the jump.**
