@@ -84,7 +84,11 @@
   <link rel="icon" type="image/png" sizes="512x512" href="icons/Icon-512.png">
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>Yahweh's Words 雅伟之言</title>
+  <!-- Static default only. The boot script near the end of <body>
+       rewrites this to the reader's own language — see the comment
+       there. English is the default because it is what a crawler,
+       a link preview, or a reader with storage blocked should get. -->
+  <title>Yahweh's Words</title>
   <link rel="manifest" href="manifest.json">
 
   <!--
@@ -588,10 +592,69 @@
   </style>
   <div id="ys-boot" role="status" aria-live="polite">
     <img src="icons/Icon-192.png" alt="" />
-    <div class="ys-name">Yahweh's Words 雅伟之言</div>
+    <div class="ys-name">Yahweh's Words</div>
     <div class="ys-bar"><i></i></div>
     <div class="ys-slow" hidden></div>
   </div>
+  <script>
+    // ONE app name, the reader's own — matching what the Flutter splash
+    // does a moment later (see lib/pages/loading_page.dart). Until
+    // 2026-08-30 both screens printed the pair "Yahweh's Words 雅伟之言"
+    // to everyone; the user asked for the reader's language only.
+    //
+    // This runs SYNCHRONOUSLY, immediately after the div it edits. The
+    // parser has created the element but has not yielded to paint yet, so
+    // the swap lands before first paint and there is no flash of the
+    // wrong name. That is also why the name is not written by the boot
+    // script further down — that one runs later and would flash.
+    //
+    // The locale comes from the app's OWN stored preference, not from
+    // navigator.language, because the two genuinely disagree: measured on
+    // the author's machine 2026-08-30, navigator.language was `en-US`
+    // while the app was set to zh-Hans. Reading the browser's guess would
+    // have shown English here and Chinese one screen later.
+    //
+    // Two traps in that read, both verified against a live dev build
+    // rather than assumed:
+    //   * the key is `flutter.locale` (shared_preferences prefixes
+    //     everything with `flutter.`);
+    //   * the value arrives JSON-encoded, i.e. the literal characters
+    //     "zh-Hans" WITH the quotes, so a bare === comparison fails and
+    //     silently falls through to the browser guess — which usually
+    //     agrees, so it would have looked correct in testing and been
+    //     wrong only for the users who changed the app's language.
+    //
+    // The regional fallback mirrors AppSettings._detectSystemLocale:
+    // Chinese splits Hant/Hans, everything else is English.
+    (function () {
+      function ysAppLocale() {
+        try {
+          var raw = window.localStorage.getItem('flutter.locale');
+          if (raw) {
+            var v = raw.replace(/^"|"$/g, '');
+            if (v === 'zh-Hans' || v === 'zh-Hant' || v === 'en') return v;
+          }
+        } catch (e) {
+          // private mode, or storage blocked by policy — fall through
+        }
+        var l = (navigator.language || '').toLowerCase();
+        if (l.indexOf('zh') !== 0) return 'en';
+        return /hant|[-_](tw|hk|mo)\b/.test(l) ? 'zh-Hant' : 'zh-Hans';
+      }
+      var NAMES = {
+        'zh-Hans': '雅伟之言',
+        'zh-Hant': '雅偉之言',
+        'en': "Yahweh's Words"
+      };
+      var name = NAMES[ysAppLocale()] || NAMES.en;
+      var el = document.querySelector('#ys-boot .ys-name');
+      if (el) el.textContent = name;
+      // The tab title carried the same pair. Setting it here rather than
+      // in <head> keeps the whole rule in one place; a title updates
+      // without a repaint of content, so the ordering costs nothing.
+      document.title = name;
+    })();
+  </script>
   <script>
     (function () {
       var el = document.getElementById('ys-boot');

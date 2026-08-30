@@ -112,6 +112,19 @@ jobs:
           sudo apt-get install -y --no-install-recommends zsh
           zsh --version
 
+      # The boot splash picks the app's name by locale, in browser
+      # JavaScript inside web/index.html. `flutter test` can assert that
+      # code is present; it cannot tell you that `zh-TW` resolves to
+      # 雅偉之言 or that a JSON-quoted stored preference is unwrapped. This
+      # runs the real extracted function against both.
+      #
+      # It is also the file's syntax gate. This repo has already shipped a
+      # stray brace in an inline <script> that silently disabled the
+      # whole self-heal script on four live sites — nothing failed, it
+      # just stopped working.
+      - name: Boot splash locale logic
+        run: node tools/check_boot_splash_locale.js
+
       - name: Test
         run: flutter test --reporter expanded
 
