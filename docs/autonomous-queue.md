@@ -45,6 +45,42 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [ ] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
+      here, root cause is upstream in yswords-data.** CI on `main` went
+      red (`gh run 33300947566`) not from this iteration's own change but
+      from a same-day automated commit `b616bbe` ("chore(songs): refresh
+      bundled snapshot from yswords-data") that this loop fast-forwarded
+      onto before pushing. `test/song_model_test.dart` ("nearly every CDC
+      song has audio") dropped from 285/286 CDC songs with audio to
+      264/283, and `test/cahaya_songs_enabled_test.dart` ("every song with
+      no stream still offers somewhere to hear or read it") found 10 rows
+      (`cdc:e0255`, `e0049`, `e0079`, `e0250`, `e0034`, `e0092`, `e0710`,
+      `e0032`, `e0140`, `e0016`) with NEITHER audio NOR a soundcloud/
+      youtube/score link — genuine dead ends a reader could actually tap
+      into, not a test-only regression.
+
+      `assets/songs.json` was reverted to the last known-good version
+      (from `a0ab5f3`, pre-sync) and CI is green again on that state.
+      This is a **stopgap**, not a fix: `.github/workflows/sync-songs.yml`
+      runs daily at 02:00 UTC and will pull the same bad snapshot from
+      yswords-data again tomorrow unless the upstream pipeline is fixed.
+      `song_model_test.dart`'s own failure message already predicted the
+      failure mode: "the sync is probably guessing filenames again instead
+      of reading each song page" — this has apparently happened before.
+      `scripts/pull_songs_snapshot.py` refuses a catalogue that is too
+      small or missing a whole source, but has no per-song audio-
+      completeness check, so a partial regression like this sails through
+      untouched.
+
+      **Left for a future iteration** (needs someone to look at the
+      yswords-data repo, not just this one): find why the CDC audio-URL
+      scrape lost coverage for exactly these 10+ songs and fix it there,
+      or teach `pull_songs_snapshot.py` to refuse a snapshot where the
+      CDC-audio-coverage ratio drops meaningfully versus the currently
+      bundled one (mirroring what `test/song_model_test.dart` already
+      checks, but at pull time instead of at CI time) so a bad upstream
+      publish can no longer reach `main` at all.
+
 - [x] **AI search results do not jump to the verse when tapped. Fixed
       2026-08-24 — the reader route was being leaked, not the jump.**
       2026-08-23, reported by the user ("Can you look into correctly
