@@ -19,6 +19,23 @@ Widget? mediaEmbed(String embedUrl) {
   return _MediaEmbed(embedUrl: embedUrl);
 }
 
+/// Whether this platform's webview actually implements
+/// `WebViewController.setBackgroundColor`.
+///
+/// macOS does not. `webview_flutter_wkwebview` routes setBackgroundColor
+/// through `PlatformWebView.setOpaque`, and the macOS half of that plugin
+/// leaves setOpaque unimplemented — so calling it throws
+/// `UnimplementedError: opaque is not implemented on macOS` rather than
+/// degrading. Reported from a real macOS 26.5.2 install on 1.4.169.
+///
+/// Takes the OS name instead of reading `Platform` directly so the rule
+/// can be tested on any host. The alternative — asserting on the source
+/// text of the call site — pins the spelling of a fix rather than the
+/// behaviour it encodes.
+@visibleForTesting
+bool webviewSupportsBackgroundColor(String operatingSystem) =>
+    operatingSystem != 'macos';
+
 class _MediaEmbed extends StatefulWidget {
   const _MediaEmbed({required this.embedUrl});
 
@@ -50,14 +67,37 @@ class _MediaEmbedState extends State<_MediaEmbed> {
       params = const PlatformWebViewControllerCreationParams();
     }
     _controller = WebViewController.fromPlatformCreationParams(params)
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF000000))
-      // Wrapped in a page rather than navigated to directly, and with a
-      // baseUrl naming an origin we control. A bare navigation to an
-      // embed URL has no embedding page and sends no Referer, which is
-      // what made every YouTube video answer "Error 153" on 2026-08-23.
-      ..loadHtmlString(_wrapper(widget.embedUrl),
-          baseUrl: 'https://yswords-qat.netlify.app');
+      ..setJavaScriptMode(JavaScriptMode.unrestricted);
+
+    // setBackgroundColor THROWS on macOS. Reported from a real macOS
+    // 26.5.2 install running 1.4.169, 2026-08-27:
+    //
+    //   UnimplementedError: opaque is not implemented on macOS
+    //     PlatformWebView.setOpaque
+    //     WebKitWebViewController.setBackgroundColor
+    //     _MediaEmbedState.initState
+    //
+    // webview_flutter_wkwebview implements setBackgroundColor by way of
+    // setOpaque, and its macOS half does not implement setOpaque at all —
+    // so this threw during initState for every embed on the Songs page.
+    // The platform gate above deliberately admits macOS (it has a real
+    // webview); what it could not know is that one method of that
+    // webview is iOS-only.
+    //
+    // Skipping it costs nothing to look at: _wrapper() already paints
+    // `background:#000` on html and body, so the black is the page's,
+    // not the widget's. The call is kept on iOS/Android because there it
+    // suppresses the white flash BEFORE that HTML has loaded.
+    if (webviewSupportsBackgroundColor(Platform.operatingSystem)) {
+      _controller.setBackgroundColor(const Color(0xFF000000));
+    }
+
+    // Wrapped in a page rather than navigated to directly, and with a
+    // baseUrl naming an origin we control. A bare navigation to an
+    // embed URL has no embedding page and sends no Referer, which is
+    // what made every YouTube video answer "Error 153" on 2026-08-23.
+    _controller.loadHtmlString(_wrapper(widget.embedUrl),
+        baseUrl: 'https://yswords-qat.netlify.app');
     final platform = _controller.platform;
     if (platform is AndroidWebViewController) {
       platform.setMediaPlaybackRequiresUserGesture(false);
