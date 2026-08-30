@@ -5508,6 +5508,66 @@ has never seen this repo.
       nothing left to discriminate; that is fine, but do not delete the
       check as "redundant" while two bundles still exist.
 
+      **2026-08-30 progress — A and B done, C measured, item stays open.**
+
+      * **A (font gate) — done.** `availableFontOptions()`
+        (`lib/utils/font_catalog.dart`) now also consults a new
+        `lib/services/google_fonts_reachability.dart` singleton: a
+        three-state verdict (`unknown | reachable | unreachable`) probed
+        lazily from the font picker (its only call site), cached in
+        SharedPreferences with a timestamp, re-probed at most once per
+        24 h. Fails OPEN on `unknown` — international users never lose
+        fonts to a slow or missing probe. The probe hits the REAL byte
+        URL `package:google_fonts` 6.3.3 fetches from
+        (`https://fonts.gstatic.com/s/a/<sha256>.ttf`, taken from its
+        generated `part_e.g.dart` for EB Garamond regular), not a guess
+        at some other Google origin's CORS behaviour, and is proven to
+        actually go red: `test/font_catalog_runtime_gate_test.dart`
+        mocks both a thrown exception and a non-200 response through an
+        injectable `http.Client` factory and asserts both resolve to
+        `unreachable` — `google_fonts` itself swallows network errors
+        internally (`googleFontsTextStyle` fires the load future
+        without awaiting or catching it), so a probe piggybacking on
+        `GoogleFonts.getFont()` directly would have been decorative;
+        this probes the CDN independently instead.
+      * **B (migration trap) — done, left alone on purpose.**
+        `migrateLegacyFontKey` stays gated on `kChinaMode` only, per this
+        item's own warning: it permanently overwrites the user's stored
+        `fontFamily`, and a transient runtime verdict flipping on one bad
+        network blip must never drive a permanent, silent rewrite.
+        Comment added at the gate explaining why. Test: a stored
+        Google-font key survives when the runtime verdict is forced to
+        `unreachable`.
+      * **C (Firebase gate) — measured, this item's premise was stale.**
+        This entry's own text above ("dials `*.googleapis.com` /
+        `*.firebaseio.com` and waits ~4 s for the watchdog") describes
+        the boot path as it was before v1.3.145. Reading
+        `lib/main.dart:215` onward: since v1.3.145 the
+        `CloudAuthService.instance.init()` call is
+        `unawaited(...).timeout(const Duration(seconds: 8))` —
+        explicitly NOT in front of `FetchVerses` (see the 2026-07-26
+        comment at that call site). The international build does not
+        pay boot latency for this gate today. What remains open is
+        smaller than the item assumed: not "make Firebase init
+        runtime-detected to fix a boot stall" (already fixed, unrelated
+        change) but "should `kChinaMode` still skip Firebase Auth/RTDB
+        outright, or should that also become a runtime verdict" — a
+        product decision, not a latency fix. Left as-is this iteration;
+        `lib/main.dart` untouched.
+      * **Verified:** each new test assertion flipped to red before the
+        fix and restored (see the two red states: gate removed →
+        "unreachable verdict hides Google fonts" failed as expected;
+        `migrateLegacyFontKey` driven off the runtime verdict →
+        "stored Google-font key survives" failed as expected).
+        `flutter analyze` clean, full suite (1290 tests) green.
+      * **Still open:** `yswords-cn` / `yswords-cn-dev` / `yswords-cn-qat`
+        are NOT retired — that was never in this iteration's scope (the
+        item's own text gates retirement on both A and B, which are now
+        done, but retiring three live Netlify sites is a deploy-topology
+        change that deserves its own explicit go/no-go, not a
+        side-effect of a font-picker patch). `kChinaMode` and its ~10
+        UI/copy call sites are untouched, as instructed.
+
 - [x] **Sermon passage filter: highlight the match, and filter by verse
       — SHIPPED 2026-08-23 (v1.4.119).** The filter travels into the
       sermon as a `PassageFilter`; every mention is highlighted on top

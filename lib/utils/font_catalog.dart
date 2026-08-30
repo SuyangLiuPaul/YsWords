@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:yswords/constants/build_flags.dart';
+import 'package:yswords/services/google_fonts_reachability.dart';
 
 /// Round 56: central font catalogue for the Settings → Font Family
 /// dropdown.
@@ -355,11 +356,33 @@ const List<FontOption> _catalog = [
 /// the Great Firewall, so picking one would silently fail. The
 /// "System default" + bundled Roboto + system-installed Chinese
 /// fonts cover every realistic case for users in mainland China.
+///
+/// 2026-08-30: `kChinaMode` is a compile-time bet about the build,
+/// not the network the device is actually on — several mainland
+/// China users report the international build working for them over
+/// yahwehword.com. Below the build-flag check, also consult
+/// [GoogleFontsReachabilityService]'s runtime verdict on the
+/// international build. It fails OPEN: while the verdict is
+/// `unknown` (no probe has completed yet, or it's still in flight),
+/// Google entries stay visible — a user must never lose fonts
+/// because a probe was slow or the device was briefly offline. This
+/// is the only call site of [availableFontOptions], so triggering
+/// the (lazy, cached, at-most-once-per-24h) probe here is exactly
+/// "probe from the font picker."
 List<FontOption> availableFontOptions() {
-  if (!kChinaMode) return List.unmodifiable(_catalog);
-  return List.unmodifiable(
-    _catalog.where((opt) => !opt.isGoogleFont),
-  );
+  if (kChinaMode) {
+    return List.unmodifiable(
+      _catalog.where((opt) => !opt.isGoogleFont),
+    );
+  }
+  GoogleFontsReachabilityService.instance.ensureProbed();
+  if (GoogleFontsReachabilityService.instance.verdict ==
+      GoogleFontsReachability.unreachable) {
+    return List.unmodifiable(
+      _catalog.where((opt) => !opt.isGoogleFont),
+    );
+  }
+  return List.unmodifiable(_catalog);
 }
 
 /// Whether [key] points at a real entry in the catalogue.
@@ -384,6 +407,18 @@ String migrateLegacyFontKey(String stored) {
   // international build is unreachable (`fonts.googleapis.com` is
   // blocked). Migrate those to `'system'` so the OS-native font
   // stack handles rendering instead of silently failing.
+  //
+  // 2026-08-30: deliberately gated on `kChinaMode` only, NOT on
+  // GoogleFontsReachabilityService's runtime verdict (see
+  // availableFontOptions above). This function permanently overwrites
+  // the user's stored selection. `kChinaMode` is a build-time constant
+  // — safe to act on unconditionally. A runtime probe can flip to
+  // `unreachable` on one bad network blip (a flaky wifi handoff, a
+  // brief captive portal) and flip back a minute later; driving a
+  // permanent, silent rewrite off a value that transient would destroy
+  // a deliberate user setting with no way back. Hiding the option from
+  // the picker for one session is recoverable; overwriting the stored
+  // key is not.
   if (kChinaMode) {
     final opt = _catalog.firstWhere(
       (o) => o.key == stored,

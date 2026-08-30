@@ -90,18 +90,34 @@ sites can be retired:
     bundle, and a preference-with-a-fallback becomes a single point of
     failure on a host nobody here controls. The app already requires
     Netlify; now that is all it requires.
-  * **Firebase Auth + RTDB — still open.** `kChinaMode` skips init
-    entirely; with it false the app dials `*.googleapis.com` /
-    `*.firebaseio.com` and, per `lib/constants/build_flags.dart`, waits
-    ~4 s for the watchdog to give up. These are blocked far more
-    reliably than gstatic.
-  * **Google Fonts picker — still open.** `kChinaMode` hides the
-    options; without it China readers see entries that can never load.
+  * **Google Fonts picker — done, 2026-08-30.** `availableFontOptions()`
+    now consults a runtime verdict from the new
+    `lib/services/google_fonts_reachability.dart` (probes the real
+    gstatic byte URL `google_fonts` fetches from, lazily from the font
+    picker, cached 24 h, fails open on `unknown`) as well as
+    `kChinaMode`. `migrateLegacyFontKey` deliberately stays gated on
+    `kChinaMode` only — see the comment at that function — because it
+    permanently overwrites a stored setting and a transient runtime
+    verdict must never drive that.
+  * **Firebase Auth + RTDB — smaller than it looked, still open as a
+    product decision.** The description above ("waits ~4 s for the
+    watchdog") describes the boot path as it was before v1.3.145.
+    Verified 2026-08-30 against `lib/main.dart:215` onward:
+    `CloudAuthService.instance.init()` has been `unawaited(...)` with an
+    8 s `.timeout` since v1.3.145, specifically so it does NOT sit in
+    front of `FetchVerses` — the intl build does not pay boot latency
+    for this today. What is actually still open is narrower: whether
+    `kChinaMode` should keep skipping Firebase Auth/RTDB init outright
+    (it costs nothing at boot now, just a background network attempt
+    that mainland China's GFW would block anyway) or whether that too
+    should become a runtime verdict. That is a product call, not a
+    latency fix — ask the user rather than guessing.
 
-Both open items are compile-time constants today. Retiring cn means
-making them **runtime-detected**, or deciding the 4 s and the dead font
-entries are acceptable. That change touches the boot path — do it as its
-own iteration with its own verification, not folded into something else.
+Retiring `yswords-cn` / `yswords-cn-dev` / `yswords-cn-qat` still has
+NOT happened — both items above being resolved doesn't auto-retire the
+sites; that is its own explicit go/no-go, not a side effect of a
+font-picker patch. `kChinaMode` and its ~10 UI/copy call sites are
+untouched.
 
 **Trap 62: a script that prints "✓ … now at $NEW" is not evidence it
 wrote anything — it printed the same line whether the awk matched or
