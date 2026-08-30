@@ -105,6 +105,35 @@
   status = 200
   force = true
 
+# A stable, hotlinkable address for the app mark: /logo
+#
+# For email signatures and anywhere else the image is fetched by
+# something that is not a browser running our app. It MUST be above the
+# SPA catch-all below — measured on yswords-dev before this rule
+# existed, `/logo` returned `200 text/html`, i.e. the whole single-page
+# app, because the catch-all rewrote it to index.html. A mail client
+# fetching that gets an HTML document where it asked for a picture, and
+# renders a broken image.
+#
+# Files that actually exist are served ahead of every redirect rule, so
+# `/logo/logo-256.png` needs no rule of its own; only the extensionless
+# alias does. Status 200 (a rewrite, not a 301) keeps the address at
+# /logo while serving the PNG's bytes, and Content-Type comes from the
+# target's extension.
+#
+# 256px is the default on purpose: signatures render the mark at about
+# 100-150px, so 256 covers a 2x display, and the file is 7 KB — it is
+# re-fetched every time a recipient opens the mail. The same art at
+# 512px is 32 KB and at plain sips-resized 256px was 82 KB; the
+# difference is a 64-colour quantisation of flat artwork, measured at
+# 0.5% mean error with the visible deviation confined to antialiased
+# edges. Sizes 128/256/512 are all in web/logo/ if a caller wants one
+# explicitly.
+[[redirects]]
+  from = "/logo"
+  to = "/logo/logo-256.png"
+  status = 200
+
 # Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
 # `/.netlify/functions/*`) are matched and served by Netlify BEFORE
 # this catch-all rewrite, so the function doesn't get swallowed by
