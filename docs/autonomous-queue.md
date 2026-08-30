@@ -45,8 +45,10 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
-- [ ] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
-      here, root cause is upstream in yswords-data.** CI on `main` went
+- [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
+      here, root cause is upstream in yswords-data.** Pull-time guard added
+      2026-08-30 — see the new item below for what shipped and what's still
+      open upstream. CI on `main` went
       red (`gh run 33300947566`) not from this iteration's own change but
       from a same-day automated commit `b616bbe` ("chore(songs): refresh
       bundled snapshot from yswords-data") that this loop fast-forwarded
@@ -80,6 +82,48 @@ reported. Work these top-down before P2.
       bundled one (mirroring what `test/song_model_test.dart` already
       checks, but at pull time instead of at CI time) so a bad upstream
       publish can no longer reach `main` at all.
+
+- [ ] **Upstream fix still needed: find why yswords-data's CDC audio-URL
+      scrape lost coverage for 18 songs on 2026-08-29.** Opened 2026-08-30
+      as the remainder of the item above, after adding a pull-time guard
+      here (see `[x]` result below) that stops a repeat from reaching
+      `main`, but does not fix the upstream scrape. This needs someone
+      working in `~/Documents/CodingProject/yswords-data`, not this repo.
+
+      Re-measured 2026-08-30 directly from the guard's own diff of the
+      live regressed snapshot (`generatedAt 2026-08-29T20:14:14Z`) against
+      the last known-good bundled one (`a0ab5f3`): **18 CDC ids** lost
+      their only audio and gained no replacement —
+      `cdc:d0506 e0016 e0019 e0032 e0034 e0049 e0050 e0079 e0092 e0140
+      e0250 e0255 e0365 e0490 e0710 e0820 e0910 e1130` — and **3 CDC ids
+      vanished entirely**, `cdc:h01 h02 h03`. 0 new rows, so this is loss,
+      not churn.
+
+      **The queue's own previous hypothesis ("the sync is probably
+      guessing filenames again") looks backwards for this incident, but
+      this is an observation, not a conclusion** — nobody has read the
+      upstream scraper yet. The rows that vanished (`h01`–`h03`) are
+      exactly the *bare-code* ones, not ones the scraper would need to
+      guess a filename for; if anything that suggests the scraper is
+      dropping rows it can't classify by the usual `<letter><4-digit>`
+      code pattern, not fabricating URLs. Whoever picks this up should
+      verify against the actual scraper before asserting either way.
+
+      **Result of the guard (this repo, not the fix):**
+      `scripts/pull_songs_snapshot.py` now loads the bundled
+      `assets/songs.json` as a baseline and refuses to write when, versus
+      it, the incoming snapshot (a) drops any row's only audio/video/score
+      with no replacement, (b) loses a source's row entirely, or (c) drops
+      a source's audio-coverage ratio by more than 3 points — printing the
+      specific ids in all three cases. Verified against the real regressed
+      snapshot: it refuses and names exactly the 18+3 ids above, and it
+      still accepts the currently-bundled snapshot fed back to itself.
+      `--allow-regression` overrides for a human who has confirmed a drop
+      is real (a church pulling a file down on purpose). Missing baseline
+      (fresh clone) skips the new checks rather than crashing. `flutter
+      analyze` and the full `flutter test` suite (1290 tests) both stay
+      green; the two Dart tests that went red on 2026-08-29 were not
+      touched.
 
 - [x] **AI search results do not jump to the verse when tapped. Fixed
       2026-08-24 — the reader route was being leaked, not the jump.**

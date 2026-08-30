@@ -29,6 +29,8 @@ refreshed with THIS script.
 Usage:
     python3 scripts/pull_songs_snapshot.py
     python3 scripts/pull_songs_snapshot.py --url https://…/songs.json
+    python3 scripts/pull_songs_snapshot.py --url file:///tmp/live.json
+    python3 scripts/pull_songs_snapshot.py --allow-regression
 """
 
 import argparse
@@ -47,11 +49,148 @@ DEFAULT_URL = 'https://yswords-data.netlify.app/data/songs.json'
 REQUIRED_SOURCES = {'fydt', 'cdc', 'cgdc', 'cahaya'}
 MIN_SONGS = 400
 
+# A source's audio ratio is allowed to wobble by this many percentage
+# points before it counts as a regression (churches occasionally pull
+# one file down on purpose). 2026-08-29's CDC incident dropped the
+# ratio by 6.36 points (286/286 -> 265/283); 3 points catches that with
+# margin to spare. The margin is thinnest on the smallest source
+# (`cahaya`, 47 rows): a single row's ordinary churn moves its ratio by
+# ~2.1 points, still under 3 but only by ~0.9 — if `cahaya` starts
+# false-positiving on routine single-row changes, widen the tolerance
+# for that source specifically rather than raising it everywhere.
+AUDIO_RATIO_TOLERANCE = 0.03
+
+
+def nonempty(v):
+    """Mirrors Song.fromJson's `str()` helper: null/blank -> falsy."""
+    if v is None:
+        return False
+    return str(v).strip() != ''
+
+
+def has_media(song):
+    """True if a row offers ANY way to hear, watch, or read it.
+
+    Mirrors lib/models/song.dart's `hasAudio` (audioUrl/audioTracks/
+    soundcloudTrackId) plus `hasVideo`'s videoUrl/youtubeId, plus
+    scoreUrl — the wider set `test/cahaya_songs_enabled_test.dart`
+    requires at least one of. Missing videoUrl here would make a
+    direct-mp4-only row (fydt publishes these) look dead-ended when
+    the app can actually still play it.
+    """
+    has_playable_audio = nonempty(song.get('audioUrl')) or bool(
+        song.get('audioTracks') or [])
+    has_audio = has_playable_audio or nonempty(song.get('soundcloudTrackId'))
+    has_video = nonempty(song.get('videoUrl')) or nonempty(
+        song.get('youtubeId'))
+    return has_audio or has_video or nonempty(song.get('scoreUrl'))
+
+
+def has_audio_only(song):
+    """Mirrors Song.hasAudio exactly (no youtube/score) for the
+    per-source coverage ratio, which is what
+    test/song_model_test.dart's `nearly every CDC song has audio`
+    actually checks."""
+    has_playable_audio = nonempty(song.get('audioUrl')) or bool(
+        song.get('audioTracks') or [])
+    return has_playable_audio or nonempty(song.get('soundcloudTrackId'))
+
+
+def load_baseline():
+    if not os.path.exists(TARGET):
+        return None
+    with open(TARGET, 'rb') as f:
+        try:
+            doc = json.load(f)
+        except json.JSONDecodeError:
+            return None
+    return doc.get('songs') or []
+
+
+def check_regression(baseline_songs, incoming_songs):
+    """Compares incoming against the currently bundled snapshot.
+
+    Returns a list of human-readable problem strings, each naming the
+    specific ids affected rather than just a ratio.
+    """
+    problems = []
+
+    baseline_by_id = {s['id']: s for s in baseline_songs if 'id' in s}
+    incoming_by_id = {s['id']: s for s in incoming_songs if 'id' in s}
+
+    # 1. Per-id: a row that used to offer some way to hear/read it and
+    # now offers none, for ids present in both snapshots.
+    lost_media_ids = sorted(
+        sid for sid, base_song in baseline_by_id.items()
+        if sid in incoming_by_id
+        and has_media(base_song)
+        and not has_media(incoming_by_id[sid])
+    )
+    if lost_media_ids:
+        problems.append(
+            f'{len(lost_media_ids)} row(s) lost their only audio/video/'
+            f'score and gained no replacement: {", ".join(lost_media_ids)}')
+
+    # 2. Per-source: net loss of rows (a source shedding ids, not just
+    # churn — new ids appearing elsewhere doesn't offset this).
+    def source_of(row):
+        return row.get('source')
+
+    baseline_ids_by_source = {}
+    for sid, s in baseline_by_id.items():
+        baseline_ids_by_source.setdefault(source_of(s), set()).add(sid)
+    incoming_ids_by_source = {}
+    for sid, s in incoming_by_id.items():
+        incoming_ids_by_source.setdefault(source_of(s), set()).add(sid)
+
+    for source, base_ids in baseline_ids_by_source.items():
+        incoming_ids = incoming_ids_by_source.get(source, set())
+        missing_ids = sorted(base_ids - incoming_ids)
+        if missing_ids:
+            problems.append(
+                f'{source}: {len(missing_ids)} row(s) present in the '
+                f'bundled snapshot vanished entirely: '
+                f'{", ".join(missing_ids)}')
+
+    # 3. Per-source: audio coverage ratio drop beyond tolerance.
+    for source, base_ids in baseline_ids_by_source.items():
+        incoming_ids = incoming_ids_by_source.get(source, set())
+        if not base_ids or not incoming_ids:
+            continue
+        base_with_audio = sum(
+            1 for sid in base_ids if has_audio_only(baseline_by_id[sid]))
+        incoming_with_audio = sum(
+            1 for sid in incoming_ids if has_audio_only(incoming_by_id[sid]))
+        base_ratio = base_with_audio / len(base_ids)
+        incoming_ratio = incoming_with_audio / len(incoming_ids)
+        if incoming_ratio < base_ratio - AUDIO_RATIO_TOLERANCE:
+            regressed_ids = sorted(
+                sid for sid in (base_ids & incoming_ids)
+                if has_audio_only(baseline_by_id[sid])
+                and not has_audio_only(incoming_by_id[sid]))
+            problems.append(
+                f'{source}: audio coverage dropped from '
+                f'{base_with_audio}/{len(base_ids)} '
+                f'({base_ratio:.1%}) to {incoming_with_audio}/'
+                f'{len(incoming_ids)} ({incoming_ratio:.1%}), beyond the '
+                f'{AUDIO_RATIO_TOLERANCE:.0%} tolerance: '
+                f'{", ".join(regressed_ids)}')
+
+    return problems
+
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--url', default=DEFAULT_URL)
     ap.add_argument('--dry-run', action='store_true')
+    ap.add_argument(
+        '--allow-regression', action='store_true',
+        help='Write even if the incoming snapshot regresses versus the '
+             'currently bundled one. For a human who has confirmed the '
+             'drop is real (a church took a file down on purpose), not '
+             'for routine use.')
     args = ap.parse_args()
 
     print(f'Fetching {args.url} …')
@@ -77,6 +216,19 @@ def main():
     for source in REQUIRED_SOURCES & set(by_source):
         if by_source[source] < 10:
             problems.append(f'{source} has only {by_source[source]} songs')
+
+    baseline_songs = load_baseline()
+    if baseline_songs is None:
+        print('  (no bundled assets/songs.json to compare against — '
+              'skipping regression checks)')
+    elif args.allow_regression:
+        regressions = check_regression(baseline_songs, songs)
+        if regressions:
+            print('  --allow-regression set; overriding these findings:')
+            for p in regressions:
+                print(f'  • {p}')
+    else:
+        problems.extend(check_regression(baseline_songs, songs))
 
     if problems:
         print('ERROR: refusing to write a suspect snapshot:',
