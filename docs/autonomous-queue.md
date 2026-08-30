@@ -7005,36 +7005,60 @@ has never seen this repo.
       one new out-of-canon link (CP37), and two matches that resolve to
       nothing (331's 一一九).
 
-- [ ] **Two sermons now link to a chapter that does not exist, and the
-      reader has no canon check to stop them.** 232's 阿摩司书第12章 —
-      Amos has 9. The preacher is not citing it; he is mimicking a new
-      believer hunting for Amos, and nothing in the grammar can tell
-      rhetoric from citation. The popup degrades to its empty state
-      rather than showing a wrong verse. Recorded 2026-08-26.
+- [x] **FIXED 2026-08-31: chapter-level canon check added at the sermon
+      underlining site.** `lib/constants/canon_chapters.dart` (66 books
+      → last chapter, union of `kjv.json`/`nasb.json`/`leb.json`, all
+      three agreeing on all 1,189 chapter boundaries — re-derived and
+      pinned by `test/canon_chapters_test.dart`, which fails if a
+      bundled asset ever drifts) + `chapterExistsInCanon(book, chapter)`
+      used in `_buildSpans` (`sermon_detail_page.dart:924`) so an
+      out-of-canon match renders as plain text, and in
+      `_openPassagePopup` (:637) so the passage-chip call site gets the
+      same guard rather than silently opening a popup that fails safe
+      anyway — that field is empty for both 232 and CP37 today, so it
+      wasn't exercised by either, but a future sermon's curated
+      `passage` field could carry the same kind of slip.
+      **Measured, not assumed to be just these two:** swept every
+      `passageRefPattern` match through `parseReference` over all 867
+      transcripts (289 × en/zh-CN/zh-TW) — 12,502 matches, 12,473
+      parsed, and **9** out-of-canon, not 4. The other 5 are pre-existing
+      false-positive matches in English prose that were rendered as
+      tappable/underlined non-references before this fix and are now
+      correctly plain text: `en/004.txt` "Deuteronomy 43" (occurs-43-
+      times, not a citation), `en/134.txt` "numbers.⏎⏎400" (400
+      prophets — this one spans a paragraph break, a separate
+      pre-existing `passageRefPattern` defect queued below rather than
+      fixed here), `en/369.txt` "am 100" ×2 and `en/CP70.txt` "am 21"
+      ("I am 100/21 years old" matching Amos's "Am" abbreviation).
+      **Did NOT put the check inside `parseReference`** per the guard
+      rail — 16 call sites, nothing measured for the other 15; queuing
+      the wider application below. **Did NOT touch any transcript.**
+      `flutter analyze` clean, full suite green (1,303 tests). Two
+      claims went through an independent refuter pass before this
+      commit (66-books/1,189-chapters union claim; the 12,502/12,473/9
+      sweep counts) — both survived, re-derived from the assets by a
+      second, independent script.
 
-      **A second site arrived with the 第-less relaxation the same day,
-      so "the ONLY out-of-canon reference" — as this item read until
-      now — is no longer true.** CP37's 「启示录三十七章十七节」 resolves
-      to Revelation 37:17 and Revelation has 22 chapters. It is a
-      garbled transcript and the paragraph settles it: 「让我给你读启示
-      录第三章」 immediately before, and 「启示录三章十七节这样读：
-      "因为你说我是富足的…"」 immediately after — Laodicea, Revelation
-      3:17. The preacher said 三章十七节 and the recognizer heard
-      三十七章. **Do not "fix" the transcript**; the fix is the canon
-      check, which refuses it without anyone having to decide what he
-      said.
+- [ ] **Follow-up queued by the fix above: apply the chapter-canon check
+      inside `parseReference`/`_buildRef` itself, not just at the sermon
+      underlining site.** 16 files call `parseReference` (search,
+      evidence, notes, timeline, cross-references…) and none of them has
+      this guard; the sermon body was fixed in isolation because
+      changing the parser's own contract needs its own measurement pass
+      across all 16 call sites first, per the guard rail in that
+      iteration's brief. Do the sweep before changing anything.
 
-      Fixing it properly means a canon check at the point of
-      underlining, which the sermon body has no access to today: there
-      is no chapter-count table anywhere in `lib/`, only
-      `_singleChapterBooks` in `reference_parser.dart`. The Python
-      extractor already has one (`CANON` in
-      `scripts/extract_sermon_refs.py`) and it is exactly why refs.json
-      holds `CP37 → Revelation 3:17` and no Revelation 37 — so this is
-      the Dart side lagging the Python side again (trap 60), and the
-      table can be derived from the bundled Bible asset rather than
-      hand-written. The same guard would cover the digit branch's
-      identical (currently unexercised) exposure.
+- [ ] **Follow-up queued by the fix above: `passageRefPattern` can match
+      across a paragraph break.** `assets/sermons/en/134.txt` has "...in
+      Numbers." followed by a blank line then "400 prophets were
+      consulted" — the pattern's `\s*` after the book name admits the
+      newline-newline gap, producing a single match "numbers.\n\n400"
+      that resolves to Numbers 400 (caught here only because 400 is
+      out-of-canon for Numbers, which has 36 chapters). A same-shaped
+      match landing on an IN-canon chapter elsewhere in the corpus would
+      not be caught by anything and would render as a live tap target
+      built from two unrelated sentences. Not swept for or fixed in this
+      iteration — needs its own measurement.
 
 - [ ] **一一九 is 119 read digit-by-digit, and neither implementation
       admits it — 331's 「诗篇一一九篇103节」 resolves to nothing.**

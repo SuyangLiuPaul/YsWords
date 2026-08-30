@@ -6,6 +6,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/constants/canon_chapters.dart';
 import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/constants/ui_strings.dart';
@@ -635,6 +636,12 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
     }
     ref ??= parseReference(passage);
     if (ref == null) return;
+    // Same canon check as the underlined body text (see `_buildSpans`):
+    // this chip comes from the sermon's own curated `passage` field, so
+    // it isn't exposed by 232/CP37 (both ship an empty `passage`), but a
+    // future entry could carry the same kind of transcription slip and
+    // there's no reason to let it open a popup that fails safe anyway.
+    if (!chapterExistsInCanon(ref.englishBook, ref.chapter)) return;
     if (!mounted) return;
     await showVersePopup(context, ref);
   }
@@ -913,9 +920,15 @@ class _SermonBody extends StatelessWidget {
       final matched = match.group(0)!;
       // Only treat as a link if our parser actually recognises it —
       // this filters out false positives like "Mark sat down" that
-      // the regex catches but the alias index rejects.
+      // the regex catches but the alias index rejects — and if the
+      // chapter it resolved to actually exists. A transcription slip
+      // like sermon 232's "阿摩司书第12章" (Amos has 9) or CP37's
+      // "启示录三十七章十七节" (Revelation has 22) must not become a
+      // tappable, underlined promise of scripture that isn't there;
+      // the fix is this canon check, not deciding what the preacher
+      // said (see `test/canon_chapters_test.dart`).
       final parsed = parseReference(matched);
-      if (parsed == null) {
+      if (parsed == null || !chapterExistsInCanon(parsed.englishBook, parsed.chapter)) {
         spans.add(TextSpan(text: matched));
       } else {
         // Prefer the user's locale for display. We only rewrite when
