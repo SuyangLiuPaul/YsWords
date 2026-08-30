@@ -70,6 +70,12 @@ fi
 
 cd "$PROJECT"
 
+# How much of main.dart.js verify_site() fingerprints. 256 KB out of
+# ~10 MB: measured 2026-08-30, the intl and cn bundles already differ
+# inside the first slice this size, and it keeps the check cheap enough
+# to run on every site on every retry.
+MAIN_SLICE=262144
+
 # Prove one site is serving what was just built.
 #
 # Netlify answers a request for a missing file with 200 + index.html, so
@@ -77,24 +83,45 @@ cd "$PROJECT"
 verify_site() {
   local label="$1" host="$2"
   local url="https://$host.netlify.app"
-  local served attempt want got
+  local served attempt
 
-  # WHICH bundle landed matters as much as which version. The China build
-  # is the only one passed --no-web-resources-cdn and that changes
-  # flutter_bootstrap.js, which Netlify serves byte-identical to the file
-  # on disk — measured across all four sites, 2026-08-17 — so comparing
-  # hashes settles it without depending on anything inside the file. It
-  # is the check that catches the recorded recovery hazard: once the
-  # second build starts, build/web holds the CHINA bundle, so redeploying
-  # it to an international site ships CHINA_MODE to readers who can reach
-  # Google.
+  # WHICH bundle landed matters as much as which version. Netlify serves
+  # these files byte-identical to the copies on disk — measured across
+  # all four sites, 2026-08-17 — so comparing hashes settles it without
+  # depending on anything inside them. This is the check that catches the
+  # recorded recovery hazard: once the second build starts, build/web
+  # holds the CHINA bundle, so redeploying it to an international site
+  # ships CHINA_MODE to readers who can reach Google.
   #
-  # Its one blind spot, so nobody assumes more of it than it gives: the
-  # two bootstraps differ ONLY because --no-web-resources-cdn is passed
-  # to the China build alone (dart-defines do not reach this file). Pass
-  # that flag to both builds, or neither, and this check keeps passing
-  # while no longer being able to tell the bundles apart.
-  want="$(shasum -a 256 "$PROJECT/build/web/flutter_bootstrap.js" | cut -d' ' -f1)"
+  # 2026-08-30: it now hashes main.dart.js as well, and that is the part
+  # doing the work. The old version hashed flutter_bootstrap.js ALONE,
+  # and its own comment named the blind spot that would kill it:
+  #
+  #   > the two bootstraps differ ONLY because --no-web-resources-cdn is
+  #   > passed to the China build alone (dart-defines do not reach this
+  #   > file). Pass that flag to both builds, or neither, and this check
+  #   > keeps passing while no longer being able to tell the bundles
+  #   > apart.
+  #
+  # That flag now goes to both builds (see the international build
+  # below), so the bootstraps ARE byte-identical and that sentence has
+  # come true. main.dart.js is where CHINA_MODE actually lands, and the
+  # two differ there: measured on the dev sites at the same v1.4.169,
+  # 10,418,966 B (intl) vs 10,285,102 B (cn), with distinct hashes
+  # inside the first 256 KB.
+  #
+  # A 256 KB Range slice rather than the whole 10 MB file: enough to
+  # tell the bundles apart, cheap enough to run on every site on every
+  # attempt. Netlify answered 206 to this on both dev sites, and
+  # `Accept-Encoding: identity` is required — without it the range would
+  # apply to a gzip stream and not to the bytes on disk.
+  #
+  # The bootstrap hash is kept because it costs 11 KB and still catches
+  # engine-revision and build-config drift; it just can no longer be the
+  # thing that distinguishes intl from cn.
+  local want_boot want_main got_boot got_main
+  want_boot="$(shasum -a 256 "$PROJECT/build/web/flutter_bootstrap.js" | cut -d' ' -f1)"
+  want_main="$(head -c "$MAIN_SLICE" "$PROJECT/build/web/main.dart.js" | shasum -a 256 | cut -d' ' -f1)"
 
   # Retried together, because an abort costs a rebuild and a single
   # dropped connection must not be able to cause one. Freshness comes
@@ -104,19 +131,32 @@ verify_site() {
   for attempt in 1 2 3; do
     served="$(curl -fsS --max-time 30 "$url/version.json" 2>/dev/null \
       | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
-    got="$(curl -fsS --max-time 30 "$url/flutter_bootstrap.js" 2>/dev/null \
+    got_boot="$(curl -fsS --max-time 30 "$url/flutter_bootstrap.js" 2>/dev/null \
       | shasum -a 256 | cut -d' ' -f1)"
-    if [[ "$served" = "$APP_VERSION" && "$got" = "$want" ]]; then
+    got_main="$(curl -fsS --max-time 60 \
+      -H "Range: bytes=0-$((MAIN_SLICE - 1))" -H 'Accept-Encoding: identity' \
+      "$url/main.dart.js" 2>/dev/null | shasum -a 256 | cut -d' ' -f1)"
+    if [[ "$served" = "$APP_VERSION" && "$got_boot" = "$want_boot" \
+          && "$got_main" = "$want_main" ]]; then
       echo "  ✓ $label — v$APP_VERSION, bundle matches build/web"
       return 0
     fi
     if [[ "$attempt" != "3" ]]; then sleep 5; fi
   done
 
+  # Say WHICH check failed. "a different bundle" was ambiguous once there
+  # was more than one way to be different, and the main.dart.js case is
+  # the one that means CHINA_MODE went to the wrong site — worth naming
+  # rather than leaving the operator to guess.
   if [[ "$served" != "$APP_VERSION" ]]; then
     echo "  ✗ $label serves version '${served:-none}', expected $APP_VERSION"
+  elif [[ "$got_main" != "$want_main" ]]; then
+    echo "  ✗ $label serves v$APP_VERSION but a different main.dart.js than"
+    echo "    build/web — this is the CHINA_MODE/intl mix-up. Rebuild the"
+    echo "    bundle this site should have and redeploy it."
   else
-    echo "  ✗ $label serves v$APP_VERSION but a different bundle than build/web"
+    echo "  ✗ $label serves v$APP_VERSION but a different flutter_bootstrap.js"
+    echo "    than build/web"
   fi
   return 1
 }
@@ -220,7 +260,34 @@ rm -f "$PROJECT/build/web/_headers"
 
 # ── International build → English sites (+ prod) ──────────────────
 echo "==> building INTERNATIONAL bundle"
+# 2026-08-30: --no-web-resources-cdn is now passed to BOTH builds.
+#
+# It used to be China-only, deliberately: by default Flutter web pulls
+# the ~7 MB CanvasKit wasm from `https://www.gstatic.com/flutter-canvaskit`,
+# and for readers who can reach it that is a better-peered CDN, often
+# already warm from another Flutter app. The local copy is emitted into
+# build/web/canvaskit/ on every build regardless; the flag only decides
+# whether the bootstrap USES it.
+#
+# What changed is the blast radius, not the reachability. The user
+# reports several people in mainland China running the INTERNATIONAL
+# build over yahwehword.com and finding it stable, so gstatic is
+# evidently reachable for them today — the earlier assumption that it is
+# uniformly blocked was too strong, and the China bundle is on its way
+# out because of it. But once the cn sites are retired the intl bundle
+# is the ONLY bundle, so gstatic stops being a preference with a
+# fallback and becomes a single point of failure nobody here controls.
+#
+# Cost of the flag: one cold load per browser pulls canvaskit from
+# Netlify instead of gstatic, then caches it. Benefit: the app depends
+# on exactly one host being reachable — the one already serving it.
+# That trade is worth a slower first paint.
+#
+# NOTE: this makes the two builds' flutter_bootstrap.js byte-identical.
+# See verify_site() — the bundle check had to move to main.dart.js,
+# which is the file dart-defines actually reach.
 "$FLUTTER" build web --release \
+  --no-web-resources-cdn \
   --dart-define="APP_VERSION=$APP_VERSION"
 INTL_SITES=(
   "b745ae1f-0780-4fa3-8478-bdf2f2aaf59a:dev:yswords-dev"

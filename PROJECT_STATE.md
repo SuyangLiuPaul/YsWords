@@ -474,28 +474,60 @@ dev/qat sites). Native install: `zsh tools/yswords-ios-reinstall.sh`.
 
 A launchd agent works the queue one item at a time.
 
-- `com.yswords.accuracyloop`, `StartInterval 1800` (every 30 min,
-  set by the user 2026-08-23; was hourly), `RunAtLoad false`
-- **It stops itself on 2026-09-21 20:30.** `STOP_AT` in `run.sh` is a
+- `com.yswords.accuracyloop`, `StartInterval 3600` (hourly, set by the
+  user 2026-08-30 — was 1800/30-min before that), `RunAtLoad false`
+- **Two-stage plan/execute split, added 2026-08-30** ("schedule呢要opus
+  写方案，sonnet去执行"): each tick runs Opus first to pick the one item
+  worth doing, then Sonnet to actually do it. Rationale: nearly all of
+  an iteration's tokens go to execution (reading code, test/build
+  output), almost none to the judgment call of *which* item — so the
+  expensive model does only the cheap, high-judgment part and the cheap
+  model does the expensive, low-judgment part.
+  - Stage 1 (plan): `--model claude-opus-5`, brief is
+    `plan-prompt.md`, watchdog 900s. Reads `docs/autonomous-queue.md`
+    and CI status, writes its pick to the loop-local `NEXT_TASK.md`
+    (not committed to the repo — it's Sonnet's assignment, not a
+    record of work done). Never edits the repo, never builds, never
+    commits.
+  - Stage 2 (execute): `--model claude-sonnet-5`, brief is `prompt.md`,
+    watchdog 5400s (unchanged from the old single-stage budget — this
+    is still where analyze/test/build/deploy happen). Reads
+    `NEXT_TASK.md` as its assignment; `prompt.md` also keeps the old
+    priority-order logic as an explicit **fallback** for when
+    `NEXT_TASK.md` is missing, stale, or empty.
+  - A rate limit hit during the plan stage skips the execute stage for
+    that tick (same account, same 5-hour/weekly cap) rather than
+    burning it on a call that will just fail too.
+  - **Known defect, unchanged from the single-stage era:** `--model
+    claude-opus-5` against the current token has been measured to
+    actually run `claude-opus-4-5`. Fixing it is a credential operation
+    for the user (`claude setup-token` on Opus-5-entitled auth), not
+    something either stage's prompt can do.
+- **It stops itself on 2026-09-29 00:00.** `STOP_AT` in `run.sh` is a
   dead-man switch: past that instant the job logs and calls
-  `launchctl bootout` on itself rather than idling forever. Set to 29
-  days by the user on 2026-08-23; before that it was two weeks and
-  would have unloaded on 2026-08-24. The value is re-read every tick,
-  so extending it needs no reload — but **edit `run.sh` only via
-  `.new` + `bash -n` + atomic `mv`** (see trap 2 below).
+  `launchctl bootout` on itself rather than idling forever. The value
+  is re-read every tick, so extending it needs no reload — but **edit
+  `run.sh` only via `.new` + `bash -n` + atomic `mv`** (see trap 2
+  below).
 - Driver: `~/Library/Application Support/yswords-loop/run.sh`
-- Brief: the same directory's `prompt.md`
-- Log: the same directory's `run.log`
-- `--effort high`; watchdog `MAX_RUN=5400`
+- Briefs: the same directory's `plan-prompt.md` (stage 1) and
+  `prompt.md` (stage 2)
+- Log: the same directory's `run.log`, both stages interleaved
+- `--effort high` on both stages
 - **One item, one agent — no fan-out.** The one exception is the
   refuter, which stays: it guards against confident wrong conclusions,
   which is a different failure from insufficient depth, so raising
   effort does not replace it. It has already caught a wrong ten-row
   video ID table and found 15 verses with missing characters.
 - Deploys to dev/qat each iteration when something shipped; never prod.
+- **No `Co-Authored-By` or other AI-attribution trailer on any commit
+  or PR.** User, 2026-08-25: "我要把coauthored全部去掉" — going forward
+  only, the existing ~342 historical trailers stay as they are.
 
 **Health check:** `tail run.log` — an iteration that ends `rc=0` and
-advances the repo hash is healthy.
+advances the repo hash is healthy. Look for both `--- stage 1` and
+`--- stage 2` lines per tick; a tick with only stage 1 means it was
+skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
 
 ## Traps that have already bitten
 
