@@ -6278,7 +6278,7 @@ has never seen this repo.
       elsewhere and the invention was masked at index level — a
       coincidence, not a safety net.
 
-- [ ] **The "and" guard over-refuses where a verse number is also a
+- [x] **The "and" guard over-refuses where a verse number is also a
       book ordinal, and nobody has decided whether that is right.**
       Raised by the refuter 2026-08-25 against the fix above. `BOOK_RE`
       admits very short aliases, so "Psalm 23 verses 1 **and 2 The**
@@ -6291,6 +6291,82 @@ has never seen this repo.
       the alias, which is a change to `BOOK_RE`'s contract and affects
       far more than this branch. Measure the whole-corpus effect of that
       before touching it.
+
+      **MEASURED 2026-08-31, NOT SHIPPED.** Two attempts, both against
+      an untracked full copy of the extractor (`scripts/_adv_andbook.py`)
+      diffed against the committed `refs.json`.
+
+      Attempt 1 narrowed line 604's lookahead to require an immediate
+      digit after the alias — `(?!{BOOK_RE}\b\s*\.?\s*\d)`, the shape
+      the item itself suggested. Whole-corpus pair diff: **+0 −0**,
+      which looked clean until every site was traced to its literal
+      sentence rather than trusted as a count. `en/235.txt`'s "Paul
+      uses that picture in Genesis chapter 1 verse 3 and 2 Corinthians
+      chapter 4" changed from two matches (`Genesis 1:3`, `2
+      Corinthians 4`) to one (`Genesis 1:3` only): no digit sits
+      immediately after "2 Corinthians" (the word "chapter" is between
+      them), so the narrowed guard stops refusing, "and 2" is swallowed
+      as a bogus continuation of Genesis 1, and `2 Corinthians 4` is
+      lost from the English body. It doesn't show at the pair level
+      only because `zh-CN/235.txt` and `zh-TW/235.txt` state the same
+      fact plainly ("在哥林多後書4章中說了這樣的話") and independently
+      supply the same key — the identical "coincidence, not a safety
+      net" shape flagged for guard 2 two entries up (line ~6278). The
+      item's own suggested narrowing would have shipped a real, silent
+      regression behind a clean-looking diff.
+
+      Attempt 2 mirrored REF_RE's own book→chapter grammar (lines
+      489–494: optional `.`, optional `chapters?|ch\.|第` or its comma
+      form, then a digit or CJK numeral) inside the lookahead instead
+      of requiring a bare digit. This fixes attempt 1's regression
+      (`en/235.txt` splits into `Genesis 1:3` + `2 Corinthians 4`
+      again) and fixes the item's own synthetic example ("Psalm 23
+      verses 1 and 2 The Lord is my shepherd" → `Psalms 23:1`, `Psalms
+      23:2`, verse 2 recovered). Whole-corpus effect, checked by
+      comparing the full parsed dict for equality rather than a
+      pair-set sample: **byte-identical output — +0 −0, no reordering
+      either.** The item's "zero occurrences in the corpus today" holds
+      and is now verified exactly rather than assumed.
+
+      **Not shipping.** Zero measured benefit today, and the only
+      version that is actually safe works by duplicating REF_RE's
+      book→chapter recognition a second time inside a negative
+      lookahead — a second copy of that grammar to keep in sync by
+      hand, for a bug class the current 867-transcript corpus does not
+      contain. Same reasoning as the entry above this one (+1 −0,
+      declined): standing maintenance cost for zero current win isn't
+      worth carrying. `scripts/_adv_andbook.py` (untracked) has the
+      working attempt-2 implementation if a future transcript ever
+      hits this shape. `refs.json` and `extract_sermon_refs.py` are
+      byte-unchanged.
+
+      This measured only the **numbered-ordinal** shape the item names
+      (`2 The`, `2 Tim`, `3 Jo`, …). A separate, wider class — bare
+      two-letter aliases that are ordinary English words (`He`, `Is`,
+      `Am`, `Ac`, `Ep`, …) with no number at all after them — is
+      queued separately below; a crude corpus scan found 324 candidate
+      sites but it is not known how many sit inside an in-progress
+      `REF_RE` match, so treat that count as unmeasured, not zero.
+
+- [ ] **The "and" guard's bare-alias false-refusal class is wider than
+      the numbered-ordinal shape above, and unmeasured.** Found while
+      measuring the item above (2026-08-31). `BOOK_RE` also admits bare
+      two-letter capitalised aliases that are ordinary English words in
+      this preacher's prose — `He` (Hebrews), `Is` (Isaiah), `Am`
+      (Amos), `Ac`, `Ep`, `Ho`, `Na`, `Ne`, `Ob`, `Pr`, `Ro`, `Ru`,
+      `Ti`, `Cl`, `Ga`, `Mt`, `Mc` — so "and He says", "and Jesus
+      cannot protect" (`Jesus` isn't an alias, but `Je`/`Jer` reached
+      via partial matches inside longer words could be) sit in the same
+      refusal branch as the numbered-ordinal case. A crude corpus scan
+      for `and <BOOK_RE match not followed by a digit>` returns 324
+      sites, but the `vand` branch only fires **inside an in-progress
+      `REF_RE` match** (i.e. after a verse number, mid-citation) — most
+      of the 324 are plain prose nowhere near a citation and never reach
+      this branch at all. Needs the same instrumented measurement as
+      above (copy the extractor, narrow only what's needed, diff the
+      full parsed dict against committed `refs.json`, trace every
+      changed site to its sentence) before any conclusion, let alone a
+      fix, is warranted.
 
 - [x] **12 sites say "Book C:V and C2:V2" and the second citation is
       lost — 10 of them unreachable by any other path. SHIPPED
