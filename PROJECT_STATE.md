@@ -635,24 +635,47 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
    for the identical URLs (all 15 hymn pages, and 39 of 283 D/E pages).
    No connection error, no timeout, just silently thinner content. This
    is very likely the same datacenter-IP treatment as the ECONNREFUSED
-   case, just a softer form of it, but is an inference from one paired
-   comparison, not confirmed. Practical upshot: the daily
-   `refresh-songs.yml` cron may now be structurally unable to ever
-   refresh the CDC catalogue on its own — every future CDC-side song
-   change likely needs a manual home-IP `sync_songs.py` run + manual
-   `netlify-cli deploy`, same as the 2026-08-30 repair. See
-   `docs/autonomous-queue.md` for the open item tracking confirmation
-   (wait for a second, unpaired day before treating this as settled).
-   **Do not respond by spoofing headers/UA to look less like a bot** —
-   that's evasion, not a fix, and this repo treats CDC/fydt as a
-   neighbour to stay gentle with, not an obstacle to route around.
+   case, just a softer form of it. **2026-08-31 update:** a second,
+   unpaired data point arrived — the scheduled run (`event: schedule`,
+   run `33333258556`, 2026-08-30 20:18 UTC) matched exactly: 15/15 hymn
+   pages `has no mp3`, zero `warn: GET … failed` lines, 248/283 D/E
+   pages with audio versus 282/283 from the same-day home-IP run. That
+   is three runner-side observations (2026-08-29, the 2026-08-30 manual
+   dispatch `33308480754`, and this scheduled run) against a home-IP
+   control that stayed clean each time. **The pattern is now
+   established**: this failure mode has recurred on every runner-side
+   attempt observed so far (n=3), so the daily `refresh-songs.yml` cron
+   has failed this way every time it has run since the 2026-08-30 fix
+   shipped. **The cause is still inferred, not proven** — datacenter-IP
+   differentiation remains the strongest fit, but nobody has a statement
+   from CDC and a runner-pool coincidence isn't ruled out; treat it as
+   likely, not settled. Operational upshot: CI cannot currently refresh
+   the CDC catalogue — every CDC-side song change needs a manual home-IP
+   `sync_songs.py` run + manual `netlify-cli deploy`, same as the
+   2026-08-30 repair, and **a green `refresh-songs.yml` run does not
+   mean the catalogue refreshed** (see 8 below). **Do not respond by
+   spoofing headers/UA to look less like a bot** — that's evasion, not a
+   fix, and this repo treats CDC/fydt as a neighbour to stay gentle
+   with, not an obstacle to route around.
 8. **The `yswords-data` "Refresh songs" daily failure is the audio
    coverage guard working correctly**, not a break. Fix the alert
    fatigue, not the guard. As of 2026-08-30 there is a second guard with
    the same posture: `sync_songs.py`'s new per-row regression check
    (any row's only media vanishing, or any row disappearing) also
    refuses to write rather than publish a stripped catalogue — see 7
-   above for why it may now fire routinely.
+   above for why it fires on essentially every runner-side attempt.
+   As of the 2026-08-30 20:18 UTC scheduled run (`33333258556`), the
+   workflow step reports `conclusion: success` even when the guard
+   refused to write (it runs under `set +e … exit 0`, plus a dedup step
+   that suppresses the repeat failure email) — deliberate, not a bug.
+   The manual dispatch run about nine hours earlier the same day
+   (`33308480754`, 11:15 UTC) still concluded `failure` under the same
+   guard, so
+   this success-suppression is a property of the current workflow
+   state, not something every past run showed. The upshot going
+   forward: **a green check on this workflow is not evidence the
+   catalogue actually refreshed**; only a manual home-IP
+   run + deploy, or reading the run's own log, tells you that.
 9. **Data and its test ship together.** Stashing data without its test
    turned four tests red.
 10. **Flutter no longer ships an offline service worker.** `flutter

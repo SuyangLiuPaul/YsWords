@@ -143,6 +143,30 @@ void main() {
       );
     });
 
+    // 2026-08-29/30 regression guard. `fetch_cdc_hymns()` in
+    // yswords-data's sync used to treat "0/15 hymn pages had an mp3"
+    // as a legitimate empty result rather than a fetch failure, and the
+    // 2026-08-29 scheduled cron published exactly that: a catalogue
+    // with h01-h15 present but silent. The upstream per-row guard now
+    // refuses that write, but this repo's own snapshot should still
+    // fail loudly if a hymnless catalogue ever slips through again.
+    test('all 15 Classic Piano Hymns are present with audio', () {
+      final hymns = songs
+          .where((s) => s.source == 'cdc' && s.id.startsWith('cdc:h'))
+          .toList();
+      final expectedIds =
+          List.generate(15, (i) => 'cdc:h${(i + 1).toString().padLeft(2, '0')}');
+      expect(hymns.map((s) => s.id).toSet(), expectedIds.toSet(),
+          reason: 'expected exactly h01-h15; found '
+              '${hymns.map((s) => s.id).toList()..sort()}');
+      for (final s in hymns) {
+        expect(s.hasAudio, isTrue,
+            reason: '${s.id} (${s.title}) has no audio');
+        expect(s.hasPlayableAudio, isTrue,
+            reason: '${s.id} (${s.title}) is not playable');
+      }
+    });
+
     test('CDC contributes instrumental and accompaniment tracks', () {
       final cdc = songs.where((s) => s.source == 'cdc');
       final instrumental =

@@ -140,7 +140,7 @@ reported. Work these top-down before P2.
       per-row/per-source/coverage-ratio contract were already established
       by the earlier `[x]` entry above and are unchanged here.)
 
-- [ ] **A nuance on the already-known trap, not a new one: CDC's
+- [x] **A nuance on the already-known trap, not a new one: CDC's
       datacenter-IP treatment (`PROJECT_STATE.md` §7/§8) can be a silent
       200-with-no-media, not only ECONNREFUSED — which means the daily GH
       Actions cron may be structurally unable to ever refresh the CDC
@@ -177,12 +177,23 @@ reported. Work these top-down before P2.
       evading anti-bot measures on someone else's site, which this repo's
       own "gentle neighbour" rule (see the 2026-08-09/2026-08-10 firewall
       incidents noted in `sync_songs.py`) exists specifically to avoid.
-      **Next step for whoever picks this up:** wait for tomorrow's
-      scheduled run (or trigger `refresh-songs.yml` again no sooner than
-      several hours out, to stay a gentle neighbour) and check whether it
-      fails the same way — a second, unpaired data point on a different
-      day would turn this from "one paired comparison" into a real
-      pattern.
+      **Result, 2026-08-31:** the second, unpaired data point arrived —
+      the scheduled `event: schedule` run **33333258556** on 2026-08-30
+      (created 20:18:03Z, Sunday → `--verify` branch) matched exactly:
+      all 15 hymn pages answered `has no mp3` in ~2.5s with zero
+      `warn: GET … failed` lines, the same "answered but NONE contained
+      an mp3" guard fired, and CDC's D/E catalogue came back 248/283
+      with audio versus 282/283 from the home-IP run the same day. That
+      is three runner-side observations (2026-08-29, the 2026-08-30
+      manual dispatch 33308480754, and this scheduled run) against one
+      home-IP control that was clean each time — the **pattern is now
+      established** (this failure mode has recurred on every runner-side
+      attempt observed so far, n=3); the **cause is still inferred, not
+      proven** — datacenter-IP differentiation remains the strongest fit
+      given §7's ECONNREFUSED precedent, but no statement from CDC
+      exists and a runner-pool coincidence isn't ruled out. See
+      `PROJECT_STATE.md` §7 for the operational upshot this now
+      supports. No further scheduled-run wait is needed for this item.
 
 - [x] **AI search results do not jump to the verse when tapped. Fixed
       2026-08-24 — the reader route was being leaked, not the jump.**
