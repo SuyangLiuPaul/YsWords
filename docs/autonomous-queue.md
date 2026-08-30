@@ -6359,25 +6359,40 @@ has never seen this repo.
       sites but it is not known how many sit inside an in-progress
       `REF_RE` match, so treat that count as unmeasured, not zero.
 
-- [ ] **The "and" guard's bare-alias false-refusal class is wider than
-      the numbered-ordinal shape above, and unmeasured.** Found while
-      measuring the item above (2026-08-31). `BOOK_RE` also admits bare
-      two-letter capitalised aliases that are ordinary English words in
-      this preacher's prose — `He` (Hebrews), `Is` (Isaiah), `Am`
-      (Amos), `Ac`, `Ep`, `Ho`, `Na`, `Ne`, `Ob`, `Pr`, `Ro`, `Ru`,
-      `Ti`, `Cl`, `Ga`, `Mt`, `Mc` — so "and He says", "and Jesus
-      cannot protect" (`Jesus` isn't an alias, but `Je`/`Jer` reached
-      via partial matches inside longer words could be) sit in the same
-      refusal branch as the numbered-ordinal case. A crude corpus scan
-      for `and <BOOK_RE match not followed by a digit>` returns 324
-      sites, but the `vand` branch only fires **inside an in-progress
-      `REF_RE` match** (i.e. after a verse number, mid-citation) — most
-      of the 324 are plain prose nowhere near a citation and never reach
-      this branch at all. Needs the same instrumented measurement as
-      above (copy the extractor, narrow only what's needed, diff the
-      full parsed dict against committed `refs.json`, trace every
-      changed site to its sentence) before any conclusion, let alone a
-      fix, is warranted.
+- [x] **The "and" guard's bare-alias false-refusal class — MEASURED
+      2026-08-31, reached count is 0, no narrowing warranted.** The 324
+      was a standalone-grep upper bound; the number that actually
+      **reaches** the `(?!{BOOK_RE})` lookahead inside a live `REF_RE`
+      match is **0**, not just for this corpus but structurally: the
+      lookahead is zero-width, so the mandatory token right after it —
+      `(?:\d+|{_CN_NUM_RE})` — is anchored at the exact same position.
+      None of the 17 bare aliases (`He Is Am Ac Ep Ho Na Ne Ob Pr Ro Ru
+      Ti Cl Ga Mt Mc`, all verified present in `ENGLISH_ALIASES`) begin
+      with a digit or CJK numeral, so the digit requirement fails at
+      that position regardless of what the book-alias lookahead would
+      have decided — the guard cannot be the deciding factor for this
+      class, full stop. (The digit-*leading* sibling class — `1 Peter`,
+      `2 Corinthians`, `1 Corinthians` — is real and separate: 5 sites
+      total corpus-wide, all correct refusals, already covered by the
+      item above.) Measured with an instrumented copy of the real
+      `REF_RE` (`(?!{BOOK_RE})` swapped for an always-succeeding
+      positive lookahead with a `vand_bookpeek` capture, run via
+      `finditer` over every sermon's `passage` hint + en/zh-CN/zh-TW
+      body — not a standalone grep) over the whole corpus: 194 sites
+      where `and <verse>` actually extended a range, 5 where a book
+      alias also matched there, 0 of those 5 (and 0 of the 194) bare
+      two-letter. Corroborated by a direct grep for
+      `and\s+(?:He|Is|...)\d` (alias immediately adjacent to a digit,
+      zero-space) across the whole corpus: 0 hits. Refuted
+      adversarially and confirmed as a structural proof, not merely an
+      empirical count. `extract_sermon_refs.py` and `refs.json` are
+      byte-unchanged — this closes an unmeasured item with a fact, no
+      code change warranted. ("`Je`/`Jer` reached via partial matches
+      inside longer words" in the original wording was itself loose —
+      matching is case-sensitive with no `IGNORECASE`, and both `Je`
+      and `Jer` (Jeremiah's aliases) are letter-initial like the other
+      17, so they share the identical zero-reach proof above rather
+      than needing separate treatment.)
 
 - [x] **12 sites say "Book C:V and C2:V2" and the second citation is
       lost — 10 of them unreachable by any other path. SHIPPED
