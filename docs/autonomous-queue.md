@@ -6578,7 +6578,7 @@ has never seen this repo.
       numerals, and the digit spelling defeats it. See the shipped entry
       above.
 
-- [ ] **The two-character abbreviations lose at least one real citation,
+- [x] **The two-character abbreviations lose at least one real citation,
       and 156 「與帖前四章」 is it.** Raised by the refuter 2026-08-26
       while arguing against the item above. 帖前 (1 Thessalonians) is not
       plausibly an everyday word — nor are 帖后, 彼前, 彼后, 代下 — so the
@@ -6587,14 +6587,35 @@ has never seen this repo.
       genuine citation and is dropped; it costs nothing today only
       because 156 reaches 1 Thessalonians 4 by another path.
 
+      **MEASURED 2026-08-30, NOT SHIPPED.** Built the evidence-gated
+      admission proposed below (a two-char abbreviation admitted
+      mid-sentence only when immediately followed by 第, a digit/CN-numeral
+      + 章/篇, or an explicit verse colon) in an untracked scratch copy and
+      ran it over the real 867-transcript corpus. Whole-corpus effect:
+      **+1 −0 (sermon, key) pairs, exhaustively measured** (diffed the
+      full `byVerse` pair set, not a sample; independently re-run and
+      confirmed by a refuter agent). The +1 is `('423', '2 Corinthians
+      5')` — a BARE chapter key, from `en/423.txt`'s embedded Chinese
+      「林后第五章第十六十七节」. It duplicates the `2 Corinthians 5:16` /
+      `5:17` 423 already holds, and it is the exact site the shipped item
+      above (line ~6609) calls "a gain" to give up: admitting 林后 here
+      reopens the bare-chapter-key over-breadth the item above just spent
+      −18 closing (`passage_filter.dart`'s colon-less-key-matches-every-
+      verse behaviour). Meanwhile the motivating case is a no-op: 156
+      already holds `1 Thessalonians 4` via the full name earlier in the
+      same sentence, so 「與帖前四章」 gains no new key by this path — and
+      neither does 374's 提后一章十六节 (already holds `2 Timothy 1:16` via
+      the full name). Net effect of shipping: one known-bad key reopened,
+      zero real gain. Not shipping. `scripts/_adv_evgate.py` (untracked)
+      has the implementation if a future iteration wants to re-verify or
+      try a tighter evidence gate; the corpus-wide grep for all 17
+      abbreviations followed by evidence found no other sites, so this is
+      not a sampling gap.
+
       Do not fix this by admitting the "safe-looking" ones one at a
       time: which two-character strings are also ordinary words is a
       judgement about Chinese, not a measurement, and the corpus cannot
-      settle it. A better shape would be to admit an abbreviation only
-      when the citation that follows is unambiguous — a 第, a 章, or an
-      explicit verse — which is the same evidence the bare-numeral guard
-      already demands. Measure the whole-corpus effect of that before
-      trading anything real for it.
+      settle it.
 
 - [ ] **「第十六十七节」 — two verse numbers run together with no
       separator — parses as neither.** 423 says 「在林后第五章第十六十七

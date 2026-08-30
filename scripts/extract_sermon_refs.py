@@ -344,6 +344,26 @@ BOOK_RE = build_book_pattern()
 # with no class to be repaired alongside it and with the 提前 hazard
 # riding in beside it.
 #
+# 2026-08-30: an evidence-gated relaxation was measured and rejected —
+# admit an abbreviation mid-sentence only when a 第, a 章/篇-marked
+# number, or an explicit verse colon follows it directly, rather than
+# excluding the whole class. Built as `CJK_INFIX_ABBREV_RE` + an
+# evidence lookahead folded into `BOOK_START_RE`, in an untracked
+# scratch copy, and run over the full 867-transcript corpus. Whole-
+# corpus effect: +1 −0 pairs, exhaustively measured (not a sample) and
+# independently re-confirmed. The +1 is exactly 423 above —「林后第五章」
+# satisfies the evidence gate (第 follows immediately), reopening the
+# bare-chapter key this comment just called a gain to give up, and
+# duplicating the `2 Corinthians 5:16` / `5:17` 423 already holds by the
+# full name. The relaxation's motivating case (156's 「與帖前四章」) is a
+# no-op under it: 156 already holds `1 Thessalonians 4` via the full
+# name earlier in the same sentence, so the gate reaches no new key
+# there, nor at 374's 提后一章十六节 (already holds `2 Timothy 1:16` the
+# same way). An evidence gate sounds like it should discriminate, but
+# 「第」 is not scoped to a citation — it also introduces the noun that
+# follows a chapter number in restated prose, which is exactly the 423
+# shape. Net: one known-bad key reopened, zero real gain. Not shipped.
+#
 # 诗篇 is itself an ordinary word ("psalm"), and 009's 「同一诗篇」 is
 # exactly that usage. What handles it is not the length rule but the
 # 「第N和第M节」 refusal in `extract_refs`, which is load-bearing here:
