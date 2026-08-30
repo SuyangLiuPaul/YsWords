@@ -5441,6 +5441,62 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **Fix `UpdateService` — the update check has never worked once.**
+      2026-08-30. `lib/services/update_service.dart:46` reads
+
+          static const String repo = 'SuyangLiuPaul/Yahweh\'s Words';
+
+      The real repo is `SuyangLiuPaul/YsWords`. Measured, not inferred:
+      the URL the app actually requests returns **404**, and the correct
+      one returns 200 with tag `v1.4.6` and four platform assets. Every
+      non-200 is swallowed into a silent "couldn't check", so the tile
+      in About has reported failure for its entire life.
+
+      Fixing the slug is one line, but it does **not** make the feature
+      useful on its own, and shipping it alone would be worse than
+      leaving it off — the newest GitHub release is **v1.4.6
+      (2026-08-04)** while dev is 1.4.170, so a working check would tell
+      users an *older* build is available. Two things must land with it:
+
+        1. A decision from the user on whether GitHub releases resume.
+           Without releases there is nothing for this to point at.
+        2. `kAppVersion`'s fallback in `lib/constants/app_version.dart`
+           is still `1.3.113`. A native build without
+           `--dart-define=APP_VERSION` self-reports that, so
+           `isNewer(latest, current)` would say "update available"
+           forever regardless of the real version.
+
+      Add a test that pins the repo slug — a string constant that was
+      wrong for months with no failing test is the whole lesson here.
+
+- [ ] **Retire the China bundle: make the two `kChinaMode` gates
+      runtime-detected.** 2026-08-30, user: "我没有cn版本的了发现现在的
+      yswords中国可以用yahwehword的" — several people in mainland China
+      run the international build over yahwehword.com and report it
+      stable, so the "Google hosts are unreachable there" premise the
+      split was built on is at least partly wrong.
+
+      CanvasKit is already handled (v1.4.170, `--no-web-resources-cdn`
+      now on both builds). What is left is the two things
+      `lib/constants/build_flags.dart` still gates at compile time:
+
+        * **Firebase Auth + RTDB init.** With `kChinaMode` false the app
+          dials `*.googleapis.com` / `*.firebaseio.com` and waits ~4 s
+          for the watchdog. Those are blocked far more reliably than
+          gstatic ever was.
+        * **Google Fonts entries in the font picker**, which can never
+          load from `fonts.googleapis.com` there.
+
+      Make both runtime-detected (or get an explicit user decision that
+      the 4 s and the dead entries are acceptable), and only then retire
+      `yswords-cn`, `yswords-cn-dev`, `yswords-cn-qat`.
+
+      **This touches the boot path — its own iteration, its own
+      verification, not folded into anything else.** Note also that once
+      the cn build is gone, `verify_site()`'s main.dart.js check has
+      nothing left to discriminate; that is fine, but do not delete the
+      check as "redundant" while two bundles still exist.
+
 - [x] **Sermon passage filter: highlight the match, and filter by verse
       — SHIPPED 2026-08-23 (v1.4.119).** The filter travels into the
       sermon as a `PassageFilter`; every mention is highlighted on top

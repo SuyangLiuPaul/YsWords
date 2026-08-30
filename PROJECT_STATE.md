@@ -65,9 +65,43 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.169** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.169** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.170** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.170** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+
+**`yahwehword.com` is live and points at `yswords` PROD** (apex is
+Netlify, `www` redirects to apex, NS on Cloudflare). So prod is not a
+quiet backwater any more — it is what a real domain resolves to, and it
+is 159 versions behind dev. That is still the rule, not an oversight,
+but the audience changed.
+
+**The China bundle is on its way out (user, 2026-08-30).** The
+`CHINA_MODE=true` split was built on the assumption that mainland China
+cannot reach Google hosts. Partly wrong: the user reports several people
+in mainland China running the INTERNATIONAL build over yahwehword.com
+and finding it stable, so `www.gstatic.com` is evidently reachable for
+them. What that leaves, and what still has to be solved before the cn
+sites can be retired:
+
+  * **CanvasKit — done, 2026-08-30 (v1.4.170).** `--no-web-resources-cdn`
+    now goes to BOTH builds, so the intl bundle loads the ~7 MB wasm
+    same-origin from Netlify rather than gstatic. Not because gstatic is
+    blocked — because once cn is retired the intl bundle is the *only*
+    bundle, and a preference-with-a-fallback becomes a single point of
+    failure on a host nobody here controls. The app already requires
+    Netlify; now that is all it requires.
+  * **Firebase Auth + RTDB — still open.** `kChinaMode` skips init
+    entirely; with it false the app dials `*.googleapis.com` /
+    `*.firebaseio.com` and, per `lib/constants/build_flags.dart`, waits
+    ~4 s for the watchdog to give up. These are blocked far more
+    reliably than gstatic.
+  * **Google Fonts picker — still open.** `kChinaMode` hides the
+    options; without it China readers see entries that can never load.
+
+Both open items are compile-time constants today. Retiring cn means
+making them **runtime-detected**, or deciding the 4 s and the dead font
+entries are acceptable. That change touches the boot path — do it as its
+own iteration with its own verification, not folded into something else.
 
 **Trap 61: a two-part fix will report success after the part that
 measures well, and the part that does not measure at all can be the
