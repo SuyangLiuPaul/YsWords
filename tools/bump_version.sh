@@ -67,13 +67,25 @@ awk -v new="$NEW" '
 mv "$TMP" "$PUBSPEC"
 
 # Update lib/constants/app_version.dart — the `defaultValue: '...'`
-# inside the kAppVersion String.fromEnvironment call.
+# inside _envAppVersion's String.fromEnvironment call, AND the ternary
+# fallback literal on kAppVersion's own line (`_envAppVersion == '' ?
+# '...' : _envAppVersion`). Both must move together or the two-literal
+# guard from 3c22efa (2026-06-29, the empty-dart-define blank-version
+# fix) drifts apart — see test/update_service_test.dart.
+#
+# 2026-08-30: this anchor used to say `kAppVersion = String.fromEnvironment(`,
+# which 3c22efa renamed away when it split the constant in two. The awk
+# matched nothing from that commit onward — every bump since silently left
+# the fallback frozen at 1.3.113 while still printing a success message.
 TMP="$(mktemp)"
 awk -v new="$NEW" '
-  /const String kAppVersion = String\.fromEnvironment\(/ { in_block = 1 }
+  /const String _envAppVersion = String\.fromEnvironment\(/ { in_block = 1 }
   in_block && /defaultValue:/ {
     sub(/defaultValue: '\''[^'\'']*'\''/, "defaultValue: '\''" new "'\''")
     in_block = 0
+  }
+  /const String kAppVersion = _envAppVersion ==/ {
+    sub(/'\''[^'\'']*'\'' : _envAppVersion/, "'\''" new "'\'' : _envAppVersion")
   }
   { print }
 ' "$APP_VERSION_DART" >"$TMP"

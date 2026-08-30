@@ -242,6 +242,105 @@ void main() {
     });
   });
 
+  /// 2026-08-30: `bump_version.sh`'s version-update awk anchored on
+  /// `const String kAppVersion = String\.fromEnvironment\(`, a line that
+  /// `3c22efa` (2026-06-29) renamed away when it split the constant into
+  /// `_envAppVersion` (the environment read) and `kAppVersion` (a ternary
+  /// guarding the empty-dart-define case). The awk matched nothing from
+  /// that commit onward — every bump since left `app_version.dart`'s
+  /// fallback frozen at `1.3.113` while the script still printed a
+  /// success message. `flutter analyze` and the widget suite cannot see
+  /// this: the failure is entirely in the shell, so this test runs the
+  /// real awk block under `sh`, mirroring `_extractReleaseStampViaShell`
+  /// above for the release-time block.
+  group('the version-fallback writer (bump_version.sh)', () {
+    /// Runs the real "Update lib/constants/app_version.dart" awk block —
+    /// lifted verbatim out of the script — against a scratch copy of the
+    /// REAL app_version.dart, and returns the mutated content. A Dart
+    /// reimplementation of the awk would only prove Dart agrees with
+    /// Dart; the shell is what bump_version.sh actually runs at release
+    /// time.
+    String runBlock(String newVersion) {
+      final script = File('tools/bump_version.sh').readAsStringSync();
+      const startMarker = '# Update lib/constants/app_version.dart';
+      final start = script.indexOf(startMarker);
+      expect(start, greaterThan(-1),
+          reason: 'bump_version.sh no longer has its version-update block '
+              'at the anchor this test expects');
+      const endMarker = 'mv "\$TMP" "\$APP_VERSION_DART"';
+      final end = script.indexOf(endMarker, start);
+      expect(end, greaterThan(start));
+      final block = script.substring(start, end + endMarker.length);
+
+      final scratch = File(
+          '${Directory.systemTemp.path}/bump_version_awk_test_'
+          '${DateTime.now().microsecondsSinceEpoch}.dart')
+        ..writeAsStringSync(
+            _repoFile('lib/constants/app_version.dart').readAsStringSync());
+      addTearDown(() {
+        if (scratch.existsSync()) scratch.deleteSync();
+      });
+
+      final result = Process.runSync('sh', [
+        '-c',
+        'APP_VERSION_DART="${scratch.path}"\nNEW="$newVersion"\n$block',
+      ]);
+      expect(result.exitCode, 0, reason: result.stderr.toString());
+      return scratch.readAsStringSync();
+    }
+
+    test('anchors on _envAppVersion, which is what the source actually '
+        'declares today', () {
+      final source = _repoFile('lib/constants/app_version.dart')
+          .readAsStringSync();
+      expect(
+        source,
+        contains('const String _envAppVersion = String.fromEnvironment('),
+        reason: 'if this constant is renamed again, update the anchor in '
+            'the same commit — a bump that silently stops moving the '
+            'fallback is exactly the defect this test exists to catch',
+      );
+    });
+
+    test('a bump moves BOTH literals — the defaultValue and the ternary '
+        'fallback', () {
+      final after = runBlock('9.9.9');
+      expect(after, contains("defaultValue: '9.9.9',"));
+      expect(
+        after,
+        contains("_envAppVersion == '' ? '9.9.9' : _envAppVersion;"),
+        reason: 'the ternary literal (3c22efa\'s empty-dart-define guard) '
+            'must move too, or it silently re-drifts from pubspec.yaml '
+            'the next time a build ships an empty APP_VERSION define',
+      );
+      // The guard from 3c22efa must survive the bump untouched in shape.
+      expect(after, contains("_envAppVersion == '' ?"));
+    });
+
+    test('is idempotent under a second bump to the same version', () {
+      final once = runBlock('9.9.9');
+      final scratch2 = File(
+          '${Directory.systemTemp.path}/bump_version_awk_test2_'
+          '${DateTime.now().microsecondsSinceEpoch}.dart')
+        ..writeAsStringSync(once);
+      addTearDown(() {
+        if (scratch2.existsSync()) scratch2.deleteSync();
+      });
+      final script = File('tools/bump_version.sh').readAsStringSync();
+      const startMarker = '# Update lib/constants/app_version.dart';
+      final start = script.indexOf(startMarker);
+      const endMarker = 'mv "\$TMP" "\$APP_VERSION_DART"';
+      final end = script.indexOf(endMarker, start);
+      final block = script.substring(start, end + endMarker.length);
+      final result = Process.runSync('sh', [
+        '-c',
+        'APP_VERSION_DART="${scratch2.path}"\nNEW="9.9.9"\n$block',
+      ]);
+      expect(result.exitCode, 0, reason: result.stderr.toString());
+      expect(scratch2.readAsStringSync(), once);
+    });
+  });
+
   /// The second guard, added 2026-08-25 to cover the nightly — which the
   /// stamp above structurally cannot, because the stamp only moves when
   /// `bump_version.sh` runs and the 04:00 launchd job does not bump.

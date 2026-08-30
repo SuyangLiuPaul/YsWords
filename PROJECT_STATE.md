@@ -103,6 +103,32 @@ making them **runtime-detected**, or deciding the 4 s and the dead font
 entries are acceptable. That change touches the boot path — do it as its
 own iteration with its own verification, not folded into something else.
 
+**Trap 62: a script that prints "✓ … now at $NEW" is not evidence it
+wrote anything — it printed the same line whether the awk matched or
+not.** `tools/bump_version.sh` bumps `pubspec.yaml` and
+`app_version.dart`'s `kAppVersion` fallback in lockstep, on every
+release, since v1.3.9. `3c22efa` (2026-06-29) renamed the constant the
+awk anchored on (`kAppVersion = String.fromEnvironment(` →
+`_envAppVersion = String.fromEnvironment(` plus a new ternary), and the
+awk's `/pattern/ { in_block = 1 }` simply never fired again — `awk`
+does not error on a pattern matching zero lines, it silently prints the
+file unchanged, and the script's `mv "$TMP" "$APP_VERSION_DART"` then
+happily overwrote the real file with that unchanged copy. Every bump
+from that commit to 2026-08-30 left the fallback frozen at `1.3.113`
+while pubspec climbed to `1.4.170`, and the terminal output claimed
+success at every one of them. Found only because a downstream feature
+(`UpdateService`, fixed the same iteration) needed the fallback to be
+honest and a manual value-check caught the two-month-old literal.
+**A script whose failure mode is "matched nothing, changed nothing" needs
+a test that runs its actual `awk`/`sed` against real input and asserts
+the output moved** — `test/apk_freshness_guard_test.dart` already did
+this for the neighbouring `kAppReleaseTime` block (same file, same
+awk-anchor shape); it just hadn't been extended to this one. Anchoring
+tests in Dart against a Dart reimplementation of the shell would have
+proven nothing — see Trap 39, a regex disarmed by reformatting, and the
+existing `_extractReleaseStampViaShell` comment: "A Dart
+reimplementation of the awk would only prove Dart agrees with Dart."
+
 **Trap 61: a two-part fix will report success after the part that
 measures well, and the part that does not measure at all can be the
 one carrying the gain.** Relaxing 第 in the Chinese chapter-mark

@@ -5441,33 +5441,44 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
-- [ ] **Fix `UpdateService` — the update check has never worked once.**
-      2026-08-30. `lib/services/update_service.dart:46` reads
+- [x] **Fix `UpdateService` — the update check has never worked once.**
+      2026-08-30. Fixed both preconditions that were fixable without the
+      user: `repo` in `update_service.dart:46` was
+      `'SuyangLiuPaul/Yahweh\'s Words'` (404) → now
+      `'SuyangLiuPaul/YsWords'` (200, tag `v1.4.6`) — also fixed the same
+      stale slug in `about_page.dart:664` and
+      `setup_instructions_card.dart:279`, which grep turned up alongside
+      it. `kAppVersion`'s fallback in `app_version.dart` was `1.3.113`
+      (two literals: `_envAppVersion`'s `defaultValue` and
+      `kAppVersion`'s ternary) → now `1.4.170`, matching pubspec.
+      `isNewer('1.4.6', '1.4.170')` is `false`, so the tile now reads
+      "you're on the latest" — true and harmless, no phantom-downgrade
+      prompt, no user decision needed to ship this much.
 
-          static const String repo = 'SuyangLiuPaul/Yahweh\'s Words';
+      Root cause of the stale fallback: `tools/bump_version.sh`'s awk
+      anchored on `const String kAppVersion = String\.fromEnvironment\(`,
+      a line `3c22efa` (2026-06-29) renamed away when it split the
+      constant into `_envAppVersion` + a ternary guard. The awk matched
+      nothing from that commit onward — every bump since left the
+      fallback frozen while the script kept printing a false success
+      message. Fixed the anchor and taught the same awk block to move
+      the ternary literal too, so the two can never drift apart again.
 
-      The real repo is `SuyangLiuPaul/YsWords`. Measured, not inferred:
-      the URL the app actually requests returns **404**, and the correct
-      one returns 200 with tag `v1.4.6` and four platform assets. Every
-      non-200 is swallowed into a silent "couldn't check", so the tile
-      in About has reported failure for its entire life.
+      Tests added: `test/update_service_test.dart` pins the repo slug
+      and greps `lib/` for any remaining copy of the old one; asserts
+      `kAppVersion == pubspec.yaml`'s version (the durable check — fails
+      the moment they drift); asserts a real release is never "newer"
+      than a correct fallback. `test/apk_freshness_guard_test.dart`
+      mirrors the existing release-time pattern: lifts the real awk
+      block out of `bump_version.sh` and runs it under `sh` against the
+      real `app_version.dart`, proving a bump moves both literals and is
+      idempotent. All three regressions were verified to actually fail
+      before the fix (reverted each in turn, confirmed red, restored).
+      `flutter analyze` clean, full suite (1281 tests) green.
 
-      Fixing the slug is one line, but it does **not** make the feature
-      useful on its own, and shipping it alone would be worse than
-      leaving it off — the newest GitHub release is **v1.4.6
-      (2026-08-04)** while dev is 1.4.170, so a working check would tell
-      users an *older* build is available. Two things must land with it:
-
-        1. A decision from the user on whether GitHub releases resume.
-           Without releases there is nothing for this to point at.
-        2. `kAppVersion`'s fallback in `lib/constants/app_version.dart`
-           is still `1.3.113`. A native build without
-           `--dart-define=APP_VERSION` self-reports that, so
-           `isNewer(latest, current)` would say "update available"
-           forever regardless of the real version.
-
-      Add a test that pins the repo slug — a string constant that was
-      wrong for months with no failing test is the whole lesson here.
+      Left for the user, moved below: whether GitHub releases resume at
+      all — without one, the tile has nothing current to compare against
+      even though the mechanism is now honest.
 
 - [ ] **Retire the China bundle: make the two `kChinaMode` gates
       runtime-detected.** 2026-08-30, user: "我没有cn版本的了发现现在的
@@ -8626,6 +8637,15 @@ so the bundle-size answer stays on the record.
 
 ## Blocked on the user — do not attempt
 
+- **Do GitHub releases resume?** 2026-08-30. `UpdateService` is now
+  correct (right repo slug, right `kAppVersion` fallback) but the
+  latest GitHub release is still `v1.4.6` (2026-08-04) against dev's
+  1.4.170 — nothing has been cut since. The check is honest either way
+  (it won't show a phantom downgrade), but it has nothing current to
+  point users at until releases resume, or the tile stays a quiet
+  no-op. One-line answer either way: resume cutting a release per
+  version (and if so, from what trigger), or leave it and the tile
+  just never fires.
 - **prod deploy.** Every prod push needs explicit permission in the
   moment; it does not carry over. prod is on v1.4.11 and still serves
   the broken LEB and the wrong sermon attribution.
