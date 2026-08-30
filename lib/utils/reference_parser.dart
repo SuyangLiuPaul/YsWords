@@ -1,4 +1,5 @@
 import 'package:yswords/constants/book_name_mapping.dart' show zhToEn;
+import 'package:yswords/constants/canon_chapters.dart' show chapterExistsInCanon;
 
 /// Result of parsing a string like "John 3:16", "约 3:16-18",
 /// "1 Cor 13", "创 1:1" — a Bible reference resolved to its
@@ -317,6 +318,8 @@ BibleReference? _buildRef(
   if (_singleChapterBooks.contains(canonical) && chapter > 1) {
     final start = chapter;
     final end = verseEnd ?? verseStart;
+    // No canon check needed here — the reinterpretation above always
+    // lands on chapter 1, which every single-chapter book has.
     return BibleReference(
       englishBook: canonical,
       chapter: 1,
@@ -324,6 +327,28 @@ BibleReference? _buildRef(
       verseEnd: (end != null && end >= start) ? end : start,
     );
   }
+
+  // Chapter-level canon guard, applied to the FINAL chapter number (i.e.
+  // after the single-chapter-book reinterpretation above, never before
+  // it — a reference like "Jude 14-15" must resolve against Jude 1, not
+  // be refused for "Jude 14" not existing). Returning null here — rather
+  // than a reference with a chapter that isn't there — is deliberate:
+  // callers that get null already know to treat the input as
+  // unresolvable, whereas a wrong-but-well-formed BibleReference would
+  // render as a plausible, tappable citation to scripture that isn't
+  // there (sermon 232's "阿摩司书第12章", CP37's "启示录三十七章十七节").
+  // Verified (2026-08-31) this cannot fall through to a worse guess:
+  // every caller of `_buildRef` passes the book part as a PREFIX of the
+  // original string (the regex group ends where the chapter digits
+  // start), so when this guard returns null, `parseReference`'s later
+  // patterns and its final bare-book-name fallback all re-run against
+  // the SAME full raw string with the chapter digits still attached —
+  // which never matches a bare book alias, so none of them can produce
+  // a different, still-wrong reference. `test/canon_chapters_test.dart`
+  // pins `totalParsed` dropping by exactly the 9 known out-of-canon
+  // matches, which is the corpus-wide check that nothing else changed
+  // class.
+  if (!chapterExistsInCanon(canonical, chapter)) return null;
 
   return BibleReference(
     englishBook: canonical,

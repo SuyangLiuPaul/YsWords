@@ -8,23 +8,25 @@ import 'package:yswords/utils/reference_parser.dart';
 /// Every reference the app offers as a tap target must point at
 /// scripture that exists.
 ///
-/// Nothing in the app checks this. `parseReference` and `splitCitation`
-/// resolve a book name and read numbers off the string; neither has any
-/// idea how long a chapter is, and `splitCitation` additionally INHERITS
-/// a bookless part from the part before it — so `John 18:31-33, 45`
-/// would put a live tap target on John 18:45 in a chapter with 40
-/// verses. The jump itself fails safe (`resolveAndPrepareJump` reports
-/// failure rather than landing somewhere plausible), so the cost of such
-/// an entry today is a snackbar; but the card would still be PRINTING a
-/// reference that is not scripture, and a reference that reads
-/// plausibly and is wrong gets believed.
+/// As of 2026-08-31, `parseReference` itself refuses a chapter that
+/// doesn't exist (queue line 7042) — but only at chapter granularity.
+/// It still has no idea how long a chapter's LAST verse is, and
+/// `splitCitation` additionally INHERITS a bookless part from the part
+/// before it — so `John 18:31-33, 45` would put a live tap target on
+/// John 18:45 in a chapter with 40 verses. The jump itself fails safe
+/// (`resolveAndPrepareJump` reports failure rather than landing
+/// somewhere plausible), so the cost of such an entry today is a
+/// snackbar; but the card would still be PRINTING a reference that is
+/// not scripture, and a reference that reads plausibly and is wrong
+/// gets believed.
 ///
-/// Bounds-checking inside the parser would mean compiling a canon table
-/// into the app — 1,189 numbers that can themselves be wrong, spent
-/// defending against data that does not exist. This is the cheaper
-/// guard, and the same one the unresolvable-citation work settled on:
-/// check the DATA, and fail with the offending id if an import ever adds
-/// a citation the reader cannot reach.
+/// Verse-level bounds-checking inside the parser would mean compiling a
+/// full chapter→last-verse table into the app — far more numbers than
+/// the chapter-count table, and numbers that can themselves be wrong,
+/// spent defending against data that does not exist. This is the
+/// cheaper guard for verses, and the same one the unresolvable-citation
+/// work settled on: check the DATA, and fail with the offending id if
+/// an import ever adds a citation the reader cannot reach.
 ///
 /// **The ruler is the union of the three English Bibles we ship, and it
 /// has to be — one version alone is the wrong ruler.** All three carry

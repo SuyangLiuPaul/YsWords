@@ -7039,7 +7039,7 @@ has never seen this repo.
       sweep counts) — both survived, re-derived from the assets by a
       second, independent script.
 
-- [ ] **Follow-up queued by the fix above: apply the chapter-canon check
+- [x] **Follow-up queued by the fix above: apply the chapter-canon check
       inside `parseReference`/`_buildRef` itself, not just at the sermon
       underlining site.** 16 files call `parseReference` (search,
       evidence, notes, timeline, cross-references…) and none of them has
@@ -7047,6 +7047,17 @@ has never seen this repo.
       changing the parser's own contract needs its own measurement pass
       across all 16 call sites first, per the guard rail in that
       iteration's brief. Do the sweep before changing anything.
+      **DONE 2026-08-31:** `_buildRef` now refuses an out-of-canon
+      chapter directly, after the single-chapter-book reinterpretation.
+      Corpus-wide sweep (12,502 sermon matches, 60,426 asset strings
+      across the 9 curated JSON files) shows `totalParsed` dropping by
+      exactly the 9 already-known out-of-canon sites — nothing else
+      changed class. An independent refuter confirmed the "cannot fall
+      through to a different wrong reference" claim by reading
+      `parseReference`/`resolveBookName` end-to-end. `flutter analyze`
+      clean, full suite green (1,304 tests). The sermon page's own
+      `chapterExistsInCanon` checks are now redundant but left in place
+      as defence in depth.
 
 - [ ] **Follow-up queued by the fix above: `passageRefPattern` can match
       across a paragraph break.** `assets/sermons/en/134.txt` has "...in

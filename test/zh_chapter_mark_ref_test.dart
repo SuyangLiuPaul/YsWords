@@ -226,8 +226,18 @@ void main() {
       // reached them, so nothing is underlined that does nothing when
       // tapped. Named rather than counted so that any NEW unresolvable
       // shape still fails here.
-      expect(unresolved, {'诗篇一一九篇103节', '詩篇一一九篇103節'},
-          reason: 'a match the parser cannot resolve underlines nothing');
+      //
+      // The other four (2026-08-31): sermon 232's "阿摩司书第12章" (Amos
+      // has 9 chapters) and CP37's "启示录三十七章十七节" (Revelation has
+      // 22), in both zh-CN and zh-TW, now refuse to parse at all —
+      // `parseReference` itself gained the chapter-canon check that used
+      // to live only at the sermon page's own call sites (queue line
+      // 7042). Same "underlines nothing" property as the 一一九 pair.
+      expect(unresolved, {
+        '诗篇一一九篇103节', '詩篇一一九篇103節',
+        '阿摩司书第12章', '阿摩司書第12章',
+        '启示录三十七章十七节', '啓示錄三十七章十七節',
+      }, reason: 'a match the parser cannot resolve underlines nothing');
     });
 
     // The defect this pattern order was changed for. A match that stops
