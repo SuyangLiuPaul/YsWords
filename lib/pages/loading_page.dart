@@ -580,8 +580,8 @@ class _LoadingPageState extends State<LoadingPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // v1.3.75: tint the loading logo with the chosen theme
-                  // colour so it matches the themed app icon + the
-                  // "YsWords / 雅偉之言" text below. loading.png is a single-
+                  // colour so it matches the themed app icon + the app-name
+                  // text below. loading.png is a single-
                   // hue silhouette (mostly #295E8C with alpha edges), so a
                   // srcIn tint recolours it cleanly without losing the mark.
                   ColorFiltered(
@@ -598,21 +598,30 @@ class _LoadingPageState extends State<LoadingPage> {
                   SizedBox(height: 24 * s),
                   Column(
                     children: [
+                      // ONE name, the reader's own — not both stacked.
+                      // (User, 2026-08-30: "根据用户语言而定".)
+                      //
+                      // This is `appName`, which the rest of the app has
+                      // used all along — settings, dashboard, about, the
+                      // notification title. The splash was the one screen
+                      // that hardcoded the pair instead, and that carried a
+                      // real defect with it: the literal here was the
+                      // SIMPLIFIED 雅伟之言, so a zh-Hant reader was shown
+                      // simplified glyphs on the very first screen of the
+                      // app. `appName` has the Traditional form (雅偉之言),
+                      // so routing through it fixes that in passing.
+                      //
+                      // Keep the CJK fallback stack: this Text now holds
+                      // Chinese for two of the three locales, and the
+                      // user's chosen fontFamily may carry no CJK glyphs.
                       Text(
-                        'Yahweh\'s Words',
+                        uiStrings['appName']?[settings.locale] ??
+                            'Yahweh\'s Words',
                         style: TextStyle(
                           fontSize: settings.fontSize * 1.2,
                           fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4 * s),
-                      Text(
-                        '雅伟之言',
-                        style: TextStyle(
-                          fontSize: settings.fontSize * 1.0,
-                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       SizedBox(height: 4 * s),
@@ -804,22 +813,16 @@ class _LoadingPageState extends State<LoadingPage> {
               ),
             ),
             SizedBox(height: 24 * s),
+            // Same single localized name as the other splash path above —
+            // see the comment there for why this stopped being two Texts.
             Text(
-              'Yahweh\'s Words',
+              uiStrings['appName']?[settings.locale] ?? 'Yahweh\'s Words',
               style: TextStyle(
                 fontSize: settings.fontSize * 1.2,
                 fontFamily: settings.fontFamily,
                 fontFamilyFallback: kCjkFontFallback,
                 color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 4 * s),
-            Text(
-              '雅伟之言',
-              style: TextStyle(
-                fontSize: settings.fontSize * 1.0,
-                color: Theme.of(context).colorScheme.primary,
               ),
             ),
             SizedBox(height: 4 * s),
