@@ -2628,10 +2628,14 @@ class _VerticalProgressIndicator extends StatelessWidget {
       final h = constraints.maxHeight;
       final pillHeight = (22 * menuScale).clamp(20.0, 32.0).toDouble();
       // Anchor the pill so its center tracks the progress; clamp so it
-      // never overflows the track.
+      // never overflows the track. `h - pillHeight` can go negative
+      // when the track is shorter than the pill (e.g. mid-collapse
+      // layout pass) — `.clamp(0.0, negative)` throws ArgumentError
+      // (upper < lower) instead of clamping, so floor the upper bound
+      // at 0 rather than trusting h to always exceed pillHeight.
       final clamped = progress.clamp(0.0, 1.0);
-      final pillTop =
-          (clamped * (h - pillHeight)).clamp(0.0, h - pillHeight).toDouble();
+      final pillTravel = (h - pillHeight).clamp(0.0, double.infinity);
+      final pillTop = (clamped * pillTravel).clamp(0.0, pillTravel).toDouble();
 
       return SizedBox(
         width: 56 * menuScale,
@@ -5580,15 +5584,17 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
     _tabs = _buildTabs();
     // Auto-select the "book" tab when no chapter-specific match exists,
     // so the picker opens directly on the most useful list. Falls back
-    // to index 0 (always valid) when the book tab isn't present. The
-    // final clamp guarantees we never feed an out-of-range index to
-    // TabController, even if _buildTabs() composition changes later.
+    // to index 0 (always valid) when the book tab isn't present.
+    // `_buildTabs()` always adds an "all" tab today, but `.clamp(0,
+    // _tabs.length - 1)` throws ArgumentError when length is 0 (upper
+    // < lower) rather than clamping to it — guard explicitly instead of
+    // relying on _buildTabs() never changing.
     final bookIdx = _tabs.indexWhere((t) => t.kind == _MapTabKind.book);
     final initial = (widget.chapterMaps.isEmpty && bookIdx >= 0) ? bookIdx : 0;
     _tab = TabController(
       length: _tabs.length,
       vsync: this,
-      initialIndex: initial.clamp(0, _tabs.length - 1),
+      initialIndex: _tabs.isEmpty ? 0 : initial.clamp(0, _tabs.length - 1),
     );
     _loadAll();
   }
