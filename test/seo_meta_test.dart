@@ -154,11 +154,20 @@ void main() {
       final pair = RegExp(
           "(Yahweh's Words\\s*[·・|/,、_—–-]?\\s*雅[伟偉]之言)"
           "|(雅[伟偉]之言\\s*[·・|/,、_—–-]?\\s*Yahweh's Words)");
-      final hit = pair.firstMatch(markup);
-      expect(hit, isNull,
-          reason: 'the two names appear together as "${hit?.group(0)}". '
-              'One name per language: English text says '
-              "Yahweh's Words, Chinese text says 雅伟之言.");
+      // manifest.json too: its `description` is what Android and Chrome
+      // print in the install prompt, which is a share surface like any
+      // other and carried the pair until 2026-08-31.
+      final surfaces = {
+        'web/index.html': markup,
+        'web/manifest.json': File('web/manifest.json').readAsStringSync(),
+      };
+      for (final surface in surfaces.entries) {
+        final hit = pair.firstMatch(surface.value);
+        expect(hit, isNull,
+            reason: '${surface.key} prints the two names together as '
+                '"${hit?.group(0)}". One name per language: English text '
+                "says Yahweh's Words, Chinese text says 雅伟之言.");
+      }
     });
 
     test('no hreflang, because there are no per-language urls', () {
