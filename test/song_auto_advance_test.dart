@@ -24,7 +24,7 @@ class _FakeEngine implements SongPlaybackEngine {
   final _duration = StreamController<Duration>.broadcast();
   final _playing = StreamController<bool>.broadcast();
   final _complete = StreamController<void>.broadcast();
-  final _error = StreamController<String>.broadcast();
+  final _error = StreamController<(int, String)>.broadcast();
 
   @override
   Stream<Duration> get onPosition => _position.stream;
@@ -35,12 +35,16 @@ class _FakeEngine implements SongPlaybackEngine {
   @override
   Stream<void> get onComplete => _complete.stream;
   @override
-  Stream<String> get onError => _error.stream;
+  Stream<(int, String)> get onError => _error.stream;
 
   @override
   bool get isAvailable => true;
 
   final List<String> playCalls = [];
+
+  int _attempt = 0;
+  @override
+  int get attempt => _attempt;
 
   /// When true, the FIRST play() call never completes on its own —
   /// simulating a load whose future is still pending when a later
@@ -56,6 +60,7 @@ class _FakeEngine implements SongPlaybackEngine {
 
   @override
   Future<void> play(String url) {
+    final id = ++_attempt;
     playCalls.add(url);
     _playCount++;
     if (holdFirstPlay && _playCount == 1) {
@@ -64,14 +69,19 @@ class _FakeEngine implements SongPlaybackEngine {
     }
     if (autoErrorBudget > 0) {
       autoErrorBudget--;
-      Future.microtask(() => _error.add('dead: $url'));
+      Future.microtask(() => _error.add((id, 'dead: $url')));
     }
     return Future.value();
   }
 
   void resolveHeldPlay() => _held?.complete();
 
-  void emitError(String message) => _error.add(message);
+  /// [attempt] defaults to whatever the most recent play() issued —
+  /// the same thing native's `_guard` does for a control-command
+  /// error on the current track. Pass it explicitly to simulate a
+  /// STALE error for a superseded attempt.
+  void emitError(String message, {int? attempt}) =>
+      _error.add((attempt ?? _attempt, message));
   void emitDuration(Duration d) => _duration.add(d);
   void emitPosition(Duration p) => _position.add(p);
 
@@ -236,6 +246,54 @@ void main() {
     // ever waiting on the part that hangs. See
     // docs/autonomous-queue.md for the follow-up this discovery was
     // queued as.
+    unawaited(handler.stop());
+  });
+
+  testWidgets(
+      'a stale onError for an attempt the handler has already moved past '
+      'is not blamed on whatever track is current now', (tester) async {
+    final engine = _FakeEngine()..holdFirstPlay = true;
+    final handler = SongAudioHandler(engine: engine);
+    await handler.setQueue(
+      queueOf(['s0', 's1', 's2']),
+      autoPlay: false,
+    );
+
+    // Attempt 1: s0, held — its play() future never resolves on its
+    // own, mirroring A in the bug report.
+    unawaited(handler.playAt(0));
+    await settle(tester);
+    expect(engine.attempt, 1);
+
+    // Before attempt 1's error/success arrives, move to s1 — attempt 2.
+    unawaited(handler.playAt(1));
+    await settle(tester);
+    expect(engine.attempt, 2);
+    expect(handler.songQueue.index, 1);
+
+    // Attempt 1's now-stale error finally lands. It must be discarded
+    // outright — not read as an error on s1 (the current track, which
+    // has itself not yet produced position/duration and so looks
+    // exactly as "unproven" as a genuinely dead s1 would).
+    engine.emitError('dead: attempt 1, arriving late', attempt: 1);
+    await settle(tester);
+
+    expect(handler.songQueue.index, 1,
+        reason: 'a stale error for the abandoned attempt 1 (s0) must '
+            'not skip s1 — the track it was never actually about');
+    expect(handler.error, isNull,
+        reason: 'a discarded stale error must not surface as the '
+            'current track\'s visible error either');
+
+    // A genuine error for the CURRENT attempt (2) is still honoured —
+    // the id check must not have swallowed error handling altogether.
+    engine.emitError('dead: attempt 2, for real this time', attempt: 2);
+    await settle(tester);
+
+    expect(handler.songQueue.index, 2,
+        reason: 'an error carrying the CURRENT attempt id must still '
+            'quarantine and skip past a track that never played');
+
     unawaited(handler.stop());
   });
 }

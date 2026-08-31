@@ -48,8 +48,14 @@ class SongPlaybackEngine {
     _listen('error', () {
       // Surfaced as a stream event rather than thrown: playback errors
       // arrive asynchronously from the element, long after whatever
-      // call started them has returned.
-      _error.add(_describeError());
+      // call started them has returned. Tagged with `_attempt` at fire
+      // time, not at the play() call that (maybe) caused it: this is
+      // one shared `<audio>` element, so the browser resets `.error`
+      // (and this listener only fires with it set — see
+      // `_describeError`) whenever a later `play()` reassigns `src`.
+      // An error that is still about the CURRENT src is therefore
+      // always about the current attempt by the time it fires.
+      _error.add((_attempt, _describeError()));
     });
   }
 
@@ -59,13 +65,25 @@ class SongPlaybackEngine {
   final _duration = StreamController<Duration>.broadcast();
   final _playing = StreamController<bool>.broadcast();
   final _complete = StreamController<void>.broadcast();
-  final _error = StreamController<String>.broadcast();
+  final _error = StreamController<(int, String)>.broadcast();
 
   Stream<Duration> get onPosition => _position.stream;
   Stream<Duration> get onDuration => _duration.stream;
   Stream<bool> get onPlaying => _playing.stream;
   Stream<void> get onComplete => _complete.stream;
-  Stream<String> get onError => _error.stream;
+
+  /// Errors, tagged with the [attempt] id current when they fired. See
+  /// `song_playback_engine_native.dart`'s [onError] doc — the native
+  /// engine is where a genuinely STALE id (an error for a superseded
+  /// attempt) actually occurs; here it exists for interface parity so
+  /// `song_audio_handler.dart` can treat both engines identically.
+  Stream<(int, String)> get onError => _error.stream;
+
+  int _attempt = 0;
+
+  /// The id of the most recently issued `play()` call. See the native
+  /// engine's [attempt] doc.
+  int get attempt => _attempt;
 
   void _listen(String type, void Function() handler) {
     _el.addEventListener(type, ((web.Event _) => handler()).toJS);
@@ -90,6 +108,11 @@ class SongPlaybackEngine {
   /// lands while the user gesture is still valid — the whole reason
   /// this class exists.
   Future<void> play(String url) async {
+    // Bumped first and unconditionally: every play() call — even one
+    // that resolves to the same src as before — is a new attempt for
+    // the id's purposes, since it means the caller wants to hear this
+    // track again from the top.
+    _attempt++;
     // Compared against what we last ASSIGNED, not against `_el.src`.
     // The element resolves src to an absolute URL, so reading it back
     // gives `https://host/song-media/…` while the caller passes the

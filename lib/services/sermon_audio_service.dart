@@ -141,8 +141,12 @@ class SermonAudioService extends ChangeNotifier {
       _duration = d;
       notifyListeners();
     });
-    _player.onError.listen((e) {
-      _error = e;
+    _player.onError.listen((event) {
+      // The attempt id exists for `song_audio_handler.dart`'s
+      // multi-track queue; a sermon plays one part at a time with no
+      // "already moved on" race to guard against, so it is unused here.
+      final (_, message) = event;
+      _error = message;
       _loading = false;
       notifyListeners();
     });

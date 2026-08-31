@@ -38,7 +38,7 @@ class SongPlaybackEngine {
     // command below then no-ops instead of throwing.
     _player.setVolume(1.0).catchError((Object e) {
       _unavailable = true;
-      _error.add('audio engine unavailable: $e');
+      _error.add((0, 'audio engine unavailable: $e'));
     });
   }
 
@@ -57,43 +57,62 @@ class SongPlaybackEngine {
   final _duration = StreamController<Duration>.broadcast();
   final _playing = StreamController<bool>.broadcast();
   final _complete = StreamController<void>.broadcast();
-  final _error = StreamController<String>.broadcast();
+  final _error = StreamController<(int, String)>.broadcast();
 
   Stream<Duration> get onPosition => _position.stream;
   Stream<Duration> get onDuration => _duration.stream;
   Stream<bool> get onPlaying => _playing.stream;
   Stream<void> get onComplete => _complete.stream;
-  Stream<String> get onError => _error.stream;
+
+  /// Errors, tagged with the [attempt] id of the `play()` call they
+  /// belong to. Every guarded command shares the id of the most recent
+  /// `play()` — see [attempt] — so a caller can tell a stale error for
+  /// a track it has already moved past from one about the track it is
+  /// currently trying to play.
+  Stream<(int, String)> get onError => _error.stream;
+
+  int _attempt = 0;
+
+  /// The id of the most recently issued `play()` call. Bumped
+  /// synchronously at the top of [play], before any `await`, so a
+  /// caller that reads this right after calling `play()` gets exactly
+  /// the id that call's errors will carry — even if a later `play()`
+  /// bumps it again before the first one's error arrives.
+  int get attempt => _attempt;
 
   /// Start [url], which may be an https URL or a local file path from
   /// the offline downloads.
   Future<void> play(String url) async {
+    final id = ++_attempt;
     final source = url.startsWith('/')
         ? ap.DeviceFileSource(url)
         : ap.UrlSource(url) as ap.Source;
-    await _guard(() => _player.play(source));
+    await _guard(id, () => _player.play(source));
   }
 
-  Future<void> resume() => _guard(_player.resume);
-  Future<void> pause() => _guard(_player.pause);
-  Future<void> stop() => _guard(_player.stop);
-  Future<void> seek(Duration to) => _guard(() => _player.seek(to));
+  Future<void> resume() => _guard(_attempt, _player.resume);
+  Future<void> pause() => _guard(_attempt, _player.pause);
+  Future<void> stop() => _guard(_attempt, _player.stop);
+  Future<void> seek(Duration to) => _guard(_attempt, () => _player.seek(to));
   Future<void> setVolume(double volume) =>
-      _guard(() => _player.setVolume(volume));
+      _guard(_attempt, () => _player.setVolume(volume));
 
-  /// Run a player command, turning any failure into an [onError] event.
+  /// Run a player command, turning any failure into an [onError] event
+  /// tagged with [id] — the attempt that was current when the command
+  /// was issued, not whatever `_attempt` has become by the time it
+  /// fails.
   ///
   /// Every one of these awaits `creatingCompleter` internally, so on a
   /// device where the platform side never came up they would each
   /// rethrow the same start-up error. Reporting once and returning
   /// keeps a dead audio stack from propagating into the queue logic,
   /// which would otherwise abandon the whole playlist on track one.
-  Future<void> _guard(Future<void> Function() action) async {
+  Future<void> _guard(int id, Future<void> Function() action) async {
     if (_unavailable) return;
     try {
       await action();
     } catch (e) {
-      _error.add('$e');
+      _error.add((id, '$e'));
     }
   }
 

@@ -160,7 +160,7 @@ void main() {
       String? error;
       engine.onPosition.listen((p) => lastPosition = p);
       engine.onDuration.listen((d) => duration = d);
-      engine.onError.listen((e) => error = e);
+      engine.onError.listen((e) => error = e.$2);
 
       await engine.play(primaryUrl(song)!);
 

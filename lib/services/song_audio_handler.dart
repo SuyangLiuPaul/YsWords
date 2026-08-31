@@ -63,7 +63,19 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     // this exact same stream — play, resume, pause, stop, seek and
     // setVolume alike — so this listener cannot tell "the track is
     // dead" apart from "the user's pause failed" by the message alone.
-    _player.onError.listen((message) {
+    _player.onError.listen((event) {
+      final (attempt, message) = event;
+      // Discard an error that belongs to a play() attempt this handler
+      // has already moved past — see `_playCurrent`, which records
+      // `_currentAttempt` right after issuing play(). This closes the
+      // misattribution this comment used to describe (playAt(0) starts
+      // loading A; before A's error arrives the user or auto-advance
+      // moves to B; A's error used to land here and get blamed on B).
+      // It does NOT close every stale-error race: an error that
+      // arrives late for the SAME track that is still current — one
+      // that went alive then died, for instance — carries the current
+      // id and is not filtered by this check.
+      if (attempt != _currentAttempt) return;
       _error = message;
       _loading = false;
       notifyUi();
@@ -77,15 +89,6 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
       // track that never proved itself alive is also what lets a
       // queue of genuinely dead tracks terminate — see
       // docs/autonomous-queue.md:7636.
-      //
-      // This is a heuristic, not a correlation id: onError carries no
-      // reference to which play() attempt failed, so a STALE error for
-      // a track the user has already skipped away from can still land
-      // here and be blamed on whatever is current now, if that track
-      // also has not yet produced position/duration. Pre-existing
-      // (the old unconditional skip mis-attributed every error this
-      // way too), not introduced by this check — but not closed by it
-      // either. See docs/autonomous-queue.md's follow-up entry.
       if (_duration > Duration.zero || _position > Duration.zero) return;
       final item = _queue.current;
       if (item != null) _failed.add(item.song.id);
@@ -186,6 +189,12 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   /// loop: without it a queue of dead links would skip forward
   /// forever, hammering three church servers as it went.
   final Set<String> _failed = {};
+
+  /// The [SongPlaybackEngine.attempt] id of the `play()` call this
+  /// handler is currently trying — set right after issuing `play()`,
+  /// so `onError`'s listener can drop an error whose id is older, i.e.
+  /// one that belongs to a track already left behind.
+  int _currentAttempt = 0;
 
   /// The song queue. Named `songQueue`, not `queue`, because
   /// BaseAudioHandler already owns `queue` as its BehaviorSubject of
@@ -512,6 +521,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     final baseUrl = _proxyUrlFor[item.song.id] ?? item.url;
     final resolved = sourceResolver?.call(item.song, baseUrl) ?? baseUrl;
     final playing = _player.play(resolved);
+    _currentAttempt = _player.attempt;
 
     _loading = true;
     _error = null;
