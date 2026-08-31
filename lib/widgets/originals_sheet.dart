@@ -13,6 +13,8 @@ import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/app_scroll_behavior.dart'
+    show kSelectableTextPhysics;
 import 'package:yswords/widgets/collapsible_english_ref.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/services/tagged_text_service.dart';
@@ -1656,6 +1658,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                     ),
                   ),
                 ),
+                scrollPhysics: kSelectableTextPhysics,
               ),
             ],
             if (_aiLoading) ...[

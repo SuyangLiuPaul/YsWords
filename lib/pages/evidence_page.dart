@@ -6,6 +6,8 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/widgets/press_scale.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/app_scroll_behavior.dart'
+    show kSelectableTextPhysics;
 import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
@@ -1205,6 +1207,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                     ),
                   ),
                 ),
+                scrollPhysics: kSelectableTextPhysics,
               ),
               const SizedBox(height: 12),
               if (_result!.citations.isNotEmpty)

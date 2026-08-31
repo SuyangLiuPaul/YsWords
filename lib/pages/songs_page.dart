@@ -20,6 +20,8 @@ import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/song_service.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/app_scroll_behavior.dart'
+    show kSelectableTextPhysics;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/song_actions.dart';
@@ -2058,6 +2060,7 @@ class _SongDetailSheet extends StatelessWidget {
                           ),
                           child: SelectableText(
                             song.lyrics!,
+                            scrollPhysics: kSelectableTextPhysics,
                             style: TextStyle(
                               fontFamily: settings.fontFamily,
                               fontFamilyFallback: kCjkFontFallback,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/utils/app_scroll_behavior.dart'
+    show kSelectableTextPhysics;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/widgets/left_accent_card.dart';
@@ -53,6 +55,7 @@ class BlockNoteCard extends StatelessWidget {
         ),
         child: SelectableText(
           note,
+          scrollPhysics: kSelectableTextPhysics,
           style: TextStyle(
             fontSize: settings.fontSize * 0.82,
             fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,

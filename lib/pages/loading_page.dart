@@ -2,6 +2,8 @@ import 'dart:async';
 // 2026-05-20 (v1.2.67): `dart:js_interop` was here, blocking
 // native compile. Replaced with a conditional-export helper —
 // see lib/utils/clear_cache_helper.dart.
+import 'package:yswords/utils/app_scroll_behavior.dart'
+    show kSelectableTextPhysics;
 import 'package:yswords/utils/clear_cache_helper.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -1057,6 +1059,7 @@ class _LoadingPageState extends State<LoadingPage> {
                       children: [
                         SelectableText(
                           mainProvider.loadError!,
+                          scrollPhysics: kSelectableTextPhysics,
                           style: TextStyle(
                             fontFamily: 'monospace',
                             fontSize: (settings.fontSize - 4)

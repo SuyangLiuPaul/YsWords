@@ -13,6 +13,8 @@ import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/app_scroll_behavior.dart'
+    show kSelectableTextPhysics;
 import 'package:yswords/widgets/note_reference_picker_sheet.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
@@ -3659,6 +3661,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
           const SizedBox(height: 5),
           SelectableText(
             widget.verseText,
+            scrollPhysics: kSelectableTextPhysics,
             style: TextStyle(
               fontFamily: widget.settings.fontFamily,
               fontFamilyFallback: kCjkFontFallback,
@@ -3746,6 +3749,7 @@ class _AiExplainSheetState extends State<_AiExplainSheet> {
           else ...[
             SelectableText(
               turn.answer ?? '',
+              scrollPhysics: kSelectableTextPhysics,
               style: reading,
               onSelectionChanged: (sel, cause) {
                 final a = turn.answer ?? '';

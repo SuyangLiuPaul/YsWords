@@ -2,6 +2,8 @@
 // `lib/utils/clear_cache_helper.dart` for the conditional-import
 // pattern that replaced it.
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/app_scroll_behavior.dart'
+    show kSelectableTextPhysics;
 import 'package:yswords/utils/clear_cache_helper.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 
@@ -1487,6 +1489,7 @@ class _AccountSectionState extends State<_AccountSection> {
                         ),
                         child: SelectableText(
                           auth.initError!,
+                          scrollPhysics: kSelectableTextPhysics,
                           style: TextStyle(
                             fontFamily: 'monospace',
                             fontSize: (settings.fontSize - 6)
@@ -4112,6 +4115,13 @@ class _ExportDialogState extends State<_ExportDialog> {
               ),
               padding: const EdgeInsets.all(8),
               child: Scrollbar(
+                // SelectableText-owns-its-scroller: the ONE opt-out in
+                // the app. This preview box is height-capped at 280 and
+                // the SelectableText's inner scrollable IS the scroller,
+                // so it must NOT take kSelectableTextPhysics. Nothing
+                // scrollable sits under it for a drag to be stolen from.
+                // The marker word above is what
+                // test/selectable_text_scroll_test.dart looks for.
                 child: SelectableText(
                   _content,
                   style: const TextStyle(
