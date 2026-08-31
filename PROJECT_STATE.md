@@ -65,11 +65,28 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.184** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.184** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.185** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.185** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.184** | ⛔ never without explicit permission **in the current turn** |
 
-**All six sites are on 1.4.184** (2026-08-31). Four releases in one day,
+**dev/qat moved ahead of prod again on 1.4.185** (2026-08-31): the
+no-profile-keys boot-trap mitigation (see the queue — a mailed-in
+`Invalid argument: 0` crash an origin can never recover from on its
+own, confirmed live on prod at 1.4.184). It stays dev/qat-only per its
+own task brief until the user OKs a prod push, despite prod already
+carrying the defect it mitigates.
+
+**Also found this iteration, worth knowing**: `main` had 9 unpushed
+commits sitting on this local checkout when this iteration started —
+a full day of releases (1.4.181 through 1.4.184) that had built,
+tested and even deployed to Netlify, but never reached GitHub. `git
+push` closed the gap in the same push as this iteration's own commit.
+If a future iteration's `git log` on `main` doesn't match what a live
+site's `version.json` reports, check for this before assuming either
+one is wrong — `git fetch && git log origin/main..main` shows whether
+local is ahead of what CI and GitHub have actually seen.
+
+Prod is on 1.4.184 (2026-08-31). Four releases in one day,
 all of it the discovery work: the prerendered `/read/` pages (1.4.181),
 the `/read/*` 404 rule (1.4.182), the Traditional-label fix (1.4.183),
 and the Search Console ownership token (1.4.184). Prod was authorised

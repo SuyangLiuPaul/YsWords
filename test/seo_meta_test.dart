@@ -227,6 +227,25 @@ void main() {
         .where((l) => !l.trimLeft().startsWith('#'))
         .join('\n');
 
+    // 2026-08-31: the IN-APP copy joins the sweep, and it should have
+    // been here from the start. This group covered only the share card
+    // and index.html, so `onboardWelcomeBody` — the very first screen a
+    // new user sees — went on saying "14 translations" for weeks after
+    // NIV, CUV, CNV and LJK1 were removed. Twice the real number, in
+    // the word the user had rejected, on the one screen that exists to
+    // introduce the app. Same `//`-stripping as the rest: these files
+    // document past wording changes by quoting the rejected phrasing.
+    String dartCopy(String path) => File(path)
+        .readAsStringSync()
+        .split('\n')
+        .where((l) => !l.trimLeft().startsWith('//'))
+        .join('\n');
+    final appCopy = {
+      'lib/constants/ui_strings.dart': dartCopy('lib/constants/ui_strings.dart'),
+      'lib/widgets/onboarding_dialog.dart':
+          dartCopy('lib/widgets/onboarding_dialog.dart'),
+    };
+
     test('matches what the picker actually offers', () {
       expect(entries.length, 7,
           reason: 'the version list changed — the share card and the '
@@ -235,6 +254,24 @@ void main() {
       for (final text in [card, markup]) {
         expect(text, contains('${entries.length} versions'));
       }
+    });
+
+    test('the in-app copy advertises the same count', () {
+      // Only where a count is actually claimed — most of these files is
+      // unrelated strings, so this asserts the absence of a WRONG
+      // number rather than the presence of the right one.
+      final anyCount = RegExp(r'(\d+)\s*(?:versions|translations)'
+          r'|(\d+)\s*个\s*(?:版本|译本)'
+          r'|(\d+)\s*個\s*(?:版本|譯本)');
+      appCopy.forEach((path, text) {
+        for (final m in anyCount.allMatches(text)) {
+          final n = m.group(1) ?? m.group(2) ?? m.group(3);
+          expect(n, '${entries.length}',
+              reason: '$path claims "${m.group(0)}" but the picker offers '
+                  '${entries.length}. Editions were removed in 2026-08 '
+                  'and this copy was not updated with them.');
+        }
+      });
     });
 
     test('says "versions", never "N translations"', () {
@@ -249,7 +286,11 @@ void main() {
               'distinction — and this test — should be revisited');
 
       final overclaim = RegExp(r'\d+\s+translations|[Ss]even\s+translations');
-      for (final entry in {'tools/make_og_card.py': card, 'web/index.html': markup}.entries) {
+      for (final entry in {
+        'tools/make_og_card.py': card,
+        'web/index.html': markup,
+        ...appCopy,
+      }.entries) {
         final hit = overclaim.firstMatch(entry.value);
         expect(hit, isNull,
             reason: '${entry.key} claims "${hit?.group(0)}". There are '

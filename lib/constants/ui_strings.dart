@@ -1700,11 +1700,21 @@ const uiStrings = {
     'zh-Hant': '歡迎使用雅偉之言',
     'en': 'Welcome to Yahweh\'s Words',
   },
+  // 2026-08-31: was "14 translations" / "14 个译本", wrong twice over.
+  // The COUNT went stale in 2026-08 when NIV, CUV, CNV and LJK1 were
+  // removed — and this is the first screen a new user ever sees, so it
+  // was advertising twice the editions the picker offers. The WORD is
+  // the one the user rejected the same day (「应该叫做7 versions吧不然
+  // 以为7个语言」): 7 versions is 5 translations, because 和合本雅伟版
+  // and 梁家铿译本 each ship 简体 and 繁體 of the same work.
+  // test/seo_meta_test.dart derives the 7 from bible_versions.dart and
+  // now checks this file too — it previously covered only the share
+  // card and index.html, which is how this survived.
   'onboardWelcomeBody': {
-    'zh-Hans': '双语圣经阅读应用，14 个译本（英文／简体／繁体）。主页的「读经」卡片会带你回到上次离开的位置。',
-    'zh-Hant': '雙語聖經閱讀應用，14 個譯本（英文／簡體／繁體）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
+    'zh-Hans': '双语圣经阅读应用，7 个版本（英文／简体／繁体）。主页的「读经」卡片会带你回到上次离开的位置。',
+    'zh-Hant': '雙語聖經閱讀應用，7 個版本（英文／簡體／繁體）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
     'en':
-        'A bilingual Bible reader with 14 translations across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
+        'A bilingual Bible reader with 7 versions across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
   },
   'onboardReadTitle': {
     'zh-Hans': '阅读、高亮、研经',
@@ -1922,10 +1932,15 @@ const uiStrings = {
     'en':
         'Pre-download Bibles, sermons, and tools so the app launches instantly and works without network.',
   },
+  // 2026-08-31: the English said "7 translations" — the right count with
+  // the wrong noun, which is precisely the phrasing the user rejected
+  // (「应该叫做7 versions吧不然以为7个语言」). The Chinese already read
+  // 「共 7 部」 without the same implication, but 版本 matches the word
+  // the version picker itself uses.
   'offlinePackBibles': {
-    'zh-Hans': '圣经译本（共 7 部）',
-    'zh-Hant': '聖經譯本（共 7 部）',
-    'en': 'Bibles (7 translations)',
+    'zh-Hans': '圣经版本（共 7 个）',
+    'zh-Hant': '聖經版本（共 7 個）',
+    'en': 'Bibles (7 versions)',
   },
   // {name} is filled from sermon_credit.dart — the single source for
   // the preacher's name. The count was 587, which was the sum of every

@@ -236,8 +236,14 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
           icon: Icons.menu_book_rounded,
           title: uiStrings['onboardWelcomeTitle']?[locale] ??
               'Welcome to Yahweh\'s Words',
+          // Kept byte-identical to the 'en' entry in ui_strings.dart. A
+          // fallback that drifts from the string it stands in for is a
+          // second copy of the copy, and it is the one nobody re-reads:
+          // this line still said "14 translations" after the real string
+          // was written, and only ever renders for a locale the map is
+          // missing — so it would have been wrong invisibly.
           body: uiStrings['onboardWelcomeBody']?[locale] ??
-              'A bilingual Bible reader with 14 translations across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
+              'A bilingual Bible reader with 7 versions across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
         ),
         _Slide(
           icon: Icons.format_color_fill,
