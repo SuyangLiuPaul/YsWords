@@ -1,3 +1,5 @@
+
+import 'contact.dart';
 const uiStrings = {
   // ====== Search Page ======
   'search': {
@@ -5039,12 +5041,12 @@ const uiStrings = {
   },
   'feedbackCopiedFallback': {
     'zh-Hans': '邮件应用不可用，反馈已复制到剪贴板。'
-        '请粘贴到您的邮件中发到 paulsyliu@gmail.com。',
+        '请粘贴到您的邮件中发到 $kSupportEmail。',
     'zh-Hant': '郵件應用不可用，回饋已複製到剪貼簿。'
-        '請貼到您的郵件中發到 paulsyliu@gmail.com。',
+        '請貼到您的郵件中發到 $kSupportEmail。',
     'en':
         'Mail app unavailable — feedback copied to clipboard. '
-            'Paste it into your email to paulsyliu@gmail.com.',
+            'Paste it into your email to $kSupportEmail.',
   },
   'feedbackPrivacyNote': {
     'zh-Hans': '为方便排查问题，发送时会一并附上：界面语言、圣经版本、'

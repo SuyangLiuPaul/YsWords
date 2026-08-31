@@ -21,6 +21,7 @@ import 'package:yswords/utils/version_mapper.dart'
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import '../constants/contact.dart';
 
 /// 常見的聖經誤解 — what people repeat, and what the text actually says.
 ///
@@ -54,7 +55,7 @@ class MisconceptionsPage extends StatefulWidget {
 class _MisconceptionsPageState extends State<MisconceptionsPage> {
   /// Where reader suggestions go when the mail function is not
   /// configured. Same address the Feedback page uses.
-  static const String _devEmail = 'paulsyliu@gmail.com';
+  static const String _devEmail = kSupportEmail;
 
   List<Map<String, dynamic>> _entries = const [];
   Object? _error;

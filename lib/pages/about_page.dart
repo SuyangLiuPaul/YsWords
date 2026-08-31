@@ -15,6 +15,7 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/setup_instructions_card.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import '../constants/contact.dart';
 
 /// Settings → About → "About / 关于" — full attributions + licensing
 /// + takedown contact page.
@@ -281,7 +282,7 @@ class _ContactCard extends StatelessWidget {
   final String locale;
   const _ContactCard({required this.scheme, required this.locale});
 
-  static const _email = 'paul.sy.liu@gmail.com';
+  static const _email = kSupportEmail;
 
   Future<void> _open(BuildContext context) async {
     final uri = 'mailto:$_email?subject=Yahweh\'s Words%20copyright%20enquiry';

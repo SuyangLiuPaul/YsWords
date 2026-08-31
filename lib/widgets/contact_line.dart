@@ -6,6 +6,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import '../constants/contact.dart';
 
 /// Single source of truth for the "Made by Paul Liu · contact" line
 /// shown across YsWords, DailyNews, bible-evidence redirect stub,
@@ -27,7 +28,7 @@ class ContactLine extends StatelessWidget {
 
   const ContactLine({
     super.key,
-    this.email = 'paul.sy.liu@gmail.com',
+    this.email = kSupportEmail,
     this.compact = false,
   });
 

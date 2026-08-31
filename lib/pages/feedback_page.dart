@@ -14,9 +14,10 @@ import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import '../constants/contact.dart';
 
 /// 2026-05-07 (v12 → v16): user-facing feedback form. The user
-/// (paulsyliu@gmail.com) wanted a single place inside the app
+/// (see kSupportEmail) wanted a single place inside the app
 /// where readers can report bugs, request features, or share
 /// general thoughts.
 ///
@@ -46,7 +47,7 @@ class FeedbackPage extends StatefulWidget {
 enum _FeedbackCategory { bug, feature, general, content }
 
 class _FeedbackPageState extends State<FeedbackPage> {
-  static const String _devEmail = 'paulsyliu@gmail.com';
+  static const String _devEmail = kSupportEmail;
 
   _FeedbackCategory _category = _FeedbackCategory.general;
   final _nameController = TextEditingController();

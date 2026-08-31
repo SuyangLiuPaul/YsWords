@@ -2,8 +2,20 @@
 ///
 /// Captures uncaught Flutter / async errors on every platform we
 /// ship (web / iOS / macOS / Android) and POSTs a JSON blob to
-/// `/api/errorReport` — which forwards via Resend to the developer
-/// inbox (`lsy95112@gmail.com`).
+/// `/api/errorReport` — which forwards via Resend to whatever inbox
+/// the `FEEDBACK_TO` environment variable names on the deployed site.
+///
+/// **The destination is NOT set in this repo.** `netlify/functions/
+/// errorReport.mjs` has a `TO_DEFAULT`, but every deployed site
+/// overrides it with a `FEEDBACK_TO` env var, so editing that default
+/// changes nothing that ships — verified 2026-08-31, when the prod site
+/// was found carrying `FEEDBACK_TO` for all contexts. Change the
+/// destination in Netlify's environment variables, not here.
+///
+/// This is deliberately not [kSupportEmail]: that constant is the
+/// address shown TO readers, and this is where machine-generated crash
+/// mail lands. They may well be the same address, but they are two
+/// decisions and collapsing them would hide one behind the other.
 ///
 /// 2026-05-24 (v1.3.21): added in response to the priorities.md
 /// item #2 — "Today, a crash on yswords.netlify.app is invisible
