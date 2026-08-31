@@ -65,16 +65,28 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.183** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.183** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.4.183** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.184** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.184** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn` | **1.4.184** | ⛔ never without explicit permission **in the current turn** |
 
-**All six sites are on 1.4.183** (2026-08-31, user: 「繁体那两个名字也一起
-改了，然后push prod」). That covers the prerendered `/read/` pages
-(1.4.181), the `/read/*` 404 rule (1.4.182) and the Traditional-label
-fix (1.4.183). The rule has NOT changed: **the next prod push needs its
-own explicit instruction in its own turn** — this one does not carry
+**All six sites are on 1.4.184** (2026-08-31). Four releases in one day,
+all of it the discovery work: the prerendered `/read/` pages (1.4.181),
+the `/read/*` 404 rule (1.4.182), the Traditional-label fix (1.4.183),
+and the Search Console ownership token (1.4.184). Prod was authorised
+twice, separately — 「繁体那两个名字也一起改了，然后push prod」 and
+「可以，做吧」. The rule has NOT changed: **the next prod push needs its
+own explicit instruction in its own turn**; neither of these carries
 forward.
+
+**Search Console: `https://yahwehword.com/`, a URL-prefix property,
+verified by the HTML tag in `web/index.html`.** That meta is
+PERMANENT — Google re-checks it periodically, so removing it does not
+break anything today, it un-verifies the property at some later
+re-check and silently stops sitemap processing and every report, with
+no symptom in the app. `test/seo_meta_test.dart` pins it. A `Domain`
+property (Cloudflare DNS TXT) would additionally cover `www` and
+`http` and can be ADDED later — but it does not replace this tag while
+the URL-prefix property exists.
 
 Verified on `yahwehword.com` itself, not on a preview: `/read/`, three
 chapter pages, all six sitemaps, `robots.txt` and `og-card.png` return
