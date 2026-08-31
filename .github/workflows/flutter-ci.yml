@@ -125,6 +125,15 @@ jobs:
       - name: Boot splash locale logic
         run: node tools/check_boot_splash_locale.js
 
+      # The rules that decide whether a stuck splash throws away an
+      # in-flight 10 MB download and reloads itself. Wrong in the
+      # permissive direction and a slow phone reloads forever, each
+      # attempt discarding the bytes of the last; wrong in the strict
+      # direction and the user stares at the dead splash this exists to
+      # fix. Neither shows up on a fast connection.
+      - name: Boot splash auto-recovery logic
+        run: node tools/check_boot_autorecover.js
+
       - name: Test
         run: flutter test --reporter expanded
 

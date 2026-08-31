@@ -519,9 +519,20 @@
       try {
         if (window.caches && caches.keys) {
           const keys = await caches.keys();
-          await Promise.all(keys.map(function(k) {
-            return caches.delete(k).catch(function() {});
-          }));
+          await Promise.all(keys
+            // 2026-08-31: `song-media-` is now spared, as the boot-time
+            // self-heal above has always spared it. That bucket holds
+            // the songs a user DOWNLOADED for offline listening; it has
+            // nothing to do with a broken app shell, and wiping it fixes
+            // nothing. It mattered less while this ran only on a
+            // deliberate tap — it is now also the automatic boot
+            // recovery, so silently destroying someone's offline music
+            // to repair a shell would be a harm the user never agreed
+            // to and would never connect to what they did.
+            .filter(function(k) { return k.indexOf('song-media-') !== 0; })
+            .map(function(k) {
+              return caches.delete(k).catch(function() {});
+            }));
         }
       } catch (e) { console.warn('Cache delete failed:', e); }
       try { localStorage.removeItem('yswords_build_stamp'); } catch (_) {}
@@ -704,6 +715,151 @@
         slow.appendChild(a);
         slow.hidden = false;
       }, 15000);
+
+      // ── Automatic recovery ────────────────────────────────────────
+      //
+      // 2026-08-31, from the user with a screenshot of a phone parked on
+      // this splash, the link circled in red: 「even some people don't
+      // know they need to click here」. Quite right — a recovery that
+      // only works for people who recognise an underlined phrase as a
+      // repair tool is not a recovery. Most people read a stuck screen
+      // as a broken app and close it.
+      //
+      // So the page now does it itself. The whole difficulty is telling
+      // STUCK apart from SLOW, because reloading a slow load makes it
+      // strictly worse: it aborts an in-flight main.dart.js and throws
+      // away every byte already fetched, so the next attempt starts from
+      // zero and hits the same wall. That is a loop the app can never
+      // escape, and the slower the connection the worse it gets — the
+      // same pathology `clear_cache_helper_web.dart`'s boot-recovery
+      // latch was written for, one layer further out.
+      //
+      // The discriminator is main.dart.js's own resource timing:
+      //
+      //   • still downloading → NO entry yet → slow, hands off. This is
+      //     the case that must never be touched, and it is the common
+      //     one: on a phone the bundle is ~10 MB.
+      //   • finished, and still no Flutter view seconds later → the
+      //     bytes arrived and did not run. That is stuck, and a reload
+      //     costs nothing because there is no transfer to interrupt.
+      //   • an uncaught script error → stuck, immediately.
+      //
+      // Plus a once-per-tab-session latch, so a page that cannot be
+      // fixed this way is left alone after one attempt rather than
+      // reloading forever.
+      var LATCH = 'yswords.bootAutoRecovered';
+      var sawScriptError = false;
+      var bundleScriptFailed = false;
+      window.addEventListener('error', function (e) {
+        if (!e) return;
+        var t = e.target;
+        if (t && t !== window && t.tagName) {
+          // A RESOURCE failed to load. Only a script can stop the app
+          // starting — a missing image or font says nothing about
+          // whether the shell can run, and treating one as evidence
+          // would let an unrelated 404 abort a download in flight.
+          if (String(t.tagName).toUpperCase() !== 'SCRIPT') return;
+          var src = String(t.src || '');
+          if (src.indexOf('main.dart.js') !== -1 ||
+              src.indexOf('flutter_bootstrap.js') !== -1) {
+            // The bundle itself could not be fetched. There is no
+            // transfer left to interrupt, so this is the one signal
+            // allowed to act while nothing has finished downloading.
+            bundleScriptFailed = true;
+          } else {
+            sawScriptError = true;
+          }
+          return;
+        }
+        // An uncaught exception. Something ran and threw.
+        if (e.message) sawScriptError = true;
+      }, true);
+
+      // Pure decision, kept as a named function on purpose: it is
+      // extracted and exercised by tools/check_boot_autorecover.js, so
+      // the rules that decide whether to throw away someone's in-flight
+      // download are tested rather than eyeballed.
+      function ysShouldAutoRecover(s) {
+        // Booted. Nothing to recover.
+        if (s.booted) return false;
+        // One attempt per tab session, whatever happens.
+        if (s.alreadyTried) return false;
+        // Never before this floor, no matter what the signals say — a
+        // cold first load on a slow phone legitimately takes this long.
+        if (s.elapsedMs < 20000) return false;
+        // The bundle could not be fetched at all. Nothing is in flight,
+        // so this is the only signal allowed past the guard below.
+        if (s.bundleScriptFailed) return true;
+        // THE GUARD. No entry for main.dart.js means it is still on its
+        // way, and reloading now would abort it and discard every byte
+        // already fetched — each retry starting from zero and hitting
+        // the same wall, worse the slower the link. Whatever else is
+        // true, a download in progress is left alone.
+        if (s.mainBundleDoneMs === null) return false;
+        // Past here the bundle has arrived, so a reload costs no
+        // transfer. It either threw…
+        if (s.sawScriptError) return true;
+        // …or it simply never painted.
+        if (s.elapsedMs - s.mainBundleDoneMs >= 12000) return true;
+        return false;
+      }
+
+      function ysMainBundleDoneMs() {
+        try {
+          var entries = performance.getEntriesByType('resource');
+          for (var i = 0; i < entries.length; i++) {
+            var n = entries[i].name || '';
+            if (n.indexOf('main.dart.js') !== -1 && entries[i].responseEnd > 0) {
+              return entries[i].responseEnd;
+            }
+          }
+        } catch (_) {}
+        return null;
+      }
+
+      function ysAlreadyRecovered() {
+        try {
+          return sessionStorage.getItem(LATCH) !== null;
+        } catch (_) {
+          // Private-mode Safari throws on storage access. Fail CLOSED:
+          // report "already tried", so a browser that cannot hold the
+          // latch never auto-reloads rather than risking the loop. The
+          // manual link is still there.
+          return true;
+        }
+      }
+
+      var recoverPoll = setInterval(function () {
+        if (done) { clearInterval(recoverPoll); return; }
+        if (!ysShouldAutoRecover({
+              booted: done,
+              alreadyTried: ysAlreadyRecovered(),
+              elapsedMs: performance.now(),
+              sawScriptError: sawScriptError,
+              bundleScriptFailed: bundleScriptFailed,
+              mainBundleDoneMs: ysMainBundleDoneMs()
+            })) {
+          return;
+        }
+        clearInterval(recoverPoll);
+        try { sessionStorage.setItem(LATCH, '1'); } catch (_) {}
+        var slow = el.querySelector('.ys-slow');
+        if (slow) {
+          var zh = (navigator.language || '').toLowerCase().indexOf('zh') === 0;
+          slow.textContent = zh ? '正在自动修复…' : 'Repairing automatically…';
+          slow.hidden = false;
+        }
+        // Give the message a frame to paint before the page goes away,
+        // so a reload that does not help still leaves the user knowing
+        // the app tried something rather than having merely blinked.
+        setTimeout(function () {
+          if (window.yswordsClearCacheAndReload) {
+            window.yswordsClearCacheAndReload();
+          } else {
+            location.reload();
+          }
+        }, 400);
+      }, 1000);
     })();
   </script>
   <script src="flutter_bootstrap.js" async></script>
