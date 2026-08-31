@@ -1,0 +1,36 @@
+# Adjudicated gitleaks findings. One line per finding, in gitleaks'
+# own fingerprint format: <commit>:<file>:<rule>:<startline>
+#
+# Nothing goes in here that is actually a secret. A finding is listed
+# only when the string it matched is public BY DESIGN and knowing it
+# grants no access — and the reason is written down, because a
+# suppression whose justification is missing is indistinguishable from
+# one that was wrong.
+#
+# ── 2026-09-01: the IndexNow key ──────────────────────────────────────
+# `generic-api-key` matched `kKey` in tools/indexnow_submit.dart. It is
+# a 32-character hex string, which is exactly the shape of an API token,
+# so the match is a good one — the rule is doing its job.
+#
+# It is not a secret. IndexNow proves site ownership the same way Search
+# Console's meta tag does: by requiring the value to be PUBLICLY
+# READABLE at a well-known url. Ours is served, deliberately, at
+#   https://yahwehword.com/7cad63f32387c0af0b842b4015fb2636.txt
+# and the file that serves it is committed at
+#   web/7cad63f32387c0af0b842b4015fb2636.txt
+# Hiding the constant while publishing the file would be theatre.
+#
+# What knowing it allows: submitting urls *on yahwehword.com* to
+# IndexNow. Nothing else — it is not reused, it authenticates no
+# account, and it reads no data. The worst a third party could do is
+# nominate our own paths for crawling; junk paths answer 404 (see the
+# /read/* and /sermons/* rules in netlify.toml). If that ever mattered,
+# rotating it is a two-file change: replace the key file in web/ and the
+# constant, then re-run the submitter, whose pre-flight fetch fails loudly
+# if the two disagree.
+#
+# Scoped to the one commit that introduced it. gitleaks-action scans the
+# push's commit range, so this entry covers a re-scan of history; the
+# inline `gitleaks:allow` on the constant itself covers a scan of the
+# working tree. Both are needed because they are different scans.
+d51e17fe4f2660d28af9a74afce5a2f54f07dcb5:tools/indexnow_submit.dart:generic-api-key:42

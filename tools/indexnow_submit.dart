@@ -41,6 +41,11 @@ import 'dart:io';
 
 const kHost = 'yahwehword.com';
 const kBase = 'https://$kHost';
+// gitleaks:allow — public by design, not a credential. IndexNow proves
+// ownership the way Search Console's meta tag does: this value MUST be
+// readable at https://yahwehword.com/<key>.txt, and that file is
+// committed in web/. Knowing it permits submitting urls on this host and
+// nothing else. See .gitleaksignore for the full adjudication.
 const kKey = '7cad63f32387c0af0b842b4015fb2636';
 
 /// Mirrors `prerenderVersions` in tools/prerender_bible.dart plus the
