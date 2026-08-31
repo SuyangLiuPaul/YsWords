@@ -9706,18 +9706,41 @@ so the bundle-size answer stays on the record.
 
 ## Blocked on the user — do not attempt
 
-- **Do GitHub releases resume?** 2026-08-30. `UpdateService` is now
-  correct (right repo slug, right `kAppVersion` fallback) but the
-  latest GitHub release is still `v1.4.6` (2026-08-04) against dev's
-  1.4.170 — nothing has been cut since. The check is honest either way
-  (it won't show a phantom downgrade), but it has nothing current to
-  point users at until releases resume, or the tile stays a quiet
-  no-op. One-line answer either way: resume cutting a release per
-  version (and if so, from what trigger), or leave it and the tile
-  just never fires.
+- ~~**Do GitHub releases resume?**~~ **ANSWERED 2026-09-01, user:
+  「GitHub releases 恢复可以做」. v1.4.190 is cut**, with all five platform
+  assets attached (Android/iOS/Linux/macOS/Windows — macOS is one
+  v1.4.6 never had). `tools/release_github.sh` cuts the next one.
+
+  Two things this turned up, both worth keeping:
+
+  * **The last four releases shipped the wrong version number.**
+    `app_version.dart`'s fallback sat frozen at `1.3.113` from v1.3.134
+    through v1.4.6 while pubspec advanced — `bump_version.sh`'s awk
+    anchored on a line renamed in 2026-06 and kept printing success. No
+    release workflow passes `--dart-define`, so that fallback IS
+    `kAppVersion` in every published build: the v1.4.6 APK reports
+    itself as 1.3.113, and `UpdateService` compares the latest tag
+    against exactly that. Those users were told an update was
+    available, installed it, and were told again — forever, by a
+    notification no download could satisfy. The writer was repaired
+    2026-08-30; a test now also asserts the two files agree in the tree
+    right now, and `release_github.sh` refuses to tag a commit where
+    they disagree.
+  * **The Linux release build had been broken for three weeks and
+    nothing could see it.** `audioplayers` returned 2026-08-09 with
+    Songs v2 and needs `gstreamer-1.0`; the workflow's apt list predated
+    it. That workflow runs ONLY on a `v*` tag, and no tag was pushed
+    between 2026-08-04 and the dependency landing five days later. **A
+    platform whose build is exercised only at release time goes stale
+    silently, and the longer releases pause the wider that window
+    gets.**
+
+  Cadence: **not** per web version. `release_web.sh` runs many times a
+  day and one tag starts five platform builds with a ~160 MB Android
+  asset. Cut a native release deliberately, when there is something
+  worth installing.
 - **prod deploy.** Every prod push needs explicit permission in the
-  moment; it does not carry over. prod is on v1.4.11 and still serves
-  the broken LEB and the wrong sermon attribution.
+  moment; it does not carry over. prod is on v1.4.190 as of 2026-09-01.
 - **貴胄 or 貴冑? And more generally: when the printed 和合本 and modern
   Traditional orthography disagree, which wins?** Raised 2026-08-18. The
   Traditional Bible sets 貴胄 in 26 places (士 5:13, 王上 21:8/11, 尼希米記 ×8,
