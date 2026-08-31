@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ONE url, and that is not an oversight — read this before "fixing" it.
+
+  The reader addresses chapters with a HASH route
+  (`#/2thessalonians/2:1?v=nasb`, see lib/services/url_sync_service_web.dart).
+  Fragments are never sent to the server, and Google retired the
+  AJAX-crawling scheme in 2015, so every hash route is the same document
+  to a crawler. The app also accepts `?verse=` / `?sermon=` query links
+  (main.dart `_handleDeepLink`) and those ARE distinct URLs — but every
+  one of them returns byte-identical HTML, so listing them would be
+  submitting duplicates of the home page, which is worse than listing
+  nothing.
+
+  So this file honestly describes what exists today: a single indexable
+  document. Growing it means first making pages that are genuinely
+  different at the URL level — prerendered chapter/sermon pages served
+  at real paths. Until that exists, adding <url> entries here inflates
+  the sitemap without adding a single indexable page.
+
+  No <lastmod>: the content behind this URL changes on most deploys and
+  nothing here computes that date, so any value written by hand would be
+  a lie within a week. Omitting it is allowed and is better than a stale
+  one — crawlers de-prioritise a sitemap whose lastmod they learn not to
+  trust.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://yahwehword.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

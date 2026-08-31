@@ -1,0 +1,36 @@
+# yahwehword.com — Yahweh's Words 雅伟之言
+#
+# Before this file existed, /robots.txt fell through the SPA catch-all
+# in netlify.toml (`/*` -> /index.html, status 200) and answered with
+# the app's HTML under `content-type: text/html`. Crawlers treat that as
+# "no robots.txt", so nothing was actually blocked — but nothing was
+# declared either, and the Sitemap line had nowhere to live. A real file
+# wins over the catch-all because that rule is NOT `force`d, so simply
+# shipping this in web/ is enough.
+
+User-agent: *
+Allow: /
+
+# Rendering this app REQUIRES JavaScript, the 10 MB Dart bundle, the
+# CanvasKit wasm and the JSON assets. A crawler that cannot fetch them
+# sees an empty canvas. These are Allow-ed explicitly so that a future
+# broad Disallow added above can never quietly starve the renderer —
+# the failure mode there is silent and total.
+Allow: /main.dart.js
+Allow: /flutter_bootstrap.js
+Allow: /assets/
+Allow: /canvaskit/
+Allow: /icons/
+
+# Proxies and endpoints. None of these are pages; all of them cost
+# somebody money or crawl budget when fetched.
+#   /__/auth/       Firebase sign-in reverse proxy (netlify.toml)
+#   /song-media/    upstream church audio proxy — large binaries
+#   /.netlify/      Netlify Functions, incl. the Gemini AI-search proxy
+#   /api/           the same functions under their friendly path
+Disallow: /__/auth/
+Disallow: /song-media/
+Disallow: /.netlify/
+Disallow: /api/
+
+Sitemap: https://yahwehword.com/sitemap.xml

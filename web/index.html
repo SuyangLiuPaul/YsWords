@@ -41,7 +41,111 @@
        can even start. -->
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Yahweh's Words 雅伟之言 — a bilingual Bible reader app to help you listen to His voice and abide in Him daily.">
+
+  <!-- ── Discovery / sharing ──────────────────────────────────────
+       2026-08-31. Before this block the site had a title, a one-line
+       description, and nothing else: no canonical, no Open Graph, no
+       structured data. The practical cost was not ranking — it was that
+       every link anyone PASTED, into WeChat or WhatsApp or iMessage,
+       unfurled as a bare URL with no name, no icon and no sentence.
+       For an app that spreads by one person sending it to another, that
+       is the highest-leverage thing on this page.
+
+       The description names 和合本雅伟版 and 梁家铿译本 deliberately.
+       They are what makes this app findable AT ALL: no other Bible site
+       carries them, so they are the queries that can actually be won,
+       while "bible app" cannot. -->
+  <meta name="description" content="Yahweh's Words 雅伟之言 — free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns.">
+
+  <!-- Kept even though Google has ignored keywords since 2009: Baidu
+       and Sogou still read it, and a large share of this app's readers
+       search in Chinese. Cheap, and NOT cargo cult — delete only if the
+       audience stops being Chinese-speaking. -->
+  <meta name="keywords" content="雅伟之言,和合本雅伟版,雅伟,梁家铿译本,双语圣经,圣经App,原文圣经,希腊文,希伯来文,Yahweh's Words,bilingual Bible,Chinese English Bible">
+
+  <!-- One canonical home for every deploy of this file. dev, qat and
+       the *.netlify.app hostnames all serve byte-identical HTML, so
+       without this they compete with prod as duplicates of each other.
+       Hardcoding prod is the point: a non-prod copy should credit prod,
+       not itself. -->
+  <link rel="canonical" href="https://yahwehword.com/">
+
+  <!-- Open Graph. `og:image` must be ABSOLUTE — WeChat and several
+       other unfurlers do not resolve a relative one and simply show no
+       picture. Regenerate the card with `python3 tools/make_og_card.py`
+       whenever the name, tagline or domain changes. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Yahweh's Words 雅伟之言">
+  <meta property="og:title" content="Yahweh's Words 雅伟之言 — Bilingual Bible 双语圣经">
+  <meta property="og:description" content="Free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns.">
+  <meta property="og:url" content="https://yahwehword.com/">
+  <meta property="og:image" content="https://yahwehword.com/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Yahweh's Words 雅伟之言 — bilingual Bible reader">
+  <!-- The app ships one UI in three scripts at the SAME url, so there
+       is nothing for hreflang to point at (it needs distinct URLs per
+       language and inventing them would be worse than omitting it).
+       og:locale has no such requirement and is honest here. -->
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="zh_CN">
+  <meta property="og:locale:alternate" content="zh_TW">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Yahweh's Words 雅伟之言 — Bilingual Bible 双语圣经">
+  <meta name="twitter:description" content="Free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns.">
+  <meta name="twitter:image" content="https://yahwehword.com/og-card.png">
+
+  <!-- Structured data. Deliberately NOT claimed here: aggregateRating
+       and reviewCount (there are none — fabricating them is exactly the
+       kind of thing that earns a manual action), and any Organization /
+       publisher block, because the legal entity behind the app is not
+       something this repo records and guessing at it would be worse
+       than leaving it out. `price: 0` is a checked fact: there is no
+       purchase dependency in pubspec.yaml and no paywall in lib/. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://yahwehword.com/#website",
+        "url": "https://yahwehword.com/",
+        "name": "Yahweh's Words",
+        "alternateName": ["雅伟之言", "雅偉之言"],
+        "description": "Free bilingual Bible reader with 和合本雅伟版, 梁家铿译本, KJV, NASB and LEB, original-language text, cross-references, sermons and hymns.",
+        "inLanguage": ["en", "zh-Hans", "zh-Hant"]
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://yahwehword.com/#app",
+        "name": "Yahweh's Words 雅伟之言",
+        "url": "https://yahwehword.com/",
+        "applicationCategory": "ReferenceApplication",
+        "operatingSystem": "Any (web browser)",
+        "browserRequirements": "Requires JavaScript.",
+        "inLanguage": ["en", "zh-Hans", "zh-Hant"],
+        "image": "https://yahwehword.com/og-card.png",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "Seven Bible translations: 和合本雅伟版 (简/繁), 梁家铿译本 (简/繁), KJV, NASB, LEB",
+          "Side-by-side bilingual reading",
+          "Original Greek and Hebrew with Strong's numbers",
+          "Cross-references and exegesis notes",
+          "Sermons with audio",
+          "Hymns and songs, playable offline",
+          "Reading plans, highlights, notes and bookmarks",
+          "Works offline and installs as an app"
+        ]
+      }
+    ]
+  }
+  </script>
+  <!-- ── end discovery / sharing ─────────────────────────────────── -->
 
   <!-- Disable iOS Safari data-detection (auto-linking of dates/phone numbers)
        and spell-check underlining on Flutter web HTML renderer elements. -->
@@ -607,6 +711,69 @@
     <div class="ys-bar"><i></i></div>
     <div class="ys-slow" hidden></div>
   </div>
+
+  <!-- What a visitor with JavaScript disabled gets. Until now: the
+       splash above, forever — `#ys-boot` is `position: fixed; inset: 0`
+       with a near-maximum z-index and only the Dart bundle ever removes
+       it, so a no-JS visitor sat staring at a progress bar that could
+       not advance. The <style> inside <noscript> applies ONLY when
+       scripting is off, which is what lets this replace the splash
+       rather than hide behind it.
+
+       This is also the only real prose on the page for a crawler that
+       does not execute JavaScript. It is NOT hidden text and NOT
+       cloaking: a no-JS visitor genuinely sees exactly this, and a
+       browser with JavaScript never renders it at all. Keep it that
+       way — text served to crawlers but not to people is the one thing
+       here that could get the site penalised. -->
+  <noscript>
+    <style>
+      #ys-boot { display: none !important; }
+      .ys-noscript {
+        max-width: 40em; margin: 0 auto; padding: 40px 24px;
+        font: 400 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI",
+              "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: #0d3b5c;
+      }
+      .ys-noscript h1 { font-size: 24px; margin: 0 0 4px; }
+      .ys-noscript h2 { font-size: 17px; font-weight: 600; margin: 28px 0 6px; }
+      .ys-noscript p { margin: 8px 0; }
+      .ys-noscript .ys-note {
+        margin-top: 28px; padding: 12px 16px; border-radius: 8px;
+        background: #eef6fb; font-size: 15px;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #0f1418; }
+        .ys-noscript { color: #dbe7f0; }
+        .ys-noscript .ys-note { background: #16232c; }
+      }
+    </style>
+    <div class="ys-noscript">
+      <h1>Yahweh's Words · 雅伟之言</h1>
+      <p>A free bilingual Bible reader — English and Chinese side by side,
+         for listening to His voice and abiding in Him daily.</p>
+      <p>免费的双语圣经阅读工具 —— 中英对照，帮助你每天听祂的声音、住在祂里面。</p>
+
+      <h2>Translations · 收录译本</h2>
+      <p>和合本雅伟版（简体・繁體）、梁家铿译本（简体・繁體）、King James Version、
+         New American Standard Bible、Lexham English Bible.</p>
+
+      <h2>What it does · 主要功能</h2>
+      <p>Side-by-side bilingual reading; the original Greek and Hebrew with
+         Strong's numbers; cross-references and exegesis notes; sermons with
+         audio; hymns that play offline; reading plans, highlights, notes and
+         bookmarks. It installs as an app and works offline.</p>
+      <p>双语对照阅读、原文（希腊文／希伯来文）与 Strong 编号、交叉引用与释经注、
+         讲道音频、可离线播放的诗歌、读经计划与高亮笔记书签。可安装为应用，支持离线使用。</p>
+
+      <div class="ys-note">
+        <p><strong>JavaScript is required to read the Bible here.</strong>
+           Please enable it and reload this page.</p>
+        <p><strong>本站需要 JavaScript 才能阅读圣经。</strong>请开启后重新载入页面。</p>
+      </div>
+    </div>
+  </noscript>
+
   <script>
     // ONE app name, the reader's own — matching what the Flutter splash
     // does a moment later (see lib/pages/loading_page.dart). Until
