@@ -268,14 +268,25 @@ rm -f "$PROJECT/build/web/_headers"
 # NAMES those five children. If this step is ever removed, that index
 # keeps shipping and every child it points at 404s.
 #
+# The sermons under /sermons/ are the same story and the same fix, with
+# one difference worth stating: they are the half that is actually
+# unique. Scripture text is the most duplicated content on the web, but
+# these 289 transcripts are not published anywhere else in this form.
+# `web/sitemap.xml` names those three children too.
+#
 # Run per build, not once: `flutter build web` runs twice below
 # (international, then CHINA_MODE) and each rewrites build/web in place.
-# Cheap enough that per-build is the safe default — ~4 s for all five
-# editions. test/prerender_bible_test.dart asserts there is at least one
-# prerender call per `flutter build web` in this file.
+# Cheap enough that per-build is the safe default — ~7 s for all five
+# editions and all three sermon languages.
+# test/prerender_bible_test.dart and test/prerender_sermons_test.dart
+# each assert there is at least one prerender call per
+# `flutter build web` in this file.
 prerender() {
   echo "==> prerendering the crawlable Bible into build/web/read/"
   "${DART:-$HOME/flutter/bin/dart}" run "$PROJECT/tools/prerender_bible.dart" \
+    --out "$PROJECT/build/web" --assets "$PROJECT/assets"
+  echo "==> prerendering the crawlable sermons into build/web/sermons/"
+  "${DART:-$HOME/flutter/bin/dart}" run "$PROJECT/tools/prerender_sermons.dart" \
     --out "$PROJECT/build/web" --assets "$PROJECT/assets"
 }
 

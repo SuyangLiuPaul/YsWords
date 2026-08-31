@@ -103,12 +103,36 @@ void main() {
     final doc = XmlDocument.parse(File('web/sitemap.xml').readAsStringSync());
     final children = doc.findAll('loc');
 
-    test('names exactly one child per prerendered edition, plus home', () {
-      final expected = <String>{
-        '$_prod/sitemap-home.xml',
-        for (final v in prerenderVersions) '$_prod/sitemap-$v.xml',
-      };
-      expect(children.toSet(), expected);
+    test('names one child per prerendered edition, plus home', () {
+      // Containment, not equality. This asserted equality until the
+      // sermon pages landed (2026-08-31) and added three more children,
+      // which broke it — correctly, as a reminder that this file is
+      // shared. The Bible's own claim is that each of ITS editions is
+      // indexed; `test/prerender_sermons_test.dart` makes the matching
+      // claim for the sermon children, and one test there checks the
+      // other direction: that every child named here is one some
+      // generator actually writes.
+      for (final v in prerenderVersions) {
+        expect(children, contains('$_prod/sitemap-$v.xml'),
+            reason: 'sitemap-$v.xml is generated but nothing indexes it, '
+                'so Google never reads those ~1,200 pages');
+      }
+      expect(children, contains('$_prod/sitemap-home.xml'));
+    });
+
+    test('no edition is indexed that the generator does not write', () {
+      // The failure this catches is the opposite one: a child named here
+      // that nothing produces 404s in Search Console on every deploy.
+      // Restricted to the /read/ children — the sermon ones are checked
+      // in their own file.
+      final editionChildren = children.where((c) =>
+          c.contains('/sitemap-') && !c.contains('sitemap-sermons-') &&
+          !c.endsWith('sitemap-home.xml'));
+      for (final c in editionChildren) {
+        final name = c.substring('$_prod/sitemap-'.length).replaceAll('.xml', '');
+        expect(prerenderVersions, contains(name),
+            reason: '$c is indexed but prerender_bible.dart does not write it');
+      }
     });
 
     test('the static home child is committed, not generated', () {

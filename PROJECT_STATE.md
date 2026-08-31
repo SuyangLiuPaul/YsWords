@@ -141,10 +141,42 @@ reader. `web/sitemap.xml` is now a sitemap INDEX naming one static child
 (`sitemap-home.xml`) and five generated ones; **a child 404ing in Search
 Console means the generator did not run.**
 
+**The prerendered sermons under `/sermons/`** (user, 2026-08-31:
+「第二个开做」). 931 pages — 289 sermons × 3 languages, plus 20 series
+indexes per language, three language indexes and an English hub.
+`tools/prerender_sermons.dart`, same shape as the Bible generator and
+the same reason for being written in Dart: it imports `sermon_credit`,
+`sermon_topics`, `passage_localizer` and `version_mapper`, so the
+preacher's name, the series labels and every localized book name come
+from the app's own tables. Three more generated sitemap children
+(`sitemap-sermons-en|zh-hans|zh-hant.xml`).
+
+⚠️ **These are the pages that can actually rank.** Scripture text is the
+most duplicated content on the web and a new domain is the last copy
+anyone has a reason to serve; these transcripts are published nowhere
+else in this form. They also carry 1,699 links into the `/read/` tree,
+which is the only inbound linking those chapter pages have.
+
+**Whose words they are is load-bearing.** Every page carries
+`© {name} · used with permission`, composed from `sermon_credit.dart` —
+`test/prerender_sermons_test.dart` fails if the generator ever spells
+his name itself. And nothing re-paragraphs: `sermon_detail_page.dart`
+sets that rule ("inserting breaks into another man's sermon is making an
+expressive decision he did not make") and the tests hold the static
+pages to it, including EC018/EC019, which are raw ASR and go out whole.
+
 ⚠️ **This is what the SEO work was actually for.** The 1.4.180 metadata
 fixed how a link UNFURLS. It could not create pages, and the site was
 one indexable URL whose every word lives inside a `<canvas>` — nothing
 to rank, however good the tags were.
+
+⚠️ **`/sermons/` fell into the exact sitemap gap `/read/` had fallen
+into, on the same day.** Each generated sermon sitemap starts at
+`/sermons/<language>/`, so the hub choosing between languages was in
+none of them — 932 generated against 930 listed. Caught by the same
+arithmetic that caught it the first time, and now pinned by a test in
+each file. **Adding a namespace is not bookkeeping; it is the step that
+is easy to skip twice.**
 
 **The soft 404 was found only by curling the live deploy** (fixed in
 1.4.182). On 1.4.181 every non-existent path under `/read/` fell through

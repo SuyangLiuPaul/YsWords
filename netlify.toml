@@ -163,6 +163,19 @@
   to = "/read/404.html"
   status = 404
 
+# Same rule, same reason, for the prerendered sermons. `/sermons/` is a
+# far easier namespace to guess at than `/read/` — the ids are short and
+# mostly numeric (`004`, `207`, `EC019`), so `/sermons/en/999/` is the
+# kind of url a crawler will try on its own. Without this it answers 200
+# with the app shell, and 289 real pages sit in an unbounded field of
+# soft-404 duplicates of the home page.
+#
+# Not `force`d, so every generated page under /sermons/ still wins.
+[[redirects]]
+  from = "/sermons/*"
+  to = "/sermons/404.html"
+  status = 404
+
 # Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
 # `/.netlify/functions/*`) are matched and served by Netlify BEFORE
 # this catch-all rewrite, so the function doesn't get swallowed by

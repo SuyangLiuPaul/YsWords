@@ -11,18 +11,26 @@
   one of them returns byte-identical HTML, so listing them would be
   submitting duplicates of this page.
 
-  The actual crawlable pages live under `/read/` and are listed in the
-  generated per-edition sitemaps that `sitemap.xml` indexes. This file
-  covers the two entry points that belong to neither: the application
-  itself, and the `/read/` hub.
+  The actual crawlable pages live under `/read/` and `/sermons/` and are
+  listed in the generated sitemaps that `sitemap.xml` indexes. This file
+  covers the three entry points that belong to none of them: the
+  application itself, the `/read/` hub, and the `/sermons/` hub.
 
-  `/read/` is here because it falls in a gap — each generated sitemap
+  `/read/` is here because it fell in a gap — each generated sitemap
   starts at `/read/<edition>/`, and this one used to hold only `/`, so
   the one page linking all five editions together appeared in NO
   sitemap at all (found 2026-08-31 by counting: 4,344 edition urls + 1
   home against 4,346 generated pages). It was still reachable — every
   one of those 4,344 pages links to it from the footer — but the entry
   point to the whole tree should not depend on that.
+
+  `/sermons/` reproduced that gap exactly, on the same day, for the same
+  structural reason: the three generated sermon sitemaps each start at
+  `/sermons/<language>/`, so the hub that chooses between the languages
+  was in none of them (932 generated pages against 930 listed — the
+  other one is the 404 body, which is deliberately unlisted). Adding a
+  namespace here is not optional bookkeeping; it is the step that is
+  easy to skip twice.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -32,6 +40,11 @@
   </url>
   <url>
     <loc>https://yahwehword.com/read/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://yahwehword.com/sermons/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>

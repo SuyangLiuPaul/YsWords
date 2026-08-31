@@ -55,6 +55,9 @@ const kSitemaps = <String>[
   'sitemap-cuvs-yhwh-tr.xml',
   'sitemap-biblexg-v2.xml',
   'sitemap-biblexg-v2-tr.xml',
+  'sitemap-sermons-en.xml',
+  'sitemap-sermons-zh-hans.xml',
+  'sitemap-sermons-zh-hant.xml',
 ];
 
 /// IndexNow accepts up to 10,000 urls per request. Batching well under

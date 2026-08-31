@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../tools/indexnow_submit.dart' show kKey, kSitemaps, kHost;
 import '../tools/prerender_bible.dart' show prerenderVersions;
+import '../tools/prerender_sermons.dart' show sermonLangs;
 
 void main() {
   group('the IndexNow key file', () {
@@ -51,14 +52,19 @@ void main() {
   });
 
   group('what it submits', () {
-    test('one sitemap per prerendered edition, plus home', () {
+    test('one sitemap per prerendered edition and language, plus home', () {
       // The submit tool holds its own literal list because it talks to
       // the LIVE site, not the source tree. That independence is the
       // point — and it is also exactly how the two drift apart, so pin
       // them here.
+      //
+      // The sermon children matter most: they are the 930 urls carrying
+      // text that exists nowhere else, so they are the ones actually
+      // worth a crawler's attention.
       final expected = <String>{
         'sitemap-home.xml',
         for (final v in prerenderVersions) 'sitemap-$v.xml',
+        for (final l in sermonLangs) 'sitemap-sermons-${l.seg}.xml',
       };
       expect(kSitemaps.toSet(), expected);
     });

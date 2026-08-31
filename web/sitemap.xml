@@ -18,6 +18,13 @@
   apart, and `release_web.sh` runs the generator on every build so the
   children are never missing from a deploy.
 
+  `tools/prerender_sermons.dart` does the same for the 289 sermons, one
+  child per language. Those three are the more valuable half: scripture
+  text is the most duplicated content on the web, whereas these
+  transcripts exist nowhere else in this form, and unique text is the
+  only thing this domain has that other sites do not.
+  `test/prerender_sermons_test.dart` pins them the same way.
+
   If a child sitemap 404s in Search Console, the generator did not run:
   check that `tools/release_web.sh` still invokes it.
 
@@ -44,5 +51,14 @@
   </sitemap>
   <sitemap>
     <loc>https://yahwehword.com/sitemap-biblexg-v2-tr.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-sermons-en.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-sermons-zh-hans.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-sermons-zh-hant.xml</loc>
   </sitemap>
 </sitemapindex>
