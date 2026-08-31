@@ -13,12 +13,26 @@
 
   The actual crawlable pages live under `/read/` and are listed in the
   generated per-edition sitemaps that `sitemap.xml` indexes. This file
-  covers the application entry point and nothing else.
+  covers the two entry points that belong to neither: the application
+  itself, and the `/read/` hub.
+
+  `/read/` is here because it falls in a gap — each generated sitemap
+  starts at `/read/<edition>/`, and this one used to hold only `/`, so
+  the one page linking all five editions together appeared in NO
+  sitemap at all (found 2026-08-31 by counting: 4,344 edition urls + 1
+  home against 4,346 generated pages). It was still reachable — every
+  one of those 4,344 pages links to it from the footer — but the entry
+  point to the whole tree should not depend on that.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://yahwehword.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://yahwehword.com/read/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

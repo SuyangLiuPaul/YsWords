@@ -114,6 +114,22 @@ void main() {
     test('the static home child is committed, not generated', () {
       expect(File('web/sitemap-home.xml').existsSync(), isTrue);
     });
+
+    test('every generated page is reachable from some sitemap', () {
+      // Found by counting, 2026-08-31: the five generated sitemaps start
+      // at /read/<edition>/ and sitemap-home.xml held only `/`, so the
+      // ONE page that links all five editions together — the /read/ hub
+      // — was in no sitemap at all. 4,344 edition urls + 1 home against
+      // 4,346 generated pages. It was still reachable (every one of
+      // those pages footers back to it), but the entry point to the
+      // whole tree should not depend on a footer link being followed.
+      final home =
+          XmlDocument.parse(File('web/sitemap-home.xml').readAsStringSync())
+              .findAll('loc');
+      expect(home, contains('$_prod${readIndexPath()}'),
+          reason: 'the /read/ hub belongs to no generated sitemap, so it '
+              'has to be listed here');
+    });
   });
 
   group('the release actually runs the generator', () {
