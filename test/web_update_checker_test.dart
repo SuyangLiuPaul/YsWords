@@ -22,15 +22,22 @@ import 'package:yswords/services/web_update_checker.dart';
 void main() {
   final checker = WebUpdateChecker.instance;
 
+  // A controllable clock, so the min-spacing floor can be tested rather
+  // than merely slept through.
+  var clock = DateTime(2026, 8, 31, 12);
+  void advance(Duration d) => clock = clock.add(d);
+
   setUp(() {
     WebUpdateChecker.debugPretendWeb = true;
-    checker.available.value = null;
+    WebUpdateChecker.nowFn = () => clock;
+    checker.resetForTest();
   });
 
   tearDown(() {
     WebUpdateChecker.debugPretendWeb = false;
     WebUpdateChecker.debugClientFactory = null;
-    checker.available.value = null;
+    WebUpdateChecker.nowFn = DateTime.now;
+    checker.resetForTest();
   });
 
   group('reading version.json', () {
@@ -109,9 +116,36 @@ void main() {
       expect(checker.available.value, '9.9.9');
       // The user reloaded in another tab, or the deploy was rolled
       // forward to match. The banner must go away on its own.
+      advance(WebUpdateChecker.minCheckSpacing);
       serve(200, jsonEncode({'version': kAppVersion}));
       await checker.checkNow();
       expect(checker.available.value, isNull);
+    });
+
+    test('checks closer together than the floor are dropped', () async {
+      // Measured on the live dev site: ONE page load produced six
+      // requests, because every `resumed` lifecycle event fires a check
+      // and browsers hand those out far more freely than "the user came
+      // back". Without this floor, thumbing between apps on a phone
+      // turns an idle reader into a steady poller.
+      var hits = 0;
+      WebUpdateChecker.debugClientFactory = () => MockClient((_) async {
+            hits++;
+            return http.Response(jsonEncode({'version': '9.9.9'}), 200);
+          });
+
+      await checker.checkNow();
+      expect(hits, 1);
+
+      advance(WebUpdateChecker.minCheckSpacing - const Duration(seconds: 1));
+      await checker.checkNow();
+      await checker.checkNow();
+      await checker.checkNow();
+      expect(hits, 1, reason: 'a resume storm got through the floor');
+
+      advance(const Duration(seconds: 2)); // now past the floor
+      await checker.checkNow();
+      expect(hits, 2, reason: 'the floor never lifted');
     });
 
     test('off the web it does nothing at all', () async {

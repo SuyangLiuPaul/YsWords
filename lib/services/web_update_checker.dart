@@ -56,6 +56,24 @@ class WebUpdateChecker with WidgetsBindingObserver {
 
   static const Duration requestTimeout = Duration(seconds: 8);
 
+  /// Floor between two checks, whatever asked for them.
+  ///
+  /// 2026-08-31: measured against the live dev site, ONE page load made
+  /// six requests for version.json where two were expected (index.html's
+  /// own, plus the first scheduled check). Every `resumed` lifecycle
+  /// event fires a check, and a browser hands those out far more freely
+  /// than "the user came back to the app" — a hidden tab, a focus
+  /// change, a pane repaint. On a phone, thumbing between apps would
+  /// have turned an idle reader into a steady poller. The interval that
+  /// matters is `pollInterval`; this only stops the resume path from
+  /// running away, and 60 s is well under any deploy cadence, so nothing
+  /// is missed by it.
+  static const Duration minCheckSpacing = Duration(seconds: 60);
+
+  /// Test seam for [minCheckSpacing]. Never set outside tests.
+  @visibleForTesting
+  static DateTime Function() nowFn = DateTime.now;
+
   /// The version the server is serving, when it differs from the one
   /// this bundle was built as. Null means "we are current, or we don't
   /// know". The banner watches this.
@@ -65,6 +83,7 @@ class WebUpdateChecker with WidgetsBindingObserver {
   Timer? _poll;
   bool _started = false;
   bool _inFlight = false;
+  DateTime? _lastCheckedAt;
 
   /// Test seam: lets the VM-side tests exercise the whole service
   /// without `kIsWeb`. Never set outside tests.
@@ -90,6 +109,13 @@ class WebUpdateChecker with WidgetsBindingObserver {
   }
 
   @visibleForTesting
+  void resetForTest() {
+    _lastCheckedAt = null;
+    _inFlight = false;
+    available.value = null;
+  }
+
+  @visibleForTesting
   void stop() {
     _firstCheck?.cancel();
     _poll?.cancel();
@@ -112,6 +138,9 @@ class WebUpdateChecker with WidgetsBindingObserver {
   /// indistinguishable from "no update" and must not surface anywhere.
   Future<void> checkNow() async {
     if (!isSupported || _inFlight) return;
+    final last = _lastCheckedAt;
+    if (last != null && nowFn().difference(last) < minCheckSpacing) return;
+    _lastCheckedAt = nowFn();
     _inFlight = true;
     final client = (debugClientFactory ?? http.Client.new)();
     try {
