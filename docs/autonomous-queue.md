@@ -224,6 +224,84 @@ reported. Work these top-down before P2.
       Deployed dev + qat only — **prod needs the user's go-ahead**,
       given the item is already live there.
 
+      **2026-09-01 — matrix result: eliminates `_bootstrap()`'s own
+      code path for 7 stale-value shapes; does NOT root-cause it.**
+      `test/boot_trap_shape_vm_repro_test.dart` widened from the single
+      all-valid repro into a matrix, run on the VM against
+      `runBootstrapProper` — a function that mirrors `lib/main.dart`'s
+      `_bootstrap()` try/catch EXACTLY (same scope, `lib/main.dart:353`-
+      `404`): `ProfileService.init()` → `AppSettings.loadSettings()` →
+      `MainProvider.restoreState()` → `FetchVerses.execute()` →
+      `FetchBooks.execute()` → the post-load validate-or-fallback block.
+      Confirmed by reading `restoreState()` (`main_provider.dart:1479`-
+      `1615`) this pass: only two version ids are migrated (`niv→kjv`,
+      locale-conditional `cuvs-yhwh→nasb`); `currentVersion`,
+      `currentBook` and `currentChapter` are otherwise assigned with NO
+      check that they still resolve to real data — the gap this item's
+      last plan flagged is real, confirmed by reading the code, not
+      inferred.
+      Seven shapes tried, all against the trap's own "no profile.* keys,
+      just the three legacy keys" storage shape: (1) the original all-
+      valid triple (baseline — proves nothing, kept for regression);
+      (2) a version id never shipped as an asset (`rsv` — confirmed
+      against `lib/constants/bible_versions.dart`'s 6-entry list, which
+      matches the 6 version `.json` assets 1:1); (3) a book name in the
+      wrong version's language (Chinese key `约翰福音` against English
+      `kjv`); (4) an outright unknown book string (`Frobnicate`);
+      (5) a chapter past the book's actual length (`John` ch. 999 —
+      John has 21, per `lib/constants/canon_chapters.dart`); (6) chapter
+      0; (7) the mirror-image of (3) (English key `John` against Chinese
+      `cuvs-yhwh`, whose own book field is Chinese). **None of the 7
+      threw `ArgumentError`** — cases (2)-(7) either fall back cleanly to
+      the first verse or, for (2), hit a caught, already-handled
+      `FlutterError: asset not found` (exactly what `_bootstrap()`'s own
+      catch turns into an error scaffold in production, not a crash).
+      **What this narrows, precisely — no more:** `restoreState`,
+      `FetchVerses`, `FetchBooks` and the validate-fallback block do not
+      throw `ArgumentError` for any of these 7 stale-value shapes. It
+      does NOT narrow past `_bootstrap()` itself: an earlier draft of
+      this matrix also folded in `UrlSyncService.init` and
+      `jump_to_reference.resolveAndPrepareJump`, both claimed as "the
+      same boot sequence" — an adversarial review of that draft caught
+      two things wrong with that claim before it landed: `UrlSyncService
+      .init` in production runs OUTSIDE `_bootstrap()`'s try/catch
+      (`main.dart:481`, its own separate `.catchError` at `:484`-`486`,
+      not the `:404` catch), and `resolveAndPrepareJump` is never called
+      from `_bootstrap()` at all — it's a user-tap-only path, included
+      only as the closest VM-reachable stand-in for a deep-link jump.
+      Both are now checked separately (`runPostBootstrapExtras`, also
+      clean across all 7 shapes) and the file's doc comment says plainly
+      what it does and doesn't cover.
+      **The gap that same review surfaced and this matrix still leaves
+      open, not folded into "codegen/widget-build":**
+      `lib/services/url_sync_service_web.dart`'s `_applyHashToState` does
+      its own INDEPENDENT book/chapter/version resolution from
+      `window.location.hash` on every web cold boot, is
+      `dart:js_interop`-gated, and cannot run on this VM harness at all.
+      Given the crash is web-release-only, that file is a live,
+      unexcluded candidate — not yet tried, not yet cleared.
+      **Checked, not just proposed:** read both `_applyHashToState`
+      (`url_sync_service_web.dart:241`-`320`) and `_parseHash`
+      (`:337`-`394`) this pass for the same class of unguarded
+      `.clamp()`/index math the two `bible_reading_pane.dart` sites above
+      turned out to have. Neither has a `.clamp()` call anywhere.
+      `_applyHashToState`'s one index lookup (`relIdx` at `:307`-`311`,
+      the verse-jump path) is already gated by `if (relIdx >= 0)` before
+      use. `_parseHash`'s every `.substring()` call sits behind an index
+      already confirmed in range (an `indexOf` result checked `>= 0` /
+      `> 0` before use, or a literal `+1` on an index just checked). This
+      rules out the clamp/unguarded-index-math pattern in this file; it
+      does NOT clear the file as a candidate altogether, since it was
+      only read, never exercised at runtime — both functions are
+      `dart:js_interop`-gated and unreachable from this VM harness, so a
+      throw from something other than the patterns checked (e.g. an
+      `int.tryParse` edge case, though none was found on this read) is
+      still untested. **Next**, in order: (a) exercise
+      `_applyHashToState`/`_parseHash` in a real or headless browser
+      with the trap's stale values; (b) only after that, the
+      widget-build/layout and dart2js-codegen possibilities named above
+      remain open but untried.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still
@@ -7867,7 +7945,7 @@ has never seen this repo.
       bug and still isn't — a song started from the detail sheet's mix
       chips legitimately has nothing to advance to.
 
-- [ ] **`SongPlaybackEngine`'s `onError` has no per-attempt id, so a
+- [x] **`SongPlaybackEngine`'s `onError` has no per-attempt id, so a
       stale error can be misattributed to whatever track is current by
       the time it arrives.** Found 2026-08-31 by an adversarial review
       of the fix above (`docs/autonomous-queue.md`, "Songs stop instead
@@ -7888,6 +7966,17 @@ has never seen this repo.
       makes this reproducible headlessly: hold two attempts open, error
       the first after the second has started, assert the second is not
       touched) and watch it fail before touching production code.
+      **Fixed 2026-09-01** (commit `9884e24`), recovered from an
+      earlier iteration's uncommitted working tree and verified against
+      this description before landing: both engines now expose
+      `attempt`/echo an `(int, String)` tuple on `onError`;
+      `song_audio_handler.dart` records `_currentAttempt` right after
+      `play()` and discards a mismatched id;
+      `sermon_audio_service.dart` just unpacks the tuple (a sermon has
+      no "already moved on" race to guard). New widget test in
+      `test/song_auto_advance_test.dart` reproduces the exact race
+      above and asserts the stale error is dropped while a genuine
+      current-attempt error still quarantines the track.
 
 - [x] **Two references, only one is reachable — each cited passage now
       has its own tap target.** v1.4.79.
