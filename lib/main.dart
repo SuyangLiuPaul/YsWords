@@ -8,6 +8,8 @@ import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/loading_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
+import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/services/app_icon_service.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -867,6 +869,18 @@ class _RootRouterState extends State<_RootRouter> {
   /// finish before OR after the home page appears.
   bool _bootHashLandingPending = false;
 
+  /// Set when this launch is the cold start our OWN Android launcher-icon
+  /// swap caused — see [kAndroidIconSwapPendingKey]. Changing the theme
+  /// colour disables the launcher component the task is rooted on, which
+  /// finishes the task; the reader is on the Settings page when they pick
+  /// a colour (that swatch row is the only caller of setPrimaryColor) and
+  /// would otherwise come back to the Dashboard.
+  ///
+  /// Same flag-plus-rebuild shape as the deep-link landing above, and for
+  /// the same reason: the prefs read can finish before OR after the home
+  /// page appears.
+  bool _iconSwapLandingPending = false;
+
   @override
   void initState() {
     super.initState();
@@ -874,6 +888,16 @@ class _RootRouterState extends State<_RootRouter> {
       if (!mounted) return;
       setState(() => _bootHashLandingPending = true);
     });
+    // ignore: unawaited_futures
+    _checkIconSwapRestart();
+  }
+
+  Future<void> _checkIconSwapRestart() async {
+    // Consuming clears the flag, so this can only land the user once —
+    // the launch after that is an ordinary one and behaves ordinarily.
+    if (!await consumeAndroidIconSwapPending()) return;
+    if (!mounted) return;
+    setState(() => _iconSwapLandingPending = true);
   }
 
   void _advance() {
@@ -962,6 +986,21 @@ class _RootRouterState extends State<_RootRouter> {
         if (!mounted) return;
         pushPage(const HomePage(),
             routeName: '/HomePage');
+      });
+    }
+    // Put the reader back where our own icon swap threw them from.
+    // Deliberately AFTER the deep-link branch: a shared link is
+    // something the reader just acted on, and it wins over restoring a
+    // page they left behind.
+    if (_showHome && _iconSwapLandingPending) {
+      _iconSwapLandingPending = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        // `display` is the section holding the colour swatches, so this
+        // lands on the row they were actually using rather than the top
+        // of a long page.
+        pushPage(const SettingsPage(initialSection: SettingsSection.display),
+            routeName: '/SettingsPage');
       });
     }
     // After Round 32: Dashboard is the home / root page. The Bible

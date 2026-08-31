@@ -42,9 +42,62 @@ import 'package:flutter/material.dart' show Color, Colors;
 import 'package:flutter/services.dart'
     show MethodChannel, PlatformException, rootBundle;
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:yswords/services/app_icon_service_web.dart'
     if (dart.library.io) 'package:yswords/services/app_icon_service_web_stub.dart'
     as web_impl;
+
+/// Set while an Android launcher-icon swap is queued, i.e. while this
+/// task is about to be destroyed by our own icon change.
+///
+/// Android roots a task on the launcher component it was started from,
+/// and changing the icon means disabling exactly that component — which
+/// finishes the task. `DONT_KILL_APP` spares the PROCESS but not the
+/// task, so `main()` re-runs and the Navigator stack is gone.
+///
+/// Measured on an Android 14 emulator, 2026-08-31, with the swap applied
+/// from the app itself (adb cannot do it — the OS refuses: "Shell cannot
+/// change component state"): pick red on the Settings page, press Home,
+/// and the task record disappears while the pid stays the same. Relaunch
+/// lands on the Dashboard.
+///
+/// Nothing persisted is lost, so this is not data loss — the cost is
+/// that the reader is thrown back to the Dashboard from wherever they
+/// were. This flag is how the next launch knows to put them back, and
+/// why it does NOT do that on an ordinary cold start: Android kills
+/// backgrounded apps all the time, and a launcher tap that silently
+/// reopened a sub-page would be its own bug.
+const String kAndroidIconSwapPendingKey = 'android_icon_swap_pending';
+
+/// Record that the next launch is one WE caused. Only called after the
+/// swap has actually been dispatched — the same-icon early return above
+/// means an ordinary launch never sets this.
+Future<void> markAndroidIconSwapPending() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(kAndroidIconSwapPendingKey, true);
+  } catch (e) {
+    // Best effort. Failing to set the flag costs the user their place,
+    // which is exactly the pre-fix behaviour — never a crash on a
+    // theme change.
+    debugPrint('[AppIconService] could not flag icon-swap restart: $e');
+  }
+}
+
+/// True exactly once after a swap-induced restart; clears itself so a
+/// later ordinary launch is unaffected.
+Future<bool> consumeAndroidIconSwapPending() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    if (!(prefs.getBool(kAndroidIconSwapPendingKey) ?? false)) return false;
+    await prefs.remove(kAndroidIconSwapPendingKey);
+    return true;
+  } catch (e) {
+    debugPrint('[AppIconService] could not read icon-swap flag: $e');
+    return false;
+  }
+}
 
 class AppIconService {
   AppIconService._();
@@ -162,6 +215,10 @@ class AppIconService {
         if (current == name) return;
         await _androidChannel
             .invokeMethod<bool>('setIcon', <String, dynamic>{'name': name});
+        // Past the guard, so a swap is genuinely queued — which means
+        // this Android task is going to be destroyed. See
+        // [markAndroidIconSwapPending].
+        await markAndroidIconSwapPending();
       } else if (Platform.isMacOS) {
         Uint8List? bytes;
         if (variant != null) {
