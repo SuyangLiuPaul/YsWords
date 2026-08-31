@@ -9331,20 +9331,21 @@ so the bundle-size answer stays on the record.
   appears in `prerenderVersions`. `/read/nasb/...` answers a real 404
   (netlify.toml) — on the first deploy it answered 200 with the app
   shell, which implied the text was published there.
-- **繁體 edition labels contain Simplified characters.** Found
-  2026-08-31 while generating the static pages. In
-  `lib/constants/bible_versions.dart` the Traditional rows read
-  `menuLabel: '和合本雅伟版(繁體)'` and `'梁家铿譯本(繁體)'` — 伟 and 铿
-  are Simplified, inside the label whose whole job is to mark the
-  Traditional edition. The sibling `shortLabel` is already correct
-  (`和合本雅偉版`). By the project's own rule — the 2026-05-10 雅威→雅偉
-  fix records that "the canonical simp→trad pairing is 雅伟 → 雅偉" —
-  these should be `和合本雅偉版(繁體)` and `梁家鏗譯本(繁體)`.
-  NOT changed unilaterally, for one reason: 梁家铿 is a person's name and
-  the user may deliberately keep one spelling of it. The 和合本 one has
-  no such excuse. Blast radius is the version picker plus 1,256
-  crawlable page titles per Traditional edition. One-line answer:
-  convert both, convert only 和合本, or leave as-is.
+- ~~**繁體 edition labels contain Simplified characters.**~~ **SETTLED
+  2026-08-31** — the user said convert both (「繁体那两个名字也一起改了」),
+  shipped in v1.4.183. Three strings in
+  `lib/constants/bible_versions.dart`: `和合本雅伟版(繁體)` → 偉,
+  `梁家铿(繁)` and `梁家铿譯本(繁體)` → 鏗.
+
+  Worth keeping, because the reasoning was almost wrong: the
+  translator's name looked like a genuine judgement call, and it was not
+  one. `ui_strings.dart` already gives `梁家鏗譯本` under `'zh-Hant'`,
+  `about_page.dart` follows it, and every Traditional discussion in
+  `test/` writes 梁家鏗. **These two labels were the outliers, not the
+  convention** — the answer was already in the repo and only looked like
+  a question because the labels were read on their own. A guard in
+  `test/bible_versions_language_test.dart` now fails if any `zh-Hant`
+  label picks up a Simplified character again.
 
 ## Unblocked 2026-08-10 — no longer an excuse to skip native work
 

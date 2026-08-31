@@ -65,16 +65,23 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.182** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.182** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.4.180** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.183** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.183** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn` | **1.4.183** | ⛔ never without explicit permission **in the current turn** |
 
-**dev/qat are two versions ahead of prod** (2026-08-31). 1.4.181 shipped
-the prerendered `/read/` pages; 1.4.182 fixed the soft 404 they exposed
-(below). **prod stays on 1.4.180 deliberately** — the user's
-「可以push prod了吧」 covered the 1.4.180 metadata work and does not carry
-forward. The next prod push needs its own explicit instruction in its
-own turn.
+**All six sites are on 1.4.183** (2026-08-31, user: 「繁体那两个名字也一起
+改了，然后push prod」). That covers the prerendered `/read/` pages
+(1.4.181), the `/read/*` 404 rule (1.4.182) and the Traditional-label
+fix (1.4.183). The rule has NOT changed: **the next prod push needs its
+own explicit instruction in its own turn** — this one does not carry
+forward.
+
+Verified on `yahwehword.com` itself, not on a preview: `/read/`, three
+chapter pages, all six sitemaps, `robots.txt` and `og-card.png` return
+200 with the right content types; `/read/nasb/…`, `/read/leb/…`,
+`/read/kjv/john/999/` and `/read/biblexg-v2/genesis/1/` return 404; the
+Traditional titles read `約翰福音 3章 — 和合本雅偉版(繁體) | 雅偉之言`; the
+app boots to the dashboard.
 
 **The prerendered Bible under `/read/`** (v1.4.181, user: 「可以然后再加上
 梁本」). 4,346 JavaScript-free pages of real verse text at real paths —
