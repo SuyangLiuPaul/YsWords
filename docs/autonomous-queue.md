@@ -9320,6 +9320,32 @@ so the bundle-size answer stays on the record.
   NASB needs permission; nothing has been done about it. Ask before
   investing in anything NASB-shaped (including #173-176).
 
+  2026-08-31: the prerendered `/read/` pages raised the stakes, and were
+  built around this. Publishing a translation as thousands of static,
+  crawlable, permanently-archived pages is a materially more exposed act
+  than bundling it in an app, and deleting the files afterwards does not
+  undo it. So `tools/prerender_bible.dart` ships only KJV, the two
+  和合本雅伟版 editions and the two 梁家铿译本 editions (the last on the
+  user's explicit say-so, 「再加上梁本」). NASB and LEB are excluded, and
+  `test/prerender_bible_test.dart` fails if `nasb`, `leb` or `niv` ever
+  appears in `prerenderVersions`. `/read/nasb/...` answers a real 404
+  (netlify.toml) — on the first deploy it answered 200 with the app
+  shell, which implied the text was published there.
+- **繁體 edition labels contain Simplified characters.** Found
+  2026-08-31 while generating the static pages. In
+  `lib/constants/bible_versions.dart` the Traditional rows read
+  `menuLabel: '和合本雅伟版(繁體)'` and `'梁家铿譯本(繁體)'` — 伟 and 铿
+  are Simplified, inside the label whose whole job is to mark the
+  Traditional edition. The sibling `shortLabel` is already correct
+  (`和合本雅偉版`). By the project's own rule — the 2026-05-10 雅威→雅偉
+  fix records that "the canonical simp→trad pairing is 雅伟 → 雅偉" —
+  these should be `和合本雅偉版(繁體)` and `梁家鏗譯本(繁體)`.
+  NOT changed unilaterally, for one reason: 梁家铿 is a person's name and
+  the user may deliberately keep one spelling of it. The 和合本 one has
+  no such excuse. Blast radius is the version picker plus 1,256
+  crawlable page titles per Traditional edition. One-line answer:
+  convert both, convert only 和合本, or leave as-is.
+
 ## Unblocked 2026-08-10 — no longer an excuse to skip native work
 
 - **Xcode signing works again.** It failed for weeks with "No Accounts:
