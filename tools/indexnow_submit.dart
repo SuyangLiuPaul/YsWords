@@ -24,8 +24,10 @@
 // mechanism depends on it being publicly readable, the same way the
 // Search Console meta tag is. `web/7cad63f32387c0af0b842b4015fb2636.txt`
 // ships with every deploy; `test/indexnow_test.dart` fails if the file
-// ever stops matching its own name, which is the one corruption the API
-// answers with a bare 403.
+// ever stops matching its own name — a corruption the API answers with
+// a bare 403 and no message. Note that 403 is not proof of a bad key:
+// see the retry loop in main() for the propagation case measured on
+// 2026-08-31.
 //
 // ── What it submits ───────────────────────────────────────────────────
 // The live sitemaps, fetched from prod rather than read from a local
@@ -59,6 +61,12 @@ const kSitemaps = <String>[
 /// that keeps a single failure from costing the whole submission, and
 /// keeps each request small enough to read in a log.
 const kBatch = 2000;
+
+/// How many times a 403 is retried before it is believed. Three tries at
+/// 15/30/45s covers the propagation window seen on 2026-08-31 (the very
+/// next attempt already succeeded) without turning a genuinely bad key
+/// into a two-minute wait for nothing.
+const _kRetries = 3;
 
 final _loc = RegExp(r'<loc>\s*([^<\s]+)\s*</loc>');
 
@@ -124,11 +132,30 @@ Future<void> main(List<String> args) async {
 
   for (var i = 0; i < list.length; i += kBatch) {
     final batch = list.sublist(i, (i + kBatch).clamp(0, list.length));
-    final code = await _submit(client, batch);
+    var code = await _submit(client, batch);
+    // 403 does NOT reliably mean the key is wrong. Measured 2026-08-31,
+    // minutes after the key file first went live: the pre-flight above
+    // fetched it successfully, `curl` returned 200/text-plain to every
+    // user-agent, single-url and 2000-url submissions both returned 200
+    // when retried moments later — yet the first real batch came back
+    // 403. The endpoint validates ownership on its own schedule, and
+    // right after a deploy it can still be holding a stale answer.
+    //
+    // So a 403 here is retried rather than treated as fatal. Only a
+    // 403 that survives the backoff is reported as a key problem; the
+    // other codes are genuinely about the request and fail fast.
+    for (var attempt = 1; attempt <= _kRetries && code == 403; attempt++) {
+      final wait = Duration(seconds: 15 * attempt);
+      stdout.writeln('batch ${i ~/ kBatch + 1}: HTTP 403 — the key file '
+          'verified, so this may be ownership propagation. Retry '
+          '$attempt/$_kRetries in ${wait.inSeconds}s.');
+      await Future<void>.delayed(wait);
+      code = await _submit(client, batch);
+    }
     final ok = code == 200 || code == 202;
     stdout.writeln('batch ${i ~/ kBatch + 1}: ${batch.length} urls → HTTP $code'
-        '${ok ? '' : '  ← 400 bad format · 403 key not readable · '
-            '422 url not on this host · 429 rate limited'}');
+        '${ok ? '' : '  ← 400 bad format · 403 key still refused after '
+            'retries · 422 url not on this host · 429 rate limited'}');
     if (!ok) {
       client.close();
       exit(1);
