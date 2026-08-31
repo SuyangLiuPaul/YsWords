@@ -339,6 +339,62 @@ void main() {
       expect(result.exitCode, 0, reason: result.stderr.toString());
       expect(scratch2.readAsStringSync(), once);
     });
+
+    test('the two files agree RIGHT NOW, not merely when the awk is run',
+        () {
+      // The tests above prove the writer works. They cannot prove it was
+      // ever run, or that nobody hand-edited one file — and that gap is
+      // not hypothetical. Measured 2026-09-01 across the four most
+      // recent release tags:
+      //
+      //   v1.3.134  pubspec 1.3.134  app_version.dart 1.3.113
+      //   v1.3.141  pubspec 1.3.141  app_version.dart 1.3.113
+      //   v1.4.5    pubspec 1.4.5    app_version.dart 1.3.113
+      //   v1.4.6    pubspec 1.4.6    app_version.dart 1.3.113
+      //
+      // No release workflow passes --dart-define, so `_envAppVersion` is
+      // empty in every published build and `kAppVersion` IS that
+      // fallback. The v1.4.6 APK therefore reports itself as 1.3.113,
+      // and `UpdateService` compares the latest TAG against exactly that
+      // — so those users are told an update is available, install it,
+      // and are told again. Forever. A notification no download can
+      // satisfy.
+      //
+      // tools/release_github.sh refuses to tag a commit where these
+      // disagree. This test is the same invariant one step earlier, so
+      // it fails on the commit that breaks it rather than at release
+      // time.
+      final pubspec = _repoFile('pubspec.yaml').readAsLinesSync();
+      final versionLine = pubspec.firstWhere(
+        (l) => l.startsWith('version:'),
+        orElse: () => '',
+      );
+      expect(versionLine, isNotEmpty, reason: 'pubspec.yaml has no version');
+      // `version: 1.4.190+190` — the build number after `+` is not part
+      // of the version kAppVersion carries.
+      final pubspecVersion =
+          versionLine.split(':')[1].trim().split('+').first.trim();
+
+      final source =
+          _repoFile('lib/constants/app_version.dart').readAsStringSync();
+      final ternary = RegExp(
+        r"_envAppVersion == '' \? '([0-9][0-9.]*)' : _envAppVersion",
+      ).firstMatch(source);
+      expect(ternary, isNotNull,
+          reason: 'kAppVersion no longer has the ternary fallback this '
+              'reads — if the shape changed, update release_github.sh too');
+      final defaultValue =
+          RegExp(r"defaultValue: '([0-9][0-9.]*)',").firstMatch(source);
+      expect(defaultValue, isNotNull);
+
+      expect(ternary!.group(1), pubspecVersion,
+          reason: 'app_version.dart\'s ternary fallback is '
+              '${ternary.group(1)} but pubspec.yaml says $pubspecVersion. '
+              'The fallback is what ships, because no build passes '
+              '--dart-define=APP_VERSION. Run tools/bump_version.sh.');
+      expect(defaultValue!.group(1), pubspecVersion,
+          reason: 'the defaultValue literal drifted from pubspec.yaml');
+    });
   });
 
   /// The second guard, added 2026-08-25 to cover the nightly — which the
