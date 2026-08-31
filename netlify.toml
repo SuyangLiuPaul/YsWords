@@ -134,6 +134,35 @@
   to = "/logo/logo-256.png"
   status = 200
 
+# 2026-08-31: /read/ answers 404 for real, and MUST stay above the SPA
+# catch-all below (first match wins).
+#
+# The prerenderer (tools/prerender_bible.dart) turned /read/ into a
+# guessable, enumerable namespace of ~4,300 real pages. Measured on qat
+# before this rule existed, EVERY path that did not resolve to a
+# generated file fell through to the catch-all and answered 200 with the
+# Flutter shell:
+#
+#   /read/kjv/john/999/     200   (no such chapter)
+#   /read/nasb/john/3/      200   (NASB is deliberately NOT published)
+#   /read/totally-made-up/  200
+#
+# That is a soft 404, and at this scale it is not cosmetic. Google
+# indexes those as duplicates of the home page — an unbounded supply of
+# them — which spends crawl budget on noise and dilutes the real pages.
+# The NASB shape is worse than noise: answering 200 under a path that
+# names a translation the project has no licence to publish implies it
+# is there.
+#
+# `status = 404` makes Netlify serve the body with a real 404, and
+# because the rule is NOT `force`d it loses to every actual file under
+# /read/ — the generated pages keep working untouched. The body itself
+# is written by the prerenderer alongside them.
+[[redirects]]
+  from = "/read/*"
+  to = "/read/404.html"
+  status = 404
+
 # Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
 # `/.netlify/functions/*`) are matched and served by Netlify BEFORE
 # this catch-all rewrite, so the function doesn't get swallowed by

@@ -147,6 +147,52 @@ void main() {
     });
   });
 
+  group('a bad /read/ url answers 404, not 200', () {
+    // Measured on qat 2026-08-31, before the rule existed: every path
+    // under /read/ that did not resolve to a generated file fell through
+    // the SPA catch-all and answered 200 with the Flutter shell —
+    // /read/kjv/john/999/, /read/totally-made-up/, and worst of all
+    // /read/nasb/john/3/, naming a translation the project has no
+    // licence to publish. Google indexes those as an unbounded supply of
+    // duplicates of the home page.
+    //
+    // Netlify matches redirects top-to-bottom, first match wins, so the
+    // whole fix is ordering. Reordering this file would restore the bug
+    // silently — nothing in the app changes, and only a crawler notices.
+    final toml = File('netlify.toml').readAsLinesSync();
+    int ruleLine(String from) =>
+        toml.indexWhere((l) => l.trim() == 'from = "$from"');
+
+    test('the /read/ rule exists and sits above the SPA catch-all', () {
+      final read = ruleLine('/read/*');
+      final spa = ruleLine('/*');
+      expect(read, isNot(-1), reason: 'the /read/* 404 rule is gone');
+      expect(spa, isNot(-1));
+      expect(read, lessThan(spa),
+          reason: 'below the catch-all it can never match — first match wins');
+    });
+
+    test('it is a real 404 and is not forced', () {
+      final read = ruleLine('/read/*');
+      final block = toml.sublist(read, read + 3).join('\n');
+      expect(block, contains('status = 404'),
+          reason: 'a 200 here is the soft-404 this rule exists to remove');
+      expect(block, isNot(contains('force')),
+          reason: 'forcing it would shadow all 4,300 real pages under /read/');
+    });
+
+    test('the body it serves is generated', () {
+      final body = renderNotFound();
+      expect(body, contains('<html lang="en">'));
+      expect(body, contains('Page not found'));
+      expect(body, contains('页面不存在'));
+      // It cannot know which language the reader wanted — the url was
+      // not a page — so it names no product at all rather than guessing.
+      expect(body, isNot(contains("Yahweh's Words")));
+      expect(body, isNot(contains('雅伟之言')));
+    });
+  });
+
   group('verse text', () {
     test('strips <note:> popups completely', () {
       // The marker is not inline text — it renders as a popup in the app

@@ -613,6 +613,43 @@ String renderReadIndex(Map<String, PrerenderEdition> editions) {
   return buf.toString();
 }
 
+/// The body Netlify serves — with a real 404 status — for any /read/
+/// path that does not resolve to a generated file. See the `/read/*`
+/// rule in netlify.toml for why this is not optional: without it every
+/// guessable path under /read/ answered 200 with the Flutter shell,
+/// including `/read/nasb/...`, which named a translation the project has
+/// no licence to publish.
+///
+/// Bilingual and unbranded on purpose. It is the one page here that
+/// cannot know which language its reader wanted — the URL that produced
+/// it was, by definition, not a page — so it carries no product name at
+/// all rather than picking one and breaking the one-name rule.
+String renderNotFound() {
+  final buf = StringBuffer(_head(
+    lang: 'en',
+    title: 'Page not found · 页面不存在',
+    description: 'This chapter or edition is not published here.',
+    path: '/read/404.html',
+  ))
+    ..writeln('<main>')
+    ..writeln('<h1>Page not found</h1>')
+    ..writeln('<p>This chapter or edition is not published at that address. '
+        'It may not exist in the canon, or the edition may not be one of the '
+        'editions available here.</p>')
+    ..writeln('<p lang="zh-Hans">这个地址下没有对应的章节或版本。'
+        '可能该章节不存在，或该版本不在此处提供。</p>')
+    ..writeln('<p class="app"><a href="/read/">'
+        'All editions · 全部版本 →</a></p>')
+    ..writeln('</main>')
+    ..writeln('<footer>')
+    ..writeln('<p><a href="/">yahwehword.com</a> · '
+        '<a href="/read/">Read · 阅读</a></p>')
+    ..writeln('</footer>')
+    ..writeln('</body>')
+    ..writeln('</html>');
+  return buf.toString();
+}
+
 // ── sitemaps ──────────────────────────────────────────────────────────
 
 String renderSitemap(List<String> paths) {
@@ -797,6 +834,9 @@ void main(List<String> args) {
 
   _write(File('$out/read/read.css'), readCss);
   _write(File('$out/read/index.html'), renderReadIndex(editions));
+  // Deliberately NOT listed in any sitemap: it is the answer to a bad
+  // url, not a page anyone should be sent to.
+  _write(File('$out/read/404.html'), renderNotFound());
 
   var pages = 2;
   final sitemapNames = <String>[];
