@@ -259,6 +259,29 @@ void main() {
           ]);
     });
 
+    // The same 節/节-is-a-verse rule, but at a word boundary rather than
+    // mid-word — 010's real sentence has a hard punctuation break right
+    // before 詩篇, so `infix` is unset and the old guard (restricted to
+    // the infix branch) let "Psalms 27" through even though the
+    // paragraph is expounding Psalm 37 and 27 is the verse. 247's real
+    // sentence states the chapter (19) three words before the book name
+    // repeats with a verse-marked number; nothing is filed for it
+    // because the chapter is not adjacent to the book name here, and
+    // 247 loses nothing corpus-wide because two other, chapter-marked
+    // citations of Revelation 12 survive elsewhere in the same file.
+    test('refuses the boundary form too, not just the infix one', () {
+      expect(
+          _extractAll([
+            '他是一个行义的人。诗篇第二十七节说："你当离恶行善。"第二十九节：'
+                '"义人必承受地土。"',
+            '然后在第19章，启示录12节，一个荣耀的人物出现，头戴冠冕。',
+          ]),
+          [
+            <String>[],
+            <String>[],
+          ]);
+    });
+
     // 第二次 is "a second TIME". The English unit-word guard had no
     // Chinese half, so both of these indexed a verse the sermon never
     // opens. The chapter really was cited and is kept.

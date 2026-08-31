@@ -817,15 +817,22 @@ def extract_refs(text: str) -> list[str]:
         # how 023's 「以猶大書第七節」 and 012's 「約翰二書第三節」 are
         # right.
         #
-        # Restricted to the infix branch on purpose. The class is real
-        # at a boundary too — 7 sites, including 106 and 150's 「但第11節」
-        # where 但 is the conjunction "but" and is read as Daniel — but
-        # only two of those reach the shipped index, and both need their
-        # paragraph read before the entry is removed rather than moved
-        # (010's 「詩篇第二十七節」 belongs to Psalm 37; 247's 「啟示錄12節」
-        # has its chapter three words earlier). Queued; this refuses only
-        # what the relaxed boundary newly introduces.
-        if m.group("infix") is not None and not m.group("chmark"):
+        # 2026-08-31: generalised from the infix branch to the boundary
+        # form too, after reading all 8 paragraphs this shape reaches in
+        # the corpus — 010, 106, 150 and 247, each in both zh-CN and
+        # zh-TW. 010's 「詩篇第二十七節」 belongs to Psalm 37 — the
+        # paragraph names it three sentences earlier — and 27 is the
+        # VERSE quoted right after, so the old infix-only guard let
+        # "Psalms 27" through. 247's 「啟示錄12節」 has its chapter (19)
+        # three words earlier and is really Revelation 19:12; no
+        # same-sentence reach-back exists yet to recover it, so nothing
+        # is filed for that clause, but 247 loses no Revelation 12
+        # entry — two other, chapter-marked citations of it survive
+        # elsewhere in the same file. 106 and 150's 「但第11/30節」 (但 =
+        # "but", read as Daniel) never reached this guard either way:
+        # the single-CJK-character abbreviation rule below already
+        # refuses them for lack of a verse or 章.
+        if not m.group("chmark"):
             ch_end = m.end("ch") if m.group("ch") else m.end("chcn")
             if (text[ch_end:ch_end + 1] in ("节", "節")
                     and len(CANON.get(canon, {1: 0})) > 1):

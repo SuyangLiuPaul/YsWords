@@ -7339,23 +7339,73 @@ has never seen this repo.
       judgement call I'm not making here — flagging it so "four
       copies" isn't quietly wrong if someone later folds this item in.
 
-- [ ] **At a word boundary, a chapter number followed by 节/節 is still
-      read as the chapter — 7 sites, 2 of them wrong in the shipped
-      index.** 016's infix form is refused as of 2026-08-25, but the
-      boundary form is unchanged because those entries ship today and
-      each needs the paragraph read before it is removed. The sites:
-      010 「诗篇第二十七节」 → `Psalms 27`, but the paragraph is
-      expounding Psalm 37 (which the sermon does reach) and 27 is the
-      VERSE; 247 「然后在第19章，启示录12节」 → `Revelation 12`, where
-      the chapter is stated three words earlier and the entry should be
-      Revelation 19:12. Both are in `refs.json` now. The other five —
-      106 and 150's 「但第11节」/「但第30节」 where 但 is the conjunction
-      "but" read as Daniel, and their zh-TW twins — are already refused
-      downstream (`Daniel 30` fails canon) and cost nothing.
+- [x] **At a word boundary, a chapter number followed by 节/節 is still
+      read as the chapter — DONE 2026-08-31, guard generalised, `Psalms
+      27` removed, `Revelation 19:12` deliberately not shipped.** Read
+      all 8 paragraphs first (not 7 — see correction below), then
+      dropped the `m.group("infix") is not None and` conjunct in
+      `scripts/extract_sermon_refs.py`'s 節/节-is-a-verse guard so it
+      fires on the ordinary boundary form too, not just mid-word infix
+      matches. Regenerated `refs.json` and diffed byte-for-byte against
+      the pre-fix file: the **entire corpus-wide effect is one key**,
+      `"Psalms 27"`, disappearing (it was held only by 010). Verified
+      against the bundled CUV text (`build-cn/assets/assets/cuv.json`):
+      Psalm 37:27 is "你当离恶行善，就可永远安居" and 37:29 is "义人必
+      承受地土，永居其上" — exact match to what 010's paragraph quotes,
+      and the paragraph is saturated with explicit 诗篇第三十七篇
+      references on both sides of the ambiguous line. 247 loses
+      nothing: `bySermon["247"]` still holds `Revelation 12` after the
+      fix, via two other 章-marked citations (lines 9 and 13 of
+      `zh-CN/247.txt`) that the guard doesn't touch.
 
-      Two entries is small, but the shape is not: the fix is the same
-      infix refusal generalised, plus a way to reach back for a chapter
-      stated earlier in the sentence. Read all 7 paragraphs first.
+      **`Revelation 19:12` is NOT recovered.** The queue framed this as
+      "the fix is the same infix refusal generalised, plus a way to
+      reach back for a chapter stated earlier in the sentence" — I
+      shipped only the first half. A same-sentence reach-back (247's
+      「然后在第19章，启示录12节」 needs the bare 「第19章」 three words
+      earlier read as this citation's chapter) is a distinct parsing
+      feature with its own corpus-wide blast radius to measure, and the
+      acceptance criteria explicitly allowed shipping the refusal alone
+      "if you say so explicitly in the queue tick" — so noting it here.
+      Queued below as a follow-up rather than attempted in the same
+      iteration as a scripture-accuracy change.
+
+      **Correction to this entry's own count:** it said "7 sites"; the
+      actual figure, re-derived rather than copied, is **8 paragraphs**
+      — 010, 106, 150 and 247 each appear in *both* zh-CN and zh-TW
+      (247's zh-TW body spells 启示录 with the 啓 variant, which is why
+      a plain 啟示錄 grep undercounts it). This doesn't change which
+      entries ship: 106 and 150's four 但-as-Daniel paragraphs (CN+TW
+      each) were already producing nothing, just not for the reason
+      this entry states. It says both are "refused downstream (`Daniel
+      30` fails canon)" — true for 150 (`但第30节`: Daniel only has 12
+      chapters), but 106's `但第11节` would resolve to `Daniel 11`,
+      which IS a valid chapter and does NOT fail canon. What actually
+      refuses both is a different, earlier guard: single-CJK-character
+      abbreviations (但, 约, 传, …) are refused outright unless they
+      carry a verse or a 章 mark, which neither has. Same shipped
+      result, different mechanism — worth being precise about since a
+      future edit to the canon-range check could otherwise silently
+      re-admit 106.
+
+      Added `test/sermon_ref_extraction_test.dart`: "refuses the
+      boundary form too, not just the infix one" (010 + 247's real
+      sentences), confirmed red before the fix, green after.
+      `flutter analyze` clean, full suite green (1327 tests). A
+      subagent independently re-derived every claim above from the
+      files rather than trusting this text, including the CUV
+      cross-check, and found only the 7-vs-8 count wrong.
+
+- [ ] **Same-sentence chapter reach-back for 247's `Revelation 19:12`.**
+      「然后在第19章，启示录12节」 states its chapter (19) three words
+      before the book name repeats with a verse-marked number. Recovering
+      it needs a way to carry a bare 「第N章」 forward to the next 书名+
+      节 in the same sentence — a distinct feature from the refusal
+      above, not a corollary of it. Before shipping: measure how many
+      OTHER corpus sites a same-sentence reach-back would touch and
+      confirm every one of them reads correctly; a reach-back that is
+      right for 247 and wrong for one other sermon is a worse trade than
+      the current silence. Not attempted 2026-08-31 for that reason.
 
 - [ ] **The 2026-08-25 boundary relaxation is not additive *by
       construction*, though it is additive on this corpus.**
