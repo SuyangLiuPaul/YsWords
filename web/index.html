@@ -70,6 +70,21 @@
        not itself. -->
   <link rel="canonical" href="https://yahwehword.com/">
 
+  <!-- Google Search Console ownership, for the URL-prefix property
+       `https://yahwehword.com/` (added 2026-08-31 at the user's request:
+       「你帮我做标签吧」). Google re-checks this periodically, so it is
+       PERMANENT — removing it un-verifies the property and silently
+       stops sitemap processing and every Search Console report.
+       Not a secret: the whole mechanism works by serving this token
+       publicly in the homepage HTML, which is what proves control of
+       the site.
+       The token is bound to that one property. A `Domain` property
+       (DNS TXT on Cloudflare) would additionally cover www and http,
+       and remains the better long-term shape if this ever needs
+       widening — but it is not a replacement for this line while the
+       URL-prefix property exists. -->
+  <meta name="google-site-verification" content="uogIMG00dJvAMYCfzGJ6wSnpWCl2TtbMhJp92b5DUC8" />
+
   <!-- Open Graph. `og:image` must be ABSOLUTE — WeChat and several
        other unfurlers do not resolve a relative one and simply show no
        picture. Regenerate the card with `python3 tools/make_og_card.py`

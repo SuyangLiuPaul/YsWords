@@ -60,6 +60,24 @@ void main() {
               'the pair');
     });
 
+    test('keeps the Search Console ownership token', () {
+      // Removing this un-verifies the property. Google re-checks the
+      // token periodically, so the failure is DELAYED and silent:
+      // sitemap processing stops, every report empties, and the app
+      // itself is completely unaffected — there is no symptom to notice
+      // until someone opens Search Console and finds the property gone.
+      // It reads like a stray tag someone added once, which is exactly
+      // why it needs pinning rather than a comment.
+      final m = RegExp(r'<meta name="google-site-verification" '
+              r'content="([^"]+)"')
+          .firstMatch(markup);
+      expect(m, isNotNull,
+          reason: 'the google-site-verification meta is gone — the '
+              'https://yahwehword.com/ property will silently '
+              'un-verify at the next re-check');
+      expect(m!.group(1), isNotEmpty);
+    });
+
     test('og:image and twitter:image are ABSOLUTE urls', () {
       // The one that bites in practice. A relative og:image renders fine
       // in every validator that resolves it against the page, and shows
