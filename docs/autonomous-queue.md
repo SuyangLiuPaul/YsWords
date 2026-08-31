@@ -302,6 +302,79 @@ reported. Work these top-down before P2.
       widget-build/layout and dart2js-codegen possibilities named above
       remain open but untried.
 
+      **2026-09-01 — did step (a); ran clean, but the result is weaker
+      than "no throw" and must not be read that way.** The headless
+      harness built last pass (`tools/boot_trap_headless_repro.mjs`) was
+      untracked with two known defects; both fixed and it is now
+      committed. Fix 1: console capture was filtering at capture time
+      (kept only `error`/`warning`-typed events or text matching a
+      regex), which would have discarded the exact `[UrlSync]`/
+      `Bootstrap failed` lines this run existed to catch — now captures
+      every `Runtime.consoleAPICalled` event regardless of type. Fix 2:
+      shapes with a hash never actually rebooted the app — a same-origin
+      navigation differing only in the fragment is a same-document
+      navigation in Chrome (no reload, no `main()`), so the planted
+      localStorage was never read at boot for exactly the two shapes
+      that carry a hash. Now bounces through `about:blank` first to
+      force a real document load, confirmed per-shape by a changed
+      `performance.timeOrigin` before/after (all three runs showed
+      `true`). Also fixed a latent bug in the summary's throw-count
+      filter (`e.kind` never contains "onerror"/"unhandledrejection" —
+      those are `console.error` with the marker in `e.text`) and a
+      stale `~8s` comment that didn't match the actual 15000ms wait.
+
+      Ran against `https://yswords-dev.netlify.app` (confirmed serving
+      1.4.188 beforehand), all three shapes, well inside the 45s
+      mitigation timer. Raw result: **zero** CDP
+      `Runtime.exceptionThrown`, **zero** `BOOT_TRAP window.onerror`/
+      `unhandledrejection`, 14 console events per shape (all ordinary
+      Firebase/TrustedTypes/CloudAuthService init logs, no `[UrlSync]`
+      or `Bootstrap failed` text), and final state
+      `glassPanePresent:true` / `bootSplashPresent:false` with a normal
+      post-boot `localStorage` (`profile.list`, `profile.guest.*`
+      present) for all three shapes — none stuck or parked.
+
+      **Do not read that as "these three shapes don't throw" — a
+      refuter call (2026-09-01) found why the harness can't tell, and
+      both holes were verified by reading the code, not taken on
+      faith.** (1) `debugPrint` is globally silenced in release web —
+      `lib/main.dart:55-56`, an intentional 2026-06-11 info-disclosure
+      fix — contradicting this loop's own earlier claim that
+      "debugPrint is NOT stripped in release web". Fix 1 above (the
+      console-filter widening) cannot surface `[UrlSync]`/`Bootstrap
+      failed` text because that text is never emitted at all on this
+      build, not merely filtered out — recorded as trap #57 in
+      `PROJECT_STATE.md` so the next diagnostic doesn't repeat the
+      premise. (2) `_applyHashToState` is called from inside its own
+      local `try`/`catch` (`url_sync_service_web.dart:165-173`,
+      `urlSyncInit`) that swallows whatever it throws and reports only
+      via that now-silent `debugPrint` — so a genuine `Invalid argument:
+      0` thrown inside it would produce no CDP exception, no
+      `window.onerror`, no `unhandledrejection`, and no console line;
+      it would look exactly like the clean run this pass got. The
+      harness, even after both fixes, cannot currently distinguish "ran
+      clean" from "threw and the local catch quietly absorbed it".
+      Separately, read `_applyHashToState` this pass (`:241-320`): shape
+      C's chapter (`999`) fails the `hasVerse` check at `:282` for
+      *any* version, so it returns at `:285` and never reaches
+      `mp.setCurrentChapter` (`:288`) or the verse-jump index math
+      (`chapterVerses[relIdx]`, `:307-311`) — the array/index-shaped
+      code closest to the `Invalid argument: 0` symptom. None of the
+      three shapes tried exercises those lines.
+      **Net: item stays open.** The three shapes tried did not produce
+      an uncaught exception or a stuck boot in headless Chrome against
+      dev within the pre-mitigation window — that raw fact stands — but
+      this neither clears `_applyHashToState`/`_parseHash` as the throw
+      site nor rules out a caught-and-swallowed throw on the exact path
+      tested. The harness needs a different oracle than console/CDP
+      capture (e.g. reading the resulting book/chapter/version off
+      rendered state via `Runtime.evaluate`, not off whether anything
+      was printed) before another run here is worth trusting, and a
+      shape that actually reaches `setCurrentChapter`/`relIdx` (a stale
+      chapter that exists in the target version but a verse that
+      doesn't, rather than a stale chapter that doesn't exist at all)
+      is still untried.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still

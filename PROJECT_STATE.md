@@ -1542,6 +1542,20 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     all 82 with no false positives and did not need to know what the
     residue looks like. **When a count grows on each adversarial round,
     the detector is the defect, not the count.**
+57. **`debugPrint` is globally silenced in release web** — `lib/main.dart:55-56`
+    (2026-06-11, an intentional info-disclosure fix) reassigns it to a
+    no-op whenever `kReleaseMode`. Any diagnostic that greps browser
+    console output for a `debugPrint('[Something] ... failed: $e')` line
+    on a deployed dev/qat/prod origin will see nothing, and that absence
+    means nothing — it is not evidence the catch block never fired, only
+    that its print never ran. Found 2026-09-01 chasing the boot-crash
+    item (below), where it also meant `url_sync_service_web.dart`'s own
+    local `try`/`catch` around `_applyHashToState` (`:165-173`) can
+    swallow the exact `Invalid argument: 0` this loop is hunting with
+    zero surviving signal — no console line, no CDP
+    `Runtime.exceptionThrown`, no `window.onerror`. A repro harness
+    needs a different oracle (final DOM/state check, not console
+    capture) to see a throw that a local catch already absorbed.
 
 ## Standing rules from the user
 
