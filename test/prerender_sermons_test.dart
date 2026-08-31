@@ -396,11 +396,53 @@ void main() {
         expect(l.seg, l.seg.toLowerCase());
         expect(langPath(l), '/sermons/${l.seg}/');
         expect(topicPath(l, 'Baptism'), endsWith('/'));
-        // Sermon ids are NOT lowercased — `EC019` is the id the app and
-        // the asset filenames use, and rewriting it here would make the
-        // url disagree with `?sermon=`.
-        expect(sermonPath(l, 'EC019'), '/sermons/${l.seg}/EC019/');
       }
+    });
+
+    test('every generated path is lowercase, because Netlify 301s if not',
+        () {
+      // Found on prod, 2026-09-01, not by any local check:
+      // /sermons/en/EC019/ answered 301 -> /sermons/en/ec019/ -> 200.
+      // 22 of the 289 ids carry uppercase, so 66 pages shipped with a
+      // <link rel="canonical"> naming a url that redirects — which is a
+      // standard reason for Google to drop a page — plus hreflang
+      // alternates and sitemap entries doing the same.
+      final metas = loadIndex(File('assets/sermons/index.json'));
+      final upper = metas.where((m) => m.id != m.id.toLowerCase()).toList();
+      expect(upper, isNotEmpty,
+          reason: 'if no id has uppercase any more this test proves '
+              'nothing — check whether the ids were renamed');
+      for (final l in sermonLangs) {
+        for (final m in metas) {
+          final p = sermonPath(l, m.id);
+          expect(p, p.toLowerCase(), reason: 'sermon ${m.id} in ${l.seg}');
+        }
+      }
+    });
+
+    test('lower-casing an id cannot merge two sermons into one page', () {
+      final metas = loadIndex(File('assets/sermons/index.json'));
+      final seen = <String, String>{};
+      for (final m in metas) {
+        final p = sermonPath(sermonLangs.first, m.id);
+        final clash = seen[p];
+        expect(clash, isNull,
+            reason: 'sermons $clash and ${m.id} both resolve to $p — one '
+                'would silently overwrite the other');
+        seen[p] = m.id;
+      }
+    });
+
+    test('the app link keeps the real id, which is matched case-sensitively',
+        () {
+      // The path is lowercased; `?sermon=` must NOT be. main.dart
+      // compares it against `c.id` from index.json with ==.
+      expect(appLink('EC019'), endsWith('?sermon=EC019'));
+      expect(sermonPath(sermonLangs.first, 'EC019'), '/sermons/en/ec019/');
+      final main = File('lib/main.dart').readAsStringSync();
+      expect(main, contains('c.id == sermonId'),
+          reason: 'if the app stopped comparing ids exactly, this '
+              'asymmetry needs rechecking');
     });
   });
 

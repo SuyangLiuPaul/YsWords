@@ -275,7 +275,26 @@ const sermonsRoot = '/sermons/';
 String langPath(SermonLang l) => '/sermons/${l.seg}/';
 String topicPath(SermonLang l, String topic) =>
     '/sermons/${l.seg}/series/${topicSlug(topic)}/';
-String sermonPath(SermonLang l, String id) => '/sermons/${l.seg}/$id/';
+/// Note the `toLowerCase()`. Measured on prod 2026-09-01:
+/// `/sermons/en/EC019/` answered **301** to `/sermons/en/ec019/`, which
+/// then answered 200 — Netlify lower-cases the path. 22 of the 289 ids
+/// carry uppercase (`EC003`, `C178`, `CP70`, `M5` …), so 66 pages were
+/// affected, and the damage was not the redirect itself:
+///
+///   * each page's own `<link rel="canonical">` named the uppercase
+///     form, i.e. a url that redirects — a canonical pointing at a
+///     redirect is a standard reason for Google to drop the page;
+///   * its hreflang alternates named it too, in all three languages;
+///   * and the sitemaps listed it, so every one of those urls would
+///     have been submitted as a 301.
+///
+/// Lower-casing here fixes all four at once, because the generated file
+/// path comes from this same function. The id itself is NOT lower-cased
+/// anywhere else: `EC019` is what `assets/sermons/<lang>/EC019.txt` is
+/// called and what [appLink] must pass to `?sermon=`, which is a query
+/// parameter and is matched case-sensitively against the index.
+String sermonPath(SermonLang l, String id) =>
+    '/sermons/${l.seg}/${id.toLowerCase()}/';
 
 /// The app's own deep link for a sermon.
 ///
