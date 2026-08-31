@@ -7293,7 +7293,7 @@ has never seen this repo.
       5,548 existing chapter-mark matches — a large blast radius to buy
       two sites that already render correctly.
 
-- [ ] **Two non-glyph spellings the alias table misses: 約拿記/约拿记
+- [x] **Two non-glyph spellings the alias table misses: 約拿記/约拿记
       (Jonah written with 記, 6 sites, sermon 069, including 「約拿記第2
       章」) and 哥罗西书 (Colossians with 哥 for 歌, EC013).** Found
       2026-08-26 by the one-substitution scan, and confirmed by the
@@ -7304,6 +7304,21 @@ has never seen this repo.
       Cheap, and it belongs in `_zhAliasToEn` where the reader gets it
       too; queued rather than folded in so the +57 measurement stayed
       clean.
+      **2026-08-31: done.** Added both pairs to `_zhAliasToEn`
+      (`lib/constants/book_name_mapping.dart`) — also added Traditional
+      哥羅西書 for symmetry with every other entry in the table, even
+      though it has zero corpus sites, rather than leave the table's
+      one asymmetric row. `_zhAliasToEn` alone was NOT sufficient:
+      `passageRefPattern` (`lib/utils/passage_localizer.dart`) is a
+      second, hand-maintained alternation of the same 66 book names —
+      adding the aliases there too was needed before either spelling
+      became tappable in a sermon body, not just resolvable once typed.
+      Confirmed 6 sites for 約拿記/约拿记 (sermon 069 only) and 1 for
+      哥罗西书 (EC013 only) by direct grep, and confirmed
+      `python3 scripts/extract_sermon_refs.py` regenerates `refs.json`
+      byte-identical to the shipped file — the predicted +0 −0 held.
+      New queue note below at the `bookNameToEnglish` entry: the copy
+      count there should be five, not four, once the regex counts.
 
 - [ ] **`bookNameToEnglish` in `lib/constants/book_names.dart` is a
       FOURTH copy of the 130 Chinese spellings.** Found by the refuter
@@ -7315,6 +7330,14 @@ has never seen this repo.
       glyph never reaches it. Worth folding into the same table anyway,
       since "four copies, three of them right" is the state this week's
       work has been paying off.
+      **2026-08-31 note:** the queue :7296 item (约拿记/哥罗西书) found a
+      fifth candidate: `passageRefPattern`'s Chinese branch in
+      `lib/utils/passage_localizer.dart` — a hand-written alternation
+      of the same 66 book names, not a map, so `_zhAliasToEn` alone did
+      not make either new spelling tappable in a sermon body. Whether
+      an alternation "counts" as a copy the way a map does is a
+      judgement call I'm not making here — flagging it so "four
+      copies" isn't quietly wrong if someone later folds this item in.
 
 - [ ] **At a word boundary, a chapter number followed by 节/節 is still
       read as the chapter — 7 sites, 2 of them wrong in the shipped

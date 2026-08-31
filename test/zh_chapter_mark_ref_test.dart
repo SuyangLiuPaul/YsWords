@@ -257,6 +257,39 @@ void main() {
     });
   });
 
+  // Queue :7296 — two spellings the alias table missed. 約拿記/约拿记
+  // (Jonah written with 記 instead of 書) and 哥罗西书 (Colossians with
+  // 哥 instead of 歌) are both unambiguous — there is no other 約拿 or
+  // 哥羅西 book — so this is a table gap, not a judgement call. Fixing
+  // only `_zhAliasToEn` is not enough: `passageRefPattern`'s Chinese
+  // branch is a separate hand-written alternation, so a spelling can
+  // resolve via `parseReference` and still never be matched in text.
+  group('約拿記 / 哥罗西书 aliases (queue :7296)', () {
+    test('約拿記/约拿记 resolves like 約拿書/约拿书', () {
+      expect(parseReference('約拿記第2章')!.englishBook, 'Jonah');
+      expect(parseReference('约拿记第2章')!.englishBook, 'Jonah');
+    });
+
+    test('哥罗西书/哥羅西書 resolves like 歌罗西书/歌羅西書', () {
+      expect(parseReference('哥罗西书1章19節')!.englishBook, 'Colossians');
+      expect(parseReference('哥羅西書1章19節')!.englishBook, 'Colossians');
+    });
+
+    test('passageRefPattern matches the corpus sentence from sermon 069', () {
+      const s = '正如我们在约拿记第2章那美丽的祷告中所看到的。';
+      final m = passageRefPattern.firstMatch(s);
+      expect(m, isNotNull);
+      expect(m!.group(0), '约拿记第2章');
+    });
+
+    test('passageRefPattern matches the corpus sentence from EC013', () {
+      const s = '哥罗西书1章19節都讲到神的整体的封城都是住在基督里面.';
+      final m = passageRefPattern.firstMatch(s);
+      expect(m, isNotNull);
+      expect(m!.group(0), '哥罗西书1章19節');
+    });
+  });
+
   // The measurement that motivated the change, kept executable so a
   // later regex edit cannot quietly undo it.
   group('the Chinese corpus', () {

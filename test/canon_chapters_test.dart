@@ -170,18 +170,17 @@ void main() {
     // of a transcript that actually reads "1 Corinthians 5:21") — a
     // blanket null-check would flag all of those as "new" on every run
     // and prove nothing about this guard specifically.
-    expect(totalMatches, 12498,
+    expect(totalMatches, 12505,
         reason: 'total passageRefPattern matches across all 867 '
-            'transcripts — pins the corpus this sweep covers. 12502 '
-            'before the queue-7164 fix: 4 fewer because that fix drops '
-            'caseSensitive: false, which bought exactly 4 false matches '
-            '("am" read as the Amos abbreviation, out of canon '
-            'regardless) and nothing genuine.');
-    expect(totalParsed, 12464,
-        reason: '12473 before the out-of-canon guard, minus the 9 '
-            'out-of-canon ones. Unaffected by the queue-7164 fix: all 4 '
-            'matches it removed were already refused by this guard, so '
-            'none of them was ever counted here.');
+            'transcripts — pins the corpus this sweep covers. 12498 '
+            'before queue-7296 (約拿記/约拿记 + 哥罗西书 added to the alias '
+            'table and the pattern): 7 more matches, 6 for 約拿記/约拿记 in '
+            'sermon 069 and 1 for 哥罗西书 in EC013, all previously '
+            'unmatched prose.');
+    expect(totalParsed, 12471,
+        reason: '12464 before queue-7296: +7, matching the 7 new '
+            'matches above — Jonah 2 and Colossians 1:19 are both '
+            'in-canon, so every new match parses.');
   });
 
   test(
