@@ -41,10 +41,26 @@ jobs:
       # Flutter Linux desktop toolchain deps (GTK3 + ninja/clang/cmake).
       # ubuntu-latest already ships a recent libstdc++; these are the
       # pieces `flutter build linux` needs that aren't preinstalled.
+      #
+      # 2026-09-01: gstreamer added. `audioplayers` came BACK on
+      # 2026-08-09 with Songs v2 (it had been dropped in v1.3.19 along
+      # with the 朗读 feature), and audioplayers_linux's CMakeLists does a
+      # pkg_check_modules on gstreamer-1.0. This list predated that, so
+      # the first tag cut after Songs v2 — v1.4.190, 501 commits after
+      # v1.4.6 — was also the first Linux build to fail:
+      #
+      #   CMake Error ... The following required packages were not found:
+      #     - gstreamer-1.0
+      #
+      # Nothing earlier could have caught it: this workflow runs only on
+      # a `v*` tag, and no tag was pushed between 2026-08-04 and the
+      # dependency landing five days later. A platform whose build is
+      # only exercised at release time goes stale silently.
       - name: Install Linux build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
