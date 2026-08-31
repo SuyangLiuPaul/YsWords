@@ -7204,17 +7204,69 @@ has never seen this repo.
       `chapterExistsInCanon` checks are now redundant but left in place
       as defence in depth.
 
-- [ ] **Follow-up queued by the fix above: `passageRefPattern` can match
-      across a paragraph break.** `assets/sermons/en/134.txt` has "...in
+- [x] **FIXED 2026-08-31 — `passageRefPattern`'s English tail and
+      Chinese digit fallback no longer admit a newline; a corpus-wide
+      case-sensitivity defect found alongside it is fixed too.**
+      Original finding: `assets/sermons/en/134.txt` has "...in
       Numbers." followed by a blank line then "400 prophets were
-      consulted" — the pattern's `\s*` after the book name admits the
+      consulted" — the pattern's `\s*` after the book name admitted the
       newline-newline gap, producing a single match "numbers.\n\n400"
-      that resolves to Numbers 400 (caught here only because 400 is
-      out-of-canon for Numbers, which has 36 chapters). A same-shaped
-      match landing on an IN-canon chapter elsewhere in the corpus would
-      not be caught by anything and would render as a live tap target
-      built from two unrelated sentences. Not swept for or fixed in this
-      iteration — needs its own measurement.
+      that resolves to Numbers 400 (caught only because 400 is
+      out-of-canon for Numbers, which has 36 chapters).
+
+      **The "live tap target" framing was checked and does not hold for
+      the sermon reader specifically**: `sermon_detail_page.dart:844`
+      splits the body on `\n\s*\n` *before* handing text to
+      `_buildSpans`/`_refPattern.allMatches` one paragraph at a time, so
+      a blank-line-crossing match is structurally unreachable there —
+      confirmed by reading the call site, not assumed. The other four
+      `localizePassage` call sites all take single-line `passage`
+      strings from `index.json`, so none of them was reachable either.
+      Fixed anyway, because `passageRefPattern` is a shared utility and
+      should not depend on every caller happening to pre-split its
+      input — the next caller might not.
+
+      **Fix**: both tails' `\s*` became `[^\S\n]*`
+      (`lib/utils/passage_localizer.dart:36,87`), matching the join
+      between book name and `zhChapterMarkTailPattern`, which already
+      used `[^\S\n]*` for exactly this reason. Corpus-wide sweep (all
+      867 transcripts): exactly 1 English-branch match contained a
+      newline (134's) and 0 Chinese-digit-branch matches did, so the
+      fix changes exactly the one known site and cannot break a
+      line-wrapped citation — the transcripts hold each paragraph on
+      one long line (134's longest paragraph is 1,605 chars over 65
+      lines; they do not hard-wrap).
+
+      **Second defect found in the same sweep and fixed in the same
+      commit**: `passageRefPattern` was `caseSensitive: false`. Across
+      all 867 transcripts that bought exactly 4 matches, all 4 false:
+      "I am 100" / "I am 21, 23" (`369.txt` ×2, `CP70.txt` ×1, ages not
+      verses) matching the Amos abbreviation "Am", plus 134's own
+      "numbers.\n\n400" (which also needed lower-case "numbers" to
+      match the book name at all — the newline and case fixes overlap
+      on that one site). Zero legitimate match in the corpus depends on
+      case-insensitivity, and `index.json`'s 165 `passage` fields are
+      all Titlecase, so `caseSensitive: false` was dropped outright
+      rather than word-boundary patching the short abbreviations. All 4
+      were already inert — `parseReference` itself already refused them
+      (its internal `chapterExistsInCanon` check inside `_buildRef`
+      returns null for Amos 100/21 and Numbers 400 before the string
+      ever reaches a canon check at any call site), a distinction a
+      refuter caught after an earlier draft of this write-up
+      misattributed the refusal to `sermon_detail_page.dart`'s own
+      `_buildSpans` check, which never runs for these because `parsed
+      == null` short-circuits it first. So this closes the match
+      itself, not a live defect — pinned by new tests in
+      `test/zh_chapter_mark_ref_test.dart` (newline refusal for both
+      tails, "am"/"Am" case pin) and by updating
+      `test/canon_chapters_test.dart`'s corpus-wide match-count pin
+      (12,502 → 12,498; `totalParsed` unchanged at 12,464 since all 4
+      removed matches were already unparsed). `refs.json` untouched —
+      it is built by `scripts/extract_sermon_refs.py`'s own `REF_RE`, a
+      different pattern; that pattern's own newline exposure is the
+      separate open entry below ("The list carry's `\s*` crosses a
+      newline..."), left alone. `flutter analyze` clean, full suite
+      green.
 
 - [ ] **一一九 is 119 read digit-by-digit, and neither implementation
       admits it — 331's 「诗篇一一九篇103节」 resolves to nothing.**

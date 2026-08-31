@@ -151,6 +151,58 @@ void main() {
           'Mt 5:27-30');
     });
 
+    // Measured 2026-08-31 (docs/autonomous-queue.md ~7164). The
+    // book-name-to-chapter-mark join already used [^\S\n] (the "does
+    // not reach across a paragraph break" case above); the English
+    // digit tail and the Chinese digit fallback did not, and sermon
+    // 134 shows why that is live: "...quoting those numbers." / blank
+    // line / "400 prophets were consulted" matched as a single
+    // reference "numbers.\n\n400" (Numbers 400) — caught only because
+    // 400 is out of canon for Numbers (36 chapters). A same-shaped
+    // join onto an in-canon chapter would not have been caught by
+    // anything. `sermon_detail_page.dart` splits on `\n\s*\n` before
+    // matching, so this specific case was never reachable through the
+    // sermon reader — but the pattern itself is used elsewhere
+    // (`localizePassage`) and should not depend on a caller happening
+    // to pre-split its input.
+    test('the English digit tail does not reach across a paragraph break',
+        () {
+      // Capitalized, so this isolates the newline fix from the
+      // separate case-sensitivity fix below — sermon 134's actual
+      // text is lower-case "numbers." and is refused for that reason
+      // alone now, which the case-sensitivity test covers.
+      expect(
+          passageRefPattern
+              .firstMatch('quoting those Numbers.\n\n400 prophets'),
+          isNull);
+      expect(passageRefPattern.firstMatch('Numbers 4:16')?.group(0),
+          'Numbers 4:16');
+    });
+
+    test(
+        'the Chinese digit fallback does not reach across a paragraph '
+        'break', () {
+      expect(passageRefPattern.firstMatch('詩篇\n\n23:1'), isNull);
+      expect(
+          passageRefPattern.firstMatch('詩篇 23:1')?.group(0), '詩篇 23:1');
+    });
+
+    // The only effect of matching case-insensitively, swept over all
+    // 867 transcripts: 4 false matches where lower-case "am" ("I am
+    // 100", "I am 21, 23" — self-reported ages) is read as the Amos
+    // abbreviation "Am". No real reference in the corpus, and no
+    // `index.json` `passage` field, is anything but Titlecase, so
+    // nothing genuine depends on case-insensitivity. All four sites
+    // were already inert before this fix too — `parseReference`
+    // refuses Amos 100/21 internally (Amos has 9 chapters) — so this
+    // pins that the match itself is gone, not just its canon check.
+    test('lower-case "am" is not read as the Amos abbreviation', () {
+      expect(passageRefPattern.firstMatch('I am 100 years old'), isNull);
+      expect(passageRefPattern.firstMatch('I am 21, 23'), isNull);
+      // The real abbreviation, properly cased, still matches.
+      expect(passageRefPattern.firstMatch('Am 3:7')?.group(0), 'Am 3:7');
+    });
+
     // Alternation is ordered. With the digit branch first, `\s*\d+`
     // wins on 「馬太福音3章15節」, the match ends at 「馬太福音3」 and the
     // verse behind it is prose — the tap landed on the chapter and lost

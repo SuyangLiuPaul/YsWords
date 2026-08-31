@@ -25,7 +25,15 @@ final RegExp passageRefPattern = RegExp(
   r'2Chr|Neh|Est|Ps|Prv|Prov|Eccl|Isa|Jer|Lam|Ezek|Eze|Dan|Hos|Jl|'
   r'Am|Obad|Jonah|Mic|Nah|Hab|Zeph|Hag|Zech|Mal|Matt|Mt|Mk|Lk|Jn|'
   r'Rom|Cor|Gal|Eph|Phil|Col|Thess|Tim|Heb|Pet|Rev)'
-  r'\.?\s*\d+(?:\s*[:.]\s*\d+(?:\s*[-–]\s*\d+)?)?)'
+  // [^\S\n], not \s: a bare \s* here crosses a paragraph break (two
+  // blank-line-separated sentences joined by nothing) and can knit an
+  // unrelated number after the gap into the reference, e.g. sermon
+  // 134's "...quoting those numbers." / blank line / "400 prophets
+  // were consulted" reading as "Numbers 400". Caught there only
+  // because 400 is out of canon for Numbers; a same-shaped join onto
+  // an in-canon chapter elsewhere would not be caught by anything.
+  // Same fix, same reasoning as `zhChapterMarkTailPattern`.
+  r'\.?[^\S\n]*\d+(?:[^\S\n]*[:.][^\S\n]*\d+(?:[^\S\n]*[-–][^\S\n]*\d+)?)?)'
   // ── Chinese (full Simplified + Traditional book names) ──────
   r'|(?:'
   // Old Testament — Simplified
@@ -74,9 +82,25 @@ final RegExp passageRefPattern = RegExp(
   // and lost the verse. 674 matches truncated that way, 260 of them
   // dropping a cited verse.
   r'(?:' '$zhChapterMarkTailPattern'
-  r'|\s*\d+(?:\s*[:：.]\s*\d+(?:\s*[-–]\s*\d+)?)?'
+  // [^\S\n], not \s, for the same paragraph-break reason as the
+  // English tail above.
+  r'|[^\S\n]*\d+(?:[^\S\n]*[:：.][^\S\n]*\d+(?:[^\S\n]*[-–][^\S\n]*\d+)?)?'
   r')',
-  caseSensitive: false,
+  // Case-sensitive: the only effect of case-insensitivity, measured
+  // over all 867 transcripts, is 4 false matches where "am" (lower
+  // case) is read as the Amos abbreviation "Am" — "I am 100" and
+  // "I am 21, 23" (self-reported ages, not verses) plus one further
+  // corpus site enabled only in combination with the paragraph-break
+  // gap above (sermon 134's "numbers." / "400" join, which needs
+  // lower-case "numbers" to match the book name at all). All four are
+  // inert today because `parseReference` already refuses an
+  // out-of-canon chapter internally (Amos has 9 chapters, Numbers 36 —
+  // see `reference_parser.dart`'s `_buildRef`, which calls
+  // `chapterExistsInCanon` before returning) and every caller treats a
+  // null `parseReference` result as "not a real reference" — but
+  // nothing legitimate depends on matching case: every real reference
+  // in the corpus, and every `index.json` `passage` field, already
+  // spells the book name Titlecase.
 );
 
 /// True when [matched] is written in the Chinese chapter-mark grammar

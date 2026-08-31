@@ -170,11 +170,18 @@ void main() {
     // of a transcript that actually reads "1 Corinthians 5:21") — a
     // blanket null-check would flag all of those as "new" on every run
     // and prove nothing about this guard specifically.
-    expect(totalMatches, 12502,
+    expect(totalMatches, 12498,
         reason: 'total passageRefPattern matches across all 867 '
-            'transcripts — pins the corpus this sweep covers');
+            'transcripts — pins the corpus this sweep covers. 12502 '
+            'before the queue-7164 fix: 4 fewer because that fix drops '
+            'caseSensitive: false, which bought exactly 4 false matches '
+            '("am" read as the Amos abbreviation, out of canon '
+            'regardless) and nothing genuine.');
     expect(totalParsed, 12464,
-        reason: '12473 before this guard, minus the 9 out-of-canon ones');
+        reason: '12473 before the out-of-canon guard, minus the 9 '
+            'out-of-canon ones. Unaffected by the queue-7164 fix: all 4 '
+            'matches it removed were already refused by this guard, so '
+            'none of them was ever counted here.');
   });
 
   test(
