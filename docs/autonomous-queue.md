@@ -170,13 +170,22 @@ reported. Work these top-down before P2.
       in index.html.
       prod (1.4.173) is unaffected.
 
-      **PARTIAL 2026-08-31 — mitigation shipped (dev/qat), root cause
-      still unknown; this stays open.** "prod is unaffected" above is
-      now STALE in the direction of more urgency: prod has since shipped
-      past 1.4.173 and `yahwehword.com/version.json` returned **1.4.184**
-      as of this iteration (re-verified at commit time, not just quoted
-      from an earlier note) — the trap is live on the production origin,
-      aimed at the returning-old-version population from 2026-08-30.
+      **PARTIAL 2026-08-31 — mitigation now ON PROD, root cause still
+      unknown; this stays open.** "prod is unaffected" above is STALE in
+      the direction of more urgency: prod shipped past 1.4.173, so the
+      trap went live on the production origin, aimed at the
+      returning-old-version population from 2026-08-30.
+
+      **UPDATE, same day: the mitigation reached prod in v1.4.186**
+      (user: 「都push做了吧」). An earlier revision of this entry said it
+      was dev/qat-only; that is now wrong — all six sites carry it, and
+      prod no longer serves the defect unmitigated. What did NOT change
+      is the half that matters: **nobody knows why that three-key state
+      throws `Invalid argument: 0`.** The fix works around the SHAPE, it
+      does not explain the throw, so another stored-state shape could
+      reach the same crash. This entry stays open until the root cause
+      is found; the new boot-step breadcrumbs are what should make the
+      next mailed-in report diagnosable without a source-map rebuild.
       Did not chase the minified line. Shipped instead: (1) `_bootstrap`
       in `lib/main.dart` now tracks a named `step` through each awaited
       boot stage and includes it in both the on-screen error text and
