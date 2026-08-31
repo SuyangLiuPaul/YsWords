@@ -375,6 +375,87 @@ reported. Work these top-down before P2.
       doesn't, rather than a stale chapter that doesn't exist at all)
       is still untried.
 
+      **2026-09-01 — ran the `clamp(0, …)` sweep NEXT_TASK.md asked
+      for; the three "unguarded" candidates it named are actually all
+      guarded, and the wider sweep found nothing else. Item stays
+      open, no new lead.** The lead (`ArgumentError.value(0)` from
+      `x.clamp(lowerLimit, upperLimit)` when `lowerLimit >
+      upperLimit`, rendering as dart2js's `Invalid argument: 0`) is
+      real and still the best fit for the mailed-in string; commit
+      `2c32e1fd` fixed two genuine sites on it. But re-reading the
+      three sites this pass named as the sweep's continuation found
+      each already guarded, before this pass touched anything — a
+      correction to that pass's claim, not a fix of new code:
+      - `lib/utils/jump_to_reference.dart:172` — `(itemIdx - 1)
+        .clamp(0, verses.length - 1)` is directly preceded by
+        `if (verses.isEmpty) return null;` at `:171`, same `verses`
+        local, no reassignment or `await` between. The whole function
+        is additionally wrapped in `try { … } catch (_) { return
+        null; }`, so even a hypothetical throw here could not surface
+        as an uncaught error regardless of the guard.
+      - `lib/models/song_queue.dart:242` — `survivorsBefore.clamp(0,
+        rebuilt.length - 1)` is directly preceded by `if (rebuilt
+        .isEmpty) return rebuilt;` at `:232`, same `rebuilt` local.
+      - `lib/services/sermon_audio_service.dart:182` — `saved.$1
+        .clamp(0, parts.length - 1)` is directly preceded by
+        `if (!isConfigured || parts == null || parts.isEmpty)
+        return;` at `:165`. An `await MediaFocus.instance.claim(this)`
+        sits between the guard and the clamp (`:177`), so this one
+        got checked for a mutation-during-await race, not just static
+        order: `_index` (which `parts` is a reference into) is
+        assigned exactly once, in `load()`, behind
+        `if (_index != null) return;`, and neither `_index` nor its
+        value lists are mutated in place anywhere else in the file —
+        confirmed by reading every `_index` occurrence, not by
+        grepping for absence. `parts` cannot be emptied out from under
+        the local reference during that await.
+      Widened past the narrow grep per the brief: every `clamp(0,` hit
+      in `lib/` (23), every two-line-spread `.clamp(` call (2:
+      `family_tree_page.dart:746`, `floating_media_player.dart:174`),
+      and every `.clamp(<non-literal>,` with a non-zero lower bound
+      (6: `theme_accent.dart:50,52`, `word_distribution_table.dart
+      :322,342`, the `_ClampOffset` extension in
+      `floating_media_player.dart:261-268`). Every remaining hit's
+      upper bound is either a literal/const that can't invert, a
+      `.length`-shaped bound structurally ≥0, or explicitly guarded
+      inline (`_ClampOffset` does `maxX < minX ? minX : maxX` itself).
+      `family_tree_page.dart:746` (`raw.clamp(position
+      .minScrollExtent, position.maxScrollExtent)`) is NOT locally
+      guarded in app code, so it got a closer look: Flutter's own
+      `ScrollPosition.applyContentDimensions` asserts `minScrollExtent
+      <= maxScrollExtent`, and `RenderViewportBase.performLayout`
+      constructs them as `math.min(0.0, …)` / `math.max(0.0, …)` — the
+      invariant is structural, not conventional, so this is a
+      framework guarantee, not a gap.
+      A refuter pass (given all four claims above plus file:line
+      evidence, asked to find a hole) tried to break each and found
+      none, including re-deriving the ScrollMetrics guarantee from
+      the Flutter SDK source rather than taking it on faith.
+      `test/song_queue_test.dart` gained a `withPreference` group (3
+      tests, previously zero coverage of that method) that exercises
+      both branches of the `song_queue.dart:242` guard in behaviour,
+      not just in reading — including the boundary case
+      (`survivorsBefore == rebuilt.length`) that clamp actually has to
+      clamp, and the `rebuilt.isEmpty` short-circuit. The other two
+      sites did not get a live test: `captureCurrentVerseNum`'s guard
+      is trivial to state and the function's own catch-all makes a
+      regression there harmless by construction; `sermon_audio_service
+      .play()` calls a platform audio plugin that a prior comment in
+      this same codebase (`song_queue.dart:201-204`) already recorded
+      as hanging test runs rather than failing them.
+      **Net: the clamp family is now believed exhausted as a lead for
+      this item** — everything reachable in `lib/` either can't
+      invert or is caught before it can matter. The two open avenues
+      from the previous pass are unchanged by this one: (a) exercising
+      `_applyHashToState`/`_parseHash` with an oracle that can tell
+      "ran clean" from "threw and the local catch swallowed it" (the
+      harness gap the 2026-09-01 refuter found still stands — this
+      pass did not touch the browser harness at all, per NEXT_TASK
+      .md's explicit instruction not to spend the hour on another
+      browser run); (b) the untried shape where the target version's
+      chapter exists but the verse doesn't, reaching
+      `setCurrentChapter`/`relIdx`.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still

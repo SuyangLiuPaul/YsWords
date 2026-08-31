@@ -135,6 +135,62 @@ void main() {
     });
   });
 
+  group('withPreference', () {
+    // 2026-09-01: `withPreference`'s `index: survivorsBefore.clamp(0,
+    // rebuilt.length - 1)` (lib/models/song_queue.dart:242) was flagged
+    // by docs/autonomous-queue.md:110's clamp sweep as a possible site
+    // for the mailed-in "Invalid argument: 0" boot crash. Reading the
+    // code found it's already guarded two lines above
+    // (`if (rebuilt.isEmpty) return rebuilt;`), so `rebuilt.length - 1`
+    // can never go negative when the clamp actually runs — these tests
+    // exercise both branches to prove that in behaviour, not just in
+    // reading, since this file had no coverage of `withPreference` at
+    // all before this.
+    test('every song surviving the switch and the cursor at the end '
+        'clamps down to the new last index instead of throwing', () {
+      // Skip fallback to instrumental: only 'a' and 'c' have one, so the
+      // rebuilt queue is 2 long. Starting index 2 ('c') means all of
+      // items[0..1] are counted as survivorsBefore — 2 — which is
+      // exactly rebuilt.length, one past its last valid index.
+      final q = SongQueue.fromSongs(
+        [song('a', instrumental: 'ia'), song('b'), song('c', instrumental: 'ic')],
+        startIndex: 2,
+      );
+      final switched = q.withPreference(
+        TrackPreference.instrumental,
+        TrackFallback.skip,
+      );
+      expect(switched.length, 2);
+      expect(switched.index, 1,
+          reason: 'survivorsBefore (2) must clamp down to the new last '
+              'valid index (1), not throw');
+      expect(switched.current!.song.id, 'c');
+    });
+
+    test('switching to a preference nothing has returns an empty queue '
+        'without touching the clamp at all', () {
+      final q = SongQueue.fromSongs(
+        [song('a'), song('b')],
+        startIndex: 1,
+      );
+      final switched = q.withPreference(
+        TrackPreference.instrumental,
+        TrackFallback.skip,
+      );
+      expect(switched.isEmpty, isTrue,
+          reason: 'neither song has an instrumental track, so skip '
+              'fallback must empty the queue, returned before the '
+              'clamp line runs');
+      expect(switched.current, isNull);
+    });
+
+    test('an already-empty queue is returned as-is', () {
+      final q = SongQueue.fromSongs(const []);
+      expect(() => q.withPreference(TrackPreference.instrumental, TrackFallback.skip),
+          returnsNormally);
+    });
+  });
+
   group('shuffle', () {
     test('keeps the current track playing and puts it first', () {
       final q = SongQueue.fromSongs(
