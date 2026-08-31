@@ -41,6 +41,16 @@ const _crossYue = [
   'CincIrfTfDs',
 ];
 
+/// Which 在十字架下 episodes have a Mandarin recording YET.
+///
+/// The user is producing them one at a time and hands over a link when
+/// each is done: `01` on 2026-08-25, `02` on 2026-09-01. Add an id here
+/// only after confirming by YouTube oEmbed that its title carries BOTH
+/// the right ordinal and 普通话版 — the church's page layout is one row
+/// out for this series, which is the mistake `_meta.pairingEvidence`
+/// exists to prevent.
+const _crossWithMandarin = {'01', '02'};
+
 /// Not episodes, and must never be listed as one: these are the whole
 /// series in a single video. Putting either in the episode list makes a
 /// 10-part series look like an 11-part one.
@@ -105,14 +115,19 @@ void main() {
     // for the gap has not changed — "如果没有普通话就空着没问题" — so an
     // episode without a Mandarin recording must offer no Mandarin button
     // rather than quietly playing the Cantonese take under that label.
-    // As of 2026-08-25 exactly episode 01 has one.
+    //
+    // [_crossWithMandarin] is a deliberate ledger, not a derived value:
+    // the point of this test is that adding a Mandarin id is a decision
+    // someone made and checked (see `_meta.crossMandarin` — every id is
+    // verified by oEmbed before it is filed), so it should cost one
+    // explicit line here. Deriving the set from the data would make the
+    // test agree with whatever the file happens to say.
     final crossEpisodes = byId('cross').episodes;
-    expect(crossEpisodes.first.id, '01');
-    expect(crossEpisodes.first.tracks.map((t) => t.lang),
-        ['en', 'yue', 'cmn']);
-    for (final e in crossEpisodes.skip(1)) {
-      expect(e.trackFor('cmn'), isNull, reason: 'episode ${e.id}');
-      expect(e.tracks.map((t) => t.lang), ['en', 'yue'],
+    for (final e in crossEpisodes) {
+      final expected = _crossWithMandarin.contains(e.id)
+          ? ['en', 'yue', 'cmn']
+          : ['en', 'yue'];
+      expect(e.tracks.map((t) => t.lang), expected,
           reason: 'episode ${e.id}');
     }
     // 獨一真神 does have all three.

@@ -71,20 +71,31 @@ void main() {
       expect(e.trackForLocale('zh-Hant')?.lang, 'en');
     });
 
-    test('在十字架下 is mid-recording: ep 1 has Mandarin, the rest fall '
-        'to Cantonese', () {
-      // 2026-08-25: the user supplied the 普通话版 of episode 1 only and
-      // said they would make the rest. Coverage therefore differs
-      // BETWEEN EPISODES OF ONE SERIES — the first case in this file —
-      // so a Simplified reader must get Mandarin on episode 1 and
-      // Cantonese on episode 2 from the same series.
-      final eps = byId('cross').episodes;
-      expect(eps.first.trackFor('cmn')?.youtubeId, 'g-Wk0qbuAkE');
-      expect(eps.first.trackForLocale('zh-Hans')?.lang, 'cmn');
-      for (final e in eps.skip(1)) {
-        expect(e.trackFor('cmn'), isNull, reason: 'episode ${e.id}');
-        expect(e.trackForLocale('zh-Hans')?.lang, 'yue',
-            reason: 'episode ${e.id}');
+    test('在十字架下 is mid-recording: the finished episodes have Mandarin, '
+        'the rest fall to Cantonese', () {
+      // The user is recording the 普通话版 one episode at a time and hands
+      // over each link as it is done — episode 1 on 2026-08-25, episode 2
+      // on 2026-09-01, the rest still being made. Coverage therefore
+      // differs BETWEEN EPISODES OF ONE SERIES — the first case in this
+      // file — so a Simplified reader gets Mandarin on the finished ones
+      // and Cantonese on the rest, from the same series.
+      //
+      // The ids are spelled out rather than derived: filing a Mandarin
+      // recording under the wrong episode is invisible on screen (a
+      // Mandarin button that plays the wrong lesson), and this is where
+      // that would be caught.
+      const mandarin = {'01': 'g-Wk0qbuAkE', '02': '3qQu-vA8ZIU'};
+      for (final e in byId('cross').episodes) {
+        final id = mandarin[e.id];
+        if (id != null) {
+          expect(e.trackFor('cmn')?.youtubeId, id, reason: 'episode ${e.id}');
+          expect(e.trackForLocale('zh-Hans')?.lang, 'cmn',
+              reason: 'episode ${e.id}');
+        } else {
+          expect(e.trackFor('cmn'), isNull, reason: 'episode ${e.id}');
+          expect(e.trackForLocale('zh-Hans')?.lang, 'yue',
+              reason: 'episode ${e.id}');
+        }
       }
     });
 
