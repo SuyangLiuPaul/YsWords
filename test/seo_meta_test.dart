@@ -240,6 +240,38 @@ void main() {
     });
   });
 
+  group('the browser tab title', () {
+    test('the app sets one, so the engine cannot blank it', () {
+      // Found on live prod 2026-08-31: document.title was "" and the tab
+      // showed the bare hostname. Cause: GetMaterialApp had no `title`,
+      // and `WidgetsApp.title` defaults to '' — which `Title` hands to
+      // setApplicationSwitcherDescription, which on web IS
+      // `document.title`. index.html sets the name during boot and the
+      // engine wiped it a second later.
+      //
+      // Untestable from index.html alone, and invisible in any browser
+      // unless you happen to look at the tab, which is exactly why it
+      // survived: the app looks perfect while its title is empty.
+      final main = File('lib/main.dart')
+          .readAsStringSync()
+          .split('\n')
+          .where((l) => !l.trimLeft().startsWith('//'))
+          .join('\n');
+      final at = main.indexOf('GetMaterialApp(');
+      expect(at, greaterThan(0), reason: 'GetMaterialApp was renamed');
+      // Only the argument list, not the whole rest of the file.
+      final args = main.substring(at, at + 1200);
+      expect(args, contains('title:'),
+          reason: 'GetMaterialApp sets no title, so Flutter assigns the '
+              "empty default to document.title and the tab shows the "
+              'URL instead of the app name');
+      expect(args, contains("uiStrings['appName']"),
+          reason: 'the tab title must come from the same localized '
+              'source as every other place the name is printed, so it '
+              "stays one name in the reader's own language");
+    });
+  });
+
   group('no-JavaScript visitors', () {
     test('get real content instead of a splash frozen forever', () {
       final ns = RegExp(r'<noscript>([\s\S]*?)</noscript>').firstMatch(markup);

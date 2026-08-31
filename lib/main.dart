@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yswords/constants/build_flags.dart';
+import 'package:yswords/constants/ui_strings.dart' show uiStrings;
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/home_page.dart';
@@ -532,6 +533,26 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         );
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
+          // 2026-08-31: this was UNSET, and unset is not neutral on web.
+          // `WidgetsApp.title` defaults to '' and is handed to a `Title`
+          // widget, which calls setApplicationSwitcherDescription — on
+          // web that assigns `document.title`. So every load did this:
+          // <title>Yahweh's Words</title> parsed, the boot script in
+          // index.html replaced it with the reader's own name, and then
+          // the engine came up and blanked it. Verified on prod
+          // (v1.4.179, yahwehword.com): `document.title` was "" and the
+          // browser tab fell back to showing the bare hostname.
+          //
+          // Two things were broken by that one empty string. The tab
+          // stopped carrying the name the user asked it to carry
+          // (2026-08-30, "the reader's own language, name only") a
+          // second after boot. And Googlebot, which renders JavaScript
+          // and reads the resulting DOM, saw a titleless page — the one
+          // signal a site with no crawlable content still has.
+          //
+          // Same source as every other place that prints the name, so
+          // it stays localized and stays a single name, never the pair.
+          title: uiStrings['appName']?[settings.locale] ?? "Yahweh's Words",
           // 2026-06-28 (v1.3.111): graceful fallback for UNKNOWN named routes.
           // Diagnosed by source-map-deobfuscating a prod (v1.3.102) crash
           // report ("Null check operator used on a null value", Android web):
