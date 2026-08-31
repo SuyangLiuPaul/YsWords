@@ -65,9 +65,24 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.170** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.170** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.4.11** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.173** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.173** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn` | **1.4.173** | ⛔ never without explicit permission **in the current turn** |
+
+**Prod is current for the first time in three weeks** (2026-08-31, user:
+"Prod push"). It had sat on 1.4.11 since 2026-08-09 — 161 versions —
+which was the standing rule working as intended, but the gap stopped
+being harmless once `yahwehword.com` started resolving to it. The rule
+itself has NOT changed: the next prod deploy needs its own explicit
+instruction, and this one does not carry over.
+
+⚠️ **The prod site has a GitHub Push build hook that has failed on every
+push since 2026-08-09** — `Unable to access repository`, dozens of
+errored deploys. It is inert while broken, which is why nobody noticed,
+but if it ever starts working it publishes `main` straight to prod,
+bypassing both the version check and the bundle comparison in
+`verify_site`. It cannot be removed from here (the Netlify API rejects
+the write); do it in the site's UI.
 
 **`yahwehword.com` is live and points at `yswords` PROD** (apex is
 Netlify, `www` redirects to apex, NS on Cloudflare). So prod is not a
