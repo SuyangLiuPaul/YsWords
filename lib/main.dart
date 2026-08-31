@@ -197,11 +197,21 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     final mainProvider = context.read<MainProvider>();
     final appSettings = context.read<AppSettings>();
 
+    // 2026-08-31: named checkpoint for whichever awaited stage below is
+    // in flight when/if the catch block fires. A mailed-in "boot
+    // crashed" report used to arrive with nothing but the exception
+    // text — no way to tell whether ProfileService, restoreState, or
+    // FetchVerses was the one that threw, so every report needed a
+    // fresh source-map rebuild just to locate the failing line. Cheap
+    // enough to keep on every boot; only read when the catch fires.
+    var step = 'start';
     try {
       // Profiles must be initialised before MainProvider.restoreState
       // because that step reads highlights / notes / bookmarks under
       // the active profile's namespace. Same goes for ReadingPlanService
       // calls that fire while the home page builds.
+      step = 'ProfileService.init';
+      ErrorReporter.breadcrumb('boot:step', data: step);
       await ProfileService.instance.init();
       // Firebase auth is best-effort — falls through gracefully if
       // the user hasn't filled in lib/firebase_options.dart yet.
@@ -335,7 +345,11 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       // `<note:>` format that's NATIVELY in LEB + biblexg-v2
       // continues to render as before; only the cross-version
       // overlay layer was dropped.
+      step = 'appSettings.loadSettings';
+      ErrorReporter.breadcrumb('boot:step', data: step);
       await appSettings.loadSettings();
+      step = 'mainProvider.restoreState';
+      ErrorReporter.breadcrumb('boot:step', data: step);
       await mainProvider.restoreState();
 
       if (mainProvider.verses.isEmpty) {
@@ -346,12 +360,16 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         // up to ~37 s wall-clock before we bail to the manual
         // error scaffold — but in practice the first attempt
         // succeeds within a couple seconds.
+        step = 'FetchVerses.execute';
+        ErrorReporter.breadcrumb('boot:step', data: step);
         await FetchVerses.execute(
           mainProvider: mainProvider,
           onAttempt: (attempt, _) =>
               mainProvider.setLoadProgress(attempt, 3),
         );
       }
+      step = 'FetchBooks.execute';
+      ErrorReporter.breadcrumb('boot:step', data: step);
       await FetchBooks.execute(mainProvider: mainProvider);
       // Clear the in-flight progress now that the load settled
       // (whether it succeeded or threw — the catch block below also
@@ -384,8 +402,15 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         mainProvider.updateCurrentVerse(verse: firstVerse);
       }
     } catch (e, st) {
-      debugPrint('Bootstrap failed: $e\n$st');
-      mainProvider.setLoadError(e.toString());
+      debugPrint('Bootstrap failed at $step: $e\n$st');
+      // The step lands both in the on-screen error text (so a
+      // screenshot or a pasted-in mailed report names the stage with
+      // no source-map work needed) and in the ErrorReporter payload
+      // (whose breadcrumb trail already has one entry per stage
+      // reached, in case $step itself never updated past the previous
+      // stage — e.g. a throw between two breadcrumb calls).
+      mainProvider.setLoadError('[$step] ${e.toString()}');
+      ErrorReporter.report(e, st, source: 'bootstrap', extra: step);
       // Clear the splash subtitle on failure too — the load-error
       // scaffold takes over from here.
       mainProvider.setLoadProgress(0, 0);

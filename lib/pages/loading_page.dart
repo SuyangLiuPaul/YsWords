@@ -9,7 +9,9 @@ import 'package:yswords/utils/clear_cache_helper.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/utils/legacy_reading_position_quarantine.dart';
 import '../models/app_settings.dart';
 import '../models/verse.dart';
 import '../providers/main_provider.dart';
@@ -164,7 +166,7 @@ class _LoadingPageState extends State<LoadingPage> {
     // the meantime (including the 3 s pre-advance grace window
     // `_scheduleAdvanceIfReady` uses), this is a silent no-op.
     if (kIsWeb && !bootRecoveryAlreadyTried()) {
-      _autoHardReload = Timer(_kAutoHardReloadThreshold, () {
+      _autoHardReload = Timer(_kAutoHardReloadThreshold, () async {
         if (!mounted) return;
         final mp = context.read<MainProvider>();
         // A boot that is still running, or one that already produced
@@ -178,6 +180,15 @@ class _LoadingPageState extends State<LoadingPage> {
             mp.verses.isEmpty;
         if (genuinelyFailed) {
           markBootRecoveryTried();
+          // 2026-08-31: before nuking caches and reloading, break the
+          // no-profile-keys boot trap (see
+          // legacy_reading_position_quarantine.dart) if this origin is
+          // in that shape. Best-effort — a failure here must never
+          // block the reload that already worked as the fallback.
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await quarantineLegacyReadingPositionIfTrapped(prefs);
+          } catch (_) {/* best-effort */}
           _hardReload();
         }
       });

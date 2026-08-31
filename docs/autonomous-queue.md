@@ -170,6 +170,51 @@ reported. Work these top-down before P2.
       in index.html.
       prod (1.4.173) is unaffected.
 
+      **PARTIAL 2026-08-31 — mitigation shipped (dev/qat), root cause
+      still unknown; this stays open.** "prod is unaffected" above is
+      now STALE in the direction of more urgency: prod has since shipped
+      past 1.4.173 and `yahwehword.com/version.json` returned **1.4.184**
+      as of this iteration (re-verified at commit time, not just quoted
+      from an earlier note) — the trap is live on the production origin,
+      aimed at the returning-old-version population from 2026-08-30.
+      Did not chase the minified line. Shipped instead: (1) `_bootstrap`
+      in `lib/main.dart` now tracks a named `step` through each awaited
+      boot stage and includes it in both the on-screen error text and
+      an `ErrorReporter.report` call (previously the catch block never
+      reported at all — only Zone-level uncaught errors did) — the next
+      mailed-in report names the failing stage with no source-map work.
+      (2) `lib/utils/legacy_reading_position_quarantine.dart` — the
+      splash's existing 45s automatic hard-reload (`loading_page.dart`,
+      already there, previously only cleared caches) now also detects
+      the exact trap shape (`profile.list` absent, unscoped
+      `book`/`chapter`/`version` present) and moves those three values
+      to `profile.guest.*` before removing the unscoped keys, so the
+      next boot's ProfileService.init() sees a shape indistinguishable
+      from a normal fresh install instead of the trap. Guarded by its
+      own persistent one-shot flag, set only after the migration
+      actually completes (an adversarial review caught the first draft
+      setting it too early, which would have permanently disabled the
+      mitigation on any origin where the migration itself threw
+      partway through — fixed before commit).
+      `MainProvider.restoreState()` gained a matching third fallback
+      tier (primary pane + active profile == guest only, to avoid
+      leaking the guest position into a different profile) so the
+      migrated position is actually read back — "clears the trap" and
+      "loses the reading position" are NOT the same fix, and the first
+      draft only had the former until the review caught it.
+      **Still unproven:** whether the crash is really the caught
+      `_bootstrap` exception surfacing through `mainProvider.loadError`
+      (plausible from `lib/pages/loading_page.dart` rendering it, not
+      confirmed), and whether removing the three keys actually stops
+      whatever throws or just changes the shape enough to dodge it.
+      Root-causing still needs a clean browser repro this loop has not
+      gotten (the preview-pane harness throttles a backgrounded tab
+      hard enough that "hung" and "slow" can't be told apart — see
+      above). Close this item only once the actual throw site is
+      identified, not once the mitigation is confirmed to help.
+      Deployed dev + qat only — **prod needs the user's go-ahead**,
+      given the item is already live there.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still

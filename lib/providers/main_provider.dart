@@ -1521,6 +1521,26 @@ class MainProvider extends ChangeNotifier {
     savedBook ??= prefs.getString('${_storagePrefix}book');
     savedChapter ??= prefs.getInt('${_storagePrefix}chapter');
 
+    // 2026-08-31: third fallback tier, primary pane + guest profile
+    // only. Reads back whatever legacy_reading_position_quarantine.dart
+    // moved into the guest-profile namespace when it broke the
+    // no-profile-keys boot trap on a previous boot (that helper clears
+    // the two tiers above on purpose, since their mere presence
+    // alongside no profile.* keys at all is the trap shape). Gated on
+    // the ACTIVE profile being guest, not just isPrimary — the trapped
+    // origin never had a real profile selection, so it always resolves
+    // to guest by ProfileService's own default, but a household member
+    // who has since switched to a different profile with no reading
+    // history of their own must not be silently handed the guest
+    // profile's old position. For every other origin this is
+    // unreachable — one of the tiers above already yielded a value.
+    if (isPrimary && ProfileService.instance.currentId == ProfileService.guestId) {
+      final guestId = ProfileService.guestId;
+      savedVersion ??= prefs.getString('profile.$guestId.version');
+      savedBook ??= prefs.getString('profile.$guestId.book');
+      savedChapter ??= prefs.getInt('profile.$guestId.chapter');
+    }
+
     if (savedVersion != null) {
       var v = savedVersion.toLowerCase();
       // Migration 2026-05: NIV asset was removed for licensing reasons.
