@@ -1,33 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ONE url, and that is not an oversight — read this before "fixing" it.
+  A sitemap INDEX, not a list of pages — and the split is deliberate.
 
-  The reader addresses chapters with a HASH route
-  (`#/2thessalonians/2:1?v=nasb`, see lib/services/url_sync_service_web.dart).
-  Fragments are never sent to the server, and Google retired the
-  AJAX-crawling scheme in 2015, so every hash route is the same document
-  to a crawler. The app also accepts `?verse=` / `?sermon=` query links
-  (main.dart `_handleDeepLink`) and those ARE distinct URLs — but every
-  one of them returns byte-identical HTML, so listing them would be
-  submitting duplicates of the home page, which is worse than listing
-  nothing.
+  Until 2026-08-31 this file held exactly one url, because it truthfully
+  described what existed: the app renders through CanvasKit (all text is
+  painted into a canvas) and addresses chapters with a HASH route
+  (`#/john/3`), and fragments never reach a server, so the whole reader
+  was ONE indexable document with no crawlable words in it.
 
-  So this file honestly describes what exists today: a single indexable
-  document. Growing it means first making pages that are genuinely
-  different at the URL level — prerendered chapter/sermon pages served
-  at real paths. Until that exists, adding <url> entries here inflates
-  the sitemap without adding a single indexable page.
+  `tools/prerender_bible.dart` changed that. It emits a JavaScript-free
+  copy of the Bible text at real paths under `/read/`, and one child
+  sitemap per edition, into `build/web/` at release time. Those children
+  are GENERATED, so they cannot live in this directory; this index is
+  STATIC, so it can. The two halves have to agree, and
+  `test/prerender_bible_test.dart` pins them to each other — it fails if
+  the prerenderer's edition list and the children named below drift
+  apart, and `release_web.sh` runs the generator on every build so the
+  children are never missing from a deploy.
 
-  No <lastmod>: the content behind this URL changes on most deploys and
-  nothing here computes that date, so any value written by hand would be
-  a lie within a week. Omitting it is allowed and is better than a stale
-  one — crawlers de-prioritise a sitemap whose lastmod they learn not to
-  trust.
+  If a child sitemap 404s in Search Console, the generator did not run:
+  check that `tools/release_web.sh` still invokes it.
+
+  No <lastmod> anywhere. The content behind these urls changes on most
+  deploys and nothing computes that date, so any hand-written value
+  would be a lie within a week — and crawlers de-prioritise a sitemap
+  whose lastmod they learn not to trust.
 -->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://yahwehword.com/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-</urlset>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-home.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-kjv.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-cuvs-yhwh.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-cuvs-yhwh-tr.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-biblexg-v2.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://yahwehword.com/sitemap-biblexg-v2-tr.xml</loc>
+  </sitemap>
+</sitemapindex>

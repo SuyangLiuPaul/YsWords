@@ -13,6 +13,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/mini_xml.dart';
+
 const _prod = 'https://yahwehword.com';
 
 void main() {
@@ -331,10 +333,36 @@ void main() {
   group('sitemap.xml', () {
     final sitemap = File('web/sitemap.xml');
 
-    test('exists and is well-formed XML', () {
+    test('exists and is a well-formed sitemap INDEX', () {
       expect(sitemap.existsSync(), isTrue);
       // Parsing rather than substring-matching: a sitemap that is not
       // valid XML is rejected wholesale by Search Console.
+      final doc = XmlDocument.parse(sitemap.readAsStringSync());
+      // 2026-08-31: this was a `urlset` holding the single home url.
+      // tools/prerender_bible.dart added ~4,300 real pages under /read/,
+      // so it became an index over one STATIC child (the app entry
+      // point) and five GENERATED ones. WHICH children it must name is
+      // asserted in test/prerender_bible_test.dart, against the
+      // generator itself — that is the pairing that can drift.
+      expect(doc.rootName, 'sitemapindex');
+      expect(doc.findAll('loc'), isNotEmpty);
+    });
+
+    test('every child sitemap is an absolute url on the prod origin', () {
+      final doc = XmlDocument.parse(sitemap.readAsStringSync());
+      for (final loc in doc.findAll('loc')) {
+        expect(loc, startsWith('$_prod/'),
+            reason: 'a relative child sitemap loc is silently ignored');
+        expect(loc, endsWith('.xml'));
+      }
+    });
+  });
+
+  group('sitemap-home.xml', () {
+    final sitemap = File('web/sitemap-home.xml');
+
+    test('exists and is well-formed XML', () {
+      expect(sitemap.existsSync(), isTrue);
       final doc = XmlDocument.parse(sitemap.readAsStringSync());
       expect(doc.rootName, 'urlset');
     });
@@ -357,58 +385,3 @@ void main() {
     });
   });
 }
-
-/// Minimal XML reader — enough to prove the sitemap parses and to pull
-/// `<loc>` values out of it. `package:xml` is not a dependency of this
-/// app and one test does not justify adding it to the shipped
-/// dependency tree.
-class XmlDocument {
-  final String _src;
-  const XmlDocument._(this._src);
-
-  static XmlDocument parse(String rawSrc) {
-    if (!rawSrc.trimLeft().startsWith('<?xml')) {
-      throw FormatException('missing XML declaration');
-    }
-    // Comments first, exactly as a real parser does. The sitemap's own
-    // comment explains why it holds one <url>, and mentioning the tag
-    // name in prose must not read as an unclosed element.
-    final src = rawSrc.replaceAll(RegExp(r'<!--[\s\S]*?-->'), '');
-    // Tag balance: catches a truncated file or an unclosed element,
-    // which is the realistic way this file breaks.
-    final opens = RegExp(r'<([a-zA-Z][\w:-]*)(\s[^>]*)?>').allMatches(src);
-    final stack = <String>[];
-    for (final m in opens) {
-      final full = m.group(0)!;
-      if (full.endsWith('/>')) continue;
-      stack.add(m.group(1)!);
-    }
-    for (final m in RegExp(r'</([a-zA-Z][\w:-]*)>').allMatches(src)) {
-      final name = m.group(1)!;
-      if (!stack.contains(name)) {
-        throw FormatException('closing tag </$name> was never opened');
-      }
-      stack.remove(name);
-    }
-    if (stack.isNotEmpty) {
-      throw FormatException('unclosed tag(s): ${stack.join(', ')}');
-    }
-    return XmlDocument._(src);
-  }
-
-  /// Name of the first real element. A String, not a wrapper type:
-  /// returning a private class from a public getter trips
-  /// `library_private_types_in_public_api`, and one name is all any
-  /// assertion here needs.
-  String get rootName {
-    final m = RegExp(r'<([a-zA-Z][\w:-]*)').firstMatch(_src);
-    if (m == null) throw FormatException('no root element');
-    return m.group(1)!;
-  }
-
-  List<String> findAll(String tag) => RegExp('<$tag>\\s*([^<]*?)\\s*</$tag>')
-      .allMatches(_src)
-      .map((m) => m.group(1)!)
-      .toList();
-}
-

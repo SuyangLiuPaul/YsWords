@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The app itself — one url, and that is not an oversight.
+
+  The reader addresses chapters with a HASH route
+  (`#/2thessalonians/2:1?v=nasb`, see lib/services/url_sync_service_web.dart).
+  Fragments are never sent to the server, and Google retired the
+  AJAX-crawling scheme in 2015, so every hash route is the same document
+  to a crawler. The app also accepts `?verse=` / `?sermon=` query links
+  (main.dart `_handleDeepLink`) and those ARE distinct urls — but every
+  one of them returns byte-identical HTML, so listing them would be
+  submitting duplicates of this page.
+
+  The actual crawlable pages live under `/read/` and are listed in the
+  generated per-edition sitemaps that `sitemap.xml` indexes. This file
+  covers the application entry point and nothing else.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://yahwehword.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

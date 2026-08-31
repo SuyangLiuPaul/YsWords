@@ -774,10 +774,28 @@
       <p>双语对照阅读、原文（希腊文／希伯来文）与 Strong 编号、交叉引用与释经注、
          讲道音频、可离线播放的诗歌、读经计划与高亮笔记书签。可安装为应用，支持离线使用。</p>
 
+      <!-- 2026-08-31: the way OUT of this dead end, and the only in-page
+           link from `/` into the prerendered Bible under /read/
+           (tools/prerender_bible.dart). It belongs here rather than in
+           the boot splash because it is genuinely the answer to the
+           problem this block describes: a reader with no JavaScript
+           cannot use the app, but CAN read every chapter as plain text.
+
+           Do NOT mistake it for the crawl path. Googlebot executes
+           JavaScript, so it never renders noscript content and may
+           weight a link inside it lightly or not at all. Discovery of
+           the ~4,300 pages rests on web/sitemap.xml, which indexes one
+           generated sitemap per edition. This link is for the person. -->
+      <h2>Read online · 在线阅读</h2>
+      <p><a href="/read/">Read the Bible as plain text</a> — every chapter,
+         no JavaScript required.</p>
+      <p lang="zh-Hans"><a href="/read/">纯文本阅读圣经</a> —— 全部章节，无需 JavaScript。</p>
+
       <div class="ys-note">
-        <p><strong>JavaScript is required to read the Bible here.</strong>
-           Please enable it and reload this page.</p>
-        <p><strong>本站需要 JavaScript 才能阅读圣经。</strong>请开启后重新载入页面。</p>
+        <p><strong>JavaScript is required for the full reader</strong> —
+           search, cross-references, the original Greek and Hebrew, sermons
+           and hymns. Please enable it and reload this page.</p>
+        <p><strong>完整的阅读器需要 JavaScript</strong> —— 搜索、串珠、原文对照、讲道与诗歌。请开启后重新载入页面。</p>
       </div>
     </div>
   </noscript>

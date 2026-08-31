@@ -258,6 +258,27 @@ deploy_sites() {
 # the wasm script re-adds it fresh on its own next run if wanted.
 rm -f "$PROJECT/build/web/_headers"
 
+# 2026-08-31: the crawlable Bible under /read/.
+#
+# The app paints scripture into a CanvasKit <canvas> and addresses
+# chapters with hash routes, so yahwehword.com is ONE indexable URL with
+# no text a crawler can read. tools/prerender_bible.dart emits ~4,300
+# JavaScript-free pages carrying the real verse text, plus one sitemap
+# per edition — and `web/sitemap.xml` is a committed sitemap INDEX that
+# NAMES those five children. If this step is ever removed, that index
+# keeps shipping and every child it points at 404s.
+#
+# Run per build, not once: `flutter build web` runs twice below
+# (international, then CHINA_MODE) and each rewrites build/web in place.
+# Cheap enough that per-build is the safe default — ~4 s for all five
+# editions. test/prerender_bible_test.dart asserts there is at least one
+# prerender call per `flutter build web` in this file.
+prerender() {
+  echo "==> prerendering the crawlable Bible into build/web/read/"
+  "${DART:-$HOME/flutter/bin/dart}" run "$PROJECT/tools/prerender_bible.dart" \
+    --out "$PROJECT/build/web" --assets "$PROJECT/assets"
+}
+
 # ── International build → English sites (+ prod) ──────────────────
 echo "==> building INTERNATIONAL bundle"
 # 2026-08-30: --no-web-resources-cdn is now passed to BOTH builds.
@@ -289,6 +310,7 @@ echo "==> building INTERNATIONAL bundle"
 "$FLUTTER" build web --release \
   --no-web-resources-cdn \
   --dart-define="APP_VERSION=$APP_VERSION"
+prerender
 INTL_SITES=(
   "b745ae1f-0780-4fa3-8478-bdf2f2aaf59a:dev:yswords-dev"
   "2bcb6644-2a3a-4050-b6dc-5b059bbe96d3:qat:yswords-qat"
@@ -319,6 +341,7 @@ echo "==> building CHINA bundle (CHINA_MODE=true)"
   --no-web-resources-cdn \
   --dart-define="APP_VERSION=$APP_VERSION" \
   --dart-define="CHINA_MODE=true"
+prerender
 CN_SITES=(
   "50f1502c-299f-4ff8-a21b-28f53eaee1e1:cn-dev:yswords-cn-dev"
   "266f97ef-f28b-4313-b83b-653c098df640:cn-qat:yswords-cn-qat"
