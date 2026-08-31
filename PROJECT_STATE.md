@@ -65,16 +65,18 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.185** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.185** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.4.184** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.186** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.186** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn` | **1.4.186** | ⛔ never without explicit permission **in the current turn** |
 
-**dev/qat moved ahead of prod again on 1.4.185** (2026-08-31): the
-no-profile-keys boot-trap mitigation (see the queue — a mailed-in
-`Invalid argument: 0` crash an origin can never recover from on its
-own, confirmed live on prod at 1.4.184). It stays dev/qat-only per its
-own task brief until the user OKs a prod push, despite prod already
-carrying the defect it mitigates.
+**All six sites are on 1.4.186** (2026-08-31, user: 「都push做了吧」).
+That release carries three things: the `/read/` hub added to
+`sitemap-home.xml`, the "14 translations" copy fix, and — riding along
+— **the boot-trap mitigation that had been held at dev/qat on 1.4.185**.
+So prod no longer carries the `Invalid argument: 0` defect it was
+mitigating. The prod authorisation was given for the release as a
+whole after the mitigation was pointed out as part of it; it does NOT
+carry forward to the next one.
 
 **Also found this iteration, worth knowing**: `main` had 9 unpushed
 commits sitting on this local checkout when this iteration started —
@@ -85,6 +87,21 @@ If a future iteration's `git log` on `main` doesn't match what a live
 site's `version.json` reports, check for this before assuming either
 one is wrong — `git fetch && git log origin/main..main` shows whether
 local is ahead of what CI and GitHub have actually seen.
+
+**Search Console is verified and the sitemap is submitted**
+(2026-08-31). Property `https://yahwehword.com/`, URL-prefix type,
+HTML-tag method; `/sitemap.xml` accepted as a **Sitemap index**,
+"processed successfully", all six children discovered. Bing Webmaster
+Tools imported the same property from GSC (read-only
+`webmasters.readonly` grant, account `lsy95112@gmail.com`).
+
+⚠️ **The HTML-FILE verification method cannot work on this site, and
+the error it gives is misleading.** Google fetches
+`/google<token>.html`, the SPA catch-all answers 200 with the Flutter
+shell, and Search Console reports *"Your verification file has the
+wrong content"* — not "not found". That is the same root cause as the
+`/read/` soft 404, still present at the site root. Use the HTML tag
+(already in `web/index.html`); do not chase the file method.
 
 Prod is on 1.4.184 (2026-08-31). Four releases in one day,
 all of it the discovery work: the prerendered `/read/` pages (1.4.181),
