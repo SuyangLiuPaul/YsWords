@@ -146,7 +146,20 @@ def main():
         return f
 
     name = "Yahweh's Words"
-    tag_en = 'Bilingual Bible · 7 translations · original languages'
+    # "7 versions", NOT "7 translations" — the user's call, 2026-08-31:
+    # 「不然以为7个语言」. Both numbers are defensible and they mean
+    # different things, so the word has to be the careful one:
+    #   * 7 是版本条目数 — what the version picker actually offers.
+    #   * 5 是不同译本数 — 和合本雅伟版 and 梁家铿译本 are each shipped
+    #     in 简体 and 繁體, the same translation converted script-wise
+    #     (scripts/fix_traditional_conversion.py and the
+    #     repair_tr_*_glyph.py family), not two separate works.
+    # "translations" reads as "seven LANGUAGES", which would be a real
+    # overclaim; "versions" is both true and the standard word in Bible
+    # software (the V in KJV; 中文界面叫版本).
+    # test/seo_meta_test.dart derives the 7 from
+    # lib/constants/bible_versions.dart and fails if this line drifts.
+    tag_en = 'Bilingual Bible · 7 versions · original languages'
     tag_zh = '双语圣经 · 和合本雅伟版 · 原文对照与释经注'
     domain = 'yahwehword.com'
 

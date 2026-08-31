@@ -170,6 +170,67 @@ void main() {
     });
   });
 
+  group('the version count the copy advertises', () {
+    // The user caught "7 translations" by eye (2026-08-31: 「7
+    // translation有那么多吗？」) and then fixed the word as well
+    // (「应该叫做7 versions吧不然以为7个语言」). Both halves are pinned
+    // here, because marketing copy is exactly the kind of text that
+    // nothing else in the build ever re-reads.
+    final src = File('lib/constants/bible_versions.dart').readAsStringSync();
+    final list = src.substring(
+      src.indexOf('const bibleVersions ='),
+      src.indexOf('\n];', src.indexOf('const bibleVersions =')),
+    );
+    // Comments out first: this file carries long ones, several of which
+    // quote `value:` while explaining a past change.
+    final entries = RegExp(r"value:\s*'([^']+)'")
+        .allMatches(list.replaceAll(RegExp(r'//[^\n]*'), ''))
+        .map((m) => m.group(1)!)
+        .toList();
+    // Python `#` comments come out for the same reason the HTML and JS
+    // ones do: make_og_card.py documents this very decision by QUOTING
+    // the wording that was rejected. Stripping is per-language on
+    // purpose — blanket-removing `#` lines from index.html would eat
+    // `#ys-boot { … }`, which is a CSS selector another test depends on.
+    final card = File('tools/make_og_card.py')
+        .readAsStringSync()
+        .split('\n')
+        .where((l) => !l.trimLeft().startsWith('#'))
+        .join('\n');
+
+    test('matches what the picker actually offers', () {
+      expect(entries.length, 7,
+          reason: 'the version list changed — the share card and the '
+              'JSON-LD featureList both advertise a count and neither '
+              'is derived at build time');
+      for (final text in [card, markup]) {
+        expect(text, contains('${entries.length} versions'));
+      }
+    });
+
+    test('says "versions", never "N translations"', () {
+      // 7 versions is 5 translations: 和合本雅伟版 and 梁家铿译本 each
+      // ship 简体 and 繁體 of the SAME translation, converted
+      // script-wise. Calling the 7 "translations" implies seven
+      // languages, which is the overclaim the user rejected.
+      final distinct =
+          entries.map((v) => v.replaceAll(RegExp(r'-tr$'), '')).toSet();
+      expect(distinct.length, lessThan(entries.length),
+          reason: 'if 简/繁 pairs ever stop existing, this whole '
+              'distinction — and this test — should be revisited');
+
+      final overclaim = RegExp(r'\d+\s+translations|[Ss]even\s+translations');
+      for (final entry in {'tools/make_og_card.py': card, 'web/index.html': markup}.entries) {
+        final hit = overclaim.firstMatch(entry.value);
+        expect(hit, isNull,
+            reason: '${entry.key} claims "${hit?.group(0)}". There are '
+                '${entries.length} VERSIONS but only ${distinct.length} '
+                'translations; "translations" reads as that many '
+                'languages. Use "versions".');
+      }
+    });
+  });
+
   group('no-JavaScript visitors', () {
     test('get real content instead of a splash frozen forever', () {
       final ns = RegExp(r'<noscript>([\s\S]*?)</noscript>').firstMatch(markup);
