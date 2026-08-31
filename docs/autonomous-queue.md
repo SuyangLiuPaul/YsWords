@@ -97,10 +97,48 @@ reported. Work these top-down before P2.
       `--source-maps` changes codegen (hash `af115786…`), so the map must
       be made against a build the repro is run on, not against the
       deployed one.
-      **Unknown, and worth settling first: can a real user reach this
-      state?** It was entered by clearing localStorage mid-session and
-      loading a deep link. If no real path exists the severity is much
-      lower. prod (1.4.173) is unaffected.
+      **SETTLED 2026-08-31 — yes, and by an ordinary user, not an
+      exotic path. Treat this as high severity.** The question was
+      whether the state could only be entered by clearing localStorage
+      by hand. It cannot.
+      `book` / `chapter` / `version` are unscoped keys written by the
+      PRIMARY reader pane itself (`_storagePrefix` is `''` for the
+      primary — `main_provider.dart` `saveCurrentState`), so any user
+      who has ever read a chapter has all three. The `profile.*` keys
+      only started existing with `a2db94b8` (2026-04-27, "local
+      profiles + sign-in / guest welcome gate").
+      Deterministic check on the commit BEFORE that one
+      (`git grep '.setString(|.setInt(|.setBool(|.setStringList(' a2db94b8^ -- lib/`):
+      every `app_settings.dart` write sits in a SETTER, so it only fires
+      when the user changes a font / theme / locale; `loadSettings()`
+      only reads. The only other writers are `highlights`, `verseNotes`,
+      `bookmarks` and the reading-plan keys — all of which require the
+      user to have highlighted, noted, bookmarked or started a plan.
+      **So someone who used the app before 2026-04-27 to simply READ,
+      and has not opened it since, has exactly `flutter.book`,
+      `flutter.chapter`, `flutter.version` and nothing else** — the trap
+      state, bit for bit. That is the same returning-old-version
+      population the user raised on 2026-08-30 (「发现很多人之前用过是
+      老版本」).
+      **What is NOT established, and don't let the above imply it:** how
+      often that state actually fails. Local repro on a hand-built
+      release bundle was inconclusive and is not worth repeating in that
+      harness — the same 3-keys-plus-deep-link input sometimes sat dead
+      for 3+ minutes with zero storage writes and sometimes reached the
+      dashboard slowly, and a backgrounded browser-pane tab is throttled
+      hard enough that "hung" and "slow" cannot be told apart there.
+      Reproduce on a real device or a foreground browser, not that one.
+      **One thing the repro did establish, and it is about code we
+      shipped:** in every stuck run the HTML boot splash had ALREADY been
+      removed (`#ys-boot` gone, `booted`/`done` true), which clears
+      `recoverPoll` — so `ysShouldAutoRecover` cannot fire for this
+      shape at all. The app was alive and parked on its OWN Flutter
+      loading page, which the splash's recovery has no signal for. The
+      user's photo (splash still up, link visible) is the OTHER shape,
+      the one auto-recovery does cover. If this is fixed by hardening
+      rather than by root-cause, the watchdog has to live in Dart, not
+      in index.html.
+      prod (1.4.173) is unaffected.
 
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
