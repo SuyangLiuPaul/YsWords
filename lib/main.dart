@@ -14,6 +14,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/sermon_service.dart';
+import 'package:yswords/services/web_update_checker.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
@@ -33,6 +34,7 @@ import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/song_download_service.dart';
 import 'package:yswords/widgets/global_mini_player.dart';
+import 'package:yswords/widgets/update_banner.dart';
 import 'package:yswords/services/song_audio_handler.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
@@ -811,7 +813,13 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               // stopped audio look identical from the outside.
               // Wrapping here means a page added later cannot forget
               // it. Renders nothing when nothing is playing.
-              child: GlobalMiniPlayer(child: child!),
+              // 2026-08-31: the "new version available" strip lives
+              // here for the same reason the player does — app-wide, so
+              // no page can forget it. Outside the mini-player so the
+              // two stack rather than fight for the bottom edge.
+              // Renders nothing off the web, and nothing on the web
+              // until the server actually moves.
+              child: UpdateBanner(child: GlobalMiniPlayer(child: child!)),
             );
           },
           // 2026-05-24 (v1.3.21): BreadcrumbObserver auto-records
@@ -907,6 +915,12 @@ class _RootRouterState extends State<_RootRouter> {
     // path until the splash is gone.
     context.read<MainProvider>().markSplashDismissed();
     _handleDeepLink();
+    // Started here, not in initState: this runs the moment the splash is
+    // gone, which is the earliest point where spending anything on
+    // "is there a newer build?" is defensible. It idles for another 20 s
+    // on top of that (see WebUpdateChecker.firstCheckDelay) and no-ops
+    // entirely off the web.
+    WebUpdateChecker.instance.start();
   }
 
   /// On first show of the home page, inspect the URL for share

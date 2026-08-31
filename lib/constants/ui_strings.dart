@@ -6634,6 +6634,23 @@ const uiStrings = {
     'zh-Hans': '讲道已复制到剪贴板',
     'zh-Hant': '講道已複製到剪貼簿',
   },
+  // Web update banner (2026-08-31). Shown when the server is serving a
+  // build other than the one this tab is running.
+  'updateAvailable': {
+    'en': 'A new version is available',
+    'zh-Hans': '有新版本可用',
+    'zh-Hant': '有新版本可用',
+  },
+  'updateReloadNow': {
+    'en': 'Update',
+    'zh-Hans': '更新',
+    'zh-Hant': '更新',
+  },
+  'updateDismiss': {
+    'en': 'Later',
+    'zh-Hans': '稍后',
+    'zh-Hant': '稍後',
+  },
   'sermonCopyEmpty': {
     'en': 'Sermon not loaded yet — wait for content to appear',
     'zh-Hans': '讲道尚未加载完成 — 请等待内容显示',
