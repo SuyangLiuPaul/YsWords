@@ -45,6 +45,63 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [ ] **2026-08-31 the exegesis notes announce a list and then don't
+      print it — 34 candidate sites, several confirmed wrong.** Reported
+      by the user with a photo of `yahwehword.com/#/2thessalonians/2:1`
+      beside the printed original. 2 Thess 2:4's note ends
+      「其中 θεοῦ 這個字有多重釋義，包括：」 and the next block starts
+      「另外，ναός …」. The three items the print edition carries —
+      1. 泛指任何神明（如林前8.5）2. 專指以色列的神 יהוה（如林前8.6）
+      3. 神 יהוה 的代表，例如以色列的拯救者（如出7.1 摩西）、以色列的審判官
+      — are **absent from `assets/biblexg-v2.json` and
+      `assets/biblexg-v2-tr.json` entirely**. Not a rendering bug: the
+      text is not in the data.
+      **This is the "reads plausibly and is wrong" case the priority rule
+      names.** A reader is told a word has several senses, is shown none,
+      and later notes cite the missing items by number.
+      Scan (`blockNotes` ending in `：` / `:`) finds **34 in each edition,
+      and NOT ONE is followed by a note starting with a list marker** —
+      i.e. no enumerated list survives anywhere in this dataset, which
+      points at the ingestion pipeline dropping indented enumerations
+      rather than at 34 separate typos.
+      The heuristic over-flags — some are legitimately continued in prose
+      (罗2:16 hands over to rearranged verses; 犹1:23 to a translation;
+      the `分类 1：`-style lists did survive because they are prose, not
+      an indented list). Confirmed broken so far:
+      * 帖後2:4 — verified against the user's photo of the print edition
+      * 可16:8 「下面較長的結尾…加插的：」 and 罗16:24 「有抄本加插下面讚詞：」
+        — the announced content is the LAST note; nothing follows at all
+      * 來1:9 「有以下不同含義…：」 then next cites 「（釋義3）」
+      * 罗3:26 / 加2:21 「含下面四重釋義：」 then next cites 「上述分類 1」
+      Do NOT hand-patch 34 notes: find where the enumerations were lost
+      (the biblexg ingestion), recover them from source, and add a test
+      that fails when a note ends in a colon with no list after it.
+
+- [ ] **2026-08-31 a boot crash the app cannot recover from on its own —
+      `Invalid argument: 0`, web release only.** Mailed-in crash report,
+      v1.4.178 web. Reproduced 4/4 on `yswords-dev`.
+      **It is not a regression and not a code difference.** `main.dart.js`
+      on dev, on qat and built locally are byte-identical (SHA-256
+      `4b3969fe89dc0155…`) and the same bytes run clean on qat and from a
+      local static server; dev/qat send identical security headers.
+      **The trigger is the stored state.** The origin held exactly three
+      legacy keys — `flutter.book`, `flutter.chapter`, `flutter.version`
+      — and no profile at all, where a healthy origin has ~12 including
+      `profile.list` and `profile.legacyMigrated`. Planting exactly those
+      three keys on the byte-identical bundle reproduces it.
+      **It is a trap:** the crash lands before the profile is written, so
+      the state persists and every reload crashes again. Only clearing
+      the three keys by hand got dev out.
+      Release-only — a debug build in the same state boots fine — so the
+      minified stack (`main.dart.js:59285:36`) is the only pointer, and
+      `--source-maps` changes codegen (hash `af115786…`), so the map must
+      be made against a build the repro is run on, not against the
+      deployed one.
+      **Unknown, and worth settling first: can a real user reach this
+      state?** It was entered by clearing localStorage mid-session and
+      loading a deep link. If no real path exists the severity is much
+      lower. prod (1.4.173) is unaffected.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still
