@@ -45,7 +45,7 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
-- [ ] **2026-08-31 the exegesis notes announce a list and then don't
+- [x] **2026-08-31 FIXED — the exegesis notes announce a list and then don't
       print it — 34 candidate sites, several confirmed wrong.** Reported
       by the user with a photo of `yahwehword.com/#/2thessalonians/2:1`
       beside the printed original. 2 Thess 2:4's note ends
@@ -76,6 +76,36 @@ reported. Work these top-down before P2.
       Do NOT hand-patch 34 notes: find where the enumerations were lost
       (the biblexg ingestion), recover them from source, and add a test
       that fails when a note ends in a colon with no list after it.
+
+      **Result:** root cause was the two upstream node types the queue
+      suspected — `build_book_verses` in `tools/import_ljk2.py` handled
+      only `chapter`/`verse`/`comment` and silently dropped `comment-list`
+      (numbered, 22/edition) and `ul-comment-list` (bulleted, 8/edition) —
+      30 list nodes per edition on 22 verses per edition (not always the
+      *same* 22: 羅3's list attaches after v26 in Simplified but v20 in
+      Traditional, a pre-existing difference in how the publisher's own
+      cn/tw sources split that footnote run, unrelated to this fix).
+      Fixed the importer (new `elif` branch + `clean_comment_list()`) so
+      a future re-import keeps them, and additively backfilled the two
+      shipped assets with a new one-shot `tools/
+      backfill_ljk2_comment_lists.py`, anchored by position (count of
+      preceding `comment` nodes in the verse's run) since hand-repairs
+      have made the two editions' note text diverge — zero verse `text`
+      touched, `git diff --stat` on the assets is purely additive.
+      A first pass mis-ordered the 2nd/3rd list in the 6 verses per
+      edition that carry more than one list (raw, un-offset insertion
+      index displaced the comment that belongs between two lists) —
+      caught by an adversarial review before commit; the script now
+      tracks a running per-verse offset and every affected verse's
+      `blockNotes` matches the source run byte-for-byte, order included.
+      2 Thess 2:4 (the user's photo) now carries the three θεοῦ senses at
+      `blockNotes[4]`; 來1:9, 罗3:26, 加2:21 also recovered. 可16:8 and
+      罗16:24 are confirmed NOT comment-list cases (already-known,
+      separate losses) and remain open.
+      New `test/biblexg_block_note_list_test.dart` fails on the pre-fix
+      asset at exactly 帖後2:4's missing index; its allow-list for
+      residual colon-ending prose names each of the 11 remaining sites
+      per edition individually rather than asserting a bare count.
 
 - [ ] **2026-08-31 a boot crash the app cannot recover from on its own —
       `Invalid argument: 0`, web release only.** Mailed-in crash report,

@@ -174,6 +174,24 @@ def split_block_comment(segments) -> tuple[str, str]:
     return clean_block_comment(note_parts), assemble_verse_text(body_parts)
 
 
+_LI_RE = re.compile(r'<li[^>]*>(.*?)</li>', re.S)
+
+
+def clean_comment_list(segments, ordered: bool) -> str:
+    """Render a `comment-list` / `ul-comment-list` node as one blockNotes
+    string: one `<li>` per line, numbered (comment-list) or bulleted
+    (ul-comment-list). Each item goes through `clean_block_comment` —
+    same tag handling as an ordinary block note, so `<cite>` / `<mark>`
+    read identically whether the source text sits in a list or not.
+    """
+    raw = ' '.join(str(s) for s in segments)
+    items = [clean_block_comment([it]) for it in _LI_RE.findall(raw)]
+    items = [it for it in items if it]
+    if ordered:
+        return '\n'.join(f'{i}. {it}' for i, it in enumerate(items, 1))
+    return '\n'.join(f'• {it}' for it in items)
+
+
 def clean_block_comment(segments) -> str:
     """Join + clean the plain-string parts of a block comment."""
     parts: list[str] = [str(s) for s in segments]
@@ -280,6 +298,17 @@ def build_book_verses(book_data: list[dict], book_id: int,
                 cleaned, body = split_block_comment(contents)
                 if body and out:
                     out[-1]['text'] = f"{out[-1]['text']}{body}"
+                if not cleaned:
+                    continue
+                if out:
+                    out[-1].setdefault('blockNotes', []).append(cleaned)
+                else:
+                    pending_comments.append(cleaned)
+            elif t in ('comment-list', 'ul-comment-list'):
+                contents = n.get('contents', [])
+                if not isinstance(contents, list):
+                    contents = [str(contents)]
+                cleaned = clean_comment_list(contents, ordered=t == 'comment-list')
                 if not cleaned:
                     continue
                 if out:
