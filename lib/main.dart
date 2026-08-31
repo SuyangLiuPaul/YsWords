@@ -483,6 +483,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       appSettings: appSettings,
     ).catchError((Object e, StackTrace st) {
       debugPrint('UrlSyncService.init failed: $e\n$st');
+      ErrorReporter.report(e, st, source: 'UrlSyncService.init');
     });
 
     // 2026-05-24 (v1.3.0): refresh scheduled notification content on

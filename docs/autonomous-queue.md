@@ -456,6 +456,122 @@ reported. Work these top-down before P2.
       chapter exists but the verse doesn't, reaching
       `setCurrentChapter`/`relIdx`.
 
+      **`0fa4effb` (2026-09-01 06:37) — backfilling this entry, which was**
+      **missing from the queue.** Two parts, both merged and (per below)
+      confirmed live on dev before this entry: (1) product fix —
+      `url_sync_service_web.dart`'s boot catch (`:174-180`) and popstate
+      catch now call `ErrorReporter.report` alongside the `debugPrint`
+      that was previously the only trace, closing the "swallowed with zero
+      observable signal" gap the 2026-09-01 refuter identified above.
+      (2) diagnostic — the harness gained a **state oracle** (reads
+      landed `flutter.book/chapter/version` and diffs against a per-shape
+      `expect`) and a **network oracle** (flags any `/api/errorReport`
+      POST), plus two untried shapes: stale-verse-valid-chapter (reaches
+      `setCurrentChapter` + the `relIdx` verse-jump math — avenue (b)
+      above) and cross-version cross-language (version swap + `FetchBooks`
+      + book-name translation mid-boot).
+
+      **2026-09-01 — ran the harness against dev with both oracles now**
+      **live; clean, but with one real (non-throw) anomaly worth carrying**
+      **forward, and a harness bug found and fixed along the way.**
+      Confirmed `https://yswords-dev.netlify.app/version.json` reports
+      `1.4.190` (≥ 1.4.190, so `0fa4effb`'s Part 1 is live) before trusting
+      any negative. Ran all 5 shapes; each got ~15s observation, inside
+      the 45s auto-recovery timer so `legacy_reading_position_quarantine
+      .dart`'s migration (gated on a *genuinely failed* boot,
+      `loading_page.dart:169-194`) did not fire for any of them — confirmed
+      by reading the gate, not assumed.
+      **Throw/report oracle, all 5 shapes: clean.** Zero CDP
+      `Runtime.exceptionThrown`, zero `BOOT_TRAP window.onerror`/
+      `unhandledrejection`, zero `/api/errorReport` POSTs. This is the
+      first run where that negative means something — Part 1 is confirmed
+      live, so a throw inside either inner catch would have shown up as a
+      POST regardless of `debugPrint` being silenced in release web.
+      **Harness bug found first, fixed before trusting the state oracle:**
+      the first run showed a MISMATCH on every one of the 5 shapes,
+      including the two whose hash exactly matches the planted state —
+      which should be trivially clean. Root cause: `shared_preferences_web`
+      encodes every value with `json.encode` before `localStorage.setItem`
+      (`shared_preferences_web-2.4.3/lib/shared_preferences_web.dart:265-266`,
+      confirmed by reading the package source) — a `String` (book, version)
+      lands JSON-quoted (`"John"`), an `int` (chapter, confirmed via
+      `main_provider.dart:1428-1430`'s `setString`/`setInt`/`setString`)
+      lands bare. The oracle compared the raw encoded string against an
+      unquoted `expect` literal, so every String-typed field mismatched
+      by construction — a harness defect, not an app one. Fixed in this
+      commit: `finalState`'s browser-side eval now `JSON.parse`s each
+      stored value before returning it (falls back to the raw string if
+      parsing throws), and the Node-side comparison coerces both sides
+      through `String()` so the now-numeric decoded `chapter` still
+      compares correctly against the shape table's string literal.
+      **State oracle after the fix: 4 of 5 MATCH** (valid-deep-link,
+      stale-disagreeing-version-only, stale-verse-valid-chapter, and the
+      cross-version cross-language shape all landed exactly where their
+      `expect` said). **1 of 5 (bare-hash, `#/` with no fragment at all)
+      is a genuine MISMATCH, not a quoting artifact — new information.**
+      Planted `John`/`3`/`kjv`; landed `Genesis`/`1`/`nasb` (the app's
+      hard default), with `flutter.profile.guest.lastRead` also showing
+      the default triple, `profile.list: ["guest"]` and
+      `profile.legacyMigrated: "true"` — i.e. the profile initialized as
+      if this were a brand-new install, not one carrying a prior reading
+      position. No throw, no `/api/errorReport`, no console trace
+      accompanies it — the position was silently replaced, not crashed on.
+      This shape's own `note` in the harness (added last pass) predicted
+      the planted keys would be preserved verbatim once `_applyHashToState`
+      never runs; `restoreState()`'s legacy-fallback tier
+      (`main_provider.dart:1519-1522`) reads exactly those unscoped keys
+      before the app default, so on a plain reading of that function this
+      should have landed `John`/`3`/`kjv`, not defaults — checked this
+      pass, not assumed, and still doesn't explain the observed value.
+      **Deliberately not root-caused here** — this needs its own
+      investigation (is `saveCurrentState()` writing the default before
+      `restoreState()` resolves? does the bare-hash boot path skip the
+      reader entirely and land on a dashboard that seeds defaults? something
+      else?) and a refuter, not a guess appended to this entry.
+      **A refuter pass was run on exactly this anomaly before it was**
+      **written up.** It found this is not a fresh find: `git log -S
+      "quarantineLegacyReadingPositionIfTrapped"` turns up `e8bf2f13`,
+      whose own message says the trap-shape crash's "root cause is still
+      unknown (a clean browser repro has eluded this loop twice now)" —
+      this run is a continuation of that open question, not a new one. It
+      also surfaced a genuine hole in this run's own reasoning and then
+      partly closed it: `_bootstrap()`'s outer `try`/`catch`
+      (`lib/main.dart:404-417`) swallows any exception from
+      `restoreState()` internally (`setLoadError` + `ErrorReporter.report`,
+      no rethrow), so "no exception observed" does NOT by itself prove
+      `restoreState()`'s legacy-fallback tier ran to completion — a
+      throw inside it stays fully internal. **But** that same catch's
+      `ErrorReporter.report(e, st, source: 'bootstrap', extra: step)`
+      call (`:413`) is unconditional, and this run's network oracle
+      would have caught the resulting `/api/errorReport` POST the same
+      way it was built to catch the two `UrlSync` ones — and observed
+      zero, for this shape same as the other four. That doesn't prove
+      `restoreState()` completed cleanly (an exception inside a `try`
+      that itself never reaches `:413` — e.g. one already caught by an
+      inner block — would still produce nothing), but it does rule out
+      the specific mechanism "an uncaught throw inside `_bootstrap()`'s
+      main try block, reported via `:413`" for this run. What's left
+      unexplained either way: why the legacy-fallback reads at
+      `:1520-1522` would yield `null`/defaults instead of the planted
+      values, with no exception reaching `:413` to explain it.
+      **Net: item stays open, root cause of the mailed-in `Invalid
+      argument: 0` still not found.** What this run adds: Part 1's
+      ErrorReporter wiring is confirmed live and produced no report for
+      any of the 5 shapes tried, which is one fewer place the throw can be
+      hiding un-observed on this exact input; the harness's state oracle
+      is now trustworthy (bug fixed, verified by the 4/5 flip); and a new,
+      separate, non-crashing reading-position-loss anomaly on the
+      bare-hash shape is recorded for whoever picks this up next, instead
+      of being lost the way `0fa4effb` was.
+      **Small in-scope fix bundled with this pass:** `lib/main.dart:481-486`
+      — `UrlSyncService.init(...).catchError` was still `debugPrint`-only
+      even after `0fa4effb` fixed the two catches *inside*
+      `url_sync_service_web.dart`; this was the one remaining silent
+      swallow on the same boot path (a failure in `UrlSyncService.init`
+      itself, before it ever reaches `_applyHashToState`, e.g. in its own
+      setup). Now also calls `ErrorReporter.report(e, st, source:
+      'UrlSyncService.init')`.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still

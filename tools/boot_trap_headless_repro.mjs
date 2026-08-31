@@ -382,15 +382,27 @@ async function runShape(shape) {
         Object.keys(localStorage).sort().forEach(function(k) {
           kv[k] = localStorage.getItem(k);
         });
+        // shared_preferences_web encodes every value with json.encode
+        // before calling localStorage.setItem (shared_preferences_web.dart
+        // :265-266, _encodeValue) — a String lands as a JSON-quoted
+        // '"John"', an int lands unquoted as '3'. localStorage.getItem
+        // returns that raw encoded form, so comparing it directly against
+        // an unquoted expected string (e.g. "John") always mismatches on
+        // every String-typed key. Decode the same way the plugin encoded
+        // it so the oracle compares semantic values, not their encoding.
+        function decodeStored(raw) {
+          if (raw == null) return raw;
+          try { return JSON.parse(raw); } catch (e) { return raw; }
+        }
         return {
           bootSplashPresent: !!el,
           glassPanePresent: !!glassPane,
           bodyTextSnippet: (document.body.innerText || '').slice(0, 300),
           localStorage: kv,
           landed: {
-            book: localStorage.getItem('flutter.book'),
-            chapter: localStorage.getItem('flutter.chapter'),
-            version: localStorage.getItem('flutter.version'),
+            book: decodeStored(localStorage.getItem('flutter.book')),
+            chapter: decodeStored(localStorage.getItem('flutter.chapter')),
+            version: decodeStored(localStorage.getItem('flutter.version')),
           },
         };
       })()
@@ -422,8 +434,12 @@ async function runShape(shape) {
 
   const landed = finalState.result?.value?.landed;
   if (shape.expect && landed) {
+    // `chapter` decodes to a JS number (setInt on the Dart side) while
+    // `shape.expect.chapter` is written as a string literal above —
+    // compare by String() so that type, not semantic value, doesn't
+    // produce a false mismatch.
     const mismatches = Object.entries(shape.expect)
-      .filter(([k, v]) => landed[k] !== v)
+      .filter(([k, v]) => String(landed[k]) !== String(v))
       .map(([k, v]) => `${k}: expected ${JSON.stringify(v)}, landed ${JSON.stringify(landed[k])}`);
     if (mismatches.length === 0) {
       console.log(`    state oracle: MATCHES expected landing (${JSON.stringify(shape.expect)})`);
