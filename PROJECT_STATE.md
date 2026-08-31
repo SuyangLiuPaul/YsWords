@@ -65,11 +65,16 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.178** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.178** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.4.173** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.180** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.180** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn` | **1.4.180** | ⛔ never without explicit permission **in the current turn** |
 
-**Prod is current for the first time in three weeks** (2026-08-31, user:
+**All six sites are on 1.4.180** (2026-08-31, user: 「可以push prod了吧」 —
+the SEO/discovery work, which is worthless until it is the thing a
+crawler and an unfurler actually fetch). The rule has NOT changed: the
+next prod push needs its own explicit instruction in its own turn.
+
+**Prod first became current** (2026-08-31, user:
 "Prod push"). It had sat on 1.4.11 since 2026-08-09 — 161 versions —
 which was the standing rule working as intended, but the gap stopped
 being harmless once `yahwehword.com` started resolving to it. The rule
