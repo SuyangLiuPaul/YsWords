@@ -395,6 +395,36 @@ void main() {
     });
   });
 
+  // Measured 2026-08-31 (docs/autonomous-queue.md ~6722): a corpus-wide
+  // scan found exactly 3 numeral runs before 節/节 that `cn_number`
+  // rejects — 十六十七 (real, but 423 already holds both verses via its
+  // zh-CN/zh-TW/en bodies), 一一 (「唯一一节」, prose) and 三百四十九
+  // (tail of 一千三百四十九, prose). No splitter shipped: it cannot tell
+  // "two concatenated verses" from "one digit-read chapter" (诗篇一一九篇
+  // = Psalm 119, not 1 and 19) without more context than the run itself
+  // carries. These pin that a naive "split the run in two" rule would
+  // regress — either by inventing verses from prose, or by misreading a
+  // chapter number as a verse pair.
+  group('a run-together Chinese numeral pair before 節/节 stays refused',
+      () {
+    test('十六十七 leaves only the chapter key, not invented verses', () {
+      expect(_extractRefs('哥林多后书第五章第十六十七节里面，保罗说过'),
+          ['2 Corinthians 5']);
+    });
+
+    test('一一 from 唯一一节 ("the only verse") is not read as a number',
+        () {
+      expect(_extractRefs('哥林多后书第五章唯一一节经文'), ['2 Corinthians 5']);
+    });
+
+    test(
+        '三百四十九, the tail of 一千三百四十九 (1349), is not read as a '
+        'verse number', () {
+      expect(_extractRefs('哥林多后书第五章出现在一千三百四十九节经文中'),
+          ['2 Corinthians 5']);
+    });
+  });
+
   group('the Chinese book names come from one table', () {
     // 2026-08-26. There were three hand-typed copies of the 66 Chinese
     // book names — the app's `_zhAliasToEn`, the extraction script's

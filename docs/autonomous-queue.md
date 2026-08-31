@@ -6719,15 +6719,56 @@ has never seen this repo.
       judgement about Chinese, not a measurement, and the corpus cannot
       settle it.
 
-- [ ] **「第十六十七节」 — two verse numbers run together with no
-      separator — parses as neither.** 423 says 「在林后第五章第十六十七
-      节里面」 and its English body confirms "5:16 and 17", but
-      `cn_number` correctly rejects 十六十七 as malformed, so the verse is
-      lost and only the chapter survives. Found 2026-08-26. Zero cost
-      today (423 holds 2 Corinthians 5:16 and 5:17 from the English), but
-      it is a real shape and the corpus should be counted before anyone
-      writes a splitter — 十六十七 is only unambiguous because 十六 and
-      十七 are adjacent, and a general rule here could invent verses.
+- [x] **MEASURED 2026-08-31, NOT SHIPPED — counted the corpus for
+      「第十六十七节」-shaped run-together verse pairs and no splitter is
+      justified.** Original finding (2026-08-26) still holds: 423 says
+      「在林后第五章第十六十七节里面」 and `cn_number` correctly rejects
+      十六十七 as malformed, so that clause alone loses the verse and
+      keeps only the chapter.
+
+      **Corpus-wide scan** (`scripts/scan_runtogether_verse_numbers.py`,
+      committed): maximal runs of `[〇零一二三四五六七八九十百]+`
+      immediately before 节/節, kept only where `cn_number()` returns
+      `None`, over all 867 transcripts (`assets/sermons/{en,zh-CN,zh-TW}`,
+      289 sermons × 3 bodies). Result: **exactly 7 hits, 3 distinct
+      strings** — `十六十七` ×1 (`en/423.txt`), `一一` ×4 (`zh-CN/317`,
+      `zh-CN/348`, and their zh-TW twins), `三百四十九` ×2 (`zh-CN/EC011`
+      + zh-TW twin). Independently re-run and confirmed by a refuter
+      agent, which also swept every *valid* numeral run before 节/節 in
+      the same pass and found nothing else malformed.
+
+      **十六十七 is the only genuine instance, and it costs nothing.**
+      `一一` in 317/348 is 「唯一一节经文」 ("the only one verse") — a
+      tokenization artifact at the 唯一|一节 boundary, not a citation.
+      `三百四十九` in EC011 is the tail of 「一千三百四十九」 (1349, "行
+      appears in 1349 verses"); 千 is genuinely absent from
+      `_CN_NUM_RE`'s character class, which is what truncates the run.
+      Sermon 423's zh-CN and zh-TW bodies state the same reference as
+      「哥林多后书第5章第16和17節」, which `_CN_CHAPTER_VERSE_PAIR_RE`
+      already parses to both verses — and 423's own English sentence
+      states it a third way, digit form, "2 Corinthians 5:16 and 17",
+      also independently parsed. `refs.json["bySermon"]["423"]` holds
+      both `2 Corinthians 5:16` and `5:17` today via all three paths;
+      shipping a splitter for the fourth (Chinese run-together) spelling
+      would add zero reach.
+
+      **A second no-op site turned up widening the marker to 篇/章:**
+      `诗篇一一九篇` (Psalm 119 spelled digit-by-digit, 一-一-九, instead
+      of the standard 一百一十九) in `zh-CN/331` / `zh-TW/331` —
+      `cn_number("一一九")` is also `None`. Same shape, same non-loss:
+      331's English body states "Psalm 119:103" directly and it's
+      already in `refs.json`. It sharpens the reason not to ship a
+      generic splitter rather than weakening the "one site" claim: a
+      naive "split into two numbers" rule cannot tell 十六十七 (two
+      2-digit verses, 16+17) from 一一九 (one digit-read chapter, 119)
+      without more context than the run itself carries — exactly the
+      "could invent verses" risk this item was queued to check for.
+
+      No digit-form run-together case (e.g. a literal "1617节") exists
+      anywhere in the corpus — every 3-4-digit run before 节/節 is a
+      legitimate single verse number (Psalm 119:103/105/176).
+
+      `refs.json` unchanged, no production code touched.
 
 - [x] **「<章/篇>N和M节」 parses no verse at all, so eighteen citations
       of two specific verses are indexed as WHOLE CHAPTERS. SHIPPED
