@@ -47,7 +47,7 @@ void main() {
       // The wide labels are deliberately unchanged — they are correct
       // when there is room for them.
       expect(shortBibleVersionLabel('biblexg-v2'), '梁家铿(简)');
-      expect(shortBibleVersionLabel('biblexg-v2-tr'), '梁家铿(繁)');
+      expect(shortBibleVersionLabel('biblexg-v2-tr'), '梁家鏗(繁)');
     });
   });
 
@@ -105,6 +105,50 @@ void main() {
     expect(bibleVersionLanguage('cuvs-yhwh-tr'), 'zh-Hant');
     // Unknown code falls back to the primary audience, never throws.
     expect(bibleVersionLanguage('does-not-exist'), 'zh-Hans');
+  });
+
+  test('no zh-Hant label contains a Simplified character', () {
+    // Three of them did, for months, in the one place a reader would
+    // actually look: 和合本雅伟版(繁體), 梁家铿(繁), 梁家铿譯本(繁體) — the
+    // 繁體 marker spelled out in full, with the name in front of it left
+    // Simplified. Each row's own shortLabel or About-page equivalent was
+    // already correct, so nothing looked broken; the rows just quietly
+    // disagreed with themselves. Fixed 2026-08-31, when the prerendered
+    // /read/ pages were about to print them on 1,256 crawlable
+    // Traditional page titles per edition.
+    //
+    // The pair table is explicit rather than derived: this app ships no
+    // general simp→trad converter (that lives in the Python asset
+    // scripts), and this guard only has to cover the vocabulary edition
+    // names are built from. Add a pair when a new edition needs one.
+    const simplifiedToTraditional = {
+      '伟': '偉', // 雅伟版
+      '铿': '鏗', // 梁家铿
+      '译': '譯', // 译本
+      '简': '簡', // 简体
+      '体': '體', // 繁体
+      '华': '華',
+      '书': '書',
+      '汉': '漢',
+      '标': '標', // 新标点
+      '点': '點',
+    };
+
+    for (final v in bibleVersions.where((v) => v.language == 'zh-Hant')) {
+      final labels = <String, String>{
+        'shortLabel': v.shortLabel,
+        'menuLabel': v.menuLabel,
+        if (v.narrowLabel != null) 'narrowLabel': v.narrowLabel!,
+      };
+      labels.forEach((field, text) {
+        for (final entry in simplifiedToTraditional.entries) {
+          expect(text.contains(entry.key), isFalse,
+              reason: '${v.value}.$field is "$text" — "${entry.key}" is '
+                  'Simplified inside a Traditional label; '
+                  'use "${entry.value}"');
+        }
+      });
+    }
   });
 
   test('the locale-default versions exist in the catalog', () {

@@ -88,7 +88,15 @@ const bibleVersions = <BibleVersionInfo>[
   BibleVersionInfo(
     value: 'cuvs-yhwh-tr',
     shortLabel: '和合本雅偉版',
-    menuLabel: '和合本雅伟版(繁體)',
+    // 2026-08-31: was '和合本雅伟版(繁體)' — 伟 is SIMPLIFIED, inside the
+    // label whose entire job is to mark the Traditional edition, while
+    // the shortLabel one line up already read 雅偉. Found while
+    // generating the static /read/ pages, where it would have been
+    // printed on 1,256 crawlable Traditional page titles. Fixed at the
+    // user's instruction (「繁体那两个名字也一起改了」), and it follows the
+    // rule the 2026-05-10 雅威→雅偉 change already set down: this
+    // project's canonical simp→trad pairing is 雅伟 → 雅偉.
+    menuLabel: '和合本雅偉版(繁體)',
     language: 'zh-Hant',
     // 2026-08-04: sub-line removed — see the 简体 entry above.
     narrowLabel: '雅偉版',
@@ -111,10 +119,23 @@ const bibleVersions = <BibleVersionInfo>[
     language: 'zh-Hans',
     narrowLabel: '梁简',
   ),
+  // 2026-08-31: both labels below said 梁家铿 — SIMPLIFIED 铿 — on the
+  // Traditional row, next to a correctly-Traditional 譯本(繁體). The
+  // translator's name was the one part not being converted.
+  //
+  // Not a judgement call in the end, though it looked like one: a
+  // person's name is exactly the kind of thing a project might
+  // deliberately leave in one spelling. This project does not. The
+  // Traditional About-page line already reads 梁家鏗譯本
+  // (ui_strings.dart, key 'zh-Hant'), and every Traditional discussion
+  // in test/ writes 梁家鏗. These two labels were the outliers, not the
+  // convention. Fixed at the user's instruction; a guard in
+  // test/bible_versions_language_test.dart now fails if any zh-Hant
+  // label picks up a Simplified character again.
   BibleVersionInfo(
     value: 'biblexg-v2-tr',
-    shortLabel: '梁家铿(繁)',
-    menuLabel: '梁家铿譯本(繁體)',
+    shortLabel: '梁家鏗(繁)',
+    menuLabel: '梁家鏗譯本(繁體)',
     language: 'zh-Hant',
     narrowLabel: '梁繁',
   ),

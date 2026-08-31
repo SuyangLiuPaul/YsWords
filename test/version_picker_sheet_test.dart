@@ -72,7 +72,7 @@ void main() {
     expect(find.text('New American Standard Bible'), findsOneWidget);
     await tester.tap(find.text('繁體中文'));
     await tester.pumpAndSettle();
-    expect(find.text('和合本雅伟版(繁體)'), findsOneWidget);
+    expect(find.text('和合本雅偉版(繁體)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -94,7 +94,7 @@ void main() {
   testWidgets('no overflow on an iPad-sized viewport', (tester) async {
     await openMenu(tester,
         currentVersion: 'cuvs-yhwh-tr', size: const Size(1180, 820));
-    expect(find.text('和合本雅伟版(繁體)'), findsOneWidget);
+    expect(find.text('和合本雅偉版(繁體)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
