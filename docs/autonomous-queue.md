@@ -468,33 +468,35 @@ reported. Work these top-down before P2.
       so the initial route `getFlutterEngine` pins can never be
       anything but `/`.
 
-- [ ] **Changing the theme colour silently cold-restarts the app when
-      no audio is playing, and does not when audio is playing.** Found
-      while verifying the item above, 2026-08-25; it is the same
-      mechanism seen from the user's side rather than the engine's.
-      With the service idle, the icon swap finishes the task, the last
-      client unbinds, the service is destroyed and takes the
-      FlutterEngine with it — so the next launch re-runs `main()` and
-      the in-memory Navigator stack is gone. Measured: the user was on
-      the Settings page when they picked red; the relaunch landed on
-      the **Dashboard**. With audio playing the identical action
-      returned to Settings, same scroll offset.
+- [x] **FIXED by `e41b512` (2026-08-31) — "Android: put the reader back
+      after a theme-colour icon swap".** Original finding (2026-08-25):
+      with the audio service idle, the icon swap finishes the task, the
+      last client unbinds, the service is destroyed and takes the
+      FlutterEngine with it, so the next launch re-runs `main()` and the
+      in-memory Navigator stack is gone — the user was on the Settings
+      page when they picked red, and the relaunch landed on the
+      Dashboard. With audio playing the identical action returned to
+      Settings, same scroll offset. Three options were on the table:
+      (a) keep the engine alive by rooting the task on a component that
+      is never disabled, (b) accept the restart but restore the
+      Navigator stack, (c) document it as-is.
 
-      So picking a colour costs a full cold start and throws away
-      wherever the user was — and whether it does depends on something
-      as unrelated as whether a song is playing. Nothing is lost that
-      is persisted (bookmarks, notes, highlights, reading position all
-      come back), so this is polish, not data loss.
-
-      Not fixed inline because the options all have teeth and want a
-      decision: (a) keep the engine alive across the swap by making the
-      swap not finish the task — e.g. root the task on a component that
-      is never disabled, so the aliases can be toggled freely; (b)
-      accept the restart but persist and restore the Navigator stack;
-      (c) accept it as-is and document it. (a) is the real fix but it
-      changes the manifest's launcher topology, which is the thing that
-      broke in v1.3.85 and again in v1.2.97 — it needs a careful look,
-      not an hour.
+      `e41b512` took (b), and shows (a) cannot work as written: Android
+      necessarily roots a task on whatever launcher component started
+      it, and the swap disables exactly that component by construction,
+      so "root it on a component that is never disabled" and "the
+      component the swap toggles" are the same thing. Instead
+      `AppIconService` flags a pending restart once a swap is dispatched,
+      and `_RootRouter` consumes the flag on the next launch and pushes
+      `SettingsPage(initialSection: display)` — the section holding the
+      colour swatches, and the only place `setPrimaryColor` is called
+      from. Verified end-to-end on an Android 14 emulator, not just unit
+      tested: tap → HOME → relaunch lands on Settings/DISPLAY with the
+      flag cleared; a later ordinary force-stop + relaunch still lands on
+      the Dashboard, so a plain cold start is unaffected.
+      `test/android_icon_swap_restart_test.dart` covers consume-once,
+      real removal (not a stale `false`), and two swaps before one
+      launch still restoring only once.
 
 - [x] **The Android release build can ship an APK without the current
       Dart code, and nothing catches it. Content assertion added
