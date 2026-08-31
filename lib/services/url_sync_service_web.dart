@@ -42,6 +42,7 @@ import 'package:yswords/constants/bible_versions.dart' show bibleVersions;
 import 'package:yswords/constants/book_slugs.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/error_reporter.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
@@ -170,13 +171,21 @@ Future<void> urlSyncInit({
     await _applyHashToState(bootHash, isBoot: true);
   } catch (e, st) {
     debugPrint('[UrlSync] boot apply failed: $e\n$st');
+    // 2026-09-01: this catch previously only reported through
+    // debugPrint, which is a global no-op in release web
+    // (main.dart:55-57) — a real throw here was indistinguishable
+    // from a clean boot to any diagnostic tool that isn't attached
+    // to a debug build. See docs/autonomous-queue.md's boot-crash item.
+    ErrorReporter.report(e, st, source: 'UrlSync.boot');
   }
 
   // (B) Listen for browser back/forward so popstate drives state.
   try {
     _window.addEventListener('popstate', ((JSAny? event) {
-      _applyHashToState(_window.location.hash).catchError((Object e) {
+      _applyHashToState(_window.location.hash)
+          .catchError((Object e, StackTrace st) {
         debugPrint('[UrlSync] popstate apply failed: $e');
+        ErrorReporter.report(e, st, source: 'UrlSync.popstate');
       });
     }).toJS);
   } catch (e) {

@@ -48,22 +48,82 @@ if (!/yswords-dev\.netlify\.app|yswords-qat\.netlify\.app|localhost|127\.0\.0\.1
   process.exit(2);
 }
 
+const PLANT_JOHN_3_KJV = { 'flutter.book': 'John', 'flutter.chapter': '3', 'flutter.version': 'kjv' };
+
+// `expect` is what a CORRECT, fully-applied run should leave in the primary
+// pane's storage (`flutter.book` / `flutter.chapter` / `flutter.version` —
+// `_storagePrefix` is `''` for the primary pane, `main_provider.dart:60`,
+// written by `saveCurrentState()` at `:1428-1430`). It is a claim about
+// normal behaviour, verified per-shape against the actual asset JSON below
+// (see the commit message / queue entry for the verification), NOT a
+// root-cause claim about the crash. Shapes designed to fail validation
+// midway (stale-disagreeing) get a `note` instead of a full `expect`,
+// because `_applyHashToState`'s version-swap runs UNCONDITIONALLY before
+// the `hasVerse` guard (`:259-271` vs `:282`), so only `version` is
+// pinned down for those; `book`/`chapter` legitimately depend on whatever
+// `restoreState()` produced before the hash was applied, which this
+// harness does not independently pre-compute.
 const TRAP_SHAPES = [
   {
     name: 'bare-hash (#/ / no hash at all)',
     hash: '',
-    plant: { 'flutter.book': 'John', 'flutter.chapter': '3', 'flutter.version': 'kjv' },
+    plant: PLANT_JOHN_3_KJV,
+    expect: { book: 'John', chapter: '3', version: 'kjv' },
+    note: 'empty hash: _parseHash returns null on the h.isEmpty check ' +
+      '(:340), _applyHashToState never runs at all — landed state is ' +
+      'exactly what restoreState() read from the planted keys.',
   },
   {
     name: 'valid-deep-link matching planted state',
     hash: '#/john/3:16?v=kjv',
-    plant: { 'flutter.book': 'John', 'flutter.chapter': '3', 'flutter.version': 'kjv' },
+    plant: PLANT_JOHN_3_KJV,
+    expect: { book: 'John', chapter: '3', version: 'kjv' },
+    note: 'hash matches the plant; John 3 has 36 verses in kjv (verified ' +
+      'against assets/kjv.json) so verse 16 exists — this should fully ' +
+      'apply, including the verse-jump index math at :307-311.',
   },
   {
     name: 'stale deep link DISAGREEING with planted state ' +
           '(the shape only _applyHashToState alone sees)',
     hash: '#/revelation/999:1?v=biblexg-v2',
-    plant: { 'flutter.book': 'John', 'flutter.chapter': '3', 'flutter.version': 'kjv' },
+    plant: PLANT_JOHN_3_KJV,
+    expect: { version: 'biblexg-v2' },
+    note: 'version swap runs unconditionally before the hasVerse guard ' +
+      '(:259-271 vs :282); chapter 999 does not exist for 启示录 in any ' +
+      'version (Revelation has 22 chapters), so hasVerse fails and ' +
+      'book/chapter are left at whatever restoreState() produced BEFORE ' +
+      'this hash was applied — not necessarily the planted John/3. Only ' +
+      '`version` is checked for this shape; a book/chapter mismatch here ' +
+      'is expected, not a finding.',
+  },
+  {
+    name: 'stale verse, valid chapter — untried shape (b): reaches ' +
+          'setCurrentChapter + the relIdx verse-jump math',
+    hash: '#/john/3:999?v=kjv',
+    plant: PLANT_JOHN_3_KJV,
+    expect: { book: 'John', chapter: '3', version: 'kjv' },
+    note: 'John 3 exists in kjv (36 verses, verified against ' +
+      'assets/kjv.json; verse 999 does not) so hasVerse passes at :282 ' +
+      'and mp.setCurrentChapter runs at :288 — the one line every prior ' +
+      'pass\'s shapes never reached. The verse lookup at :307-311 finds ' +
+      'no match (relIdx == -1) and is skipped by the `if (relIdx >= 0)` ' +
+      'guard, so no verse jump; landed chapter should still be 3.',
+  },
+  {
+    name: 'cross-version cross-language deep link — heaviest untried ' +
+          'path: version swap + FetchBooks + book-name translation mid-boot',
+    hash: '#/revelation/17:1?v=biblexg-v2',
+    plant: PLANT_JOHN_3_KJV,
+    expect: { book: '启示录', chapter: '17', version: 'biblexg-v2' },
+    note: 'Revelation 17 has 18 verses in biblexg-v2 (book field 启示录, ' +
+      'verified against assets/biblexg-v2.json); englishToChinese maps ' +
+      '"Revelation"->"启示录" (book_name_mapping.dart:70), so ' +
+      'translateBookName resolves it correctly if the version-swap + ' +
+      'FetchBooks sequence at :259-271 completes before the translation ' +
+      'at :278 runs. This exact link is named in the :249-258 code ' +
+      'comment as the historical v1.3.61 bug case (cold boot to biblexg-v2 ' +
+      'while default-booted in an English version) — the fix for THAT bug ' +
+      'is what this shape re-exercises end to end.',
   },
 ];
 
@@ -182,8 +242,29 @@ async function runShape(shape) {
     }
   });
 
+  // Network oracle (secondary, meaningful once Part 1 — the ErrorReporter
+  // calls added to url_sync_service_web.dart's two catches — is deployed
+  // to ORIGIN). A swallowed `_applyHashToState` throw now becomes a real
+  // outbound POST to /api/errorReport instead of a silent debugPrint. This
+  // is best-effort: `request.postData` is only populated on
+  // requestWillBeSent when CDP captured it inline; if it's missing we try
+  // `Network.getRequestPostData` once, and if that also comes up empty we
+  // still record that the POST happened.
+  const errorReportRequests = [];
+  cdp.on((method, params) => {
+    if (method !== 'Network.requestWillBeSent') return;
+    const url = params.request?.url || '';
+    if (!url.includes('/api/errorReport')) return;
+    errorReportRequests.push({
+      requestId: params.requestId,
+      url,
+      postData: params.request?.postData || null,
+    });
+  });
+
   await cdp.send('Runtime.enable');
   await cdp.send('Page.enable');
+  await cdp.send('Network.enable');
 
   // Inject BEFORE any page script runs, on every document (so it survives
   // the reload after planting storage) — mirrors what a real browser
@@ -289,16 +370,71 @@ async function runShape(shape) {
         // empty even on a healthy boot because Flutter renders to
         // canvas/DOM nodes that document.body.innerText does not walk.
         var glassPane = document.querySelector('flt-glass-pane');
+        // State oracle: dump every key/VALUE, not just key names. The
+        // primary reading pane's _storagePrefix is '' (main_provider.dart
+        // :60), so book/chapter/version live at the unscoped
+        // flutter.book / flutter.chapter / flutter.version keys written by
+        // saveCurrentState() (:1428-1430). Reading the values (not just
+        // presence) is what lets this harness tell "landed where the hash
+        // pointed" from "landed where the trap planted it and the apply
+        // silently no-op'd" — the shape a swallowed throw produces.
+        var kv = {};
+        Object.keys(localStorage).sort().forEach(function(k) {
+          kv[k] = localStorage.getItem(k);
+        });
         return {
           bootSplashPresent: !!el,
           glassPanePresent: !!glassPane,
           bodyTextSnippet: (document.body.innerText || '').slice(0, 300),
-          localStorageKeys: Object.keys(localStorage).sort(),
+          localStorage: kv,
+          landed: {
+            book: localStorage.getItem('flutter.book'),
+            chapter: localStorage.getItem('flutter.chapter'),
+            version: localStorage.getItem('flutter.version'),
+          },
         };
       })()
     `,
     returnByValue: true,
   }).catch((e) => ({ result: { value: { error: String(e) } } }));
+
+  // Resolve any /api/errorReport POST bodies CDP didn't inline. Best
+  // effort — by now the request has long finished, so a miss here just
+  // means "POST happened, body unavailable", not "no POST happened".
+  for (const req of errorReportRequests) {
+    if (req.postData) continue;
+    try {
+      const r = await cdp.send('Network.getRequestPostData', { requestId: req.requestId });
+      req.postData = r?.postData || null;
+    } catch {
+      /* body not retrievable after the fact — leave null */
+    }
+  }
+  if (errorReportRequests.length > 0) {
+    console.log(`    /api/errorReport POSTs observed: ${errorReportRequests.length}`);
+    for (const req of errorReportRequests) {
+      console.log(`      -> ${req.url}`);
+      console.log(`         body: ${req.postData || '(unavailable)'}`);
+    }
+  } else {
+    console.log('    /api/errorReport POSTs observed: 0');
+  }
+
+  const landed = finalState.result?.value?.landed;
+  if (shape.expect && landed) {
+    const mismatches = Object.entries(shape.expect)
+      .filter(([k, v]) => landed[k] !== v)
+      .map(([k, v]) => `${k}: expected ${JSON.stringify(v)}, landed ${JSON.stringify(landed[k])}`);
+    if (mismatches.length === 0) {
+      console.log(`    state oracle: MATCHES expected landing (${JSON.stringify(shape.expect)})`);
+    } else {
+      console.log(`    state oracle: MISMATCH — ${mismatches.join('; ')}`);
+      console.log('      (a mismatch here means the hash did not fully apply — ' +
+        'consistent with, though not proof of, a swallowed throw)');
+    }
+  } else if (shape.expect) {
+    console.log('    state oracle: could not read landed state (see finalState.error below)');
+  }
 
   console.log(`    events captured: ${events.length}`);
   for (const e of events) {
@@ -316,7 +452,12 @@ async function runShape(shape) {
   cdp.close();
   await closeTab(tab.id);
 
-  return { shape: shape.name, events, finalState: finalState.result?.value };
+  return {
+    shape: shape.name,
+    events,
+    finalState: finalState.result?.value,
+    errorReportRequests,
+  };
 }
 
 async function main() {
@@ -359,24 +500,46 @@ async function main() {
 
   console.log('\n=== summary ===');
   let anyThrow = false;
+  let anyErrorReport = false;
   for (const r of results) {
     const throwCount = (r.events || []).filter(
       (e) => e.kind === 'Runtime.exceptionThrown' ||
              /BOOT_TRAP window\.onerror|BOOT_TRAP unhandledrejection/i.test(e.text || ''),
     ).length;
     if (throwCount > 0) anyThrow = true;
-    console.log(`  ${r.shape}: ${throwCount} throw-like event(s)` +
+    const reportCount = (r.errorReportRequests || []).length;
+    if (reportCount > 0) anyErrorReport = true;
+    console.log(`  ${r.shape}: ${throwCount} throw-like event(s), ` +
+      `${reportCount} /api/errorReport POST(s)` +
       (r.error ? ` (harness error: ${r.error})` : ''));
   }
-  console.log(anyThrow
-    ? '\nAt least one shape produced a throw/rejection — see events above ' +
-      'for the frame. Do NOT state a root cause without decoding it ' +
-      'against a matching --source-maps build; report only what was ' +
-      'observed here.'
-    : '\nNo shape reproduced a throw or unhandled rejection in the ~15s ' +
-      'observation window. This does not clear _applyHashToState / ' +
-      '_parseHash beyond the exact shapes tried — see the shapes list ' +
-      'above for exactly what that is.');
+  // The network oracle is the primary signal once Part 1 is deployed: a
+  // swallowed _applyHashToState throw now reaches ErrorReporter.report
+  // (source: 'UrlSync.boot' / 'UrlSync.popstate'), which POSTs here even
+  // though debugPrint stays silent in release web. The console/CDP
+  // exception oracle from prior passes is kept as a secondary signal —
+  // it catches anything that escapes the local catch entirely.
+  if (anyErrorReport) {
+    console.log('\n/api/errorReport fired on at least one shape — that IS ' +
+      'the throw site this item has been looking for (see the POST ' +
+      'bodies logged per-shape above for the error string + stack). Do ' +
+      'not state a root cause beyond what that body actually says.');
+  } else if (anyThrow) {
+    console.log('\nAt least one shape produced a throw/rejection outside ' +
+      'the local catch (CDP exception or window.onerror/unhandledrejection) ' +
+      '— see events above for the frame. Do NOT state a root cause without ' +
+      'decoding it against a matching --source-maps build; report only ' +
+      'what was observed here.');
+  } else {
+    console.log('\nNo shape produced an /api/errorReport POST or an ' +
+      'uncaught throw/rejection in the ~15s observation window. This ' +
+      'clears exactly the shapes tried, on ORIGIN as deployed at run ' +
+      'time — check the per-shape "state oracle" lines above: a MATCH ' +
+      'means the hash fully applied (clean, not just quiet); a ' +
+      'MISMATCH without a POST is itself new information (the apply did ' +
+      'not complete AND nothing reported why) and should be written up, ' +
+      'not treated as "no throw".');
+  }
 }
 
 main();
