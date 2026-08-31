@@ -21,7 +21,12 @@ import 'package:yswords/services/playback/song_playback_engine.dart';
 /// targets this app ships to. just_audio would have needed a separate
 /// media-kit backend for Windows and Linux, for no gain here.
 class SongAudioHandler extends BaseAudioHandler with SeekHandler {
-  SongAudioHandler() {
+  /// [engine] is a test seam: production call sites pass nothing and
+  /// get the real platform engine, and a test can inject a fake that
+  /// implements the same public surface with no audio plugin and no
+  /// network. See test/song_auto_advance_test.dart.
+  SongAudioHandler({SongPlaybackEngine? engine})
+      : _player = engine ?? SongPlaybackEngine() {
     _player.onPlaying.listen((playing) {
       _playing = playing;
       _broadcast();
@@ -53,11 +58,37 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _player.onComplete.listen((_) => _onTrackFinished());
     // Web reports playback failures asynchronously from the element,
     // long after play() returned, so they arrive here rather than as
-    // a thrown exception.
+    // a thrown exception. On native, `_guard` (song_playback_engine_
+    // native.dart) funnels EVERY guarded command's failure through
+    // this exact same stream — play, resume, pause, stop, seek and
+    // setVolume alike — so this listener cannot tell "the track is
+    // dead" apart from "the user's pause failed" by the message alone.
     _player.onError.listen((message) {
       _error = message;
       _loading = false;
       notifyUi();
+      // A track that already produced real position or duration — the
+      // same "is this track alive" signal _armStallWatchdog trusts —
+      // is not the one that just failed to start; some other command
+      // (pause/stop/seek) failed on a perfectly good track, and
+      // skipping here would move the music on out from under a user
+      // who only pressed pause. 2026-08-16, "为什么一首歌完了下首歌
+      // 没有继续播放而是停住了": quarantining and skipping only a
+      // track that never proved itself alive is also what lets a
+      // queue of genuinely dead tracks terminate — see
+      // docs/autonomous-queue.md:7636.
+      //
+      // This is a heuristic, not a correlation id: onError carries no
+      // reference to which play() attempt failed, so a STALE error for
+      // a track the user has already skipped away from can still land
+      // here and be blamed on whatever is current now, if that track
+      // also has not yet produced position/duration. Pre-existing
+      // (the old unconditional skip mis-attributed every error this
+      // way too), not introduced by this check — but not closed by it
+      // either. See docs/autonomous-queue.md's follow-up entry.
+      if (_duration > Duration.zero || _position > Duration.zero) return;
+      final item = _queue.current;
+      if (item != null) _failed.add(item.song.id);
       _skipPastFailure();
     });
 
@@ -109,7 +140,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  final SongPlaybackEngine _player = SongPlaybackEngine();
+  final SongPlaybackEngine _player;
 
   /// Injected so this file stays free of the native-only download
   /// layer: given a song and its upstream URL, returns what to

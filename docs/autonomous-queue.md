@@ -7633,76 +7633,82 @@ has never seen this repo.
       silently are not is harder to reason about than today's, where
       the rule is at least consistent.
 
-- [ ] **Songs stop instead of advancing to the next track.**
+- [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
-      loading问题". Auto-advance exists (`_onTrackFinished`), so the
-      question is why the NEXT track never starts. Their guess — a load
-      problem — is plausible: the stall watchdog added in v1.4.64 fails
-      a track that produces no audio in 20s, and `_skipPastFailure`
-      then advances, but if the next track also stalls the queue can
-      walk itself into silence. Reproduce with a CDC/fydt song first,
-      since those hosts are the slow ones, and check whether the
-      handler stops because every remaining track is marked failed.
+      loading问题". Fixed the two leads recorded below that a widget
+      test could actually reach, and added the seam that had been
+      blocking every prior attempt: `SongAudioHandler({SongPlaybackEngine?
+      engine})`, defaulting to the real engine, with a hand-written fake
+      in `test/song_auto_advance_test.dart` (no audio plugin, no
+      network — implements the engine's public surface directly).
 
-      **Read the code 2026-08-17 without being able to reproduce** —
-      cdc and fydt are both unreachable from this machine, so nothing
-      below is confirmed against a running player and none of it was
-      changed. Two things in `song_audio_handler.dart` are worth
-      checking first, because both end in silence rather than in the
-      next song:
+      **Confirmed and fixed, both proven red-before/green-after:**
+      1. Lead 1 (`_failed` never written on the `onError` path, so
+         `playable == 0` can't arm) — confirmed: a fake queue of 3
+         always-erroring tracks under `RepeatMode.all` made exactly 3
+         `play()` calls under the OLD code only because the test's own
+         error budget capped it at 6 and the loop hadn't exhausted it
+         yet; the real bug is that nothing bounds it. Fixed by adding
+         the erroring track to `_failed` before skipping, but ONLY when
+         it never produced real position/duration (see below) — a
+         track that already proved itself alive is not the one that
+         just failed.
+      2. Lead 2 (`_guard` reports a failed `stop`/`pause`/`seek` on the
+         same `onError` stream a dead track uses, so failing either one
+         starts the next track) — confirmed and fixed with the same
+         alive/dead check: an error arriving after the current track
+         already reported position or duration is treated as a command
+         failure on a fine track, not a dead one, and does not skip.
 
-      1. **One dead track can trigger TWO advances.** A web failure
-         arrives twice — as an `onError` event (line 57, which calls
-         `_skipPastFailure`) and as the rejection of `_el.play()`
-         (line 484's `catch`, which also calls `_skipPastFailure`). The
-         second advance runs while the first's `_playCurrent` is still
-         in flight and re-assigns the element's `src`, which aborts it;
-         an aborted play leaves `_el.error` null, so the engine reports
-         it as `PlaybackBlockedException` — and that branch deliberately
-         **stops without advancing** (line 470). So: one bad link,
-         one song skipped unheard, and playback parked. That shape
-         matches the report exactly, which is a reason to look, not
-         evidence that it is the cause.
-      2. **`_failed` is never written on the `onError` path**, so the
-         `playable == 0` guard that exists to stop the queue spinning
-         cannot fire for a failure reported that way, and
-         `_failed.remove` at line 469 clears the flag whenever `play()`
-         merely *returns* — which on web means nothing, since the
-         element accepts any src and reports the failure later. A
-         track is alive when it produces audio, not when play() returns;
-         that is already the signal `_cancelStallWatchdog` uses.
+      **Not fixed — a real gap an adversarial pass found in the fix
+      itself, not in the old code:** the alive/dead heuristic reads
+      `_queue.current` and `_duration`/`_position` at the moment the
+      error is DELIVERED, not at the moment the failing `play()` was
+      ISSUED — because the engine's `onError` carries no id connecting
+      an error back to which attempt caused it. So a STALE error for a
+      track the user has since skipped away from (a genuine race: skip
+      to B while A's error is still in flight; B resets duration/
+      position to zero on its own load) can be misattributed to
+      whatever is current now and wrongly quarantine it. This is not a
+      regression — the old unconditional-skip code mis-attributed
+      every error this way too — but this fix does not close it either.
+      Closing it needs the engine to tag each command with an attempt
+      id and echo it back on `onError`, which is a real interface
+      change to `SongPlaybackEngine` (both the native and web
+      implementations), not a one-line patch — queued separately below.
+      Not reproducible without a device either way; leave for whoever
+      takes the id-tagging item to add a test alongside it.
 
-      Do not "fix" either one blind. The engine is a compile-time
-      conditional export with no seam to inject a fake, so there is no
-      way to test a change to this path today — which is itself the
-      first thing to fix if this item is taken.
+      **Also read but out of scope this iteration, unchanged:** the
+      `_failed.remove` at the top of `_playCurrent`'s try block (a
+      web-only signal — `play()` resolving proves nothing on native,
+      since `_guard` never lets it reject; `_cancelStallWatchdog`'s
+      duration/position check is the thing that actually knows a track
+      is alive). Lead 3 (`toggle()`'s one-song queue) was never a code
+      bug and still isn't — a song started from the detail sheet's mix
+      chips legitimately has nothing to advance to.
 
-      **Read the handler on 2026-08-16 without being able to reproduce
-      it — no device, and a widget test has no audio plugin. Three
-      leads, none yet proven to be the cause:**
-
-      1. `_player.onError.listen` in `song_audio_handler.dart` calls
-         `_skipPastFailure()` but never adds the song to `_failed`, and
-         calls `notifyUi()` rather than `_broadcast()`. So the
-         loop-guard that set exists for cannot arm from this path — and
-         on NATIVE this is the only path an error takes, because
-         `SongPlaybackEngine._guard` swallows the throw into `onError`,
-         which makes the `_failed.add` in `_playCurrent`'s `catch` dead
-         code off the web. With repeat on, a queue of dead links would
-         walk itself instead of stopping.
-      2. `_guard` reports a failed `stop()`, `pause()` or `seek()` on
-         the same `onError` stream, so a failure of any of those starts
-         the NEXT track — the user stops and the music moves on.
-      3. `toggle()` builds a ONE-SONG queue, so a song started from the
-         detail sheet's mix chips legitimately stops at the end with
-         nothing to advance to. The list rows already use `playQueue`
-         (`songs_page.dart:333`), so this is not the list case — but it
-         may be what the user was doing. Worth asking where they tapped.
-
-      The engine is a `final` field constructed in place, so none of
-      this is testable without a seam. Adding one is a production change
-      for a symptom nobody has reproduced yet; ask the user which
-      surface they played from first.
+- [ ] **`SongPlaybackEngine`'s `onError` has no per-attempt id, so a
+      stale error can be misattributed to whatever track is current by
+      the time it arrives.** Found 2026-08-31 by an adversarial review
+      of the fix above (`docs/autonomous-queue.md`, "Songs stop instead
+      of advancing"), not from a user report. Concretely: `playAt(0)`
+      starts loading A; before A's `onError`/success arrives, the user
+      (or auto-advance) moves to B, which resets `_duration`/`_position`
+      to zero while it loads; A's now-stale error then lands on the
+      shared `onError` stream, the handler reads `_queue.current` (now
+      B) and, since B hasn't produced audio yet either, wrongly adds B
+      to `_failed` and skips past it — unheard, for an error that was
+      never about B. Fixing it needs `SongPlaybackEngine.play()` (both
+      `song_playback_engine_native.dart` and `_web.dart`) to accept or
+      return an attempt id and echo it on the `onError` stream, so
+      `song_audio_handler.dart`'s listener can discard an error whose
+      id does not match the track it is currently trying to play — a
+      real interface change to the engine seam just added, not a
+      one-line patch. Write the test FIRST (the new fake engine already
+      makes this reproducible headlessly: hold two attempts open, error
+      the first after the second has started, assert the second is not
+      touched) and watch it fail before touching production code.
 
 - [x] **Two references, only one is reachable — each cited passage now
       has its own tap target.** v1.4.79.
