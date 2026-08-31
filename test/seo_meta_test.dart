@@ -19,8 +19,20 @@ void main() {
   final html = File('web/index.html').readAsStringSync();
   // Assertions about what the page DECLARES must not be satisfied — or
   // broken — by prose. index.html is heavily commented on purpose, and
-  // several of those comments name the very tags checked below.
-  final markup = html.replaceAll(RegExp(r'<!--[\s\S]*?-->'), '');
+  // several of those comments name the very tags checked below: one
+  // explains why there is no hreflang, another QUOTES the old
+  // side-by-side name pair while recording the day it was dropped.
+  // Both are documentation of a decision, not the decision itself.
+  //
+  // Two comment syntaxes live in this file — <!-- --> around markup and
+  // // inside the boot <script>s — so both come out. A `//` is only
+  // treated as a comment when it opens the line, which keeps every
+  // `https://` in the file intact.
+  final markup = html
+      .replaceAll(RegExp(r'<!--[\s\S]*?-->'), '')
+      .split('\n')
+      .where((l) => !l.trimLeft().startsWith('//'))
+      .join('\n');
 
   String? metaContent(String attr, String key) {
     // Tolerant of attribute order: the tag is authored `property=…
@@ -124,6 +136,29 @@ void main() {
                 'real ratings to report; fabricating them risks a manual '
                 'action against the whole site');
       }
+    });
+
+    test('never prints the two names side by side', () {
+      // The user's rule, given 2026-08-30 and restated 2026-08-31:
+      // English is "Yahweh's Words", Chinese is 雅伟之言, and no screen
+      // shows the pair. The app honours it by reading the reader's own
+      // language — but OG tags and the share card are STATIC (unfurlers
+      // do not run JavaScript), so the pair is exactly what a
+      // well-meaning edit reaches for when one tag has to serve both
+      // audiences. It got in once already, in the first version of this
+      // very block.
+      //
+      // The rule is about the NAME. Describing the app in both languages
+      // is fine and deliberate; what must not happen is the two names
+      // rendered as a single label.
+      final pair = RegExp(
+          "(Yahweh's Words\\s*[·・|/,、_—–-]?\\s*雅[伟偉]之言)"
+          "|(雅[伟偉]之言\\s*[·・|/,、_—–-]?\\s*Yahweh's Words)");
+      final hit = pair.firstMatch(markup);
+      expect(hit, isNull,
+          reason: 'the two names appear together as "${hit?.group(0)}". '
+              'One name per language: English text says '
+              "Yahweh's Words, Chinese text says 雅伟之言.");
     });
 
     test('no hreflang, because there are no per-language urls', () {

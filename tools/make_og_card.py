@@ -4,10 +4,10 @@ shows — WeChat, WhatsApp, Facebook, Twitter/X, iMessage, Slack.
 
     python3 tools/make_og_card.py
 
-Why a script and not a one-off export: the card carries the app name in
-BOTH scripts and the domain, all three of which have already changed
-once (「雅伟之言」 replaced the printed pair on 2026-08-30; the site moved
-to yahwehword.com). Regenerating has to be a one-liner, or the card
+Why a script and not a one-off export: the card carries the app name,
+the tagline and the domain, and all three have already changed once (the
+printed name pair was dropped on 2026-08-30; the site moved to
+yahwehword.com). Regenerating has to be a one-liner, or the card
 silently goes stale and every share advertises the old name.
 
 Composition notes, so a later edit does not undo them by accident:
@@ -20,6 +20,19 @@ Composition notes, so a later edit does not undo them by accident:
     that covers Latin AND both Chinese scripts, so the Latin and the
     Chinese lines share a weight instead of visibly disagreeing the way
     Helvetica-plus-a-CJK-fallback does.
+  * ONE name, not the pair. The user's rule (2026-08-30, restated
+    2026-08-31): English is "Yahweh's Words", Chinese is 雅伟之言, and
+    the two are never printed side by side. In the app that is easy —
+    it reads the reader's own language. A share card cannot: WeChat,
+    WhatsApp and every other unfurler read the raw HTML WITHOUT running
+    JavaScript, so there is exactly one card for every reader and it has
+    to pick. It picks English, matching the domain and the static
+    <title> that link previews already fall back to. The Chinese carries
+    the DESCRIPTION lines instead, so the card is still bilingual
+    without ever stacking the two names.
+    To flip the card to Chinese: swap `name` to 雅伟之言 below and swap
+    og:title / og:image:alt in web/index.html to match. Change both or
+    the picture and the text disagree.
 """
 
 import os
@@ -132,34 +145,30 @@ def main():
                   % (text, floor), file=sys.stderr)
         return f
 
-    name_en = "Yahweh's Words"
-    name_zh = '雅伟之言'
+    name = "Yahweh's Words"
     tag_en = 'Bilingual Bible · 7 translations · original languages'
     tag_zh = '双语圣经 · 和合本雅伟版 · 原文对照与释经注'
     domain = 'yahwehword.com'
 
-    f_name = fitted(name_en, 82)
-    f_zh = fitted(name_zh, 62)
-    f_tag = fitted(tag_en, 30)
-    f_tag_zh = fitted(tag_zh, 30)
+    f_name = fitted(name, 82)
+    f_tag = fitted(tag_en, 32)
+    f_tag_zh = fitted(tag_zh, 32)
     f_domain = fitted(domain, 27)
 
-    block = (height(name_en, f_name) + 26 + height(name_zh, f_zh) + 40
-             + height(tag_en, f_tag) + 14 + height(tag_zh, f_tag_zh)
-             + 34 + height(domain, f_domain))
+    block = (height(name, f_name) + 44
+             + height(tag_en, f_tag) + 16 + height(tag_zh, f_tag_zh)
+             + 36 + height(domain, f_domain))
     y = (H - block) // 2
 
-    draw.text((x, y), name_en, font=f_name, fill=INK)
-    y += height(name_en, f_name) + 26
-    draw.text((x, y), name_zh, font=f_zh, fill=INK)
-    y += height(name_zh, f_zh) + 40
+    draw.text((x, y), name, font=f_name, fill=INK)
+    y += height(name, f_name) + 44
 
-    draw.line([(x, y - 20), (x + 96, y - 20)], fill=RULE, width=3)
+    draw.line([(x, y - 22), (x + 96, y - 22)], fill=RULE, width=3)
 
     draw.text((x, y), tag_en, font=f_tag, fill=INK_SOFT)
-    y += height(tag_en, f_tag) + 14
+    y += height(tag_en, f_tag) + 16
     draw.text((x, y), tag_zh, font=f_tag_zh, fill=INK_SOFT)
-    y += height(tag_zh, f_tag_zh) + 34
+    y += height(tag_zh, f_tag_zh) + 36
 
     draw.text((x, y), domain, font=f_domain, fill=RULE)
 

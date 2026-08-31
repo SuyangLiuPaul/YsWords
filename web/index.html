@@ -55,7 +55,7 @@
        They are what makes this app findable AT ALL: no other Bible site
        carries them, so they are the queries that can actually be won,
        while "bible app" cannot. -->
-  <meta name="description" content="Yahweh's Words 雅伟之言 — free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns.">
+  <meta name="description" content="Yahweh's Words — a free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns. 雅伟之言 —— 免费的中英对照圣经。">
 
   <!-- Kept even though Google has ignored keywords since 2009: Baidu
        and Sogou still read it, and a large share of this app's readers
@@ -75,14 +75,14 @@
        picture. Regenerate the card with `python3 tools/make_og_card.py`
        whenever the name, tagline or domain changes. -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Yahweh's Words 雅伟之言">
-  <meta property="og:title" content="Yahweh's Words 雅伟之言 — Bilingual Bible 双语圣经">
-  <meta property="og:description" content="Free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns.">
+  <meta property="og:site_name" content="Yahweh's Words">
+  <meta property="og:title" content="Yahweh's Words — Bilingual Bible 双语圣经">
+  <meta property="og:description" content="A free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns. 雅伟之言 —— 中英对照，免费使用。">
   <meta property="og:url" content="https://yahwehword.com/">
   <meta property="og:image" content="https://yahwehword.com/og-card.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Yahweh's Words 雅伟之言 — bilingual Bible reader">
+  <meta property="og:image:alt" content="Yahweh's Words — bilingual Bible reader">
   <!-- The app ships one UI in three scripts at the SAME url, so there
        is nothing for hreflang to point at (it needs distinct URLs per
        language and inventing them would be worse than omitting it).
@@ -92,8 +92,8 @@
   <meta property="og:locale:alternate" content="zh_TW">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Yahweh's Words 雅伟之言 — Bilingual Bible 双语圣经">
-  <meta name="twitter:description" content="Free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns.">
+  <meta name="twitter:title" content="Yahweh's Words — Bilingual Bible 双语圣经">
+  <meta name="twitter:description" content="A free bilingual Bible: 和合本雅伟版、梁家铿译本、KJV、NASB、LEB, original Greek &amp; Hebrew, cross-references, sermons and hymns. 雅伟之言 —— 中英对照，免费使用。">
   <meta name="twitter:image" content="https://yahwehword.com/og-card.png">
 
   <!-- Structured data. Deliberately NOT claimed here: aggregateRating
@@ -119,7 +119,8 @@
       {
         "@type": "WebApplication",
         "@id": "https://yahwehword.com/#app",
-        "name": "Yahweh's Words 雅伟之言",
+        "name": "Yahweh's Words",
+        "alternateName": ["雅伟之言", "雅偉之言"],
         "url": "https://yahwehword.com/",
         "applicationCategory": "ReferenceApplication",
         "operatingSystem": "Any (web browser)",
@@ -736,6 +737,7 @@
         color: #0d3b5c;
       }
       .ys-noscript h1 { font-size: 24px; margin: 0 0 4px; }
+      .ys-noscript .ys-name-zh { font-size: 22px; font-weight: 600; margin: 30px 0 4px; }
       .ys-noscript h2 { font-size: 17px; font-weight: 600; margin: 28px 0 6px; }
       .ys-noscript p { margin: 8px 0; }
       .ys-noscript .ys-note {
@@ -749,10 +751,16 @@
       }
     </style>
     <div class="ys-noscript">
-      <h1>Yahweh's Words · 雅伟之言</h1>
+      <!-- Two names, never juxtaposed. English is "Yahweh's Words",
+           Chinese is 雅伟之言, and each heads its OWN language's block —
+           the same rule the splash and the Flutter loading page follow,
+           applied to the one page that has to serve both at once because
+           it runs with JavaScript off and cannot ask who is reading. -->
+      <h1>Yahweh's Words</h1>
       <p>A free bilingual Bible reader — English and Chinese side by side,
          for listening to His voice and abiding in Him daily.</p>
-      <p>免费的双语圣经阅读工具 —— 中英对照，帮助你每天听祂的声音、住在祂里面。</p>
+      <p class="ys-name-zh" lang="zh-Hans">雅伟之言</p>
+      <p lang="zh-Hans">免费的双语圣经阅读工具 —— 中英对照，帮助你每天听祂的声音、住在祂里面。</p>
 
       <h2>Translations · 收录译本</h2>
       <p>和合本雅伟版（简体・繁體）、梁家铿译本（简体・繁體）、King James Version、
