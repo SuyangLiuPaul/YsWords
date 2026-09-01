@@ -151,6 +151,27 @@ void main() {
       }
     });
 
+    test('SIMULATING WEB: an English reader lands on KJV, not on Chinese',
+        () {
+      // The assertion the browser could not make. `availableVersions`
+      // narrows on a compile-time const that is false under flutter
+      // test, so this builds the web candidate list by hand and runs
+      // the real rule over it.
+      final webList = bibleVersions
+          .where((v) => !kWebRestrictedVersions.contains(v.value))
+          .toList();
+      expect(resolvableVersionFrom('nasb', webList), 'kjv');
+      expect(resolvableVersionFrom('leb', webList), 'kjv');
+      // Chinese editions are untouched and must not be redirected.
+      expect(resolvableVersionFrom('cuvs-yhwh', webList), 'cuvs-yhwh');
+      expect(resolvableVersionFrom('cuvs-yhwh-tr', webList), 'cuvs-yhwh-tr');
+      // And every result is something the web build can actually load.
+      final webCodes = webList.map((v) => v.value).toSet();
+      for (final v in bibleVersions.map((e) => e.value)) {
+        expect(webCodes, contains(resolvableVersionFrom(v, webList)));
+      }
+    });
+
     test('an English restricted edition falls back to a loadable English one',
         () {
       // Not asserting "KJV" by name — asserting the property that makes

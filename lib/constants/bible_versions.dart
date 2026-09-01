@@ -218,8 +218,22 @@ List<BibleVersionInfo> get availableVersions => bibleVersions
 /// Falls back inside the same language family — English lands on KJV,
 /// which is public domain and can never be restricted — and only leaves
 /// the family if that family is somehow empty.
-String resolvableVersion(String version) {
-  final available = availableVersions;
+String resolvableVersion(String version) =>
+    resolvableVersionFrom(version, availableVersions);
+
+/// The rule behind [resolvableVersion], with the candidate list passed in.
+///
+/// Split out because `availableVersions` narrows on `_kIsWeb`, which is a
+/// compile-time const — false under `flutter test`, so a test on the VM
+/// cannot exercise the web behaviour through [resolvableVersion] at all.
+/// Every assertion about where an English reader lands when NASB is
+/// stripped has to go through this door, and a browser check is not a
+/// substitute: the one I ran took the fresh-install branch and never
+/// touched this path.
+String resolvableVersionFrom(
+  String version,
+  List<BibleVersionInfo> available,
+) {
   if (available.any((v) => v.value == version)) return version;
   final lang = bibleVersionLanguage(version);
   for (final v in available) {
