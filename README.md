@@ -527,11 +527,19 @@ asset files** are licensed separately as listed below.
 
 For questions, feedback, or licensing / takedown requests:
 
-**paul.sy.liu@gmail.com**
+**support@yahwehword.com**
 
 If you are a rights holder and would like content removed, a single
 email to that address is sufficient. I will acknowledge within
 24 hours and act within 72 hours.
+
+<!-- 2026-09-01: was the developer's personal Gmail. The in-app UI
+     migrated every reader-facing contact address to
+     support@yahwehword.com on 2026-08-31 — see lib/constants/contact.dart
+     and test/support_email_test.dart, which pins that no personal
+     address survives anywhere in lib/. This README section is outside
+     lib/, so that test never covered it and the personal address sat
+     here for a month after the app itself stopped showing it. -->
 
 ---
 
