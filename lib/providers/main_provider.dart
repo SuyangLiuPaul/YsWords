@@ -405,7 +405,13 @@ class MainProvider extends ChangeNotifier {
     // Sort each chapter's verses by verse number once, up front, so
     // callers don't have to.
     for (final list in out.values) {
-      list.sort((a, b) => a.verse.compareTo(b.verse));
+      // 2026-09-02: subVerseOrder breaks the tie when two entries share
+      // a verse number (路加福音 23:34a and 34b) — Dart's sort is unstable,
+      // so returning 0 for that pair leaves the halves in either order.
+      list.sort((a, b) {
+        final v = a.verse.compareTo(b.verse);
+        return v != 0 ? v : a.subVerseOrder.compareTo(b.subVerseOrder);
+      });
     }
     return out;
   }

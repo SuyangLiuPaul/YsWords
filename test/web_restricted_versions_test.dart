@@ -60,6 +60,29 @@ void main() {
             'calls — a build with no strip ships the files');
   });
 
+  test('netlify.toml answers a real 404 for each stripped asset', () {
+    // Removing the file is not enough on its own: the SPA catch-all
+    // answered /assets/assets/nasb.json with 200 + index.html (53,444
+    // bytes of Flutter shell), measured on prod right after v1.4.193.
+    // A 200 under a path naming an unlicensed translation is the exact
+    // signal this whole change exists to stop sending.
+    final toml = File('netlify.toml').readAsStringSync();
+    for (final v in kWebRestrictedVersions) {
+      final rule = RegExp(
+        'from = "/assets/assets/$v\\.json"\\s+to = "[^"]+"\\s+status = 404',
+      );
+      expect(toml, matches(rule),
+          reason: '$v has no 404 redirect in netlify.toml, so its URL '
+              'falls through to the SPA fallback and answers 200');
+    }
+    final spa = toml.indexOf('from = "/*"');
+    for (final v in kWebRestrictedVersions) {
+      expect(toml.indexOf('from = "/assets/assets/$v.json"'), lessThan(spa),
+          reason: 'first match wins — the $v rule must sit ABOVE the '
+              'catch-all or it never runs');
+    }
+  });
+
   test('the strip refuses to continue if the file survives', () {
     expect(script, contains('refusing to deploy'),
         reason: 'a silent rm that failed would deploy the asset anyway');

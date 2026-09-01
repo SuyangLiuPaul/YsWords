@@ -28837,10 +28837,21 @@
   "chapter": "23",
   "verse": "33",
   "verseLabel": "33",
-  "text": "來到那片地，名叫髑髏地，就在那裡將耶穌釘上了十字架，也釘了那兩個罪犯，右手一個，左手一個。34a耶穌說：父親啊，赦免他們，因為他們不曉得自己在做甚麼。",
+  "text": "來到那片地，名叫髑髏地，就在那裡將耶穌釘上了十字架，也釘了那兩個罪犯，右手一個，左手一個。",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
   "id": "42023033"
+ },
+ {
+  "book": "路加福音",
+  "chapter": "23",
+  "verse": "34",
+  "verseLabel": "34a",
+  "text": "耶穌說：父親啊，赦免他們，因為他們不曉得自己在做甚麼。",
+  "isParagraphStart": false,
+  "paragraphType": "paragraph",
+  "id": "42023033a",
+  "subVerseOrder": 0
  },
  {
   "book": "路加福音",
@@ -28850,7 +28861,8 @@
   "text": "然後，他們抓鬮分了耶穌的衣袍。",
   "isParagraphStart": false,
   "paragraphType": "paragraph",
-  "id": "42023034"
+  "id": "42023034",
+  "subVerseOrder": 1
  },
  {
   "book": "路加福音",

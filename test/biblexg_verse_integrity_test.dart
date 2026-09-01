@@ -75,12 +75,16 @@ void main() {
                 ' swallowed ${hit.group(0)}');
           }
         }
-        // 路加福音 23:33 still holds 34a. Splitting it needs a sub-verse
-        // label — the 註釋本 prints 34a / 34b — and that changes a verse
-        // id, so it is the user's call. See docs/autonomous-queue.md.
-        expect(stranded, hasLength(1));
-        expect(stranded.single, contains('23:33'));
-        expect(stranded.single, contains('34a'));
+        // 2026-09-02: this used to assert hasLength(1) and pin 路加福音
+        // 23:33's swallowed `34a` as a known, user-gated defect. The user
+        // ruled (「34a这些能够也做成像经文可以选择的节吗」), 23:33 was split,
+        // and 34a is now a verse of its own — so the expected count is
+        // zero and this test is back to meaning what its name says.
+        // tools/repair_biblexg_luke_23_34a.py re-applies the split after
+        // the Traditional rebuild; test/luke_23_34a_test.dart pins the
+        // result. If this ever fails at 1 again, that rebuild ran without
+        // the repair.
+        expect(stranded, isEmpty);
       });
 
       test('every reference is unique and no verse is empty', () {

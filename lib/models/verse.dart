@@ -35,6 +35,22 @@ class Verse {
   /// 116 psalms in the LEB.
   final String superscription;
 
+  /// 2026-09-02: reading order among verses that share a [verse] number.
+  ///
+  /// 梁家鏗譯本 prints 路加福音 23:34 in two halves, and until now the app
+  /// showed the publisher's own affix as literal characters in the middle
+  /// of 23:33 — `…右手一個，左手一個。34a耶穌說：父親啊…`. Splitting it out
+  /// gives two entries that both hold `verse: 34`: the supplied
+  /// `verseLabel: '34a'` and the existing `verseLabel: '34'` (which is
+  /// really 34b). `compareTo` on the number alone returns 0 for that pair,
+  /// and **Dart's sort is not stable**, so without an explicit ordinal the
+  /// two halves could render in either order.
+  ///
+  /// 0 for every verse in every other edition, which is why it is not
+  /// simply the array index: a default of 0 keeps 31,102 unchanged verses
+  /// out of the asset, and only the second half of Luke 23:34 carries a 1.
+  final int subVerseOrder;
+
   const Verse({
     required this.book,
     required this.chapter,
@@ -45,6 +61,7 @@ class Verse {
     this.paragraphType = 'inline',
     this.blockNotes = const [],
     this.superscription = '',
+    this.subVerseOrder = 0,
   }) : verseLabel = verseLabel ?? '$verse';
 
   // Always use the English book name so the ID is the same regardless of
@@ -66,6 +83,7 @@ class Verse {
     String? paragraphType,
     List<String>? blockNotes,
     String? superscription,
+    int? subVerseOrder,
   }) {
     return Verse(
       book: book ?? this.book,
@@ -77,6 +95,7 @@ class Verse {
       paragraphType: paragraphType ?? this.paragraphType,
       blockNotes: blockNotes ?? this.blockNotes,
       superscription: superscription ?? this.superscription,
+      subVerseOrder: subVerseOrder ?? this.subVerseOrder,
     );
   }
 
@@ -112,6 +131,7 @@ class Verse {
       paragraphType: (json['paragraphType'] as String?) ?? 'inline',
       blockNotes: blockNotes,
       superscription: (json['superscription'] as String?) ?? '',
+      subVerseOrder: (json['subVerseOrder'] as num?)?.toInt() ?? 0,
     );
   }
 }

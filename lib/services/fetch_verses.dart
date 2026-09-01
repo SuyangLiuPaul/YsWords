@@ -409,7 +409,13 @@ class FetchVerses {
       final bi = standardBookOrder.indexOf(bookNameToEnglish[b.book] ?? b.book);
       if (ai != bi) return ai.compareTo(bi);
       final c = a.chapter.compareTo(b.chapter);
-      return c != 0 ? c : a.verse.compareTo(b.verse);
+      if (c != 0) return c;
+      final v = a.verse.compareTo(b.verse);
+      // 2026-09-02: two entries can share a verse number — 路加福音 23:34
+      // is printed in halves (34a, then 34b labelled plain "34"). Dart's
+      // sort is not stable, so a comparator that returns 0 here leaves
+      // their order undefined. See Verse.subVerseOrder.
+      return v != 0 ? v : a.subVerseOrder.compareTo(b.subVerseOrder);
     });
 
     return enriched;

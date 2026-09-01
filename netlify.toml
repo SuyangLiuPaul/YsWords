@@ -176,6 +176,39 @@
   to = "/sermons/404.html"
   status = 404
 
+# 2026-09-02: the stripped translations answer a real 404, not the shell.
+#
+# `strip_restricted_assets` in tools/release_web.sh removes nasb.json and
+# leb.json from build/web (they are licensed for quotation, not for
+# redistribution as files). That alone left the SPA catch-all below
+# answering their URLs with 200 + index.html — measured on prod right
+# after the v1.4.193 deploy:
+#
+#   /assets/assets/nasb.json   200   53,444   ← the Flutter shell
+#   /assets/assets/leb.json    200   53,444   ← the Flutter shell
+#   /assets/assets/kjv.json    200  7,604,330 ← the real file, correctly
+#
+# This is the SAME soft-404 the /read/ rule above was written for, and
+# here it is worse than crawl noise: a 200 under a path that names a
+# translation we have no licence to publish is exactly the signal we are
+# trying not to send, and a client that checks status before parsing
+# would report the file as present.
+#
+# Must stay ABOVE the catch-all (first match wins) and must NOT be
+# `force`d, so that if a licence is granted and the file returns to the
+# bundle, the real asset wins on its own with no rule to remember to
+# delete. Keep this list equal to `kWebRestrictedVersions` — see
+# test/web_restricted_versions_test.dart.
+[[redirects]]
+  from = "/assets/assets/nasb.json"
+  to = "/read/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/assets/assets/leb.json"
+  to = "/read/404.html"
+  status = 404
+
 # Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
 # `/.netlify/functions/*`) are matched and served by Netlify BEFORE
 # this catch-all rewrite, so the function doesn't get swallowed by

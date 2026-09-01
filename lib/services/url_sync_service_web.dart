@@ -437,9 +437,17 @@ Future<void> _applyHashToState(String rawHash, {bool isBoot = false}) async {
               (bookNameToEnglish[v.book] ?? v.book) == parsed.book &&
               v.chapter == parsed.chapter)
           .toList()
-        ..sort((a, b) => a.verse.compareTo(b.verse));
-      final relIdx = chapterVerses
-          .indexWhere((v) => v.verse == parsed.verse);
+        ..sort((a, b) {
+          final n = a.verse.compareTo(b.verse);
+          return n != 0 ? n : a.subVerseOrder.compareTo(b.subVerseOrder);
+        });
+      // With a sub-verse letter, match the label exactly. Without one,
+      // match the number — and because the sort puts 34a before 34b,
+      // a bare `23:34` lands on the first half, which is where verse 34
+      // begins.
+      final relIdx = parsed.verseLabel != null
+          ? chapterVerses.indexWhere((v) => v.verseLabel == parsed.verseLabel)
+          : chapterVerses.indexWhere((v) => v.verse == parsed.verse);
       if (relIdx >= 0) {
         mp.updateCurrentVerse(verse: chapterVerses[relIdx]);
         mp.setPendingJump(chapterVerseIndex: relIdx);
@@ -459,11 +467,17 @@ class _ParsedHash {
   final String book; // canonical English
   final int chapter;
   final int? verse;
+
+  /// Set only when the URL carried a sub-verse letter (`23:34a`). Null
+  /// for an ordinary `23:34`, which must keep matching on the number so
+  /// that a link written before the split still resolves.
+  final String? verseLabel;
   final String? version;
   const _ParsedHash({
     required this.book,
     required this.chapter,
     this.verse,
+    this.verseLabel,
     this.version,
   });
 }
@@ -494,13 +508,26 @@ _ParsedHash? _parseHash(String rawHash) {
 
   int chapter = 1;
   int? verse;
+  String? verseLabel;
   if (segments.length >= 2) {
     final chapterSeg = segments[1];
     // chapter or chapter:verse
     final colon = chapterSeg.indexOf(':');
     if (colon > 0) {
       chapter = int.tryParse(chapterSeg.substring(0, colon)) ?? 1;
-      verse = int.tryParse(chapterSeg.substring(colon + 1));
+      // 2026-09-02: a verse can carry a sub-verse letter — 梁家鏗譯本
+      // prints 路加福音 23:34 in halves, so `/luke/23:34a` is a real
+      // reference. `int.tryParse` alone returned null for it and the
+      // link silently degraded to the whole chapter. Split the digits
+      // from the suffix: the number still drives everything numeric,
+      // and the label (kept only when a suffix is actually present)
+      // picks the right half out of the two that share the number.
+      final raw = chapterSeg.substring(colon + 1);
+      final m = RegExp(r'^(\d+)([a-z])?$', caseSensitive: false).firstMatch(raw);
+      if (m != null) {
+        verse = int.tryParse(m.group(1)!);
+        if (m.group(2) != null) verseLabel = '${m.group(1)}${m.group(2)!.toLowerCase()}';
+      }
     } else {
       chapter = int.tryParse(chapterSeg) ?? 1;
     }
@@ -523,6 +550,7 @@ _ParsedHash? _parseHash(String rawHash) {
     book: englishBook,
     chapter: chapter,
     verse: verse,
+    verseLabel: verseLabel,
     version: version,
   );
 }
