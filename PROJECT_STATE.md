@@ -1634,6 +1634,36 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     `yswords.bootAutoRecovered` for the poll) so a future run can attribute
     a reload on evidence instead of a timing argument ("our window is
     under 20s so it probably wasn't the poll").
+60. **Don't rebuild to reproduce a historical bundle's SHA-256 — fetch**
+    **it.** Netlify keeps every atomic deploy individually addressable
+    forever at `https://<deploy-id>--<site>.netlify.app/`, findable via
+    `netlify api listSiteDeploys --data '{"site_id":"…","per_page":100}'`
+    and matching the version in each entry's `title`. Four passes tried
+    to rebuild `c0af3985` (v1.4.178) locally hoping to land on the
+    queue's recorded oracle hash `4b3969fe89dc0155…`; two consecutive
+    bare-`APP_VERSION` rebuilds were byte-identical to EACH OTHER
+    (`1a122cd1…`) but not to the recorded hash, because
+    `tools/build_web.py`'s real invocation also passes
+    `--dart-define=APP_RELEASE_TIME=<wall-clock of the build>`, a
+    dart2js compile-time constant baked into the JS — a local build
+    using the source's committed default timestamp instead of the real
+    build-moment one can never byte-match. 2026-09-01 fetched the actual
+    "v1.4.178 dev" deploy directly instead (`created_at
+    2026-08-31T06:14:29.932Z`, id `6a951bc5dcfc9be2f91f9942`) — hash
+    matched immediately, no dart-define guessing needed. Use this before
+    trying to reconstruct a past bundle from source.
+    That fetch also finally decoded `main.dart.js:59285:36` for the
+    open boot-crash item (`docs/autonomous-queue.md`): it's dart2js's
+    compiled `num.clamp()` (`js_number.dart:184-193` in the bundled
+    Flutter 3.44.2 SDK), throwing `ArgumentError.value(lowerLimit)`
+    when `lowerLimit.compareTo(upperLimit) > 0`. The application call
+    site that invokes `.clamp()` with an inverted range is still not
+    found — searched `lib/**/*.dart` only; ~27 Flutter-framework files
+    and ~152 pub-cache package files also call `.clamp(` and compile
+    into the bundle, and weren't checked. See the queue entry for the
+    full trail, including why the double-typed `.clamp(0.0, …)` calls
+    in `scrollable_positioned_list` (this app's verse-list scroller)
+    are probably NOT it — the crash text says integer `0`, not `0.0`.
 
 ## Standing rules from the user
 

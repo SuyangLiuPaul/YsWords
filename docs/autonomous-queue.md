@@ -805,6 +805,135 @@ reported. Work these top-down before P2.
       **Item stays open.** Root cause — the actual throw site — is still
       not identified.
 
+      **2026-09-01 — `main.dart.js:59285:36` decoded. The immediate
+      throw site is dart2js's compiled `num.clamp(lowerLimit,
+      upperLimit)`, not application code, and it fires because some
+      caller passes an inverted range with `lowerLimit=0`. The exact
+      application call site is still NOT identified — this closes the
+      SDK half of the lead, not the item.**
+      NEXT_TASK.md asked for the minified line to actually be chased,
+      last done successfully on v1.3.102. This pass found a shortcut
+      past the whole build-oracle-hash problem the last four passes
+      wrestled with: Netlify keeps every atomic deploy individually
+      addressable forever, so instead of rebuilding and hoping to
+      reproduce byte-identical output, this pass queried
+      `netlify api listSiteDeploys` for `yswords-dev`
+      (`b745ae1f-0780-4fa3-8478-bdf2f2aaf59a`), found the deploy titled
+      "v1.4.178 dev" (`created_at 2026-08-31T06:14:29.932Z`, id
+      `6a951bc5dcfc9be2f91f9942`), and fetched
+      `https://6a951bc5dcfc9be2f91f9942--yswords-dev.netlify.app/main.dart.js`
+      directly — the ACTUAL bytes served to the user who mailed in the
+      report, not a local rebuild. SHA-256
+      `4b3969fe89dc01558c3c2e28b0b9e7d02ae7634d66d3749df7c1ecc1d436d3dd`,
+      confirming the queue's recorded `4b3969fe89dc0155…` prefix (a
+      refuter pass independently re-curled the same URL and recomputed
+      the same hash rather than trusting this write-up).
+      Two throwaway local rebuilds of `c0af3985` (bare
+      `--dart-define=APP_VERSION=1.4.178`, mirroring the historical
+      build-oracle command) were ALSO attempted first, before finding
+      the direct-fetch shortcut: both produced SHA-256 `1a122cd1…`,
+      identical to each other (so dart2js output is deterministic on
+      this Mac) but NOT matching `4b3969fe89dc0155…`. A refuter caught
+      why: `tools/build_web.py`'s real invocation always passes
+      `--dart-define=APP_RELEASE_TIME=<wall-clock of the build>` in
+      addition to `APP_VERSION`, and that ISO-8601 string is a
+      dart2js compile-time constant baked verbatim into the JS — a
+      local build using the source's committed `defaultValue:` instead
+      of the real build-moment timestamp will never byte-match a real
+      deploy. (A `--source-maps` rebuild, SHA-256 `8352f50b…`, also
+      didn't match the previously-recorded `af115786…` for the same
+      reason and was never used — superseded by the direct fetch.)
+      **Record this as the actual fix for future passes: don't try to
+      reconstruct the byte-identical bundle by guessing dart-defines —
+      pull the specific historical Netlify deploy instead.**
+      With byte-verified real bytes in hand: line 59285, column 36 is
+      `A.z(A.a8V(b))` inside
+      `P(a,b,c){if(this.ar(b,c)>0)throw A.z(A.a8V(b))
+      if(this.ar(a,b)<0)return b
+      if(this.ar(a,c)>0)return c
+      return a}`
+      (column 36 lands on the `z` of `A.z`, recounted by the refuter).
+      `A.a8V(a){return new A.Oj(!0,a,null,null)}` elsewhere in the same
+      file constructs `ArgumentError.value(a)`'s internal representation
+      (`hasValue:true, value:a, name:null, message:null`). The whole
+      4-branch function structurally matches `num.clamp()` in the
+      bundled Flutter 3.44.2 SDK verbatim —
+      `~/flutter/bin/cache/dart-sdk/lib/_internal/js_runtime/lib/js_number.dart:184-193`
+      (`core/num.dart` declares `clamp` abstract; `JSNumber` is the only
+      concrete implementation, shared by `int` and `double` alike, which
+      is why one compiled function covers every `.clamp()` call in the
+      app, the Flutter framework, and every package — a refuter
+      confirmed this structural match is unique in the 10 MB file and
+      checked there's no second, different-shaped clamp variant it
+      could be confused with). The minified body drops the two
+      `is! num` guard-throws present in source (dead-code-eliminated,
+      calls are statically `num`); param mapping is `a`=`this`
+      (the clamped value, since the final branch is `return a` ↔
+      `return this`), `b`=`lowerLimit`, `c`=`upperLimit`; `this.ar`
+      is `compareTo` (dart2js compiles it as a 2-arg call rather than
+      true `this`-dispatch since the comparison is receiver-independent
+      for JS numbers).
+      **So: `main.dart.js:59285:36` throws
+      `ArgumentError.value(lowerLimit)` inside `num.clamp()`'s
+      `lowerLimit.compareTo(upperLimit) > 0` branch — i.e. SOME
+      `.clamp(lowerLimit, upperLimit)` call, somewhere in the compiled
+      app, was invoked with an inverted range.** The reported message
+      "Invalid argument: 0" (an integer literal, not "0.0") means
+      `lowerLimit` was an int `0`, which is informative: it rules out
+      the double-typed `.clamp(0.0, …)` calls found in the
+      `scrollable_positioned_list` package's `wrapping.dart`/
+      `viewport.dart` (this app's verse-list scroller, `0.3.8`,
+      `centerOffset.clamp(0.0, mainAxisExtent)` and similar — a
+      tempting candidate given the trap state is exactly "no verses
+      loaded yet", but ruled out by the literal `0` vs `0.0` in the
+      crash text, not by presence/absence of a guard).
+      Searched `lib/**/*.dart` for int-shaped `.clamp(0, …)` calls where
+      the upper bound could plausibly be negative during boot (empty
+      collection minus one): `jump_to_reference.dart:172`,
+      `chapter_scroll_progress.dart:33,176`,
+      `bible_reading_pane.dart:5597`, `sermon_audio_service.dart:182`.
+      **Every one is already guarded** with an explicit
+      empty/zero-length check immediately before the clamp (e.g.
+      `bible_reading_pane.dart:5588-5591` even has an in-code comment
+      naming this exact failure mode and why it's guarded). Neither of
+      the queue's standing candidate files —
+      `lib/services/url_sync_service_web.dart` nor
+      `lib/providers/main_provider.dart` — contains any `.clamp(` call
+      at all, so the state-restoration code itself isn't the direct
+      thrower; at most it could be what produces the bad state that a
+      DIFFERENT function's clamp later chokes on.
+      **Not searched, and explicitly flagged by a refuter as the gap
+      that matters:** the ~27 files under
+      `~/flutter/packages/flutter/lib/src/` and ~152 files across
+      `~/.pub-cache/hosted/pub.dev/` that also call `.clamp(` and also
+      compile into this bundle. An int-typed `.clamp(0, …)` inside the
+      Flutter framework itself (scroll-extent or layout-index clamping
+      is the standing pattern to check first) is at least as plausible
+      as an app-level miss and was not ruled out — this pass ran out of
+      budget after two full release builds plus the direct-fetch
+      detour, per NEXT_TASK.md's "two builds is most of the hour"
+      warning.
+      **Item stays open** — this closes outcome (a) for the SDK half
+      (exact file:line, confirmed can-throw, build-oracle hash quoted)
+      but not the application mechanism, so per NEXT_TASK.md's own
+      rule it doesn't get ticked. Next pass: search
+      `~/flutter/packages/flutter/lib/src/**` and relevant pub-cache
+      packages (start with `scrollable_positioned_list` itself even
+      though its two found call sites are double-typed — it may have
+      other int-typed index clamps not yet found by the same
+      `grep -n "\.clamp("` pass) for an int-typed `.clamp(0, X)` where
+      `X` can be negative when a list backing the reading pane is still
+      empty during boot.
+      Cleanup: two throwaway worktrees removed
+      (`git worktree remove --force`, both under `/tmp/boot-crash-decode/`);
+      `ps` confirmed no orphaned headless Chrome or `http.server` from
+      this run. No dependency added; the planned hand-rolled VLQ
+      source-map decoder (`tools/decode_sourcemap.py`) was never needed
+      because the direct-fetch method made source-map decoding
+      unnecessary — noting this so a future pass doesn't rebuild the
+      decoder before checking whether the direct-fetch shortcut applies
+      first.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still
