@@ -58,7 +58,45 @@ class UrlSyncService {
   /// `#/minified:Xt` — clobbering our canonical share link. This
   /// schedules a rewrite of the proper `#/<book>/<chapter>?v=`
   /// fragment shortly after the engine's write. Native no-op.
-  static void onRouteChanged() => impl.onRouteChanged();
+  ///
+  /// 2026-09-01 (URL-routing Stage 2): `routeName` is the route now on
+  /// top of the Navigator stack (the pushed route on `didPush`, the
+  /// revealed one on `didPop` — see `main.dart`'s `_UrlRestoreObserver`).
+  /// When it's one of [setKnownRoutes]' registered paths, the correction
+  /// below is skipped entirely: GetX's named push already wrote that
+  /// path to the URL directly, and rewriting it back to the Bible
+  /// position is exactly the "two histories" bug
+  /// `docs/url-routing-plan.md` §5 traces.
+  static void onRouteChanged({String? routeName}) =>
+      impl.onRouteChanged(routeName: routeName);
+
+  /// 2026-09-01 (URL-routing Stage 2): the set of paths registered in
+  /// `main.dart`'s `getPages` table (e.g. `{'/about', '/highlights'}`).
+  /// Call once at boot, before any navigation. Lets the web impl tell a
+  /// registered non-Bible route apart from the Bible reader without
+  /// hard-coding the path list a second time. Native no-op.
+  static void setKnownRoutes(Set<String> routeNames) =>
+      impl.setKnownRoutes(routeNames);
+
+  /// 2026-09-01 (URL-routing Stage 2): fired when a browser Back/Forward
+  /// navigates AWAY from a registered named route. `popstate` alone only
+  /// updates `window.location`; the Flutter Navigator never hears about
+  /// it (docs/url-routing-plan.md §5, point 6 — "two stacks of the same
+  /// length but different content"). `main.dart` registers `Get.back()`
+  /// here so the two stacks collapse into one, the way §5 says adopting
+  /// `getPages` should make happen "by construction." Native no-op.
+  static void setPopRouteCallback(void Function() cb) =>
+      impl.setPopRouteCallback(cb);
+
+  /// 2026-09-01 (URL-routing Stage 2): fired once, at boot, if the URL
+  /// the app was opened with names a registered route directly (e.g. a
+  /// bookmark to `/#/about`) rather than a Bible reference. The
+  /// existing boot-hash apply only understands the Bible grammar
+  /// (docs/url-routing-plan.md §1) and silently no-ops on anything
+  /// else, so a registered route needs its own boot path — this is it.
+  /// Register before first navigation; native no-op.
+  static void setBootRouteCallback(void Function(String routeName) cb) =>
+      impl.setBootRouteCallback(cb);
 
   /// Initialise. Web reads the boot URL, applies it to providers,
   /// then starts listening for further state / popstate events.

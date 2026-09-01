@@ -8847,6 +8847,109 @@ has never seen this repo.
       converting pages in batches) are unstarted; leaving this
       unticked.
 
+      **Stage 2 done, 2026-09-01: the `getPages` mechanism lands, proven
+      on the two zero-param pages Stage 1's §6 batch 1 named first**
+      (`AboutPage` → `/about`, `HighlightsPage` → `/highlights`). Not
+      the rest of batch 1 — kept to two on purpose, see below.
+
+      Four pieces, all in this commit: (1) a `getPages` table on
+      `GetMaterialApp` (`main.dart`) with those two routes, `home:` and
+      `onUnknownRoute` (the v1.3.111 crash guard) untouched; (2)
+      `pushPage` (`app_nav.dart`) dispatches through `Get.toNamed` when
+      the caller passes a registered `routeName` explicitly, falling
+      back to the old anonymous `Get.to` for every other page; (3) the
+      two-histories fix — `_writeStateToUrl` (`url_sync_service_web.dart`)
+      now refuses to rewrite the hash back to the Bible position while a
+      registered route is on top, and `popstate` pops the Flutter route
+      instead of applying the URL as a Bible hash when leaving one; (4)
+      a boot-hash path — cold-loading `/#/about` directly now dispatches
+      to it instead of silently no-op'ing the way an unparseable hash
+      always did before.
+
+      **Two real bugs found only by testing against a live web build,
+      not by reading the diff — both fixed before this landed:**
+
+      1. The first cut keyed the registered-route dispatch off
+         `page.runtimeType.toString()` (`'AboutPage'`, `'HighlightsPage'`)
+         to avoid touching call sites. `flutter build web --release`
+         minifies class names — confirmed by grepping the built
+         `main.dart.js`: the literal `AboutPage` appears nowhere except
+         as this map's own (then string) key, and dart2js's
+         `mangledGlobalNames` table only preserves ~10 core types, not
+         app classes. The lookup silently never matched in the one build
+         that ships, so the whole mechanism no-op'd end to end. Fixed by
+         matching on the explicit `routeName` string the caller passes
+         instead (`app_nav.dart`'s `_registeredRoutePaths` is now a
+         `Set<String>`) — string literals survive minification, types
+         don't. The 3 call sites (`dashboard_page.dart`,
+         `settings_page.dart`, `bible_reading_pane.dart`) now pass
+         `routeName: '/about'` / `'/highlights'` explicitly.
+      2. Cold-loading `/#/about` against a real web build: the hash
+         landed correctly, then reverted to the Bible default a few
+         seconds later. Root cause, found by adding temporary tracing
+         and screenshotting the live page: the app's first-run
+         onboarding tutorial is a `showDialog` — a `PopupRoute`, not a
+         `PageRoute` — opening on top of `/about`. `_UrlRestoreObserver`
+         reported its push with `routeName: null` (dialogs are
+         unnamed), which reset the write-guard's notion of "current
+         route" to null and let `_writeStateToUrl` fire unguarded on the
+         next `MainProvider` change. Fixed two ways: `_writeStateToUrl`
+         itself now carries the guard (both callers — the debounced
+         `_onMpChange` listener AND `onRouteChanged`'s 350ms correction
+         — rely on the same check, where before only the latter had
+         one), and `_UrlRestoreObserver.didPush`/`didPop` now ignore any
+         route that isn't a `PageRoute` (`DialogRoute`/
+         `ModalBottomSheetRoute` extend `PopupRoute`, a `ModalRoute`
+         sibling of `PageRoute`, not a subtype — confirmed against the
+         Flutter SDK and against `get-4.7.2`'s `GetPageRoute extends
+         PageRoute`), so a transient overlay can no longer be mistaken
+         for leaving the page it's sitting on top of.
+
+      **Verification, in order of what it can and can't prove:**
+      - `test/url_routing_stage2_test.dart` (5 tests, VM-only): the
+        `Get.toNamed` dispatch, the ~72-untouched-call-sites fallback,
+        an explicit non-registered `routeName` still using the old
+        path, and `Get.back()` returning to the previous page — all
+        confirmed red before the `app_nav.dart` fix, green after.
+      - Full suite: 1500 tests (was 1495), `flutter analyze` clean.
+      - `url_sync_service_web.dart` is `dart:js_interop`-gated and
+        unreachable from the VM harness, so the two-histories half was
+        verified the way this stage's brief asked: built
+        `tools/build_web.py --intl-only`, served it locally, and drove
+        headless Chrome via the DevTools protocol (no
+        extension/chromedriver needed — Chrome 152's own
+        `--remote-debugging-port`). Confirmed live: cold-load of
+        `/#/about` and `/#/highlights` both render the right page and
+        the hash survives 8+ seconds (past both the onboarding dialog
+        and the 350ms correction window); `/#/john/3:16?v=kjv` still
+        resolves exactly as before (frozen grammar untouched — confirmed
+        by diff, no hunk touches `_parseHash`); and, the acceptance
+        criterion that matters most, pressing the browser's REAL Back
+        button (not `Get.back()`) while on `/about` correctly pops
+        AboutPage and reveals the actual Dashboard underneath —
+        screenshotted before and after — rather than either doing
+        nothing (the original bug) or jumping to an arbitrary passage.
+      - A refuter subagent independently re-checked all 5 factual claims
+        above (the minification claim, the PopupRoute/PageRoute
+        subtyping, the no-regression claim re: the 3 call sites and the
+        registered-paths set, the frozen-grammar diff claim, and the
+        boot-latch ordering) against the Flutter SDK, the `get` package
+        source, and `git diff` directly — all 5 CONFIRMED. One unstated
+        caveat it found: the boot-route latch would double-fire if
+        `_RootRouterState` were ever recreated mid-session; it isn't
+        (mounts once for the app's lifetime as `home:`'s content), so
+        not fixed, but worth knowing before Stage 3 reuses the pattern.
+
+      **Scope held deliberately narrow.** Only these two pages —
+      `AboutPage`/`HighlightsPage` — got `getPages` entries; the rest of
+      §6 batch 1 (`FeedbackPage`, `VideosPage`, `SongsPage`, `StatsPage`,
+      `SongDownloadsPage`, `SongPlaylistsPage`, `ProfilesPage`,
+      `FamilyTreePage`, `BibleTimelinePage`, `SermonsPage`,
+      `MisconceptionsPage`) is Stage 3, not this commit — a small
+      reviewable diff that proves the mechanism end-to-end was worth
+      more than page count this pass, per the brief. Leaving this item
+      unticked; Stage 3 is unstarted.
+
 - [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
       loading问题". Fixed the two leads recorded below that a widget

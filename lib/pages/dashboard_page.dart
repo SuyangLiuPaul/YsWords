@@ -628,7 +628,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 count: mainProvider.highlights.length,
                 label: uiStrings['highlights']?[locale] ?? 'Highlights',
                 tint: scheme.tertiary,
-                onTap: () => pushPage(const HighlightsPage()),
+                onTap: () =>
+                    pushPage(const HighlightsPage(), routeName: '/highlights'),
               ),
             ),
           ],

@@ -3,9 +3,12 @@ import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yswords/constants/build_flags.dart';
+import 'package:yswords/constants/motion.dart' show AppMotion;
 import 'package:yswords/constants/ui_strings.dart' show uiStrings;
 import 'package:yswords/models/sermon.dart';
+import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/pages/dashboard_page.dart';
+import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/loading_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
@@ -62,6 +65,11 @@ void main() {
   // (`#/revelation/17:1?v=biblexg-v2`) before UrlSyncService.init
   // gets to read it. Native targets no-op.
   UrlSyncService.captureBootHash();
+  // URL-routing Stage 2: must run before UrlSyncService.init's boot
+  // check (below, inside the async bootstrap) so a boot hash like
+  // `/#/about` is recognised as a registered route rather than
+  // silently dropped as unparseable Bible grammar. Native no-op.
+  UrlSyncService.setKnownRoutes(_stage2GetPages.map((p) => p.name).toSet());
 
   // 2026-05-24 (v1.3.21): wrap the whole entrypoint in
   // runZonedGuarded so uncaught zone errors (async work that
@@ -112,6 +120,33 @@ void main() {
     ErrorReporter.report(error, stack, source: 'Zone');
   });
 }
+
+/// URL-routing Stage 2 (`docs/url-routing-plan.md`, §6 batch 1): the
+/// first two zero-param pages proving the `getPages` mechanism end to
+/// end before the rest of batch 1 converts in Stage 3. Every path here
+/// must also appear in `app_nav.dart`'s `_registeredRoutePaths` — that
+/// map is what makes `pushPage` route these through `Get.toNamed`
+/// instead of the anonymous `Get.to` every other page still uses.
+/// `home:` (below) keeps serving the root/reader shell; `getPages` only
+/// adds named routes on top of it, it does not replace `onUnknownRoute`
+/// (still wired below, the v1.3.111 crash guard) or the boot deep-link
+/// path (`UrlSyncService`, still Bible-grammar-only per §1).
+final List<GetPage> _stage2GetPages = [
+  GetPage(
+    name: '/about',
+    page: () => const AboutPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/highlights',
+    page: () => const HighlightsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+];
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
@@ -579,6 +614,15 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           // Same source as every other place that prints the name, so
           // it stays localized and stays a single name, never the pair.
           title: uiStrings['appName']?[settings.locale] ?? "Yahweh's Words",
+          // URL-routing Stage 2: named routes on top of `home:` (below).
+          // GetX's `GetMaterialApp` builds a normal `MaterialApp` (not
+          // `.router` mode) whenever `home` is set, wiring `getPages`
+          // into `onGenerateRoute` and leaving `onUnknownRoute` /
+          // `home` untouched (verified by reading `get-4.7.2`'s
+          // `get_material_app.dart`, since this is exactly the "GetX
+          // named routes write the browser URL" claim
+          // docs/url-routing-plan.md §4 flagged as unverified).
+          getPages: _stage2GetPages,
           // 2026-06-28 (v1.3.111): graceful fallback for UNKNOWN named routes.
           // Diagnosed by source-map-deobfuscating a prod (v1.3.102) crash
           // report ("Null check operator used on a null value", Android web):
@@ -895,13 +939,32 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 /// proper `#/<book>/<chapter>?v=` fragment shortly after every
 /// push/pop. No-op on native (stub dispatch).
 class _UrlRestoreObserver extends NavigatorObserver {
+  // URL-routing Stage 2: pass the route now on top of the stack — the
+  // pushed route on didPush, the one it revealed on didPop — so
+  // UrlSyncService can tell a registered non-Bible route (docs/url-
+  // routing-plan.md §6 batch 1) apart from the Bible reader. Previously
+  // this called onRouteChanged() with no argument at all.
+  //
+  // Only for `PageRoute`s (GetX's `GetPageRoute`, `MaterialPageRoute`)
+  // — a `showDialog`/`showModalBottomSheet` pushes a `PopupRoute` with
+  // no name ON TOP of the current page without leaving it. Reporting
+  // those reset UrlSyncService's notion of the current route to null,
+  // which defeated the Stage 2 write-guard the moment a dialog opened
+  // over a registered route: found by cold-loading `/#/about` against
+  // a live web build and watching the hash silently revert to the
+  // Bible position a few seconds later, timed exactly to the
+  // first-run onboarding tutorial (a dialog) opening over it.
   @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      UrlSyncService.onRouteChanged();
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    if (route is! PageRoute) return;
+    UrlSyncService.onRouteChanged(routeName: route.settings.name);
+  }
 
   @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      UrlSyncService.onRouteChanged();
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    if (route is! PageRoute) return;
+    UrlSyncService.onRouteChanged(routeName: previousRoute?.settings.name);
+  }
 }
 
 class _RootRouter extends StatefulWidget {
@@ -942,6 +1005,18 @@ class _RootRouterState extends State<_RootRouter> {
     UrlSyncService.setBootDeepLinkCallback(() {
       if (!mounted) return;
       setState(() => _bootHashLandingPending = true);
+    });
+    // URL-routing Stage 2: a way to pop the Flutter Navigator when the
+    // browser Back button leaves a registered route (docs/url-routing-
+    // plan.md §5), and a way to navigate to one when the app was
+    // opened with its path already in the address bar (a bookmark to
+    // `/#/about`, not just a same-session push).
+    UrlSyncService.setPopRouteCallback(() {
+      if (Get.key.currentState?.canPop() ?? false) Get.back();
+    });
+    UrlSyncService.setBootRouteCallback((routeName) {
+      if (!mounted) return;
+      Get.toNamed(routeName);
     });
     // ignore: unawaited_futures
     _checkIconSwapRestart();

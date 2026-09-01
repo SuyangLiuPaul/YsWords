@@ -2962,7 +2962,7 @@ class _AboutCard extends StatelessWidget {
                 uiStrings['aboutOpenButton']?[locale] ??
                     'Attributions & licensing',
               ),
-              onPressed: () => pushPage(const AboutPage()),
+              onPressed: () => pushPage(const AboutPage(), routeName: '/about'),
             ),
             SizedBox(height: 10 * s),
             // Clear-cache button — wipes service workers + browser

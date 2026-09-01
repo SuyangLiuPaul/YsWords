@@ -117,15 +117,91 @@ void setBootDeepLinkCallback(void Function() cb) {
   }
 }
 
+/// URL-routing Stage 2 (docs/url-routing-plan.md §6 batch 1): paths
+/// registered in main.dart's `getPages` table. Set once via
+/// [setKnownRoutes] at boot. A route name in here means GetX's named
+/// push already wrote the correct path to the URL directly — the
+/// Bible-position correction below must stay out of its way.
+Set<String> _knownRoutes = {};
+
+void setKnownRoutes(Set<String> routeNames) {
+  _knownRoutes = routeNames;
+}
+
+/// The route currently on top of the Navigator stack, as reported by
+/// `main.dart`'s `_UrlRestoreObserver` — null means the Bible reader (or
+/// any other page pushed the old, unnamed way; see §2's "72 call sites
+/// untouched by Stage 2").
+String? _currentRouteName;
+
+/// URL-routing Stage 2: fired by `main.dart` on `popstate` when the
+/// browser navigated away from a route in [_knownRoutes]. See
+/// `UrlSyncService.setPopRouteCallback`.
+void Function()? _popRouteCallback;
+
+void setPopRouteCallback(void Function() cb) {
+  _popRouteCallback = cb;
+}
+
+/// URL-routing Stage 2: fired once, at boot, when the captured boot
+/// hash names a path in [_knownRoutes] (e.g. opening `/#/about`
+/// directly) rather than a Bible reference. `_applyHashToState` would
+/// silently no-op on a hash like this anyway (`_parseHash` only
+/// understands the Bible grammar), so cold-loading a registered route
+/// needs its own boot path — this is it. Same latch shape as the
+/// existing `_bootDeepLinkCallback`/`_bootDeepLinkApplied` pair:
+/// whichever of "the boot check ran" and "the callback got registered"
+/// happens second fires the navigation.
+void Function(String routeName)? _bootRouteCallback;
+bool _bootRouteApplied = false;
+String? _pendingBootRoute;
+
+void setBootRouteCallback(void Function(String routeName) cb) {
+  _bootRouteCallback = cb;
+  if (_bootRouteApplied && _pendingBootRoute != null) {
+    final route = _pendingBootRoute!;
+    Timer.run(() => cb(route));
+  }
+}
+
+/// Strips a raw location hash down to its path (no leading `#`, no
+/// query string), or null for an empty/root hash. Deliberately
+/// separate from `_parseHash`, which is Bible-grammar-specific and
+/// stays untouched per docs/url-routing-plan.md §1.
+String? _hashToPath(String rawHash) {
+  var h = rawHash.startsWith('#') ? rawHash.substring(1) : rawHash;
+  final qIdx = h.indexOf('?');
+  if (qIdx >= 0) h = h.substring(0, qIdx);
+  if (h.isEmpty || h == '/') return null;
+  return h.startsWith('/') ? h : '/$h';
+}
+
 /// Restore the canonical hash after a navigator push/pop. The engine
 /// writes the pushed route's minified name into the fragment
 /// (`#/minified:Xt`); 350 ms later we put the share link back. The
 /// `_lastWrittenUrl = null` reset forces the write even though our
 /// state hasn't changed since the last one.
-void onRouteChanged() {
+///
+/// 2026-09-01 (URL-routing Stage 2): `routeName` is the route now on
+/// top (see `UrlSyncService.onRouteChanged`'s doc). When it's a
+/// registered route, GetX's named push already wrote `#<routeName>`
+/// directly — the correction below would clobber that back to the
+/// current Bible position, which is the exact "two histories" bug
+/// docs/url-routing-plan.md §5 traces. Skip it entirely for those
+/// routes; every other page (§2's other ~72 call sites) is untouched.
+void onRouteChanged({String? routeName}) {
   if (!_initialized) return;
+  _currentRouteName = routeName;
+  if (routeName != null && _knownRoutes.contains(routeName)) return;
   Timer(const Duration(milliseconds: 350), () {
     if (_isApplyingFromUrl) return;
+    // The route on top may have changed again since this timer was
+    // scheduled (e.g. a fast push-then-pop); re-check rather than
+    // trusting the closed-over `routeName`.
+    if (_currentRouteName != null &&
+        _knownRoutes.contains(_currentRouteName)) {
+      return;
+    }
     _lastWrittenUrl = '';
     try {
       _writeStateToUrl();
@@ -168,7 +244,20 @@ Future<void> urlSyncInit({
     final bootHash = (_bootHash != null && _bootHash!.length > 1)
         ? _bootHash!
         : liveHash;
-    await _applyHashToState(bootHash, isBoot: true);
+    // URL-routing Stage 2: a boot hash naming a registered route
+    // (`/about`, `/highlights`) is not Bible grammar at all — hand it
+    // to the boot-route callback instead of the Bible apply path,
+    // which would just silently no-op on it.
+    final bootPath = _hashToPath(bootHash);
+    if (bootPath != null && _knownRoutes.contains(bootPath)) {
+      _bootRouteApplied = true;
+      _pendingBootRoute = bootPath;
+      _currentRouteName = bootPath;
+      final cb = _bootRouteCallback;
+      if (cb != null) Timer.run(() => cb(bootPath));
+    } else {
+      await _applyHashToState(bootHash, isBoot: true);
+    }
   } catch (e, st) {
     debugPrint('[UrlSync] boot apply failed: $e\n$st');
     // 2026-09-01: this catch previously only reported through
@@ -182,6 +271,20 @@ Future<void> urlSyncInit({
   // (B) Listen for browser back/forward so popstate drives state.
   try {
     _window.addEventListener('popstate', ((JSAny? event) {
+      // URL-routing Stage 2: if a registered route (e.g. `/about`) was
+      // on top when this fired, the browser just navigated AWAY from
+      // it, but the Flutter Navigator stack never heard `popstate` —
+      // docs/url-routing-plan.md §5's "two stacks of the same length,
+      // different content." Pop the Flutter route to match instead of
+      // treating this as a Bible-hash change; the URL already reflects
+      // where the browser went.
+      final leavingRegisteredRoute =
+          _currentRouteName != null && _knownRoutes.contains(_currentRouteName);
+      if (leavingRegisteredRoute) {
+        _currentRouteName = null;
+        _popRouteCallback?.call();
+        return;
+      }
       _applyHashToState(_window.location.hash)
           .catchError((Object e, StackTrace st) {
         debugPrint('[UrlSync] popstate apply failed: $e');
@@ -212,6 +315,18 @@ void _onMpChange() {
 }
 
 void _writeStateToUrl() {
+  // URL-routing Stage 2: the single guard both callers (the debounced
+  // `_onMpChange` listener AND `onRouteChanged`'s 350ms correction) rely
+  // on. Without it, a registered route's URL survived `onRouteChanged`
+  // only to be clobbered moments later by an ordinary MainProvider
+  // change firing `_onMpChange` — e.g. the boot-time provider setup
+  // that runs regardless of which route the boot hash named. Found by
+  // testing a cold `/#/about` load against a real web build: the
+  // address bar landed back on the default Bible position, because
+  // `_onMpChange` had no equivalent check at all.
+  if (_currentRouteName != null && _knownRoutes.contains(_currentRouteName)) {
+    return;
+  }
   final mp = _mp;
   if (mp == null) return;
   final localBook = mp.currentBook;

@@ -2237,7 +2237,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       // so the floating-header entry now opens it.
                       // The modal HighlightsSheet remains for the
                       // long-press color-picker context only.
-                      onHighlights: () => pushPage(const HighlightsPage()),
+                      onHighlights: () => pushPage(
+                        const HighlightsPage(),
+                        routeName: '/highlights',
+                      ),
                       // Reload — re-runs FetchVerses+FetchBooks on the
                       // current version. User asked for this so they
                       // don't have to relaunch the app when verses
