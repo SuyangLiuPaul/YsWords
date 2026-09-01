@@ -1,197 +1,143 @@
 # P0 — the decisions only you can make
 
-Generated 2026-09-01 from `docs/autonomous-queue.md` plus a fresh census
-(`python3 tools/audit_p0.py`).
+Rewritten 2026-09-02. **Most of this page no longer exists**, and that is
+the news.
 
-> ## Revised 2026-09-01 after a review by Fable 5.1
+> ## 🔒 和合本雅偉版 is frozen — user, 2026-09-02
 >
-> The first version of this page had **two errors of my own**, both now
-> verified and corrected below. Recording them because they change what you
-> should do:
+> > cuvs yhwh这个不用管 因为出版方说这个不要
+> > 删掉相关内容
 >
-> 1. **I put the gate on the wrong edition.** The 427/86 wording differences
->    and "rebuild the Traditional from the corrected Simplified" are about
->    **梁家鏗譯本 (`biblexg-v2*`)** — `docs/梁家鏗譯本-請教出版方.md` is the
->    letter, and its title says so. They have nothing to do with
->    `cuvs-yhwh-tr.json`. **So §A and §C are NOT gated by the publisher and
->    never were.** My "don't start, the rebuild will overwrite it" warning was
->    wrong for the CUV work.
-> 2. **I quoted a verdict the queue had already retracted.** For 蹟/跡 and
->    鍊/鏈 the queue table now reads `~~蹟/跡~~ … **this verdict was WRONG —
->    see below**`, and the text below it says these are *"NOT edition
->    preferences … the same one-to-many collapse as every fixed instalment."*
->    I grepped for the old sentence and never read far enough to see the
->    strikethrough. Item 3 is a real defect, not a preference.
+> Sections A, C and item 8 of the previous version were all proposals to
+> edit `assets/cuvs-yhwh.json` / `cuvs-yhwh-tr.json`. The publisher has
+> declined, so they are not decisions any more — they are deleted.
 >
-> Also: **item 13 (NASB) is not an editorial decision. It is a live
-> exposure** — see below. And items 5 and 6 turn out to be defects with one
-> sensible repair each, not rulings.
+> **25 open queue items went with them**, plus the whole 兇/凶 · 蹟/跡 ·
+> 鍊/鏈 · 剋/克 glyph class, the one-to-many converter leftovers, the
+> Revelation and speech-mark quotation classes, 創 45:10, 哀 3:1, 尼 1–3,
+> 可 6:33, 摩 6:8, 鴻 3:4, 路 21:30, 番 1:1 and 約 9:9. The queue carries a
+> FROZEN block at the top; `test/cuvs_yhwh_frozen_test.dart` pins both
+> files by SHA-256 so an audit that rediscovers 0 蹟 / 103 跡 next month
+> cannot quietly "fix" it.
+>
+> **What is NOT frozen**, so the ruling is not over-read: the word-tap
+> corpus, the Strong's tagging, the lexicon, and every line of rendering
+> code — including the `[雅偉]` brackets shipped in v1.4.192, which are a
+> rendering decision about the publisher's own notation, not an edit to it.
 
 ---
 
-## ⚠️ First — item 13 is not like the others
+## 1. NASB — the one thing that is still urgent
 
-Measured against prod just now:
+Measured against prod:
 
 ```
 https://yahwehword.com/assets/assets/nasb.json  →  HTTP 200, 7,215,432 bytes
 assets/nasb.json  →  31,090 verses
 ```
 
-The Lockman Foundation's gratis-use policy caps quotation at **1,000 verses**,
-and separately states that no more than 1,000 verses may be **stored in an
-electronic retrieval system**. A publicly fetchable 31,090-verse JSON is
-outside that on both clauses. README currently claims *"used under the
-publisher's free-quotation provisions"* — that claim does not hold at this
-size.
+The Lockman Foundation's gratis-use policy caps quotation at **1,000
+verses**, and separately forbids storing more than 1,000 in an electronic
+retrieval system. A publicly fetchable 31,090-verse JSON is outside both.
+README claims *"used under the publisher's free-quotation provisions"* —
+that claim does not hold at this size.
 
-**This is a decision, but not a leisurely one:** obtain a written licence from
-Lockman, or drop `nasb.json` from the public web build. I have not touched it
-— removing a translation is your call — but it should not wait behind glyph
-policy. *(I verified the URL, byte count and verse count myself. I have not
-independently re-read Lockman's policy text; that clause summary is Fable's,
-and worth your own look before you act.)*
+**Decide:** obtain a written licence from Lockman, or drop `nasb.json` from
+the public web build. I have not touched it — removing a translation is
+your call. *(URL, byte count and verse count are mine. The Lockman clause
+summary is Fable's; worth your own look before acting.)*
 
----
-
-## A. Traditional glyph policy — now 1 real ruling, not 4
-
-| pair | ours | witness | verdict |
-|---|---|---|---|
-| 兇 / 凶 | 48 兇, 0 凶 | 11 兇 / 37 凶 (mixed) | **your call** |
-| 剋 / 克 | 0 剋, 23 克 | witness keeps 剋 5 of 6 | not a defect |
-| 蹟 / 跡 | 0 蹟, 103 跡 | **95 蹟, 8 跡** | **defect — fix** |
-| 鍊 / 鏈 | 0 鍊, 60 鏈 | **62 鍊, 1 鏈** | **defect — fix** |
-
-1. **兇 → 凶?** *Genuinely your call, and genuinely close.* Both forms are
-   legitimate; the witness is itself mixed (11/37), so there is no clean rule
-   to copy; modern Taiwan usage favours 兇 in 兇手/兇惡/兇猛. Fable's
-   recommendation: **don't** — 48 verses of churn for no reader benefit.
-   Revisit only as part of a full per-position witness diff.
-2. **剋 — is zero correct?** **Yes, nothing to do.** 克制 is the MOE standard.
-   Not your call; it was never a defect.
-3. **蹟/跡 and 鍊/鏈 — restore the distinction?** **Yes.** Two witnesses agree
-   this is a converter collapse, and 神跡 is the non-standard spelling for a
-   Traditional reader where 神蹟 is what every Traditional Bible prints.
-   Implement as a **per-position copy of the witness**, not a blanket
-   replace — the 8 legitimate 跡 and 1 鏈 must survive. ~163 scripture
-   positions plus the tagged corpus and lexicon.
-4. **Do the sermons follow?** **No ruling needed — they are already correct.**
-   `sermons/zh-TW` already distinguishes 神蹟/痕跡 and 鍛鍊/鎖鏈; my "83 files"
-   was the count of files *containing* 蹟, i.e. files already right. The one
-   real sermon defect is the **17 wrong 幹** (幹枯/幹淨/幹擾) — that is work,
-   not a decision, and my first version omitted it.
-
-> **貴胄 / 貴冑 is ANSWERED.** All 26 positions take 貴胄 (a noble scion);
-> 和合本 renders "helmet" as 盔/頭盔/盔甲/鎧甲 with zero 甲冑 in 31,102 verses.
-> Nothing to undo. Drop it from the blocked list.
+This also blocks the NASB divine-pronoun item at the bottom of the queue.
 
 ---
 
-## B. Verse numbering — 1 ruling, 3 defects
+## 2. The Traditional-glyph ruling — its subject just disappeared
 
-5. **路加福音 23:34a** — **not a policy call, a visible bug.** `biblexg`
-   Luke 23:33 currently prints the literal characters `34a` inside the verse
-   body, in both editions. Verified:
-   > 「…右手一個，左手一個。**34a**耶穌說：父親啊，赦免他們…」
+You ruled the same day:
 
-   The publisher marks it as a doubtful-passage affix, the same construct the
-   repo already handles for 22:43, 22:44 and 23:17. Repair: strip the literal
-   `34a` and render it as that affix. **Do not introduce sub-verse labels** —
-   the app has no non-numeric verse label today and the sort problem is real.
-6. **路加福音 21:30 — split.** Also not a policy call: highlights and notes
-   key off the verse **id**, and splitting changes no id (21:29 keeps its id
-   with shorter text; 21:30 gains text). The witness has a corrupt bare `a`
-   at 21:30, so the merge is inherited damage, not an edition's division.
-7. **約翰三書 1:14/15 — don't split.** The CUV genuinely has 14 verses
-   (KJV versification), and `originals_versification.json` already maps
-   `3_john 1:14 → [1:14, 1:15]`. The fix is in the cross-reference lookup.
-   Code work, no ruling.
-8. **創 45:10 「你和你我兒子孫子」 — this is the real one.** My first version
-   framed it as "the printed 1919 says 你我, so changing it emends the CUV."
-   **That premise does not survive checking.** Wikisource's "printed 1919" is,
-   by its own index page, the CCIM digital e-text reformatted to 1919
-   conventions, flagged as unproofread — nobody has looked at a 1919 page.
-   The 你我 lineage is the same unproofread e-text family that carried the 16
-   typos already repaired. Against it: the Hebrew has no first person, the
-   ministry's own Strong's tagging puts no number on 我, and every published
-   CUV checked reads 你的.
+> 关于繁体字 你可以参考和合本最新版本的繁体版看那边怎么写的然后用他们的
 
-   **So the question is narrower than "may an app correct scripture":** it is
-   *"do we follow our own source's typo?"* Fable recommends fixing it to
-   你的, recorded explicitly as an emendation-with-reasons, and telling the
-   ministry. **The philosophical version of this question is still yours** —
-   but you are not overruling the 1919 printing, because nobody here has
-   read the 1919 printing.
+That was aimed at `cuvs-yhwh-tr`, which is now frozen. **Nothing to apply
+it to there** — the file keeps 0 蹟 / 103 跡, 0 鍊 / 60 鏈, 48 兇 / 0 凶,
+measured and accepted.
 
----
+Where it still applies is `biblexg-v2-tr.json`, which is also **our own
+conversion** rather than the publisher's Traditional. I measured it, and
+it is in much better shape than the CUV conversion — the collapse pattern
+is simply absent:
 
-## C. Quotation marks — 1 ruling
+| pair | biblexg-v2-tr | reading |
+|---|---|---|
+| 蹟 / 跡 | 97 / 1 | correct — 神蹟 distinguished from 痕跡 |
+| 幹 / 干 | 31 / 3 | **all 31 correct** — 幹活, 幹農活, 幹掉 |
+| 癒 / 愈 | 22 / 3 | correct — 痊癒, 治癒 |
+| 剋 / 克 | 1 / 19 | correct — 剋扣 |
 
-Traditional and Simplified return **identical** numbers: 3438/3123 first
-level, 665/642 second, 2336 imbalanced verses, 143 unclosed second-level
-opens. The editions are mechanically parallel, so this is **one defect
-appearing twice**.
+Two real inconsistencies, both small:
 
-Correction to my first version: I wrote "repair one and regenerate the other."
-**There is no regenerator** — `fix_traditional_conversion.py` is a
-never-applied draft, and every `repair_*.py` in the repo writes both editions
-in one pass. Any fix must be written to both.
+* **8 stray 着 against 1058 著** — 穿着, 盯着, 站着, 拖着, 照着, 憑着,
+  靠着, 得着. Modern Traditional prints 著 throughout; these 8 are
+  leftovers.
+* **兇 8 / 凶 8, splitting the same words** — 兇惡 once and 凶惡 twice,
+  兇殺 beside 行凶.
 
-A verse-level imbalance is *expected* (CUV speech runs across verses), so
-2,336 is not 2,336 bugs. The checkable set is the **143 unclosed second-level
-opens**.
-
-9. **Close the five 『 in Revelation's letters?** Punctuation was never part
-   of the 1919 text — it is editorial by definition, and this edition already
-   closes 『 in 642 of 665 places. Rule it **together with 3:7 and 3:14**
-   (the queue says so; my first version dropped that): either all seven
-   letters get 『…』 or none do. Low stakes, honestly close.
+**Neither is worth a sweep today**, because item "rebuild the Traditional
+from the corrected Simplified" will regenerate this file once the publisher
+answers. Your ruling is now recorded *in that item*, so the rebuild
+produces modern Traditional conventions rather than needing a second pass.
 
 ---
 
-## D. Waiting on the publisher — 梁家鏗譯本, not the CUV
+## 3. 梁家鏗譯本 — waiting on the publisher, not on you
 
-10. **The 427 Traditional wording differences** — your action is not a
-    ruling, it is finishing the per-book review of §四之二 so the letter can
-    go out.
-11. **The 86 Simplified wording differences** — counted and settled; only
-    awaiting the publisher's direction.
-12. **The two official editions disagree** — drafted; ships with the letter.
+These are the only remaining scripture items, and your action on all four
+is the same: finish the per-book review of §四之二 so the letter can go.
 
-These gate the **`biblexg-v2*`** rebuild only. Nothing in §A, §B or §C waits
-on them.
+* The **427 Traditional wording differences** — clustered in 路加 (178)
+  and 馬可 (89), reading as one consistent later revision.
+* The **86 Simplified wording differences** — counted and settled, waiting
+  only on their direction.
+* **The two official editions disagree** — drafted, ships with the letter.
+* **馬可福音 6:8-11 is missing from the publisher's own Simplified** —
+  `cn-mk.json` has no 6:8-11 and truncates 6:7 mid-sentence.
+
+One of theirs is a **visible bug**, not a policy question, and I would fix
+it independently of the letter if you want it gone sooner:
+
+* **路加福音 23:33 prints the literal characters `34a` inside the verse
+  body**, in both editions:
+  > 「…右手一個，左手一個。**34a**耶穌說：父親啊，赦免他們…」
+
+  Repair is to render it as the doubtful-passage affix the repo already
+  handles for 22:43, 22:44 and 23:17. **No sub-verse labels** — the app has
+  no non-numeric verse label and the sort problem is real.
 
 ---
 
-## Decisions this page was missing
+## 4. Not decisions after all
 
-Fable flagged three, and they look right to me:
+Kept here only so they are not re-raised as questions:
 
-* **What is the baseline edition for `cuvs-yhwh`?** The repo alternates
-  between "the ministry's module", "the two 新標點 witnesses", and "the
-  printed 1919" — and the last is actually the CCIM e-text. **This one ruling
-  settles item 8 and ~11 other queued lineage positions** (意料/逆料, 留/等,
-  消息/信息 …) that this page never listed. Probably the highest-leverage
-  decision here.
-* **Should the ministry (孙树民 / yahwehdehua.net) be told** about the typos
-  found in their module? There is a letter for 梁家鏗 and none for the
-  edition the app is named after.
-* **Rename the "printed 1919" witness** in `tools/audit_print_witness.py` and
-  the queue. Decisions that rested on it alone should be re-marked as resting
-  on an e-text.
+* **約翰三書 1:14/15** — the CUV genuinely has 14 verses (KJV
+  versification), and `originals_versification.json` already maps
+  `3_john 1:14 → [1:14, 1:15]`. The fix is in the cross-reference lookup.
+  Code work.
+* **17 wrong 幹 in `assets/sermons/zh-TW/`** — 幹枯 / 幹淨 / 幹擾. The
+  sermon assets are the church's, not the publisher's, and these are our
+  conversion errors. Work, not a ruling.
+* **貴胄 / 貴冑** — answered. All 26 positions take 貴胄; 和合本 renders
+  "helmet" as 盔/頭盔/盔甲/鎧甲, zero 甲冑 in 31,102 verses.
 
 ---
 
 ## Suggested order
 
-1. **NASB** — live exposure, not an editorial nicety.
-2. **Baseline-edition ruling** — unblocks item 8 and ~11 more at once.
-3. **Finish §四之二** so 10–12 leave your desk.
-4. Then **6, 5, 3** — none touch a gated asset, and 6 and 5 fix things
-   readers can see today.
+1. **NASB** — live exposure, and it gates the divine-pronoun item too.
+2. **Finish §四之二** so the 梁家鏗 letter leaves your desk.
+3. Then 路加 23:34a and the 約翰三書 lookup — both are code, no ruling.
 
-Re-run the census any time; it writes nothing:
+The census still runs, and still writes nothing — though its glyph section
+now describes a frozen file:
 
 ```bash
 python3 tools/audit_p0.py

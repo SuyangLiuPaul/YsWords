@@ -14,6 +14,38 @@ and quoted.**
 
 ---
 
+> ## 🔒 FROZEN — 和合本雅偉版 is not ours to edit (user, 2026-09-02)
+>
+> > cuvs yhwh这个不用管 因为出版方说这个不要
+> > 删掉相关内容
+>
+> **`assets/cuvs-yhwh.json` and `assets/cuvs-yhwh-tr.json` are read-only.**
+> The publisher has declined the corrections. This is not a deprioritisation
+> and not a "later" — do not emend the text, the punctuation, the glyphs or
+> the versification of either file, and do not open new items proposing it.
+>
+> 25 open items were **deleted** on 2026-09-02 under this rule (the 兇/凶 and
+> 蹟/跡 glyph classes, the one-to-many converter leftovers, the Revelation and
+> speech-mark quotation classes, 創 45:10, 哀 3:1, 尼 1–3, 可 6:33, 摩 6:8,
+> 鴻 3:4, 路 21:30, 番 1:1, 約 9:9 …). They are in git history at `8f09228e`
+> if the ruling is ever reversed; **rediscovering them is not a reason to
+> reopen them.** `test/cuvs_yhwh_frozen_test.dart` pins both files by hash,
+> so an unattended sweep fails CI instead of shipping.
+>
+> **Two consequences, stated once so nobody rediscovers them as news:**
+>
+> 1. `cuvs-yhwh-tr.json` is *our own* conversion, not the publisher's
+>    Traditional edition, and it keeps its known collapses — 0 蹟 / 103 跡,
+>    0 鍊 / 60 鏈, 48 兇 / 0 凶. Measured, accepted, closed.
+> 2. The word-tap corpus, the Strong's tagging, the lexicon and the
+>    rendering code are **not** frozen — those are ours, and their items
+>    stayed.
+>
+> Unaffected: **梁家鏗譯本** (`biblexg-v2*`), where the publisher is in
+> conversation with us rather than declining. The Traditional-glyph ruling
+> the user gave the same day — 参考和合本最新版本的繁体版…用他们的 — now
+> applies **there**, since it can no longer apply here.
+
 > ## ⚠️ TIER ORDER CHANGED — 2026-08-24, by the user
 >
 > > 第一个可以推到后面去做，先把功能性的和系统bugs issues之前提到的全部先做完
@@ -2192,82 +2224,6 @@ reported. Work these top-down before P2.
       `test/transposed_characters_test.dart` fails three of its four tests on
       the pre-fix data.
 
-- [ ] **路加福音 21:30 is a 「見上節」 stub, and it is the only one of our 70
-      the print does NOT also merge.** Found 2026-08-24 by
-      `tools/audit_print_witness.py`. The printed 1919 page numbers 21:30 and
-      gives it text — 「他發芽的時候、你們一看見自然曉得夏天近了。」 — while
-      our 21:29 carries those words merged in and 21:30 shows only the stub.
-      For the other 69 the print merges exactly as we do, so this is a genuine
-      one-off rather than a class.
-
-      **Not repairable by this loop, and not for lack of evidence — it is a
-      versification change.** Every witness in our own lineage merges it: the
-      Traditional import blob `7a2dc43` (which reads a corrupt bare `'a'`
-      there), the tagged corpus, and SeekSparks' `cuvs-plus.json`. So nothing
-      is *wrong* on screen; the two editions divide the verse differently and
-      ours is the inherited division. Splitting it moves every id, highlight,
-      bookmark and note anchored to 21:29, which by the 約翰三書 1:14
-      precedent below is the user's call, not the loop's.
-
-      **The question for the user is one line:** leave 21:30 as a stub
-      pointing at 21:29, or split 21:29 so 21:30 carries 「他發芽的時候…」 on
-      its own? Held in the tool's `MERGE_ONLY` table as HELD FOR THE USER, and
-      pinned by `test/print_witness_alignment_test.dart` so a sweep cannot
-      quietly resolve it either way.
-
-- [ ] **耶利米哀歌 3:1 reads 「因雅偉神忿怒的杖」 and nothing supports the 神.**
-      The print and both witnesses read 耶和華 alone; our own tagged corpus
-      reads 雅偉 alone and tags it **H0 — supplied, no Strong's number**. The
-      Hebrew is אֲנִי הַגֶּבֶר רָאָה עֳנִי בְּשֵׁבֶט עֶבְרָתוֹ: "the rod of
-      **his** wrath", with **no divine name in the verse at all**. So both
-      readings are the translators' supplement, and ours supplements the
-      supplement.
-
-      **Needs the user, because it is a divine-name decision in a divine-name
-      edition** — the one class of change this loop must not make unattended.
-      The question is one line: where CUV supplies 耶和華 for a bare pronoun,
-      should this edition read 雅偉 or 雅偉神?
-
-- [ ] **Three insertions in 尼希米記 1–3, and 尼 1:2's 關於 is the likeliest
-      contamination in the whole corpus.** 1:2 關於 ×2, 2:19 你們, 3:3 他們.
-      The Hebrew has a word each could render — עַל twice, the second אַתֶּם,
-      הֵמָּה — so they are **not deletable**; but unlike the 20 cleared above,
-      our own tagged corpus lacks all three, so four lines of evidence lack
-      them and one has them.
-
-      **關於 occurs in exactly ONE verse of 31,102 — this one.** A modern
-      connective appearing once, at a flagged verse, in a 1919 translation
-      fits contamination better than it fits any revision. Two more things
-      point the same way and neither is conclusive: 尼 3:3's own tagged import
-      lists H1992 (הֵמָּה) among the **untranslated** words, so this edition's
-      own tagging says it does not render it; and 哥林多後書 12:20's 發見 is
-      likewise a hapax where 發現 occurs 12 times.
-
-      **Whoever takes this needs the print open and a decision from the user
-      about 關於 specifically** — removing it is deleting from scripture on a
-      frequency argument, which is not a call this loop should make alone.
-
-- [ ] **馬可福音 6:33 reads 「就從各城的步行」 — the extra 的 lost its only
-      supporting evidence.** Cleared with the 20 above and then pulled back out
-      by the refuter in the same iteration. The print and both witnesses read
-      「就從各城步行」; the tagged corpus reads 城的 with us, so it is two of our
-      files against three witnesses — not enough to delete a character
-      unattended, and the reading is poor Chinese either way.
-
-      **The tag that looked like evidence is an alignment off-by-one:** the run
-      城的 carries G3588, the article, while πόλεων is **G4172 — a number that
-      appears in no run of this verse at all**. The noun was given the
-      article's number. This is the first measured case of that error in the
-      tagged corpus and it is worth knowing how common it is, because every
-      argument this repo has built on a Strong's tag assumes it is not.
-
-      **How common is now measured: at least 71 runs, sized 2026-08-24** —
-      `tools/audit_strongs_alignment.py`. This verse is not one of the 71 and
-      cannot be: 城的 is too rare a run text for the detector's ground truth.
-      So the answer to "does 可 6:33's tag support deleting the 的" is still no,
-      and the wider answer is that a Strong's tag is weaker evidence than this
-      repo has been treating it as.
-
 - [x] **Audit the running text against our OWN tagged corpus — a third witness
       nothing has ever consulted. Done 2026-08-19: it found SEVEN more verses
       that were missing a character, and both external witnesses were blind to
@@ -2310,75 +2266,6 @@ reported. Work these top-down before P2.
       Follow-on, filed below: 阿摩司書 6:8's word ORDER differs from the print
       and needs the user, because reordering it would undo this edition's
       divine-name restoration.
-
-- [ ] **阿摩司書 6:8 — the print puts 萬軍之神 BEFORE the oath and we put it
-      after. Needs the user; do NOT reorder unattended.** We read 「主雅偉指着
-      自己起誓，萬軍之神〈原文有雅偉〉說」. The printed 1919, both external
-      witnesses and our own tagged corpus all read 「主耶和華萬軍之神指着自己
-      起誓說」. No character is missing — the ideographs match as a multiset —
-      so this is order alone.
-
-      **It is filed rather than fixed because the evidence points at a
-      deliberate choice by this edition.** The Hebrew is נִשְׁבַּע אֲדֹנָי
-      יְהוִה בְּנַפְשׁוֹ נְאֻם יְהוָה אֱלֹהֵי צְבָאוֹת, where "YHWH God of
-      hosts" FOLLOWS "by himself" and attaches to נְאֻם — our order, not the
-      print's. The note 「原文有雅偉」 marks exactly the second יְהוָה that the
-      print renders as 神 alone. Reordering it would undo the divine-name
-      restoration this whole edition exists to make. Held in the `UNSETTLED`
-      set of `tools/audit_tagged_running_text.py` so it can never be swallowed
-      as explained noise.
-
-- [ ] **那鴻書 3:4 — the 「原文是賣」 note sits on a different 誘惑 than three
-      witnesses use, and NOTHING SETTLES IT. Needs the user. Do not move it.**
-      Taken 2026-08-19 as a wrong-attachment defect; it is not one. Recorded
-      here with both positions because the loop and its refuter disagreed and
-      neither could close it from the data.
-
-      **The premise the item was filed on was wrong.** It said "the print puts
-      the note on the SECOND 誘惑". The printed 1919 does not put it on either:
-      it sets it at the END of the verse and NAMES the word —
-      「…用邪術誘惑多族{{\*|誘惑原文作賣}}」 — and 誘惑 occurs twice, so the
-      printed note covers both. It cannot arbitrate an occurrence.
-
-      | | reads |
-      |---|---|
-      | ours + our tagged corpus | note after the **first** 誘惑 |
-      | SeekSparks `cuvs-plus.json` | after the **second** |
-      | git blob `7a2dc43` (Traditional) | after the **second** |
-      | Yahwehdehua `CUV_LEB/34_那鸿书.pdf` | after the **second** |
-      | printed 1919 | verse-final, worded 誘惑原文作賣 |
-
-      **Neither placement is false**, which is why this is not P0-urgent. The
-      Hebrew has one gapped הַמֹּכֶרֶת (H4376) governing both objects —
-      הַמֹּכֶרֶת גּוֹיִם בִּזְנוּנֶיהָ וּמִשְׁפָּחוֹת בִּכְשָׁפֶיהָ — so both
-      Chinese 誘惑 render the same verb and 賣 is a true gloss of either.
-
-      **Both of the arguments the loop first reached for were broken by the
-      refuter, and they are recorded so nobody rebuilds them.** (1) "Our tagged
-      corpus independently agrees" — it does not independently: the note text
-      sits INSIDE the run it tags (`诱惑〔原文是"卖"` → H4376), so its
-      segmentation inherited the placement it is being cited to support.
-      (2) "The new audit clears it, 0 of 157" — circular, because the adjacency
-      test it used is satisfied by EITHER occurrence of a word that appears
-      twice. The audit was given a second, discriminating pass because of this.
-
-      **What argues for moving, now that it is measured:** of the 18 printed
-      notes naming a word the verse uses more than once, ours follows the same
-      occurrence as the print in 17. This is the only one. And in the three
-      other verse-final printed notes of that kind — 結 33:6, 結 33:8,
-      林後 3:6 — our edition attaches to the LAST occurrence, so this verse
-      breaks our own habit as well as the three witnesses.
-
-      **What argues for leaving it:** moving a note is writing into the
-      apparatus on the strength of a house style, when the note is true where
-      it is, and the one witness that shares neither of the three's lineage
-      (the print) declines to answer. `test/note_attachment_test.dart` pins the
-      current reading so it cannot drift while it waits;
-      `tools/audit_note_placement.py` holds it in UNSETTLED.
-
-      **The question for the user is one line:** should a note the print sets
-      at the end of a verse be attached to the first or the last of a repeated
-      word? Answering it settles this verse and any future one.
 
 - [x] **Audit WHICH WORD every translator's note is attached to, against the
       printed 1919 — a check nothing in this repo had ever run.** Done
@@ -3193,88 +3080,6 @@ reported. Work these top-down before P2.
       pre-fix data; the last one pins the Simplified merge so the reason the
       internal check is unavailable stays recorded in code).
 
-- [ ] **The inventory diff has a TAIL the table below never enumerated — it was
-      cut off at 10 occurrences, and 咸 was hiding under it.** The two
-      candidates below are **DONE 2026-08-18** (11 verses + 21 lexicon fields),
-      and **the reverse sweep at the end of this entry is now DONE too
-      (2026-08-18)** — see the entry immediately below, which is what it found.
-      What is left open here is only the 蹟/鍊 correction. Measured
-      2026-08-18 while fixing 書 10:3. The full diff — every character the
-      witness `7a2dc43` uses that our asset holds **zero** of — is **109
-      characters**, not the 25 the table lists. 咸 sat at the very bottom with a
-      count of 1, which is exactly why it was found by hand rather than by the
-      sweep.
-
-      **Most of the tail is NOT a defect, and an earlier draft of this entry got
-      that wrong** — it listed 蹟 95, 鍊 62, 歎 52, 祕 51, 甦 7 as "certainly
-      holes" on the strength of the zero-count signature alone, and checking
-      them broke that. The signature is necessary, not sufficient: it fires just
-      as loudly when **both forms are valid Traditional and the two editions
-      simply chose differently**, which is what these are —
-
-      | | ours | witness | verdict |
-      |---|---|---|---|
-      | 歎/嘆 | 0 歎, 53 嘆 | 52 歎, 0 嘆 | both valid; 嘆 is the Taiwan standard |
-      | 祕/秘 | 0 祕, 51 秘 | 51 祕, 0 秘 | both valid — and cmn-cu89t itself MIXES (48 祕 + 3 秘), which settles it |
-      | ~~蹟/跡~~ | 0 蹟, 103 跡 | 95 蹟, 8 跡 | **this verdict was WRONG — see below** |
-      | ~~鍊/鏈~~ | 0 鍊, 60 鏈 | 62 鍊, 1 鏈 | **this verdict was WRONG — see below** |
-      | 甦/蘇 | 0 甦, 44 蘇 | 7 甦, 37 蘇 | both valid |
-      | 裡/裏, 麼/麽, 牠/它, 毘/毗 | | | long-settled conventions, already known |
-
-      **蹟/跡 and 鍊/鏈 are NOT edition preferences — the refuter broke that on
-      2026-08-18, and the corrected reading matters.** BOTH witnesses (blob
-      `7a2dc43` and the published cmn-cu89t) read 95 蹟 / 8 跡 and 62 鍊 / 1 鏈,
-      i.e. they actively DISTINGUISH 神蹟 from 痕跡/蹤跡/筆跡, and 金鍊/鐵鍊/
-      鎖鍊 from a 鏈. Ours reads 103 跡 / 0 蹟 and 60 鏈 / 0 鍊 — **the same
-      one-to-many collapse as every fixed instalment**, not two editions
-      choosing differently.
-
-      They are still deliberately NOT swept, but for a narrower reason than the
-      table gave: 跡 and 鏈 are standard Traditional spellings that read
-      correctly, so nothing false is printed today. Restoring the distinction is
-      an improvement to ask the user for (~165 positions), not a scripture
-      defect to fix unattended. `test/traditional_tail_glyphs_test.dart` pins
-      all four counts so a later sweep cannot do it silently.
-
-      **Two in the tail WERE candidates, and both are now DONE (2026-08-18 —
-      11 verses + 21 lexicon fields, `tools/repair_tr_tail_glyphs.py`,
-      `test/traditional_tail_glyphs_test.dart`).** Eighteenth instalment:
-
-      * ~~**鹼/堿, 6 positions.**~~ **DONE.** Ours read 堿 at 伯 9:30
-        「用堿潔淨我的手」, 詩 107:34 「使肥地變為堿地」, 箴 25:20 「如堿上倒醋」,
-        耶 2:22, 耶 17:6, 瑪 3:2.
-      * ~~**姪/侄, 5 positions.**~~ **DONE** — 創 12:5, 14:12, 14:14, 14:16
-        (「亞伯蘭的姪兒羅得」 — Lot) and 代下 22:8 — **plus 21 more in the
-        Strong's lexicon**, 19 in `hebrew.json` and 2 in `greek.json`, every one
-        侄子/侄女 (Lot H3876/G3091, Bethuel H1328, Iscah H3252, Jonadab H3082/
-        H3122, Jonathan H3083). Left alone, a reader tapping 羅得 on the
-        Originals sheet would have been shown a spelling the verse beside it no
-        longer uses.
-
-      **The discriminator this instalment had to get right**, because the
-      partition alone does NOT separate these two from 蹟/鍊 above: no published
-      Traditional 和合本 sets 堿 or 侄 at these eleven verses — two independent
-      Traditional editions agree against ours alone — whereas 跡 and 鏈 are what
-      other published editions legitimately set. And the thing NOT to claim:
-      **堿 and 侄 are not Simplified-only glyphs.** Both encode in Big5 and the
-      MOE 異體字字典 lists 堿 under 鹼. An earlier draft of the fix asserted "a
-      form no Traditional standard sets" and that assertion was itself wrong.
-
-      Also newly recorded: the converter's fingerprint differs between the two.
-      Our Simplified reads 碱 at all six alkali positions, so there it DID
-      rewrite the character (碱 → 堿); it reads 侄 at all five nephew positions,
-      so there it did nothing at all — opencc has no 侄↔姪 mapping in any
-      direction (s2t, s2twp, t2tw, t2hk, t2s, tw2s all checked). The nephew is
-      therefore the first instalment with **no converter oracle**, resting on
-      the two Bible witnesses plus the repo's own hand-authored
-      `assets/family_tree.json`, which has always written 姪子.
-
-      And the harder half: the 癒 lesson says a merged pair only shows in this
-      diff when the surviving form is the one we lack. **咸 was the mirror
-      case, caught only because a name looked wrong.** The sweep in the other
-      direction — characters the *witness* holds zero of — **was run
-      2026-08-18** and found a defect family nobody suspected. See below.
-
 - [x] **The reverse inventory sweep found a SECOND defect family: 16
       transcription errors that are wrong in the Simplified asset too. DONE
       2026-08-18.** Eighteen instalments had all been converter holes, so every
@@ -3332,23 +3137,6 @@ reported. Work these top-down before P2.
       refuses any tagged replacement that would span tokens and move the
       Strong's alignment), `test/cuv_typo_corruptions_test.dart` (13 tests, 8
       of which fail on the pre-fix data).
-
-- [ ] **創 45:10 「你和你我兒子孫子」 — needs the user, do NOT fix unattended.**
-      It was in the first draft of the instalment above and was pulled out.
-      Both witnesses read 你**的**兒子, and 你我 is ungrammatical — but the
-      refuter found that Wikisource's transcription of the printed 1919 和合本
-      reads 你我 there as well. If the printed text says it, changing it is an
-      emendation of the CUV, which is the user's call and not ours. Pinned by
-      the test so it cannot be swept by accident.
-
-- [ ] **Our Traditional corpus holds 47 兇 and zero 凶, where the printed CUV
-      uses 凶 — a likely systematic over-conversion, ~47 positions.** Found by
-      the refuter while checking 士 20:6. The Traditional witness splits 11 兇
-      / 37 凶, and Wikisource's CUV books show 凶 25× and 兇 0×. Nothing false
-      is printed — 兇 is a legitimate Traditional character and reads correctly
-      — so this is an edition-consistency improvement, not a scripture defect,
-      and 士 20:6 was written 兇淫 to stay consistent with the corpus we
-      actually have. Ask the user before flipping 47 positions.
 
 - [x] **代上 3:20 spelt Jushab-hesed 於沙希悉; it now reads 于沙希悉. The
       nineteenth converter hole, and the second one to reach a NAME. DONE
@@ -3571,93 +3359,6 @@ reported. Work these top-down before P2.
       The remaining ten are filed immediately below — they are a 2-against-3
       split and are NOT settleable from anything available here.
 
-- [ ] **The app contradicts itself on screen at 以賽亞書 64:3 and 使徒行傳
-      25:18: the verse reads 意料, the word-tap sheet reads 逆料. Needs the
-      user — do NOT resolve it by editing either side.** Found 2026-08-23.
-      This is the one real defect in that pass, and it is P0 by the standing
-      rule: a reader who taps the word sees a different word from the one
-      printed in the verse, and both look authoritative.
-
-      **Cause is known and is not corruption.** Commit `81db105` (Paul Liu,
-      2025-08-10) changed 逆料 → 意料 in both reading editions and did not
-      touch `assets/tagged/cuvs-yhwh/`, which the sheet renders. The edit was
-      simply never propagated.
-
-      **Two ways to close it, and they are not equivalent** — which is exactly
-      why the user picks:
-        1. propagate the edit into the tagged corpus, so both read 意料 and
-           the edition keeps the user's wording; or
-        2. drop the edit, so both read 逆料 and the edition matches the
-           printed 1919, both external witnesses and the publisher's own site.
-
-      An autonomous iteration took route 2 unasked, deployed it to dev/qat and
-      reverted it in the same hour. Do not repeat that. The queue entry above
-      carries the full account.
-
-- [ ] **Ten word-level differences where our text and our tagged corpus agree
-      AGAINST the print and both witnesses. Needs the user. Do NOT sweep
-      them.** Measured 2026-08-23 in the pass above. Every one is the same
-      shape as 馬可福音 6:33, which was referred to the user for the same
-      reason: two of our files against three outside lines is not enough to
-      rewrite a word, and **nothing false is on screen today** — in each case
-      both readings render the same Greek or Hebrew.
-
-      | ref | ours + our tagged corpus | print + witness A + witness B |
-      |---|---|---|
-      | 創 49:33 | **歸到**列祖那裏去了 | **歸他**列祖 |
-      | 徒 27:31 | 這些人若不**留**在船上 | 若不**等**在船上 |
-      | 徒 28:6 | **等**了多時，**看見**他無害 | **看**了多時、**見**他無害 |
-      | 徒 28:15 | 一聽見我們的**消息** | 我們的**信息** |
-      | 徒 28:17 | **或**我們祖宗…卻**做為囚犯**…**被交在**羅馬人手裏 | **和**我們祖宗…卻**被鎖綁**…**解在** |
-      | 林後 5:19 | 將這和好的道理託付**在**我們 | 託付**了**我們 |
-      | 林後 7:15 | 他**對**你們的心腸 | 他**愛**你們的心腸 |
-      | 林後 8:10 | 你們**開始**辦這事 | 你們**下手**辦這事 |
-      | 林後 12:1 | 說到主的**異象**和啟示 | 主的**顯現**和啟示 |
-      | 林後 13:5 | 有耶穌基督在你們**裏面** | 在你們**心裏** |
-
-      **The original languages were checked and rule nothing out** — in two
-      places they argue for OUR reading. 林後 5:19 is θέμενος **ἐν ἡμῖν** τὸν
-      λόγον, and 託付**在**我們 mirrors ἐν more closely than the print's
-      託付**了**; 林後 7:15 is τὰ σπλάγχνα αὐτοῦ περισσοτέρως **εἰς ὑμᾶς**,
-      with no verb "to love" in the Greek at all, so 他**對**你們 is the
-      literal rendering and the print's 他**愛**你們 is the free one. A
-      reading that is less idiomatic is not the same as one that is wrong,
-      which is precisely why this loop must not decide these.
-
-      **A root cause was proposed and BROKEN — recorded so nobody rebuilds
-      it.** The hypothesis was that our text had been contaminated by the 2010
-      和合本修訂版 (RCUV). The refuter checked all ten: RCUV agrees with us at
-      five and partially at two, but **contradicts us at three** (徒 28:17
-      和我們祖宗, 林後 7:15 他愛你們的心, 林後 5:19 託付了我們), siding with
-      the print. 恢復本 covers some of the misfits but not all, and 林後 5:19
-      託付**在**我們 and 林後 7:15 他**對**你們 match **no** published version
-      it could query. So this is not one revision bleeding in; it looks like a
-      hand-edited text, and "looks like" is as far as the evidence goes.
-
-      **The question for the user is one line:** at these ten places our
-      edition departs from the printed 1919 — are those the publisher's own
-      deliberate wording choices, or corruption to be undone? One answer
-      settles all ten. Until then they stay exactly as they are.
-
-      **Do NOT count the Yahwehdehua export as a witness here — it is the
-      ANCESTOR.** The extracted dataset at `~/Documents/New project/
-      yahwehdehua_bible/output/checkpoints/` carries the publisher's own
-      `cuv2017_strongs`, and it reads OUR way at all ten. That looks like
-      independent confirmation and is not: spot-checked on CJK ideographs, it
-      is character-identical to our tagged corpus and to our reading text
-      across whole chapters (Acts 25, 2 Cor 13, Isaiah 64 — 53 of 53 verses).
-      Our corpus was imported from it. Citing it would repeat the 創世記
-      39:22 / 41:30 mistake in a worse form: there, two witnesses shared an
-      ancestor; here the "witness" IS the ancestor.
-
-      **But that identity is itself the useful finding, and it reframes the
-      question for the user.** All ten readings are the publisher's own, live
-      on their site — so nothing was corrupted in this repo, and the decision
-      is not "restore the text" but "which edition should the app follow".
-      The question becomes: *at these ten places your edition departs from the
-      printed 1919 和合本 — are those your intended wording, or would you
-      rather the app matched the print?* One answer settles all ten.
-
 - [x] **自已 → 自己 outside the Bible text — DONE 2026-08-18, 8 substitutions
       across 6 files, and nothing under `assets/` spells 自已 any more.**
       `assets/sermons/zh-CN/021.txt` 「所以我對自已說」 and `029.txt`
@@ -3702,440 +3403,6 @@ reported. Work these top-down before P2.
       hold pre-repair copies of `cuvs-yhwh*.json` and `tagged/cuvs-yhwh/psalms.json`
       carrying this and the earlier typo family. Gitignored build output, so a
       rebuild clears them — but never deploy from a stale one.
-
-- [ ] **SeekSparks' copy of `cuvs-yhwh-tr.json` still carries this whole defect
-      family.** Noted by the refuter 2026-08-18: that repo's asset still reads
-      何鹹 *and* 希伯侖, i.e. it is the pre-repair converted file. It is
-      **read-only from here** (it has its own hourly loop, writing collides), so
-      this is a note, not a task: either that loop replays the same seventeen
-      instalments, or someone copies the repaired assets across once. Worth
-      raising with the user rather than deciding unilaterally.
-
-      **Checked again 2026-08-23 and it is CORRECT on the two verses this
-      loop briefly got wrong**: that copy reads 意料 at 以賽亞書 64:3 and
-      使徒行傳 25:18, matching the user's edit in `81db105`, and 銷滅 at
-      帖前 5:19. So the divergence between the two repos is the glyph family
-      and nothing more — had the 意料 "repair" survived here, it would have
-      created a NEW divergence rather than closing one. Worth remembering
-      when someone finally syncs the assets: a difference between the two
-      copies is not automatically a defect in one of them.
-
-- [ ] **Two 愈/癒 spin-offs the refuter found, deliberately NOT swept with the
-      verse asset on 2026-08-18 — neither is converter-backed.** Small, and each
-      needs a judgement the 35-substitution instalment did not.
-
-      1. `assets/strongs/hebrew.json` **H6867** — `glossZhTw` and `defZhTw` read
-         「痂, 傷愈的疤」 where the Traditional should be 傷癒. The evidence is
-         internal inconsistency: the same file's Traditional fields write 治癒 for
-         a different entry. **But opencc does NOT convert 傷愈 → 傷癒** (verified),
-         so unlike the verse asset there is no converter oracle behind it and it is
-         an editorial call on 2 fields. `greek.json`, `maps_index.json` and the
-         tagged corpus are clean; this is the only Traditional 愈 in `hebrew.json`.
-      2. `assets/biblexg-v2-tr.json` — 4 Traditional-facing 愈 that are **not**
-         痊愈: 治愈 ×2 (路 8:2, in the text and in a note) and 愈合 ×2 (啟 13:3,
-         13:12). opencc converts both, and the same file writes 癒 26 times, so it
-         is internally inconsistent by the same argument as H6867 — but this is
-         **梁家鏗's own translation**, not ours to normalise. The same 4 strings are
-         duplicated in `ljk-nt-bible-webapp/public/resources/tw-lk.json` and
-         `tw-rev.json`.
-      3. Added 2026-08-18, same call, same file: `assets/biblexg-v2-tr.json`
-         spells 希斯**侖** once (路 3:33, the genealogy) against its own two
-         希斯**崙** (太 1:3) and one 沙崙. Internally inconsistent by exactly
-         the argument used for H6867 — and, again, his text and his call, so it
-         was left alone when our own 155 were repaired.
-
-      Also recorded: `build-cn/` and `build-wasm/` still hold a stale
-      `biblexg-tr.json` (23 愈 / 0 癒) with no source counterpart — gitignored build
-      output, so it needs a rebuild rather than an edit, but do not mistake it for a
-      live asset.
-
-- [ ] **The one-to-many Simplified leftovers — 24 classes still open, one
-      character at a time.** The rest of the same defect. Every enumerated
-      class is now done: ~~**幹 319**~~ **DONE — 199 were dry and now read 乾,
-      111 were offence or a name and now read 干** (see below, and it is what
-      finally made 詩篇 51:7 read 「乾淨」); ~~**發 1375**~~ **DONE — 88 were
-      hair and now read 髮**; ~~**谷 244**~~ **DONE — 67 were grain and now
-      read 穀**; ~~**松 51**~~ **DONE — 24 were the verb and now read 鬆**;
-      ~~**采 3**~~ **DONE — all three were the verb and now read 採**.
-
-      **The "~2,000 to review" estimate this item used to carry was a guess,
-      and it has now been measured — 25 classes, ~1,000 positions.** The
-      measurement is a character-inventory diff: every character the witness
-      `7a2dc43` uses that our asset does not contain **at all**. Each row
-      below is the same hole signature every fixed instalment had — ours holds
-      **zero** of the Traditional form across 31,102 verses:
-
-      | Traditional | witness has | ours writes | ours has | witness also has |
-      |---|---|---|---|---|
-      | ~~制~~ | ~~90~~ | ~~製~~ | ~~157~~ | ~~67~~ | **DONE 2026-08-18** |
-      | ~~恆~~ | ~~79~~ | ~~恒~~ | ~~79~~ | ~~0~~ | **DONE 2026-08-18** |
-      | 託 | 73 | 托 | 82 | 9 |
-      | 痲 | 65 | 麻 | 237 | 172 |
-      | 慾 | 65 | 欲 | 75 | 10 |
-      | 飢 | 58 | 饑 | 157 | 99 |
-      | 准 | 54 | 準 | 94 | 40 |
-      | 捨 | 53 | 舍 | 317 | 264 |
-      | 姦 | 46 | 奸 | 107 | 61 |
-      | ~~卜~~ | ~~42~~ | ~~蔔~~ | ~~42~~ | ~~0~~ | **DONE 2026-08-18** |
-      | ~~凌~~ | ~~37~~ | ~~淩~~ | ~~37~~ | ~~0~~ | **DONE 2026-08-18** |
-      | 凶 | 37 | 兇 | 47 | 11 |
-      | 佔 | 30 | 占 | 56 | 26 |
-      | 颳 | 26 | 刮 | 34 | 8 |
-      | ~~症~~ | ~~26~~ | ~~癥~~ | ~~26~~ | ~~0~~ | **DONE 2026-08-18** |
-      | ~~冑~~ | ~~26~~ | ~~胄~~ | ~~26~~ | ~~0~~ | **NOT A DEFECT 2026-08-18 — needs the user** |
-      | 樑 | 25 | 梁 | 27 | 2 |
-      | 繫 | 24 | 系 | 34 | 4 |
-      | 籤 | 24 | 簽 | 26 | 2 |
-      | 杆 | 21 | 桿 | 26 | 5 |
-      | 閒 | 18 | 閑 | 19 | 1 |
-      | 扎 | 17 | 紮 | 21 | 4 |
-      | 儘 | 16 | 盡 | 407 | 391 |
-      | 併 | 12 | 並 | 2144 | 2133 |
-      | 鬨 | 10 | 哄 | 49 | 39 |
-
-      **Take the exact partitions first — they are the cheapest instalments
-      left and need no judgement at all.** ~~恆/恒 79~~ **DONE**, ~~卜/蔔 42~~ **DONE**,
-      ~~凌/淩 37~~ **DONE**, ~~症/癥 26~~ **DONE**, and ~~冑/胄 26~~ each have
-      ours-count == witness-count and the witness holding **zero** of our form, so
-      they are whole-class 1:1 replacements rather than a split. ~~Next up: 冑/胄 26
-      (甲冑 is a helmet, 胄 is a descendant)~~ — **冑/胄 turned out NOT to be a
-      converter hole at all; see the block below, it is now the user's call.**
-      ~~Next up: 愈/癒 35~~ **DONE 2026-08-18 — see the block below.** A fifth
-      partition the refuter turned up that the inventory table above missed, because
-      愈 is a real Traditional character in 愈來愈 and so is not a hole by the
-      "ours holds zero" test.
-
-      **制/製 is done — 90 substitutions, 2026-08-18. The FIRST of the splits,
-      and the widest reader surface of any instalment so far.** Every one of the
-      90 was printing a non-word: 加拉太書 5:23 「溫柔、節製」, 彼得後書 1:6
-      「加上節製；有了節製」, 創世紀 4:7 「你卻要製伏它」, 出埃及記 1:11
-      「派督工的轄製他們」, 加拉太書 5:1 「奴僕的軛挾製」, 彼得前書 2:13
-      「人的一切製度」. Simplified merged 製 (manufacture — 製造/製作) onto 制
-      (system, statute, restrain, subdue — 制度/節制/轄制/制伏), and the map
-      expanded it back unconditionally: ours held 157 製 and **ZERO** 制, our
-      Simplified twin 157 制 and **ZERO** 製 in the same places. Right 67 times,
-      wrong 90.
-
-      **Not the 蹟/跡 shape.** There both forms are legitimate Traditional
-      spellings and two editions merely chose differently, which is why those
-      stay unswept. Here 節製 and 轄製 are not variants of anything — no
-      orthography and no published edition sets them.
-
-      The 90 are 轄制 33, 制伏 30, 壓制 9, 節制 8, 克制 6, 按制子 2, 挾制 1,
-      制度 1; the 67 keeps are exactly 62 製造 + 5 製作 and nothing else.
-      **No verse in the corpus holds both readings**, so the two senses never
-      had to be told apart inside one sentence (unlike 幹, where 以西結書 19:12
-      sets a genuine 幹 four characters from a 乾).
-
-      **The refuter did not break it and made the evidence stronger.** It ran a
-      full per-verse join on {book, chapter, verse} across all 31,101 shared
-      verses and found **zero** count mismatches on either character — so the
-      alignment never had to guess anywhere, and the 7 positions that fell back
-      to ordinal matching (民 32:22, 士 16:5/16:6/16:19, 伯 35:9, 哀 1:13,
-      但 2:40 — all blocked by *neighbouring* edition differences: 雅偉/耶和華,
-      克/剋, `<note: …>`/（…）) are exact rather than merely probable. All 7 were
-      also confirmed one by one in the published 新標點 `cmn-cu89t`. It corrected
-      one thing worth keeping: **`cmn-cu89t` is not a clean second witness** —
-      its 66 製 differs from ours by book (賽 8 vs 6, 何 2 vs 3), all on the
-      67-keep side and never among the 90. The load-bearing witness is blob
-      `7a2dc43`; the genuinely independent line is 梁家鏗's Traditional NT,
-      which distinguishes the pair the same way (60 制 / 6 製, 節制 never 節製).
-
-      **Scope — the verse asset only, and two files deliberately left alone.**
-      `assets/strongs/*.json` already distinguish the pair in their `*ZhTw`
-      fields (製造/製作/銅製的/皮製的 against 節制/限制/抑制/轄制/受制於), so
-      they were **not** produced by this map — which is direct evidence for the
-      open provenance question above. `assets/maps_index.json` sets zh-Hant
-      「編製的應許之地地圖」, the correct Traditional word for compiling, and
-      already writes 制伏 correctly. Both pinned by the test.
-      `tools/repair_tr_restraint_glyph.py` (re-runnable, idempotent);
-      `test/traditional_restraint_glyph_test.dart` fails four ways on the
-      pre-fix data.
-
-      **愈/癒 is done — 35 substitutions, 2026-08-18.** The fifth true partition,
-      and every healing in the Traditional Bible was misspelt: 約翰福音 5:6 read
-      「你要痊愈嗎？」, 馬可福音 5:34 「你的災病痊愈了」, 利未記 15:13
-      「患漏症的人痊愈了」. 癒 is the healing (痊癒/治癒/癒合); the mainland
-      standard merged it onto 愈, which in Traditional is only the comparative
-      (愈來愈, 愈加, 每況愈下).
-
-      **The lesson is about how it was FOUND, not how it was fixed.** The inventory
-      diff that generated the table above lists characters our asset holds **zero**
-      of — and 愈/癒 never appeared in it, because we hold 35 愈. The hole ran the
-      other way: we held zero 癒. **A merged Simplified pair only shows up in that
-      diff when the surviving form is the one we lack.** When the enumerated rows
-      run out, the remaining exposure is exactly this shape, so the next sweep
-      should diff on characters the *witness* holds zero of as well.
-
-      Ours held 35 愈 and **ZERO** 癒; the witness 35 癒 and **ZERO** 愈, agreeing
-      count-for-count on all 31,102 verses with **zero** mismatches, swept in both
-      directions. But "the witness holds none of our form" was **not sufficient
-      here**, unlike 症 or 凌: 愈 is a live Traditional character, so one 愈來愈
-      among the 35 would have made this a split and a blind replace would have
-      printed 愈來癒. It isn't — all 35 are preceded by 痊 and by nothing else, and
-      the corpus contains no 愈來愈/愈加/愈發/每況愈下 at all. Both facts are
-      enforced by the tool and pinned by the test.
-
-      Corroborated by a **published** 新標點和合本 Traditional (ebible `cmn-cu89t`):
-      34 癒, **zero** 愈, every one 痊癒, reconciling book for book with our 35 —
-      the single difference is 約翰福音 5:4, the bracketed angel-troubling-the-water
-      verse, which we carry in 〔〕 and that edition omits. 梁家鏗's independent
-      Traditional NT writes 痊癒 in all 26 of its healings. opencc s2t/s2tw/s2twp
-      render 痊愈 → 痊癒 while correctly keeping 愈來愈. No published Traditional
-      和合本 printing 痊愈 could be found, so unlike 冑/胄 there is no split and no
-      question for the user. `tools/repair_tr_recovery_glyph.py` (re-runnable,
-      idempotent); `test/traditional_recovery_glyph_test.dart` fails three ways on
-      the pre-fix data.
-
-      **The refuter broke two of my claims and both corrections are worth keeping.**
-      (1) I was going to write that 新譯本 (blob `57c4686`, 37 痊愈 / zero 癒) is a
-      defective conversion to be explained away. It is a conversion, but **新譯本
-      genuinely prints 痊愈** in published Traditional e-texts (信望愛 `ncv`,
-      cnbible CNV) — it is a different translation with a different house style, and
-      it is evidence neither for nor against 和合本. Do not cite it either way.
-      (2) My scope claim was too wide — see the two spin-off items below. It also
-      noted that `cmn-cu89t` words the comparative 越發 and never 愈發, so its
-      zero-愈 does **not** independently prove it would preserve an adverbial 愈;
-      that weight rests on our own recount, not on that edition.
-
-      **Scope was narrower than the fix wanted to be.** 愈 is correct elsewhere and a
-      sweep would have corrupted it: `assets/misconceptions.json` sets zh-Hant
-      「強者愈強、弱者愈弱」 and the zh-TW sermons have 每況愈下 in `CP18.txt`. Both
-      are now pinned by the test.
-
-      **冑/胄 is NOT a converter hole — 26 substitutions NOT applied, and the
-      decision belongs to the user. 2026-08-18.** The first row of this table to
-      fail on inspection, and worth reading before the next instalment, because the
-      "ours holds **zero** of the Traditional form" signature fired here for an
-      entirely benign reason and would have printed 26 wrong characters.
-
-      All 26 take one reading, **貴胄** — a noble scion. Nothing is a helmet. That
-      is the whole of it: 胄 (U+80C4, 肉/月 radical) is the descendant, 冑 (U+5191,
-      冂 radical) is the helmet, and **和合本 never says 甲冑** — it renders helmet
-      as 盔 (15), 頭盔 (4), 盔甲, 鎧甲 (6) and 頂盔貫甲, with **zero** 甲冑 and zero
-      甲胄 in 31,102 verses. So our asset holds no 冑 because the sense that needs
-      one never occurs, not because a converter could not produce it. Every other
-      row in this table has a hole to undo; this one has nothing to undo.
-
-      **A correct converter agrees with us.** `opencc -c s2t` renders 贵胄 → 貴胄
-      and 甲胄 → 甲冑 — it distinguishes the two senses and keeps 胄 for the scion.
-      `s2tw` and `s2twp` do the same. Taiwan 教育部《重編國語辭典》heads the entry
-      **貴胄**, and 教育部《異體字字典》lists 胄 (35895) and 冑 (3002) as two
-      independent 正字, neither a variant of the other, so there is no
-      one-to-many expansion here to get wrong. Our Simplified twin writes 胄 26
-      times, which is also the only mainland-standard form.
-
-      **But the print tradition is split, and that is why this is not ours to
-      settle.** The witness `7a2dc43` sets 貴冑 in all 26, and the refuter
-      downloaded an independent published 新標點和合本 (ebible `cmn-cu89t`) which
-      also reads **26 冑 / 0 胄**, the same verses — joined by 信望愛 `unv` and
-      catholicgallery CUVT. So 貴冑 is a mainstream printed CUV reading and the
-      witness is reproducing its edition faithfully, not corrupting it. It is not
-      unanimous either: the refuter found Wikisource 和合本 and cnbible's CUV
-      setting 貴胄, and 新譯本 `57c4686` is internally inconsistent — 4 貴胄
-      (士 5:13, 王上 21:8, 21:11, 尼 2:16) against 1 貴冑 (傳 10:17). 梁家鏗's
-      Traditional NT sets 貴冑 at 路 19:12 where its own Simplified sets 贵胄.
-      Even 康熙字典 concedes the confusion under 冑: 「冑與胄子之胄不同，經典多混，
-      傳寫譌也」.
-
-      **The refuter's real contribution was not breaking the character analysis —
-      that survived every attack — but catching that the analysis answers a
-      different question than the previous five instalments did.** In 隻, 恆, 卜,
-      凌 and 症 the witness, the orthographic standard, opencc and every other
-      edition all pointed the same way, so "match the witness" and "match the
-      standard" never had to be told apart. Here they diverge for the first time,
-      and choosing between them is choosing a contract:
-
-        * **fidelity to the printed 和合本** → apply the 26, print 貴冑;
-        * **modern Traditional orthography** → change nothing, ours is right.
-
-      **Do not apply it on an autonomous iteration either way.** Nothing here is
-      untrue about scripture — same word, same sound, same meaning, no verse or
-      reference affected — so it does not carry the P0 override, and the repo
-      already treats edition-fidelity questions as the user's (see "Proofread the
-      TRADITIONAL against the printed 註釋本" and the 427 wording differences).
-      **The question for the user is in "Blocked on the user".**
-
-      **The lesson generalises, so check the next one:** an inventory diff finds
-      characters we lack, and "we lack it" has two causes — the converter could not
-      write it, or scripture never needed it. Only the first is a defect. 冑 was the
-      last remaining row whose "witness also has" column is 0, so the exposure is
-      bounded; the open rows below are all splits, where the witness holding both
-      forms already proves the character is in play. For **愈/癒 35**, the next
-      instalment, both tests do agree: opencc renders 痊愈 → 痊癒 under s2t, s2tw
-      and s2twp, and the queue's own count has the witness at 35 癒 / 0 愈 — so
-      unlike 冑 it is a genuine hole. Still cross-check it against a published
-      edition before applying, which is the habit this row should leave behind.
-
-      **症/癥 is done — 26 substitutions, 2026-08-18.** The fourth true partition,
-      and the same converter accident as 蔔 for 卜: 症 and 癥 are two different
-      words sharing one Simplified form, and the table picked the rarer expansion
-      everywhere. 症 is the illness (病症, 漏症); 癥 is zhēng, an abdominal mass,
-      surviving in modern Traditional essentially only in 癥結 — which scripture
-      never says. So the whole of 利未記 15, the chapter on 漏症, read 「人若身患漏癥」,
-      and 馬太福音 4:23 had Jesus healing 各樣的病癥.
-
-      Ours held 26 癥 and **ZERO** 症; the witness 26 症 and **ZERO** 癥, agreeing
-      count-for-count on all 31,102 verses with **zero** mismatches — the refuter
-      swept it in **both** directions (witness→ours as well as ours→witness) so an
-      offsetting pair could not hide in a verse ours lacks. The four readings are
-      漏癥 ×20 (利未記 ×18, 民數記 5:2, 撒母耳記下 3:29), 病癥 ×4 (申 7:15,
-      太 4:23, 9:35, 10:1), 火癥 ×1 (申 28:22), 熱癥 ×1 (哈 3:5). All 26 confirmed
-      two-sided against the witness's same-id verse, none one-sided — but the window
-      is narrow in seven places and the figure is worthless without it: 19 at ≥3
-      characters each side, four 利未記 at 2, and three at **1** (太 4:23, 9:35,
-      10:1 all end 各樣的病癥。 so there is nothing to the right but the stop).
-      Corroborated by 新譯本 `57c4686` (39 症, zero 癥) and by our own Simplified
-      asset and the tagged Strong's corpus, both already 26 症 / zero 癥.
-      梁家鏗's Traditional NT gives **no** corroboration and is not claimed as any:
-      it holds neither character, wording 各樣的病症 as 各種疾病.
-      `tools/repair_tr_ailment_glyph.py` (re-runnable, idempotent) refuses eight
-      ways, including refusing outright if the corpus ever contains 癥結;
-      `test/traditional_ailment_glyph_test.dart` fails four ways on the pre-fix data.
-
-      **Scope was the interesting part, and the refuter broke my first version of
-      it.** Unlike 淩 or 蔔, 癥 is CORRECT elsewhere in this repo:
-      `assets/sermons/zh-TW/105.txt` reads 「真正的癥結」 — one 癥 against 171 症 in
-      that corpus — so a repo-wide sweep would have corrupted it. I had also written
-      that no other tracked file carries the character; `HANDOFF.md` and this queue
-      both do, in our own notes about the pair. Now pinned by the test.
-      SeekSparks' tracked copy of `cuvs-yhwh-tr.json` carries the identical 26 癥;
-      **its own loop writes there and this repo must not**, as with 五壳 above.
-
-      **凌/淩 is done — 37 substitutions, 2026-08-18.** The third true partition,
-      and the one that shows most clearly that this class is a converter defect
-      rather than an editorial preference: **凌 is the correct form in BOTH
-      scripts.** Taiwan 教育部, the Hong Kong list and the mainland standard all
-      set 凌 in 凌辱/欺凌/凌遲; 淩 is a rare variant used essentially only as a
-      surname and in water senses, and it appears in no name in scripture. So
-      unlike 隻, 淨 or 恆 there was no simplification to undo here — the converter
-      mangled a character that needed no conversion at all, and our own
-      Simplified asset writes the correct 凌 in the same 37 places.
-
-      Ours held 37 淩 and **ZERO** 凌; the witness 37 凌 and **ZERO** 淩, agreeing
-      count-for-count on all 31,102 verses with **zero** mismatches. All 37 take
-      exactly three readings — 凌辱 ×32, 欺凌 ×3 (代下 28:20, 詩 69:19, 箴 26:18)
-      and 凌遲 ×2 (但 2:5, 3:29) — and all 37 were confirmed position by position
-      against the witness's same-id verse on a **two-sided** context window, the
-      first instalment with no one-sided or bare-count confirmations at all.
-      士師記 19:25 read 「終夜淩辱她」, 撒母耳記上 31:4 「淩辱我」, 詩篇 44:15
-      「我的淩辱終日在我面前」, 路加福音 6:28 「淩辱你們的，要為他禱告」.
-      Corroborated by 梁家鏗's independent Traditional NT (10 凌 in verse text,
-      zero 淩) and 新譯本 `57c4686` (30 凌, zero 淩).
-
-      **The narrowest scope of any instalment so far:** 淩 occurs in no other
-      text file tracked in the repo — the sermons (23 凌), `section_titles.json`
-      and `bible_evidence.json` already write it correctly — so nothing outside
-      the verse asset needed touching.
-      `tools/repair_tr_insult_glyph.py` (re-runnable, idempotent) refuses seven
-      ways; `test/traditional_insult_glyph_test.dart` fails four ways on the
-      pre-fix data. The test also caught a miscount of my own before it was
-      committed: 梁家鏗's file holds 15 凌, not 10, because five sit in
-      `blockNotes` (凌晨, the Roman watches) which a `text`-field count skips.
-
-      **The refuter confirmed all four load-bearing claims** — including that it
-      could find no position among the 37 where 淩 could legitimately stand, no
-      name and no genealogy — and independently recounted the biblexg number the
-      test had already caught. It added one piece of scope worth keeping: the
-      **retired LJK1 `assets/biblexg-tr.json` carries the same hole** (10 淩,
-      zero 凌). It is deleted from the tree and dropped from the bundle as of
-      v1.4.5 (commit `69307c7`), so nothing ships it and there is nothing to fix
-      — but **if that version is ever revived it is unrepaired**, and it will
-      need this instalment and probably every other one in the class. The same
-      goes for any other retired Traditional asset brought back from history.
-
-      **恆/恒 is done — 79 substitutions, 2026-08-18.** The second true partition
-      and the one with the widest reader surface: **54 of the 79 are Bethlehem**,
-      so a Traditional Bible spelt the nativity 伯利恒 at 彌迦書 5:2
-      「伯利恒、以法他啊」, 路加福音 2:4, 馬太福音 2:1 and every reference in Ruth.
-      The other 25 are 恒久 ×8, 恒心 ×8, 恒切 ×4, 恒常, 恒守, 恒忍, the name
-      雅叔比利恒 (代上 4:22, Jashubi-lehem) and 詩篇 89:36 「如日之恒一般」, where
-      the character stands alone. 箴言 11:19 「恒心為義的」, 哥林多前書 13:4
-      「愛是恒久忍耐」, 使徒行傳 1:14 「恒切禱告」.
-
-      Ours held 79 恒 and **ZERO** 恆; the witness 79 恆 and **ZERO** 恒, agreeing
-      count-for-count on all 31,102 verses with **zero** mismatches — so no
-      offsetting pair could hide. Easier than 卜/蔔 in one respect: 恆 and 恒 are
-      the same word rather than two words sharing a Simplified form (恒 is the
-      mainland standard, 恆 the Taiwan 教育部 and Hong Kong form), so there was no
-      meaning to decide anywhere. All 79 still confirmed position by position
-      against the witness's same-id verse: 74 on a two-sided window of up to 8
-      characters, 5 on one side only — 箴言 11:19 and 箴言 25:15 are verse-initial
-      so there is no left context (and 25:15 also loses its right window, the
-      witness dropping two commas), 彌迦書 5:2 reads 「伯利恒、以法他」 against the
-      witness's 「伯利恆的以法他」, 使徒行傳 1:14 「的恒切」 against 「地恆切」, and
-      創世紀 48:7 brackets its gloss `(以法他就是伯利恒)` where the witness sets
-      〈…〉. Corroborated by 梁家鏗's independent Traditional NT (32 恆, zero 恒,
-      all 伯利恆) and by 新譯本 `57c4686` (zero 恒). Nothing to do on the
-      Simplified side or in the tagged corpus — both already write 恒, the
-      correct single Simplified form.
-      `tools/repair_tr_constancy_glyph.py` (re-runnable, idempotent) refuses
-      seven ways, including refusing outright if the witness holds even one 恒;
-      `test/traditional_constancy_glyph_test.dart` fails four ways on the
-      pre-fix data.
-
-      **The refuter could not break the fix but broke three things I wrote about
-      it, which is why the description above is not the one I first drafted.**
-      It independently recounted all seven claims and confirmed them, then found
-      (a) I had called 彌迦書 5:2 verse-initial — it is not, the glyph sits at
-      index 2 of 伯利恒 and its *right* side differs, a 、/的 variant; only the two
-      Proverbs are verse-initial; (b) the tool's cue audit reached **78 of 79**,
-      because 伯利恒 is not a substring of 雅叔比利恒 — the cue is now 利恒, and
-      the same off-by-one was about to go into the test; (c) 創世紀 48:7 uses
-      ASCII parentheses, not fullwidth. It also confirmed the scope: it swept
-      every tracked file and found every other 恒 sitting in a `zh-Hans` key or
-      Simplified prose, with `section_titles.json` cleanly split (cuv 8 恒 / 0 恆
-      against cuv-tr 0 恒 / 8 恆).
-
-      **卜/蔔 is done — 42 substitutions, 2026-08-18.** The first true partition
-      of the whole class and the cheapest instalment yet: 蔔 is correct in
-      exactly one word in the language, 蘿蔔, and no radish occurs in scripture,
-      so unlike 發/髮 or 谷/穀 there was no correct-in-our-form side to protect.
-      Ours held 42 蔔 and **ZERO** 卜; the witness 42 卜 and **ZERO** 蔔, agreeing
-      count-for-count on all 31,102 verses with **zero** mismatches — so no
-      offsetting pair could hide, because no verse holds both readings.
-      申命記 18:10 read 「不可有占蔔的、觀兆的」, 以西結書 13:6 「是謊詐的占蔔」,
-      彌迦書 3:11 「先知為銀錢行占蔔」. The positions a divination-only rule would
-      have missed are the transliterations — 別西蔔/巴力西蔔 ×8 (Beelzebub /
-      Baal-zebub), 巴蔔 ×2 (Bakbuk), 押蔔 (Azbuk) and 蔔士 (亞 10:2, the diviners)
-      — and they need no rule here because the class moves whole.
-      梁家鏗's independently translated Traditional NT corroborates: 別西卜 ×8,
-      占卜 at 使徒行傳 16:16, zero 蔔. Nothing to do on the Simplified side or in
-      the tagged corpus — both already write 卜, which is the correct single
-      Simplified form. **占 was deliberately left alone** (56 here, of which the
-      witness says 30 should be 佔): 占 is correct inside 占卜, so 卜 had to be
-      settled first and 佔/占 is now unblocked.
-      `tools/repair_tr_divination_glyph.py` (re-runnable, idempotent) refuses
-      seven ways, including refusing outright if the witness holds even one 蔔 —
-      because that would mean this is a split and not a partition;
-      `test/traditional_divination_glyph_test.dart` fails three ways on the
-      pre-fix data and pins 占/佔 so the next instalment cannot silently
-      overshoot into this one.
-
-      **The refuter earned its keep again, and this time on scope.** It could
-      not break the claim — it confirmed zero 蘿/萝/菔 anywhere in the corpus
-      (民數記 11:5's produce list is 黃瓜、西瓜、韭菜、蔥、蒜, no radish), matched
-      all 42 on a ±2-character window, and added two witnesses nobody had used:
-      新譯本 `57c4686` (44 卜 / 0 蔔) and the sermon corpus below. But it caught
-      that **"no 蔔 belongs in this repo" is false** — `assets/sermons/zh-TW/`
-      holds **seven correct 蔔**, all 蘿蔔/胡蘿蔔, which a repo-wide sweep would
-      have printed as 蘿卜. The claim is true of scripture and had to be scoped
-      to the verse asset. Now pinned by the test.
-
-- [ ] **克/剋 is a new hole the inventory table never listed — ours holds ZERO 剋.**
-      Found 2026-08-18 by the refuter while it was checking 制/製. Both witnesses
-      write 剋制 at five of our six 克制 (士 16:5, 16:6, 16:19, 哀 1:13,
-      但 2:40); the sixth, 克制肉體, is 克 in all three. Simplified merged
-      克/剋, so it is the same class of converter defect.
-
-      **It did not show in the "characters the witness has and we hold zero of"
-      table because that table was cut off at 10 occurrences** — the same reason
-      咸 hid. But it is **weaker than 製/制 and must not be swept on that
-      analogy**: 克制 is itself a standard Traditional word in the Taiwan MOE
-      dictionary, so nothing false is printed today and this is
-      edition-consistency, not a scripture defect. Measure the full 克 inventory
-      before deciding, and ask the user — it belongs with 兇/凶 and 蹟/鍊 above,
-      not with the instalments.
 
 - [ ] **`assets/bible_evidence.json` has zh-Hant fields holding wholly SIMPLIFIED
       prose — not a glyph hole, an untranslated field.** Found 2026-08-18 while
@@ -4759,36 +4026,6 @@ reported. Work these top-down before P2.
       the artifact. It IS still testimony at positions it does not share —
       西番雅書 1:1 is one.
 
-- [ ] **The 8 ASCII `"` in running scripture: sweep the whole 原文 apparatus
-      to full-width, or leave it ASCII? User's call.** A pass on 2026-08-23
-      converted them to 「」/“” and was reverted the same hour when the refuter
-      broke the reasoning. The eight sit in the inline （原文有 "…"）
-      parentheticals of 撒迦利亞書 1:3, 8:14, 10:1 and 10:12. The argument for
-      widening was that running-text parentheticals read 6/6 「」 — but that
-      population is quoted speech and translation glosses (「以馬內利」翻出來就是…),
-      not the 原文 apparatus. Measured against its own kind, the apparatus is
-      **ASCII by 157 to 7** across the 528 notes that cite 原文, so widening
-      the eight would leave them disagreeing with 157 of their own convention.
-      A second argument also failed: `"` being byte-identical at 344 in both
-      editions proves nothing, because a 1:1 S/T map preserves every count —
-      「 and “ stand at 3,439 apiece for the same reason.
-
-      So the real question is not about eight marks, it is whether this corpus
-      should set its 原文 apparatus in ASCII at all — 344 marks in each edition,
-      reader-visible wherever notes are rendered. That is an edition-wide
-      typographic choice, not a defect repair, so it needs the user.
-      `test/ascii_punctuation_test.dart` pins 336-in-notes / 8-in-running-text
-      per edition and fails any future sweep until then.
-
-- [ ] **西番雅書 1:1 may want a ，where the stray `)` was.** The verse read
-      「亞瑪利雅的曾孫)基大利的孫子」; the `)` is deleted and the verse now reads
-      曾孫基大利. Witness 7a2dc43 sets ，there, and our own verse sets ，after
-      the neighbouring links of the same genealogy. Against it: the printed
-      1919 punctuates the whole chain bare, and SeekSparks (which does not
-      carry the `)` here, so it is testimony at this position) reads 曾孫基大利
-      too. Deleting an artifact and adding a mark are separate acts and only
-      the first is a repair, so the ，is left to the user.
-
 - [x] **`說；「` opened a quotation with a semicolon in 5 verses — fixed
       2026-08-23 in all three files.** 列王紀上 22:13, 路加福音 13:2,
       約翰福音 7:45, 約翰福音 9:9 and 希伯來書 3:11 now read 「說：」.
@@ -5038,22 +4275,6 @@ reported. Work these top-down before P2.
       events, which cannot be house style — a `”` with nothing open is either a
       stray or evidence of an opening mark lost earlier.
 
-- [ ] **The five verses that leave the first reply UNQUOTED are still open** —
-      a different act from the nine above, which is why they were filed
-      separately and stay that way. 馬可福音 3:22, 馬太福音 21:27,
-      約翰福音 8:19, 13:8, 18:31: the first reply carries no marks at all while
-      the second is quoted, and the witness `7a2dc43` quotes both. Nothing false
-      is on screen — no reader attributes the words to the wrong person, they
-      are simply unmarked — so this sits below the accuracy items. Adding a pair
-      is writing marks the edition never had, so it wants the same four-line
-      treatment the nine got, not a sweep.
-
-      Also still open from the original measurement: of the 49 verses with a
-      speech colon followed by unquoted words, 10 of the 13 with a bare `說：`
-      inside a balanced 「…」 span are third-level inner speech this edition
-      stops marking (出埃及記 33:5, 使徒行傳 21:11, 羅馬書 14:11 and the rest),
-      and the witness agrees they are unmarked. Those are not defects.
-
 - [x] **啟示錄 2:1, 2:8, 2:12, 2:18 and 3:1 nested `「` directly inside `「` —
       FIXED 2026-08-24, five substitutions in all three assets, and ONLY five.**
       The entry below used to call for fifteen edits across all seven letters.
@@ -5091,122 +4312,6 @@ reported. Work these top-down before P2.
       `「` and a `『` open. **It neither creates nor removes an unclosed
       quotation — it only puts the right mark on the level that was already
       nested.**
-
-- [ ] **Should the five `『` in Revelation's letters be CLOSED? Both positions
-      recorded, neither settled from the data — needs the user.** 啟示錄 2:7,
-      2:11, 2:17, 2:29 and 3:6 end `…。」`; the witness `7a2dc43` ends `…。』」`.
-      Five insertions, in all three assets.
-
-      **For closing:** the edition closes its inner quotations 642 times, and
-      the shape the five would otherwise keep — a `」` arriving while a `『` is
-      still open — is attested only 6 times (出 12:13, 出 33:3, 亞 3:10,
-      亞 7:7, 太 22:14, 可 5:34). Leaving them nearly doubles a 6-instance
-      anomaly.
-
-      **Against closing:** 13–18 `『` in this edition are never closed at all,
-      and every non-Decalogue one is exactly this shape — `說：『` running to
-      the end of the discourse. By that measure the five are ordinary. And
-      inserting a mark the file does not have is writing into the edition,
-      which the standing rule reserves for the user.
-
-      Nothing false is on screen either way. Pinned as-is by
-      `test/revelation_inner_quotes_test.dart` so it cannot drift while it
-      waits.
-
-- [ ] **啟示錄 3:7 and 3:14 mark no second-level quotation at all, and that is
-      probably house style rather than a defect.** Ours reads `說：那聖潔、真實…`
-      where the witness reads `說：『那聖潔…`. Left alone because the same thing
-      happens in **331 verses** — counted only where the witness's `說：『X` and
-      our `說：X` share the same following character, so the two positions
-      really correspond. The witness is a more heavily punctuated recension
-      (5,856 `「` to our 3,425; 857 `：『` to our 548), so it marks level 2 in
-      hundreds of places where this edition does not.
-
-      Consequence worth stating: the seven letters are now in three states
-      rather than four, not one. If the user answers the closing question above
-      they should be asked about these two in the same breath — one answer
-      could settle both.
-
-- [ ] **啟示錄 2:13's leading `「` is a paragraph reopener, not a stray — do
-      NOT delete it.** An earlier draft of the repair above deleted it because
-      the witness lacks it. The witness lacks it **144 times**: a verse-initial
-      `「` where the witness begins with an ordinary character is this edition's
-      convention for reopening a quotation after a paragraph break (申 32:23,
-      太 5:3, 路 6:24 …), and **five of the 144 are in Revelation itself** —
-      2:13, 4:11, 18:14, 18:16, 22:14. Recorded here so nobody deletes it
-      later on the same reasoning. This is why Revelation ch2 still reads
-      5 `「` to 4 `」` and ch22 reads 10 to 9; that residual is this class, not
-      the one that was fixed. Both verses are pinned by the test.
-
-- [ ] **The wrong-level quotation class is NOT confined to Revelation — the
-      first refuter found eleven more, and nobody has read them.** Found
-      2026-08-24 while attacking the Revelation fix, which is the right
-      provenance for it: it went looking for evidence the scope was wrong.
-      Same detector shape, against the same witness, outside Revelation:
-
-        * missing an inner opener where the witness has `『` — 使徒行傳 23:5,
-          路加福音 13:32, 使徒行傳 25:24, 出埃及記 8:20, 創世記 50:4, 50:16
-        * ends `」` where the witness ends `』」` — 撒迦利亞書 7:7, 11:6,
-          羅馬書 12:19 (使徒行傳 23:5 again, which has both shapes at once)
-        * the INVERSE error — 馬可福音 5:34 reads `『` where the witness
-          reads `「`
-
-      **Start with 馬可福音 5:34 — it is the strongest of the eleven and may
-      be stronger than the five that were just fixed.** Ours reads
-      `耶穌對她說：『女兒，你的信救了你…你的災病痊癒了。」` — it OPENS with the
-      second-level mark and CLOSES with the first-level one, a mismatched pair
-      inside a single verse. And nothing encloses it: 5:31's quotation closes,
-      so there is no open `「` for a level-2 mark to sit inside, and 5:28, 5:30,
-      5:31 and 5:35 all use `「…」`. That is broken against our own text, with
-      no witness needed — which none of the other ten can say.
-
-      **Do not sweep the rest.** Each has to be read against the 331-verse and
-      144-verse house-style classes above before it can be called a defect.
-      出埃及記 33:1 in particular is the *unclosed `『`* question again, not a
-      new class. The two Zechariah verses and 羅馬書 12:19 turn on whether a
-      quotation that spans verses should close, which is the open item three
-      entries up.
-
-- [ ] **約翰福音 9:9's other half: ours reads 「是他；」, the witness reads
-      「是他」；.** The semicolon belongs to the outer sentence (有人說…；又有人
-      說…) and has migrated inside the quotation. Left when the `說；` item
-      above was fixed, because it MOVES a mark rather than substituting one —
-      the same class as 創世紀 21:7 below, and the same class as the three
-      citations above. Pinned as-is by `test/speech_colon_test.dart` so it
-      cannot drift while it waits. May be an edition-wide typographic
-      question rather than a defect, in which case it belongs with the
-      full-width-quotes question already blocked on the user.
-
-- [ ] **The wider speech-mark class: 83 positions where 說 is followed by an
-      opening quotation mark, and only 4 of them were the `；` fixed above.**
-      Measured 2026-08-23 over the Traditional text with notes stripped:
-      **59 bare** (`說『天國近了！』`), **20 with `，`** (`誰能說，「我潔淨了
-      我的心」`), 4 with `；`.
-
-      **Most of the 59 are almost certainly CORRECT and this must not become
-      a sweep.** The bare ones are overwhelmingly a quotation embedded as the
-      object of 說 inside a larger sentence — 馬太福音 21:25 「我們若說『從天
-      上來』」, 約翰一書 2:4 「人若說「我認識他」」 — where no mark before the
-      quote is ordinary Chinese. The `，` group is the genuinely open
-      question: 箴言 20:9 「誰能說，「我潔淨了我的心」」 sets a comma where the
-      same construction elsewhere in the edition sets `：`.
-
-      Whoever takes this must measure per POSITION, not per verse: several of
-      these verses contain three or four 說 and a verse-level check of "the
-      witness has 說：somewhere" says nothing. Start from the `，` group, which
-      is 20 positions and bounded.
-
-- [ ] **創世紀 21:7 has a displaced closing 』 the 2026-08-19 repair did not
-      touch.** The empty quote pair at the end was removed, but ours still
-      reads 說『撒拉要乳養嬰孩**呢？**』 where the witness and the standard CUV
-      read 說『撒拉要乳養嬰孩』**呢？** — the inner quote wrongly swallows the
-      outer clause's question. `？』` is a legitimate pair, so no adjacency
-      sweep will ever find it; it was caught only by the refuter reading the
-      whole verse. Fixing it MOVES a character rather than deleting one, which
-      is why it was left. **The general lesson is the expensive one: a
-      misplaced-but-well-formed mark is invisible to every structural check
-      this repo has**, so this class can only be found by reading against a
-      witness.
 
 - [x] **希伯來書 2:2 was missing 干犯 — ALREADY FIXED, and this entry was
       stale.** Closed 2026-08-24 after checking the data rather than the
@@ -6447,6 +5552,25 @@ has never seen this repo.
       fixes the cause rather than the symptoms — but it needs a 简→繁
       converter this repo does not have. Report what is needed rather
       than hand-converting: hand-converting scripture is guessing.
+
+      **The glyph ruling for that converter is set — user, 2026-09-02:**
+      > 关于繁体字 你可以参考和合本最新版本的繁体版看那边怎么写的然后用他们的
+
+      It was given for `cuvs-yhwh-tr` and lands here instead, because that
+      file is now frozen (see the top of this file). Take the modern
+      printed Traditional 和合本 as the model for one-to-many choices —
+      神蹟 not 神跡, 鍛鍊/鐵鍊 not 鍛鏈, 著 not 着 — rather than whatever
+      the converter's default table emits.
+
+      **Measured 2026-09-02, so the rebuild has a target to beat.** Today's
+      `biblexg-v2-tr.json` is already close: 蹟 97 / 跡 1, 幹 31 / 干 3 (all
+      31 correct — 幹活, 幹農活, 幹掉), 癒 22 / 愈 3, 剋 1 (剋扣) — none of
+      the collapse the CUV conversion has. Two inconsistencies for the
+      rebuild to clear, both internal to the file rather than against a
+      witness: **8 stray 着 against 1058 著** (穿着, 盯着, 站着, 拖着, 照着,
+      憑着, 靠着, 得着) and **兇 8 / 凶 8 splitting the same words** (兇惡
+      once, 凶惡 twice; 兇殺 beside 行凶). Not worth a sweep before the
+      rebuild — it would regenerate the file anyway.
 
 - [x] **Make the audit a permanent test — done for 梁家鏗譯本.**
       `test/biblexg_verse_integrity_test.dart` fails on duplicate
@@ -10687,8 +9811,14 @@ so the bundle-size answer stays on the record.
   worth installing.
 - **prod deploy.** Every prod push needs explicit permission in the
   moment; it does not carry over. prod is on v1.4.190 as of 2026-09-01.
-- **貴胄 or 貴冑? And more generally: when the printed 和合本 and modern
-  Traditional orthography disagree, which wins?** Raised 2026-08-18. The
+- ~~**貴胄 or 貴冑? And more generally: when the printed 和合本 and modern
+  Traditional orthography disagree, which wins?**~~ **MOOT 2026-09-02.**
+  Both halves are answered and neither needs the user any more. The
+  narrow half: 貴胄 is right in all 26 places and nothing needs undoing.
+  The general half — which wins — the user ruled 「参考和合本最新版本的
+  繁体版…用他们的」, and then froze the only edition it would have applied
+  to. It now governs the `biblexg-v2*` rebuild instead, and is recorded
+  on that item. Evidence kept below for the record. Raised 2026-08-18. The
   Traditional Bible sets 貴胄 in 26 places (士 5:13, 王上 21:8/11, 尼希米記 ×8,
   以賽亞書 ×3, 耶利米書 ×3, 但 1:3, 路 19:12 …). Printed 新標點和合本 and the
   witness edition both set 貴冑; Taiwan 教育部 and opencc both say 胄 is the

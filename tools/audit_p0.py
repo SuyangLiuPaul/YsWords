@@ -14,25 +14,34 @@ each read their own copy. This script emits COUNTS AND VERSE IDS instead, so
 the reading is done once by grep-speed code and the judgement is done on a
 table. Re-running it later costs nothing.
 
-What it deliberately does NOT do
---------------------------------
-It does not fix anything, and it does not recommend fixing anything. Several
-of these classes are edition-CONSISTENCY questions the backlog has already
-ruled are the user's call, not defects:
+THE GLYPH SECTION IS NOW A MUSEUM PIECE — READ THIS BEFORE ACTING ON IT
+-----------------------------------------------------------------------
+On 2026-09-02 the user froze 和合本雅偉版:
 
-  * 兇/凶 — "Nothing false is printed. 兇 is a legitimate Traditional
-    character and reads correctly, so this is an edition-consistency
-    improvement, not a scripture defect. Ask the user before flipping 47
-    positions."
-  * 跡/蹟 and 鏈/鍊 — "standard Traditional spellings that read correctly,
-    so nothing false is printed today. Restoring the distinction is an
-    improvement to ask the user for (~165 positions), not a scripture defect
-    to fix unattended."
+    cuvs yhwh这个不用管 因为出版方说这个不要
 
-Those sentences are the reason this file prints a table and stops. An agent
-handed "sweep 兇→凶" without them would flip 47 verses of scripture on its
-own authority. `test/traditional_tail_glyphs_test.dart` pins the counts so a
-later sweep cannot happen silently.
+`assets/cuvs-yhwh.json` and `assets/cuvs-yhwh-tr.json` are READ-ONLY. The
+publisher declined our corrections. Section 1 below still prints 48 兇 / 0
+凶 and 0 蹟 / 103 跡 because those are still true — they are simply no
+longer defects to fix, and no longer questions to ask. `test/
+cuvs_yhwh_frozen_test.dart` pins both files by SHA-256; an unattended sweep
+fails CI rather than shipping.
+
+The earlier version of this docstring said these were "the user's call, ask
+before flipping 47 positions." That is obsolete: the call was made, and the
+answer was don't. Twenty-five queue items were deleted with it.
+
+The 简→繁 ruling the user gave the same day —
+
+    关于繁体字 你可以参考和合本最新版本的繁体版看那边怎么写的然后用他们的
+
+— applies to the `biblexg-v2*` rebuild instead, and is recorded there.
+
+What this script still does NOT do
+----------------------------------
+It fixes nothing, in any section. Sections 3 and 4 (the word-tap corpus and
+the Traditional sermon assets) are ours and remain open work; section 1 and
+section 2 now describe a frozen file and are kept for reference only.
 """
 import json
 import re
@@ -62,18 +71,20 @@ def ref(v):
 # Each pair is (ours, printed-CUV-alternative, note). The backlog's own
 # finding is recorded in the note so the table explains itself.
 GLYPH_PAIRS = [
-    ('兇', '凶', 'ask user; ~47 positions; nothing false printed'),
-    ('剋', '克', 'ours holds ZERO 剋 — is that correct for this edition?'),
-    ('蹟', '跡', 'deliberately NOT swept — reads correctly today'),
-    ('鍊', '鏈', 'deliberately NOT swept — reads correctly today'),
-    ('癒', '愈', 'two spin-offs left unswept; neither converter-backed'),
-    ('幹', '干', 'sermons/zh-TW carries 17 wrong 幹 (separate from scripture)'),
+    ('兇', '凶', 'FROZEN — asked and answered: leave it'),
+    ('剋', '克', 'FROZEN — 克制 is the MOE standard; never was a defect'),
+    ('蹟', '跡', 'FROZEN — a real collapse, and we are not fixing it'),
+    ('鍊', '鏈', 'FROZEN — same collapse, same answer'),
+    ('癒', '愈', 'FROZEN — two spin-offs, closed unswept'),
+    ('幹', '干', 'sermons/zh-TW carries 17 wrong 幹 — STILL OURS, still open'),
 ]
 
 
 def section_glyphs(show_refs=None):
     print('\n=== 1. GLYPH PAIRS (Traditional edition consistency) ===')
-    print('    These are POLICY questions. The backlog says so explicitly.\n')
+    print('    🔒 FROZEN 2026-09-02 — cuvs-yhwh is read-only, the publisher')
+    print('    declined our corrections. These counts are still true and are')
+    print('    no longer defects. Do not sweep; do not re-open as questions.\n')
     tr = load(TR)
     print(f'    {"pair":<12}{"ours":>8}{"alt":>8}   note')
     print(f'    {"-"*12}{"-"*8}{"-"*8}   {"-"*44}')
