@@ -8463,16 +8463,16 @@ has never seen this repo.
       New queue note below at the `bookNameToEnglish` entry: the copy
       count there should be five, not four, once the regex counts.
 
-- [ ] **`bookNameToEnglish` in `lib/constants/book_names.dart` is a
-      FOURTH copy of the 130 Chinese spellings.** Found by the refuter
-      2026-08-26. It matched `_zhAliasToEn` exactly until 啓示錄 was
-      added, and now differs by that one entry. Nothing is broken —
-      `resolveBookName` falls through to `_zhAliasToEn`, and the one
-      direct caller (`main_provider.dart:1155`) is fed book names from
-      the app's own data rather than from a transcript, so a transcript
-      glyph never reaches it. Worth folding into the same table anyway,
-      since "four copies, three of them right" is the state this week's
-      work has been paying off.
+- [x] **`bookNameToEnglish` in `lib/constants/book_names.dart` is a
+      FOURTH copy of the 130 Chinese spellings — DONE 2026-09-01.**
+      Found by the refuter 2026-08-26. It matched `_zhAliasToEn` exactly
+      until 啓示錄 was added, and now differs by that one entry. Nothing
+      is broken — `resolveBookName` falls through to `_zhAliasToEn`, and
+      the one direct caller (`main_provider.dart:1155`) is fed book
+      names from the app's own data rather than from a transcript, so a
+      transcript glyph never reaches it. Worth folding into the same
+      table anyway, since "four copies, three of them right" is the
+      state this week's work has been paying off.
       **2026-08-31 note:** the queue :7296 item (约拿记/哥罗西书) found a
       fifth candidate: `passageRefPattern`'s Chinese branch in
       `lib/utils/passage_localizer.dart` — a hand-written alternation
@@ -8481,6 +8481,39 @@ has never seen this repo.
       an alternation "counts" as a copy the way a map does is a
       judgement call I'm not making here — flagging it so "four
       copies" isn't quietly wrong if someone later folds this item in.
+      **2026-09-01: done, and two of this entry's own claims corrected.**
+      Two stale facts, both re-derived by parsing the two maps and
+      independently checked by a refuter before committing:
+        1. **"differs by that one entry" was wrong — the gap was 5, not
+           1.** `_zhAliasToEn` had picked up 约拿记/約拿記 (Jonah) and
+           哥罗西书/哥羅西書 (Colossians) from the :7296 item on 2026-08-31
+           and 啓示錄 (Revelation) earlier, none mirrored back here. All
+           5 added to `bookNameToEnglish`, next to their book's existing
+           group. Re-measured after the fix: both tables now hold the
+           same 135 CJK-keyed spellings, zero value conflicts either way.
+        2. **"the one direct caller (`main_provider.dart:1155`)" was
+           wrong — it's 22 direct `bookNameToEnglish[...]` lookups across
+           9 files** (also `jump_to_reference.dart`, `verse.dart`,
+           `url_sync_service_web.dart` ×4, `fetch_books.dart` ×2,
+           `fetch_verses.dart` ×5, `note_reference_picker_sheet.dart` ×2,
+           `verse_popup_sheet.dart` ×2, `bible_reading_pane.dart` ×4).
+           None of this changes the fix — none of these sites feed a raw
+           transcript spelling in — but the "low-traffic constant" framing
+           was never accurate and shouldn't be repeated.
+      **Did NOT merge the two tables into one.** `_zhAliasToEn` can't
+      become a value derived from `bookNameToEnglish`: its literal source
+      text is parsed by regex in two independent places —
+      `test/sermon_ref_extraction_test.dart`'s `_zhAliasToEnFromSource()`
+      and `scripts/extract_sermon_refs.py`'s `load_dart_chinese_aliases()`
+      — so it must stay a hand-written `const` map, not a computed
+      expression. Landed the smaller shape instead: added the 5 entries,
+      and added `test/book_name_table_parity_test.dart` as a drift
+      detector — it reads `bookNameToEnglish` by import and `_zhAliasToEn`
+      by the same source-text regex the sermon test uses, and fails the
+      moment the two CJK key sets or their values disagree. Confirmed
+      red before the fix (`Actual: {约拿记, 約拿記, 哥罗西书, 哥羅西書,
+      啓示錄}`) and green after. `flutter analyze` clean; full suite
+      (1494 tests) green. Pure Dart constants + a test — no deploy.
 
 - [x] **At a word boundary, a chapter number followed by 节/節 is still
       read as the chapter — DONE 2026-08-31, guard generalised, `Psalms

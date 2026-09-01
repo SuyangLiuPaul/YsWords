@@ -10,6 +10,16 @@
 // `fetch_books.dart` still re-exports this map for backwards
 // compatibility, so every existing `import '...fetch_books.dart'
 // show bookNameToEnglish` call site keeps working unchanged.
+//
+// 2026-09-01: the CJK keys here are meant to stay identical to
+// `_zhAliasToEn` in `book_name_mapping.dart` (drift found by the
+// refuter 2026-08-26; last measured 130 vs 135, a 5-entry gap fixed in
+// the same commit as this note). They can't be merged into one table:
+// `_zhAliasToEn` is parsed as literal source text by both
+// `test/sermon_ref_extraction_test.dart` and
+// `scripts/extract_sermon_refs.py`, so it must stay a hand-written
+// `const` map, not a derived one. `test/book_name_table_parity_test.dart`
+// is the drift detector instead — it fails if the two tables disagree.
 
 const Map<String, String> bookNameToEnglish = {
   // Genesis
@@ -77,6 +87,7 @@ const Map<String, String> bookNameToEnglish = {
   'Obadiah': 'Obadiah', '俄巴底亚书': 'Obadiah', '俄巴底亞書': 'Obadiah',
   // Jonah
   'Jonah': 'Jonah', '约拿书': 'Jonah', '約拿書': 'Jonah',
+  '约拿记': 'Jonah', '約拿記': 'Jonah',
   // Micah
   'Micah': 'Micah', '弥迦书': 'Micah', '彌迦書': 'Micah',
   // Nahum
@@ -115,6 +126,7 @@ const Map<String, String> bookNameToEnglish = {
   'Philippians': 'Philippians', '腓立比书': 'Philippians', '腓立比書': 'Philippians',
   // Colossians
   'Colossians': 'Colossians', '歌罗西书': 'Colossians', '歌羅西書': 'Colossians',
+  '哥罗西书': 'Colossians', '哥羅西書': 'Colossians',
   // 1 Thessalonians
   '1 Thessalonians': '1 Thessalonians', '帖撒罗尼迦前书': '1 Thessalonians', '帖撒羅尼迦前書': '1 Thessalonians',
   // 2 Thessalonians
@@ -145,4 +157,5 @@ const Map<String, String> bookNameToEnglish = {
   'Jude': 'Jude', '犹大书': 'Jude', '猶大書': 'Jude',
   // Revelation
   'Revelation': 'Revelation', '启示录': 'Revelation', '啟示錄': 'Revelation',
+  '啓示錄': 'Revelation',
 };
