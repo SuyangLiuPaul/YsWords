@@ -78,7 +78,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 | Category     | Details                                                                                                                 |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Versions     | KJV, LEB, NASB, 和合本雅伟版 (简 / 繁), 和合本 (简 / 繁), 新译本 (简 / 繁), 原文释经圣经 (简 / 繁)                              |
+| Versions     | KJV, LEB, NASB, 和合本雅伟版 (简 / 繁), 梁家铿译本 (简 / 繁)                              |
 | Reading      | Apple-glass reader controls; Light / Dark / System theme; Adjustable font family, size, line spacing, menu scale; Verse-by-verse or Paragraph Flow reading mode (default); Full-width reading on all devices; Grid view default for new users; Reading mode toggle in header on tablet+ |
 | Highlights   | Mark verses with 6 colors (yellow, green, blue, pink, orange, purple); persistent across sessions                      |
 | Bookmarks    | Bookmark + per-verse notes; visible inline indicator next to every flagged verse in both verse-by-verse and paragraph mode |
@@ -329,9 +329,8 @@ pubspec.yaml                  Flutter / Dart dependencies + asset
 | -------- | -------------------------- | -------------------------------------------------- |
 | English  | KJV, LEB                   | Public domain / Logos Bible Software               |
 | English  | NASB 2020                  | Bundled at `assets/nasb.json` (text licensed)      |
-| Chinese  | 和合本, 新译本               | getbible.net (free public API)                     |
-| Chinese  | 原文释经圣经 (BIBLEXG)      | https://www.biblexg.com/                           |
-| Chinese  | 雅伟的话 和合本雅伟版        | https://yahwehdehua.net/cn                         |
+| Chinese  | 梁家铿译本 (BIBLEXG v2)     | https://www.biblexg.com/                           |
+| Chinese  | 和合本雅伟版                | https://yahwehdehua.net/cn                         |
 
 All JSON files in `/assets/` are used with permission or where public-domain applies.
 
@@ -372,17 +371,24 @@ Chapter/verse may be stored as strings or integers depending on source.
 | `leb` | Lexham English Bible | English | `assets/leb.json` | No | OT + NT replay for available verses |
 | `nasb` | New American Standard Bible 2020 | English | `assets/nasb.json` | No | OT + NT replay |
 | `cuvs-yhwh` | 和合本雅伟版 (简) | Simplified Chinese | `assets/cuvs-yhwh.json` | No | OT + NT replay |
-| `cuvs-yhwh-tr` | 和合本雅伟版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | OT + NT replay |
-| `cuv` | 和合本 (简) | Simplified Chinese | `assets/cuv.json` | No | OT + NT replay |
-| `cuv-tr` | 和合本 (繁) | Traditional Chinese | `assets/cuv-tr.json` | No | OT + NT replay |
-| `cnv` | 新译本 (简) | Simplified Chinese | `assets/cnv.json` | No | OT + NT replay |
-| `cnv-tr` | 新译本 (繁) | Traditional Chinese | `assets/cnv-tr.json` | No | OT + NT replay |
-| `biblexg` | 原文释经圣经 (简) | Simplified Chinese | `assets/biblexg.json` | No; NT text only | NT replay |
-| `biblexg-tr` | 原文释经圣经 (繁) | Traditional Chinese | `assets/biblexg-tr.json` | No; NT text only | NT replay |
-| `biblexg-v2` | 原文释经圣经第二版 (简) | Simplified Chinese | `assets/biblexg-v2.json` | NT only (canonical source) | NT |
-| `biblexg-v2-tr` | 原文释经圣经第二版 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | NT only (canonical source) | NT |
+| `cuvs-yhwh-tr` | 和合本雅偉版 (繁) | Traditional Chinese | `assets/cuvs-yhwh-tr.json` | No | OT + NT replay |
+| `biblexg-v2` | 梁家铿译本 (简) | Simplified Chinese | `assets/biblexg-v2.json` | NT only (canonical source) | NT |
+| `biblexg-v2-tr` | 梁家鏗譯本 (繁) | Traditional Chinese | `assets/biblexg-v2-tr.json` | NT only (canonical source) | NT |
 
 Default version on first launch: `cuvs-yhwh`.
+
+<!-- 2026-09-01: this table used to also list `cuv`/`cuv-tr` (和合本),
+     `cnv`/`cnv-tr` (新译本), and `biblexg`/`biblexg-tr` (原文释经圣经
+     v1). All six were DELETED outright in v1.4.5 (2026-08-03) —
+     assets, bible_versions.dart entries, and copyright rows — the
+     user's explicit choice over a footnote-only fix (see HANDOFF.md,
+     "v1.4.0 — Import feature + Bible-version cleanup"). Old shared
+     links using those version codes no longer resolve. This table
+     kept listing them for a month after removal; check
+     lib/constants/bible_versions.dart before trusting any version
+     list in prose docs — pubspec.yaml's asset section is the second
+     source of truth, since a version's JSON has to be declared there
+     to ship at all. -->
 
 **Paragraph mode note**: Paragraph metadata is shared at load time. The NT uses LJK2 (`biblexg-v2`) as the canonical source; the OT uses `assets/web-ot-paragraphs.json`, a derived map of 11,922 verse starts from the public-domain World English Bible USFM. `FetchVerses` replays both sources by english book name + `chapter:verse`, so paragraph layout is consistent across translations wherever the version includes those verses.
 
@@ -476,10 +482,17 @@ asset files** are licensed separately as listed below.
 | KJV (1611 / 1769) | Public domain | No restrictions in most jurisdictions. |
 | LEB (Lexham English Bible) | © Logos Bible Software | Used under the LEB licence; non-commercial study only. |
 | NASB 2020 | © The Lockman Foundation | Used under the publisher's free-quotation provisions; non-commercial use only. |
-| 和合本 1919 (CUV, 简/繁) | Public domain | Original 1919 text. |
 | 和合本雅伟版 (CUVS-YHWH, 简/繁) | Used with permission | © Yahweh De Hua Ministry · https://yahwehdehua.net/cn |
-| 新译本 1992 / 2011 (CNV, 简/繁) | © Worldwide Bible Society | Yahweh-substituted edition; community study version. |
-| 原文释经圣经 LJK1 / LJK2 (简/繁) | Used with permission | © Bible Exegesis Ministry · https://www.biblexg.com/ |
+| 梁家铿/梁家鏗译本 (BIBLEXG v2, 简/繁) | Used with permission | © Bible Exegesis Ministry · https://www.biblexg.com/ |
+
+<!-- 2026-09-01: dropped 和合本 1919 (CUV) and 新译本 (CNV) — both
+     DELETED outright in v1.4.5 (2026-08-03), assets and all, per
+     HANDOFF.md's "Bible-version cleanup" entry. Neither text ships in
+     this repo any more, so a license row for it is a claim about
+     something not present. The BIBLEXG row was "LJK1 / LJK2"
+     (`biblexg`/`biblexg-tr`, also deleted the same day); it now names
+     the surviving edition, `biblexg-v2`/`biblexg-v2-tr`, same
+     publisher and permission. -->
 
 > **NIV (New International Version) was previously bundled but
 > removed in 2026-05.** Biblica / Zondervan retain commercial
