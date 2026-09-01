@@ -28,10 +28,10 @@ These were identified as the highest-ROI gaps after v1.2.35. None are blocking, 
    can't flood the inbox.
 
 3. **Lamentations 5:21/5:22 data-quality bug** — flagged in `v1.2.32`'s
-   notes. `cnv.json` has both verses set to a hybrid that merges
-   their content, and `cnv-tr.json`'s 5:22 carries a non-canonical
-   paraphrase. Needs a verified 新譯本 CNV source to correct. ~30 min
-   when a source is to hand.
+   notes. MOOT as of `v1.4.5` (2026-08-03): CUV, CNV, and LJK1 were
+   deleted outright — `cnv.json` / `cnv-tr.json` no longer exist,
+   superseded by `cuvs-yhwh` / `biblexg-v2`. Closed 2026-09-01 rather
+   than fixed; no CNV text ships any more for this bug to be in.
 
 4. **Test coverage on the risky files** — PARTIAL in v1.3.23
    (25 new tests added — 134/134 total, up from 109). Locked in
