@@ -48,7 +48,28 @@ if (!/yswords-dev\.netlify\.app|yswords-qat\.netlify\.app|localhost|127\.0\.0\.1
   process.exit(2);
 }
 
-const PLANT_JOHN_3_KJV = { 'flutter.book': 'John', 'flutter.chapter': '3', 'flutter.version': 'kjv' };
+// Plant values PRE-ENCODED the way shared_preferences_web itself encodes
+// them (shared_preferences_web-2.4.3/lib/shared_preferences_web.dart:265-267,
+// `_encodeValue` = `json.encode(value)`) — a String must land JSON-quoted
+// (`'"John"'`), an int lands bare (`'3'`). Every prior version of this
+// harness planted the raw, un-encoded string instead (`'John'`, not
+// `'"John"'`); `_decodeValue` (:269-284) runs `json.decode` and returns
+// `null` on `FormatException` rather than throwing, so `'John'`/`'kjv'`
+// silently decoded to `null` at boot while `'3'` happened to parse as valid
+// JSON already. That is a real shape (see docs/autonomous-queue.md:110's
+// 2026-09-01 "bare-hash MISMATCH" entry, since fully explained by this), but
+// it is not the trap this harness exists to plant: a real user's book/
+// version keys are ALWAYS written through shared_preferences (`setString`
+// in main_provider.dart's `saveCurrentState`), which always JSON-encodes —
+// raw unquoted strings can never land in a real user's localStorage this
+// way. Plant the encoded form so every shape actually round-trips as the
+// type the app wrote, matching the mailed-in trap instead of an artifact
+// of this tool.
+const PLANT_JOHN_3_KJV = {
+  'flutter.book': JSON.stringify('John'),
+  'flutter.chapter': JSON.stringify(3),
+  'flutter.version': JSON.stringify('kjv'),
+};
 
 // `expect` is what a CORRECT, fully-applied run should leave in the primary
 // pane's storage (`flutter.book` / `flutter.chapter` / `flutter.version` —
@@ -501,7 +522,8 @@ async function main() {
   } catch (e) {
     console.error('Chrome did not come up on the debug port in 10s:', e.message);
     process.exitCode = 2;
-    return;
+    cleanup();
+    process.exit(process.exitCode);
   }
 
   const results = [];
@@ -556,6 +578,18 @@ async function main() {
       'not complete AND nothing reported why) and should be written up, ' +
       'not treated as "no throw".');
   }
+
+  // `cleanup` above is registered on process.on('exit', …), but Node only
+  // fires 'exit' once the event loop is empty or process.exit() is called
+  // explicitly — and the still-alive `chrome` child process handle keeps
+  // the loop non-empty forever. Without this, main() returning here never
+  // triggers 'exit', chrome.kill() never runs, and the headless Chrome +
+  // this node process both leak indefinitely. Found 2026-09-01: an
+  // instance from an earlier iteration of this same loop was still
+  // running 83 minutes later, orphaned (PPID 1), one per every prior run
+  // of this harness that was never manually killed.
+  cleanup();
+  process.exit(process.exitCode || 0);
 }
 
 main();

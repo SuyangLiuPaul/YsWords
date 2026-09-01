@@ -1556,6 +1556,22 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     `Runtime.exceptionThrown`, no `window.onerror`. A repro harness
     needs a different oracle (final DOM/state check, not console
     capture) to see a throw that a local catch already absorbed.
+58. **A localStorage-planting harness has to plant the ENCODED form, not
+    the app's logical value, or it tests an artifact.** `shared_preferences_web`
+    JSON-encodes every write and returns `null` (not a throw) on decode
+    failure. `tools/boot_trap_headless_repro.mjs` planted raw strings
+    (`'John'`, not `'"John"'`) on every run from the file's creation
+    until 2026-09-01 — a bareword isn't valid JSON, so it silently
+    decoded to `null` at boot, and an entire investigation chased that
+    `null` as a possible app defect before finding the plant itself was
+    wrong. Separately: a CDP/headless-Chrome harness that spawns a child
+    process and never calls `process.exit()` after its own summary will
+    never exit on its own — the child handle keeps Node's event loop
+    non-empty, so `process.on('exit', cleanup)` never fires. An instance
+    from an earlier loop iteration was found still running 83 minutes
+    later, orphaned. Any future one-shot Node harness in this repo needs
+    an explicit `cleanup(); process.exit(...)` at every return path, not
+    a reliance on the `exit` event.
 
 ## Standing rules from the user
 

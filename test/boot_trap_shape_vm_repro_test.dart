@@ -199,6 +199,52 @@ void main() {
     },
   );
 
+  test(
+    'restoreState() legacy-fallback tier: the trap shape (unscoped '
+    'book/chapter/version, no lastRead blob, no profile.* keys at all) '
+    'restores the PLANTED values, not the app default',
+    () async {
+      // This is the exact tier a 2026-09-01 browser-harness pass
+      // (tools/boot_trap_headless_repro.mjs) spent a full run chasing as a
+      // possible app defect, before finding the harness itself was
+      // planting undecodable raw strings — shared_preferences_web
+      // JSON-encodes every write (shared_preferences_web-2.4.3/lib/
+      // shared_preferences_web.dart:265-267) and returns null on decode
+      // failure (:269-284), so the harness's un-encoded plant silently
+      // decoded to null and landed the app default, which briefly looked
+      // like restoreState()'s legacy tier (main_provider.dart:1519-1522)
+      // was skipping the reader. It wasn't: fixing the plant encoding and
+      // re-running showed the tier working correctly. This test pins that
+      // behaviour directly, bypassing the browser and its localStorage
+      // string-encoding step entirely, so a future regression here fails
+      // in ~1s instead of costing another headless-Chrome investigation.
+      SharedPreferences.setMockInitialValues({
+        'book': 'John',
+        'chapter': 3,
+        'version': 'kjv',
+      });
+
+      await ProfileService.instance.init();
+      expect(ProfileService.instance.currentId, ProfileService.guestId,
+          reason: 'the trap shape has no profile.* keys at all, so a '
+              'fresh ProfileService.init() must default to guest — this '
+              'is a precondition of the tier under test, not the tier '
+              'itself');
+
+      final mp = MainProvider();
+      expect(mp.isPrimary, isTrue,
+          reason: 'the legacy-fallback tier only runs for the primary '
+              'pane (_storagePrefix == \'\') — a default MainProvider() '
+              'must be primary for this test to exercise it');
+
+      await mp.restoreState();
+
+      expect(mp.currentBook, 'John');
+      expect(mp.currentChapter, 3);
+      expect(mp.currentVersion, 'kjv');
+    },
+  );
+
   /// One matrix case: plant [prefsValues] as the ONLY stored state
   /// (same shape as the mailed-in trap — no profile.* keys at all),
   /// run `_bootstrap()` proper, and report what happened rather than

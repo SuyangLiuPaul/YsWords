@@ -572,6 +572,117 @@ reported. Work these top-down before P2.
       setup). Now also calls `ErrorReporter.report(e, st, source:
       'UrlSyncService.init')`.
 
+      **2026-09-01 — the bare-hash anomaly is FULLY EXPLAINED: it was**
+      **the harness, not the app. Fixed, re-run, still open — but for a**
+      **narrower reason than before.** Both hypotheses the previous entry
+      left open ("is `saveCurrentState()` writing the default before
+      `restoreState()` resolves? does the bare-hash boot path skip the
+      reader entirely?") are wrong. What actually happened:
+      `tools/boot_trap_headless_repro.mjs:51` planted the trap's three
+      keys as raw strings (`'John'`, `'3'`, `'kjv'`), but
+      `shared_preferences_web` JSON-encodes every value on write and
+      JSON-decodes on read (`shared_preferences_web-2.4.3/lib/
+      shared_preferences_web.dart:265-267` `_encodeValue`=`json.encode`;
+      `:269-284` `_decodeValue` does `json.decode`, `on FormatException
+      catch (_) { return null; }`) — confirmed against the exact version
+      `pubspec.lock` resolves, not just the newest in pub-cache. `'John'`
+      and `'kjv'` are not valid JSON literals, so both decoded to `null`
+      at boot; `'3'` happens to already be valid JSON and decoded to `3`.
+      `restoreState()`'s legacy-fallback tier (`main_provider.dart
+      :1520-1522`) therefore read `savedVersion=null, savedBook=null,
+      savedChapter=3` — and because `savedChapter != null`,
+      `currentChapter` WAS set to `3` (confirmed by reading `:1610-1611`).
+      **The observed landed chapter was still `1`, not `3`, because of a
+      second, separate step**, not because chapter failed to decode:
+      `currentBook` has no initializer (`String? currentBook;`, `:551`),
+      stayed `null` since `savedBook` was `null`, and `lib/main.dart`'s
+      post-bootstrap "validate restored state or fallback" block
+      (`:380-397`) requires BOTH `currentBook != null` AND
+      `currentChapter != null` before trusting the restored pair — book
+      failing that check discards the chapter that had, by itself,
+      restored correctly, and resets both to `verses.first` (Genesis 1,
+      confirmed the first entry of `nasb`'s book order by two independent
+      mechanisms: `assets/nasb.json`'s literal first record, and
+      `FetchVerses`'s own `standardBookOrder` sort). `nasb` itself came
+      from the locale-default branch (`savedVersion == null` →
+      locale-based default; headless Chrome's default `navigator.language`
+      is `en`, confirmed against `restoreState()`'s `case 'en': currentVersion
+      = 'nasb'`). **Net: this was never a stale-state-handling bug in
+      `MainProvider` or `main.dart` — it is exactly what those two files
+      are supposed to do with an input (raw, non-JSON-encoded localStorage
+      values) that a real user's browser can never produce**, since every
+      real write goes through `shared_preferences`'s `setString`/`setInt`,
+      which always JSON-encodes. A refuter pass (2026-09-01) tried to
+      break this chain, including independently re-deriving the
+      `verses.first == Genesis 1` claim rather than taking it on faith,
+      and could not — confirmed as written above.
+      **Fixed:** the harness now plants `JSON.stringify(value)` per key so
+      planted values round-trip through `shared_preferences_web` exactly
+      as the app itself would have written them; the code comment names
+      `_encodeValue`/`_decodeValue` and the `FormatException → null`
+      behaviour so this can't quietly regress back in.
+      **Re-ran all 5 shapes against dev with the corrected plant — this is
+      the first run to actually plant the mailed-in trap's real byte
+      shape.** Confirmed `yswords-dev.netlify.app/version.json` still
+      `1.4.190` beforehand. Result: **5 of 5 state-oracle MATCH** (up from
+      4/5 pre-fix — the bare-hash shape now lands exactly `John`/`3`/`kjv`
+      as planted), **zero** CDP exceptions, **zero** `window.onerror`/
+      `unhandledrejection`, **zero** `/api/errorReport` POSTs, across all
+      five shapes. This is now a genuine "the real trap state, planted
+      correctly, does not crash and does not silently corrupt the reading
+      position" result — stronger than any prior run, all of which (per
+      the refuter, below) were planting an artifact instead.
+      **A refuter pass also found the "void" scope from the 2026-09-01
+      4/5-match entry understated how much of that OLDER run doesn't
+      carry forward, and this pass corrects it:** it's not just that
+      `book`/`version` mismatched on the bare-hash shape — for the
+      valid-deep-link and stale-verse shapes (the two whose hash includes
+      `v=kjv`), `_applyHashToState`'s version-swap branch
+      (`url_sync_service_web.dart:268-270`) decides its path by comparing
+      the hash's version against `mp.currentVersion`, which was ALSO
+      corrupted to `nasb` (not `kjv`) by the same raw-string-plant defect
+      on that older run. Those two shapes' final landed values happened
+      to still match `expect` (because `setCurrentChapter` uses the
+      hash-parsed version regardless of which branch fired), but the code
+      PATH exercised — "already matches current state, no-op" versus
+      "swap and refetch" — was not the one their shape names claimed to
+      test. So on the pre-fix run, not only the bare-hash MISMATCH but 2
+      of the other 4 "MATCH"es were coincidental at the state level and
+      wrong at the code-path level; this pass's corrected plant is what
+      makes today's 5/5 the first trustworthy set.
+      **Bonus fix in the same file, found while re-running, unrelated to
+      the plant bug:** `main()` never called `process.exit()` after
+      printing its summary, and the spawned headless-Chrome child process
+      keeps Node's event loop non-empty forever, so `process.on('exit',
+      cleanup)` never fires and both the Chrome process tree and the node
+      process leak indefinitely. Found because an instance from an
+      earlier iteration of this same loop was still running 83 minutes
+      later, orphaned (reparented to PPID 1) — every prior run of this
+      harness that wasn't manually killed is still out there. Fixed by
+      calling `cleanup(); process.exit(...)` explicitly at the end of
+      `main()` and on the early-exit path when Chrome doesn't come up;
+      verified the fixed script now exits on its own (checked via `ps`
+      before/after).
+      **New test:** `test/boot_trap_shape_vm_repro_test.dart` gained a
+      case pinning `restoreState()`'s legacy-fallback tier directly (no
+      browser, no localStorage string-encoding step) — plants the trap's
+      unscoped triple via `SharedPreferences.setMockInitialValues`, no
+      `profile.*` keys, confirms `ProfileService` defaults to guest, and
+      asserts the planted book/chapter/version are what's restored.
+      Verified it FAILS (`Expected: 'John', Actual: <null>`) against a
+      deliberately broken legacy-fallback tier, not just passes against
+      the current one.
+      **Item stays open.** This closes the specific anomaly the last pass
+      left dangling and gives a clean, trustworthy 5/5 non-crash result on
+      the exact trap shape — but the actual throw site for the mailed-in
+      `Invalid argument: 0` is still not identified. What's left, per the
+      last several passes: `_applyHashToState`/`_parseHash`'s own
+      `try`/`catch` (`url_sync_service_web.dart:165-173`) still swallows
+      whatever it throws internally with only `ErrorReporter.report`
+      (now live) as an external signal, and this run produced zero such
+      reports for the 5 shapes tried — narrowing, not closing. Close this
+      only once the actual throw site is found.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still
