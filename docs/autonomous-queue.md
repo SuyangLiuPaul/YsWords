@@ -747,6 +747,63 @@ reported. Work these top-down before P2.
       http.server` instances and the harness's own headless Chrome closed
       via `cleanup()`+`process.exit()` — verified via `ps` after, none
       orphaned.
+      **2026-09-01: ran exactly the experiment the prior pass named.**
+      `tools/boot_trap_headless_repro.mjs` now registers a foreign
+      (non-`app_shell_sw.js`) worker between the bare-origin load and the
+      plant, verifies its presence, and reads back a `sessionStorage`
+      document-load counter (reset right after the plant) to prove whether
+      the sweep's forced second `location.reload()` actually happened —
+      served entirely from a local `python3 -m http.server` against
+      `build/web` (v1.4.189); nothing deployed, per the guard rail.
+      **The extra reload fired, and is proven to have fired, on all 5**
+      **shapes** — `sessionStorage.getItem('yswords_self_heal_reloaded')`
+      read `'1'` after the run and the load counter read `2` (vs. a reset
+      baseline of `0`) on every shape. A first pass of the pre-plant
+      verification wrongly reported the foreign worker absent on 4 of 5
+      shapes: it read only the first non-null of
+      `active`/`installing`/`waiting` per registration, which hid the
+      foreign worker while it sat in `waiting` behind `app_shell_sw.js`
+      still `active` for the same `/` scope; fixed to check all three
+      slots, and confirmed against a temporary `console.log` added only to
+      `build/web/index.html` (a build artifact, reverted before commit,
+      never in the repo) that printed the sweep's own `unregisterCount`
+      directly.
+      **A refuter pass on the draft of this paragraph found a real hole**
+      **and it was closed, not argued around:** `web/index.html` ships a
+      SECOND, independent `location.reload()` source — the stuck-splash
+      auto-recovery poll at `:958-1053` (`ysShouldAutoRecover`, LATCH
+      `yswords.bootAutoRecovered`) — and a bare load-count of 2 cannot by
+      itself distinguish which one fired. That poll is gated behind a
+      hard 20s floor (`:997`) and this harness's observation window is
+      ~15s, so it should not have had time to fire, but "should not have"
+      is a timing argument, not proof. The harness now also reads back
+      `yswords.bootAutoRecovered` per shape; it was `null` on all 5 while
+      `yswords_self_heal_reloaded` was `'1'`, so the reload is attributed
+      to the SW sweep's `maybeReload()` specifically, on evidence, not
+      inference. A stale in-code comment claiming `maybeReload()` was "the
+      only such trigger in the shipped sweep" was wrong and has been
+      corrected.
+      **Despite the forced extra reload being proven to fire on every**
+      **shape, all 5 still show 0 CDP `Runtime.exceptionThrown`, 0**
+      **`window.onerror`/`unhandledrejection`, 0 `/api/errorReport`**
+      **POSTs, and all 5 state-oracle checks MATCH the expected landing.**
+      This narrows the open question again without closing it: it is now
+      known that "three-key trap + the forced extra reload" does not, by
+      itself, reproduce the crash on the current (`v1.4.189`) bundle
+      served locally. The `1.4.178`-bundle differential named as step 5
+      (lower priority) was not attempted this pass — same time-budget
+      call as the prior pass, now compounded by the attribution work
+      above.
+      Cleanup verified via `ps`: no orphaned headless Chrome or
+      `http.server` from this run (two unrelated `ss-hl-*` headless Chrome
+      instances on ports 9481/9457 belong to a different tool, not this
+      harness, which used port 9333). `build/web/foreign_sw.js` was a
+      build-directory test artifact only, confirmed absent from `git
+      status`; not deleted afterward only because this environment's `rm`
+      permission was declined — it will be overwritten by the next build
+      and was never referenced by the shipped app.
+      **Item stays open.** Root cause — the actual throw site — is still
+      not identified.
 
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added

@@ -1592,6 +1592,48 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     item, either plant a foreign service-worker registration first (so
     `maybeReload()` fires) or say explicitly that this variable was not
     tested.
+    **UPDATE 2026-09-01: done.** The harness now registers a foreign
+    (non-`app_shell_sw.js`) worker before the plant and reads back a
+    `sessionStorage` document-load counter to prove the extra reload
+    actually fired — 5/5 shapes confirmed it did, still with zero throws.
+    See items 59a/59b below for two bugs found building that
+    verification, kept separate because they're reusable lessons in their
+    own right, not specific to this one investigation.
+59a. **A registration-presence check that reads only the first non-null of**
+    **`active`/`installing`/`waiting` can report a worker "absent" while**
+    **it is very much registered.** Two different service-worker
+    registrations can't coexist at the same scope — registering a second
+    script at scope `/` while `app_shell_sw.js` is still `active` there
+    puts the new one in `installing`/`waiting`, not `active`, until the
+    transition completes (which `self.skipWaiting()` speeds up but doesn't
+    make synchronous). A check written as
+    `(r.active && r.active.scriptURL) || (r.installing && …) || (r.waiting
+    && …)` returns the OLD active worker's URL and hides the new one
+    entirely, because JS `||` short-circuits on the first truthy operand —
+    it never falls through to inspect `installing`/`waiting` once `active`
+    is non-null. `web/index.html`'s own sweep has the exact same shape
+    (`:383-387`) and was, empirically, NOT fooled by this — by the time its
+    check ran (one navigation later than the harness's own premature
+    check), the transition had finished. Fixed in the harness by listing
+    every slot instead of picking one; found 2026-09-01 building the
+    verification above, where it produced a false "worker not registered"
+    on 4 of 5 shapes despite the registration having genuinely succeeded.
+59b. **`web/index.html` ships TWO independent, unrelated
+    `location.reload()` triggers, not one.** The SW-sweep's `maybeReload()`
+    (`:323-410`, item 59) is gated on `unregisterCount > 0` and fires
+    almost immediately after a document loads. A SEPARATE stuck-splash
+    auto-recovery poll (`ysShouldAutoRecover`, `:958-1053`, LATCH
+    `sessionStorage['yswords.bootAutoRecovered']`) also calls
+    `location.reload()` (via `yswordsClearCacheAndReload`), but only after
+    a hard 20-second floor and only if the app never painted. A document-
+    load counter alone cannot tell these apart — a count of 2 is
+    consistent with either. Found 2026-09-01 by a refuter pass on a draft
+    queue paragraph that had (wrongly) called `maybeReload()` "the only
+    such trigger in the shipped sweep." Fixed by reading back both
+    sessionStorage latches (`yswords_self_heal_reloaded` for the SW sweep,
+    `yswords.bootAutoRecovered` for the poll) so a future run can attribute
+    a reload on evidence instead of a timing argument ("our window is
+    under 20s so it probably wasn't the poll").
 
 ## Standing rules from the user
 

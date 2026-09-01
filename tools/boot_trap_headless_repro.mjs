@@ -303,6 +303,21 @@ async function runShape(shape) {
         console.error('BOOT_TRAP unhandledrejection: ' +
           (r && r.stack ? r.stack : String(r)));
       });
+      // Document-load counter (2026-09-01 pass): runs on EVERY new
+      // document this tab loads, including the about:blank bounce. It only
+      // means anything for ORIGIN documents, since sessionStorage is
+      // origin-scoped and about:blank's is a separate, throwaway area — the
+      // reset below (in the plant step) zeroes it on the ORIGIN document
+      // right before the navigation we're actually measuring, so a value of
+      // 2 at the end can only mean two ORIGIN document loads happened after
+      // that reset: the target navigation, plus one more. This is the run's
+      // primary oracle for whether the sweep's forced maybeReload() fired —
+      // without it a clean run is unfalsifiable (see docs/autonomous-queue.md).
+      try {
+        var n = parseInt(sessionStorage.getItem('BOOT_TRAP_LOAD_COUNT') || '0', 10) + 1;
+        sessionStorage.setItem('BOOT_TRAP_LOAD_COUNT', String(n));
+        console.log('BOOT_TRAP_LOAD_COUNT=' + n);
+      } catch (e) {}
     `,
   });
 
@@ -317,12 +332,73 @@ async function runShape(shape) {
     console.log('    (warning: initial load did not reach readyState=complete in 15s)');
   });
 
-  // 2. Clear storage, plant exactly the trap's keys.
+  // 1b. Register a foreign (non-app_shell_sw.js) worker so the sweep's
+  // `unregisterCount > 0` branch — and therefore maybeReload() — has
+  // something to fire on at the NEXT document load. Every prior run of
+  // this harness used a throwaway mkdtemp profile with zero prior
+  // registrations, so that branch has never executed in this harness
+  // before now (web/index.html:380-393, :409-410). Registered here,
+  // between the bare-origin load and the plant, so it is in place before
+  // the navigation this run actually measures.
+  const swRegExpr = `
+    (async function() {
+      if (!('serviceWorker' in navigator)) return { supported: false };
+      var reg = await navigator.serviceWorker.register('/foreign_sw.js', { scope: '/' });
+      // Do NOT resolve early on \`reg.active\` truthiness — if an older
+      // worker (app_shell_sw.js) already holds this scope's active slot,
+      // reg.active is truthy from the moment register() resolves, before
+      // our own worker (installing/waiting, skipWaiting() pending) has
+      // taken over. A fixed wait is used instead of state-tracking any one
+      // slot, since which slot our worker occupies while transitioning
+      // isn't knowable in advance.
+      var sw = reg.installing || reg.waiting || reg.active;
+      await new Promise(function(resolve) {
+        if (!sw) return resolve();
+        if (sw.state === 'activated') return resolve();
+        sw.addEventListener('statechange', function onchange() {
+          if (sw.state === 'activated') { sw.removeEventListener('statechange', onchange); resolve(); }
+        });
+        setTimeout(resolve, 2000);
+      });
+      var regs = await navigator.serviceWorker.getRegistrations();
+      // List every slot (active/installing/waiting) per registration, not
+      // just the first non-null one: a first pass here that returned only
+      // r.active OR r.installing OR r.waiting silently hid a foreign
+      // worker sitting in "waiting" behind app_shell_sw.js still "active"
+      // in the same '/' scope, reporting a false "not present" even though
+      // the sweep's own next-document check (which has the SAME
+      // active-shadows-waiting shape) picked it up moments later once the
+      // transition finished — confirmed via a temporary console.log added
+      // to build/web/index.html for this run only, not part of the fix.
+      var urls = [];
+      regs.forEach(function(r) {
+        [r.active, r.installing, r.waiting].forEach(function(sw) {
+          if (sw && sw.scriptURL) urls.push(sw.scriptURL);
+        });
+      });
+      return { supported: true, registrations: urls };
+    })()
+  `;
+  const swRegResult = await cdp.send('Runtime.evaluate', {
+    expression: swRegExpr,
+    awaitPromise: true,
+    returnByValue: true,
+  }).catch((e) => ({ result: { value: { supported: false, error: String(e) } } }));
+  const swReg = swRegResult.result?.value || {};
+  const foreignRegistered = !!(swReg.registrations || [])
+    .some((u) => u.indexOf('app_shell_sw.js') === -1);
+  console.log(`    pre-plant SW registration attempt: ${JSON.stringify(swReg)}`);
+  console.log(`    foreign (non-app_shell_sw.js) worker present pre-plant: ${foreignRegistered}`);
+
+  // 2. Clear storage, plant exactly the trap's keys, and zero the
+  // document-load counter so it measures loads from this point forward
+  // only (see the addScriptToEvaluateOnNewDocument comment above).
   const plantExpr = `
     (function() {
       localStorage.clear();
       var plant = ${JSON.stringify(shape.plant)};
       for (var k in plant) localStorage.setItem(k, plant[k]);
+      try { sessionStorage.setItem('BOOT_TRAP_LOAD_COUNT', '0'); } catch (e) {}
       return Object.keys(localStorage).sort();
     })()
   `;
@@ -425,6 +501,40 @@ async function runShape(shape) {
             chapter: decodeStored(localStorage.getItem('flutter.chapter')),
             version: decodeStored(localStorage.getItem('flutter.version')),
           },
+          // Read AFTER the 15s observation window, so a reload triggered
+          // late by maybeReload() (itself gated behind the two Promise.all
+          // resolutions in web/index.html:409) has had time to land and
+          // re-run the injected counter. 2 here means: the target
+          // navigation counted as load 1, and something reloaded the
+          // document a second time before this read. web/index.html ships
+          // a SECOND, independent location.reload() source too — the
+          // stuck-splash auto-recovery poll at :958-1053 — so a bare
+          // loadCount of 2 does not by itself say which one fired; use the
+          // selfHealReloaded / autoRecoverLatch fields below to attribute
+          // it.
+          loadCount: (function() {
+            try { return sessionStorage.getItem('BOOT_TRAP_LOAD_COUNT'); }
+            catch (e) { return null; }
+          })(),
+          // Attribute a loadCount==2 to the SW sweep's maybeReload()
+          // specifically, not the SEPARATE stuck-splash auto-recovery poll
+          // (web/index.html:958-1053, LATCH 'yswords.bootAutoRecovered',
+          // gated behind a 20s floor at :997) — a second, independent
+          // location.reload() source this harness's comments previously
+          // mis-described as impossible. This run's ~15s observation
+          // window is under that 20s floor, so the auto-recovery path
+          // should not have had time to fire; these two reads make that
+          // attribution checkable per-run instead of argued from timing
+          // alone. selfHealReloaded === '1' with autoRecoverLatch === null
+          // means the SW sweep fired and the stuck-splash poll did not.
+          selfHealReloaded: (function() {
+            try { return sessionStorage.getItem('yswords_self_heal_reloaded'); }
+            catch (e) { return null; }
+          })(),
+          autoRecoverLatch: (function() {
+            try { return sessionStorage.getItem('yswords.bootAutoRecovered'); }
+            catch (e) { return null; }
+          })(),
         };
       })()
     `,
@@ -486,6 +596,17 @@ async function runShape(shape) {
   }
   console.log(`    final page state: ${JSON.stringify(finalState.result?.value)}`);
 
+  const loadCount = finalState.result?.value?.loadCount;
+  const loadCountNum = loadCount == null ? null : parseInt(loadCount, 10);
+  const selfHealReloaded = finalState.result?.value?.selfHealReloaded;
+  const autoRecoverLatch = finalState.result?.value?.autoRecoverLatch;
+  console.log(`    document-load count since plant/reset: ${loadCount} ` +
+    `(2 = the extra reload fired; 1 = it did not; anything else needs a look)`);
+  console.log(`    reload attribution: selfHealReloaded=${JSON.stringify(selfHealReloaded)} ` +
+    `(SW-sweep maybeReload latch), autoRecoverLatch=${JSON.stringify(autoRecoverLatch)} ` +
+    `(SEPARATE stuck-splash poll latch, web/index.html:958) — a loadCount of 2 attributes to ` +
+    `the SW sweep only if selfHealReloaded === '1' and autoRecoverLatch === null.`);
+
   cdp.close();
   await closeTab(tab.id);
 
@@ -494,6 +615,10 @@ async function runShape(shape) {
     events,
     finalState: finalState.result?.value,
     errorReportRequests,
+    foreignRegistered,
+    loadCount: loadCountNum,
+    selfHealReloaded,
+    autoRecoverLatch,
   };
 }
 
@@ -548,9 +673,14 @@ async function main() {
     const reportCount = (r.errorReportRequests || []).length;
     if (reportCount > 0) anyErrorReport = true;
     console.log(`  ${r.shape}: ${throwCount} throw-like event(s), ` +
-      `${reportCount} /api/errorReport POST(s)` +
+      `${reportCount} /api/errorReport POST(s), ` +
+      `foreign SW pre-plant: ${r.foreignRegistered}, ` +
+      `load count: ${r.loadCount}` +
       (r.error ? ` (harness error: ${r.error})` : ''));
   }
+  const reloadProvenCount = results.filter((r) => r.loadCount >= 2).length;
+  console.log(`\nshapes where the forced extra reload was PROVEN to fire ` +
+    `(load count >= 2): ${reloadProvenCount} of ${results.length}`);
   // The network oracle is the primary signal once Part 1 is deployed: a
   // swallowed _applyHashToState throw now reaches ErrorReporter.report
   // (source: 'UrlSync.boot' / 'UrlSync.popstate'), which POSTs here even
