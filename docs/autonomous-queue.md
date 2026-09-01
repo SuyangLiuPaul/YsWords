@@ -8809,6 +8809,44 @@ has never seen this repo.
       silently are not is harder to reason about than today's, where
       the rule is at least consistent.
 
+      **Stage 1 done, 2026-09-01.** `docs/url-routing-plan.md`
+      (design doc, no code): re-derived the destination inventory from
+      source rather than trusting either number already in circulation
+      (this item's own "72 pushPage call sites"; NEXT_TASK.md's "26
+      distinct classes") — actual count is 74 `pushPage` call sites →
+      28 distinct classes, plus 2 more that bypass `pushPage` entirely
+      via raw `Navigator.push(MaterialPageRoute(...))`
+      (`SongScorePage`, `SongVideoPage` — a real gap the "pushPage is
+      the only way pages are pushed" assumption would have missed),
+      plus `DashboardPage`/`HomePage` as root-shell states selected
+      directly by `_RootRouter`, not pushed at all. 32 destinations
+      total, tabled with proposed path/params/durable-id/cold-load
+      verdict each; 3 (`ProfileEditPage`, `NowPlayingPage`, split-view
+      `BooksPage`) have no durable id and are recommended to stay
+      unrouted by design. Existing Bible grammar quoted verbatim from
+      `_parseHash`/`_writeStateToUrl` and marked frozen. Router
+      recommendation: GetX `getPages` over `go_router` — no new
+      dependency, and `pushPage` already computes the per-page route
+      name `getPages` needs at every call site. Two-histories mechanism
+      traced call-by-call (`_UrlRestoreObserver` → `onRouteChanged`'s
+      350ms forced rewrite → `_writeStateToUrl` only knowing
+      book/chapter/verse/version, `popstate` never calling
+      `Navigator.pop`) — this is the literal cause of "Back does the
+      wrong thing," not just a description of the symptom. Staged
+      conversion order given for Stage 3. A drift-detector test
+      (`test/url_routing_plan_table_test.dart`, same pattern as
+      `e0d51e68`) parses the plan's table and fails if a pushed class
+      isn't listed — confirmed red before adding the `SongScorePage`
+      row back in, green after. All 7 factual claims (inventory counts,
+      the bypass-coverage claim, the misconceptions gap, the Bible
+      grammar quote, the two-histories call chain, the pubspec/
+      GetMaterialApp claims, 4 spot-checked constructor signatures)
+      survived an independent adversarial re-check against source.
+      `flutter analyze` clean, full suite green (1495 tests). Stage 1
+      done is not the item done — Stages 2/3 (adopting `getPages`,
+      converting pages in batches) are unstarted; leaving this
+      unticked.
+
 - [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
       loading问题". Fixed the two leads recorded below that a widget
