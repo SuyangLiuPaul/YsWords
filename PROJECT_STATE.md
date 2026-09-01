@@ -80,6 +80,19 @@ stays on 1.4.190 (2026-08-31, `/read/` hub + "14 translations" copy fix
 + the boot-trap mitigation) — that authorisation does NOT carry forward
 to 1.4.191; a prod push needs its own explicit permission.
 
+**On top of 1.4.191, uncommitted-version, 2026-09-02: URL routing Stage
+4 batch 2, `/sermons/:id` only.** The first parameterized route.
+`lib/utils/route_paths.dart` (new) holds the registered-path set plus
+`matchesRegisteredRoute`, a template matcher — the mechanism batch 2
+needs, since a concrete pushed path like `/sermons/004` can never match
+a template like `/sermons/:id` via a plain `Set.contains()`. Cold-load,
+the not-found state for an unknown id, and all 5 in-app push sites
+verified against a real web build in headless Chrome. Batch 2's other
+5 pages (`VideoSeriesPage`, `SongPlaylistDetailPage`,
+`StrongsEntryPage`, `EvidenceDetailPage`, `MapViewerPage`) are still
+open — see `docs/autonomous-queue.md`. Not deployed yet; still 1.4.191
+on dev/qat, this change hasn't crossed the 6-iteration threshold alone.
+
 **Also found this iteration, worth knowing**: `main` had 9 unpushed
 commits sitting on this local checkout when this iteration started —
 a full day of releases (1.4.181 through 1.4.184) that had built,

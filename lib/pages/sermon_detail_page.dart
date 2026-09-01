@@ -42,6 +42,85 @@ import 'package:yswords/widgets/localized_back_button.dart';
 /// Font size + family follow the user's reader settings via
 /// `AppSettings`, so sermon text matches the look of the Bible
 /// reader.
+/// URL-routing Stage 4 (`docs/url-routing-plan.md` §6 batch 2): the
+/// `/sermons/:id` cold-load / shared-link entry point. `GetPage.page`
+/// is a synchronous `() => Widget`, but resolving an id against
+/// `SermonService.instance.loadIndex()` isn't — this widget shows the
+/// same loading spinner while it resolves, then swaps in the real
+/// [SermonDetailPage] once the id is found. An id not in the index
+/// (a stale or hand-typed link) shows an explicit not-found state
+/// rather than silently redirecting to the sermon list — a bad shared
+/// link should say it's bad, not pretend it worked.
+///
+/// The 5 in-app call sites that already hold a `Sermon` object keep
+/// pushing `SermonDetailPage` directly with `routeName:
+/// '/sermons/${sermon.id}'` — only a cold load or a browser
+/// Back/Forward into this path goes through the id lookup here.
+class SermonByIdPage extends StatefulWidget {
+  final String id;
+  const SermonByIdPage({super.key, required this.id});
+
+  @override
+  State<SermonByIdPage> createState() => _SermonByIdPageState();
+}
+
+class _SermonByIdPageState extends State<SermonByIdPage> {
+  Sermon? _sermon;
+  bool _resolving = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    final all = await SermonService.instance.loadIndex();
+    Sermon? found;
+    for (final s in all) {
+      if (s.id == widget.id) {
+        found = s;
+        break;
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _sermon = found;
+      _resolving = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_resolving) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final sermon = _sermon;
+    if (sermon == null) {
+      final locale = Provider.of<AppSettings>(context, listen: false).locale;
+      return Scaffold(
+        appBar: AppBar(leading: const LocalizedBackButton()),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(
+              uiStrings['sermonNotFound']?[locale] ?? 'Sermon not found.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return SermonDetailPage(sermon: sermon);
+  }
+}
+
 class SermonDetailPage extends StatefulWidget {
   final Sermon sermon;
 

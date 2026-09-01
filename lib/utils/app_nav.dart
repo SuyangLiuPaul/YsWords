@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import 'package:yswords/constants/motion.dart';
+import 'package:yswords/utils/route_paths.dart' show matchesRegisteredRoute;
 
 /// Canonical page-push helper — every `Get.to(...)` in the app should
 /// route through here instead of specifying its own transition/duration/
@@ -43,35 +44,26 @@ import 'package:yswords/constants/motion.dart';
 /// explicit `routeName` string instead sidesteps minification
 /// entirely — string literals are never renamed.
 ///
-/// Kept in sync with `getPages` (`main.dart`'s `_registeredGetPages`) by
-/// hand — a path pushed here that's missing from `getPages` would throw
-/// inside GetX's route resolver, so an entry only belongs here once the
+/// URL-routing Stage 4: the registered-path set itself now lives in
+/// `route_paths.dart` (`kRegisteredRoutePaths`), the single source of
+/// truth shared with `url_sync_service_web.dart`'s boot/popstate/write
+/// checks — a concrete pushed path like `/sermons/004` needs template
+/// matching (`matchesRegisteredRoute`), not membership in a literal
+/// set, to be recognised against the `/sermons/:id` entry. Kept in
+/// sync with `getPages` (`main.dart`'s `_registeredGetPages`) by hand —
+/// a path pushed here that's missing from `getPages` would throw
+/// inside GetX's route resolver, so an entry only belongs there once the
 /// matching `GetPage` exists. `test/url_routing_stage3_sync_test.dart`
-/// asserts these two sets (and the plan doc's §3 table) agree, so a
-/// drift here fails the suite instead of failing at runtime.
-const Set<String> _registeredRoutePaths = {
-  '/about',
-  '/highlights',
-  '/feedback',
-  '/videos',
-  '/songs',
-  '/stats',
-  '/songs/downloads',
-  '/songs/playlists',
-  '/profiles',
-  '/family-tree',
-  '/timeline',
-  '/sermons',
-  '/misconceptions',
-};
-
+/// asserts `route_paths.dart`'s set (and the plan doc's §3 table) agree
+/// with `getPages`, so a drift here fails the suite instead of failing
+/// at runtime.
 Future<T?>? pushPage<T>(
   Widget page, {
   bool reverse = false,
   String? routeName,
   bool preventDuplicates = true,
 }) {
-  if (routeName != null && _registeredRoutePaths.contains(routeName)) {
+  if (routeName != null && matchesRegisteredRoute(routeName)) {
     return Get.toNamed<T>(
       routeName,
       preventDuplicates: preventDuplicates,

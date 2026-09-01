@@ -232,6 +232,21 @@ final List<GetPage> _registeredGetPages = [
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,
   ),
+  // URL-routing Stage 4 (docs/url-routing-plan.md §6 batch 2): the
+  // first parameterized route. `Get.parameters['id']` is populated by
+  // GetX's own route-tree matching against this template — see
+  // `lib/utils/route_paths.dart` for the separate matcher this app
+  // needs on TOP of that, for the sites that check a concrete pushed
+  // path against the registered set rather than routing through GetX.
+  // `SermonByIdPage` (sermon_detail_page.dart) does the id → Sermon
+  // lookup GetPage's synchronous `page:` can't do itself.
+  GetPage(
+    name: '/sermons/:id',
+    page: () => SermonByIdPage(id: Get.parameters['id'] ?? ''),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
   GetPage(
     name: '/misconceptions',
     page: () => const MisconceptionsPage(),
@@ -1167,7 +1182,7 @@ class _RootRouterState extends State<_RootRouter> {
           }
         }
         if (s != null && mounted) {
-          pushPage(SermonDetailPage(sermon: s));
+          pushPage(SermonDetailPage(sermon: s), routeName: '/sermons/${s.id}');
         }
       });
       return;

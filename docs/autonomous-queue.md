@@ -9060,6 +9060,52 @@ has never seen this repo.
       `routeName:` string, and deserves its own revertible commit per
       the brief. Leaving this item unticked.
 
+      **Stage 4, batch 2, `/sermons/:id` only** (2026-09-02): landed
+      the first parameterized route. `lib/utils/route_paths.dart` (new)
+      holds `kRegisteredRoutePaths` (moved out of `app_nav.dart`) and
+      `matchesRegisteredRoute`, a segment-wise template matcher — the
+      mechanism this stage exists for, since a concrete pushed path like
+      `/sermons/004` is a member of neither the old literal set nor
+      `_knownRoutes`, so a plain `Set.contains()` can never recognise it
+      against `/sermons/:id`. `GetPage(name: '/sermons/:id')` resolves to
+      a new `SermonByIdPage` (`sermon_detail_page.dart`), the async
+      id→`Sermon` lookup `GetPage.page`'s synchronous signature can't do
+      itself — spinner while resolving, localized "Sermon not found."
+      state for an unknown id (new `sermonNotFound` string, 3 locales),
+      never a silent redirect. All 5 in-app call sites that already hold
+      a `Sermon` object (`main.dart`, `dashboard_page.dart`,
+      `sermons_page.dart`, `bible_reading_pane.dart` ×2) now pass
+      `routeName: '/sermons/${s.id}'` so they write the URL too.
+      `url_sync_service_web.dart`'s 4 boot/popstate/write `.contains()`
+      checks and `app_nav.dart`'s dispatch both moved onto the shared
+      matcher.
+
+      Verified: `flutter analyze` clean; full suite 1524/1524 (was 1515
+      at Stage 3, +9 new in `test/url_routing_stage4_test.dart`);
+      red-before/green-after on the matcher itself (temporarily reverted
+      it to bare `templates.contains(path)` — 4 tests failed as
+      expected, reverted, green again); a refuter subagent independently
+      re-checked the "exactly 5 call sites", the "`Set.contains` can
+      never match a template" claim, the "first parameterized route"
+      claim, and the 1515+9=1524 test-count arithmetic — all 4
+      CONFIRMED. Browser-verified against a real
+      `tools/build_web.py --intl-only` build served locally and driven
+      via headless Chrome's DevTools protocol (screenshots, not DOM
+      text — this build is CanvasKit, which renders to `<canvas>` with
+      no accessible text nodes): cold `/#/sermons/004` opens sermon
+      #004 directly; cold `/#/sermons/zzz-no-such` shows "Sermon not
+      found." with no crash; `/#/john/3:16?v=kjv` still cold-loads
+      correctly (frozen grammar unaffected by the `.contains()` →
+      matcher swap).
+
+      Pushed, not deployed — dev/qat is still 1.4.191 and this doesn't
+      cross the 6-iteration-behind threshold on its own; the version bump
+      + deploy can ride with whichever batch-2 page finishes the set, or
+      go out sooner if the user wants to test this specific link sooner.
+      Batch 2 still has 5 pages left (`VideoSeriesPage`,
+      `SongPlaylistDetailPage`, `StrongsEntryPage`, `EvidenceDetailPage`,
+      `MapViewerPage`) — item stays unticked.
+
 - [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
       loading问题". Fixed the two leads recorded below that a widget

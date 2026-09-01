@@ -203,7 +203,7 @@ class _DashboardPageState extends State<DashboardPage> {
   /// session-progress invariants apply (id is already saved; the
   /// detail page will write a fresh offset on dispose).
   Future<void> _openResumeSermon(Sermon s) async {
-    await pushPage(SermonDetailPage(sermon: s));
+    await pushPage(SermonDetailPage(sermon: s), routeName: '/sermons/${s.id}');
     if (!mounted) return;
     // Pull the new scroll offset (the detail page wrote it on
     // dispose) so the meter on the dashboard immediately reflects

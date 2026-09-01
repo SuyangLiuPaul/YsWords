@@ -4211,7 +4211,8 @@ class _PreloadedSermonsSheetBody extends StatelessWidget {
                           const Icon(Icons.chevron_right, size: 20),
                       onTap: () {
                         Navigator.of(context).maybePop();
-                        pushPage(SermonDetailPage(sermon: s));
+                        pushPage(SermonDetailPage(sermon: s),
+                            routeName: '/sermons/${s.id}');
                       },
                     );
                   },
@@ -4388,7 +4389,8 @@ class _RelatedSermonsSheetBodyState extends State<_RelatedSermonsSheetBody> {
                     trailing: const Icon(Icons.chevron_right, size: 20),
                     onTap: () {
                       Navigator.of(context).maybePop();
-                      pushPage(SermonDetailPage(sermon: s));
+                      pushPage(SermonDetailPage(sermon: s),
+                          routeName: '/sermons/${s.id}');
                     },
                   );
                 },

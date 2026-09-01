@@ -5238,6 +5238,14 @@ const uiStrings = {
     'zh-Hant': '本篇講道沒有文字內容。',
     'en': 'No body text available for this sermon.',
   },
+  // URL-routing Stage 4: cold-loading `/#/sermons/<id>` with an id not
+  // in the index (a stale or hand-typed link). Explicit, not a silent
+  // redirect — a bad shared link should say it's bad.
+  'sermonNotFound': {
+    'zh-Hans': '未找到该讲道。',
+    'zh-Hant': '未找到該講道。',
+    'en': 'Sermon not found.',
+  },
   'loadErrorBody': {
     'zh-Hans': '无法加载圣经经文，请检查网络或重试。',
     'zh-Hant': '無法載入聖經經文，請檢查網絡或重試。',

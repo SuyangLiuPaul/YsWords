@@ -150,6 +150,7 @@ class _SermonsPageState extends State<SermonsPage> {
     });
     await pushPage(
       SermonDetailPage(sermon: sermon, highlight: _filter),
+      routeName: '/sermons/${sermon.id}',
     );
     // Returned from detail — re-arm the flash for THIS sermon's row
     // so the user immediately sees where they were.

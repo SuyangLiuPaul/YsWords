@@ -45,6 +45,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/error_reporter.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/utils/route_paths.dart' show matchesRegisteredRoute;
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 
 // ── JS interop bindings ─────────────────────────────────────────
@@ -192,14 +193,16 @@ String? _hashToPath(String rawHash) {
 void onRouteChanged({String? routeName}) {
   if (!_initialized) return;
   _currentRouteName = routeName;
-  if (routeName != null && _knownRoutes.contains(routeName)) return;
+  if (routeName != null && matchesRegisteredRoute(routeName, _knownRoutes)) {
+    return;
+  }
   Timer(const Duration(milliseconds: 350), () {
     if (_isApplyingFromUrl) return;
     // The route on top may have changed again since this timer was
     // scheduled (e.g. a fast push-then-pop); re-check rather than
     // trusting the closed-over `routeName`.
     if (_currentRouteName != null &&
-        _knownRoutes.contains(_currentRouteName)) {
+        matchesRegisteredRoute(_currentRouteName!, _knownRoutes)) {
       return;
     }
     _lastWrittenUrl = '';
@@ -249,7 +252,7 @@ Future<void> urlSyncInit({
     // to the boot-route callback instead of the Bible apply path,
     // which would just silently no-op on it.
     final bootPath = _hashToPath(bootHash);
-    if (bootPath != null && _knownRoutes.contains(bootPath)) {
+    if (bootPath != null && matchesRegisteredRoute(bootPath, _knownRoutes)) {
       _bootRouteApplied = true;
       _pendingBootRoute = bootPath;
       _currentRouteName = bootPath;
@@ -278,8 +281,8 @@ Future<void> urlSyncInit({
       // different content." Pop the Flutter route to match instead of
       // treating this as a Bible-hash change; the URL already reflects
       // where the browser went.
-      final leavingRegisteredRoute =
-          _currentRouteName != null && _knownRoutes.contains(_currentRouteName);
+      final leavingRegisteredRoute = _currentRouteName != null &&
+          matchesRegisteredRoute(_currentRouteName!, _knownRoutes);
       if (leavingRegisteredRoute) {
         _currentRouteName = null;
         _popRouteCallback?.call();
@@ -324,7 +327,8 @@ void _writeStateToUrl() {
   // testing a cold `/#/about` load against a real web build: the
   // address bar landed back on the default Bible position, because
   // `_onMpChange` had no equivalent check at all.
-  if (_currentRouteName != null && _knownRoutes.contains(_currentRouteName)) {
+  if (_currentRouteName != null &&
+      matchesRegisteredRoute(_currentRouteName!, _knownRoutes)) {
     return;
   }
   final mp = _mp;

@@ -6,35 +6,57 @@ import 'package:flutter_test/flutter_test.dart';
 /// test for the three places a registered path has to agree with the
 /// other two by hand.
 ///
-/// `app_nav.dart`'s doc comment on `_registeredRoutePaths` says outright
-/// that it is kept in sync with `main.dart`'s `getPages` table BY HAND.
-/// Stage 2 got away with that at 2 entries; Stage 3 takes it to 13, and
-/// a path present in `_registeredRoutePaths` but missing from `getPages`
-/// doesn't fail a build or an analyzer pass — it throws inside GetX's
-/// route resolver at runtime, the first time something pushes it. This
-/// test turns that runtime throw into a red test instead, and also
-/// checks the third copy of the same fact: the plan doc's own §3 table,
-/// which is what a human reads to decide what the path *should* be.
+/// Through Stage 3 that was `app_nav.dart`'s own `_registeredRoutePaths`
+/// set, kept in sync with `main.dart`'s `getPages` table BY HAND. Stage
+/// 4 (`docs/url-routing-plan.md` §6 batch 2) moved that set out to
+/// `lib/utils/route_paths.dart`'s `kRegisteredRoutePaths` — the single
+/// source of truth both `app_nav.dart`'s dispatch and
+/// `url_sync_service_web.dart`'s boot/popstate/write checks now import
+/// — so this test reads it from there instead. The underlying risk
+/// this test guards against is unchanged: a path present in
+/// `kRegisteredRoutePaths` but missing from `getPages` doesn't fail a
+/// build or an analyzer pass — it throws inside GetX's route resolver
+/// at runtime, the first time something pushes it. This test turns
+/// that runtime throw into a red test instead, and also checks the
+/// third copy of the same fact: the plan doc's own §3 table, which is
+/// what a human reads to decide what the path *should* be.
 ///
 /// All three are read as source text (matching
 /// `url_routing_plan_table_test.dart`'s existing method) rather than
-/// imported, because `main.dart`'s `_registeredGetPages` and
-/// `app_nav.dart`'s `_registeredRoutePaths` are both private — the only
-/// way to compare them without exporting internals just for a test is
-/// to read the files.
+/// imported, because `main.dart`'s `_registeredGetPages` is private —
+/// the only way to compare it without exporting internals just for a
+/// test is to read the file.
 void main() {
   test(
-    'getPages, _registeredRoutePaths and the plan doc §3 table agree on '
+    'getPages, kRegisteredRoutePaths and the plan doc §3 table agree on '
     'every registered path',
     () {
       final mainText = File('lib/main.dart').readAsStringSync();
+      final routePathsText =
+          File('lib/utils/route_paths.dart').readAsStringSync();
       final appNavText = File('lib/utils/app_nav.dart').readAsStringSync();
+      final urlSyncText =
+          File('lib/services/url_sync_service_web.dart').readAsStringSync();
       final planText = File('docs/url-routing-plan.md').readAsStringSync();
 
+      // 0. Both dispatch sites actually route through the shared
+      // matcher rather than a reverted local `.contains()` — the drift
+      // this whole file exists to prevent could otherwise sneak back
+      // in without touching either set below.
+      expect(appNavText, contains('matchesRegisteredRoute'),
+          reason: 'app_nav.dart\'s pushPage no longer dispatches through '
+              'route_paths.dart\'s shared matcher');
+      expect(urlSyncText, contains('matchesRegisteredRoute'),
+          reason: 'url_sync_service_web.dart no longer dispatches through '
+              'route_paths.dart\'s shared matcher');
+
       // 1. `main.dart`'s `_registeredGetPages` — class name -> path, in
-      // the order the GetPage entries appear.
+      // the order the GetPage entries appear. Stage 4 added a
+      // parameterized entry (`SermonByIdPage(id: Get.parameters['id'] ??
+      // '')`), so the class name only needs an opening paren after it,
+      // not the exact zero-arg `const X()` every earlier entry used.
       final getPageEntry = RegExp(
-        r"GetPage\(\s*name:\s*'([^']+)',\s*page:\s*\(\)\s*=>\s*const\s+(\w+)\(\),",
+        r"GetPage\(\s*name:\s*'([^']+)',\s*page:\s*\(\)\s*=>\s*(?:const\s+)?(\w+)\(",
       );
       final getPagesByClass = <String, String>{};
       for (final m in getPageEntry.allMatches(mainText)) {
@@ -43,22 +65,22 @@ void main() {
       expect(
         getPagesByClass,
         isNotEmpty,
-        reason: 'no GetPage(name: ..., page: () => const X()) entries '
+        reason: 'no GetPage(name: ..., page: () => X(...)) entries '
             'matched in lib/main.dart — the regex or the list\'s '
             'formatting changed and this test needs updating along with '
             'it, not silently passing empty',
       );
       final getPagesPaths = getPagesByClass.values.toSet();
 
-      // 2. `app_nav.dart`'s `_registeredRoutePaths`.
+      // 2. `route_paths.dart`'s `kRegisteredRoutePaths`.
       final registeredSetBlock = RegExp(
-        r'_registeredRoutePaths\s*=\s*\{([\s\S]*?)\};',
-      ).firstMatch(appNavText);
+        r'kRegisteredRoutePaths\s*=\s*\{([\s\S]*?)\};',
+      ).firstMatch(routePathsText);
       expect(
         registeredSetBlock,
         isNotNull,
-        reason: '_registeredRoutePaths set literal not found in '
-            'lib/utils/app_nav.dart — it may have been renamed',
+        reason: 'kRegisteredRoutePaths set literal not found in '
+            'lib/utils/route_paths.dart — it may have been renamed',
       );
       final registeredPaths = RegExp(r"'([^']+)'")
           .allMatches(registeredSetBlock!.group(1)!)
@@ -81,11 +103,20 @@ void main() {
         planPathByClass[m.group(1)!] = pathMatch.group(1)!;
       }
 
+      // URL-routing Stage 4: `SermonByIdPage` is registered in getPages
+      // under its own class (the async id-lookup resolver — see its doc
+      // comment in sermon_detail_page.dart), but the plan doc's §3 table
+      // names the page it resolves TO, `SermonDetailPage`, because that
+      // row is about page identity, not the resolver mechanism. Same
+      // path, different class name by design — map it before comparing.
+      const resolverAliases = {'SermonByIdPage': 'SermonDetailPage'};
+
       // Every registered class's getPages path must match its plan-doc
       // proposed path exactly.
       final planMismatches = <String>[];
       for (final entry in getPagesByClass.entries) {
-        final planPath = planPathByClass[entry.key];
+        final planClass = resolverAliases[entry.key] ?? entry.key;
+        final planPath = planPathByClass[planClass];
         if (planPath == null) {
           planMismatches
               .add('${entry.key}: registered as ${entry.value} but has no §3 '
@@ -109,8 +140,8 @@ void main() {
       expect(
         registeredPaths,
         getPagesPaths,
-        reason: '_registeredRoutePaths (app_nav.dart) and getPages '
-            '(main.dart) have drifted apart. In _registeredRoutePaths '
+        reason: 'kRegisteredRoutePaths (route_paths.dart) and getPages '
+            '(main.dart) have drifted apart. In kRegisteredRoutePaths '
             'only: ${registeredPaths.difference(getPagesPaths)}. In '
             'getPages only: ${getPagesPaths.difference(registeredPaths)}.',
       );
