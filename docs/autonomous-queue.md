@@ -878,15 +878,20 @@ reported. Work these top-down before P2.
       `lowerLimit.compareTo(upperLimit) > 0` branch — i.e. SOME
       `.clamp(lowerLimit, upperLimit)` call, somewhere in the compiled
       app, was invoked with an inverted range.** The reported message
-      "Invalid argument: 0" (an integer literal, not "0.0") means
-      `lowerLimit` was an int `0`, which is informative: it rules out
-      the double-typed `.clamp(0.0, …)` calls found in the
-      `scrollable_positioned_list` package's `wrapping.dart`/
-      `viewport.dart` (this app's verse-list scroller, `0.3.8`,
-      `centerOffset.clamp(0.0, mainAxisExtent)` and similar — a
-      tempting candidate given the trap state is exactly "no verses
-      loaded yet", but ruled out by the literal `0` vs `0.0` in the
-      crash text, not by presence/absence of a guard).
+      "Invalid argument: 0" was read by an earlier draft of this entry
+      as ruling out double-typed `.clamp(0.0, …)` calls (on the theory
+      that an int `0` and a double `0.0` render differently). **That
+      reasoning is WRONG and is corrected by the 2026-09-01 pass below:**
+      `B.h.k` (the double interceptor's `toString`, `main.dart.js:59310`)
+      is `if(a===0&&1/a<0)return"-0.0"; else return""+a` — for `+0.0`,
+      `1/a` is `+Infinity`, not `<0`, so it falls to `""+a`, and
+      JavaScript's `""+0` is `"0"`, identical to the int case. The crash
+      text cannot distinguish int `0` from double `0.0`, so
+      `scrollable_positioned_list`'s double-typed `.clamp(0.0, …)` calls
+      in `viewport.dart` (this app's verse-list scroller) were never
+      actually ruled out by this argument — they were ruled back in by
+      the pass below, then separately shown unreachable through this
+      app's own widget tree (not through the int/double distinction).
       Searched `lib/**/*.dart` for int-shaped `.clamp(0, …)` calls where
       the upper bound could plausibly be negative during boot (empty
       collection minus one): `jump_to_reference.dart:172`,
@@ -933,6 +938,138 @@ reported. Work these top-down before P2.
       unnecessary — noting this so a future pass doesn't rebuild the
       decoder before checking whether the direct-fetch shortcut applies
       first.
+
+      **2026-09-01 — all 43 literal-0-lower-bound clamp sites triaged
+      (outcome (b): closes this branch, does NOT tick the item).**
+      Downloaded the same byte-verified v1.4.178 bundle (SHA-256
+      `4b3969fe89dc0155…d1436d3dd`, re-confirmed) and read the
+      enclosing minified function for each of the 43 sites listed in
+      `~/Library/Application Support/yswords-loop/clamp_sites_1.4.178.txt`,
+      matching each to Dart source. Per-site verdicts (grouped by why
+      each is non-invertible):
+      - **29 sites** have a literal or `Infinity` upper bound (`1`, `6`,
+        `23`, `59`, `0.3`–`0.45`, `1/0`) or are directly preceded by a
+        guarding ternary in the SAME expression (`s===0?0:s-1`,
+        `q===0?0:…`, `p<=0?0:…`) — inversion is impossible by
+        construction, no source lookup needed beyond the minified shape
+        itself.
+      - **8 sites** have an upper bound that is a `.length`-derived
+        value (`J.aU(x)` = dart2js's compiled `.length` getter,
+        confirmed by reading its definition at `aU(a){return
+        J.ay(a).gI(a)}` and cross-checking `gI` against ~15 other call
+        sites that use it exactly like `.length`) — always >= 0.
+      - **2 sites** (`md178.js:146560`, `146969`/`147021`, 3 call sites
+        total — `lib/pages/sermon_detail_page.dart:225`,
+        `lib/pages/sermons_page.dart:111,171`) clamp to
+        `ScrollPosition.maxScrollExtent`, always read fresh after
+        `hasClients` is confirmed. A refuter checked the "structural
+        guarantee" framing an earlier pass used for this pattern
+        (`family_tree_page.dart:746`) and found it imprecise —
+        `applyContentDimensions` only *asserts* `minScrollExtent <=
+        maxScrollExtent`, it doesn't enforce it — but `maxScrollExtent`
+        is accumulated from `SliverGeometry.scrollExtent`, non-negative
+        by sliver-geometry convention for the plain `ListView`s these
+        three sites use, so it HOLDS in practice, on an emergent
+        guarantee rather than a literal enforced one. Worth remembering
+        if a future pass finds a *custom* `RenderSliver` with a
+        hand-computed `scrollExtent` — that emergent guarantee doesn't
+        transfer automatically.
+      - **2 sites** (`md178.js:88138,88140`, Flutter's
+        `_IndicatorPainter` for `TabBar`, `i.ax.length-2`) can't invert
+        because none of this app's 3 TabBars can ever have <2 tabs:
+        `library_page.dart:55` and `stats_page.dart:46` are hardcoded
+        `length: 2`/`length: 3`, and `bible_reading_pane.dart`'s
+        `_MapPickerSheet` TabBar only builds under `if (_tabs.length >
+        1)` with `_tabs` guaranteed >= 1 (an "all" tab is appended
+        unconditionally in `_buildTabs()`). Independently re-derived,
+        not taken on the prior pass's word — a refuter re-checked
+        `stats_page.dart` end-to-end for anything dynamic and found
+        none.
+      - **2 sites** (`md178.js:157724`, `158575`) ARE
+        `_VerticalProgressIndicator`'s pill-travel calc and
+        `_MapPickerSheetState`'s `TabController.initialIndex` —
+        confirmed byte-for-byte against `git show 2c32e1fd`, which
+        already fixed both **before this pass started** (same day,
+        earlier commit, already an ancestor of HEAD). Of the two, only
+        the pill-travel one was actually reachable in the pre-fix
+        bytes (`h - pillHeight` fed straight into `.clamp(0.0, h -
+        pillHeight)` with no floor); the TabController one turns out
+        to have been unreachable even pre-fix, for the same "`_tabs`
+        can't be empty" reason as the previous bullet — 2c32e1fd
+        guarded it defensively, not because it was provably reachable.
+      - **4 sites** (`md178.js:135963,135965,135973,135974`) are
+        `scrollable_positioned_list-0.3.8/lib/src/viewport.dart`'s
+        `_attemptLayout` (`centerOffset.clamp(0.0, mainAxisExtent)` and
+        the matching cache-extent pair) — matched to source line by
+        line (`centerOffset = mainAxisExtent * anchor -
+        correctedOffset` etc., all four local variables map exactly).
+        **This is a genuine, real gap in the vendored package**: its
+        `assert(mainAxisExtent >= 0.0)` guard is stripped in release,
+        and it calls plain `num.clamp()` (a refuter noted current
+        Flutter's own `RenderViewport` has since migrated to
+        `clampDouble`, which only asserts and never throws — this
+        vendored 0.3.8 package has not). But it is **not reachable
+        through this app's actual widget tree**: the refuter traced
+        `bible_reading_pane.dart`'s full ancestor chain
+        (`Scaffold.body → LayoutBuilder → Stack → PageView.builder →
+        _ChapterPage → Padding → ScrollablePositionedList.builder`,
+        no `Positioned` anywhere in that chain) against Flutter SDK's
+        own `scaffold.dart` (~1054, 1088–1101) and found every
+        subtractive step Scaffold performs when deriving the body's
+        `maxHeight` (app-bar height, bottom-nav, keyboard inset) is
+        floored with `math.max(0.0, …)`/`clampDouble(…, 0.0, …)` in
+        release code, not merely asserted — and
+        `resizeToAvoidBottomInset: false` (already set, for an
+        unrelated reason — see the note editor keyboard-avoidance fix
+        elsewhere in this file) removes the keyboard-inset subtraction
+        entirely. Root window/view size is physically non-negative.
+        Recorded as a known, real, but currently-unreachable upstream
+        gap — not fixed, since patching a vendored `.clamp()` call for
+        an unreachable path would be inventing scope; worth revisiting
+        only if this app ever wraps `ScrollablePositionedList` in a
+        `Positioned(top:, bottom:)` (the one ancestor shape that WOULD
+        make `mainAxisExtent` go negative).
+      **Net: outcome (b).** All 43 are non-invertible in the CURRENT
+      codebase (2 already fixed pre-pass by `2c32e1fd`, 41 structurally
+      safe, 4 theoretically-live-but-unreachable in a third-party
+      package). Crucially, **none of the 43 — including the two
+      already-fixed ones — sit on the boot path**: a refuter re-ran
+      `grep -n '\.clamp(' lib/main.dart lib/services/
+      url_sync_service_web.dart lib/providers/main_provider.dart`
+      (zero hits, confirming a previous pass's same finding) and
+      separately checked `lib/pages/loading_page.dart` (4 `.clamp(`
+      calls, all fixed non-zero literal font-size bounds, unrelated to
+      this list) and grepped it for every widget class that owns one
+      of the 43 surviving sites (`ScrollablePositionedList`, `TabBar`,
+      `TabController`, sermon/maps pages) — zero hits. `_bootstrap()`
+      cannot reach any of the 43 sites; they only mount well after
+      boot completes. **This closes the literal-0-lower-bound branch
+      of the clamp lead for good — it does not explain the mailed-in
+      crash, which per the queue's own history happens while the app
+      is still "parked on its own Flutter loading page,"** before any
+      of these 45 (43 plus the 2 pre-fixed) call sites' owning widgets
+      ever mount. The next avenue, if the clamp family is to be
+      pursued further, is non-literal lower bounds (a variable that
+      evaluates to 0 at runtime, e.g. `.clamp(x, y)` where `x` happens
+      to be `0`) — this pass's regex (`\.P\([^,()]{0,40},0,`) does not
+      cover those, and neither did any prior pass. Otherwise, per this
+      entry's own accumulated history, the remaining untried avenues
+      are (a) `_applyHashToState`/`_parseHash` with an oracle that can
+      tell "ran clean" from "threw and the local catch swallowed it",
+      and (b) the stale-verse-valid-chapter boot shape that actually
+      reaches `setCurrentChapter`/`relIdx`.
+      A refuter pass (given all four groups above, asked to break each
+      independently) tried and could not break any of them — see
+      per-group notes above for what it specifically checked itself
+      rather than trusting this write-up (e.g. re-reading `stats_page
+      .dart` end-to-end, re-deriving the Scaffold flooring from
+      Flutter SDK source, independently re-verifying the `B.h.k`
+      double-toString claim against `main.dart.js:59310`).
+      No code changes this pass — the two real findings were already
+      fixed before it started; the one live theoretical gap
+      (`scrollable_positioned_list`) is unreachable and patching a
+      vendored package for an unreachable path was judged out of
+      scope. No deploy — analysis only, nothing user-visible changed.
 
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added

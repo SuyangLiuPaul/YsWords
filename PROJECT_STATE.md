@@ -1661,9 +1661,37 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     found — searched `lib/**/*.dart` only; ~27 Flutter-framework files
     and ~152 pub-cache package files also call `.clamp(` and compile
     into the bundle, and weren't checked. See the queue entry for the
-    full trail, including why the double-typed `.clamp(0.0, …)` calls
-    in `scrollable_positioned_list` (this app's verse-list scroller)
-    are probably NOT it — the crash text says integer `0`, not `0.0`.
+    full trail. **Correction, 2026-09-01: the "crash text says integer
+    `0`, not `0.0`, so it rules out double-typed `.clamp(0.0, …)`"
+    reasoning above is wrong** — dart2js's double `toString`
+    (`main.dart.js:59310`) renders `0.0` as `"0"` too (`""+0` in JS),
+    identical to int `0`. See trap 61.
+61. **The literal-0-lower-bound `.clamp()` branch of the boot-crash
+    lead is now exhausted, and closes without finding the throw site.**
+    2026-09-01 triaged all 43 call sites of `.clamp(<v>, 0, <upper>)`
+    in the byte-verified v1.4.178 bundle (framework + packages + app,
+    not just `lib/**/*.dart` — closing the gap trap 60 left open). 41
+    are structurally non-invertible (literal/length/`Infinity` upper
+    bounds, or a guarding ternary in the same expression); 2
+    (`_VerticalProgressIndicator`'s pill-travel calc,
+    `_MapPickerSheetState`'s `TabController.initialIndex`) were
+    genuinely worth guarding and were already fixed same-day by
+    `2c32e1fd`, before this pass started; 4
+    (`scrollable_positioned_list-0.3.8`'s `_attemptLayout`, a
+    third-party package) are a real latent gap — `assert(mainAxisExtent
+    >= 0.0)` is stripped in release and the package still calls plain
+    `num.clamp()` rather than the newer `clampDouble` — but unreachable
+    through this app's actual widget tree (traced the full ancestor
+    chain; Scaffold floors every subtractive height step with
+    `math.max(0.0, …)` in release code, not just an assert). **None of
+    the 43 — including the 2 already-fixed ones — sit on the boot
+    path**: zero `.clamp(` calls anywhere in `main.dart`,
+    `url_sync_service_web.dart`, `main_provider.dart`, or
+    `loading_page.dart`'s reachable widgets. Full per-site breakdown in
+    the queue entry (`docs/autonomous-queue.md:110`). Next avenue if
+    the clamp family is pursued further: a non-literal lower bound (a
+    variable that evaluates to `0` at runtime) — no pass's regex has
+    covered that shape yet.
 
 ## Standing rules from the user
 
