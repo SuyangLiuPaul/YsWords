@@ -9425,30 +9425,85 @@ has never seen this repo.
         (`resolvePlaybackUrl`), downloads (`song_download_io.dart`),
         artwork (`RemoteImage`) and the score viewer.
 
-- [ ] **Tap-the-status-bar-to-scroll-to-top: 24 pages still lack it.**
+- [x] **Tap-the-status-bar-to-scroll-to-top — the "24 pages, 59 scroll
+      views" figure was double-counting; the real gap was 4 pages, now
+      wired, 2026-09-02.**
       User, 2026-08-11: "我以为所有的page按了top iPhone是会自动划上去的但是
-      Sermon这个就不是，也全部检查一下". Sermons is fixed; the audit they
-      asked for, run over `lib/pages/*.dart`:
+      Sermon这个就不是，也全部检查一下". The 2026-08-11 audit grepped for
+      the *word* `ScrollController` and counted every hit as a page that
+      "lacks" the gesture — but `ScrollToTopOnStatusBarTap`'s own doc
+      comment says the mechanism is automatic for a vertical scroll view
+      that passes no `controller:` of its own (confirmed this pass
+      against the Flutter SDK: `ScrollView.primary` defaults true for a
+      controller-less vertical scroll view, and `Scaffold.handleStatusBarTap`
+      drives `PrimaryScrollController`). The wrapper only matters for a
+      scroll view that owns an explicit controller.
 
-      **Have it (2):** songs_page (5 scroll views), sermons_page (3).
+      Re-auditing on that basis: of the "missing 24", 17 pages have
+      **zero** controller-owning scroll views (about, bible_timeline,
+      dashboard_page, evidence_page, feedback, highlights_page,
+      library_page, map_viewer, misconceptions_page, one_god [a section
+      of `videos_page.dart`, not its own file], profile_edit, profiles,
+      settings, song_downloads, song_playlist_detail, song_playlists,
+      **strongs_entry**) — verified this time with one grep run across
+      all 24 files by name, after an earlier pass in this same hour
+      wrote the list from memory and dropped strongs_entry_page off the
+      end. All 17 are already covered by `PrimaryScrollController`;
+      wiring them would be dead code. `evidence_detail_page` (7 grep
+      hits) is an 18th page that grepped non-zero but is also a false
+      positive: its only controller is a horizontal `PageController` on
+      the image-gallery `PageView`, not a vertical list; its actual body
+      is a controller-less `ListView`, already covered. 17 + 1 + the six
+      below = 24.
 
-      **Missing (24 pages, 59 scroll views):** stats_page (14),
-      search_page (9), bible_trivia_page (4), evidence_page (3),
-      family_tree_page (3), library_page (3), dashboard_page (2),
-      evidence_detail_page (2), highlights_page (2),
-      misconceptions_page (2), now_playing_page (2), and 13 pages with
-      one each — about, bible_timeline, feedback, map_viewer,
-      one_god, profile_edit, profiles, sermon_detail, settings,
-      song_downloads, song_playlist_detail, song_playlists,
-      strongs_entry.
+      That leaves six real cases, of which four are wired now —
+      `bible_trivia_page`, `family_tree_page`, `sermon_detail_page`
+      (each a single ListView + its own controller), and
+      `now_playing_page`'s queue `_QueueSheet` (a `showModalBottomSheet`
+      — confirmed it pushes a real `ModalRoute` so the widget's own
+      `isCurrent` guard applies to it correctly). Also added
+      `test/scroll_to_top_on_status_bar_tap_test.dart` — the first test
+      this widget has ever had — covering the scroll-to-zero path, the
+      `isCurrent` guard, and the multi-position guard; each assertion
+      was confirmed to go red by temporarily breaking the corresponding
+      line in the widget and reverting. One finding from building that
+      test: the `isCurrent` guard is only reachable behind a
+      **non-opaque** route (dialog/sheet) — Flutter's `Overlay` already
+      disables `TickerMode` for anything behind an *opaque* route, which
+      makes `animateTo` a no-op there independent of this guard, so a
+      naive "push a MaterialPageRoute and check" test would pass even
+      with the guard deleted.
 
-      Mechanical work: wrap the scroll view in `ScrollToTopOnStatusBarTap`
-      and give it the controller. Two things to watch — a page with
-      SEVERAL scroll views needs the one the user is looking at, not the
-      first one found (stats_page and search_page are the hard cases,
-      and tabs make the answer depend on the selected tab), and the
-      widget already guards on `ModalRoute.isCurrent` so a page behind a
-      sheet does not steal the tap.
+      **Still open, deliberately not touched this hour:**
+      `search_page` — dirty in this checkout under a concurrent session
+      (URL-routing stage 4), skipped rather than risk colliding.
+      `stats_page` — the genuinely hard case: it's a `DefaultTabController`
+      / `TabBarView` and its two controller-owning scroll views
+      (`_OriginalsOverviewTabState`, `_OriginalsBooksTabState`) sit in
+      *different tabs*, each its own `StatefulWidget`. `TabBarView` keeps
+      adjacent tabs mounted, so both observers stay registered
+      regardless of which tab is selected, and the widget's `isCurrent`
+      check can't help — both tabs share one route. Wiring both as-is
+      would scroll the *hidden* tab's list to top on every status-bar
+      tap on the visible one, which is exactly the "lose their place"
+      failure the widget's own doc warns about, just across tabs instead
+      of across routes. Needs a tab-index-aware guard (compare
+      `DefaultTabController.of(context).index` against this tab's own
+      index) before it can be wired safely — a second batch, not a
+      mechanical wrap.
+
+- [ ] **Tap-the-status-bar-to-scroll-to-top, batch 2: `search_page` and
+      the tab-aware guard `stats_page` needs.** Follow-up to the item
+      above (2026-09-02). `search_page` was skipped only because it was
+      dirty under a concurrent session that hour — re-check it owns
+      exactly one controller (confirmed pre-existing dirty diff added
+      `ScrollController` usage) and wire it once that session's change
+      has landed. `stats_page` needs `ScrollToTopOnStatusBarTap` (or a
+      copy of it) to gate on `DefaultTabController.of(context).index`
+      matching the tab's own index, not just `ModalRoute.isCurrent` —
+      `_OriginalsOverviewTabState` and `_OriginalsBooksTabState` are
+      separate tabs of one `TabBarView`, both stay mounted, and neither
+      is on its own route.
 
 - [ ] **Sermon reading: "每个段落一个block也不好experience".**
       User, 2026-08-11. This is a follow-up on the v1.4.x paragraph work

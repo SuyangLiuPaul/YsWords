@@ -17,6 +17,7 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// Curated catalogue of "Bible trivia" / 冷知识 — patterns and
 /// hidden structures most readers don't notice unless someone
@@ -131,7 +132,9 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
           child: Scrollbar(
             controller: _scrollCtrl,
             thumbVisibility: true,
-            child: ListView.separated(
+            child: ScrollToTopOnStatusBarTap(
+              controller: _scrollCtrl,
+              child: ListView.separated(
               controller: _scrollCtrl,
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -178,6 +181,7 @@ class _BibleTriviaPageState extends State<BibleTriviaPage> {
                   scheme: scheme,
                 );
               },
+              ),
             ),
           ),
         ),

@@ -26,6 +26,7 @@ import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// Reads one sermon body in the user's preferred language with a
 /// language-toggle (EN / 简 / 繁) at the top.
@@ -490,7 +491,9 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
         child: Scrollbar(
           controller: _scrollController,
           thumbVisibility: true,
-          child: ListView(
+          child: ScrollToTopOnStatusBarTap(
+            controller: _scrollController,
+            child: ListView(
             controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           children: [
@@ -581,6 +584,7 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
                 highlight: widget.highlight,
               ),
             ],
+          ),
           ),
         ),
       ),

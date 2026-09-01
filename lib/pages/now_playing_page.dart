@@ -17,6 +17,7 @@ import 'package:yswords/widgets/remote_image.dart';
 import 'package:yswords/widgets/song_actions.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// Full-screen player.
 ///
@@ -314,7 +315,9 @@ class _QueueSheetState extends State<_QueueSheet> {
                   ),
                 ),
                 Flexible(
-                  child: ListView.builder(
+                  child: ScrollToTopOnStatusBarTap(
+                    controller: _controller,
+                    child: ListView.builder(
                     controller: _controller,
                     itemExtent: _rowHeight,
                     itemCount: queue.length,
@@ -421,6 +424,7 @@ class _QueueSheetState extends State<_QueueSheet> {
                         ),
                       );
                     },
+                  ),
                   ),
                 ),
               ],

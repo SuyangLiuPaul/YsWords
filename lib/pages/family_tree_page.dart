@@ -16,6 +16,7 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/person_detail_sheet.dart';
+import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// Browseable Bible family tree, modelled on the structure of the
 /// Wikipedia article *"Genealogies in the Bible"*:
@@ -610,7 +611,9 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
       ));
     }
 
-    return ListView(
+    return ScrollToTopOnStatusBarTap(
+      controller: _scrollController,
+      child: ListView(
       controller: _scrollController,
       // Force every section to be laid out eagerly (instead of
       // lazily as items scroll into view). Without this, sections
@@ -635,6 +638,7 @@ class _FamilyTreePageState extends State<FamilyTreePage> {
           onTapPerson: _showDetail,
         ),
       ],
+      ),
     );
   }
 
