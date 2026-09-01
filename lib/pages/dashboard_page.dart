@@ -702,7 +702,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       'Mandarin',
               scheme: scheme,
               settings: settings,
-              onTap: () => pushPage(const VideosPage()),
+              onTap: () => pushPage(const VideosPage(), routeName: '/videos'),
             ),
             const SizedBox(height: 8),
             _FeaturedCard(
@@ -712,7 +712,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   'Hymns from our churches — listen, sheet music, offline',
               scheme: scheme,
               settings: settings,
-              onTap: () => pushPage(const SongsPage()),
+              onTap: () => pushPage(const SongsPage(), routeName: '/songs'),
             ),
           ],
         );
@@ -795,7 +795,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 _LinkTile(
                   icon: Icons.menu_book_outlined,
                   label: uiStrings['sermons']?[locale] ?? 'Sermons',
-                  onTap: () => pushPage(const SermonsPage()),
+                  onTap: () => pushPage(const SermonsPage(), routeName: '/sermons'),
                 ),
                 _LinkTile(
                   icon: Icons.settings_outlined,
@@ -818,7 +818,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 _LinkTile(
                   icon: Icons.insights_outlined,
                   label: uiStrings['statistics']?[locale] ?? 'Statistics',
-                  onTap: () => pushPage(const StatsPage()),
+                  onTap: () => pushPage(const StatsPage(), routeName: '/stats'),
                 ),
                 if (settings.isDashboardSectionVisible(
                     DashboardSection.todayEvidence))
@@ -831,12 +831,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 _LinkTile(
                   icon: Icons.account_tree_outlined,
                   label: uiStrings['familyTree']?[locale] ?? 'Family Tree',
-                  onTap: () => pushPage(const FamilyTreePage()),
+                  onTap: () => pushPage(const FamilyTreePage(), routeName: '/family-tree'),
                 ),
                 _LinkTile(
                   icon: Icons.timeline_rounded,
                   label: uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline',
-                  onTap: () => pushPage(const BibleTimelinePage()),
+                  onTap: () => pushPage(const BibleTimelinePage(), routeName: '/timeline'),
                 ),
                 _LinkTile(
                   icon: Icons.auto_awesome_rounded,
@@ -860,13 +860,13 @@ class _DashboardPageState extends State<DashboardPage> {
                   _LinkTile(
                     icon: Icons.library_music_rounded,
                     label: uiStrings['songsPageTitle']?[locale] ?? 'Songs',
-                    onTap: () => pushPage(const SongsPage()),
+                    onTap: () => pushPage(const SongsPage(), routeName: '/songs'),
                   ),
                   _LinkTile(
                     icon: Icons.play_circle_outline_rounded,
                     label: uiStrings['videosTitle']?[locale] ??
                         'Featured videos',
-                    onTap: () => pushPage(const VideosPage()),
+                    onTap: () => pushPage(const VideosPage(), routeName: '/videos'),
                   ),
                 ],
                 // 2026-05-07 (v12): feedback tile -- mailto-driven
@@ -883,12 +883,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   // it broke mid-word ("Common misu / nderstandings").
                   label: uiStrings['misconceptionsTile']?[locale] ??
                       'Misunderstandings',
-                  onTap: () => pushPage(const MisconceptionsPage()),
+                  onTap: () => pushPage(const MisconceptionsPage(), routeName: '/misconceptions'),
                 ),
                 _LinkTile(
                   icon: Icons.feedback_outlined,
                   label: uiStrings['feedback']?[locale] ?? 'Feedback',
-                  onTap: () => pushPage(const FeedbackPage()),
+                  onTap: () => pushPage(const FeedbackPage(), routeName: '/feedback'),
                 ),
               ],
             ),

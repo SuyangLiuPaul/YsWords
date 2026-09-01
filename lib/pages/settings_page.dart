@@ -1330,7 +1330,8 @@ class _AccountSectionState extends State<_AccountSection> {
                 ),
               ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => pushPage(const ProfilesPage()),
+              onTap: () =>
+                  pushPage(const ProfilesPage(), routeName: '/profiles'),
             ),
             // Cloud-sync row — Sign in / Sign out depending on state.
             //

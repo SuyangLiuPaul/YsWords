@@ -43,11 +43,27 @@ import 'package:yswords/constants/motion.dart';
 /// explicit `routeName` string instead sidesteps minification
 /// entirely — string literals are never renamed.
 ///
-/// Kept in sync with `getPages` by hand until Stage 3 converts the rest
-/// of §6's batches — a path pushed here that's missing from `getPages`
-/// would throw inside GetX's route resolver, so an entry only belongs
-/// here once the matching `GetPage` exists.
-const Set<String> _registeredRoutePaths = {'/about', '/highlights'};
+/// Kept in sync with `getPages` (`main.dart`'s `_registeredGetPages`) by
+/// hand — a path pushed here that's missing from `getPages` would throw
+/// inside GetX's route resolver, so an entry only belongs here once the
+/// matching `GetPage` exists. `test/url_routing_stage3_sync_test.dart`
+/// asserts these two sets (and the plan doc's §3 table) agree, so a
+/// drift here fails the suite instead of failing at runtime.
+const Set<String> _registeredRoutePaths = {
+  '/about',
+  '/highlights',
+  '/feedback',
+  '/videos',
+  '/songs',
+  '/stats',
+  '/songs/downloads',
+  '/songs/playlists',
+  '/profiles',
+  '/family-tree',
+  '/timeline',
+  '/sermons',
+  '/misconceptions',
+};
 
 Future<T?>? pushPage<T>(
   Widget page, {

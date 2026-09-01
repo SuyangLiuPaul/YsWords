@@ -187,12 +187,12 @@ class _SongsPageState extends State<SongsPage> {
             IconButton(
               icon: const Icon(Icons.download_for_offline_outlined),
               tooltip: uiStrings['songsDownloads']?[locale] ?? 'Downloads',
-              onPressed: () => pushPage(const SongDownloadsPage()),
+              onPressed: () => pushPage(const SongDownloadsPage(), routeName: '/songs/downloads'),
             ),
           IconButton(
             icon: const Icon(Icons.queue_music_rounded),
             tooltip: uiStrings['songsPlaylists']?[locale] ?? 'Playlists',
-            onPressed: () => pushPage(const SongPlaylistsPage()),
+            onPressed: () => pushPage(const SongPlaylistsPage(), routeName: '/songs/playlists'),
           ),
           const LanguageSwitcherButton(),
           const HomeIconButton(),
@@ -435,7 +435,7 @@ class _SongsPageState extends State<SongsPage> {
           'Added to the download queue.'),
       action: SnackBarAction(
         label: uiStrings['songsDownloads']?[locale] ?? 'Downloads',
-        onPressed: () => pushPage(const SongDownloadsPage()),
+        onPressed: () => pushPage(const SongDownloadsPage(), routeName: '/songs/downloads'),
       ),
     ));
   }
@@ -485,7 +485,7 @@ class _SongsPageState extends State<SongsPage> {
       content: Text(uiStrings['songsSavedPlaylist']?[locale] ?? 'Saved.'),
       action: SnackBarAction(
         label: uiStrings['songsPlaylists']?[locale] ?? 'Playlists',
-        onPressed: () => pushPage(const SongPlaylistsPage()),
+        onPressed: () => pushPage(const SongPlaylistsPage(), routeName: '/songs/playlists'),
       ),
     ));
   }

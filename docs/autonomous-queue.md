@@ -8950,6 +8950,101 @@ has never seen this repo.
       more than page count this pass, per the brief. Leaving this item
       unticked; Stage 3 is unstarted.
 
+      **Stage 3 done, 2026-09-02: the other 11 zero-param pages named
+      above get real `getPages` entries.** Same shape as Stage 2, no new
+      mechanism — 4 mechanical pieces: (1) `main.dart`'s route table
+      (renamed `_stage2GetPages` → `_registeredGetPages`, since it's no
+      longer Stage-2-specific) gained 11 entries with the exact paths
+      from `docs/url-routing-plan.md` §3 (`/feedback`, `/videos`,
+      `/songs`, `/stats`, `/songs/downloads`, `/songs/playlists`,
+      `/profiles`, `/family-tree`, `/timeline`, `/sermons`,
+      `/misconceptions`); (2) `app_nav.dart`'s `_registeredRoutePaths`
+      grew the same 13 entries; (3) all 16 real call sites (10 in
+      `dashboard_page.dart`, 4 in `songs_page.dart`, 1 each in
+      `settings_page.dart` and `bible_reading_pane.dart`) got an explicit
+      `routeName:` — re-grepped before touching anything, and all 16
+      were confirmed zero-param `const XPage()`, so the "mechanical, not
+      a design problem" premise in NEXT_TASK.md held; (4) tests.
+      Batch 2+ (single-id detail pages) untouched, `home:`/
+      `onUnknownRoute`/the boot-crash `ErrorReporter.report` calls
+      untouched. Left this item unticked — batches 2–4 unstarted.
+
+      **A `dart format` pass on the touched files was reverted before
+      committing** — it silently reformatted the entire 8000-line
+      `bible_reading_pane.dart` (2437/2420 line diff) and similarly
+      large chunks of the other 5 files, because the committed tree
+      isn't `dart format`-clean under this machine's formatter version.
+      Redid the same edits by hand instead; the real diff is 144
+      insertions / 34 deletions across 6 files. Worth knowing for
+      whoever converts batch 2: don't format-the-whole-file on this repo
+      without checking `git diff --stat` first.
+
+      **Verification:**
+      - Two new test files, VM-only: `url_routing_stage3_test.dart` (14
+        tests — one per path proving `pushPage` renders the REGISTERED
+        `getPages` entry rather than the widget passed in, which is the
+        only way to tell `Get.toNamed` dispatch apart from the `Get.to`
+        fallback — `Get.currentRoute` alone can't, both accept an
+        explicit `routeName` and report it back unchanged, confirmed by
+        deliberately shrinking `_registeredRoutePaths` back to Stage 2's
+        2 entries and finding a route-string-only assertion still green;
+        plus 3 more for the `/songs` vs `/songs/downloads` vs
+        `/songs/playlists` prefix risk) and
+        `url_routing_stage3_sync_test.dart` (1 test: `getPages`,
+        `_registeredRoutePaths` and the plan doc's §3 table read as
+        source text and asserted to agree on path per class — confirmed
+        red by both shrinking `_registeredRoutePaths` to Stage 2's set
+        (all 14 stage3 tests failed) and by planting a single typo'd
+        path (`/misconceptions-TEMP-DRIFT-TEST`) into the sync test's
+        target (the sync test caught it with a diff of exactly that one
+        path), green after reverting each.
+      - Full suite: 1515 tests (was 1500), `flutter analyze` clean.
+      - Browser verification against a real `tools/build_web.py
+        --intl-only` build, local `http.server`, headless Chrome 152 over
+        `--remote-debugging-port` (Stage 2's recipe): all 11 paths
+        cold-load to the right page (screenshotted; `SermonsPage` showed
+        a populated "289 sermons across 20 topics" list, `FamilyTreePage`
+        "277 people", `BibleTimelinePage` "98 events" — the boot-time
+        bundled-asset risk the brief called out did not bite) and the
+        hash survives 4.5+ seconds past the 350ms correction window.
+        `/songs/downloads` and `/songs/playlists` both render their own
+        page, not `SongsPage` — the prefix-sharing risk did not bite
+        either. Real browser Back (`history.back()`, not `Get.back()`)
+        from a cold-loaded `/songs/downloads` or `/songs/playlists`
+        lands on `SongsPage` first, then Dashboard on a second Back —
+        GetX's route tree auto-inserts the shared `/songs` ancestor for
+        a nested path even though `children:` was never used; screenshotted
+        each step. That's "one sensible place" per the brief's
+        acceptance bar (SongsPage is also where the real in-app Downloads/
+        Playlists buttons live), not a bug, but worth knowing before
+        batch 2 nests anything else under `/songs`. `/#/john/3:16?v=kjv`
+        cold-loads and holds — grammar frozen, confirmed both before and
+        after visiting all 11 new routes in the same session.
+      - **A false alarm along the way, worth recording as a methodology
+        trap:** switching the on-disk `build/web` between the Stage-2-only
+        control build and this stage's build WITHOUT a fresh browser
+        profile made a cold `/#/john/3:16?v=kjv` load land on `#/HomePage`
+        instead — looked exactly like a regression. It wasn't: a stale
+        service worker (`flutter_service_worker.js`) from the previous
+        build was still registered in that Chrome profile and serving
+        mismatched assets. Re-tested with a brand-new `--user-data-dir`
+        per build and the discrepancy vanished in both directions. Do NOT
+        reuse a browser profile across different on-disk builds when
+        verifying this stage's work — always start clean, or explicitly
+        unregister the service worker first.
+      - Refuter (adversarial subagent, given the diff + this writeup, not
+        this prose) re-checked the two load-bearing claims — "all 16 call
+        sites are zero-param" and "the currentRoute-only stage2 test
+        pattern can't distinguish Get.toNamed from the Get.to fallback" —
+        against source directly. Both CONFIRMED.
+
+      Stage 3 done is not the item done — batch 2 (single-id detail
+      pages: `SermonDetailPage`, `VideoSeriesPage`,
+      `SongPlaylistDetailPage`, `StrongsEntryPage`, `EvidenceDetailPage`,
+      `MapViewerPage`) needs id-lookup plumbing per call site, not just a
+      `routeName:` string, and deserves its own revertible commit per
+      the brief. Leaving this item unticked.
+
 - [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
       loading问题". Fixed the two leads recorded below that a widget

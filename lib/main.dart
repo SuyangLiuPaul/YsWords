@@ -7,12 +7,23 @@ import 'package:yswords/constants/motion.dart' show AppMotion;
 import 'package:yswords/constants/ui_strings.dart' show uiStrings;
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/about_page.dart';
+import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/dashboard_page.dart';
+import 'package:yswords/pages/family_tree_page.dart';
+import 'package:yswords/pages/feedback_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/loading_page.dart';
+import 'package:yswords/pages/misconceptions_page.dart';
+import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
+import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/pages/song_downloads_page.dart';
+import 'package:yswords/pages/song_playlists_page.dart';
+import 'package:yswords/pages/songs_page.dart';
+import 'package:yswords/pages/stats_page.dart';
+import 'package:yswords/pages/videos_page.dart';
 import 'package:yswords/services/app_icon_service.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
@@ -69,7 +80,8 @@ void main() {
   // check (below, inside the async bootstrap) so a boot hash like
   // `/#/about` is recognised as a registered route rather than
   // silently dropped as unparseable Bible grammar. Native no-op.
-  UrlSyncService.setKnownRoutes(_stage2GetPages.map((p) => p.name).toSet());
+  UrlSyncService.setKnownRoutes(
+      _registeredGetPages.map((p) => p.name).toSet());
 
   // 2026-05-24 (v1.3.21): wrap the whole entrypoint in
   // runZonedGuarded so uncaught zone errors (async work that
@@ -121,17 +133,18 @@ void main() {
   });
 }
 
-/// URL-routing Stage 2 (`docs/url-routing-plan.md`, §6 batch 1): the
-/// first two zero-param pages proving the `getPages` mechanism end to
-/// end before the rest of batch 1 converts in Stage 3. Every path here
-/// must also appear in `app_nav.dart`'s `_registeredRoutePaths` — that
-/// map is what makes `pushPage` route these through `Get.toNamed`
-/// instead of the anonymous `Get.to` every other page still uses.
-/// `home:` (below) keeps serving the root/reader shell; `getPages` only
-/// adds named routes on top of it, it does not replace `onUnknownRoute`
-/// (still wired below, the v1.3.111 crash guard) or the boot deep-link
-/// path (`UrlSyncService`, still Bible-grammar-only per §1).
-final List<GetPage> _stage2GetPages = [
+/// URL-routing (`docs/url-routing-plan.md`, §6 batch 1): the zero-param
+/// pages given real, shareable paths via the `getPages` mechanism.
+/// Stage 2 proved the mechanism with `/about` and `/highlights`; Stage 3
+/// added the rest of batch 1 below. Every path here must also appear in
+/// `app_nav.dart`'s `_registeredRoutePaths` — that map is what makes
+/// `pushPage` route these through `Get.toNamed` instead of the anonymous
+/// `Get.to` every other page still uses. `home:` (below) keeps serving
+/// the root/reader shell; `getPages` only adds named routes on top of
+/// it, it does not replace `onUnknownRoute` (still wired below, the
+/// v1.3.111 crash guard) or the boot deep-link path (`UrlSyncService`,
+/// still Bible-grammar-only per §1).
+final List<GetPage> _registeredGetPages = [
   GetPage(
     name: '/about',
     page: () => const AboutPage(),
@@ -142,6 +155,86 @@ final List<GetPage> _stage2GetPages = [
   GetPage(
     name: '/highlights',
     page: () => const HighlightsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/feedback',
+    page: () => const FeedbackPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/videos',
+    page: () => const VideosPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/songs',
+    page: () => const SongsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/stats',
+    page: () => const StatsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  // Nests under '/songs', also registered above — verify in the browser
+  // that this doesn't fall through to SongsPage; see the queue entry for
+  // this stage.
+  GetPage(
+    name: '/songs/downloads',
+    page: () => const SongDownloadsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/songs/playlists',
+    page: () => const SongPlaylistsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/profiles',
+    page: () => const ProfilesPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/family-tree',
+    page: () => const FamilyTreePage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/timeline',
+    page: () => const BibleTimelinePage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/sermons',
+    page: () => const SermonsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/misconceptions',
+    page: () => const MisconceptionsPage(),
     transition: Transition.rightToLeft,
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,
@@ -622,7 +715,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           // `get_material_app.dart`, since this is exactly the "GetX
           // named routes write the browser URL" claim
           // docs/url-routing-plan.md §4 flagged as unverified).
-          getPages: _stage2GetPages,
+          getPages: _registeredGetPages,
           // 2026-06-28 (v1.3.111): graceful fallback for UNKNOWN named routes.
           // Diagnosed by source-map-deobfuscating a prod (v1.3.102) crash
           // report ("Null check operator used on a null value", Android web):

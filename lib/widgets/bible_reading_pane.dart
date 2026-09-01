@@ -7512,7 +7512,7 @@ class _FloatingHeader extends StatelessWidget {
                             pushPage(const LibraryPage());
                             break;
                           case 'stats':
-                            pushPage(const StatsPage());
+                            pushPage(const StatsPage(), routeName: '/stats');
                             break;
                           case 'language':
                             _showLanguagePicker(context, locale);
