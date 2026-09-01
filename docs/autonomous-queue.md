@@ -5460,16 +5460,60 @@ has never seen this repo.
       (Traditional) are now addressable verses, per the printed 註釋本.
       `test/biblexg_verse_integrity_test.dart` fails on the old data.
 
-- [ ] **路加福音 23:34a needs a sub-verse label — the user's call.**
-      The last of the five. The printed 註釋本 prints 34a / 34b; the
-      publisher's Simplified keeps the second half as plain 34. Our
-      verse id is `<book>-<chapter>-<verseLabel>` and highlights key off
-      it ACROSS versions, so labelling ours 34a / 34b would desync a
-      highlight on Luke 23:34 from every other translation, and Dart's
-      unstable sort would not even keep 34a before 34 without a
-      tiebreak. Two honest options, both needing a decision:
-      (a) label them 34a / 34b and accept the one-verse highlight
-      desync, or (b) add a `sortKey` and keep the id at 34.
+- [ ] **路加福音 23:34a should become a selectable verse — user, 2026-09-02:
+      「34a这些能够也做成像经文可以选择的节吗」. Design settled below; do it.**
+
+      **This item used to say the app has no non-numeric verse label and
+      that the sort problem is real. Half of that was wrong.** `Verse`
+      already carries BOTH — `int verse` for order and lookup, and
+      `String verseLabel` for display and for the id — and
+      `Verse.fromJson` already reads `verseLabel` out of the asset. So
+      this is not int-versus-string. `verse` stays 34 and only the label
+      becomes `34a`. The field has simply never been used for a sub-verse
+      (LEB's 116 `"verse": "title"` entries are a different mechanism —
+      they throw `FormatException`, are skipped, and ride on verse 1 as
+      `superscription`).
+
+      **What is actually in the data.** 23:33 carries its own text plus
+      the whole of 34a, and the entry labelled 34 is really 34b:
+
+      > **[33]** 來到那片地，名叫髑髏地，就在那裡將耶穌釘上了十字架，也釘了
+      > 那兩個罪犯，右手一個，左手一個。**34a**耶穌說：父親啊，赦免他們，
+      > 因為他們不曉得自己在做甚麼。
+      > **[34]** 然後，他們抓鬮分了耶穌的衣袍。
+
+      The literal characters `34a` are printed at readers today. It is the
+      only one in either edition — `\d{1,3}[a-d]` matches exactly once in
+      `biblexg-v2.json` and once in `biblexg-v2-tr.json`.
+
+      **Do it this way, and the highlight-desync objection goes away.**
+      Split 33 into `{verse: 33, verseLabel: '33'}` and
+      `{verse: 34, verseLabel: '34a'}`, and **leave the existing 34
+      alone** — do not relabel it 34b. Then:
+
+      * `Luke-23-33` unchanged, `Luke-23-34` unchanged — **no existing
+        highlight or note moves**, and cross-version sync on 34 is intact.
+        That is what option (a) would have broken.
+      * `Luke-23-34a` is a new id that collides with nothing. A highlight
+        on it has no counterpart in other versions, which is honest: no
+        other version in this app numbers that half-verse.
+
+      Three things still to handle, none of them a decision:
+
+      1. **Sort tiebreak** — 34a and 34 both hold `verse: 34`, and Dart's
+         sort is unstable. Order must come from the asset, or from an
+         explicit sub-index. Check every path that re-sorts a chapter.
+      2. **Deep links** — `url_sync_service_web.dart:497` reads the verse
+         with `int.tryParse`, so `/luke/23:34a` yields null and lands on
+         the chapter instead of the verse. Degrades gracefully; still
+         wrong.
+      3. **Cross-references, the versification map, search and the
+         prerendered pages** each need a look before this ships.
+
+      The publisher's Simplified keeps the second half as plain 34, and
+      the printed 註釋本 prints 34a / 34b — so this labelling follows the
+      print for the half that has no number today and follows the
+      publisher for the half that has one.
 
 - [ ] **馬可福音 6:8-11 is missing from the publisher's own Simplified.**
       Found by the chapter-gap audit. `cn-mk.json` has no 6:8-11 at all
@@ -9831,6 +9875,23 @@ so the bundle-size answer stays on the record.
   fetchable from both prod sites. The user's stated position is that
   NASB needs permission; nothing has been done about it. Ask before
   investing in anything NASB-shaped (including #173-176).
+
+  **2026-09-02: it is not only NASB, and every write-up here has said
+  NASB alone.** Measured against prod:
+
+  ```
+  /assets/assets/nasb.json  200  7,215,432
+  /assets/assets/leb.json   200  8,812,100
+  /assets/assets/kjv.json   200  7,604,330
+  ```
+
+  **LEB is the same exposure and has never been named as one.** The
+  Lexham English Bible is Logos/Faithlife's, licensed for quotation,
+  not for redistribution of the whole text as a file. KJV is public
+  domain and fine. The prerender exclusion covers `/read/` pages only —
+  it never touched the asset bundle, which is where both files actually
+  are. Whatever is decided for NASB has to be decided for LEB in the
+  same breath, and pulling one while leaving the other is not a fix.
 
   2026-08-31: the prerendered `/read/` pages raised the stakes, and were
   built around this. Publishing a translation as thousands of static,
