@@ -1,3 +1,5 @@
+import 'package:yswords/constants/bible_versions.dart'
+    show availableVersions;
 import 'package:flutter/foundation.dart';
 import 'package:yswords/providers/main_provider.dart';
 
@@ -43,8 +45,14 @@ Future<void> eagerPreloadAllVersions(
     'biblexg-v2',
     'biblexg-v2-tr',
   ];
-  final toLoad =
-      candidates.where((v) => v != mainProvider.currentVersion).toList();
+  // 2026-09-02: skip editions this build has no asset for — on web the
+  // NASB and LEB files are stripped for licensing. preloadVersion
+  // swallows the failure, so this is not a crash, but it is two
+  // guaranteed 404s and two wasted round-trips on every cold boot.
+  final available = availableVersions.map((v) => v.value).toSet();
+  final toLoad = candidates
+      .where((v) => v != mainProvider.currentVersion && available.contains(v))
+      .toList();
   for (final version in toLoad) {
     if (!isActive()) return;
     // Yield once per iteration so the app repaints before the next

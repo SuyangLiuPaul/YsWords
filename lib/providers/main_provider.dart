@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:collection' show LinkedHashMap;
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:yswords/constants/bible_versions.dart'
+    show resolvableVersion;
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/book.dart';
@@ -653,7 +655,13 @@ class MainProvider extends ChangeNotifier {
   }
 
   void setVersion(String version) {
-    currentVersion = version;
+    // 2026-09-02: the single funnel every runtime switch goes through —
+    // the picker, deep links, jump-to-reference, the split pane. Coerce
+    // here too, so a code this build cannot load can never become the
+    // current version by any route. `saveCurrentState` below persists
+    // it, and persisting an unloadable code is what turned one bad
+    // switch into a permanent failure to boot.
+    currentVersion = resolvableVersion(version);
 
     if (isPrimary) saveCurrentState();
     notifyListeners();
@@ -1573,18 +1581,27 @@ class MainProvider extends ChangeNotifier {
             prefs.getBool('migrated_locale_default_v1346') ?? false;
         final localeForMigration = prefs.getString('locale') ?? '';
         if (!migrated && localeForMigration == 'en') {
-          v = 'nasb';
+          // 2026-09-02: resolvableVersion, not a bare 'nasb'. On web
+          // that asset is stripped for licensing, and persisting a code
+          // whose file is not in the bundle is what made the app fail
+          // to boot for English readers. Lands on KJV there.
+          v = resolvableVersion('nasb');
           // ignore: avoid_print
-          print('[v1.3.46] migrated default from cuvs-yhwh→nasb '
+          print('[v1.3.46] migrated default from cuvs-yhwh→$v '
               '(locale=en)');
           // Persist the new pick so subsequent boots don't roll back.
           // The lastRead blob seed-write at the end of restoreState
           // picks this up and uploads to RTDB.
-          await prefs.setString('${_storagePrefix}version', 'nasb');
+          await prefs.setString('${_storagePrefix}version', v);
         }
         await prefs.setBool('migrated_locale_default_v1346', true);
       }
-      currentVersion = v;
+      // 2026-09-02: a version restored from storage can name an
+      // edition this build cannot load — someone who last read NASB or
+      // LEB on the web before those assets were stripped. Coerce it
+      // rather than letting FetchVerses throw on a missing asset before
+      // the first frame is painted.
+      currentVersion = resolvableVersion(v);
     } else {
       // 2026-05-25 (v1.3.40): no saved version yet → fresh install.
       // Pick a sensible default based on the user's locale. The
@@ -1600,16 +1617,19 @@ class MainProvider extends ChangeNotifier {
       // app's primary audience; the China-mode build is gated by a
       // build flag, not locale).
       final locale = prefs.getString('locale') ?? '';
+      // Each pick goes through resolvableVersion: on web the English
+      // default 'nasb' has no asset, and a fresh install landing on it
+      // never paints a first frame.
       switch (locale) {
         case 'en':
-          currentVersion = 'nasb';
+          currentVersion = resolvableVersion('nasb');
           break;
         case 'zh-Hant':
-          currentVersion = 'cuvs-yhwh-tr';
+          currentVersion = resolvableVersion('cuvs-yhwh-tr');
           break;
         case 'zh-Hans':
         default:
-          currentVersion = 'cuvs-yhwh';
+          currentVersion = resolvableVersion('cuvs-yhwh');
           break;
       }
     }

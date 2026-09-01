@@ -199,6 +199,35 @@ List<BibleVersionInfo> get availableVersions => bibleVersions
     .where((v) => !(_kIsWeb && kWebRestrictedVersions.contains(v.value)))
     .toList();
 
+/// Coerce a version code to one this build can actually load.
+///
+/// **This is the guard v1.4.193/194 shipped without, and it cost a boot
+/// crash on every English-locale web client.** Hiding the restricted
+/// editions from the picker was never enough:
+///
+///   * `restoreState` sets `currentVersion = 'nasb'` for a fresh
+///     `locale == 'en'` install, and again in the v1.3.46 migration —
+///     neither goes anywhere near the picker;
+///   * a returning reader has `nasb` or `leb` in `SharedPreferences`
+///     from before the strip.
+///
+/// Either way boot reached `FetchVerses.execute` → `rootBundle
+/// .loadString('assets/nasb.json')` → *Unable to load asset*, and the
+/// app never painted. Reported from four sites within ten minutes.
+///
+/// Falls back inside the same language family — English lands on KJV,
+/// which is public domain and can never be restricted — and only leaves
+/// the family if that family is somehow empty.
+String resolvableVersion(String version) {
+  final available = availableVersions;
+  if (available.any((v) => v.value == version)) return version;
+  final lang = bibleVersionLanguage(version);
+  for (final v in available) {
+    if (v.language == lang) return v.value;
+  }
+  return available.isNotEmpty ? available.first.value : version;
+}
+
 /// The order languages appear in the version picker's language selector.
 /// English first, then Traditional, then Simplified — matches the way
 /// the user phrased it ("英语繁体简体"). Only languages that actually have

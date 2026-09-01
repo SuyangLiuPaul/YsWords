@@ -99,6 +99,88 @@ void main() {
     }
   });
 
+  group('the boot path — this is the half v1.4.193 shipped without', () {
+    // Hiding the editions from the picker was not enough and cost a boot
+    // crash: `restoreState` sets currentVersion from SharedPreferences or
+    // from a locale default ('en' → 'nasb'), neither of which goes near
+    // the picker. Boot reached rootBundle.loadString('assets/nasb.json'),
+    // threw *Unable to load asset*, and the app never painted. Reported
+    // from dev, cn-dev, cn-qat and prod within ten minutes.
+    final provider = File('lib/providers/main_provider.dart').readAsStringSync();
+
+    test('no bare restricted code is ever assigned as the version', () {
+      for (final v in kWebRestrictedVersions) {
+        // The exact shape of the original bug, both occurrences:
+        //   currentVersion = 'nasb';
+        //   v = 'nasb';
+        final bare = RegExp(
+          "(currentVersion|\\bv)\\s*=\\s*'$v'\\s*;",
+        );
+        expect(provider, isNot(matches(bare)),
+            reason: "main_provider assigns '$v' directly. On web that "
+                'asset is stripped and the app cannot boot. Wrap it in '
+                'resolvableVersion().');
+        expect(provider,
+            isNot(contains("setString('\${_storagePrefix}version', '$v')")),
+            reason: 'persisting an unloadable code makes one bad boot '
+                'permanent');
+      }
+    });
+
+    test('every version the boot path chooses goes through the guard', () {
+      // The locale switch is where a fresh English install is decided.
+      expect(provider, contains("resolvableVersion('nasb')"));
+      expect(provider, contains('currentVersion = resolvableVersion(v)'),
+          reason: 'a version restored from storage is the other half — a '
+              'reader who last opened NASB on the web before the strip');
+    });
+
+    test('resolvableVersion is total: nothing escapes it', () {
+      final available = availableVersions.map((v) => v.value).toSet();
+      final probes = <String>[
+        ...bibleVersions.map((v) => v.value),
+        ...kWebRestrictedVersions,
+        'niv', // removed outright in 2026-05
+        'cuv', // removed in v1.4.5
+        '', 'garbage', 'nasb-tr',
+      ];
+      for (final p in probes) {
+        expect(available, contains(resolvableVersion(p)),
+            reason: "resolvableVersion('$p') returned something this "
+                'build cannot load');
+      }
+    });
+
+    test('an English restricted edition falls back to a loadable English one',
+        () {
+      // Not asserting "KJV" by name — asserting the property that makes
+      // the fallback safe: same language, actually available, and public
+      // domain so it can never itself be stripped.
+      for (final v in kWebRestrictedVersions) {
+        if (bibleVersionLanguage(v) != 'en') continue;
+        final got = resolvableVersion(v);
+        // On the VM nothing is restricted, so this returns v itself;
+        // the assertion that matters is the language-family rule the
+        // web path depends on.
+        expect(bibleVersionLanguage(got), 'en',
+            reason: 'falling back across language families would open an '
+                'English reader into Chinese');
+      }
+      expect(versionsForLanguage('en').map((v) => v.value), contains('kjv'),
+          reason: 'KJV is the public-domain floor the web fallback lands '
+              'on; if it ever leaves the English list, revisit '
+              'resolvableVersion');
+    });
+
+    test('the preloader does not queue an edition with no asset', () {
+      final preloader =
+          File('lib/services/version_preloader.dart').readAsStringSync();
+      expect(preloader, contains('available.contains(v)'),
+          reason: 'the preload queue names nasb and leb explicitly; '
+              'without the filter every cold boot fires two 404s');
+    });
+  });
+
   test('off web, the picker still offers them', () {
     // These tests run on the VM, where the const `dart.library.js_interop`
     // is false — so this asserts the gate is genuinely web-only and has
