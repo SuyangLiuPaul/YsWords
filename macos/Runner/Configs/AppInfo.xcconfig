@@ -5,10 +5,30 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
+//
+// Still the scaffold value ON PURPOSE. This names the BUILT BUNDLE
+// (`yswords.app`) and is referenced by three TEST_HOST paths in
+// Runner.xcodeproj/project.pbxproj and four BuildableName entries in
+// xcshareddata/xcschemes/Runner.xcscheme. Nothing a user sees reads it
+// any more: CFBundleDisplayName and CFBundleName are both spelled out
+// literally in Runner/Info.plist as of 2026-09-01.
 PRODUCT_NAME = yswords
 
 // The application's bundle identifier
+//
+// `com.example.*` is the Flutter scaffold default and was never changed.
+// Changing it now makes every existing install a separate app that never
+// receives another update, and it is also what Google Play rejects
+// outright. Firebase is keyed to it in four places besides this one
+// (android/app/google-services.json ×3, ios/Runner/GoogleService-Info.plist,
+// macos/Runner/GoogleService-Info.plist), so a change is a Firebase
+// Console registration, not an edit.
 PRODUCT_BUNDLE_IDENTIFIER = com.example.yswords
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.
+//
+// 2026-09-01: was "Copyright © 2025 com.example. All rights reserved."
+// — the scaffold placeholder, shown VERBATIM to the user in the macOS
+// About panel, which reads it through NSHumanReadableCopyright in
+// Runner/Info.plist.
+PRODUCT_COPYRIGHT = Copyright © 2025-2026 Yahweh's Words. All rights reserved.

@@ -30,8 +30,21 @@
 	<string>6.0</string>
 	<key>CFBundleDisplayName</key>
 	<string>Yahweh's Words</string>
+	<!-- 2026-09-01: CFBundleName is the name macOS puts in the MENU BAR
+	     (the bold item next to ), and it was $(PRODUCT_NAME) — which
+	     AppInfo.xcconfig still sets to the Flutter scaffold's `yswords`.
+	     So Finder and the Dock said "Yahweh's Words" from
+	     CFBundleDisplayName above while the menu bar said "yswords",
+	     the only surface left disagreeing with the others.
+
+	     Set literally rather than by fixing PRODUCT_NAME: PRODUCT_NAME
+	     also names the built bundle (`yswords.app`) and is referenced by
+	     three TEST_HOST paths in Runner.xcodeproj/project.pbxproj and
+	     four BuildableName entries in the shared xcscheme. Renaming it
+	     is build-system surgery, and it buys nothing a user can see once
+	     this key is explicit. -->
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Yahweh's Words</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

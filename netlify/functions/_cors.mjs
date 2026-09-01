@@ -24,12 +24,31 @@
 // Read endpoints (aiSearch, aiBibleSearch, aiExplainWord) are kept
 // at `*` because:
 //   * they have per-IP quota via Gemini's free tier
-//   * they're embedable by design (the YsWords AI proxy is intended
+//   * they're embedable by design (the AI proxy is intended
 //     to be a public-facing API for read queries)
 //   * a malicious site spamming reads only burns AI quota, doesn't
 //     hit the developer inbox
 
+// 2026-09-01: yahwehword.com was missing. It is the CANONICAL origin —
+// every deploy of index.html carries
+// `<link rel="canonical" href="https://yahwehword.com/">` — and it was
+// the only prod hostname not listed, because the list was written
+// (2026-05-24) before the domain existed.
+//
+// This did NOT break feedback or error reporting: FeedbackService's
+// endpoint is the RELATIVE '/api/submitFeedback', so a browser on
+// yahwehword.com is same-origin and never runs a CORS check. What it
+// did break is the abuse signal. Browsers send `Origin` on every POST,
+// same-origin included, so each genuine submission from the primary
+// domain took the off-allowlist branch below and logged
+// `[cors] off-allowlist origin rejected: https://yahwehword.com` —
+// meaning the warning intended to surface attackers was instead
+// dominated by the site's own traffic, which is the same as having no
+// signal at all. Verified live before the fix: an OPTIONS preflight
+// carrying Origin: https://yahwehword.com came back
+// `access-control-allow-origin: https://yswords.netlify.app`.
 const _ALLOWLIST = [
+	'https://yahwehword.com',
 	'https://yswords.netlify.app',
 	'https://yswords-cn.netlify.app',
 	'https://yswords-dev.netlify.app',
@@ -72,7 +91,7 @@ export function corsHeaders(req) {
 		console.warn(
 			`[cors] off-allowlist origin rejected: ${origin}`,
 		);
-		allowOrigin = 'https://yswords.netlify.app';
+		allowOrigin = 'https://yahwehword.com';
 	}
 	return {
 		'Access-Control-Allow-Origin': allowOrigin,

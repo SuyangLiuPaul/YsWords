@@ -1,27 +1,33 @@
-<h1 align="center">YsWords – Yahweh's Words</h1>
+<h1 align="center">Yahweh's Words · 雅伟之言</h1>
 
 <p align="center">
-  <img src="assets/app_icon_rounded.png" alt="YsWords App Icon" width="80"/>
+  <img src="assets/app_icon_rounded.png" alt="Yahweh's Words app icon" width="80"/>
 </p>
 
 <p align="center"><em>A bilingual Bible reader for Yahweh's words built with Flutter.</em></p>
 
 <p align="center">
-  <a href="https://yswords.netlify.app">
-    <img alt="Live demo" src="https://img.shields.io/badge/Live%20demo-yswords.netlify.app-0284c7?style=for-the-badge&logo=netlify&logoColor=white">
+  <a href="https://yahwehword.com">
+    <img alt="Live site" src="https://img.shields.io/badge/Live-yahwehword.com-0284c7?style=for-the-badge&logo=netlify&logoColor=white">
   </a>
   <a href="https://github.com/SuyangLiuPaul/YsWords/releases/latest">
     <img alt="Release" src="https://img.shields.io/github/v/release/SuyangLiuPaul/YsWords?style=for-the-badge&label=Release&color=22c55e">
   </a>
-  <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.41.7-02569B?style=for-the-badge&logo=flutter&logoColor=white">
+  <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.44.2-02569B?style=for-the-badge&logo=flutter&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/License-See%20LICENSE-555?style=for-the-badge">
 </p>
+
+<!-- The repository is still named YsWords, so the github.com and
+     shields.io URLs above must keep that spelling — they are addresses,
+     not the name. Everything a reader SEES is "Yahweh's Words", which is
+     what the app, the site, the manifest and the home-screen label all
+     say. 2026-09-01. -->
 
 ---
 
 ## Try it now
 
-🌐 **<https://yswords.netlify.app>** — opens in any modern browser. No install, no sign-in needed. Optional Google sign-in syncs highlights / bookmarks / notes / last-read position across devices.
+🌐 **<https://yahwehword.com>** — opens in any modern browser. No install, no sign-in needed. Optional Google sign-in syncs highlights / bookmarks / notes / last-read position across devices.
 
 📱 On mobile, tap your browser's menu → **Add to Home Screen** to install as a PWA — full offline reading after one tap of the *Offline Pack* in Settings.
 
@@ -30,7 +36,7 @@
 ## Quick start
 
 ### For users — nothing to install
-Open <https://yswords.netlify.app> and start reading. Tap any verse to copy / highlight / bookmark / get an interlinear word study. The dashboard's quick-links grid puts Search, Library, Bible Tools, Bible Evidence, Sermons, Family Tree, Bible Timeline, Bible Trivia, **Feedback**, and Settings one tap away.
+Open <https://yahwehword.com> and start reading. Tap any verse to copy / highlight / bookmark / get an interlinear word study. The dashboard's quick-links grid puts Search, Library, Bible Tools, Bible Evidence, Sermons, Family Tree, Bible Timeline, Bible Trivia, **Feedback**, and Settings one tap away.
 
 ### For developers — clone, run, ship
 ```bash
@@ -78,8 +84,8 @@ any APIs themselves**; everything is at the Firebase project level.
 | Bookmarks    | Bookmark + per-verse notes; visible inline indicator next to every flagged verse in both verse-by-verse and paragraph mode |
 | Navigation   | Swipe left/right to change chapter; Floating chapter picker; Previous/next chapter buttons; Grid/List view for books with compact English/Chinese labels; Responsive grid for tablets/desktops; Collapsible sidebar for wide screens (≥600px) |
 | Split View   | Two fully independent Bible panes; Side-by-side on tablet/desktop (≥600px) with draggable divider; Top-bottom on phone with draggable divider; Each pane has its own book, chapter, and version; Toggle in header |
-| Search       | **Live search-as-you-type** with 250 ms debounce · Two explicit modes via chip strip: **Search** (text scan, also Enter default) and **YsWords AI** (Gemini-backed fuzzy/thematic, reference-only) · Direct-reference jump (`John 3:16`, `约 3:16`, `Rom 12:1-2`) · Strong's-# pattern (`G2316` / `H7200`) opens the lexicon page · Top-aligned **recent searches** with per-item delete · Bulk **Copy all results** to clipboard · Built-in **"?" help dialog** in your locale · Filter dropdown for whole-Bible vs current-book scope · Every keystroke resets to default scope (entire Bible) · **Tap a hit → smooth 350 ms scroll lands the verse 25 % from the top** with a bold `primaryContainer` wash + inline `►` arrow before the verse number in paragraph mode (auto-clears after 3.5 s) |
-| Word Study   | Tap any verse → "Original" → word-by-word interlinear with Strong's, transliteration, gloss · Tap a chip → full lexicon entry, word family, synonyms, LXX cross-testament refs, concordance · **YsWords AI explanation** with adjustable scope: this verse / chapter / book / whole Bible / cross-testament / **deep exegesis (BDAG-level structured analysis)** — all reference-only · **Aramaic words highlighted** in Daniel 2:4-7:28, Ezra 4:8-6:18 + 7:12-26, Genesis 31:47, Jeremiah 10:11, plus NT transliterations (raca, talitha koum, abba, eloi, ephphatha, maranatha) · **Proper-noun complementary glosses** (English etymology + Chinese biblical identification side-by-side) |
+| Search       | **Live search-as-you-type** with 250 ms debounce · Two explicit modes via chip strip: **Search** (text scan, also Enter default) and **AI** (Gemini-backed fuzzy/thematic, reference-only) · Direct-reference jump (`John 3:16`, `约 3:16`, `Rom 12:1-2`) · Strong's-# pattern (`G2316` / `H7200`) opens the lexicon page · Top-aligned **recent searches** with per-item delete · Bulk **Copy all results** to clipboard · Built-in **"?" help dialog** in your locale · Filter dropdown for whole-Bible vs current-book scope · Every keystroke resets to default scope (entire Bible) · **Tap a hit → smooth 350 ms scroll lands the verse 25 % from the top** with a bold `primaryContainer` wash + inline `►` arrow before the verse number in paragraph mode (auto-clears after 3.5 s) |
+| Word Study   | Tap any verse → "Original" → word-by-word interlinear with Strong's, transliteration, gloss · Tap a chip → full lexicon entry, word family, synonyms, LXX cross-testament refs, concordance · **AI explanation** with adjustable scope: this verse / chapter / book / whole Bible / cross-testament / **deep exegesis (BDAG-level structured analysis)** — all reference-only · **Aramaic words highlighted** in Daniel 2:4-7:28, Ezra 4:8-6:18 + 7:12-26, Genesis 31:47, Jeremiah 10:11, plus NT transliterations (raca, talitha koum, abba, eloi, ephphatha, maranatha) · **Proper-noun complementary glosses** (English etymology + Chinese biblical identification side-by-side) |
 | Annotations  | `{...}` inline badges with linked `<note:...>` pop-ups; `[...]` dotted-underline keywords; Book icon notes              |
 | Section titles | Inline scripture-section headings with optional ⓘ context popovers — covers all 13 versions × 66 books                  |
 | Book intros  | Collapsible historical-context card at the top of every chapter 1, bilingual                                            |
@@ -99,7 +105,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ## App Screenshots
 
-<p align="center"><sub>Captured on an iPhone 17 Pro (iOS 26.5). Current release <b>v1.4.5</b>. Download builds for every platform from <a href="https://github.com/SuyangLiuPaul/YsWords/releases/latest">Releases</a>; full release log in <a href="HANDOFF.md">HANDOFF.md</a>.</sub></p>
+<p align="center"><sub>Captured on an iPhone 17 Pro (iOS 26.5). Current release <b>v1.4.190</b>. Download builds for every platform from <a href="https://github.com/SuyangLiuPaul/YsWords/releases/latest">Releases</a>; full release log in <a href="HANDOFF.md">HANDOFF.md</a>.</sub></p>
 
 <h3 align="center">Read &amp; study the Word</h3>
 
@@ -208,8 +214,14 @@ Requires **Flutter >= 3.22** and **Dart >= 3.2** (active dev/prod builds run on 
 A production build is hosted on Netlify:
 
 ```
-https://yswords.netlify.app/
+https://yahwehword.com/
 ```
+
+The `yswords*.netlify.app` hostnames are the Netlify site names underneath
+and still answer 200, but every one of them carries
+`<link rel="canonical" href="https://yahwehword.com/">` — so linking to
+them points readers and crawlers at a page that disowns itself. Use the
+domain.
 
 - Open in any modern browser (Chrome, Edge, Safari, Firefox).
 - All Bible data is bundled — no download required on first load.
@@ -401,7 +413,7 @@ netlify deploy --prod --dir=build/web --auth $NETLIFY_AUTH_TOKEN --site $NETLIFY
 git push origin main
 ```
 
-- **Live site**: https://yswords.netlify.app
+- **Live site**: https://yahwehword.com (Netlify site name `yswords`)
 - **Publish directory**: `build/web/`
 - **SPA redirect**: configured in `netlify.toml`
 
@@ -433,7 +445,7 @@ Please run `flutter analyze` before committing.
 
 ## Disclaimer & Use
 
-YsWords is a **non-commercial personal / community Bible-study tool**.
+Yahweh's Words is a **non-commercial personal / community Bible-study tool**.
 The application code is open source, but **scripture texts and other
 embedded resources remain the copyright of their respective rights
 holders**. They are reproduced here under fair-use / personal-study

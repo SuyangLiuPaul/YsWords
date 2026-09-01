@@ -1,4 +1,4 @@
-# YsWords — One-time cloud setup
+# Yahweh's Words — One-time cloud setup
 
 This is the **developer setup** required to make cloud features
 (Realtime Database sync + Gemini AI) work in production. It only
@@ -162,7 +162,7 @@ to a `mailto:` link automatically — feedback is never silently lost.
    ```bash
    netlify env:set RESEND_API_KEY "re_..."
    netlify env:set FEEDBACK_TO   "your-inbox@example.com"   # optional
-   netlify env:set FEEDBACK_FROM "YsWords Feedback <feedback@yourdomain.com>"  # optional
+   netlify env:set FEEDBACK_FROM "Yahweh's Words Feedback <feedback@yourdomain.com>"  # optional
    ```
 
 4. Redeploy: `netlify deploy --prod --dir=build/web` (or wait for
@@ -259,16 +259,18 @@ most cases. Common failures:
 
 A common confusion: end users don't have Google Cloud projects.
 APIs are enabled at the **project level** (the project that owns the
-OAuth client = the YsWords project), not at the user level.
+OAuth client = this app's project), not at the user level.
 
 When a user signs in:
-* OAuth client is YsWords' (project `ysword`)
+* The OAuth client belongs to this app (Google Cloud project `ysword` —
+  the project ID is a fixed identifier and is not the brand name)
 * Scopes are requested against the user's Google account
-* User clicks Allow → grants the YsWords app access to the requested
+* User clicks Allow → grants Yahweh's Words access to the requested
   scope
-* App calls Drive API using user's OAuth token + YsWords' API enablement
+* App calls Drive API using user's OAuth token + this project's API
+  enablement
 * Storage uses **the user's Drive quota** (15 GB free), but API
-  request quota uses **YsWords' project quota** (1 billion/day, basically
+  request quota uses **this project's quota** (1 billion/day, basically
   unhittable)
 
 The user's only "setup" is one Allow click on the consent screen.
