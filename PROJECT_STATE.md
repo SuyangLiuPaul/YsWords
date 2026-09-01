@@ -1572,6 +1572,26 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     later, orphaned. Any future one-shot Node harness in this repo needs
     an explicit `cleanup(); process.exit(...)` at every return path, not
     a reliance on the `exit` event.
+59. **A fresh headless-Chrome profile can never exercise the app's**
+    **stale-service-worker sweep, and that sweep changes boot behaviour.**
+    `web/index.html`'s `maybeReload()` (`:323-410`) unregisters any worker
+    not named `app_shell_sw.js` and, only if it found one
+    (`unregisterCount > 0`), forces a SECOND `location.reload()` before
+    Flutter boots. `tools/boot_trap_headless_repro.mjs` launches Chrome
+    against a brand-new `mkdtempSync` profile every run, which has never
+    registered any worker — so `unregisterCount` is always `0` and that
+    branch has never fired in any run of this harness to date. A real
+    user with a version-specific mailed-in crash report has, by
+    definition, visited before a deploy, so they plausibly still carry a
+    stale worker this harness structurally cannot simulate. Found
+    2026-09-01 by a refuter pass on a "the trap state alone doesn't
+    crash" conclusion drawn from a 5/5-clean run against both the pre-fix
+    1.4.178 bundle and current `main` — the conclusion had to be narrowed
+    to "doesn't crash without the sweep's extra reload," not withdrawn.
+    Before trusting a future negative from this harness on the boot-crash
+    item, either plant a foreign service-worker registration first (so
+    `maybeReload()` fires) or say explicitly that this variable was not
+    tested.
 
 ## Standing rules from the user
 

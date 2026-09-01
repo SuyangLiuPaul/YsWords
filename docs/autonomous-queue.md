@@ -683,6 +683,71 @@ reported. Work these top-down before P2.
       reports for the 5 shapes tried — narrowing, not closing. Close this
       only once the actual throw site is found.
 
+      **2026-09-01 — the differential build test NEXT_TASK.md asked for:**
+      **the PRE-FIX 1.4.178 bundle also runs 5/5 clean under the corrected**
+      **plant, on both a same-origin and cross-build local test — but a**
+      **refuter found a real, verified gap in what this test can rule out,**
+      **so "trigger is the stored state" is demoted to unproven, not**
+      **disproven.** Built release web from `c0af3985` (pubspec
+      `version: 1.4.178`, the exact mailed-in commit) in a throwaway
+      worktree with `--dart-define=APP_VERSION=1.4.178`, mirroring
+      `tools/build_web.py`; served via `python3 -m http.server`; confirmed
+      `/version.json` reports `1.4.178` before trusting the run (build
+      oracle). Also built current `main` (`db9ab6a2`, `1.4.190`, which
+      carries `2c32e1fd`'s two clamp guards) the same way, on a second port,
+      for a same-harness comparison.
+      Ran the harness's `localhost:PORT` support (already present,
+      `:45-48`) against both. **Result: 5/5 state-oracle MATCH, zero CDP
+      exceptions, zero `window.onerror`/`unhandledrejection`, zero
+      `/api/errorReport` POSTs — on BOTH bundles**, identical to every prior
+      run against deployed dev at 1.4.190. This is the first time the
+      faithful (JSON-encoded) plant has been run against the pre-fix
+      bundle at all; every prior 1.4.178 attempt either used the harness's
+      since-fixed raw-string plant or predates the harness entirely.
+      **A refuter pass (given the raw run logs, asked to break the**
+      **obvious conclusion) found a real hole, verified by reading**
+      **`web/index.html:315-410` directly, not taken on the refuter's**
+      **word:** this harness launches headless Chrome against a brand-new
+      `mkdtempSync` throwaway profile on every run. `index.html`'s
+      service-worker sweep (`maybeReload()`, `:323-410`) unregisters any
+      worker whose script URL isn't `app_shell_sw.js` and, if it
+      unregistered anything (`unregisterCount > 0`), forces a SECOND
+      `location.reload()` before Flutter boots at all. A fresh profile has
+      never registered any worker, so `unregisterCount` is always `0` and
+      that branch never fires — in either this run or any prior run of
+      this harness. A real user who owns a version-specific mailed-in
+      report has, by construction, visited before a deploy; they plausibly
+      still carry a stale worker from that visit (`localStorage.clear()`,
+      which the founding repro used, does not touch Service Worker
+      registrations). So this result only clears "three-key trap state,
+      fresh browser, no stale worker" — it does not clear, and should not
+      be read as clearing, "three-key trap state PLUS the extra reload a
+      stale-worker sweep forces." The refuter's secondary attempt — that
+      the founding manual repro (`28a1925a`, 2026-08-31, 11h before the
+      harness existed) likely planted raw unencoded strings, the same
+      artifact as trap #58 — does not hold up: "cleared localStorage
+      mid-session" describes wiping ALL keys, not hand-typing three
+      key/value pairs; if the three legacy keys were then repopulated by
+      the app's own save path, they would have been JSON-encoded normally.
+      That inference is written here as unverified, not as fact, per the
+      refuter's own correction of it.
+      **Net: item stays open, and the open question changes shape again.**
+      Not "does the three-key state crash" (still unproven either way) but
+      "does the three-key state crash ONLY when combined with the
+      service-worker sweep's forced extra reload." That is now the
+      cheapest untried experiment: extend the harness to also leave a
+      foreign (non-`app_shell_sw.js`) service-worker registration in the
+      profile before planting the three keys, so `maybeReload()` actually
+      fires, and re-run the same 5 shapes through that extra reload cycle.
+      Not attempted this pass — out of scope per NEXT_TASK.md's explicit
+      "nothing deploys, all local" framing and the time already spent on
+      the build+refute cycle above.
+      Worktrees removed after the run (`git worktree remove
+      /tmp/yswords-1.4.178`, `/tmp/yswords-main`); local `python3 -m
+      http.server` instances and the harness's own headless Chrome closed
+      via `cleanup()`+`process.exit()` — verified via `ps` after, none
+      orphaned.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still
