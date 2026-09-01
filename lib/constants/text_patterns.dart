@@ -11,6 +11,32 @@ final bracePattern = RegExp(r'\{([^}]+)\}');
 /// Matches `[...]` square-bracket annotations (emphasis, alternative readings).
 final squarePattern = RegExp(r'\[([^\]]+)\]');
 
+/// Editions whose `[...]` brackets are printed, not consumed.
+///
+/// `[...]` does not mean the same thing in every edition, so it cannot be
+/// rendered the same way in every edition. Measured over the shipped
+/// assets on 2026-09-01:
+///
+///   * `cuvs-yhwh` / `cuvs-yhwh-tr` — 229 spans, TWO distinct: `[雅伟]`
+///     (212) and `[基督]` (17). Both mark a referent the editor supplied
+///     where the underlying text has something else (Matt 1:20 is
+///     ἄγγελος κυρίου, "an angel of the Lord"). The brackets are the
+///     edition's own notation for "inserted, not translated", and
+///     dropping them lets a reader take the word for original text.
+///   * `leb` — 29,652 spans, overwhelmingly supplied English function
+///     words (`[the]` 3,897, `[is]` 2,770, `[are]` 1,476). Printing
+///     these brackets would bracket a third of the New Testament.
+///   * `nasb` — 6 spans, each a whole disputed sentence.
+///   * `kjv`, `biblexg-v2`, `biblexg-v2-tr` — none at all.
+///
+/// So this is a deliberate allowlist, not a default. Adding an edition
+/// here means asserting its brackets carry meaning for the READER, not
+/// just for the typesetter.
+const kBracketPreservingVersions = <String>{
+  'cuvs-yhwh',
+  'cuvs-yhwh-tr',
+};
+
 /// Matches any annotation token: braces, brackets, or note tags.
 final combinedPattern = RegExp(r'(\{[^}]+\}|\[[^\]]+\]|<note:[^>]+>)');
 

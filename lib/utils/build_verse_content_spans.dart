@@ -22,6 +22,14 @@ List<InlineSpan> buildVerseContentSpans({
   // show. Everything else about the line — `[insert]` brackets and
   // `<note: …>` markers — renders exactly as it does in verse text.
   bool showVerseNumber = true,
+  /// The edition these verses came from, so `[...]` can be rendered with
+  /// its brackets intact in the editions where the brackets ARE the
+  /// notation. Null (the default) keeps the pre-2026-09-01 behaviour of
+  /// showing the bracketed word styled but bare, which is still right
+  /// for LEB and NASB. Callers pass the PANE's version — each split-view
+  /// pane has its own `MainProvider`, so `renderedVersion` is per-pane
+  /// and the two sides can legitimately differ.
+  String? versionCode,
 }) {
   final isReferenceLine = verse.paragraphType == 'reference';
 
@@ -301,8 +309,39 @@ List<InlineSpan> buildVerseContentSpans({
       // itself a notation, so mark it in the theme accent — same as the
       // <note:> footnote marker — with a clean thin underline for the tap
       // affordance. (User confirmed they want the [] notation coloured too.)
+      //
+      // 2026-09-01: the accent alone is not enough, and colour was
+      // carrying meaning it cannot carry. In 和合本雅伟版 the brackets
+      // are the EDITION'S OWN notation for an editorial insertion — the
+      // Greek of Matt 1:20 reads ἄγγελος κυρίου, "an angel of the
+      // Lord", so 雅伟 there is supplied by the editor, not translated
+      // from the text. Printing it as bare coloured text says only
+      // "this word is special"; a reader has no way to learn from a
+      // colour that the word is not in the original, and the natural
+      // reading is that it is. The user reported exactly that risk.
+      //
+      // So the brackets are restored AROUND the existing styling
+      // rather than replacing it — both, not either. Two further facts
+      // decided the scope:
+      //
+      //   * the asset already ships them. `主[雅偉]的使者` is what is
+      //     in cuvs-yhwh-tr.json; this render path was consuming them.
+      //     The prerendered /read/ pages never did, so the crawlable
+      //     page and the app disagreed about the same verse.
+      //   * measured across the shipped assets, `[...]` means different
+      //     things per edition: cuvs-yhwh(-tr) has 229 spans and only
+      //     TWO distinct ones, [雅伟] (212) and [基督] (17) — both
+      //     referent insertions. LEB has 29,652, overwhelmingly
+      //     supplied function words ([the], [is], [are]); NASB has 6,
+      //     whole disputed sentences. Bracketing LEB's would put
+      //     visible brackets around thirty thousand English function
+      //     words, which is a different product decision nobody asked
+      //     for. Hence version-scoped, per the user's own wording
+      //     ("both simplified and traditional 雅偉版本").
+      final showBrackets = versionCode != null &&
+          kBracketPreservingVersions.contains(versionCode);
       spans.add(TextSpan(
-        text: annotation,
+        text: showBrackets ? '[$annotation]' : annotation,
         recognizer: onTextTap != null
             ? (TapGestureRecognizer()..onTap = onTextTap)
             : null,

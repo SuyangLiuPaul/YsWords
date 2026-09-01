@@ -30,11 +30,20 @@ class SuperscriptionLine extends StatelessWidget {
   final AppSettings settings;
   final String locale;
 
+  /// The edition this superscription belongs to, passed in rather than
+  /// read from a provider: this is a presentational widget, and
+  /// `leb_superscription_test.dart` pumps it on its own with no
+  /// MainProvider above it. Reading the provider here compiled fine and
+  /// broke that test at runtime — the widget should not know where the
+  /// version comes from.
+  final String? versionCode;
+
   const SuperscriptionLine({
     super.key,
     required this.verse,
     required this.settings,
     required this.locale,
+    this.versionCode,
   });
 
   @override
@@ -55,6 +64,7 @@ class SuperscriptionLine extends StatelessWidget {
       locale: locale,
       isSelected: false,
       showVerseNumber: false,
+      versionCode: versionCode,
     );
     return Padding(
       padding: EdgeInsets.fromLTRB(

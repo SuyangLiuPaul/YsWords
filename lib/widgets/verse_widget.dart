@@ -127,6 +127,11 @@ class VerseWidget extends StatelessWidget {
           locale: locale,
           isSelected: isSelected,
           superscriptVerseNum: inParagraphMode,
+          // renderedVersion, not currentVersion — the text on screen is
+          // still the old edition until the new one has actually loaded,
+          // and the brackets have to match the words they belong to.
+          // MainProvider is pane-scoped, so this is correct in split view.
+          versionCode: mainProvider.renderedVersion,
           // v1.3.17: light haptic on verse tap — iOS Taptic Engine
           // selection click, Android vibrator pulse, no-op elsewhere.
           onTextTap: () {
@@ -319,7 +324,10 @@ class VerseWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SuperscriptionLine(
-                verse: verse, settings: settings, locale: locale),
+                verse: verse,
+                settings: settings,
+                locale: locale,
+                versionCode: mainProvider.renderedVersion),
             verseBlock,
           ],
         );

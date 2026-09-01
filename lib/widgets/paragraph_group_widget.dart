@@ -222,6 +222,10 @@ class ParagraphGroupWidget extends StatelessWidget {
             superscriptVerseNum: true,
             onTextTap: () => mainProvider.toggleVerse(verse: verse),
             spanBgColor: bgColor,
+            // See verse_widget.dart — renderedVersion, and pane-scoped.
+            // Paragraph mode is the DEFAULT reading mode, so this is the
+            // call site most readers actually see.
+            versionCode: mainProvider.renderedVersion,
           ));
 
           // 2026-05-19 (v1.2.55): the v1.2.53 cross-version LEB
@@ -336,7 +340,10 @@ class ParagraphGroupWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SuperscriptionLine(
-                verse: group.first, settings: settings, locale: locale),
+                verse: group.first,
+                settings: settings,
+                locale: locale,
+                versionCode: mainProvider.renderedVersion),
             block,
           ],
         );
