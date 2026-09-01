@@ -281,6 +281,53 @@ rm -f "$PROJECT/build/web/_headers"
 # test/prerender_bible_test.dart and test/prerender_sermons_test.dart
 # each assert there is at least one prerender call per
 # `flutter build web` in this file.
+# 2026-09-02: strip the translations we may not redistribute as files.
+#
+# `flutter build web` writes EVERY asset declared in pubspec.yaml into
+# build/web/assets/assets/, so the whole translation is one GET away.
+# Measured on prod before this existed:
+#
+#   /assets/assets/nasb.json  200  7,215,432   (Lockman)
+#   /assets/assets/leb.json   200  8,812,100   (Logos/Faithlife)
+#   /assets/assets/kjv.json   200  7,604,330   (public domain — stays)
+#
+# Both are licensed for quotation, not for redistribution of the complete
+# text. The 2026-08-31 prerender exclusion was built for exactly this
+# concern and does NOT cover it: it keeps them out of the /read/ pages and
+# never touched the asset bundle, which is where the files actually are.
+#
+# Native builds still bundle them — this is a web-only hold pending the
+# publishers' answer, not the NIV treatment (entry and asset both deleted,
+# 2026-05). `kWebRestrictedVersions` in lib/constants/bible_versions.dart
+# is the other half: it hides the editions from the picker on web so the
+# app never asks for a file that is not there. Keep the two lists equal —
+# test/web_restricted_versions_test.dart fails if they drift, or if this
+# step disappears from this script.
+#
+# Runs per build, like prerender(), because each `flutter build web`
+# rewrites build/web in place and puts the files back.
+WEB_RESTRICTED_ASSETS=(nasb leb)
+strip_restricted_assets() {
+  echo "==> stripping unlicensed translations from build/web"
+  for v in "${WEB_RESTRICTED_ASSETS[@]}"; do
+    f="$PROJECT/build/web/assets/assets/$v.json"
+    if [[ -f "$f" ]]; then
+      echo "    removed assets/$v.json ($(wc -c <"$f" | tr -d ' ') bytes)"
+      rm -f "$f"
+    fi
+    # Belt and braces: refuse to deploy if it is somehow still there.
+    if [[ -f "$f" ]]; then
+      echo "✗ could not remove $f — refusing to deploy" >&2
+      exit 1
+    fi
+  done
+  # AssetManifest.bin still NAMES them. That is deliberate and harmless:
+  # it is a binary manifest, rewriting it here would be fragile, and no
+  # code path asks for these two on web now that the picker hides them.
+  # If something ever does, it gets a 404 through rootBundle, which
+  # daily_verse_fallback._loadBundle already treats as an empty result.
+}
+
 prerender() {
   echo "==> prerendering the crawlable Bible into build/web/read/"
   "${DART:-$HOME/flutter/bin/dart}" run "$PROJECT/tools/prerender_bible.dart" \
@@ -321,6 +368,7 @@ echo "==> building INTERNATIONAL bundle"
 "$FLUTTER" build web --release \
   --no-web-resources-cdn \
   --dart-define="APP_VERSION=$APP_VERSION"
+strip_restricted_assets
 prerender
 INTL_SITES=(
   "b745ae1f-0780-4fa3-8478-bdf2f2aaf59a:dev:yswords-dev"
@@ -352,6 +400,7 @@ echo "==> building CHINA bundle (CHINA_MODE=true)"
   --no-web-resources-cdn \
   --dart-define="APP_VERSION=$APP_VERSION" \
   --dart-define="CHINA_MODE=true"
+strip_restricted_assets
 prerender
 CN_SITES=(
   "50f1502c-299f-4ff8-a21b-28f53eaee1e1:cn-dev:yswords-cn-dev"

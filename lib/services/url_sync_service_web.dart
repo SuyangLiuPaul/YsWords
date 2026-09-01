@@ -38,7 +38,7 @@ import 'dart:js_interop';
 
 import 'package:flutter/foundation.dart';
 
-import 'package:yswords/constants/bible_versions.dart' show bibleVersions;
+import 'package:yswords/constants/bible_versions.dart' show availableVersions;
 import 'package:yswords/constants/book_slugs.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
@@ -386,7 +386,13 @@ Future<void> _applyHashToState(String rawHash, {bool isBoot = false}) async {
     // to the "End of Bible" empty state on a chapter that exists.
     if (parsed.version != null &&
         parsed.version != mp.currentVersion &&
-        bibleVersions.any((v) => v.value == parsed.version)) {
+        // 2026-09-02: `availableVersions`, not `bibleVersions` — on web
+        // that excludes the editions whose assets release_web.sh strips
+        // from the bundle. An old shared link like `#/john/3:16?v=nasb`
+        // would otherwise switch to an edition whose JSON now 404s and
+        // land the reader on an empty chapter; this keeps them on the
+        // version they were already reading.
+        availableVersions.any((v) => v.value == parsed.version)) {
       mp.setVersion(parsed.version!);
       await FetchVerses.execute(mainProvider: mp);
       // v1.3.61: the chapter pager + book picker resolve book names

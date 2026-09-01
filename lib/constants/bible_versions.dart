@@ -148,9 +148,56 @@ const bibleVersions = <BibleVersionInfo>[
 /// shared links.
 const disabledVersions = <String>{};
 
-/// Versions shown in the picker (excludes disabled ones).
-List<BibleVersionInfo> get availableVersions =>
-    bibleVersions.where((v) => !disabledVersions.contains(v.value)).toList();
+/// 2026-09-02: editions we may not redistribute as a fetchable file, and
+/// therefore do not ship in the WEB bundle.
+///
+/// Measured against prod on 2026-09-02, before this change:
+///
+///     /assets/assets/nasb.json  200  7,215,432   31,090 verses
+///     /assets/assets/leb.json   200  8,812,100
+///     /assets/assets/kjv.json   200  7,604,330   (public domain — fine)
+///
+/// Flutter web writes every declared asset into `build/web/assets/assets/`,
+/// where anyone can fetch the whole translation as one file. NASB is The
+/// Lockman Foundation's and LEB is Logos/Faithlife's; both are licensed for
+/// *quotation* (Lockman's gratis policy caps it at 1,000 verses and forbids
+/// storing more than that in an electronic retrieval system), not for
+/// redistribution of the complete text. **LEB had never been named in any
+/// licensing note** — every write-up said NASB alone — which is exactly how
+/// it survived the 2026-08-31 prerender exclusion: that one covers `/read/`
+/// pages and never touched the asset bundle.
+///
+/// This hides them on web only, pending the publisher's answer. It is
+/// deliberately NOT the NIV treatment (removed outright in 2026-05, entry
+/// and asset both) because bundling inside a native app is a materially
+/// weaker act than serving a downloadable file, and the request may yet
+/// come back yes. If it comes back no, do what NIV got.
+///
+/// Two halves, and BOTH are needed — this constant alone would leave the
+/// files sitting there for anyone who knows the URL:
+///   * here, so the picker does not offer an edition whose asset is gone;
+///   * `tools/release_web.sh`, which deletes the files out of `build/web`
+///     after every `flutter build web`.
+/// `test/web_restricted_versions_test.dart` fails if either half goes away.
+const kWebRestrictedVersions = <String>{'nasb', 'leb'};
+
+/// `kIsWeb`, spelled out rather than imported.
+///
+/// `package:flutter/foundation.dart` would be the obvious import and is the
+/// wrong one here: `tools/prerender_bible.dart` imports this file and runs
+/// under plain `dart run` inside `release_web.sh`, where foundation.dart's
+/// transitive `dart:ui` does not exist. This is the same one-line
+/// definition foundation.dart itself uses
+/// (`flutter/lib/src/foundation/constants.dart:83`), and it is const, so
+/// the whole branch is tree-shaken out of native builds.
+const bool _kIsWeb = bool.fromEnvironment('dart.library.js_interop');
+
+/// Versions shown in the picker (excludes disabled ones, and on web the
+/// unlicensed ones whose assets are stripped from the bundle).
+List<BibleVersionInfo> get availableVersions => bibleVersions
+    .where((v) => !disabledVersions.contains(v.value))
+    .where((v) => !(_kIsWeb && kWebRestrictedVersions.contains(v.value)))
+    .toList();
 
 /// The order languages appear in the version picker's language selector.
 /// English first, then Traditional, then Simplified — matches the way
