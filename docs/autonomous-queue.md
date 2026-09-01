@@ -9038,6 +9038,21 @@ has never seen this repo.
         pattern can't distinguish Get.toNamed from the Get.to fallback" —
         against source directly. Both CONFIRMED.
 
+      **Deployed to all four dev/qat sites as v1.4.191** (last deployed
+      version was 1.4.190, 17 commits behind — past the "6 iterations"
+      threshold — and this change is user-visible, so both conditions for
+      deploying independently applied). One CI-red hiccup along the way,
+      fixed same iteration per the standing rule: the version bump used a
+      manual `pubspec.yaml` edit instead of `tools/bump_version.sh`, which
+      left `lib/constants/app_version.dart`'s `kAppVersion` fallback at
+      1.4.190 — exactly the drift `apk_freshness_guard_test.dart` and
+      `update_service_test.dart` exist to catch, and did, on the ubuntu-latest
+      runner, because the full suite wasn't re-run locally between the
+      version bump and the release commit. Fixed with `bump_version.sh
+      --set 1.4.191` (moves both the `defaultValue` and the ternary
+      fallback in lock-step) and a follow-up commit; CI green on it.
+      prod stays on 1.4.190; a prod push needs its own explicit instruction.
+
       Stage 3 done is not the item done — batch 2 (single-id detail
       pages: `SermonDetailPage`, `VideoSeriesPage`,
       `SongPlaylistDetailPage`, `StrongsEntryPage`, `EvidenceDetailPage`,
