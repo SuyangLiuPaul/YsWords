@@ -1692,6 +1692,25 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     the clamp family is pursued further: a non-literal lower bound (a
     variable that evaluates to `0` at runtime) — no pass's regex has
     covered that shape yet.
+62. **Runtime-patch-and-log beat static reading for the boot-crash
+    clamp lead — 51 boot-reachable call sites found and cleared in one
+    pass, vs. ~3 hours estimated for reading ~200 sites by eye.**
+    2026-09-01: patched dart2js's one compiled `num.clamp()` to log
+    every `(lower, upper, caller)` to `window.__clampLog`, ran the
+    existing headless-Chrome harness against all 5 trap shapes, read
+    the log back. Two traps worth keeping for the next instrumentation
+    job of this kind: (1) `new Error().stack` inside a wrapper IIFE has
+    the WRAPPED function's own frame at index 2, not the actual
+    caller — index 3 is the real call site; the first attempt used
+    index 2 and got two meaningless "sites" (one per numeric-type
+    interceptor) instead of 51 real ones, caught by the shape of the
+    output rather than a refuter. (2) A source-level `assert(x >= 0)`
+    is compiled OUT of a release/production dart2js bundle — do not
+    cite an assert as the reason a value can't go negative in this
+    kind of analysis; the real guarantee (if there is one) is an
+    algorithmic invariant upstream, and a refuter caught this
+    conflation on `mainAxisExtent`'s non-negativity. Full write-up:
+    `docs/autonomous-queue.md:110`, 2026-09-01 entry.
 
 ## Standing rules from the user
 

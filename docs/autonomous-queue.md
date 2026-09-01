@@ -1071,6 +1071,123 @@ reported. Work these top-down before P2.
       vendored package for an unreachable path was judged out of
       scope. No deploy — analysis only, nothing user-visible changed.
 
+      **2026-09-01 — runtime enumeration of the boot-reachable clamp
+      set (outcome (b) again): 51 sites, every one non-invertible.
+      Broader net than the pass above — not restricted to literal-0
+      lower bounds.** Switched from static reading to instrumentation:
+      patched the single compiled `num.clamp()` implementation in a
+      local build (`build/web/main.dart.js`, v1.4.189, gitignored
+      artifact, reverted after this pass) to log every invocation's
+      `(lower, upper, caller stack frame)` into `window.__clampLog`,
+      served it from `python3 -m http.server` on 127.0.0.1, and ran
+      the existing `tools/boot_trap_headless_repro.mjs` harness (a
+      small addition to its state oracle reads the log back — no
+      other harness changes) against all 5 `TRAP_SHAPES`. First
+      attempt at the stack-frame index was wrong (grabbed the clamp
+      function's own frame, not its caller — every call collapsed to
+      2 fake "sites", one per numeric-type interceptor) and was caught
+      by the run's own output shape rather than a refuter; fixed by
+      indexing one frame deeper, re-run, cross-checked against a
+      manual `node -e` stack-trace test to confirm the frame layout.
+
+      Across all 5 shapes, 51 distinct call sites executed during
+      boot, deduplicated by caller line:column. Two logged an upper
+      bound of `null` — confirmed by reading the source at both lines
+      to be literal `1/0` (Infinity), not a missing argument; CDP's
+      `returnByValue` JSON serialization turns `Infinity` into `null`
+      the same way `JSON.stringify(Infinity)` does. Zero of the 51 had
+      an observed `lower > upper`.
+
+      Went further than "not observed to invert" for every site:
+      - **41 of 51** have BOTH bounds as numeric literals baked into
+        the call at that exact source position — verified
+        programmatically (parsed each call's argument list from the
+        minified source and regex-matched both bound arguments against
+        `^-?(\d+(\.\d+)?|\d+/\d+)$`), not eyeballed. A literal pair
+        can't invert under any input; no further argument needed.
+      - **10 of 51** have a non-literal bound. Each was traced
+        individually rather than assumed safe:
+        - 3 sites (two in one function, `cZO`/`cyB` at
+          `main.dart.js:42340,42349,42350,42355`) are guarded by an
+          unconditional `if(x<=0)return 0` that executes as the first
+          statement of the same straight-line function, before the
+          clamp — confirmed no recursion/reentrancy could skip it, and
+          confirmed each function has exactly one call site in the
+          bundle. One of the two also depends on
+          `s=a+1` where `a` is `J.aZ(list)` — confirmed `J.aZ(a){return
+          J.aS(a).gI(a)}` is dart2js's compiled `.length` getter
+          (matches the interceptor-dispatch shape used identically
+          elsewhere), always >= 0, so `s >= 1`.
+        - 5 sites are `scrollable_positioned_list-0.3.8`'s
+          `_attemptLayout` (`main.dart.js:133039` etc. this build;
+          same function trap 61 already flagged at different line
+          numbers in v1.4.178) — matched to source by structural
+          correspondence (`s=a*e.ve-c` ↔ `centerOffset = mainAxisExtent
+          * anchor - correctedOffset`), not by name. `mainAxisExtent`
+          (the shared upper bound for 2 sites) is non-negative by
+          Flutter's layout algorithm — but NOT by the package's own
+          `assert(mainAxisExtent >= 0.0)`, which a refuter pointed out
+          is compiled out of a release bundle; the real guarantee is
+          the layout invariant, not that assert, and the write-up
+          originally conflated the two. `_calculatedCacheExtent` (the
+          bound for the other 3) is `max(…, widget.minCacheExtent ??
+          0)` per the package's own `_cacheExtent()` helper — but only
+          when `cacheExtentStyle == .pixel`; a refuter caught that the
+          first draft never checked which `cacheExtentStyle` branch
+          this app's call actually takes. Verified: `.pixel` is the
+          package's default at both construction sites
+          (`wrapping.dart:419,663`) and this app's `lib/` never sets
+          `cacheExtentStyle` or `cacheExtent`/`minCacheExtent`
+          (grepped), so the default holds and `_calculatedCacheExtent
+          >= 0` stands.
+        - 1 site's upper bound is itself the result of a clamp with
+          literal lower bound `0`, two statements earlier in the same
+          function (`main.dart.js:153686`) — non-negative by that
+          clamp's own postcondition.
+
+      A refuter was given all 10 justifications plus the literal-sites
+      claim and asked to break them; see the notes above for the two
+      holes it found (the stripped-assert conflation on
+      `mainAxisExtent`, the unverified `cacheExtentStyle` branch) —
+      both were then independently re-verified and closed, not just
+      patched over in the prose.
+
+      **Scope, stated plainly per this entry's own standing rule**: this
+      is a claim about the 5 trap shapes actually run, for *which*
+      sites are boot-reachable. It is not "no clamp anywhere can ever
+      invert." But the safety argument for each of the 51 sites found
+      — 41 by literal bounds, 10 by the traced guarantees above — holds
+      for any input, not only the inputs these 5 shapes happened to
+      produce, so this is stronger than a pure observation. This is
+      also a **broader sweep than the pass above it**: that one only
+      covered literal-0 lower bounds (43 sites); this one covers every
+      lower bound the boot path actually exercises, literal or not,
+      including several with non-zero literal lower bounds (`9`, `11`,
+      `13`, `16`, `20`, `44`, …) never examined before.
+
+      No code changes — `build/web/main.dart.js` was reverted to the
+      unpatched clamp after the run (gitignored artifact, no git risk
+      either way, but left clean for the next pass). Confirmed no
+      orphaned local server or headless Chrome survives (`ps`/`lsof`
+      checked after). No deploy — instrumentation and analysis only.
+
+      **Two clamp-family avenues remain, both narrower than what has
+      been swept**: (1) a non-literal *lower* bound that is not
+      already covered by one of the 10 traced sites above — this
+      pass's instrumentation would have caught any such site if it
+      executed during one of the 5 shapes, so the remaining risk is
+      specifically a lower bound that only goes non-zero/negative under
+      a shape NOT tried (e.g. a very long reading history, a corrupted
+      profile, a locale this harness didn't plant); (2) the
+      `_applyHashToState`/`_parseHash` swallowed-throw oracle named by
+      the pass above, still untried. Per the note the previous pass
+      left for this one: this item has now taken ~13 consecutive
+      commits in a day with mitigation already live on prod and the
+      user not currently blocked — the honest call for the *next* pass
+      is to leave this open with its mitigation and move to the P2
+      tier rather than a fourteenth forensic pass, unless a new trap
+      shape or user report gives a concrete new lead to chase.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still

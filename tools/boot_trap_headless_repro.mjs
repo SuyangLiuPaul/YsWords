@@ -501,6 +501,15 @@ async function runShape(shape) {
             chapter: decodeStored(localStorage.getItem('flutter.chapter')),
             version: decodeStored(localStorage.getItem('flutter.version')),
           },
+          // Populated only by a LOCALLY patched bundle (docs/autonomous-
+          // queue.md:110, 2026-09-01 runtime-enumeration pass) that
+          // instruments dart2js's compiled num.clamp() to record every
+          // call site reached during boot, keyed by stack-frame text.
+          // window.__clampLog is undefined against an unpatched/deployed
+          // bundle — that is expected, not an error.
+          clampLog: (function() {
+            try { return window.__clampLog || null; } catch (e) { return null; }
+          })(),
           // Read AFTER the 15s observation window, so a reload triggered
           // late by maybeReload() (itself gated behind the two Promise.all
           // resolutions in web/index.html:409) has had time to land and
@@ -595,6 +604,15 @@ async function runShape(shape) {
     }
   }
   console.log(`    final page state: ${JSON.stringify(finalState.result?.value)}`);
+
+  const clampLog = finalState.result?.value?.clampLog;
+  if (clampLog) {
+    const sites = Object.values(clampLog);
+    console.log(`    clampLog (instrumented bundle): ${sites.length} distinct boot-reachable clamp call sites`);
+    for (const s of sites) {
+      console.log(`      lo=${JSON.stringify(s.lo)} hi=${JSON.stringify(s.hi)} n=${s.n} at=${s.at}`);
+    }
+  }
 
   const loadCount = finalState.result?.value?.loadCount;
   const loadCountNum = loadCount == null ? null : parseInt(loadCount, 10);
