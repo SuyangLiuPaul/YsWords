@@ -9373,14 +9373,39 @@ has never seen this repo.
       Songs section — so the question is whether they belong there
       rather than in the video series. Ask before placing them.
 
-- [ ] **Each 在十字架下 episode has scripture references the app does not
-      show.** The church's page prints them under every part — Lk 23:34,
-      Mk 15:30 + Mt 27:42, Mt 27:40 + Mk 15:32 + Lk 23:35/37/39, Lk
-      23:42-43, Ps 22:8, Jn 19:26-27, Mk 15:34, Jn 19:28/30, Lk 23:46.
-      In a Bible app these should be tappable and open the passage.
-      **Transcribe them from the page and verify each against our own
-      text before shipping** — a citation that opens the wrong passage
-      is P0, and this is the exact shape of that defect.
+- [x] **DONE 2026-09-02 — the references are on screen and tappable.**
+      Data landed `3ff907a7`; the UI half landed today. `VideoRef` +
+      `VideoEpisode.refs` (the model did not parse the key at all, which
+      is why the data sat invisible for a day — `test/video_refs_parse
+      _test.dart` now fails if that recurs), a `Scripture` heading with
+      an `ActionChip` per reference under the episode title, and a tap
+      that goes through the same `resolveAndPrepareJump` →
+      `showJumpResultSnackBar` → `pushPage(HomePage)` path every other
+      citation in the app uses. Book names localise at render through
+      `localeAwareBookName`, so the chip reads 路加福音 23:34 for a Chinese
+      reader and agrees with the header they land on. An episode with no
+      references renders nothing at all — no empty heading, which would
+      read as a load failure. Verified in a browser against a local
+      release build, not just by test: episode 1 shows no heading,
+      episode 2 shows `Luke 23:34`, and tapping it opens Luke 23 in KJV.
+      The video is deliberately left playing — unmounting the embed is
+      the only stop this page has and it is not a pause, so returning
+      would restart the teaching from zero.
+
+      **Found while verifying, NOT fixed here, and not specific to this
+      feature:** on the very FIRST reader mount of a session, the chip
+      opens the right chapter but lands at verse 1 instead of the cited
+      verse (`1 / 56` on the position pill). Tapping again once the
+      reader has been mounted lands on 34 correctly. The chip adds
+      nothing to the shared path — same helper, same `pushPage` — so
+      this is `setPendingJump`'s cold-mount handshake, and the evidence
+      and stats chips reach the reader the same way. Worth its own item:
+      `scrollToVerseNumInChapter` already carries a 94-frame retry loop
+      built for exactly this race while `resolveAndPrepareJump` relies
+      on the pane's post-frame consumer instead, and the two have
+      different robustness. Reproduced once, cold; not yet reproduced
+      from another entry point, so "affects every citation chip" is
+      reasoned from the shared code path rather than observed.
 
 - [x] **Native targets link out to YouTube instead of playing in-app —
       SHIPPED 2026-08-23 (v1.4.130).** iOS/Android/macOS now embed the

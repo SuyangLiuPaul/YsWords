@@ -5773,6 +5773,14 @@ const uiStrings = {
     'zh-Hant': '影片系列',
     'en': 'Featured videos',
   },
+  // Heading over the tappable scripture chips on an episode. 「經文」 and
+  // not 「相關經文」: these are the passages the episode expounds, not
+  // ones that merely relate to it.
+  'videoScripture': {
+    'zh-Hans': '经文',
+    'zh-Hant': '經文',
+    'en': 'Scripture',
+  },
   'videosSubtitle': {
     'zh-Hans': '教会影片教导 · 英语／广东话／普通话',
     'zh-Hant': '教會影片教導 · 英語／廣東話／普通話',

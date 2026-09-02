@@ -7,6 +7,11 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/video_series.dart';
+import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/utils/jump_to_reference.dart';
+import 'package:yswords/utils/reference_parser.dart';
+import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/media_focus.dart';
 import 'package:yswords/utils/app_nav.dart';
@@ -254,6 +259,7 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
                 uiStrings[s.creditKey]?[locale] ?? 'Christian Disciples Church',
                 style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
               ),
+              _refsRow(locale, scheme),
               if (!s.isSingle) ...[
                 const SizedBox(height: 18),
                 Text(
@@ -273,6 +279,96 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
         ),
       ),
     );
+  }
+
+  /// The scripture this episode is built on, as chips that open the
+  /// passage.
+  ///
+  /// The church's page prints these under every part and the app showed
+  /// none of them, which in a Bible app is the wrong way round: a
+  /// viewer hears 「父親啊，赦免他們」 quoted and has to go looking for it.
+  ///
+  /// Renders nothing at all when an episode has no references —
+  /// episode 1 genuinely cites none, and a "Scripture" heading over an
+  /// empty row would read as a loading failure.
+  Widget _refsRow(String locale, ColorScheme scheme) {
+    final refs = _episode.refs;
+    if (refs.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            uiStrings['videoScripture']?[locale] ?? 'Scripture',
+            style: TextStyle(
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final r in refs) _refChip(r, locale, scheme),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _refChip(VideoRef r, String locale, ColorScheme scheme) {
+    // The reader's own version names the book where it can, so the chip
+    // agrees with the header they are about to land on.
+    final version = context.read<MainProvider>().currentVersion;
+    final book = localeAwareBookName(r.book, locale, version);
+    return ActionChip(
+      label: Text(
+        '$book ${r.chapter}:${r.verse}',
+        style: TextStyle(
+          fontFamilyFallback: kCjkFontFallback,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: scheme.onSecondaryContainer,
+        ),
+      ),
+      avatar: Icon(Icons.menu_book_outlined,
+          size: 16, color: scheme.onSecondaryContainer),
+      backgroundColor: scheme.secondaryContainer,
+      side: BorderSide.none,
+      onPressed: () => _openRef(r),
+    );
+  }
+
+  /// Same path every other citation in the app takes: resolve (with the
+  /// full-canon fallback for a version that lacks the book), report
+  /// what happened, then open the reader. Never navigates on a failed
+  /// resolve — a chip that silently does nothing is better than one
+  /// that lands the reader somewhere else.
+  Future<void> _openRef(VideoRef r) async {
+    final mp = context.read<MainProvider>();
+    final result = await resolveAndPrepareJump(
+      reference: BibleReference(
+        englishBook: r.book,
+        chapter: r.chapter,
+        verseStart: r.verse,
+        verseEnd: r.verse,
+      ),
+      mp: mp,
+    );
+    if (!mounted) return;
+    final ok = await showJumpResultSnackBar(context, result);
+    if (!ok || !mounted) return;
+    // The video is left playing on purpose. Unmounting the embed is the
+    // only stop this page has — `_play` explains why it never registers
+    // with MediaFocus — and it is not a pause: coming back would restart
+    // the teaching from zero. Someone who taps a verse the speaker just
+    // quoted wants to read along, not to lose their place.
+    pushPage(const HomePage(), routeName: '/HomePage');
   }
 
   Widget _player(ColorScheme scheme, String locale) {

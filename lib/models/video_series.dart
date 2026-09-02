@@ -52,17 +52,55 @@ String _localized(Map<String, String> m, String locale) =>
     m['en'] ??
     (m.isEmpty ? '' : m.values.first);
 
+/// A scripture reference an episode is built on.
+///
+/// The book is stored in ENGLISH and localised at render time by the
+/// app's existing book-name mapping, so the asset does not carry three
+/// spellings of every book and the three cannot drift apart.
+///
+/// Transcribed from the church's page and checked verse by verse
+/// against `assets/cuvs-yhwh.json` before shipping — see
+/// `tools/add_cross_series_refs.py`. That was not ceremony: the page
+/// cites 约 19:28 twice in episode 9, once correctly for 「我渴了」 and
+/// once for 「成了！」, which is 19:30. Transcribed faithfully, a tap
+/// would have opened the wrong verse.
+class VideoRef {
+  /// English book name, e.g. 'Luke'.
+  final String book;
+  final int chapter;
+  final int verse;
+
+  const VideoRef({
+    required this.book,
+    required this.chapter,
+    required this.verse,
+  });
+
+  factory VideoRef.fromJson(Map<String, dynamic> j) => VideoRef(
+        book: j['book'] as String,
+        chapter: (j['chapter'] as num).toInt(),
+        verse: (j['verse'] as num).toInt(),
+      );
+}
+
 class VideoEpisode {
   final String id;
   final int number;
   final Map<String, String> titles;
   final List<VideoTrack> tracks;
 
+  /// Scripture this episode expounds, in the order the church's page
+  /// presents it. Empty for episode 1, which genuinely cites none —
+  /// an empty list rather than a missing field, so "none" and "not
+  /// known" stay distinguishable.
+  final List<VideoRef> refs;
+
   const VideoEpisode({
     required this.id,
     required this.number,
     required this.titles,
     required this.tracks,
+    this.refs = const [],
   });
 
   factory VideoEpisode.fromJson(Map<String, dynamic> j) => VideoEpisode(
@@ -75,6 +113,10 @@ class VideoEpisode {
         tracks: [
           for (final t in (j['tracks'] as List? ?? []))
             VideoTrack.fromJson(t as Map<String, dynamic>),
+        ],
+        refs: [
+          for (final r in (j['refs'] as List? ?? []))
+            VideoRef.fromJson(r as Map<String, dynamic>),
         ],
       );
 
