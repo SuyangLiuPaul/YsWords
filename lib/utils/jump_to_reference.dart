@@ -8,6 +8,7 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
 import 'package:yswords/services/fetch_verses.dart';
+import 'package:yswords/utils/log_diag.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 
@@ -259,7 +260,7 @@ void scrollToVerseNumInChapter(MainProvider mp, int verseNum) {
 /// controller and the verse map to both be ready, so the scroll
 /// always fires correctly.
 void prepareJumpToVerse(Verse verse, MainProvider mp) {
-  debugPrint('[Yahweh\'s Words prepareJumpToVerse] verse=${verse.book} '
+  logDiag('[Yahweh\'s Words prepareJumpToVerse] verse=${verse.book} '
       '${verse.chapter}:${verse.verse} '
       'currentVersion=${mp.currentVersion} '
       'mp.verses.length=${mp.verses.length}');
@@ -293,7 +294,7 @@ void prepareJumpToVerse(Verse verse, MainProvider mp) {
     }
   }
   if (matchedBook == null) {
-    debugPrint('[Yahweh\'s Words prepareJumpToVerse] BAIL: no matching book '
+    logDiag('[Yahweh\'s Words prepareJumpToVerse] BAIL: no matching book '
         'in mp.verses for ${verse.book} (candidates=$candidates)');
     // Couldn't find a matching book in the loaded version. Bail —
     // setting an invalid currentBook would leave the reader on a
@@ -301,7 +302,7 @@ void prepareJumpToVerse(Verse verse, MainProvider mp) {
     // which is preferable to landing on an empty chapter.
     return;
   }
-  debugPrint('[Yahweh\'s Words prepareJumpToVerse] matchedBook=$matchedBook');
+  logDiag('[Yahweh\'s Words prepareJumpToVerse] matchedBook=$matchedBook');
   mp.setCurrentChapter(book: matchedBook, chapter: verse.chapter);
   // Find the canonical Verse in the loaded version that
   // corresponds to the same chapter:verse. updateCurrentVerse
@@ -317,7 +318,7 @@ void prepareJumpToVerse(Verse verse, MainProvider mp) {
   if (hit.isNotEmpty) current = hit.first;
   mp.updateCurrentVerse(verse: current);
   final relIdx = chapterVerses.indexWhere((v) => v.verse == verse.verse);
-  debugPrint('[Yahweh\'s Words prepareJumpToVerse] '
+  logDiag('[Yahweh\'s Words prepareJumpToVerse] '
       'relIdx=$relIdx chapterVerses.length=${chapterVerses.length}');
   if (relIdx >= 0) {
     mp.setPendingJump(

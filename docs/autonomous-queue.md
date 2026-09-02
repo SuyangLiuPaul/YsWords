@@ -9669,6 +9669,21 @@ has never seen this repo.
       release performance. Pick the chains that were written for support:
       the jump forensics first.
 
+      **PARTLY DONE 2026-09-02.** `lib/utils/log_diag.dart` ships the
+      helper, `jump_to_reference.dart`'s four `prepareJumpToVerse` lines
+      are converted, and `test/log_diag_test.dart` pins both the routing
+      rule and — deliberately — that the app has NOT been bulk-converted
+      (it asserts >50 surviving `debugPrint`s, so a future global
+      find-and-replace fails the build rather than silently shipping
+      developer noise to every user's console).
+
+      **Still to do: the `[Yahweh's Words jump]` chain inside
+      `bible_reading_pane.dart`**, which is the bigger half — it carries
+      the bail reasons and the attempt counter. Not done today because
+      another agent had uncommitted work in that same file and this repo
+      is one shared working tree: staging it would have swept their
+      half-finished change into this commit. Do it once that lands.
+
 - [ ] **Position-preserving language switch is not carried over.** The
       self-hosted player kept your place when you switched language;
       the YouTube embed re-arms the poster instead. `enablejsapi` is
