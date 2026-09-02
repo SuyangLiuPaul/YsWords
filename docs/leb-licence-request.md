@@ -7,16 +7,19 @@ English Bible is Faithlife's (Lexham Press), not The Lockman
 Foundation's. Do not combine it with `docs/nasb-licence-request.md`; a
 joint letter is one neither publisher can act on.
 
-> ## ⛔ BLOCKER — same as the NASB letter
+> ## ⚠️ SENDABLE AS WRITTEN — same situation as the NASB letter
 >
 > ```
-> sword.yahwehword.com/assets/assets/leb.json   200   8,748,709 bytes
+> sword.yahwehword.com/assets/assets/leb.json   200   8,748,709 bytes  ← still live
 > yswords.netlify.app  /assets/assets/leb.json   404
 > yahwehword.com       /assets/assets/leb.json   404
 > ```
 >
-> `sword.yahwehword.com` still serves the complete LEB. The letter says
-> it has been removed. Take it down first, re-check all three, then send.
+> The disclosure paragraph below says exactly this, so the letter is
+> honest and can go today. It commits you to a deadline — it says the
+> file "will be gone within days". Make that true. If you fix Sword
+> first, use the shorter paragraph at the bottom of the NASB letter,
+> with LEB substituted.
 
 ## Where it goes
 
@@ -76,10 +79,15 @@ work rather than a reproduction, and a larger request than the one
 above. A "no" to that would not affect my interest in the plain text.
 
 **Disclosure.** Until recently the complete LEB text was also
-downloadable as a single file from the websites, as a side effect of how
-the web build packages its data. That was not intended and was not
-noticed for some time. It has now been removed from all of them, and the
-sites serve no bulk LEB file while I wait for your answer.
+downloadable as a single file from these websites, as a side effect of
+how the web build packages its data. That was not intended and it went
+unnoticed for some time. I have removed it from `yahwehword.com`, which
+now serves no bulk LEB file. **The same file is still reachable on
+`sword.yahwehword.com` as I write this**, because that application is
+built and deployed separately; I am removing it there as well and it
+will be gone within days of this letter. I would rather tell you that
+than let you find it. Nothing about it is intentional and it stays gone
+once removed, whatever you decide.
 
 I would display the copyright notice and attribution in whatever form
 you require — on the version-selection screen, in each application's

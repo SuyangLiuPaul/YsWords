@@ -3,25 +3,26 @@
 Drafted 2026-09-02, **rewritten the same day** after two findings that
 changed it materially (see "What changed" at the bottom). **Not sent.**
 
-> ## ⛔ BLOCKER — do not send until this is true
+> ## ⚠️ SENDABLE AS WRITTEN — but read this first
 >
-> The letter states that the bulk NASB file has been removed from the
-> websites. **As of 2026-09-02 that is still false for one of them:**
+> As of 2026-09-02:
 >
 > ```
-> sword.yahwehword.com/assets/assets/nasb.json   200   7,588,512 bytes
+> sword.yahwehword.com/assets/assets/nasb.json   200   7,588,512 bytes  ← still live
 > yswords.netlify.app  /assets/assets/nasb.json   404
 > yahwehword.com       /assets/assets/nasb.json   404
 > ```
 >
-> `sword.yahwehword.com` is the SeekSparks build and still serves the
-> complete NASB (and LEB) to anyone who asks for the URL. Take that down
-> first — the same way `tools/release_web.sh` strips it for yswords —
-> then re-run the three checks above and confirm all three are 404.
+> `sword.yahwehword.com` is the SeekSparks build, deployed separately,
+> and `tools/release_web.sh`'s strip never covered it.
 >
-> Sending a letter that claims a remediation you have not made is worse
-> than the exposure it describes, and you are telling it to the party
-> who decides your request.
+> **The disclosure paragraph below now says exactly this**, so the letter
+> is honest and can go today. What it commits you to is a deadline: it
+> says the file "will be gone within days". Make that true.
+>
+> If you would rather take Sword down first, do that and then replace
+> the disclosure paragraph with the shorter version at the bottom of
+> this file — it reads better, but it is not worth waiting for.
 
 ## Where it goes
 
@@ -105,10 +106,15 @@ implement technical limits, for example disabling bulk copy or export of
 NASB text, or making the offline data non-extractable.
 
 **Disclosure.** Until recently the complete NASB text was also
-downloadable as a single file from the websites, as a side effect of how
-the web build packages its data. That was not intended and it was not
-noticed for some time. It has now been removed from all of them, and the
-sites serve no bulk NASB file while I wait for your answer.
+downloadable as a single file from these websites, as a side effect of
+how the web build packages its data. That was not intended and it went
+unnoticed for some time. I have removed it from `yahwehword.com`, which
+now serves no bulk NASB file. **The same file is still reachable on
+`sword.yahwehword.com` as I write this**, because that application is
+built and deployed separately; I am removing it there as well and it
+will be gone within days of this letter. I would rather tell you that
+than let you find it. Nothing about it is intentional and it stays gone
+once removed, whatever you decide.
 
 **If a decision will take time**, is there a provisional or limited-term
 arrangement — or one conditioned on restrictions you specify — that
@@ -171,6 +177,24 @@ require a formal agreement and some charge.
 
 **LEB is a separate letter to a separate publisher** — see
 `docs/leb-licence-request.md`. Do not combine them.
+
+---
+
+## Shorter disclosure paragraph — use ONLY after Sword is fixed
+
+Swap this in once all three URLs answer 404. Do not use it before then.
+
+> **Disclosure.** Until recently the complete NASB text was also
+> downloadable as a single file from these websites, as a side effect of
+> how the web build packages its data. That was not intended and it went
+> unnoticed for some time. It has now been removed from all of them, and
+> the sites serve no bulk NASB file while I wait for your answer.
+
+Check with:
+
+```bash
+for h in yahwehword.com yswords.netlify.app sword.yahwehword.com; do for a in nasb leb; do printf '%-24s %-5s %s\n' "$h" "$a" "$(curl -s -o /dev/null -w '%{http_code}' https://$h/assets/assets/$a.json)"; done; done
+```
 
 ---
 
