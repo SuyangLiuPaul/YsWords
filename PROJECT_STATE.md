@@ -65,9 +65,31 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.191** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.191** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.4.190** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.198** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.198** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn` | **1.4.198** | ⛔ never without explicit permission **in the current turn** |
+
+**All three tiers moved to 1.4.198 together, 2026-09-02 — not by this
+iteration.** While this iteration was landing Stage 4 batch 2's next
+two pages (below), a concurrent session was running
+`tools/release_web.sh --no-bump --include-prod` from a linked worktree
+(`/private/tmp/yswords-verify`, detached at `bfcfce5a`). That commit's
+tree already contained this iteration's routing commit (`f2111d3`) as
+an ancestor, so the deploy carried both changes to dev, qat, **and
+prod** in one pass — confirmed by grepping the live `main.dart.js` on
+`yswords-dev` for `/strongs/` and `/songs/playlists/` after the fact.
+This iteration deliberately did not run its own build or deploy once
+it noticed that process still running (`ps` showed it mid-flight),
+specifically to avoid the interleaved-build trap already recorded
+above ("two concurrent Flutter web builds share `build/web`"). Whoever
+authorised the prod push did so in that other session's own turn —
+this iteration gave no such permission and take no credit or blame for
+it; the standing rule (explicit permission, every turn, no carry-over)
+is unchanged. If a future iteration finds `git log` and a live
+`version.json` disagree, or finds another worktree under
+`~/Documents/yswords/.claude/worktrees/` or elsewhere with commits on
+`main`, this is the shape that takes: check `ps` and `git worktree
+list` before assuming corruption.
 
 **dev/qat moved to 1.4.191, 2026-09-02: URL routing Stage 3** — the
 other 11 zero-param §6 batch 1 pages (Feedback, Videos, Songs, Stats,
@@ -88,10 +110,10 @@ needs, since a concrete pushed path like `/sermons/004` can never match
 a template like `/sermons/:id` via a plain `Set.contains()`. Cold-load,
 the not-found state for an unknown id, and all 5 in-app push sites
 verified against a real web build in headless Chrome. Batch 2's other
-5 pages (`VideoSeriesPage`, `SongPlaylistDetailPage`,
-`StrongsEntryPage`, `EvidenceDetailPage`, `MapViewerPage`) are still
-open — see `docs/autonomous-queue.md`. Not deployed yet; still 1.4.191
-on dev/qat, this change hasn't crossed the 6-iteration threshold alone.
+5 pages were still open when this was written; two more
+(`SongPlaylistDetailPage`, `StrongsEntryPage`) landed the same day —
+see the 1.4.198 note above. `VideoSeriesPage`, `EvidenceDetailPage` and
+`MapViewerPage` remain — see `docs/autonomous-queue.md`.
 
 **Also found this iteration, worth knowing**: `main` had 9 unpushed
 commits sitting on this local checkout when this iteration started —
