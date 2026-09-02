@@ -5460,8 +5460,13 @@ has never seen this repo.
       (Traditional) are now addressable verses, per the printed 註釋本.
       `test/biblexg_verse_integrity_test.dart` fails on the old data.
 
-- [ ] **路加福音 23:34a should become a selectable verse — user, 2026-09-02:
-      「34a这些能够也做成像经文可以选择的节吗」. Design settled below; do it.**
+- [x] **路加福音 23:34a is a selectable verse — DONE 2026-09-02.** User:
+      「34a这些能够也做成像经文可以选择的节吗」. 23:33 was printing the literal
+      characters `34a` mid-sentence in both editions. Split via
+      `tools/repair_biblexg_luke_23_34a.py` (idempotent, so the pending
+      Traditional rebuild can re-run it); `Verse.subVerseOrder` breaks
+      the sort tie; `url_sync` now parses `/luke/23:34a`. The existing 34
+      keeps its label so no highlight moves. Design notes kept below.**
 
       **This item used to say the app has no non-numeric verse label and
       that the sort problem is real. Half of that was wrong.** `Verse`
@@ -9350,6 +9355,13 @@ has never seen this repo.
 
 - [ ] **Re-probe the blocked hosts EVERY iteration, and take the work
       the moment they answer.**
+      **2026-09-02: `christiandiscipleschurch.org` ANSWERS** — 200 in
+      1.2 s. It had been recorded as unreachable, and that record was
+      load-bearing: it is what deferred the sermon-audio item (now done
+      off this very host). It also gates "Reconcile our Matthew sermons
+      against the church's own 124", the CDC song sweep, and the 在十字架下
+      scripture references. Those three are no longer blocked and nobody
+      has re-checked them yet.
       User, 2026-08-11: "api之前没拿到的是不是可以拿到了也加入iteration".
       The point is that this should not depend on anyone remembering to
       try.
@@ -9866,10 +9878,36 @@ so the bundle-size answer stays on the record.
       EC019 has one period and no commas in an 18,205-character
       paragraph. Look for better transcripts on the T7 drive before
       anything else; never re-punctuate a preacher's words.
-- [ ] Sermon audio hosting — **deprioritised by the user.** Inventory is
-      done (289/289 have audio, 661 parts, 5.46 GB, do not re-encode:
-      already 32 kbps mono). The service is written and dormant; set
-      `SERMON_AUDIO_BASE` when a host is chosen.
+- [x] **Sermon audio — DONE 2026-09-02, and it cost nothing.** The user:
+      「录音你可以直接用我们教会的」. The church already publishes all of them
+      at `/content/ehhc_sermons_public` — 589 MP3s in 20 category
+      folders, covering all 289 sermons, with `accept-ranges: bytes`
+      (206 confirmed) and a one-year cache header. No bucket, no bill.
+
+      **No `access-control-allow-origin`, and it does not matter** — a
+      media element is not a fetch. `new Audio(url)` on the
+      https://yahwehword.com origin resolved metadata and reported 764 s.
+      Anything that later reads the BYTES (waveform, offline download)
+      still needs a proxy.
+
+      Three things this turned up, each of which would have shipped
+      silently:
+      * **the index double-counted 72 parts** — apostrophe variants
+        (`Lord_s` beside `Lord's`), byte-identical, same tape side. A
+        two-part sermon would have played through twice. Real count 589,
+        not 661.
+      * **`baseUrl + filename` could never resolve** — the files are
+        nested by category, so each part now carries its real path and
+        `urlFor` encodes per segment (the filenames hold apostrophes,
+        brackets and commas).
+      * **`audio_index.json` was never declared in pubspec** — `load()`
+        swallows the missing-asset error, so every play button would
+        simply never appear while all the file-reading tests stayed
+        green.
+
+      `tools/build_sermon_audio_index.py` rebuilds the index and refuses
+      on anything it cannot explain. `SermonAudioBar` is docked on the
+      sermon page. Verified playing on dev: `0:08 / 27:25`, `Part 1 of 2`.
 - [ ] NASB divine-pronoun capitalisation (#173-176) — tied to the
       unresolved NASB licensing question. Ask before investing.
 
