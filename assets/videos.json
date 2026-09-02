@@ -49,7 +49,8 @@
               "labelKey": "oneGodLangCmn",
               "youtubeId": "g-Wk0qbuAkE"
             }
-          ]
+          ],
+          "refs": []
         },
         {
           "id": "02",
@@ -75,6 +76,13 @@
               "labelKey": "oneGodLangCmn",
               "youtubeId": "3qQu-vA8ZIU"
             }
+          ],
+          "refs": [
+            {
+              "book": "Luke",
+              "chapter": 23,
+              "verse": 34
+            }
           ]
         },
         {
@@ -95,6 +103,18 @@
               "lang": "yue",
               "labelKey": "oneGodLangYue",
               "youtubeId": "GgUiSRBMgj4"
+            }
+          ],
+          "refs": [
+            {
+              "book": "Mark",
+              "chapter": 15,
+              "verse": 30
+            },
+            {
+              "book": "Matthew",
+              "chapter": 27,
+              "verse": 42
             }
           ]
         },
@@ -117,6 +137,33 @@
               "labelKey": "oneGodLangYue",
               "youtubeId": "xXC3IYb128Q"
             }
+          ],
+          "refs": [
+            {
+              "book": "Matthew",
+              "chapter": 27,
+              "verse": 40
+            },
+            {
+              "book": "Mark",
+              "chapter": 15,
+              "verse": 32
+            },
+            {
+              "book": "Luke",
+              "chapter": 23,
+              "verse": 35
+            },
+            {
+              "book": "Luke",
+              "chapter": 23,
+              "verse": 37
+            },
+            {
+              "book": "Luke",
+              "chapter": 23,
+              "verse": 39
+            }
           ]
         },
         {
@@ -137,6 +184,18 @@
               "lang": "yue",
               "labelKey": "oneGodLangYue",
               "youtubeId": "zCyNjjWhkMg"
+            }
+          ],
+          "refs": [
+            {
+              "book": "Luke",
+              "chapter": 23,
+              "verse": 42
+            },
+            {
+              "book": "Luke",
+              "chapter": 23,
+              "verse": 43
             }
           ]
         },
@@ -159,6 +218,13 @@
               "labelKey": "oneGodLangYue",
               "youtubeId": "483CYa3BjXg"
             }
+          ],
+          "refs": [
+            {
+              "book": "Psalms",
+              "chapter": 22,
+              "verse": 8
+            }
           ]
         },
         {
@@ -179,6 +245,18 @@
               "lang": "yue",
               "labelKey": "oneGodLangYue",
               "youtubeId": "OPzyLFP-TMA"
+            }
+          ],
+          "refs": [
+            {
+              "book": "John",
+              "chapter": 19,
+              "verse": 26
+            },
+            {
+              "book": "John",
+              "chapter": 19,
+              "verse": 27
             }
           ]
         },
@@ -201,6 +279,13 @@
               "labelKey": "oneGodLangYue",
               "youtubeId": "SjQCm4m-rmk"
             }
+          ],
+          "refs": [
+            {
+              "book": "Mark",
+              "chapter": 15,
+              "verse": 34
+            }
           ]
         },
         {
@@ -222,6 +307,18 @@
               "labelKey": "oneGodLangYue",
               "youtubeId": "OSKe5G6BW8c"
             }
+          ],
+          "refs": [
+            {
+              "book": "John",
+              "chapter": 19,
+              "verse": 28
+            },
+            {
+              "book": "John",
+              "chapter": 19,
+              "verse": 30
+            }
           ]
         },
         {
@@ -242,6 +339,13 @@
               "lang": "yue",
               "labelKey": "oneGodLangYue",
               "youtubeId": "CincIrfTfDs"
+            }
+          ],
+          "refs": [
+            {
+              "book": "Luke",
+              "chapter": 23,
+              "verse": 46
             }
           ]
         }
