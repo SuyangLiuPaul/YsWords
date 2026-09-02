@@ -37,6 +37,7 @@ import argparse
 import json
 import os
 import sys
+import subprocess
 import urllib.request
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -247,6 +248,33 @@ def main():
     with open(TARGET, 'wb') as f:
         f.write(raw)
     print(f'✓ wrote {TARGET} ({len(raw):,} bytes)')
+
+    # Re-apply local enrichment the upstream snapshot does not carry.
+    #
+    # This writes the upstream bytes VERBATIM, so anything added here is
+    # lost on every pull. That is not hypothetical: the 15 CDC hymn
+    # `scoreUrl`s set on 2026-09-02 were wiped by the very next nightly
+    # sync, and `check_regression` did not notice because the hymns still
+    # have audio — `has_media` is satisfied by audio OR video OR score,
+    # so losing only the score looks like no media loss at all.
+    #
+    # The scores are local because upstream scrapes the church's
+    # `music/` directory, where songs are code-named, while the hymn PDFs
+    # live in `hymns/`, named by title, which the scraper has never read.
+    # Until that is fixed upstream, re-derive them here. The tool is
+    # idempotent and refuses rather than guesses if a title stops
+    # matching exactly one song.
+    enrich = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'tools', 'add_cdc_hymn_scores.py')
+    if os.path.exists(enrich):
+        print('Re-applying local enrichment (CDC hymn sheet music) …')
+        rc = subprocess.call([sys.executable, enrich])
+        if rc != 0:
+            print('ERROR: enrichment failed; assets/songs.json is now the '
+                  'bare upstream snapshot and the hymns have lost their '
+                  'sheet music. Fix before committing.', file=sys.stderr)
+            return 1
     return 0
 
 

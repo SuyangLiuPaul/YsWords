@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -400,12 +401,69 @@ class _AttribRow extends StatelessWidget {
   final String licence;
   final String? url;
   final bool last;
+
+  /// Phrases inside [licence] that must be links, and where they go.
+  ///
+  /// Exists for the LEB, whose licence does not merely ask for an
+  /// attribution but names two phrases — "Lexham English Bible" and
+  /// "Logos Bible Software" — that have to be linked "in electronic
+  /// use". The row's single [url] cannot express that: one tap target
+  /// for the whole row is not two links inside a sentence.
+  final Map<String, String>? linkPhrases;
+
   const _AttribRow({
     required this.name,
     required this.licence,
     this.url,
+    this.linkPhrases,
     this.last = false,
   });
+
+  /// [licence] split into plain runs and linked runs, in order.
+  ///
+  /// Longest phrase first so a phrase containing another cannot be
+  /// half-matched, and each phrase is linked on EVERY occurrence — the
+  /// LEB statement names "Logos Bible Software" twice and the licence
+  /// does not say "the first one only".
+  List<InlineSpan> _spans(ColorScheme scheme, BuildContext context) {
+    final phrases = linkPhrases;
+    if (phrases == null || phrases.isEmpty) return const [];
+    final keys = phrases.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    final spans = <InlineSpan>[];
+    var rest = licence;
+    while (rest.isNotEmpty) {
+      var at = -1;
+      String? hit;
+      for (final k in keys) {
+        final i = rest.indexOf(k);
+        if (i >= 0 && (at < 0 || i < at)) {
+          at = i;
+          hit = k;
+        }
+      }
+      if (hit == null) {
+        spans.add(TextSpan(text: rest));
+        break;
+      }
+      if (at > 0) spans.add(TextSpan(text: rest.substring(0, at)));
+      spans.add(TextSpan(
+        text: hit,
+        style: TextStyle(
+          color: scheme.primary,
+          decoration: TextDecoration.underline,
+          decorationColor: scheme.primary.withValues(alpha: 0.5),
+        ),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () {
+            if (!LinkOpener.isAvailable) return;
+            LinkOpener.openOrWarn(context, phrases[hit]!);
+          },
+      ));
+      rest = rest.substring(at + hit.length);
+    }
+    return spans;
+  }
 
   Future<void> _open(BuildContext context) async {
     if (url == null) return;
@@ -417,8 +475,11 @@ class _AttribRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final hasUrl = url != null && url!.isNotEmpty;
+    final phraseSpans = _spans(scheme, context);
     return InkWell(
-      onTap: hasUrl ? () => _open(context) : null,
+      // A row whose licence text carries its own links must not also be
+      // one big tap target — the row tap would swallow the phrase taps.
+      onTap: hasUrl && phraseSpans.isEmpty ? () => _open(context) : null,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
         decoration: BoxDecoration(
@@ -449,16 +510,25 @@ class _AttribRow extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               flex: 6,
-              child: Text(
-                licence,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: scheme.onSurfaceVariant,
-                  height: 1.45,
-                ),
-              ),
+              child: phraseSpans.isEmpty
+                  ? Text(
+                      licence,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                        height: 1.45,
+                      ),
+                    )
+                  : Text.rich(
+                      TextSpan(children: phraseSpans),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                        height: 1.45,
+                      ),
+                    ),
             ),
-            if (hasUrl) ...[
+            if (hasUrl && phraseSpans.isEmpty) ...[
               const SizedBox(width: 4),
               Icon(Icons.open_in_new_rounded,
                   size: 14,
@@ -502,9 +572,11 @@ class _ScripturesTable extends StatelessWidget {
       ),
       _AttribRow(
         name: uiStrings['aboutVerLeb']?[locale] ?? 'LEB (Lexham English Bible)',
-        licence: uiStrings['aboutLicenseLeb']?[locale] ??
-            '© Logos Bible Software · non-commercial study only.',
-        url: 'https://lexhampress.com/product/9461/lexham-english-bible',
+        licence: uiStrings['aboutLicenseLeb']?[locale] ?? kLebAttribution,
+        // No row-level `url`: the licence names the two links it wants,
+        // and the old one pointed at a lexhampress.com product page that
+        // now 301s to a bookshop search.
+        linkPhrases: kLebAttributionLinks,
       ),
       _AttribRow(
         name: uiStrings['aboutVerNasb']?[locale] ?? 'NASB 2020',

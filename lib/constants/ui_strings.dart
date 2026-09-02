@@ -1,5 +1,29 @@
 
 import 'contact.dart';
+/// The Lexham English Bible's required attribution, quoted exactly.
+///
+/// From the LEB copyright statement: quotations of 100 or more verses
+/// "must be accompanied by the following statement". This app ships the
+/// whole text, so it applies.
+const String kLebAttribution =
+    'Scripture quotations marked (LEB) are from the Lexham English '
+    'Bible. Copyright 2012 Logos Bible Software. Lexham is a registered '
+    'trademark of Logos Bible Software.';
+
+/// The two phrases the LEB licence asks to be linked, and where.
+///
+/// The licence prints `http://www.lexhamenglishbible.com`, but that host
+/// has no DNS record at all (checked 2026-09-02); the bare domain
+/// resolves and is used here. Both it and lexhampress.com now 301 to
+/// bakerbookhouse.com — Baker acquired the Lexham Press imprint in
+/// September 2025 — so the link lands on a bookshop search. That is the
+/// rights holder's own redirect; pointing somewhere "better" would
+/// substitute our judgement for the address the licence names.
+const Map<String, String> kLebAttributionLinks = {
+  'Lexham English Bible': 'https://lexhamenglishbible.com',
+  'Logos Bible Software': 'https://www.logos.com',
+};
+
 const uiStrings = {
   // ====== Search Page ======
   'search': {
@@ -4222,10 +4246,19 @@ const uiStrings = {
     'zh-Hant': 'LEB（Lexham 英文聖經）',
     'en': 'LEB (Lexham English Bible)',
   },
+  // The LEB's own terms require kLebAttribution verbatim for any work
+  // using 100+ verses, and this app ships all of them. What was here
+  // before was neither that statement nor an accurate summary: the
+  // licence does not say "non-commercial only", it says you may give
+  // the LEB away but not sell it on its own. We had invented a
+  // restriction and omitted the attribution actually asked for.
+  //
+  // English in every locale on purpose: the statement is required
+  // verbatim, and a translation is a different string.
   'aboutLicenseLeb': {
-    'zh-Hans': '© Logos Bible Software · 仅限非商业研经使用。',
-    'zh-Hant': '© Logos Bible Software · 僅限非商業研經使用。',
-    'en': '© Logos Bible Software · non-commercial study only.',
+    'zh-Hans': kLebAttribution,
+    'zh-Hant': kLebAttribution,
+    'en': kLebAttribution,
   },
   'aboutVerNasb': {
     'zh-Hans': 'NASB 2020 新美国标准译本',
@@ -5275,6 +5308,23 @@ const uiStrings = {
     'zh-Hant': '未找到該講道。',
     'en': 'Sermon not found.',
   },
+  // URL-routing Stage 4 batch 2: the same cold-load not-found state for
+  // /videos/:id, /evidence/:id and /maps/:id.
+  'videoSeriesNotFound': {
+    'zh-Hans': '未找到该视频系列。',
+    'zh-Hant': '未找到該影片系列。',
+    'en': 'Video series not found.',
+  },
+  'evidenceNotFound': {
+    'zh-Hans': '未找到该条证据。',
+    'zh-Hant': '未找到該條證據。',
+    'en': 'Evidence entry not found.',
+  },
+  'mapNotFound': {
+    'zh-Hans': '未找到该地图。',
+    'zh-Hant': '未找到該地圖。',
+    'en': 'Map not found.',
+  },
   'loadErrorBody': {
     'zh-Hans': '无法加载圣经经文，请检查网络或重试。',
     'zh-Hant': '無法載入聖經經文，請檢查網絡或重試。',
@@ -6125,6 +6175,26 @@ const uiStrings = {
     'zh-Hans': '分钟',
     'zh-Hant': '分鐘',
     'en': 'minutes',
+  },
+  'songsSleepCustom': {
+    'zh-Hans': '自定义时长…',
+    'zh-Hant': '自訂時長…',
+    'en': 'Custom…',
+  },
+  'songsSleepSet': {
+    'zh-Hans': '设定',
+    'zh-Hant': '設定',
+    'en': 'Set',
+  },
+  'songsSleepEndOfSong': {
+    'zh-Hans': '播完这首歌',
+    'zh-Hant': '播完這首歌',
+    'en': 'End of this song',
+  },
+  'songsSleepEndOfSongShort': {
+    'zh-Hans': '播完这首',
+    'zh-Hant': '播完這首',
+    'en': 'End of song',
   },
   'songsQueueEmpty': {
     'zh-Hans': '这些歌都没有可播放的音频。',
