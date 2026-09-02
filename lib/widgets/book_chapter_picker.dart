@@ -86,21 +86,31 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
     final inVerseStep =
         _verseStepBook != null && _verseStepChapter != null;
     if (inVerseStep) {
-      if (_verseStepBook == widget.currentBook && chapterChanged) {
-        // Same book, different chapter (Prev/Next button on the
-        // reading pane). Keep the user in verse-step but follow into
-        // the new chapter's verse grid. This matches user intent:
-        // they opened verse-step to pick from this book; navigating
-        // chapters in the pane should slide the grid forward, not
-        // bounce them back out to the chapters strip.
+      // **The grid follows the text — always.** The user's call,
+      // 2026-08-18: 「网格跟着正文走」, made after hitting the other
+      // shape of this on a tablet, where the picker was headed 創世紀 41
+      // (its grid ran to 57, that chapter's verse count) while the pane
+      // sat on 創世紀 1.
+      //
+      // One rule, one direction, across every path: Prev/Next, a book
+      // change, a search jump, a cross-reference, a restored session, a
+      // Home round-trip. What it buys is that the panel can no longer
+      // name one chapter while the text shows another — the same class
+      // of defect as the version chip naming one translation while the
+      // verses are another (P0, fixed 2026-08-17): an interface saying
+      // something that is not so.
+      //
+      // The accepted cost, stated so nobody "improves" it later:
+      // opening 創世紀 41's grid to hunt for a verse and then moving the
+      // pane loses that grid. **Do not soften this with a hold
+      // heuristic** — a rule that sometimes follows and sometimes holds
+      // is exactly the ambiguity being removed. The superseded v1.2.76
+      // behaviour dropped the verse-step entirely on a book change,
+      // which bounced the reader out to the chapters strip.
+      if (_verseStepBook != widget.currentBook ||
+          _verseStepChapter != widget.currentChapter) {
+        newVerseStepBook = widget.currentBook;
         newVerseStepChapter = widget.currentChapter;
-        anyChange = true;
-      } else if (_verseStepBook != widget.currentBook) {
-        // Cross-book navigation (search/cross-ref/history) — the
-        // verse-step is no longer relevant. Drop it so the user
-        // doesn't see "使徒行传 12" verses while reading 列王纪上.
-        newVerseStepBook = null;
-        newVerseStepChapter = null;
         anyChange = true;
       }
     }

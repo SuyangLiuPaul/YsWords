@@ -157,4 +157,79 @@ void main() {
     expect(find.text('使徒行传  15'), findsNothing,
         reason: 'the picker must not offer a chapter the reader left');
   });
+
+  // ── The invariant ────────────────────────────────────────────────
+  //
+  // The tests above assert only the NEGATIVE — that the picker stops
+  // offering the chapter the reader left. The pre-2026-09-02 code
+  // satisfied that by dropping the verse-step entirely and bouncing the
+  // reader out to the chapters strip, so the negative alone never
+  // noticed that the answered behaviour had not been implemented.
+  //
+  // The user's rule, 2026-08-18: 「网格跟着正文走」 — the grid follows the
+  // text, always. Written as an invariant rather than a sequence, per
+  // the queue: after ANY navigation, the grid offers the pane's chapter.
+  group('the grid offers the pane chapter after any navigation', () {
+    Future<void> drillIntoActs15(WidgetTester tester) async {
+      await tester.tap(find.text('徒'));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('15').first);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('使徒行传  15'), findsOneWidget);
+    }
+
+    testWidgets('across a book change', (tester) async {
+      final mp = _provider();
+      await _pump(tester, mp);
+      await drillIntoActs15(tester);
+
+      mp.setCurrentChapter(book: '列王纪下', chapter: 3);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('列王纪下  3'), findsOneWidget,
+          reason: 'the grid must FOLLOW the pane across a book change, '
+              'not drop the verse-step and bounce out to the chapters '
+              'strip — that was the superseded v1.2.76 behaviour');
+    });
+
+    testWidgets('across Prev/Next in the same book', (tester) async {
+      // The one case v1.2.76 got right, kept so the new rule cannot
+      // regress it while fixing the book-change case.
+      final mp = _provider();
+      await _pump(tester, mp);
+      await drillIntoActs15(tester);
+
+      mp.setCurrentChapter(book: '使徒行传', chapter: 14);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('使徒行传  14'), findsOneWidget);
+      expect(find.text('使徒行传  15'), findsNothing);
+    });
+
+    testWidgets('and again on the full-screen route', (tester) async {
+      final mp = _provider();
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(420, 900);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        ChangeNotifierProvider(
+          create: (_) => AppSettings(),
+          child: MaterialApp(
+            home: BooksPage(
+              chapterIdx: mp.currentChapter!,
+              bookIdx: mp.currentBook!,
+              providerOverride: mp,
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      await drillIntoActs15(tester);
+
+      mp.setCurrentChapter(book: '列王纪下', chapter: 3);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('列王纪下  3'), findsOneWidget);
+    });
+  });
 }

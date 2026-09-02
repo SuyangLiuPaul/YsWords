@@ -4644,7 +4644,26 @@ reported. Work these top-down before P2.
       2. `didUpdateWidget`'s same-book branch makes the grid FOLLOW the
          pane's chapter — see the new item below.
 
-- [ ] **The verse grid can change chapter under the user's finger —
+- [x] **DONE 2026-09-02 — the grid follows the text, always.** The
+      decision was made 2026-08-18 (「网格跟着正文走」) and never
+      implemented: `didUpdateWidget` still dropped the verse-step
+      entirely on a book change, bouncing the reader out to the
+      chapters strip. It now sets book AND chapter to the pane's on any
+      divergence, one rule in one direction.
+
+      **Why nobody noticed for two weeks:**
+      `test/verse_picker_follows_reader_test.dart` asserted only the
+      NEGATIVE — that the picker stops offering the chapter the reader
+      left — and dropping the verse-step satisfies that just as well as
+      following does. The invariant the entry below asked for
+      (`picker.chapter == pane.chapter`) is the half that was missing.
+      Added as its own group covering a book change, Prev/Next in the
+      same book, and the full-screen `providerOverride` route; the two
+      book-change cases were confirmed to FAIL against the pre-fix code
+      before the fix was kept.
+
+      Original entry, kept for the reasoning:
+      **The verse grid can change chapter under the user's finger —
       needs the user's call, because the current behaviour was asked
       for.** Found while fixing the item above.
       `book_chapter_picker.dart` `didUpdateWidget`: while the verse grid
