@@ -57,6 +57,13 @@ that kind is not available for a project of this kind, we would be
 grateful to know what is. If the answer is no, we will remove the LEB
 entirely.
 
+If a decision will take time, we would also welcome a provisional or
+trial arrangement — a limited-term permission, or one conditioned on
+restrictions you specify — so our readers keep the LEB while the request
+is considered. We are not continuing in the meantime on our own
+authority: the bulk text is already off the website and stays off until
+we hear from you.
+
 Thank you for your time.
 
 With respect,

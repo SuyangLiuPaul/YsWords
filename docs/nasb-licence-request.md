@@ -65,6 +65,14 @@ is — including whether a paid licence exists and on what terms, so that
 we can decide accordingly. If the answer is no, we will remove the NASB
 entirely and say so plainly to our readers.
 
+**And if a decision will take time:** does the Foundation offer a
+provisional or trial arrangement — a limited-term permission, or one
+conditioned on restrictions you specify — that would let our readers
+keep the NASB while the full request is considered? We would gladly work
+within any interim conditions you set. To be clear, we are not asking to
+carry on in the meantime on our own authority: the bulk text is already
+off the website and stays off until we hear from you.
+
 Thank you for your time, and for the work of the Foundation.
 
 With respect,

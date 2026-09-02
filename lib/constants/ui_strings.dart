@@ -3467,6 +3467,17 @@ const uiStrings = {
     'zh-Hant': '這是一條測試通知。',
     'en': 'This is a test notification.',
   },
+  // 2026-09-02: shown under NASB / LEB in the version picker on WEB only.
+  // Those two are withheld from the web build pending a licence (see
+  // kWebRestrictedVersions). Before this, they simply vanished from the
+  // list on the web and a reader who had been using one had no way to
+  // tell whether the app was broken. It says where the edition went and
+  // where it still works; it does not claim a permission we do not have.
+  'versionWithheldWeb': {
+    'zh-Hans': '版权申请中 · 网页版暂不提供，手机与电脑 App 仍可阅读',
+    'zh-Hant': '版權申請中 · 網頁版暫不提供，手機與電腦 App 仍可閱讀',
+    'en': 'Licence pending · not on the web for now; still in the apps',
+  },
   'appName': {
     'zh-Hans': '雅伟之言',
     'zh-Hant': '雅偉之言',

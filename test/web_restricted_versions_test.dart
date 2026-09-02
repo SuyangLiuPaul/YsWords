@@ -202,6 +202,50 @@ void main() {
     });
   });
 
+  group('the picker says where the edition went', () {
+    // v1.4.193 made NASB and LEB vanish from the web picker with no
+    // explanation, which for a reader who had been using one is
+    // indistinguishable from the app being broken.
+    test('withheld editions are listed, not silently dropped', () {
+      final sheet =
+          File('lib/widgets/version_picker_sheet.dart').readAsStringSync();
+      expect(sheet, contains('withheldVersionsForLanguage'));
+      expect(sheet, contains('versionWithheldWeb'));
+    });
+
+    test('a withheld row cannot be selected', () {
+      // The row must not be wired to the same InkWell that pops the
+      // sheet with a version code — selecting an edition whose asset is
+      // not in the bundle is the crash this whole area is about.
+      final sheet =
+          File('lib/widgets/version_picker_sheet.dart').readAsStringSync();
+      final i = sheet.indexOf('withheldVersionsForLanguage');
+      final block = sheet.substring(i);
+      expect(block, isNot(contains('Navigator.pop<String>(context, v.value)')),
+          reason: 'the withheld row is tappable and would select an '
+              'edition with no asset');
+    });
+
+    test('the notice exists in all three languages', () {
+      final strings = File('lib/constants/ui_strings.dart').readAsStringSync();
+      final i = strings.indexOf("'versionWithheldWeb'");
+      expect(i, greaterThan(-1));
+      final block = strings.substring(i, i + 500);
+      for (final lang in ["'zh-Hans'", "'zh-Hant'", "'en'"]) {
+        expect(block, contains(lang), reason: '$lang is missing');
+      }
+    });
+
+    test('off web there is nothing to withhold', () {
+      // Native builds still bundle both, so this list must be empty on
+      // the VM — a non-empty result here would mean the picker greys out
+      // editions that work perfectly well on a phone.
+      for (final lang in ['en', 'zh-Hans', 'zh-Hant']) {
+        expect(withheldVersionsForLanguage(lang), isEmpty);
+      }
+    });
+  });
+
   test('off web, the picker still offers them', () {
     // These tests run on the VM, where the const `dart.library.js_interop`
     // is false — so this asserts the gate is genuinely web-only and has

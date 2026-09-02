@@ -258,6 +258,30 @@ List<String> get bibleLanguageOrder {
 List<BibleVersionInfo> versionsForLanguage(String language) =>
     availableVersions.where((v) => v.language == language).toList();
 
+/// Editions withheld on THIS platform, for display only — never
+/// selectable, never loadable.
+///
+/// v1.4.193 hid NASB and LEB from the web picker and they simply
+/// vanished. A reader who had been using one got no explanation and no
+/// way to tell the difference between "withheld" and "the app is
+/// broken". The picker now lists them greyed out with
+/// `versionWithheldWeb` underneath, which says where the edition went
+/// and where it still works.
+///
+/// It deliberately does NOT re-enable anything. A label reading
+/// "pending" changes no legal position — the exposure was the
+/// downloadable file, not the absence of a caption, and a caption
+/// saying we know we lack permission while still serving the text would
+/// be worse than saying nothing. So: say it, and keep the file off.
+List<BibleVersionInfo> withheldVersionsForLanguage(String language) => _kIsWeb
+    ? bibleVersions
+        .where((v) =>
+            v.language == language &&
+            kWebRestrictedVersions.contains(v.value) &&
+            !disabledVersions.contains(v.value))
+        .toList()
+    : const <BibleVersionInfo>[];
+
 /// The language family (`en` / `zh-Hant` / `zh-Hans`) of a version code.
 /// Falls back to `zh-Hans` for an unknown code (the app's primary
 /// audience) so the picker never lands on an empty tab.
