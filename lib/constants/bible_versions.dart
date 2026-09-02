@@ -268,11 +268,19 @@ List<BibleVersionInfo> versionsForLanguage(String language) =>
 /// `versionWithheldWeb` underneath, which says where the edition went
 /// and where it still works.
 ///
-/// It deliberately does NOT re-enable anything. A label reading
-/// "pending" changes no legal position — the exposure was the
-/// downloadable file, not the absence of a caption, and a caption
-/// saying we know we lack permission while still serving the text would
-/// be worse than saying nothing. So: say it, and keep the file off.
+/// Two things it deliberately does not do.
+///
+/// It re-enables nothing. A label reading "pending" creates no
+/// permission — the exposure was the downloadable file, not the absence
+/// of a caption.
+///
+/// And the caption itself does not mention licensing. An earlier draft
+/// read 「版权申请中」 / "Licence pending"; the user cut it
+/// (「那没有必要加那个字」) and was right to. A public page announcing
+/// that a licence is pending is a public statement that we are using
+/// the text without one — the same objection that keeps the label off
+/// the served text applies to our own UI. The reader needs to know
+/// where to read, not what our paperwork looks like.
 List<BibleVersionInfo> withheldVersionsForLanguage(String language) => _kIsWeb
     ? bibleVersions
         .where((v) =>

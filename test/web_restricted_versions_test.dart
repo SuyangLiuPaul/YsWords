@@ -228,11 +228,26 @@ void main() {
 
     test('the notice exists in all three languages', () {
       final strings = File('lib/constants/ui_strings.dart').readAsStringSync();
-      final i = strings.indexOf("'versionWithheldWeb'");
+      final i = strings.indexOf("'versionWithheldWeb': {");
       expect(i, greaterThan(-1));
-      final block = strings.substring(i, i + 500);
+      final block = strings.substring(i, i + 400);
       for (final lang in ["'zh-Hans'", "'zh-Hant'", "'en'"]) {
         expect(block, contains(lang), reason: '$lang is missing');
+      }
+    });
+
+    test('the notice does not announce our licensing status', () {
+      // User, 2026-09-02: 「那没有必要加那个字」. A public page saying the
+      // licence is pending is a public statement that we are using the
+      // text without one. Tell the reader where to read; keep the
+      // paperwork in the repo and the letters.
+      final strings = File('lib/constants/ui_strings.dart').readAsStringSync();
+      final i = strings.indexOf("'versionWithheldWeb': {");
+      final block = strings.substring(i, i + 400);
+      for (final word in ['版权申请', '版權申請', 'Licence pending',
+        'License pending', '授权', '授權']) {
+        expect(block, isNot(contains(word)),
+            reason: 'the picker caption mentions licensing ("$word")');
       }
     });
 
