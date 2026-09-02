@@ -1220,6 +1220,71 @@ reported. Work these top-down before P2.
       tier rather than a fourteenth forensic pass, unless a new trap
       shape or user report gives a concrete new lead to chase.
 
+      **2026-09-02 — STOP SWEEPING. The caller frame is almost certainly
+      already sitting in the crash email, and thirteen passes have been
+      guessing at something that was never lost.** Two findings, both
+      measured, plus one that corrects a previous pass's method.
+
+      **(1) The report is not one frame deep.** Every pass has treated
+      `main.dart.js:59285:36` as "the only pointer". Measured this pass
+      with dart2js `-O4` (the release configuration) on a chain that
+      throws an inverted clamp 24 calls down —
+      `/private/tmp/bugs1/stk/`, reproducible in seconds:
+
+          ERROR: Invalid argument: 0        ← the mailed-in string, exactly
+          --- StackTrace.toString() ---
+          Invalid argument: 0
+              at Object.i (…:114:19)        ← argumentErrorValue
+              at aa.v (…:1066:34)           ← num.clamp
+              at Object.cx (…:1006:18)      ← the CALLER
+              at Object.cw …  at Object.cv …  at cy …
+
+      A Dart `StackTrace` on dart2js IS the JS stack, minification does
+      not remove frames, and `ErrorReporter._send` trims the stack at
+      8000 chars — far more than ten frames of minified output. So the
+      `stack` field of the v1.4.178 email should name the call site on
+      its third line. **The queue never quoted more than the first.**
+      Ask for the email before spending another pass on inference.
+
+      **(2) Ten frames is the budget, and it can run out.** V8's default
+      `Error.stackTraceLimit` is 10; two of those are the throw helper
+      and clamp itself, so a throw deep inside Flutter's boot can spend
+      the lot before reaching a line we wrote. Measured on the same
+      harness: default → 10 frames, `Error.stackTraceLimit = 50` → 47.
+      **Shipped:** the assignment now sits in `web/index.html` ahead of
+      the `flutter_bootstrap.js` tag, in a `try`/`catch` (Firefox and
+      Safari have fixed internal limits and no knob), pinned by
+      `test/crash_stack_depth_test.dart`. Costs nothing when nothing
+      throws.
+
+      **(3) The literal-0 sweep above was incomplete, and is now
+      closed properly.** The 43-site pass used the regex
+      `\.P\([^,()]{0,40},0,`, which structurally cannot match a call
+      whose first argument contains a paren or a comma or runs past 40
+      characters — i.e. most real call sites. Re-parsed the same
+      byte-verified bundle (SHA-256 `4b3969fe89dc0155…`, re-confirmed on
+      fetch) with a balanced-paren argument splitter: **246 three-arg
+      `.P(` sites, of which 66 have a literal `0` lower bound, not 43.
+      22 had never been looked at.** All 22 triage non-invertible:
+      18 have literal upper bounds (`1`, `6`, `8`, `9`, `11`, `12`,
+      `100`, `1e6`); `139621`'s `q.length-1` is guarded by
+      `if(q.length===0)return r` on the line directly above;
+      `144676` only evaluates on the `h>0` side of `g=h<=0`;
+      `43349` sits behind `if(d<=0)return 0`; and `43344`'s `s=a+1`
+      takes `a` from `J.aU(...)` (`.length`) at `cEc`'s single call
+      site, line 157632. **No new lead — but the sweep is now actually
+      the sweep it claimed to be.**
+
+      **Next, in order:** (a) get the v1.4.178 crash email and read
+      frame 3 — this is a question for the user, not another pass;
+      (b) only if that email is gone, resume at the two remaining
+      clamp avenues (non-literal lower bound under an untried shape;
+      the `_applyHashToState` swallowed-throw oracle).
+      Note also that the crash mail does NOT reach `lsy95112@gmail.com`
+      — checked, zero matches in 90 days — because the deployed sites
+      override `FEEDBACK_TO`. Whoever picks this up cannot read the
+      report without the user.
+
 - [x] **2026-08-30 songs-sync regressed the bundled catalogue; reverted
       here, root cause is upstream in yswords-data.** Pull-time guard added
       2026-08-30 — see the new item below for what shipped and what's still

@@ -313,6 +313,27 @@
        "Clear cache & reload" — it's the manual escape hatch on
        top of the auto-recovery here. -->
   <script>
+    // 2026-09-02: V8 captures 10 stack frames by default, and a Dart
+    // StackTrace on dart2js IS the JS stack — so a crash report's stack
+    // is 10 frames deep and no more. Ten is enough for a shallow throw
+    // and NOT enough for one inside Flutter's boot, where the frames
+    // between the throw and our own code can eat the whole budget.
+    //
+    // This matters because of BUGS #1 (`Invalid argument: 0`): the throw
+    // site is dart2js's single compiled `num.clamp()`, shared by every
+    // `.clamp()` call in the app, the framework and every package, so
+    // the top frame identifies nothing. The CALLER frame is the entire
+    // diagnostic value of the report, and it is the one at risk of
+    // falling off the end.
+    //
+    // Non-standard but supported by V8 (Chrome/Edge/Android) and
+    // ignored harmlessly elsewhere; Firefox and Safari have their own
+    // fixed limits and no equivalent knob. Costs nothing when nothing
+    // throws.
+    try { Error.stackTraceLimit = 50; } catch (_) {}
+  </script>
+
+  <script>
     (function() {
       var RELOAD_KEY = 'yswords_self_heal_reloaded';
       var alreadyReloaded = false;
