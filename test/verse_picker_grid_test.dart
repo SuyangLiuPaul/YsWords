@@ -103,7 +103,7 @@ void main() {
         rows.add(Verse.fromJson(r));
       }
       expect(rows, isNotEmpty, reason: '$f has no Luke 23 at all');
-      expect(pickerChips(rows).length, 56, reason: '$f');
+      expect(pickerChips(rows).length, 56, reason: f);
     }
   });
 }
