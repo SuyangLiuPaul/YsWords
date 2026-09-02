@@ -5759,6 +5759,41 @@ has never seen this repo.
       loader backs every dataset in the app, so any bad publish used to
       be permanent for whoever cached it.
 
+- [x] **Reconciled 2026-09-02 — the host came back and the mapping
+      exists. What to DO with it is now the open question.**
+
+      `python3 tools/reconcile_matthew_124.py --json OUT`, re-runnable.
+      124 messages parsed (it refuses if the count is not 124):
+
+          exact    61   a unique recording on the same book+chapter+verse
+          chapter  44   ambiguous — same chapter, or several of ours
+          cited    12   only quoted in a transcript, never expounded
+          none      7   camp messages and series titles, no reference
+
+      **The ceiling is our own data, not theirs.** 132 of our 289 sermons
+      carry no readable `passage`, so the top two tiers can only see 157
+      recordings. That is why the `cited` tier reads `refs.json` at all,
+      and why a `none` means "we could not find one", never "we do not
+      have one".
+
+      **Title matching does not work, and looked like it did** — 23 exact
+      plus 29 fuzzy, and the fuzzy set included `Temptation after Baptism
+      #1` → our `temptation after baptism 2`, a different talk in the
+      same series. The written edition is re-titled and finer-grained
+      (006 "Submission to God's Will Fulfills All Righteousness" is our
+      002, titled the single word "Submission"). So the tool matches on
+      passage and uses title similarity only to break ties.
+
+      **NOT shipped as a per-sermon link, deliberately.** The queue's own
+      warning on the 在十字架下 item — *a citation that opens the wrong
+      passage is P0* — applies harder here: `chapter` is a guess, and
+      even `exact` is many-to-one (messages 007 and 008 both expound
+      Matthew 3:13-4:17, which is our single recording 002). Linking all
+      of them points some sermons at a message about a different talk.
+      **The decision is whether to link only the 61 exact ones, or to
+      offer the 124 as their own browsable series.** Needs the user.
+
+      Original note follows.
 - [ ] **Reconcile our Matthew sermons against the church's own 124.**
       The user, 2026-08-10: Bentley has put up Pastor Eric's 124
       messages on Matthew as a 9-volume work, at
