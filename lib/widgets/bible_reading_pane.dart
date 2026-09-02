@@ -13,6 +13,7 @@ import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/verse_citation.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
 import 'package:yswords/widgets/note_reference_picker_sheet.dart';
@@ -966,7 +967,12 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         final bookCmp = bookOrder(a.book).compareTo(bookOrder(b.book));
         if (bookCmp != 0) return bookCmp;
         if (a.chapter != b.chapter) return a.chapter.compareTo(b.chapter);
-        return a.verse.compareTo(b.verse);
+        if (a.verse != b.verse) return a.verse.compareTo(b.verse);
+        // 路加福音 23:34a and 23:34 share `verse`, so the comparator
+        // above returns 0 for them and Dart's sort is UNSTABLE — the
+        // two halves could copy out in either order, in every one of
+        // the three formats below. `subVerseOrder` is what orders them.
+        return a.subVerseOrder.compareTo(b.subVerseOrder);
       });
 
     final first = sorted.first;
@@ -992,7 +998,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         // mirrors this in getDevotionalFormattedText().
         final versesText =
             sorted.map((v) => sanitizeForCopy(v.text)).join(' ');
-        final range = _formatVerseRangeLabels(sorted);
+        final range = formatVerseRangeLabels(sorted);
         return '$versesText\n(${first.book} ${first.chapter}:$range)';
       case 'plain':
       default:
@@ -1003,32 +1009,6 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     }
   }
 
-  static String _formatVerseRange(List<int> nums) {
-    if (nums.isEmpty) return '';
-    final sorted = [...nums]..sort();
-    final parts = <String>[];
-    int start = sorted[0];
-    int end = start;
-    for (int i = 1; i < sorted.length; i++) {
-      if (sorted[i] == end + 1) {
-        end = sorted[i];
-      } else {
-        parts.add(start == end ? '$start' : '$start–$end');
-        start = sorted[i];
-        end = start;
-      }
-    }
-    parts.add(start == end ? '$start' : '$start–$end');
-    return parts.join(', ');
-  }
-
-  static String _formatVerseRangeLabels(List<Verse> verses) {
-    if (verses.isEmpty) return '';
-    if (verses.any((v) => v.verseLabel != '${v.verse}')) {
-      return verses.map((v) => v.verseLabel).join(', ');
-    }
-    return _formatVerseRange(verses.map((v) => v.verse).toList());
-  }
 
   /// Empty-reader scaffold — shown when verses come back empty
   /// (failed version switch, network blip, race) so the user always
