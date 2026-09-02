@@ -19,6 +19,7 @@ class SermonAudioPart {
     required this.part,
     required this.file,
     required this.bytes,
+    this.path = '',
   });
 
   /// 'a', 'b', 'c'… — the tape side, and the play order.
@@ -28,10 +29,22 @@ class SermonAudioPart {
   final String file;
   final int bytes;
 
+  /// Host-relative location, e.g.
+  /// `/sites/default/files/ehhc_mp3_sermons/09_Matthew_and_Luke/006a_….mp3`.
+  ///
+  /// The files are grouped into 20 category folders, so [file] alone
+  /// cannot address one — the original `baseUrl + filename` shape was
+  /// never going to resolve against this host. Written by
+  /// `tools/build_sermon_audio_index.py`; empty only if that has not
+  /// run, in which case [SermonAudioService.urlFor] falls back to the
+  /// old flat shape.
+  final String path;
+
   factory SermonAudioPart.fromJson(Map<String, dynamic> j) => SermonAudioPart(
         part: (j['part'] ?? 'a') as String,
         file: (j['file'] ?? '') as String,
         bytes: (j['bytes'] as num?)?.toInt() ?? 0,
+        path: (j['path'] ?? '') as String,
       );
 }
 
@@ -56,15 +69,30 @@ class SermonAudioService extends ChangeNotifier {
 
   static final SermonAudioService instance = SermonAudioService._();
 
-  /// Where the sermon MP3s live, with a trailing slash.
+  /// Origin the sermon MP3s are served from, with NO trailing slash.
   ///
-  /// Empty until hosting is chosen (Cloudflare R2, a Netlify site, a
-  /// China-side bucket — the decision is about cost and about whether
-  /// mainland listeners can reach it, not about this code). Set it via
-  /// `--dart-define=SERMON_AUDIO_BASE=https://…/` and everything below
-  /// starts working; nothing else needs to change.
-  static const String baseUrl =
-      String.fromEnvironment('SERMON_AUDIO_BASE', defaultValue: '');
+  /// 2026-09-02: the church publishes all of them itself, and the user
+  /// pointed at it — 「录音你可以直接用我们教会的」. So this is no longer a
+  /// hosting decision waiting on a bill: 589 files, 289 sermons, all of
+  /// them already online at
+  /// `/content/ehhc_sermons_public`, with `accept-ranges: bytes` (206
+  /// confirmed, not just advertised) and a one-year cache header.
+  ///
+  /// **There is no `access-control-allow-origin`, and it does not
+  /// matter.** A media element is not a fetch: `new Audio(url)` on the
+  /// https://yahwehword.com origin resolved metadata for one of these
+  /// and reported a 764 s duration. Checked in a browser on the real
+  /// origin rather than inferred. Anything here that ever starts
+  /// *reading the bytes* — waveform, offline download, transcoding —
+  /// will need a proxy; playback does not.
+  ///
+  /// Still overridable with `--dart-define=SERMON_AUDIO_BASE=https://…`
+  /// if the files are ever mirrored (a China-side copy is the likely
+  /// reason — mainland reachability of this host is untested).
+  static const String baseUrl = String.fromEnvironment(
+    'SERMON_AUDIO_BASE',
+    defaultValue: 'https://www.christiandiscipleschurch.org',
+  );
 
   static bool get isConfigured => baseUrl.isNotEmpty;
 
@@ -101,6 +129,11 @@ class SermonAudioService extends ChangeNotifier {
   /// Whether this sermon can be played at all.
   bool hasAudio(String sermonId) =>
       isConfigured && (_index?[sermonId]?.isNotEmpty ?? false);
+
+  /// Number of sermons that resolve to at least one playable part.
+  /// Exposed for the test that pins "all 289, not most of them".
+  int get playableSermonCount =>
+      _index?.values.where((p) => p.isNotEmpty).length ?? 0;
 
   // ── Setup ───────────────────────────────────────────────────────
 
@@ -253,8 +286,23 @@ class SermonAudioService extends ChangeNotifier {
 
   /// The URL for one part. Kept public so a test can assert the shape
   /// without a network.
-  static String urlFor(SermonAudioPart part) =>
-      '$baseUrl${Uri.encodeComponent(part.file)}';
+  ///
+  /// `Uri.encodeComponent` would escape the slashes in [SermonAudioPart.path]
+  /// and produce one long unrequestable segment, so each segment is
+  /// encoded on its own. It matters here: the filenames carry
+  /// apostrophes, brackets and commas — `The_Lord's_Concept…`,
+  /// `…Parenting_(1).mp3`.
+  static String urlFor(SermonAudioPart part) {
+    if (part.path.isEmpty) {
+      // Pre-2026-09-02 index shape: flat base + filename.
+      return '$baseUrl${Uri.encodeComponent(part.file)}';
+    }
+    final encoded = part.path
+        .split('/')
+        .map(Uri.encodeComponent)
+        .join('/');
+    return '$baseUrl$encoded';
+  }
 
   /// Ordered parts for a sermon, or empty.
   List<SermonAudioPart> partsOf(String sermonId) =>
