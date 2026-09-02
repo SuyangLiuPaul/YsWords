@@ -1,146 +1,151 @@
-# LEB — permission request to Faithlife / Lexham Press
+# LEB — you may not need to ask at all
 
-Drafted 2026-09-02, **rewritten the same day**. **Not sent.**
+Rewritten 2026-09-02 after reading the LEB's own published terms, which
+no earlier draft of this file had done. **The conclusion changed.**
 
-This is a **separate letter to a separate publisher** — the Lexham
-English Bible is Faithlife's (Lexham Press), not The Lockman
-Foundation's. Do not combine it with `docs/nasb-licence-request.md`; a
-joint letter is one neither publisher can act on.
-
-> ## ⚠️ SENDABLE AS WRITTEN — same situation as the NASB letter
+> ## The LEB's licence expressly permits giving it away
 >
-> ```
-> sword.yahwehword.com/assets/assets/leb.json   200   8,748,709 bytes  ← still live
-> yswords.netlify.app  /assets/assets/leb.json   404
-> yahwehword.com       /assets/assets/leb.json   404
-> ```
+> From the LEB copyright and usage statement:
 >
-> The disclosure paragraph below says exactly this, so the letter is
-> honest and can go today. It commits you to a deadline — it says the
-> file "will be gone within days". Make that true. If you fix Sword
-> first, use the shorter paragraph at the bottom of the NASB letter,
-> with LEB substituted.
+> > **"You can give away the Lexham English Bible, but you can't sell it
+> > on its own.** If the LEB comprises less than 25% of the content of a
+> > larger work, you can sell it as part of that work."
+> >
+> > "If you give away the LEB for use with a commercial product, or sell
+> > a work containing more than 1,000 verses from the LEB, you must
+> > annually report the number of units sold, distributed, and/or
+> > downloaded."
+> >
+> > "You must always attribute quotations of the LEB."
+>
+> Yahweh's Words and Yahweh's Sword are given away, are not sold, and are
+> not commercial products. **On the plain reading, bundling the complete
+> LEB is already permitted** — which is a different situation from the
+> NASB, whose limit is 1,000 verses full stop.
+>
+> So the open question is not permission. It is **attribution**, and we
+> are currently getting it wrong.
 
-## Where it goes
+## What we must fix — this is the real work
+
+For 100 or more verses the statement requires this text, verbatim:
+
+> Scripture quotations marked (LEB) are from the Lexham English Bible.
+> Copyright 2012 Logos Bible Software. Lexham is a registered trademark
+> of Logos Bible Software.
+
+and, **in electronic use**, that "LEB" and "Lexham English Bible" link to
+`http://www.lexhamenglishbible.com` and "Logos Bible Software" links to
+`http://www.logos.com`.
+
+What the app shows today (`ui_strings.dart`, `aboutLicenseLeb`):
+
+```
+© Logos Bible Software · non-commercial study only.
+```
+
+That is **not** the required statement, and it carries neither link. It
+also says "non-commercial study only", which is a restriction the licence
+does not actually impose in those words — we invented it. Fixing this is
+a small code change and it is the thing most worth doing.
+
+## If you still want to write
+
+Reasonable — the plain reading above is mine, not a lawyer's, and
+shipping the whole text as a bundled file is a bigger act than quoting
+it. But send it as a **confirmation**, not as a permission request:
+"here is what we do, here is our attribution, please tell us if this is
+outside what the licence allows."
+
+**Where to send it, and why this is muddled:**
 
 | | |
 |---|---|
-| **From** | `support@yahwehword.com` — make sure you can **receive** replies there |
-| **To** | Lexham Press permissions — `lexhampress.com/permissions` |
+| **Named in the licence** | `permissions@lexhampress.com` |
+| **Does that mailbox still exist?** | **Yes** — `lexhampress.com` still has MX records (Cloudflare Email Routing) even though the website is gone |
+| **The website** | `lexhampress.com` now redirects to `bakerbookhouse.com` — Baker Publishing Group **acquired Lexham Press in September 2025** |
+| **Who owns the LEB** | **Logos Bible Software.** The text is "Copyright 2012 Logos Bible Software"; Logos's own announcement says it "retains the rights to Lexham Press content" |
+| **Baker** | Bought the trade-book imprint. `ksmith@bakerpublishinggroup.com` is a *media* contact, not permissions |
+| **Logos** | Publishes no permissions address; `cs@logos.com` is general support |
 
-**Verify the address before sending.** I could not confirm it on
-2026-09-02: `lexhampress.com/permissions` answered 403 to an automated
-fetch, and a search turned up no published permissions email. Open the
-page in a normal browser and use whatever contact it names;
-`permissions@faithlife.com` is a commonly cited fallback but I could not
-confirm it is current, and Faithlife has moved this contact before.
-
-**Why this letter exists at all:** LEB had never been named in any
-licensing note in this repository. Every write-up, including the one
-that built the `/read/` prerender exclusion around this exact concern,
-said NASB alone. LEB sat in the same directory, at the same exposure,
-for the same reason, and nobody looked.
+So: **write to `permissions@lexhampress.com`** (the address the licence
+itself names, and it still receives mail), and if nothing comes back,
+try Logos via `cs@logos.com` asking to be routed to rights — Logos is
+the actual copyright holder.
 
 ---
 
-**Subject:** Permission request — complete LEB text in free,
-non-commercial Bible apps given to a church
+## The letter, if you send one
+
+**Subject:** LEB usage check — free, non-commercial Bible apps given to
+a church
 
 Dear Permissions Team,
 
-I am writing to request permission to use the Lexham English Bible in
-two free applications I build and maintain:
+I maintain two free applications that include the Lexham English Bible,
+and I am writing to confirm that what I do is within the LEB's terms
+rather than to ask for something beyond them.
 
-1. **Yahweh's Words** — `yahwehword.com`. A Bible reader for Android,
-   iOS, Web, macOS, Windows and Linux, aimed principally at bilingual
+I am one person. I write these applications myself, in my own time, and
+give them to my church and to whoever else finds them useful. They cost
+nothing to use. There is no advertising, no subscription, no in-app
+purchase, no paywall, and no sale or sharing of user data, and no
+revenue of any kind — nothing is sold and nothing is asked for.
+
+1. **Yahweh's Words** — yahwehword.com. A Bible reader for Android, iOS,
+   Web, macOS, Windows and Linux, aimed principally at bilingual
    Chinese–English readers, showing translations side by side.
-2. **Yahweh's Sword** — `sword.yahwehword.com`. A study tool over the
-   same texts, offering word-level lookup against Strong's numbers.
+2. **Yahweh's Sword** — sword.yahwehword.com. A study tool over the same
+   texts, offering word-level lookup against Strong's numbers.
 
-**Who I am.** I am one person. I write these applications myself, in my
-own time, and give them to my church and to whoever else finds them
-useful. They cost nothing to use. There is no advertising, no
-subscription, no in-app purchase, no paywall, and no sale or sharing of
-user data, and no revenue of any kind — nothing is sold and nothing is
-asked for. This is offered as work for God, not as a product.
+Each bundles the complete LEB so a reader can open any chapter with no
+network. I read the LEB's terms as permitting this — "you can give away
+the Lexham English Bible, but you can't sell it on its own" — and I want
+to be sure I have read them correctly, because bundling the whole text
+as a file is a larger act than quoting it.
 
-**What I am asking for.** Permission to bundle the **complete LEB text**
-within these applications for **offline reading**. The reader lets a
-user open any chapter with no network, so the general permission for
-quotation would not cover it, which is why I am writing rather than
-relying on it.
+Two specific questions:
 
-I should say plainly that one of the two applications keys the biblical
-text to Strong's numbers for word study. It does this today for the King
-James Version, where the tagged text is public domain. If you would be
-willing to permit the same for the LEB, I would welcome it — but I
-understand that attaching Strong's numbers to your text is a derivative
-work rather than a reproduction, and a larger request than the one
-above. A "no" to that would not affect my interest in the plain text.
+- Is bundling the complete LEB for offline reading, in an application
+  that is given away and never sold, within the licence?
+- One of the two applications keys the biblical text to Strong's numbers
+  for word study. It does this today for the King James Version, where
+  the tagged text is public domain. Attaching Strong's numbers to the
+  LEB would be a derivative work, so I would not do it without your
+  agreement. Is that something you would permit?
 
-**Disclosure.** Until recently the complete LEB text was also
-downloadable as a single file from these websites, as a side effect of
-how the web build packages its data. That was not intended and it went
-unnoticed for some time. I have removed it from `yahwehword.com`, which
-now serves no bulk LEB file. **The same file is still reachable on
-`sword.yahwehword.com` as I write this**, because that application is
-built and deployed separately; I am removing it there as well and it
-will be gone within days of this letter. I would rather tell you that
-than let you find it. Nothing about it is intentional and it stays gone
-once removed, whatever you decide.
+I am correcting our attribution regardless. It will carry your required
+statement in full, with "Lexham English Bible" linked to
+lexhamenglishbible.com and "Logos Bible Software" linked to logos.com.
 
-I would display the copyright notice and attribution in whatever form
-you require — on the version-selection screen, in each application's
-About page, and in the public source repositories — and would follow
-whatever restrictions you set on caching, offline storage, export and
-text selection.
-
-If a decision will take time, I would also welcome a provisional or
-limited-term arrangement, or one conditioned on restrictions you
-specify, so readers keep the LEB while the request is considered. I am
-not continuing in the meantime on my own authority: the bulk text is
-already off the websites and stays off until I hear from you.
-
-If the answer is no, I will remove the LEB entirely.
+If any of this falls outside the licence, tell me and I will change it
+or remove the LEB entirely.
 
 Thank you for your time.
 
 With respect,
 
 [Your name]
-support@yahwehword.com
-yahwehword.com
 
 ---
 
-## Notes
+## What changed, and what an earlier draft of this file got wrong
 
-**Only your name is left to fill in.** The "who I am" paragraph is
-written from what you told me — one person, given to the church free,
-offered as work for God. Do not imply non-profit registration you do
-not have; what you actually have already reads well.
-
-**The LEB's terms are more permissive than the NASB's**, and this letter
-may well come back yes where the other does not. That is a reason to
-send it, not a reason to assume the answer — the permissive part is the
-quotation allowance, and shipping the whole text as a file is a
-different act from quoting it.
-
-**Do not send this one to Lockman or that one to Faithlife.** Different
-publishers, different texts, different terms. The only thing the two
-requests share is the sender.
-
----
-
-## What changed on 2026-09-02
-
-1. **The letter now names Yahweh's Sword.** The earlier draft named only
-   Yahweh's Words — and Sword is the site that was, and at the time of
-   writing still is, serving the complete LEB publicly.
-2. **The Strong's-tagging question is now asked here too.** It was only
-   in the NASB letter, but Sword does the same thing to whichever text
-   it is showing, so asking Lockman and not Faithlife would have been
-   describing the app inaccurately to one of them.
-3. **The contact address is now marked unverified** rather than stated
-   as fact. The earlier draft asserted `permissions@faithlife.com`; I
-   could not confirm it.
+1. **The earlier draft treated this as a permission request equivalent
+   to the NASB one.** It is not. The NASB's limit is 1,000 verses with
+   no giveaway provision; the LEB expressly permits giving the whole
+   thing away. Writing the same letter to both publishers would have
+   asked Faithlife for something they have already granted in public.
+2. **It asserted `permissions@faithlife.com`**, unverified, and later
+   marked it unverified. The address actually named by the licence is
+   `permissions@lexhampress.com`, and that domain still accepts mail
+   even though the website now redirects to Baker Book House.
+3. **Nobody had read the LEB's terms.** Every note in this repository,
+   including the one that built the `/read/` prerender exclusion, treated
+   LEB as NASB-shaped. Reading the statement took one page fetch and
+   changed the whole conclusion.
+4. **The bulk-file exposure reads differently here too.** A publicly
+   fetchable `leb.json` is closer to "giving it away" than to selling
+   it, so the LEB side of that problem is far less serious than the NASB
+   side. It still fails the attribution requirement, which is a reason
+   to fix attribution, not a reason to panic.

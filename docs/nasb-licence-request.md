@@ -57,7 +57,7 @@ user data. There is no revenue of any kind, commercial or otherwise —
 nothing is sold and nothing is asked for. This is offered as work for
 God, not as a product.
 
-**What the applications are.** Three, sharing one codebase family:
+**What the applications are.** Two, sharing one codebase family:
 
 1. **Yahweh's Words** — `yahwehword.com`. A Bible reader for Android,
    iOS, Web, macOS, Windows and Linux, aimed principally at bilingual
@@ -68,34 +68,22 @@ God, not as a product.
 2. **Yahweh's Sword** — `sword.yahwehword.com`. A study tool over the
    same texts, offering word-level lookup against Strong's numbers.
 
-3. **Yahweh's World** — a free bilingual (English / 简体中文) news reader
-   that pairs each news story with a single Bible verse and a short
-   reflection. It publishes roughly 72 stories a day across six
-   sections with a 90-day rolling archive, so about 6,500 individual
-   verse quotations are live at any moment, refreshed daily. **Today
-   those verses are my own rendering, not the NASB** — I would like to
-   replace them with the NASB, which is why it appears in this request.
-
-**What I am asking for.** Three things, and the third is the one I
+**What I am asking for.** Two things, and the second is the one I
 expect to be hardest:
 
 - **(a) The complete text, bundled for offline reading**, in
-  applications 1 and 2. The reader lets a user open any chapter with no
+  both applications. The reader lets a user open any chapter with no
   network, so a quotation permission would not cover it. I am asking
   about the whole text deliberately and would rather be told no than be
   granted something narrower by a misunderstanding.
 
-- **(b) Ongoing verse-by-verse quotation** in application 3, as
-  described above. This is quotation rather than a full text, but the
-  cumulative count is far past 1,000 verses.
-
-- **(c) An NASB keyed to Strong's numbers.** Application 2 already does
+- **(b) An NASB keyed to Strong's numbers.** Application 2 already does
   this for the King James Version, where the tagged text is in the
   public domain. Doing the same for the NASB would mean attaching a
   Strong's number to each word of your text, and I understand that this
   is a **derivative work** rather than a reproduction, and a materially
   larger request than (a). I am asking about it separately for that
-  reason, and a "no" to (c) would not affect my interest in (a).
+  reason, and a "no" to (b) would not affect my interest in (a).
 
 **What I would do.** I would display the copyright notice and
 attribution in whatever form you require — on the version-selection
@@ -165,7 +153,7 @@ which is the answer you already have.
 commonest way a request like this gets answered uselessly is by being
 read as a quotation request.
 
-**Expect (c) to be refused even if (a) is granted**, and that is fine —
+**Expect (b) to be refused even if (a) is granted**, and that is fine —
 the letter is built so the three can be answered separately. Tagging a
 copyrighted translation word-by-word is a derivative work, and
 publishers guard those hardest.
