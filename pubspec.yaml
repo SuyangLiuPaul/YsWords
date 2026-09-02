@@ -184,6 +184,13 @@ flutter:
     - assets/tagged/cuvs-yhwh/
     - assets/sermons/index.json
     - assets/sermons/refs.json
+    # 2026-09-02: was missing, and its absence was silent. The
+    # service catches the load failure and falls back to an empty
+    # index, so every hasAudio() returns false and no play button
+    # ever appears — the exact symptom of "we turned audio on and
+    # nothing happened". test/sermon_audio_index_test.dart now
+    # fails if this line goes away again.
+    - assets/sermons/audio_index.json
     - assets/family_tree.json
     - assets/bible_timeline.json
     # 2026-08-09 (Songs v2): the combined church-song catalogue — 606

@@ -27,6 +27,7 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yswords/widgets/sermon_audio_bar.dart';
 
 /// Reads one sermon body in the user's preferred language with a
 /// language-toggle (EN / 简 / 繁) at the top.
@@ -481,6 +482,11 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
               )
             : null,
       ),
+      // 2026-09-02: the recordings, docked. These are 35–70 minute
+      // talks people read along with, so the transport has to stay put
+      // rather than scroll away with the transcript. Renders nothing
+      // when the sermon has no audio.
+      bottomNavigationBar: SermonAudioBar(sermonId: s.id),
       body: SafeArea(
         // The Scrollbar gives the user a persistent visual indicator
         // of where they are in a long body — important because a

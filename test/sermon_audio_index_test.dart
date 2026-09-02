@@ -117,6 +117,18 @@ void main() {
     });
   });
 
+  test('the index is DECLARED in pubspec, or none of this ships', () {
+    // It was not, until 2026-09-02. load() catches the missing-asset
+    // error and falls back to an empty index, so the failure mode is
+    // not a crash — it is every play button quietly never appearing,
+    // with the tests above all still green because they read the file
+    // from disk rather than through rootBundle.
+    expect(File('pubspec.yaml').readAsStringSync(),
+        contains('assets/sermons/audio_index.json'),
+        reason: 'the audio index is not bundled; SermonAudioService will '
+            'load an empty index and hasAudio() will be false for all 289');
+  });
+
   test('the service is configured — no empty base', () {
     expect(SermonAudioService.isConfigured, isTrue,
         reason: 'baseUrl went back to empty, which silently hides every '

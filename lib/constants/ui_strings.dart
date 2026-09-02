@@ -3467,6 +3467,35 @@ const uiStrings = {
     'zh-Hant': '這是一條測試通知。',
     'en': 'This is a test notification.',
   },
+  // 2026-09-02: the sermon audio bar. The recordings are Pastor Eric's
+  // own cassette tapes, digitised — a sermon is normally two files
+  // ("sides"), so the part label is not decoration: side b opens
+  // mid-sentence and a listener needs to know there is more.
+  'sermonListen': {
+    'zh-Hans': '收听录音',
+    'zh-Hant': '收聽錄音',
+    'en': 'Listen',
+  },
+  'sermonAudioPart': {
+    'zh-Hans': '第 %1 段 / 共 %2 段',
+    'zh-Hant': '第 %1 段 / 共 %2 段',
+    'en': 'Part %1 of %2',
+  },
+  'sermonAudioBack30': {
+    'zh-Hans': '后退 30 秒',
+    'zh-Hant': '後退 30 秒',
+    'en': 'Back 30 seconds',
+  },
+  'sermonAudioFwd30': {
+    'zh-Hans': '前进 30 秒',
+    'zh-Hant': '前進 30 秒',
+    'en': 'Forward 30 seconds',
+  },
+  'sermonAudioError': {
+    'zh-Hans': '录音暂时无法播放',
+    'zh-Hant': '錄音暫時無法播放',
+    'en': 'This recording will not play right now',
+  },
   'appName': {
     'zh-Hans': '雅伟之言',
     'zh-Hant': '雅偉之言',
