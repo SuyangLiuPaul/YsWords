@@ -10004,7 +10004,12 @@ so the bundle-size answer stays on the record.
   asset. Cut a native release deliberately, when there is something
   worth installing.
 - **prod deploy.** Every prod push needs explicit permission in the
-  moment; it does not carry over. prod is on v1.4.190 as of 2026-09-01.
+  moment; it does not carry over. prod is on **v1.4.196** as of
+  2026-09-02, measured: both `yswords.netlify.app` and `yahwehword.com`
+  answer `{"version":"1.4.196"}` at `/version.json`, while dev/qat and
+  the tree carry v1.4.197. Read that endpoint rather than assuming the
+  last `release_web.sh` run reached prod — it needs permission in the
+  moment and usually does not get it, so the two drift apart.
 - ~~**貴胄 or 貴冑? And more generally: when the printed 和合本 and modern
   Traditional orthography disagree, which wins?**~~ **MOOT 2026-09-02.**
   Both halves are answered and neither needs the user any more. The
