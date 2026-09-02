@@ -9509,12 +9509,57 @@ has never seen this repo.
       accept a webview on three targets and keep the link-out on the
       other two, or leave it as is. A user decision, not an inference.
 
-- [ ] **The first citation tap of a session lands on verse 1, not the
-      cited verse.** Observed 2026-09-02 while verifying the video
-      reference chips, and filed on its own on 2026-09-02 because it was
-      buried inside that feature's DONE entry, where a queue sweep does
-      not look. It is NOT a video bug: the chip adds nothing to the
-      shared path, so this is `setPendingJump`'s cold-mount handshake.
+- [ ] **RETRACTED 2026-09-02 — "the first citation tap lands on verse 1"
+      does not reproduce on any target that actually paints. It was very
+      probably my own instrument the whole time.** Read this header
+      before any of the investigation below it.
+
+      Measured on a booted iPhone 17 simulator (iOS 26.5), release-shaped
+      debug build of `cecb5efd` with an observation-only probe that
+      changes no behaviour. Cold app, reader never mounted, **both**
+      entry points, first tap each:
+
+          Verse-of-the-Day → Proverbs 1:22
+            [PROBE] +700ms  want=22 visible=[19,20,21,22,23,24,25,26]
+            [PROBE] +2000ms want=22 visible=[19,20,21,22,23,24,25,26]
+            [PROBE] +5000ms want=22 visible=[19,20,21,22,23,24,25,26]
+          Video chip → Luke 23:34
+            lands on 34, highlighted, centred with context either side
+
+      The target sits in the middle of the rendered window, which is
+      exactly what `alignment: 0.38` asks for. Note it reached that on
+      `attempt 1` — the same not-attached-then-retry pattern the web runs
+      showed — so that was never the discriminator either.
+
+      **What went wrong with the original report.** It was mine, from a
+      browser pane that `tabs_context` reports as hidden. A hidden page
+      does not composite and Chrome throttles rAF to nothing, so Flutter
+      stops producing frames when idle; the console shows no pane build
+      at all between the scroll call and the next click, and the list
+      landed on target the instant a click arrived, with no new scroll
+      call logged. Every web "reproduction" today came from that same
+      harness. The lesson is cheap to state and was expensive to learn:
+      **the queue entry said "reproduced once, cold" and never asked
+      whether the thing doing the reproducing was sound.**
+
+      Left OPEN rather than deleted for exactly one reason: nobody has
+      yet run this in a *visible* browser, so a genuine web-only defect
+      is not excluded — Flutter web's `ScrollablePositionedList` is a
+      different renderer path from iOS. Anyone picking this up: one
+      cold citation tap in a real, foreground browser tab settles it. If
+      it lands, close this item. Do NOT re-derive the analysis below
+      first; it is kept only so the dead ends are not re-walked.
+
+      The one durable finding from the whole exercise is filed
+      separately and IS real: `debugPrint` prints nothing in a release
+      web build.
+
+      ---
+
+      Original filing (superseded, kept for the trail): Observed
+      2026-09-02 while verifying the video reference chips, and filed on
+      its own because it was buried inside that feature's DONE entry.
+      Claimed to be `setPendingJump`'s cold-mount handshake.
 
       **2026-09-02, MEASURED in an instrumented release web build. The
       handshake diagnosis above is WRONG — read the numbers, not the
