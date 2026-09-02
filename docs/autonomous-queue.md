@@ -8465,6 +8465,68 @@ has never seen this repo.
       `SongPlaylistDetailPage`, `StrongsEntryPage`, `EvidenceDetailPage`,
       `MapViewerPage`) — item stays unticked.
 
+      **Stage 4, batch 2 continued — `/strongs/:number` and
+      `/songs/playlists/:id`, 2026-09-02.** Landed work that was found
+      already sitting uncommitted in the tree (last written 12:01 the
+      same day) and had survived one iteration as an orphan — read the
+      whole diff before touching it, confirmed coherent, verified and
+      landed rather than redone. Same shape as `/sermons/:id`, but
+      neither page needed an async id→object resolver widget:
+      `StrongsEntryPage` and `SongPlaylistDetailPage` already take the
+      raw id and gate their own `build()` on internal loading/not-found
+      state (`StrongsEntryPage`'s `_loading`/`_notFound` fields —
+      confirmed by reading `build()` directly, not just the field
+      declarations). `SongPlaylistService` gained a `loaded` getter
+      backed by a new `_ready` flag set *after* the `SharedPreferences`
+      await — the pre-existing `_loaded` is a re-entrancy guard that
+      flips true *before* that await, so it can't answer "has loading
+      actually finished," and without a separate flag a cold
+      `/#/songs/playlists/:id` load would flash "no longer exists" for
+      one frame on a real playlist. `SongPlaylistDetailPage` shows a
+      spinner while `!_service.loaded` instead.
+
+      Fixed one more thing found along the way: an `unnecessary_string_
+      interpolations` lint in `test/verse_picker_grid_test.dart` (from
+      the same-day `d0f35c77`, unpushed) was failing `flutter analyze`'s
+      exit code locally even though the last GREEN CI run predated that
+      commit — landed as its own small commit (`39fb408`) before this
+      one, since it would have turned CI red on push otherwise.
+
+      Also fixed one real issue found by the suite itself: the
+      loading-state branch originally returned `const Scaffold(...)`
+      from inside a `ListenableBuilder` —
+      `reactive_builder_const_test.dart`'s source-scan guard doesn't
+      exempt `Scaffold`, and while this particular instance is
+      provably static, the guard's point is not to special-case
+      instances. Dropped the `const`, per the test's own remedy.
+
+      Verified: `flutter analyze` clean; full suite 1623 tests, 1622
+      passed + 1 skipped, 0 failed (measured, not estimated — this
+      branch has diverged enough since Stage 4's first pass that
+      1515+9=1524 is no longer a comparable baseline). Red-before/
+      green-after: temporarily dropped both paths from
+      `kRegisteredRoutePaths` — 4 of the new file's 6 tests failed (more
+      than the 2 matcher assertions alone), all pass again restored.
+      Browser-verified against `tools/build_web.py --intl-only` served
+      locally, headless Chrome DevTools protocol, a fresh browser
+      profile per navigation (Stage 3's stale-service-worker trap):
+      cold `/#/strongs/G25` opens that entry; cold
+      `/#/songs/playlists/__favourites__` opens Favourites; cold
+      `/#/songs/playlists/no-such-id` shows the not-found Playlists
+      state with no crash and no spinner hang at 5s or 10s;
+      `/#/john/3:16?v=kjv` still cold-loads (frozen grammar untouched).
+      Real browser Back (`history.back()`, not `Get.back()`) from the
+      favourites playlist lands on the Playlists list, then Dashboard —
+      the same GetX-auto-inserted-ancestor pattern Stage 3 already
+      established as expected, not a bug. A refuter subagent
+      independently re-checked the `_loaded`-flips-before-the-await
+      claim, the "only call sites" counts (5 / 1), and the
+      `StrongsEntryPage` self-gating claim against source directly — all
+      3 CONFIRMED.
+
+      Batch 2 still has 3 pages left (`VideoSeriesPage`,
+      `EvidenceDetailPage`, `MapViewerPage`) — item stays unticked.
+
 - [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
       loading问题". Fixed the two leads recorded below that a widget
