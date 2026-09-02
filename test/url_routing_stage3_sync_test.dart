@@ -58,8 +58,25 @@ void main() {
       final getPageEntry = RegExp(
         r"GetPage\(\s*name:\s*'([^']+)',\s*page:\s*\(\)\s*=>\s*(?:const\s+)?(\w+)\(",
       );
+      // 2026-09-02: scan `_registeredGetPages` ONLY, not all of
+      // main.dart. `GetMaterialApp` now also takes an `unknownRoute:
+      // GetPage(name: '/_unknown', ...)` — the fallback that stops GetX
+      // throwing on a name it cannot match — and a whole-file scan read
+      // that as a registered path and demanded a §3 table row for it.
+      // It is not addressable and must never appear in the plan doc:
+      // this test is about paths a reader can navigate to.
+      final listStart = mainText.indexOf('_registeredGetPages = [');
+      expect(listStart, greaterThan(-1),
+          reason: '_registeredGetPages was renamed or restructured');
+      final listEnd = mainText.indexOf('\n];', listStart);
+      expect(listEnd, greaterThan(listStart));
+      final registeredBlock = mainText.substring(listStart, listEnd);
+      expect(registeredBlock, isNot(contains('unknownRoute')),
+          reason: 'the unknown-route fallback belongs on GetMaterialApp, '
+              'not inside the registered list');
+
       final getPagesByClass = <String, String>{};
-      for (final m in getPageEntry.allMatches(mainText)) {
+      for (final m in getPageEntry.allMatches(registeredBlock)) {
         getPagesByClass[m.group(2)!] = m.group(1)!;
       }
       expect(
