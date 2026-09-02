@@ -170,6 +170,29 @@ void main() {
       expect(out, contains('主[基督]的道'));
     });
 
+    testWidgets('[耶稣] reaches the screen — the marker restored 2026-09-02',
+        (tester) async {
+      // The classification is pinned in cuv_three_referent_markers_test;
+      // this is the other half, that it actually renders. 約翰福音 4:1 is
+      // the verse the user reported, and it is the one a reader opens.
+      final out = await render(
+        tester,
+        '主[耶稣]知道法利赛人听见他收门徒，施洗，比约翰还多，',
+        versionCode: 'cuvs-yhwh',
+      );
+      expect(out, contains('主[耶稣]知道法利赛人'));
+    });
+
+    testWidgets('[耶穌] renders in the traditional edition too',
+        (tester) async {
+      final out = await render(
+        tester,
+        '主[耶穌]知道法利賽人聽見他收門徒，施洗，比約翰還多，',
+        versionCode: 'cuvs-yhwh-tr',
+      );
+      expect(out, contains('主[耶穌]知道法利賽人'));
+    });
+
     testWidgets('LEB is untouched — supplied words stay unbracketed',
         (tester) async {
       final out = await render(
