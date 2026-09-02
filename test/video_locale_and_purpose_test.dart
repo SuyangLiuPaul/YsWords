@@ -84,7 +84,11 @@ void main() {
       // recording under the wrong episode is invisible on screen (a
       // Mandarin button that plays the wrong lesson), and this is where
       // that would be caught.
-      const mandarin = {'01': 'g-Wk0qbuAkE', '02': '3qQu-vA8ZIU'};
+      const mandarin = {
+        '01': 'g-Wk0qbuAkE',
+        '02': '3qQu-vA8ZIU',
+        '03': '5PVmXtDBsxA',
+      };
       for (final e in byId('cross').episodes) {
         final id = mandarin[e.id];
         if (id != null) {

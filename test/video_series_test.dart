@@ -49,7 +49,7 @@ const _crossYue = [
 /// the right ordinal and 普通话版 — the church's page layout is one row
 /// out for this series, which is the mistake `_meta.pairingEvidence`
 /// exists to prevent.
-const _crossWithMandarin = {'01', '02'};
+const _crossWithMandarin = {'01', '02', '03'};
 
 /// Not episodes, and must never be listed as one: these are the whole
 /// series in a single video. Putting either in the episode list makes a
