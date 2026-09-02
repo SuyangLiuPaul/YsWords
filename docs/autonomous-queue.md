@@ -9509,6 +9509,33 @@ has never seen this repo.
       accept a webview on three targets and keep the link-out on the
       other two, or leave it as is. A user decision, not an inference.
 
+- [ ] **The first citation tap of a session lands on verse 1, not the
+      cited verse.** Observed 2026-09-02 while verifying the video
+      reference chips, and filed on its own on 2026-09-02 because it was
+      buried inside that feature's DONE entry, where a queue sweep does
+      not look. It is NOT a video bug: the chip adds nothing to the
+      shared path, so this is `setPendingJump`'s cold-mount handshake.
+
+      Reproduced: cold session → tap a chip citing Luke 23:34 → Luke 23
+      opens with the position pill reading `1 / 56`. Tap again with the
+      reader already mounted → lands on 34. So the jump is not lost, it
+      is consumed before the verse list exists to scroll.
+
+      The asymmetry worth reading first:
+      `scrollToVerseNumInChapter` carries a **94-frame retry loop** built
+      for exactly this race, while `resolveAndPrepareJump` relies on the
+      pane's post-frame consumer and retries nothing. Two entry points to
+      the same destination with different robustness — the fix is
+      probably to make the second one wait the way the first already
+      does, not to add a third mechanism.
+
+      **Reproduced once, cold, from the video chip only.** "Affects every
+      citation chip" (evidence, stats, timeline, videos) is REASONED from
+      the shared `resolveAndPrepareJump` → `pushPage(HomePage)` path, not
+      observed. Reproduce from a second entry point before believing the
+      scope — if only the video chip does it, the shared-path reasoning
+      is wrong and the cause is elsewhere.
+
 - [ ] **Position-preserving language switch is not carried over.** The
       self-hosted player kept your place when you switched language;
       the YouTube embed re-arms the poster instead. `enablejsapi` is
