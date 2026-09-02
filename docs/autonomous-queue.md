@@ -2578,6 +2578,28 @@ reported. Work these top-down before P2.
       `tools/repair_tagged_editorial_asterisk.py`, pinned by
       `test/tagged_editorial_asterisk_test.dart`.
 
+      > **WRONG, AND REVERSED 2026-09-02 (862e2f62). Read this before the
+      > paragraph below it.** The publisher's own words, relayed by the
+      > user: *"on the cuv-YHWH, we used 3 markup for the word 主, one for
+      > 主[雅偉]　主# => 基督　　主* => 耶穌"*. `主*` is the edition's third
+      > referent marker and means 耶穌. It is now restored as `主[耶穌]`, in
+      > the reading assets as well — where the same asterisk had been
+      > deleted back in 2025, which is why "the reading verse reads a plain
+      > 主" looked like evidence.
+      >
+      > **The two measurements below are both real and both were read
+      > backwards.** Zero overlap with the other two markers is what a
+      > THIRD marker looks like, not what noise looks like. All 115 being
+      > NT is the distribution 耶穌 must have — it is the convention's
+      > signature, and it was recorded as killing the convention.
+      >
+      > **The deeper failure is that the answer was never in the repo to
+      > find.** This feedback predates the deletion; it lived in the
+      > user's inbox, and nothing in `docs/` carried it, so a repair pass
+      > reasoning from the assets alone had no way to check. That is now
+      > `docs/cuv-yhwh-publisher-notes.md`. Consult it before any further
+      > repair to this edition.
+
       **It resolved to a deletion, not a gloss, and the reason is measured.**
       The item warned not to assume it was another `主#`, and it was right to.
       This edition marks a referent with a bracket and uses it freely in the NT

@@ -20,6 +20,13 @@ import 'package:flutter_test/flutter_test.dart';
 /// hash changes only when the publisher ships us a new module — and then
 /// the commit that updates it should say so and nothing else.
 ///
+/// **Before touching this edition at all, read
+/// `docs/cuv-yhwh-publisher-notes.md`.** It holds what the publisher has
+/// said about their own notation, verbatim. It exists because its absence
+/// cost three deletions of correct data: the answer was in the user's
+/// inbox and nowhere in the repo, so audits reasoning from the assets
+/// alone got it wrong twice, with measurements, confidently.
+///
 /// ## The one deliberate thaw, 2026-09-02
 ///
 /// The user lifted the freeze for a single change, and it is the exact

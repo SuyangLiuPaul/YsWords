@@ -3,6 +3,12 @@
 
 WHY THIS EXISTS
 ---------------
+The publisher's own words, relayed by the user 2026-09-02 and predating
+every deletion below — see docs/cuv-yhwh-publisher-notes.md:
+
+    "on the cuv-YHWH, we used 3 markup for the word 主, one for
+     主[雅偉]　主#  => 基督　　主*   =>   耶穌"
+
 This edition marks the referent of 主 three ways:
 
     主[雅偉]  → Yahweh      212 in the asset, never lost
