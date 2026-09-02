@@ -5826,6 +5826,21 @@ const uiStrings = {
   // Heading over the tappable scripture chips on an episode. 「經文」 and
   // not 「相關經文」: these are the passages the episode expounds, not
   // ones that merely relate to it.
+  // Language label for the whole-series compilation. 中文 rather than
+  // 粵語/普通話 on purpose — see VideoSeries.compilations: the video's
+  // title is simplified Chinese, which says nothing about which variety
+  // is spoken in it.
+  'videoLangChinese': {
+    'zh-Hans': '中文',
+    'zh-Hant': '中文',
+    'en': 'Chinese',
+  },
+  // Heading over the "watch all ten parts in one video" buttons.
+  'videoWholeSeries': {
+    'zh-Hans': '完整版（十集合一）',
+    'zh-Hant': '完整版（十集合一）',
+    'en': 'Watch the whole series',
+  },
   'videoScripture': {
     'zh-Hans': '经文',
     'zh-Hant': '經文',

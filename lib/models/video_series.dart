@@ -192,12 +192,28 @@ class VideoSeries {
   final String creditKey;
   final List<VideoEpisode> episodes;
 
+  /// Whole-series recordings: all ten parts in one video.
+  ///
+  /// Deliberately NOT episodes, and pinned as non-episodes by
+  /// `test/video_series_test.dart` — an eleventh row in a series titled
+  /// "A 10-Part Journey" is the app contradicting itself. They live
+  /// here instead so the page can offer "watch the whole series"
+  /// without inventing an episode.
+  ///
+  /// `labelKey` names the language. The English one is English; the
+  /// Chinese one is labelled 中文 rather than 粵語 or 普通話 because its
+  /// spoken variety is not known — the title is written in simplified
+  /// characters, and script does not determine speech. Do not "fix"
+  /// that to cmn without watching it.
+  final List<VideoTrack> compilations;
+
   const VideoSeries({
     required this.id,
     required this.titles,
     required this.taglines,
     required this.creditKey,
     required this.episodes,
+    this.compilations = const [],
   });
 
   factory VideoSeries.fromJson(Map<String, dynamic> j) => VideoSeries(
@@ -214,6 +230,10 @@ class VideoSeries {
         episodes: [
           for (final e in (j['episodes'] as List? ?? []))
             VideoEpisode.fromJson(e as Map<String, dynamic>),
+        ],
+        compilations: [
+          for (final c in (j['compilations'] as List? ?? []))
+            VideoTrack.fromJson(c as Map<String, dynamic>),
         ],
       );
 

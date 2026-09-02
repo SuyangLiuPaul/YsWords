@@ -24,9 +24,100 @@ import 'package:yswords/widgets/youtube_embed.dart';
 
 const String kVideosAssetPath = 'assets/videos.json';
 
+/// Memoised like `MapService.loadMaps()` / `SermonService.loadIndex()` —
+/// added when `/videos/:id` (`VideoSeriesByIdPage` below) started
+/// calling this a second time in the same session (list page, then a
+/// cold deep-link into a series): a bare bundled-asset read is cheap
+/// once, but re-parsing `assets/videos.json` on every navigation is
+/// pointless work with nothing that ever changes it at runtime.
+List<VideoSeries>? _cachedSeries;
+
 Future<List<VideoSeries>> loadVideoSeries() async {
+  final cached = _cachedSeries;
+  if (cached != null) return cached;
   final raw = await rootBundle.loadString(kVideosAssetPath);
-  return VideoSeries.listFromJson(jsonDecode(raw) as Map<String, dynamic>);
+  final parsed =
+      VideoSeries.listFromJson(jsonDecode(raw) as Map<String, dynamic>);
+  _cachedSeries = parsed;
+  return parsed;
+}
+
+/// URL-routing Stage 4 (`docs/url-routing-plan.md` §6 batch 2): the
+/// `/videos/:id` cold-load / shared-link entry point, following the
+/// same pattern as `SermonByIdPage` — resolve the id against
+/// [loadVideoSeries] (the bundled `assets/videos.json`, so this never
+/// hits the network), show a spinner while resolving, then swap in the
+/// real [VideoSeriesPage] once found. An id with no match (a stale or
+/// hand-typed link) shows an explicit not-found state.
+///
+/// The one in-app call site (`videos_page.dart`'s own card `onTap`)
+/// keeps pushing [VideoSeriesPage] directly with the series object it
+/// already has — only a cold load or browser Back/Forward into this
+/// path goes through the id lookup here.
+class VideoSeriesByIdPage extends StatefulWidget {
+  final String id;
+  const VideoSeriesByIdPage({super.key, required this.id});
+
+  @override
+  State<VideoSeriesByIdPage> createState() => _VideoSeriesByIdPageState();
+}
+
+class _VideoSeriesByIdPageState extends State<VideoSeriesByIdPage> {
+  VideoSeries? _series;
+  bool _resolving = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    final all = await loadVideoSeries();
+    VideoSeries? found;
+    for (final s in all) {
+      if (s.id == widget.id) {
+        found = s;
+        break;
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _series = found;
+      _resolving = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_resolving) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final series = _series;
+    if (series == null) {
+      final locale = Provider.of<AppSettings>(context, listen: false).locale;
+      return Scaffold(
+        appBar: AppBar(leading: const LocalizedBackButton()),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(
+              uiStrings['videoSeriesNotFound']?[locale] ??
+                  'Video series not found.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return VideoSeriesPage(series: series);
+  }
 }
 
 /// The video section: a list of series, not a single video.
@@ -109,7 +200,8 @@ class _VideosPageState extends State<VideosPage> {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => pushPage(VideoSeriesPage(series: s)),
+        onTap: () => pushPage(VideoSeriesPage(series: s),
+            routeName: '/videos/${s.id}'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -273,10 +365,66 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
                 ),
                 const SizedBox(height: 6),
                 for (final e in s.episodes) _episodeTile(e, locale, scheme),
+                _wholeSeriesRow(s, locale, scheme),
               ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// "Watch the whole series" — all ten parts in one video.
+  ///
+  /// Below the episode list, not inside it. The church publishes these
+  /// compilations and the app had been ignoring them because adding an
+  /// eleventh row to a series titled "A 10-Part Journey" makes the app
+  /// contradict itself. A separate row is the answer to that, and it is
+  /// why the exclusion test can stay exactly as it is.
+  ///
+  /// Opens on YouTube rather than in the embedded player: these run over
+  /// an hour, the page's player has no position memory (see the
+  /// language-switch note in the queue), and losing your place an hour
+  /// in is worse than leaving the app.
+  Widget _wholeSeriesRow(
+      VideoSeries s, String locale, ColorScheme scheme) {
+    if (s.compilations.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            uiStrings['videoWholeSeries']?[locale] ??
+                'Watch the whole series',
+            style: TextStyle(
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final c in s.compilations)
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.play_circle_outline, size: 18),
+                  label: Text(
+                    uiStrings[c.labelKey]?[locale] ?? c.lang,
+                    style: const TextStyle(
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize: 13,
+                    ),
+                  ),
+                  onPressed: () =>
+                      LinkOpener.openOrWarn(context, c.watchUrl),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

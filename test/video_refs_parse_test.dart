@@ -14,6 +14,7 @@ import 'package:yswords/models/video_series.dart';
 /// to the source page's error). This one checks the MODEL, so the two
 /// halves cannot drift apart again.
 void main() {
+  _compilationTests();
   final doc = json.decode(File('assets/videos.json').readAsStringSync())
       as Map<String, dynamic>;
   final series = VideoSeries.listFromJson(doc);
@@ -64,6 +65,49 @@ void main() {
       for (final e in s.episodes) {
         expect(e.refs, isEmpty);
       }
+    }
+  });
+}
+
+/// The whole-series compilations, added 2026-09-02 on the user's call.
+///
+/// They are offered as a "watch the whole series" row and are still NOT
+/// episodes — `test/video_series_test.dart` pins that separately, and
+/// this checks the other half: that they are actually reachable.
+void _compilationTests() {
+  final doc = json.decode(File('assets/videos.json').readAsStringSync())
+      as Map<String, dynamic>;
+  final cross = VideoSeries.listFromJson(doc).firstWhere((s) => s.id == 'cross');
+
+  test('the cross series offers both compilations', () {
+    expect(cross.compilations.map((c) => c.youtubeId),
+        ['J8bBBHIuxjI', 'QXU-gazdgN0']);
+  });
+
+  test('they are not also episodes', () {
+    final episodeIds = {
+      for (final e in cross.episodes) for (final t in e.tracks) t.youtubeId
+    };
+    for (final c in cross.compilations) {
+      expect(episodeIds, isNot(contains(c.youtubeId)),
+          reason: 'an 11th row in a "10-Part Journey" contradicts the title');
+    }
+    expect(cross.episodes, hasLength(10));
+  });
+
+  test('the Chinese one is not labelled with a spoken variety', () {
+    // Its title is simplified Chinese, which says nothing about whether
+    // it is Cantonese or Mandarin. Labelling it cmn would be a guess
+    // presented to the reader as fact.
+    final zh = cross.compilations.firstWhere((c) => c.lang == 'zh');
+    expect(zh.labelKey, 'videoLangChinese');
+    expect(zh.lang, isNot(anyOf('cmn', 'yue')));
+  });
+
+  test('every series still parses with no compilations key', () {
+    for (final s in VideoSeries.listFromJson(doc)) {
+      if (s.id == 'cross') continue;
+      expect(s.compilations, isEmpty);
     }
   });
 }

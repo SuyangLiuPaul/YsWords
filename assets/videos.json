@@ -8,7 +8,8 @@
     "chineseTitles": "Every Chinese title carries an explicit 'zh-Hans' AND 'zh-Hant'. Until 2026-08-25 there was a single 'zh' stored verbatim as the church wrote it, on the principle that a converted glyph would be our word rather than theirs. The user asked for that to change, and the audit behind the decision is worth keeping: _localized() falls BOTH zh-Hans and zh-Hant back to 'zh', so one string served both readers and neither got their own script. Worse, the stored strings were not internally consistent — 在十字架下 episode 1 read 哪裡 while episode 6 read 黑暗里, the same word spelt two ways in one series; episode 10 mixed 將/靈 with 死后; and 獨一真神 was Traditional throughout while eight of the ten cross episodes were Simplified.",
     "shemaNote": "The Shema series is the 29 links the church published — 25 numbered messages (#7-#31) plus the 4 whole-part compilations, which sit last within their own part. Ids and titles come from YouTube (oEmbed), not from the church page, which refuses datacenter IPs. Numbering starts at #7 because #1-#6 belong to a different series on the same channel and are deliberately not included. The church's bracketed sub-numbers are not shown: Part 4 reads (15)(16)(12)(18) where the sequence wants 17, and displaying a number we know to be wrong is worse than showing only the # that is consistent.",
     "ourLabelsNote": "Two kinds of Chinese text live in this file and they must not be confused. A 'zh' title is the church's own wording, copied verbatim, and is never converted between scripts. The 'zh-Hans'/'zh-Hant' titles and taglines on shema-1..4 are OURS: the church published that series in English only, and the user asked on 2026-08-23 for a Chinese name for it ('可以 shema系列 shema series之类的'). Because they are our navigational labels rather than someone else's copy, they are written out in both scripts instead of stored once. The episode titles stay English — those are the church's words.",
-    "chineseTitlesProvenance": "The church's own titles are themselves mixed — checked against YouTube oEmbed, not assumed: its Cantonese title for cross episode 2 is fully Traditional (耶穌被釘死，與我有什麼關係？) while episodes 3-9 pair a Traditional prefix with a Simplified body, and its Mandarin title for episode 1 reads 哪里 where this file had been showing 哪裡. So the old 'verbatim' claim was not even true: the file had taken different episodes from different sources. Where the church published a title in both scripts (cross episode 1, 獨一真神) that wording is used as-is. The rest is ours, converted by hand rather than by a tool so the one-to-many choices are deliberate: 後 for 'after' (最後/死後), 係 for 'relationship' (關係), 裡 for 'inside' (黑暗裡/這裡), 託 for 'entrust' (託付). Wording was never changed, only script — the church writes 和我有什麼關係 where its own Cantonese title says 與我, and 和 was kept."
+    "chineseTitlesProvenance": "The church's own titles are themselves mixed — checked against YouTube oEmbed, not assumed: its Cantonese title for cross episode 2 is fully Traditional (耶穌被釘死，與我有什麼關係？) while episodes 3-9 pair a Traditional prefix with a Simplified body, and its Mandarin title for episode 1 reads 哪里 where this file had been showing 哪裡. So the old 'verbatim' claim was not even true: the file had taken different episodes from different sources. Where the church published a title in both scripts (cross episode 1, 獨一真神) that wording is used as-is. The rest is ours, converted by hand rather than by a tool so the one-to-many choices are deliberate: 後 for 'after' (最後/死後), 係 for 'relationship' (關係), 裡 for 'inside' (黑暗裡/這裡), 託 for 'entrust' (託付). Wording was never changed, only script — the church writes 和我有什麼關係 where its own Cantonese title says 與我, and 和 was kept.",
+    "crossCompilations": "Whole-series recordings, all ten parts in one video: J8bBBHIuxjI ('Full Series: Standing at the Cross—A 10-part Journey — Complete Series for Meditation — Good Friday', English) and QXU-gazdgN0 ('在十字架下：十堂人生課！第一课到第十课 (受难日信息 & 复活节信息)'). Titles verified 2026-09-02. They are NOT episodes and must never be listed as one — an eleventh row in a '10-Part Journey' is the app contradicting its own title, and test/video_series_test.dart pins that. The Chinese one is labelled 中文, not 粵語 or 普通話: its title is written in simplified characters and script does not determine spoken language. Do not relabel it cmn without watching it."
   },
   "series": [
     {
@@ -353,6 +354,18 @@
               "verse": 46
             }
           ]
+        }
+      ],
+      "compilations": [
+        {
+          "lang": "en",
+          "labelKey": "oneGodLangEn",
+          "youtubeId": "J8bBBHIuxjI"
+        },
+        {
+          "lang": "zh",
+          "labelKey": "videoLangChinese",
+          "youtubeId": "QXU-gazdgN0"
         }
       ]
     },

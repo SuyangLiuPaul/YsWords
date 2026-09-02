@@ -9376,7 +9376,26 @@ has never seen this repo.
       part number from its YouTube title via oEmbed, never from where it
       sits on a page.
 
-- [ ] **在十字架下 has two full-series compilations — ask whether to
+- [x] **DONE 2026-09-02 — offered as "watch the whole series", below
+      the episode list.** The user's call: add them. A separate row is
+      what makes that safe — they are still not episodes, the exclusion
+      test is unchanged, and a "10-Part Journey" still has ten parts.
+      Both titles verified before filing (`J8bBBHIuxjI` = "Full Series:
+      Standing at the Cross—A 10-part Journey…", English; `QXU-gazdgN0`
+      = 「在十字架下：十堂人生課！第一课到第十课」).
+
+      **The Chinese one is labelled 中文, not 粵語 or 普通話**, and that is
+      deliberate: its title is written in simplified characters, and
+      script does not determine spoken language. Labelling it cmn would
+      be a guess shown to the reader as fact. Do not relabel without
+      watching it.
+
+      They open on YouTube rather than in the embedded player — these
+      run over an hour, the page's player has no position memory, and
+      losing your place an hour in is worse than leaving the app.
+
+      Original entry:
+      **在十字架下 has two full-series compilations — ask whether to
       offer them.** `J8bBBHIuxjI` (English) and `QXU-gazdgN0` (Chinese)
       are the whole 10 parts in one video each. Deliberately excluded
       from the episode list and pinned as excluded by the test, because
