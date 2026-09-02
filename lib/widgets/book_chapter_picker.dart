@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:yswords/models/book.dart';
 import 'package:yswords/models/chapter.dart';
+import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
@@ -512,10 +513,34 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
     final locale = settings.locale;
     final book = _verseStepBook!;
     final chapter = _verseStepChapter!;
-    final verses = mainProvider.verses
+    // One chip per verse NUMBER, not per row.
+    //
+    // 路加福音 23:34 is carried as two rows in 梁家鏗譯本 — `34a` and `34`
+    // — because the publisher marks the first half. Rendering a chip per
+    // row put two buttons both reading "34" in the grid (reported by the
+    // user with a screenshot, 2026-09-02), and both jumped to the same
+    // place, so the second one could only ever confuse.
+    //
+    // Deliberately NOT labelled `34a`/`34b` here. There is no `34b` in
+    // the publisher's data — checked, zero occurrences in the whole
+    // corpus — and every other edition numbers Luke 23 plainly, so
+    // lettering the chips would make this grid change shape when the
+    // reader switches version. This is a navigation index: it should
+    // hold still and agree with every other edition. The letters belong
+    // where the reader can act on them — beside the text itself, which
+    // already prints 34a.
+    final rows = mainProvider.verses
         .where((v) => v.book == book && v.chapter == chapter)
         .toList()
-      ..sort((a, b) => a.verse.compareTo(b.verse));
+      ..sort((a, b) {
+        if (a.verse != b.verse) return a.verse.compareTo(b.verse);
+        return a.subVerseOrder.compareTo(b.subVerseOrder);
+      });
+    final verses = <Verse>[];
+    for (final v in rows) {
+      // Keeps the FIRST part, so a tap lands at the start of the verse.
+      if (verses.isEmpty || verses.last.verse != v.verse) verses.add(v);
+    }
     return Column(
       children: [
         Padding(
