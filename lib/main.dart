@@ -731,6 +731,46 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
           // named routes write the browser URL" claim
           // docs/url-routing-plan.md §4 flagged as unverified).
           getPages: _registeredGetPages,
+          // 2026-09-02: the SAME crash as v1.3.111, one layer up, and the
+          // v1.3.111 guard below can no longer catch it.
+          //
+          // Four prod/dev reports on v1.4.191, .193 and .195 —
+          // "Null check operator used on a null value",
+          // `TypeError: Cannot read properties of null (reading 'x')`.
+          // Deobfuscated against get-4.7.2 rather than guessed:
+          // `PageRedirect.getPageToRoute` (route_middleware.dart:199) is
+          //
+          //     while (needRecheck()) {}
+          //     final r = (isUnknown ? unknownRoute : route)!;
+          //
+          // and `needRecheck` sets `isUnknown = true` and returns false
+          // the moment `Get.routeTree.matchRoute(name)` finds nothing.
+          // With no `unknownRoute` the `!` on the next line throws.
+          //
+          // **Adding `getPages` is what re-opened it.** While the app set
+          // only `home:`, an unknown route fell through to Flutter's
+          // `_WidgetsAppState._onUnknownRoute`, which is what v1.3.111
+          // fixed by supplying `onUnknownRoute` below. `getPages` wires
+          // GetX into `onGenerateRoute`, so GetX now decides first and
+          // throws before Flutter's handler is ever consulted. The
+          // comment above saying `getPages` "leaves onUnknownRoute
+          // untouched" is true of the WIRING and false of the outcome:
+          // it stopped being reachable for unmatched named routes.
+          //
+          // Both guards stay. This one covers named routes now that GetX
+          // owns them; `onUnknownRoute` still covers the paths GetX does
+          // not generate. `Builder` supplies the context the GetPage
+          // page-builder signature does not give us, and it sits under
+          // the same Provider scope.
+          unknownRoute: GetPage(
+            name: '/_unknown',
+            page: () => Builder(
+              builder: (ctx) => _RootRouter(
+                initialVerses:
+                    Provider.of<MainProvider>(ctx, listen: false).verses,
+              ),
+            ),
+          ),
           // 2026-06-28 (v1.3.111): graceful fallback for UNKNOWN named routes.
           // Diagnosed by source-map-deobfuscating a prod (v1.3.102) crash
           // report ("Null check operator used on a null value", Android web):
