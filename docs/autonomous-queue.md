@@ -9516,25 +9516,127 @@ has never seen this repo.
       not look. It is NOT a video bug: the chip adds nothing to the
       shared path, so this is `setPendingJump`'s cold-mount handshake.
 
-      Reproduced: cold session → tap a chip citing Luke 23:34 → Luke 23
-      opens with the position pill reading `1 / 56`. Tap again with the
-      reader already mounted → lands on 34. So the jump is not lost, it
-      is consumed before the verse list exists to scroll.
+      **2026-09-02, MEASURED in an instrumented release web build. The
+      handshake diagnosis above is WRONG — read the numbers, not the
+      paragraph that follows them.** Built the repo at `cecb5efd` in a
+      throwaway worktree, replaced the reader's `debugPrint` forensics
+      with `print` (see the sibling item — that is why nobody had ever
+      seen this chain), added probes, and reproduced from the video chip
+      four times. What the log actually says:
 
-      The asymmetry worth reading first:
-      `scrollToVerseNumInChapter` carries a **94-frame retry loop** built
-      for exactly this race, while `resolveAndPrepareJump` relies on the
-      pane's post-frame consumer and retries nothing. Two entry points to
-      the same destination with different robustness — the fix is
-      probably to make the second one wait the way the first already
-      does, not to add a third mechanism.
+          [PROBE] setPendingJump idx=33 book=Luke ch=23
+          [PROBE] pane build has=true verses=56 book=Luke ch=23
+          [PROBE] _ChapterPage.initState book=Luke ch=23 isActive=true
+          [PROBE] SPL build ... active=true items=14 ctrlId=767538255
+          [jump]  pendingIdx=33 verses.length=56 currentBook=Luke ch=23
+          [PROBE] setActiveChapterControllers set
+          [PROBE] scrollToIndexAnimated idx=33 mapped=8 active=true
+                  attached=true mapSize=56
+          [jump]  scrolled to chapter-verse index 33 (attempt 1)
+          [PROBE] +700ms  want=8 visible=[1,2,3,4,5] attached=true
+          [PROBE] +700ms  retry jumpTo(8) -> [1,2,3,4,5]
+          [PROBE] +2000ms retry jumpTo(8) -> [1,2,3,4,5]
 
-      **Reproduced once, cold, from the video chip only.** "Affects every
-      citation chip" (evidence, stats, timeline, videos) is REASONED from
-      the shared `resolveAndPrepareJump` → `pushPage(HomePage)` path, not
-      observed. Reproduce from a second entry point before believing the
-      scope — if only the video chip does it, the shared-path reasoning
-      is wrong and the cause is elsewhere.
+      So, established as fact:
+
+      * **The pendingJump handshake is not the bug.** It is prepared,
+        announced, claimed by the right pane on the FIRST attempt, for
+        the right chapter, with the verse list already 56 long. The
+        240-frame ladder logs `TAKEN at framesLeft=239` — one frame in.
+      * **`resolveAndPrepareJump` does NOT "retry nothing".** It carries
+        `_announcePendingJump`, a 240-frame re-announce ladder, and the
+        pane also asks on its own behalf in `initState`. The claimed
+        asymmetry with `scrollToVerseNumInChapter`'s 94-frame loop was
+        invented; both are robust, and neither is where this fails.
+      * **The scroll itself is what does nothing.** `scrollTo` runs twice
+        (350 ms, then the defensive re-scroll 380 ms later), and a bare
+        `jumpTo` retried at +700 ms and +2 s also moves nothing. The
+        controller is attached, is the same object throughout
+        (`ctrlId` constant), target item 8 is in range (`items=14`), and
+        `_verseToItemMap` is the right chapter's (`mapSize=56`).
+
+      Three hypotheses were formed and each KILLED by measurement, so
+      nobody spends the cycles again: (1) the jump expires before the
+      pane mounts — no, it is claimed one frame in; (2) `mp.itemScroll
+      Controller` falls back to the unattached spare because
+      `_ChapterPage` registers in a post-frame callback — no,
+      `active=true` at scroll time and only one page ever mounts;
+      (3) the animated `scrollTo`'s ticker is muted inside the
+      `PageView`'s keep-alive — no, plain `jumpTo` fails identically.
+
+      What is left, and where the next session should start: an attached
+      `ItemScrollController` whose `jumpTo` does not move its
+      `ScrollablePositionedList`. Note the list DID shift by one item
+      (item 0, the top spacer, stops being rendered — `[0,1,2,3,4,5]`
+      becomes `[1,2,3,4,5]`), which is why the position pill reads
+      `3 / 56` rather than `1 / 56` in some runs. That is the signature
+      of a scroll that resolves against item extents it does not yet
+      know, or of something re-clamping the offset immediately after.
+      Probe `_onScrollNotification` and the `_ChapterPage` rebuild that
+      follows the scroll before touching the jump machinery again.
+
+      **Scope is now OBSERVED, not reasoned, and it is wider than the
+      original filing.** Reproduced from a second entry point: the
+      Dashboard's Verse-of-the-Day card (Proverbs 1:22) opens Proverbs 1
+      at verse 1, identically. That run is the more informative of the
+      two, because it differs in every way that was suspected:
+
+      * It does **not** go through `resolveAndPrepareJump` — no
+        `setPendingJump` probe fires on that path at all, so a different
+        preparer feeds the same broken scroll. Two preparers, one
+        failure: the fault is downstream of both.
+      * It is **not** in paragraph mode — `items=35`, `mapped=22`,
+        `mapSize=33`, a plain one-verse-per-item list. So the paragraph
+        `verseToItemMap` is not implicated either.
+      * `jumpTo(22)` was retried at +700 ms, +2 s, +5 s and **+10 s**,
+        every time with `attached=true` and the same `ctrlId`, and the
+        rendered window never left `[0…13]`. **Ten seconds after mount
+        is not a race.**
+
+      Native has NOT been measured and may differ. The user's original
+      report that a second tap works has NOT been reproduced on web —
+      there the second tap fails too, which is itself a discrepancy worth
+      resolving before assuming one fix covers both platforms.
+
+- [ ] **`debugPrint` prints NOTHING in a release web build, so the
+      reader's forensic logging — built expressly for users to paste
+      console output — has never once worked on the web.** Measured
+      2026-09-02 with a single-build control: two adjacent statements at
+      the top of `BibleReadingPane`'s Consumer builder, one `print` and
+      one `debugPrint`, same frame, same bundle:
+
+          [log] [CONTROL-print] this line uses print()     ← appears
+                [CONTROL-debugPrint] ...                    ← ABSENT
+
+      Same build, adjacent lines, so this is not a code-path or
+      tree-shaking question: the strings are in `main.dart.js`
+      (`grep -c "Words jump"` → 12), the code demonstrably executes, and
+      the output does not arrive.
+
+      Why this matters more than a missing log line: v1.2.50 added the
+      `[Yahweh's Words jump]` chain specifically so that "users who still
+      report problems can paste the browser console output" — see the
+      comment in `bible_reading_pane.dart`. **The web is exactly where
+      this user's reports come from**, and that instrument has been dead
+      the whole time. It cost this session four rebuild cycles: the first
+      instrumented run showed zero jump logs, from which the obvious and
+      WRONG conclusion was drawn that the consumer branch never ran. It
+      runs; it just cannot speak.
+
+      Everything on `debugPrint` is affected, not just the reader —
+      `[UrlSync]`, `prepareJumpToVerse`, and every other diagnostic.
+      `print` works (that is how `[CloudAuthService]` has always been
+      visible, and it is the only reason anything was visible at all).
+
+      Fix shape, not yet done: one `logDiag(...)` helper that routes to
+      `print` when `kIsWeb && kReleaseMode` and to `debugPrint`
+      otherwise (keeping debugPrint's throttling where it is wanted),
+      then convert the diagnostic call sites that exist to be READ BY
+      USERS. Do NOT bulk-convert every `debugPrint` in the app — most are
+      developer noise that nobody wants shipped to a release console, and
+      turning them all on would drown the few that matter and cost
+      release performance. Pick the chains that were written for support:
+      the jump forensics first.
 
 - [ ] **Position-preserving language switch is not carried over.** The
       self-hosted player kept your place when you switched language;
