@@ -7870,6 +7870,28 @@ has never seen this repo.
       entry hides the loss instead of repairing it. Add a test that
       every key in `byVerse` resolves against `kjv.json`.
 
+- [x] **Swept 2026-09-02 — no songs missing, but a whole directory of
+      sheet music was.** The host answers again, so this finally ran.
+
+      **The headline answer is no.** The church's integrated list carries
+      256 code-shaped songs (`/content/d0180` → `music/mp3/D0180.mp3`);
+      the app already has all 256, **plus 42 more**. Nothing to add.
+
+      **What the sweep did find:** the country pages link a *different*
+      directory — `hymns/`, not `music/`. 15 classic English hymns, each
+      with an MP3 and a PDF score. We already had all 15 by title
+      (`cdc:h01`–`h15`, audio included), which is exactly why they never
+      registered as missing songs — but **not one had `scoreUrl` set**,
+      and those were 15 of the 18 CDC songs in the whole catalogue with
+      no sheet music. The sync reads `music/`, where files are code-named;
+      the hymns are title-named in `hymns/`, so it never saw them.
+
+      `tools/add_cdc_hymn_scores.py` sets all 15 (idempotent; refuses
+      rather than guesses if a title stops matching exactly one cdc
+      song). All 15 PDFs confirmed 206 before writing.
+      `test/cdc_hymn_scores_test.dart` fails if a sync overwrites them.
+
+      Original note follows.
 - [ ] **Sweep the CDC network's country sites for songs we do not have.**
       User, 2026-08-18, pointing at the "WHERE WE MEET" menu on
       `christiandiscipleschurch.org`: Australia, Canada, Hong Kong,
