@@ -161,7 +161,8 @@ class _PlaylistTile extends StatelessWidget {
         // it is one tap to play from there, and a mis-tap that starts
         // 47 songs in the car is worse than one that shows a list.
         onTap: () => pushPage(
-            SongPlaylistDetailPage(playlistId: playlist.id)),
+            SongPlaylistDetailPage(playlistId: playlist.id),
+            routeName: '/songs/playlists/${playlist.id}'),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
           child: Row(

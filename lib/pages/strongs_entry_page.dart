@@ -320,6 +320,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                   // and tapping a related/root word does nothing.
                   onTap: () => pushPage(
                     StrongsEntryPage(number: f.number),
+                    routeName: '/strongs/${f.number}',
                     preventDuplicates: false,
                   ),
                 ),
@@ -346,6 +347,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                   // and tapping a related/root word does nothing.
                   onTap: () => pushPage(
                     StrongsEntryPage(number: f.number),
+                    routeName: '/strongs/${f.number}',
                     preventDuplicates: false,
                   ),
                 ),
@@ -470,6 +472,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
           child: GestureDetector(
             onTap: () => pushPage(
               StrongsEntryPage(number: num),
+              routeName: '/strongs/$num',
               preventDuplicates: false,
             ),
             child: Text(

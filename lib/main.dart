@@ -20,9 +20,11 @@ import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/song_downloads_page.dart';
+import 'package:yswords/pages/song_playlist_detail_page.dart';
 import 'package:yswords/pages/song_playlists_page.dart';
 import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
+import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/pages/videos_page.dart';
 import 'package:yswords/services/app_icon_service.dart';
 import 'package:yswords/models/verse.dart';
@@ -243,6 +245,32 @@ final List<GetPage> _registeredGetPages = [
   GetPage(
     name: '/sermons/:id',
     page: () => SermonByIdPage(id: Get.parameters['id'] ?? ''),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  // URL-routing Stage 4, batch 2: unlike `/sermons/:id`, these two take
+  // the raw id straight into the page's own constructor — no async
+  // id → object wrapper needed at the GetPage level, because both
+  // pages already resolve and render their own loading/not-found state
+  // internally. `StrongsEntryPage` is itself async (StrongsService
+  // lazy-loads and caches the lexicon JSON) and already gates its body
+  // on its own `_loading`/`_notFound` flags. `SongPlaylistDetailPage`
+  // needed one addition to do the same: `SongPlaylistService` loads
+  // from SharedPreferences asynchronously, so the page distinguishes
+  // "still loading" (spinner) from "loaded and gone" via the new
+  // `SongPlaylistService.loaded` — see that page for why.
+  GetPage(
+    name: '/strongs/:number',
+    page: () => StrongsEntryPage(number: Get.parameters['number'] ?? ''),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/songs/playlists/:id',
+    page: () =>
+        SongPlaylistDetailPage(playlistId: Get.parameters['id'] ?? ''),
     transition: Transition.rightToLeft,
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,

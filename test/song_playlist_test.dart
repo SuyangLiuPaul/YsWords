@@ -259,4 +259,39 @@ void main() {
       expect(back.fallback, TrackFallback.useVocal);
     });
   });
+
+  group('loaded', () {
+    // URL-routing Stage 4 batch 2: `SongPlaylistDetailPage` uses this
+    // getter to distinguish "the service hasn't loaded yet" from
+    // "loaded, and this id genuinely isn't here" on a cold
+    // `/#/songs/playlists/:id` load. It must NOT flip true until the
+    // SharedPreferences round trip actually completes — `_loaded` (the
+    // re-entrancy guard `load()` already had) flips true synchronously
+    // BEFORE that await, specifically so a second concurrent call
+    // doesn't start a second read; wiring `loaded` to that guard
+    // instead of a separate flag would make a real playlist look gone
+    // for exactly the frame this getter exists to cover.
+    test('stays false until load() actually resolves, not from the '
+        'moment it starts', () async {
+      await svc.resetForTest();
+      expect(svc.loaded, isFalse);
+
+      final pending = svc.load();
+      // load()'s synchronous prefix (the re-entrancy guard) has run,
+      // but the SharedPreferences await hasn't completed.
+      expect(svc.loaded, isFalse);
+
+      await pending;
+      expect(svc.loaded, isTrue);
+    });
+
+    test('a second concurrent call is a no-op and does not reset it',
+        () async {
+      await svc.resetForTest();
+      final first = svc.load();
+      final second = svc.load();
+      await Future.wait([first, second]);
+      expect(svc.loaded, isTrue);
+    });
+  });
 }

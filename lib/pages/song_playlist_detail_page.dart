@@ -59,6 +59,15 @@ class _SongPlaylistDetailPageState extends State<SongPlaylistDetailPage> {
     return ListenableBuilder(
       listenable: _service,
       builder: (context, _) {
+        // A cold `/#/songs/playlists/:id` load races this build against
+        // `_service.load()` (started in initState, not awaited) — until
+        // it resolves, `_find()` can't tell "not here yet" from "never
+        // existed". Show a spinner instead of asserting gone.
+        if (!_service.loaded) {
+          return Scaffold(
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
         final playlist = _find();
         final title = playlist == null
             ? (uiStrings['songsPlaylists']?[locale] ?? 'Playlists')

@@ -1444,7 +1444,8 @@ class _SearchPageState extends State<SearchPage> {
               // because "H1" could otherwise match a malformed ref.
               final strongs = parseStrongsNumber(trimmed);
               if (strongs != null) {
-                pushPage(StrongsEntryPage(number: strongs));
+                pushPage(StrongsEntryPage(number: strongs),
+                    routeName: '/strongs/$strongs');
                 return;
               }
               // Then try parsing as a Bible reference. If it

@@ -32,6 +32,8 @@ const Set<String> kRegisteredRoutePaths = {
   '/sermons',
   '/misconceptions',
   '/sermons/:id',
+  '/strongs/:number',
+  '/songs/playlists/:id',
 };
 
 /// True if [path] (a concrete path such as `/sermons/004`, or a plain

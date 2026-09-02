@@ -25,9 +25,20 @@ class SongPlaylistService extends ChangeNotifier {
   static const _key = 'songs.playlists.v1';
 
   final List<SongPlaylist> _playlists = [];
-  bool _loaded = false;
+  bool _loaded = false; // re-entrancy guard: set before the await, not after
+  bool _ready = false;
 
   List<SongPlaylist> get playlists => List.unmodifiable(_playlists);
+
+  /// True once [load] has actually finished (unlike the internal
+  /// `_loaded` guard, which flips before the `SharedPreferences` await
+  /// so a second concurrent call doesn't start a second read).
+  ///
+  /// Distinguishes "not loaded yet" from "loaded and this id isn't
+  /// here" — a cold `/#/songs/playlists/:id` load races [load] against
+  /// the first build, and without this a real playlist flashes "no
+  /// longer exists" for one frame before its own listener fires.
+  bool get loaded => _ready;
 
   /// User playlists, favourites first — it is the one people reach for.
   List<SongPlaylist> get ordered {
@@ -63,6 +74,7 @@ class SongPlaylistService extends ChangeNotifier {
       debugPrint('[SongPlaylistService] load failed: $e');
     }
     _ensureFavourites();
+    _ready = true;
     notifyListeners();
   }
 
@@ -241,6 +253,7 @@ class SongPlaylistService extends ChangeNotifier {
   Future<void> resetForTest({bool keepStored = false}) async {
     _playlists.clear();
     _loaded = false;
+    _ready = false;
     if (keepStored) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_key);
