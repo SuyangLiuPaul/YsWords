@@ -258,37 +258,26 @@ List<String> get bibleLanguageOrder {
 List<BibleVersionInfo> versionsForLanguage(String language) =>
     availableVersions.where((v) => v.language == language).toList();
 
-/// Editions withheld on THIS platform, for display only — never
-/// selectable, never loadable.
+/// **The withheld editions are not shown at all — not even greyed out.**
 ///
-/// v1.4.193 hid NASB and LEB from the web picker and they simply
-/// vanished. A reader who had been using one got no explanation and no
-/// way to tell the difference between "withheld" and "the app is
-/// broken". The picker now lists them greyed out with
-/// `versionWithheldWeb` underneath, which says where the edition went
-/// and where it still works.
+/// This went through three positions in one sitting, and the third is
+/// the one that holds. v1.4.193 hid them silently. Then the picker
+/// listed them disabled with a caption, so a reader who had been using
+/// one would know where it went — first captioned 「版权申请中」, then cut
+/// back to 「网页版暂不提供」 because a public page announcing a pending
+/// licence is a public statement that we are using the text without one.
 ///
-/// Two things it deliberately does not do.
+/// The user's last word removed the row itself: 「New American Standard
+/// Bible 这些也不要写」. Follow the same reasoning one step further and it
+/// is right — naming a translation we cannot serve advertises it, and a
+/// greyed-out row is still the app telling every visitor that the NASB
+/// is something we have and are not giving them. There is nothing a
+/// reader can do with that. `resolvableVersion` already moves anyone
+/// carrying a stale NASB/LEB preference onto KJV without a word, which
+/// is the outcome that actually matters.
 ///
-/// It re-enables nothing. A label reading "pending" creates no
-/// permission — the exposure was the downloadable file, not the absence
-/// of a caption.
-///
-/// And the caption itself does not mention licensing. An earlier draft
-/// read 「版权申请中」 / "Licence pending"; the user cut it
-/// (「那没有必要加那个字」) and was right to. A public page announcing
-/// that a licence is pending is a public statement that we are using
-/// the text without one — the same objection that keeps the label off
-/// the served text applies to our own UI. The reader needs to know
-/// where to read, not what our paperwork looks like.
-List<BibleVersionInfo> withheldVersionsForLanguage(String language) => _kIsWeb
-    ? bibleVersions
-        .where((v) =>
-            v.language == language &&
-            kWebRestrictedVersions.contains(v.value) &&
-            !disabledVersions.contains(v.value))
-        .toList()
-    : const <BibleVersionInfo>[];
+/// If a licence comes back, deleting `kWebRestrictedVersions` restores
+/// the editions everywhere with no other change.
 
 /// The language family (`en` / `zh-Hant` / `zh-Hans`) of a version code.
 /// Falls back to `zh-Hans` for an unknown code (the app's primary

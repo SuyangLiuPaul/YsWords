@@ -3467,23 +3467,6 @@ const uiStrings = {
     'zh-Hant': '這是一條測試通知。',
     'en': 'This is a test notification.',
   },
-  // 2026-09-02: shown under NASB / LEB in the version picker on WEB only
-  // (see kWebRestrictedVersions). Before this they simply vanished from
-  // the list on the web, which for a reader who had been using one is
-  // indistinguishable from the app being broken.
-  //
-  // It deliberately does NOT say "licence pending" — an earlier draft
-  // did. User, 2026-09-02: 「那没有必要加那个字」. A public page saying the
-  // licence is pending is a public statement that we are using the text
-  // without one, which is the same objection that kept the label off the
-  // served text in the first place; it applies to our own UI too. The
-  // reader does not need our licensing status, only where to read.
-  // The reason lives in code comments, the queue and the letters.
-  'versionWithheldWeb': {
-    'zh-Hans': '网页版暂不提供 · 手机与电脑 App 可阅读',
-    'zh-Hant': '網頁版暫不提供 · 手機與電腦 App 可閱讀',
-    'en': 'Not on the web · available in the apps',
-  },
   'appName': {
     'zh-Hans': '雅伟之言',
     'zh-Hant': '雅偉之言',

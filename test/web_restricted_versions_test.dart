@@ -202,62 +202,37 @@ void main() {
     });
   });
 
-  group('the picker says where the edition went', () {
-    // v1.4.193 made NASB and LEB vanish from the web picker with no
-    // explanation, which for a reader who had been using one is
-    // indistinguishable from the app being broken.
-    test('withheld editions are listed, not silently dropped', () {
+  group('the withheld editions are not named on web', () {
+    // Three positions in one sitting, and this is the settled one.
+    // v1.4.193 hid them silently; then the picker listed them disabled
+    // with a caption so a reader would know where the edition went;
+    // then the user cut the row itself — 「New American Standard Bible
+    // 这些也不要写」. Naming a translation we cannot serve advertises it,
+    // and a greyed-out row is still the app telling every visitor that
+    // the NASB is something it has and is not giving them.
+    test('no withheld-edition UI survives in the picker', () {
       final sheet =
           File('lib/widgets/version_picker_sheet.dart').readAsStringSync();
-      expect(sheet, contains('withheldVersionsForLanguage'));
-      expect(sheet, contains('versionWithheldWeb'));
+      expect(sheet, isNot(contains('withheldVersionsForLanguage')));
+      expect(sheet, isNot(contains('versionWithheldWeb')));
     });
 
-    test('a withheld row cannot be selected', () {
-      // The row must not be wired to the same InkWell that pops the
-      // sheet with a version code — selecting an edition whose asset is
-      // not in the bundle is the crash this whole area is about.
-      final sheet =
-          File('lib/widgets/version_picker_sheet.dart').readAsStringSync();
-      final i = sheet.indexOf('withheldVersionsForLanguage');
-      final block = sheet.substring(i);
-      expect(block, isNot(contains('Navigator.pop<String>(context, v.value)')),
-          reason: 'the withheld row is tappable and would select an '
-              'edition with no asset');
-    });
-
-    test('the notice exists in all three languages', () {
+    test('and no caption string survives either', () {
       final strings = File('lib/constants/ui_strings.dart').readAsStringSync();
-      final i = strings.indexOf("'versionWithheldWeb': {");
-      expect(i, greaterThan(-1));
-      final block = strings.substring(i, i + 400);
-      for (final lang in ["'zh-Hans'", "'zh-Hant'", "'en'"]) {
-        expect(block, contains(lang), reason: '$lang is missing');
-      }
+      expect(strings, isNot(contains('versionWithheldWeb')),
+          reason: 'a dangling string is how a reverted feature comes '
+              'back by accident');
     });
 
-    test('the notice does not announce our licensing status', () {
-      // User, 2026-09-02: 「那没有必要加那个字」. A public page saying the
-      // licence is pending is a public statement that we are using the
-      // text without one. Tell the reader where to read; keep the
-      // paperwork in the repo and the letters.
-      final strings = File('lib/constants/ui_strings.dart').readAsStringSync();
-      final i = strings.indexOf("'versionWithheldWeb': {");
-      final block = strings.substring(i, i + 400);
-      for (final word in ['版权申请', '版權申請', 'Licence pending',
-        'License pending', '授权', '授權']) {
-        expect(block, isNot(contains(word)),
-            reason: 'the picker caption mentions licensing ("$word")');
-      }
-    });
-
-    test('off web there is nothing to withhold', () {
-      // Native builds still bundle both, so this list must be empty on
-      // the VM — a non-empty result here would mean the picker greys out
-      // editions that work perfectly well on a phone.
-      for (final lang in ['en', 'zh-Hans', 'zh-Hant']) {
-        expect(withheldVersionsForLanguage(lang), isEmpty);
-      }
+    test('the reader is moved on silently instead', () {
+      // What replaced the notice: resolvableVersion carries a stale
+      // NASB/LEB preference onto KJV with no message at all. Pinned in
+      // the boot-path group above; asserted here as the intended
+      // behaviour, so deleting that guard fails two groups, not one.
+      final webList = bibleVersions
+          .where((v) => !kWebRestrictedVersions.contains(v.value))
+          .toList();
+      expect(resolvableVersionFrom('nasb', webList), 'kjv');
     });
   });
 

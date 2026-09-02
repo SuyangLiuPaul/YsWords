@@ -207,51 +207,6 @@ class _LanguageGroupedVersionBodyState
               ),
             ),
           ),
-        // 2026-09-02: editions withheld on this platform, listed but not
-        // selectable. On web that is NASB and LEB, pending a licence.
-        // Before this they just disappeared from the list and a reader
-        // who had been using one saw no reason why — indistinguishable
-        // from the app being broken. Non-empty on web only.
-        for (final v in withheldVersionsForLanguage(_lang))
-          Opacity(
-            opacity: 0.55,
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    v.menuLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: settings.fontFamily,
-                      fontFamilyFallback: kCjkFontFallback,
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w500,
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      uiStrings['versionWithheldWeb']?[settings.locale] ??
-                          uiStrings['versionWithheldWeb']?['en'] ??
-                          '',
-                      style: TextStyle(
-                        fontFamily: settings.fontFamily,
-                        fontFamilyFallback: kCjkFontFallback,
-                        fontSize: 11,
-                        color: scheme.onSurface.withValues(alpha: 0.55),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
       ],
     );
   }
