@@ -14,6 +14,7 @@ import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/verse_citation.dart';
+import 'package:yswords/utils/progress_pill_geometry.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
 import 'package:yswords/widgets/note_reference_picker_sheet.dart';
@@ -2609,16 +2610,19 @@ class _VerticalProgressIndicator extends StatelessWidget {
 
     return LayoutBuilder(builder: (ctx, constraints) {
       final h = constraints.maxHeight;
-      final pillHeight = (22 * menuScale).clamp(20.0, 32.0).toDouble();
-      // Anchor the pill so its center tracks the progress; clamp so it
-      // never overflows the track. `h - pillHeight` can go negative
-      // when the track is shorter than the pill (e.g. mid-collapse
-      // layout pass) — `.clamp(0.0, negative)` throws ArgumentError
-      // (upper < lower) instead of clamping, so floor the upper bound
-      // at 0 rather than trusting h to always exceed pillHeight.
-      final clamped = progress.clamp(0.0, 1.0);
-      final pillTravel = (h - pillHeight).clamp(0.0, double.infinity);
-      final pillTop = (clamped * pillTravel).clamp(0.0, pillTravel).toDouble();
+      // Anchors the pill so its centre tracks progress without
+      // overflowing the track. Lives in `utils/progress_pill_geometry`
+      // because this is the CONFIRMED throw site of the mailed-in
+      // `Invalid argument: 0` (v1.4.178 web) — the crash report's third
+      // frame decodes to exactly this arithmetic — and the guard
+      // deserves a test that feeds it the failing input directly.
+      final geom = progressPillGeometry(
+        trackHeight: h,
+        menuScale: menuScale,
+        progress: progress,
+      );
+      final pillHeight = geom.pillHeight;
+      final pillTop = geom.pillTop;
 
       return SizedBox(
         width: 56 * menuScale,

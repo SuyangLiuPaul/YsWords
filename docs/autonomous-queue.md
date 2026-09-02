@@ -139,7 +139,71 @@ reported. Work these top-down before P2.
       residual colon-ending prose names each of the 11 remaining sites
       per edition individually rather than asserting a bare count.
 
-- [ ] **2026-08-31 a boot crash the app cannot recover from on its own —
+- [x] **ROOT-CAUSED AND FIXED — `Invalid argument: 0` is
+      `_VerticalProgressIndicator`'s pill-travel clamp. Guarded by
+      `2c32e1fd`, shipped v1.4.190, live on prod since v1.4.196.**
+      Closed 2026-09-02 by reading the crash email the user forwarded,
+      after ~14 passes of inference. **Read this paragraph before
+      believing anything below it: two load-bearing claims in the
+      original write-up are false, and they are what sent every pass
+      after them in the wrong direction.**
+
+      The report's stack was never one frame. It carried ten, and frame
+      three names the caller:
+
+          at Object.z   (…/main.dart.js:4087:20)      argumentErrorValue
+          at e2.P       (…/main.dart.js:59285:36)     num.clamp
+          at bXv.$2     (…/main.dart.js:157724:95)    ← the call site
+          at bCE.$0 … aSX.ED … a7A.aRm … (6 more)
+
+      `157724:95` decodes, against the byte-verified v1.4.178 bundle, to
+
+          e=B.h.P(22*f,20,32)              (22*menuScale).clamp(20,32)
+          d=h-e
+          c=B.h.P(B.h.P(g.c,0,1)*d,0,d)    (progress.clamp(0,1)*d).clamp(0,d)
+
+      — `bible_reading_pane.dart`'s `_VerticalProgressIndicator`. When
+      the track is shorter than the pill, `d` is negative and
+      `.clamp(0.0, d)` throws `ArgumentError` instead of clamping.
+      `2c32e1fd` had already floored it — that commit called this a
+      "candidate" it could not confirm. It was the bug.
+
+      **False claim 1: "the minified stack is the only pointer."** It
+      never was. dart2js keeps caller frames through minification and
+      `ErrorReporter` trims at 8000 chars. The answer was in the inbox
+      from 2026-08-31 and thirteen passes were spent inferring it.
+      **Read the whole `stack` field before starting any analysis.**
+
+      **False claim 2: "the app was parked on its own Flutter loading
+      page," before any widget mounts.** The report's own breadcrumbs
+      say otherwise — `nav:push /` → `/HomePage` → a third route — and
+      `Source` is `FlutterError`, i.e. a widget build/layout error. This
+      crash is a layout-pass throw in the reading pane, not a boot-state
+      failure. The three-legacy-key trap state is a DIFFERENT symptom
+      (the stuck splash in the user's photo); conflating the two is what
+      made the boot sequence look like the place to search, and the
+      whole `restoreState`/`_applyHashToState` line of inquiry was
+      chasing the wrong event. The quarantine mitigation still stands on
+      its own for the stuck-splash shape; it was never what fixed this.
+
+      Also worth keeping: **the message is platform-specific.** dart2js
+      renders `ArgumentError.value(0.0)` as `Invalid argument: 0`; the VM
+      renders the same defect as `Invalid argument(s): 0.0`. Both
+      measured. So "web release only" was partly an artefact of the
+      string — the identical throw from iOS or Android would have been
+      mailed in under a different name and might not have been
+      recognised as the same bug.
+
+      Regression test added: `test/progress_pill_geometry_test.dart`,
+      against `lib/utils/progress_pill_geometry.dart` (the arithmetic
+      extracted from the private widget so it can be fed the failing
+      input directly — `2c32e1fd` could only add a boot-state test).
+      It includes the unguarded expression, so the tests cannot go
+      vacuous if the guard is removed.
+
+      Original entry, kept because the sweeps it records are real and
+      the negative results are worth not repeating:
+      **2026-08-31 a boot crash the app cannot recover from on its own —
       `Invalid argument: 0`, web release only.** Mailed-in crash report,
       v1.4.178 web. Reproduced 4/4 on `yswords-dev`.
       **It is not a regression and not a code difference.** `main.dart.js`
