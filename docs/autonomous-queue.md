@@ -4799,7 +4799,52 @@ reported. Work these top-down before P2.
       re-import demotes a parenthesis nobody has seen yet. It reports 86
       on the pre-fix data and 0 after.
 
-- [ ] **約翰三書 1:14 — does verse 15 deserve its own number?** Found
+- [x] **DECIDED 2026-09-02 — NO. The freeze wins; do not reopen this.**
+      The user's call, asked directly. Recorded in full because the
+      argument for changing it is good, and the next person to find this
+      will reconstruct that argument and think it is new.
+
+      **Where verse 15 stands, measured across everything we ship:**
+
+          biblexg-v2      1..15   its own verse already
+          biblexg-v2-tr   1..15   its own verse already
+          nasb            1..15   its own verse already
+          leb             1..15   its own verse already
+          cuvs-yhwh       1..14   folded into 14 behind `<note: 15节>`
+          cuvs-yhwh-tr    1..14   folded into 14 behind `<note: 15節>`
+          kjv             1..14   AUTHENTIC — leave alone
+
+      So only the two CUV editions differ, and **those two are exactly
+      the files frozen** by 「cuvs yhwh这个不用管 因为出版方说这个不要」.
+      The repair was easy and the split point is the publisher's own
+      marker — no word added or changed — and it was still the wrong
+      thing to do: `test/cuvs_yhwh_frozen_test.dart` says "if this test
+      fails, the answer is almost never to update the hash; it means
+      something edited a text we do not own", and a versification change
+      is an edit to a text we do not own.
+
+      **KJV is not a defect and must never be "fixed".** Its 3 John has
+      14 verses because that is the King James versification — verse 14
+      ends "…and we shall speak face to face. Peace be to thee." There
+      is no separate fifteenth verse to restore, and adding one would be
+      editing a public-domain text to match a different tradition.
+
+      **A repair script was written, verified, and then deliberately
+      deleted rather than committed** — the freeze test's own warning is
+      that removing the queue item removes the instruction but not the
+      script, and a ready-to-run repair sitting in `tools/` beside a
+      frozen asset is precisely the hazard it names.
+
+      What stays true and unfixed, stated so it is not rediscovered as
+      news: a reader on the CUV editions who looks up 3 John 15 will not
+      find it, `<note: 15节>` is printed mid-sentence, and
+      `cross_references.json`'s `3 John 1:15` key is reachable on
+      NASB/LEB/梁本 and not on the CUV. That is the accepted cost of the
+      freeze. If the publisher ever ships a corrected module, it comes
+      with a new hash and this resolves itself.
+
+      Original entry:
+      **約翰三書 1:14 — does verse 15 deserve its own number?** Found
       while reading the 90 above. Our asset prints 「願你平安。眾位朋友
       都問你安……」 as running text inside verse 14 and demoted only the
       label 「15节」 to a note; the Eagle's View import folds the same
