@@ -9598,6 +9598,37 @@ has never seen this repo.
       there the second tap fails too, which is itself a discrepancy worth
       resolving before assuming one fix covers both platforms.
 
+      **INSTRUMENT CAVEAT — read this before trusting the timing numbers
+      above.** The measurements were taken through an automated browser
+      pane that was *hidden* for the whole session (`tabs_context` says
+      so plainly: "The Browser pane is currently hidden"). A hidden page
+      does not composite, and Chrome throttles `requestAnimationFrame`
+      to nothing — so Flutter produces no frames while idle. The console
+      log shows exactly that: between the scroll call and the next user
+      interaction there is **not one `SPL build` line**, and the moment a
+      click arrived the list landed on verse 22 *without any new scroll
+      call being logged*. That is equally consistent with "the app
+      queues the scroll and never applies it" and with "my harness
+      stopped feeding the app frames".
+
+      So these are downgraded from measured to unreliable: the `+2 s`,
+      `+5 s` and `+10 s` retries "not moving", and the reading that the
+      scroll is *silently dropped*. What survives the caveat, because it
+      is log-derived rather than frame-derived: the handshake works and
+      is claimed one frame in; the scroll is issued with the right index,
+      on the right attached controller; and the two entry points both
+      reach that same point. Also surviving: with eight screenshots
+      forced back-to-back (a screenshot forces a composite), the reader
+      still sat at `1 / 33`.
+
+      **To finish this, measure somewhere that actually paints:** a
+      visible browser pane, or a native/emulator run — NOT this
+      harness with the pane hidden. Do not build a fix on the timing
+      numbers above; re-measure first. Suppressing the early scroll and
+      firing a single clean one at +800 ms (`attempt 0`, attached, on
+      the registered controller) did NOT help, but that too was measured
+      through the same throttled instrument.
+
 - [ ] **`debugPrint` prints NOTHING in a release web build, so the
       reader's forensic logging — built expressly for users to paste
       console output — has never once worked on the web.** Measured
