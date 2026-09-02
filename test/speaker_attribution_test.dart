@@ -116,7 +116,11 @@ void main() {
           '餅，給他們吃嗎？',
       '043002007': '耶穌對用人說：把缸倒滿了水。他們就倒滿了，直到缸口。',
       '043002008': '耶穌又說：現在可以舀出來，送給管筵席的。他們就送了去。',
-      '043013036': '西門彼得問耶穌說：主往那裏去？耶穌回答說：我所去的地方，你'
+      // 2026-09-02: the 主 here carries the edition's 耶穌 marker, restored
+      // as 主[耶穌]. It is a referent gloss the publisher prints, not a
+      // wording change by us — this test's subject is quotation marks, and
+      // they are untouched.
+      '043013036': '西門彼得問耶穌說：主[耶穌]往那裏去？耶穌回答說：我所去的地方，你'
           '現在不能跟我去，後來卻要跟我去。',
     };
     final notes = RegExp(r'<note:[^>]*>');

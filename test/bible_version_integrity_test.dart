@@ -383,11 +383,19 @@ void main() {
     expect(textOf('kjv', '1 Corinthians 10:3'), startsWith('And did all eat'));
 
     expect(textOf('cuvs-yhwh', 'Deuteronomy 15:15'), endsWith('这件事。'));
-    expect(textOf('cuvs-yhwh', 'Matthew 9:28'), contains('“主啊，我们信。”'));
-    expect(textOf('cuvs-yhwh', 'Luke 24:34'), contains('主果然复活'));
-
     expect(textOf('cuvs-yhwh-tr', 'Deuteronomy 15:15'), endsWith('這件事。'));
-    expect(textOf('cuvs-yhwh-tr', 'Matthew 9:28'), contains('「主啊，我們信。」'));
-    expect(textOf('cuvs-yhwh-tr', 'Luke 24:34'), contains('主果然復活'));
+
+    // Matthew 9:28 and Luke 24:34 were pinned here WITHOUT their marker,
+    // because they are the two verses the 2026-08-10 repair stripped as
+    // "a character that is not in scripture". The character was `主*`, the
+    // edition's own mark for 耶穌, and it is scripture as this publisher
+    // prints it — restored 2026-09-02 as 主[耶稣]. The pin stays, updated:
+    // these two verses have now been rewritten twice and should not move
+    // again without someone saying why.
+    expect(textOf('cuvs-yhwh', 'Matthew 9:28'), contains('“主[耶稣]啊，我们信。”'));
+    expect(textOf('cuvs-yhwh', 'Luke 24:34'), contains('主[耶稣]果然复活'));
+    expect(
+        textOf('cuvs-yhwh-tr', 'Matthew 9:28'), contains('「主[耶穌]啊，我們信。」'));
+    expect(textOf('cuvs-yhwh-tr', 'Luke 24:34'), contains('主[耶穌]果然復活'));
   });
 }

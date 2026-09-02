@@ -45,15 +45,25 @@ void main() {
             found.update(m.group(1)!, (n) => n + 1, ifAbsent: () => 1);
           }
         }
-        // Two distinct inserts, both names, nothing else. If a third
-        // ever appears, someone should look at it before it starts
-        // printing brackets at readers.
-        expect(found.keys.toSet(), hasLength(2),
-            reason: '$code should bracket exactly two distinct strings, '
+        // Three distinct inserts, all three names, nothing else.
+        //
+        // This said TWO until 2026-09-02, and it did exactly the job it
+        // was written for: the third marker landed and this stopped the
+        // build so a person looked before brackets started printing at
+        // readers. The edition always had three — `主[雅偉]` Yahweh,
+        // `主#` 基督, `主*` 耶穌 — and the asterisk had been deleted as
+        // importer noise, twice, by people who never asked what the
+        // publisher's convention was. Restored on the user's
+        // instruction; see test/cuv_three_referent_markers_test.dart.
+        //
+        // A FOURTH should still stop the build. That is the point.
+        expect(found.keys.toSet(), hasLength(3),
+            reason: '$code should bracket exactly three distinct strings, '
                 'got ${found.keys.toList()}');
         final isTrad = code.endsWith('-tr');
         expect(found.keys, contains(isTrad ? '雅偉' : '雅伟'));
         expect(found.keys, contains('基督'));
+        expect(found.keys, contains(isTrad ? '耶穌' : '耶稣'));
       }
     });
 

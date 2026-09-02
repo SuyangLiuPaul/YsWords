@@ -20,6 +20,31 @@ import 'package:flutter_test/flutter_test.dart';
 /// hash changes only when the publisher ships us a new module — and then
 /// the commit that updates it should say so and nothing else.
 ///
+/// ## The one deliberate thaw, 2026-09-02
+///
+/// The user lifted the freeze for a single change, and it is the exact
+/// opposite of the edits this file was written to stop: it RESTORES the
+/// publisher's own notation rather than imposing ours.
+///
+/// This edition marks the referent of 主 three ways — `主[雅偉]` Yahweh,
+/// `主#` 基督, `主*` 耶穌. Only two ever reached a reader. The asterisk was
+/// deleted from both reading assets on 2025-05-17 (b1dbb96a, "remove
+/// 主*", 121 occurrences at once) and the last two on 2026-08-10, both
+/// times read as importer noise. It is not noise; it is the third
+/// marker, and the user reported its absence at 約翰福音 4:1, which read
+/// a bare 主 where the publisher printed `主*`.
+///
+/// 123 occurrences in 114 verses are back, written as `主[耶穌]` /
+/// `主[耶稣]` on the user's call, matching the precedent that already
+/// turned `主#` into `主[基督]`. Positions came from git, not from
+/// judgement: `tools/restore_cuv_jesus_marker.py` reads them out of the
+/// pre-deletion assets and edits today's text in place, so the nineteen
+/// months of repair since 2025 survive.
+///
+/// That the freeze was lifted ONCE, by the person who imposed it, for
+/// data the publisher itself wrote, is not a precedent for lifting it
+/// again. The rule above stands.
+///
 /// Scope, so nobody over-reads the freeze: the *reading assets* are frozen.
 /// The word-tap corpus, the Strong's tagging, the lexicon and every line of
 /// rendering code are ours and stay open — including the editorial brackets
@@ -27,10 +52,14 @@ import 'package:flutter_test/flutter_test.dart';
 /// the publisher's own notation, not an edit to it.
 void main() {
   const frozen = <String, String>{
+    // Re-pinned 2026-09-02 after the 主* restoration described above.
+    // Previous pins, so the thaw is auditable rather than just asserted:
+    //   cuvs-yhwh.json     5e18b8b18d502a8cbfa7bbbcbf79e58921f5a05be6e648…
+    //   cuvs-yhwh-tr.json  d28897b6643841067f1ef763a8cf5da3c135b03f6dff09…
     'assets/cuvs-yhwh.json':
-        '5e18b8b18d502a8cbfa7bbbcbf79e58921f5a05be6e64834d83f1039306d5494',
+        '4735454344b86a11f30ae0f0c48aca46ac585032fb209fffa09a59a7021532e1',
     'assets/cuvs-yhwh-tr.json':
-        'd28897b6643841067f1ef763a8cf5da3c135b03f6dff0935557da3029e824771',
+        '2a15f69b35b11a117073df306217567df3682e4e3da667e21d0f1c0a89bc43f1',
   };
 
   frozen.forEach((path, expected) {

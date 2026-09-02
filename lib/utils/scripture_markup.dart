@@ -44,12 +44,23 @@ const Set<String> _divineNameTokens = {
 };
 
 /// Referent glosses that are not the divine name.
+///
+/// 耶稣/耶穌 joined this set on 2026-09-02, with the restoration of the
+/// edition's third marker. 和合本雅偉版 marks the referent of 主 three
+/// ways — `主[雅偉]` Yahweh, `主#` 基督, `主*` 耶穌 — and only the first
+/// two had ever reached a reader: the asterisk was deleted twice as
+/// importer noise. Without 耶穌 here the 123 restored brackets classify
+/// as `supplied`, i.e. as words the translators added, which is the
+/// opposite of what they are — the bracket names the 主 in front of it.
 const Set<String> _referentTokens = {
   '基督',
   'Christ',
   'Messiah',
   '弥赛亚',
   '彌賽亞',
+  '耶稣',
+  '耶穌',
+  'Jesus',
 };
 
 ScriptureSpanKind bracketSpanKind(String body) {
