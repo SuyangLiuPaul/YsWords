@@ -36,8 +36,6 @@
 import 'dart:async';
 import 'dart:js_interop';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:yswords/constants/bible_versions.dart' show availableVersions;
 import 'package:yswords/constants/book_slugs.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -47,6 +45,7 @@ import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/utils/route_paths.dart' show matchesRegisteredRoute;
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
+import 'package:yswords/utils/log_diag.dart';
 
 // ── JS interop bindings ─────────────────────────────────────────
 
@@ -95,7 +94,7 @@ void captureBootHash() {
   try {
     _bootHash = _window.location.hash;
   } catch (e) {
-    debugPrint('[UrlSync] captureBootHash failed: $e');
+    logDiag('[UrlSync] captureBootHash failed: $e');
   }
 }
 
@@ -209,7 +208,7 @@ void onRouteChanged({String? routeName}) {
     try {
       _writeStateToUrl();
     } catch (e) {
-      debugPrint('[UrlSync] route-change rewrite failed: $e');
+      logDiag('[UrlSync] route-change rewrite failed: $e');
     }
   });
 }
@@ -262,7 +261,7 @@ Future<void> urlSyncInit({
       await _applyHashToState(bootHash, isBoot: true);
     }
   } catch (e, st) {
-    debugPrint('[UrlSync] boot apply failed: $e\n$st');
+    logDiag('[UrlSync] boot apply failed: $e\n$st');
     // 2026-09-01: this catch previously only reported through
     // debugPrint, which is a global no-op in release web
     // (main.dart:55-57) — a real throw here was indistinguishable
@@ -290,12 +289,12 @@ Future<void> urlSyncInit({
       }
       _applyHashToState(_window.location.hash)
           .catchError((Object e, StackTrace st) {
-        debugPrint('[UrlSync] popstate apply failed: $e');
+        logDiag('[UrlSync] popstate apply failed: $e');
         ErrorReporter.report(e, st, source: 'UrlSync.popstate');
       });
     }).toJS);
   } catch (e) {
-    debugPrint('[UrlSync] popstate wiring failed: $e');
+    logDiag('[UrlSync] popstate wiring failed: $e');
   }
 
   // (B) MainProvider listener — debounced 150 ms.
@@ -312,7 +311,7 @@ void _onMpChange() {
     try {
       _writeStateToUrl();
     } catch (e) {
-      debugPrint('[UrlSync] write failed: $e');
+      logDiag('[UrlSync] write failed: $e');
     }
   });
 }
@@ -360,7 +359,7 @@ void _writeStateToUrl() {
     _window.history.pushState(null, '', newHash);
     _lastWrittenUrl = newHash;
   } catch (e) {
-    debugPrint('[UrlSync] pushState threw: $e');
+    logDiag('[UrlSync] pushState threw: $e');
   }
 }
 
@@ -414,7 +413,7 @@ Future<void> _applyHashToState(String rawHash, {bool isBoot = false}) async {
         (bookNameToEnglish[v.book] ?? v.book) == parsed.book &&
         v.chapter == parsed.chapter);
     if (!hasVerse) {
-      debugPrint('[UrlSync] book/chapter not in ${mp.currentVersion}; '
+      logDiag('[UrlSync] book/chapter not in ${mp.currentVersion}; '
           'skipping apply (${parsed.book} ${parsed.chapter})');
       return;
     }

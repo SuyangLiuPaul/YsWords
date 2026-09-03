@@ -25,6 +25,7 @@ import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/relative_time.dart' show relativeTime;
 import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
+import 'package:yswords/utils/log_diag.dart';
 
 /// "Library" — a single page with two tabs: Notes and Bookmarks.
 /// Each tab shows the user's saved annotations for the current
@@ -724,12 +725,20 @@ class _AnnotationTile extends StatelessWidget {
                     // the new optional `verses` field on
                     // BibleReference. One popup, one truth.
                     //
-                    // 2026-05-20 (v1.2.64): added forensic
-                    // `debugPrint` chain so users reporting "popup
-                    // not opening" can paste the browser console
-                    // output to point at the failing step.
+                    // 2026-05-20 (v1.2.64): added forensic chain so
+                    // users reporting "popup not opening" can paste
+                    // the browser console output to point at the
+                    // failing step.
+                    //
+                    // 2026-09-02: it was written on `debugPrint`,
+                    // which `main.dart` no-ops in every release
+                    // build, so it printed nothing in the one place
+                    // it was for. Now `logDiag`, which routes to
+                    // `print` on release web. Do not revert;
+                    // `test/forensic_logging_audit_test.dart` fails
+                    // if you do.
                     onRefTap: (ref) {
-                      debugPrint(
+                      logDiag(
                           '[Yahweh\'s Words noteRefTap] tapped '
                           '${ref.englishBook} ${ref.chapter}:'
                           '${ref.verses.join(',')} '
@@ -744,13 +753,13 @@ class _AnnotationTile extends StatelessWidget {
                       );
                       try {
                         showVersePopup(context, bibleRef).then((_) {
-                          debugPrint(
+                          logDiag(
                               '[Yahweh\'s Words noteRefTap] popup closed');
                         });
-                        debugPrint(
+                        logDiag(
                             '[Yahweh\'s Words noteRefTap] showVersePopup called');
                       } catch (e, st) {
-                        debugPrint(
+                        logDiag(
                             '[Yahweh\'s Words noteRefTap] showVersePopup '
                             'threw: $e\n$st');
                       }
