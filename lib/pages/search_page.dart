@@ -32,6 +32,7 @@ import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/relative_time.dart' show relativeTime;
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/utils/log_diag.dart';
 
 // 2026-05-10 (v1.2.31): hoisted regex — used inside the AI-results
 // `itemBuilder` for every visible row during scroll, plus the
@@ -1108,8 +1109,15 @@ class _SearchPageState extends State<SearchPage> {
   // chains; the user kept seeing "scanned 0 verses" no matter what
   // I tried. Strip the wrapping. Single async function, single
   // setState at the end, print every intermediate state so the user
-  // can read it in browser DevTools console (debugPrint outputs to
-  // console.log on Flutter web).
+  // can read it in browser DevTools console.
+  //
+  // 2026-09-02: the parenthetical here used to read "debugPrint
+  // outputs to console.log on Flutter web". It does not, in the build
+  // the user runs: `main.dart` no-ops `debugPrint` in release, so
+  // every line of this chain was mute in exactly the deployed build
+  // it was written to diagnose. `logDiag` routes to `print` on
+  // release web. Do not revert these to `debugPrint`;
+  // `test/forensic_logging_audit_test.dart` fails if you do.
   Future<void> search() async {
     try {
       await _searchImpl();
@@ -1118,7 +1126,7 @@ class _SearchPageState extends State<SearchPage> {
       // bubbles into the console with a CLEAR marker. The user's
       // recent screenshot shows search() printing "start" + "mp"
       // and then nothing — most likely an uncaught exception.
-      debugPrint('[Yahweh\'s Words search] EXCEPTION: $e\n$st');
+      logDiag('[Yahweh\'s Words search] EXCEPTION: $e\n$st');
       if (mounted) {
         setState(() {
           _versesLoadError = 'Search crashed: $e';
@@ -1137,21 +1145,21 @@ class _SearchPageState extends State<SearchPage> {
     // the separate StrongsEntryPage via parseStrongsNumber inside
     // the TextField onSubmitted handler, before _searchImpl runs.
     final query = _textEditingController.text.trim();
-    debugPrint('[Yahweh\'s Words search] start query="$query"');
+    logDiag('[Yahweh\'s Words search] start query="$query"');
     if (query.isEmpty) {
       setState(() => _resetSearchState());
       return;
     }
 
     final mp = Provider.of<MainProvider>(context, listen: false);
-    debugPrint('[Yahweh\'s Words search] mp=${mp.hashCode} '
+    logDiag('[Yahweh\'s Words search] mp=${mp.hashCode} '
         'verses=${mp.verses.length} ver=${mp.currentVersion} '
         'curBook=${mp.currentBook}');
-    debugPrint('[Yahweh\'s Words search] CHECKPOINT-1');
+    logDiag('[Yahweh\'s Words search] CHECKPOINT-1');
 
     // Load corpus if missing. Direct, no latch.
     if (mp.verses.isEmpty) {
-      debugPrint('[Yahweh\'s Words search] verses empty, loading...');
+      logDiag('[Yahweh\'s Words search] verses empty, loading...');
       setState(() {
         _isLoadingVerses = true;
         _versesLoadError = null;
@@ -1159,7 +1167,7 @@ class _SearchPageState extends State<SearchPage> {
       try {
         await FetchVerses.execute(mainProvider: mp);
       } catch (e) {
-        debugPrint('[Yahweh\'s Words search] load failed: $e');
+        logDiag('[Yahweh\'s Words search] load failed: $e');
         if (!mounted) return;
         setState(() {
           _isLoadingVerses = false;
@@ -1169,11 +1177,11 @@ class _SearchPageState extends State<SearchPage> {
       }
       if (!mounted) return;
       setState(() => _isLoadingVerses = false);
-      debugPrint(
+      logDiag(
           '[Yahweh\'s Words search] loaded; verses=${mp.verses.length}');
     }
     if (mp.verses.isEmpty) {
-      debugPrint(
+      logDiag(
           '[Yahweh\'s Words search] still empty after load attempt — bail');
       setState(() {
         _resetSearchState();
@@ -1184,7 +1192,7 @@ class _SearchPageState extends State<SearchPage> {
     }
     _lastVersesLength = mp.verses.length;
     _lastLoadedVersion = mp.currentVersion;
-    debugPrint('[Yahweh\'s Words search] CHECKPOINT-2');
+    logDiag('[Yahweh\'s Words search] CHECKPOINT-2');
 
     // 2026-05-07 (v8): Word Study removed at user request. Text
     // search no longer redirects to Strong's / lemma views. The
@@ -1196,7 +1204,7 @@ class _SearchPageState extends State<SearchPage> {
     // end so there is exactly one rebuild cycle and zero window
     // for state to drift.
     final verses = mp.verses;
-    debugPrint('[Yahweh\'s Words search] for-loop verses=${verses.length} '
+    logDiag('[Yahweh\'s Words search] for-loop verses=${verses.length} '
         'searchAll=$searchAll filter=$filterBook curBook=${mp.currentBook}');
 
     // 2026-05-08 (v1.0.1 perf): walk the parallel `verses` /
@@ -1224,7 +1232,7 @@ class _SearchPageState extends State<SearchPage> {
         localCounts[verse.book] = (localCounts[verse.book] ?? 0) + 1;
       }
     }
-    debugPrint('[Yahweh\'s Words search] matches.length=${matches.length}');
+    logDiag('[Yahweh\'s Words search] matches.length=${matches.length}');
 
     // 2026-05-08 (v1.0.1 perf): bookOrder is cached on MainProvider
     // and only rebuilt when `setBooks` runs.

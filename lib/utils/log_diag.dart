@@ -8,6 +8,28 @@ import 'package:flutter/foundation.dart';
 /// `debugPrint`, same frame, same bundle — only the `print` reached the
 /// browser console.
 ///
+/// **The mechanism, found 2026-09-03.** This is not a web-platform
+/// quirk and nothing is being tree-shaken. `lib/main.dart` opens with
+///
+///     if (kReleaseMode) {
+///       debugPrint = (String? message, {int? wrapWidth}) {};
+///     }
+///
+/// — an intentional 2026-06-11 info-disclosure fix, since `debugPrint`
+/// is NOT stripped from release builds and ~100 sync/auth call sites
+/// were landing in the browser console of the deployed site. The
+/// override is unconditional on platform, so the forensic chains are
+/// mute in a release build on *every* target; the web is merely where
+/// it was noticed, because the web is where the console is user-visible
+/// and where this app's bug reports come from.
+///
+/// [diagShouldUsePrint] deliberately does NOT widen to all release
+/// builds. On release iOS/Android the platform log is not something a
+/// user can open and paste, so routing there buys no support value and
+/// would only put the chain back into logcat. If that ever changes,
+/// widen the pure function and extend `test/log_diag_test.dart` — the
+/// rule lives in one place precisely so that is a one-line decision.
+///
 /// That mattered because v1.2.50 added the `[Yahweh's Words jump]`
 /// forensic chain specifically "so users who still report problems can
 /// paste the browser console output", and **the web is where this app's

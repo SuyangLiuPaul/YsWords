@@ -14,6 +14,7 @@ import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
+import 'package:yswords/utils/log_diag.dart';
 
 const _kFontFamily = 'fontFamily';
 const _kFontSize = 'fontSize';
@@ -375,37 +376,37 @@ class AppSettings extends ChangeNotifier {
   void _subscribeToGeminiKeyChanges() {
     // Idempotent — avoid stacking subscriptions.
     if (_geminiKeySub != null) {
-      debugPrint('[Yahweh\'s Words BYOK] subscribe: already subscribed, skip');
+      logDiag('[Yahweh\'s Words BYOK] subscribe: already subscribed, skip');
       return;
     }
     final stream = RealtimeDbSyncService.instance.watchGeminiKey();
     if (stream == null) {
-      debugPrint('[Yahweh\'s Words BYOK] subscribe: stream is null '
+      logDiag('[Yahweh\'s Words BYOK] subscribe: stream is null '
           '(not signed in / not configured)');
       return;
     }
-    debugPrint('[Yahweh\'s Words BYOK] subscribing to RTDB stream');
+    logDiag('[Yahweh\'s Words BYOK] subscribing to RTDB stream');
     _geminiKeySub = stream.listen(_handleRemoteGeminiKey);
   }
 
   Future<void> _unsubscribeFromGeminiKeyChanges() async {
-    debugPrint('[Yahweh\'s Words BYOK] unsubscribing from RTDB stream');
+    logDiag('[Yahweh\'s Words BYOK] unsubscribing from RTDB stream');
     await _geminiKeySub?.cancel();
     _geminiKeySub = null;
   }
 
   Future<void> _handleRemoteGeminiKey(String? remote) async {
     if (remote == null) {
-      debugPrint('[Yahweh\'s Words BYOK] stream emit: null (skip)');
+      logDiag('[Yahweh\'s Words BYOK] stream emit: null (skip)');
       return;
     }
     final trimmed = remote.trim();
-    debugPrint('[Yahweh\'s Words BYOK] stream emit: '
+    logDiag('[Yahweh\'s Words BYOK] stream emit: '
         '${trimmed.isEmpty ? "<empty>" : "${trimmed.substring(0, trimmed.length.clamp(0, 6))}…"} '
         '(local: '
         '${_geminiApiKey.isEmpty ? "<empty>" : "${_geminiApiKey.substring(0, _geminiApiKey.length.clamp(0, 6))}…"})');
     if (trimmed == _geminiApiKey) {
-      debugPrint('[Yahweh\'s Words BYOK] echo, no-op');
+      logDiag('[Yahweh\'s Words BYOK] echo, no-op');
       return;
     }
     _geminiApiKey = trimmed;
@@ -416,7 +417,7 @@ class AppSettings extends ChangeNotifier {
     } else {
       await prefs.setString(_kGeminiApiKey, trimmed);
     }
-    debugPrint('[Yahweh\'s Words BYOK] applied remote → local updated');
+    logDiag('[Yahweh\'s Words BYOK] applied remote → local updated');
   }
 
   /// 2026-05-17 (v1.2.51): on sign-in, push local to cloud BEFORE
@@ -427,10 +428,10 @@ class AppSettings extends ChangeNotifier {
   /// device picks up the cloud's key.
   Future<void> _doByokSync() async {
     if (_geminiApiKey.trim().isNotEmpty) {
-      debugPrint('[Yahweh\'s Words BYOK] sign-in: pushing local key to cloud first');
+      logDiag('[Yahweh\'s Words BYOK] sign-in: pushing local key to cloud first');
       await RealtimeDbSyncService.instance.pushGeminiKey(_geminiApiKey.trim());
     } else {
-      debugPrint('[Yahweh\'s Words BYOK] sign-in: local empty, pulling from cloud');
+      logDiag('[Yahweh\'s Words BYOK] sign-in: local empty, pulling from cloud');
       await _pullGeminiKeyFromCloudIfEmpty();
     }
     _subscribeToGeminiKeyChanges();

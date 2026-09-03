@@ -81,6 +81,7 @@ import 'package:yswords/widgets/paragraph_group_widget.dart';
 import 'package:yswords/widgets/version_picker_sheet.dart'
     show showLanguageGroupedVersionMenu;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/utils/log_diag.dart';
 
 /// 2026-08-02 (v1.3.156): "护眼" (easy-on-eyes) reading theme — a warm
 /// sepia/paper palette for the Bible reading pane, toggled independently
@@ -1354,7 +1355,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         if (mainProvider.hasPendingJump && verses.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) {
-              debugPrint('[Yahweh\'s Words jump] post-frame bail: !mounted');
+              logDiag('[Yahweh\'s Words jump] post-frame bail: !mounted');
               return;
             }
             // Round 56 fix for "first note tap goes to top, second
@@ -1375,13 +1376,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
             // it on the next post-frame tick.
             final mpForPane = context.read<MainProvider>();
             if (!_isLivePane(mpForPane)) {
-              debugPrint('[Yahweh\'s Words jump] post-frame bail: '
+              logDiag('[Yahweh\'s Words jump] post-frame bail: '
                   'a newer reading pane owns this provider');
               return;
             }
             final route = ModalRoute.of(context);
             if (route != null && !route.isCurrent) {
-              debugPrint('[Yahweh\'s Words jump] post-frame bail: '
+              logDiag('[Yahweh\'s Words jump] post-frame bail: '
                   '!route.isCurrent (older HomePage in stack)');
               return;
             }
@@ -1395,14 +1396,14 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
             final pendingIdx = mp.consumePendingJumpFor(
                 mp.currentBook, mp.currentChapter);
             if (pendingIdx == null) {
-              debugPrint('[Yahweh\'s Words jump] post-frame bail: '
+              logDiag('[Yahweh\'s Words jump] post-frame bail: '
                   'consumePendingJump returned null (already consumed)');
               return;
             }
             // Defensive clamp: a stale pending jump from a
             // different chapter could land out-of-range.
             if (pendingIdx < 0 || pendingIdx >= verses.length) {
-              debugPrint('[Yahweh\'s Words jump] post-frame bail: '
+              logDiag('[Yahweh\'s Words jump] post-frame bail: '
                   'pendingIdx=$pendingIdx out of range '
                   '[0, ${verses.length})');
               return;
@@ -1426,17 +1427,26 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
             // short enough that the verse goes back to normal
             // when they start reading.
             //
-            // v1.2.50 added a forensic `debugPrint` chain so users
-            // who still report problems can paste the browser
-            // console output. Each step logs whether it ran or
-            // bailed.
-            debugPrint('[Yahweh\'s Words jump] pendingIdx=$pendingIdx '
+            // v1.2.50 added a forensic chain so users who still
+            // report problems can paste the browser console output.
+            // Each step logs whether it ran or bailed.
+            //
+            // 2026-09-02: that chain was written on `debugPrint` and
+            // therefore never once worked. `main.dart` no-ops
+            // `debugPrint` in every release build (info-disclosure
+            // audit, 2026-06-11), so on the web — the only platform
+            // this app's bug reports come from — the instrument was
+            // mute from the day it shipped. `logDiag` routes to
+            // `print` there instead. Do not revert these to
+            // `debugPrint`; `test/forensic_logging_audit_test.dart`
+            // fails if you do.
+            logDiag('[Yahweh\'s Words jump] pendingIdx=$pendingIdx '
                 'verses.length=${verses.length} '
                 'currentBook=${mainProvider.currentBook} '
                 'currentChapter=${mainProvider.currentChapter}');
             void tryJump([int attempt = 0]) {
               if (!mounted) {
-                debugPrint('[Yahweh\'s Words jump] bail: !mounted (attempt $attempt)');
+                logDiag('[Yahweh\'s Words jump] bail: !mounted (attempt $attempt)');
                 return;
               }
               if (mp.itemScrollController.isAttached) {
@@ -1472,10 +1482,10 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       );
                     } catch (_) {/* harmless — already at target */}
                   });
-                  debugPrint('[Yahweh\'s Words jump] scrolled to chapter-verse '
+                  logDiag('[Yahweh\'s Words jump] scrolled to chapter-verse '
                       'index $pendingIdx (attempt $attempt)');
                 } catch (e) {
-                  debugPrint('[Yahweh\'s Words jump] scroll threw: $e '
+                  logDiag('[Yahweh\'s Words jump] scroll threw: $e '
                       '(attempt $attempt) — retrying');
                   // If scrollTo can't run yet (very rare — e.g.
                   // controller detached between the isAttached
@@ -1487,20 +1497,20 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                   return;
                 }
                 mp.setHighlightIndex(pendingIdx);
-                debugPrint('[Yahweh\'s Words jump] highlight set to $pendingIdx');
+                logDiag('[Yahweh\'s Words jump] highlight set to $pendingIdx');
                 Future.delayed(const Duration(milliseconds: 3500), () {
                   // Only clear if the highlight is still on OUR target —
                   // a subsequent jump (e.g. user navigated chapters) may
                   // have already overwritten it.
                   if (mp.highlightIndex == pendingIdx) {
                     mp.clearHighlightIndex();
-                    debugPrint('[Yahweh\'s Words jump] highlight cleared');
+                    logDiag('[Yahweh\'s Words jump] highlight cleared');
                   }
                 });
                 return;
               }
               if (attempt > 60) {
-                debugPrint('[Yahweh\'s Words jump] gave up after 60 attempts '
+                logDiag('[Yahweh\'s Words jump] gave up after 60 attempts '
                     '— controller never attached');
                 return;
               }
