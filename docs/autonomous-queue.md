@@ -6009,7 +6009,7 @@ has never seen this repo.
       offer the 124 as their own browsable series.** Needs the user.
 
       Original note follows.
-- [ ] **Reconcile our Matthew sermons against the church's own 124.**
+- [x] **Reconcile our Matthew sermons against the church's own 124.**
       The user, 2026-08-10: Bentley has put up Pastor Eric's 124
       messages on Matthew as a 9-volume work, at
       `https://www.christiandiscipleschurch.org/content/124-messages`.
@@ -6073,6 +6073,56 @@ has never seen this repo.
       — **before** editing `assets/sermons/`. A sermon we attribute to
       the wrong Matthew passage is the same class of error as a wrong
       verse: it reads plausibly and gets believed.
+
+
+      **SHIPPED 2026-09-03 as 36 links — not 61.** The host answers (200,
+      99,979 B) and the user ruled: link only what maps exactly, do not offer
+      the 124 as a browsable series.
+      **The recorded 61 reproduces exactly and is NOT shippable.** Its key is
+      `(book, chapter, FIRST verse)`, so `Matthew 3:13-17` and
+      `Matthew 3:13 - 4:17` are one passage to it — messages 006, 007 and 008
+      all land on our single recording 002, and eight of our sermons are
+      claimed by two or three messages each (17 messages involved). A sermon
+      page has one link. 61 is a count of successful match attempts, not of
+      usable pairs.
+      The shipping rule is five conditions, each added because dropping it
+      admitted a NAMED wrong pair: both references parse (message 046's
+      `Matthew 15:21-18` is a typo and is discarded, never repaired);
+      identical FULL range over the first book named (the church prints
+      parallels after the subject, so `Luke 9:23-25, par. Matthew 16:24-26`
+      must not match on Matthew); no partial-verse suffix (026 is `Mt 11:12`,
+      027 is `11:12b`, and our index cannot say which half a recording is);
+      one-to-one with no rival on EITHER side at the loose start-verse anchor;
+      and the preaching date on their page equal to ours.
+      **A plain bijection would have shipped two wrong links, and this is the
+      lesson worth keeping: a message excluded for a technical reason is still
+      a rival.** 026 looked unique only because 027 was dropped as partial —
+      and our 059 is titled *Take up your cross*, which is **027's** title.
+      047 looked unique only because 046 was dropped as unparseable — and our
+      106 is titled *The Syrophoenician woman's faith*, which is **046's**.
+      **The date is the only evidence independent of the passage**, and 36 of
+      the 37 pairs surviving the passage rules agree to the day.
+      **Title similarity is used for NOTHING, not even tie-breaking** — in the
+      surviving set it would have vetoed three correct pairs on chance
+      resemblance (`Hell` scores closer to `The Will of God` than to
+      `Hell: The Place Where God Destroys Evil`).
+      **Fixed a URL bug that would have shipped 36 dead links:** the listing's
+      hrefs are relative to `/content/`, so the address is
+      `/content/matthew-NNN`; the absolute form the old tool built 404s. Hrefs
+      are now READ from the listing and all 72 were probed 200 before writing.
+      **One data discrepancy, NOT changed:** our sermon 139 is dated
+      `1981-05-13`, a Wednesday; message 090 says May 3 1981, a Sunday, and
+      every other sermon in the set is a Sunday. The passage matches exactly.
+      Looks like a transposition in OUR index — it is the user's data, so 090
+      is simply not linked. Worth a look.
+      **The ceiling is our data, not theirs:** 124 of our 289 sermons ship an
+      empty `passage`, so "no sermon of ours on that passage" usually means
+      "we could not find one", not "we do not have one".
+      `python3 tools/reconcile_matthew_124.py --emit` rebuilds the asset and
+      prints the full matched/unmatched lists with reasons.
+      `test/matthew_124_links_test.dart` pins the count, ten specific pairs,
+      the seven deliberate rejections and the date agreement, so a re-scrape
+      cannot move them quietly.
 
 - [x] **Verify the Strong's tagging against the originals.** Done —
       the honest figure is **1,996 runs, 0.55% of tagged runs**, and
@@ -8400,6 +8450,66 @@ has never seen this repo.
       audio file, score, code or album.
       `song_source_icon_test.dart` fails if a fifth source ever appears without
       its mark.
+
+
+- [x] **setapakcdc.com added as a fifth song source (`setapak`), 2 songs —
+      DONE 2026-09-03.**
+      Added **at the user's direction, over a recommendation against it**. The
+      recommendation's facts all still hold and are recorded in
+      `fetch_setapak()` and `test/setapak_source_test.dart` rather than
+      relitigated: two YouTube-only rows, no audio file, no score, no song
+      code, no album, in exchange for a permanent fifth source.
+      Verified live before writing, not taken on the sweep's word: posts
+      **2899** (`/man-of-sorrrow/` — the triple-`r` is the site's own typo) and
+      **2902** (`/fu-mu-en/`), dated 2024-09-16; both YouTube embeds resolve;
+      and the site's Media/Music/Video categories hold **exactly these two
+      posts and nothing else**, so this is the whole catalogue, not a sample.
+      Two facts that mildly strengthen the case: 父母恩 is credited
+      「翻唱：Setapak Christian Disciples Church」 — the congregation, not one
+      member — and both posts carry credits, so these rows have a
+      `creditLine`, unlike the 20 bare Cahaya rows.
+      **Correction to the record: the 406 is against `Python-urllib/*`
+      specifically, not "non-browser UA".** The sync bot's own
+      `YsWordsSongsSyncBot/2.0` gets 200 and no workaround was needed —
+      documented so nobody adds a bare `urlopen()` later and is mystified.
+      **Lyrics deliberately NOT carried**: both are covers of works the church
+      does not own (許冠傑, Hillsong), and `lyrics` is a refresh field, so not
+      scraping it is the only way the omission survives a sync.
+      The rows were generated by RUNNING the fetcher, then a live fetch was
+      re-merged against the shipped rows for a zero diff, so the next sync will
+      not churn them.
+
+      **BLOCKED ON yswords-data**, which runs the same `sync_songs.py`: port
+      the `SOURCES['setapak']` entry, the `SETAPAK_*` constants,
+      `_setapak_category_ids` / `_setapak_credits` / `fetch_setapak`, the
+      `+ fetch_setapak()` line in `main()`, and both merge fixes — **then check
+      its JSON Schema**, because if it enumerates source keys the publish fails
+      validation without `setapak`. Until that lands
+      `pull_songs_snapshot.py` **refuses to run**, deliberately:
+      `REQUIRED_SOURCES` now has a per-source floor (the old flat ">=10" would
+      have failed forever on a 2-row source) and that interlock cannot be
+      waived with `--allow-regression`.
+
+      **Two pre-existing bugs this turned up, both fixed:**
+      * `merge()` compared `audioTracks` against `None` instead of `[]`, so a
+        NO-OP re-sync restamped **48 of 621 rows** — every row with no audio
+        file. `normalise()` restored the `[]`, so no data was ever wrong and
+        nothing looked broken; the damage was to `updatedAt`, which is the
+        "Recently updated" sort key that `merge()`'s docstring is entirely
+        about not moving. Now 0.
+      * The detail-sheet attribution promised audio, video and sheet music on
+        **22 rows that have none of the three**. Fixed keyed on row SHAPE, not
+        on source name.
+      Also `_meta.withScore` claimed 580 while 595 rows had a score — stale
+      since the CDC hymn-score pass; recomputed.
+
+      **One open inconsistency, deliberately not resolved:** "add to playlist"
+      is ungated on these rows (it works, then shows `music_off` in the
+      playlist) because that is a documented existing decision, while "add to
+      queue" two lines away IS gated. The two disagree. Changing playlist
+      semantics for 622 other rows as a side effect of adding two was judged
+      the wrong trade — but the disagreement is real and someone should settle
+      it deliberately.
 
 - [x] **The daily "Refresh songs" failure email — SHIPPED 2026-08-23
       (yswords-data 5bf317a).** Exactly as specified below: the guard is
