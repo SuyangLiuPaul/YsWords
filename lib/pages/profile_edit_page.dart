@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/avatar_picker_service.dart';
+import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
@@ -17,10 +19,25 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 /// always wins as the avatar when set, but the color is the
 /// fallback when image loading fails or the user signs out).
 ///
-/// Reachable from Settings → Profiles → "Edit current profile" or
-/// directly from the dashboard greeting card via long-press.
+/// Reachable from Settings → Profiles → "Edit current profile", and
+/// (2026-09-03) from tapping a profile's avatar in the Profiles list.
+/// The stale claim that a long-press on the dashboard greeting opened
+/// it is gone: no such handler ever existed. The dashboard avatar is
+/// now tappable and opens the Profiles list, one step above this page.
 class ProfileEditPage extends StatefulWidget {
-  const ProfileEditPage({super.key});
+  /// Test seam for the signed-in Google Account photo.
+  ///
+  /// `CloudAuthService.instance.currentUser` is a `firebase_auth`
+  /// `User` behind a singleton with no injection point, and standing
+  /// one up in a widget test means stubbing an abstract class with
+  /// dozens of members to read one nullable string. This lets the
+  /// provenance path — the whole point of the 2026-09-03 change — be
+  /// driven by a real pump of this real page. Null in production, and
+  /// the auth read below is unchanged.
+  @visibleForTesting
+  final String? debugGooglePhotoUrl;
+
+  const ProfileEditPage({super.key, this.debugGooglePhotoUrl});
 
   @override
   State<ProfileEditPage> createState() => _ProfileEditPageState();
@@ -108,6 +125,26 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     final previewColor =
         _selectedColorArgb != null ? Color(_selectedColorArgb!) : scheme.primary;
 
+    // 2026-09-03: the photo the rest of the app actually shows for
+    // this person. Everywhere else — the Dashboard greeting, the
+    // Settings account row — a signed-in Google photo WINS over the
+    // local one (`auth.currentUser?.photoURL ?? p.photoDataUrl`).
+    // This page used to ignore that and preview the local photo only,
+    // which is how you end up setting a photo, seeing it here, and
+    // seeing something else on every other screen.
+    //
+    // So: preview what is really shown, and when it comes from Google
+    // say so and link out, rather than offering a "Change photo"
+    // button that cannot change the picture the user is looking at.
+    // The queue item's own words — a control that looks editable and
+    // is not is worse than one that explains itself.
+    final googlePhotoUrl = widget.debugGooglePhotoUrl ??
+        CloudAuthService.instance.currentUser?.photoURL;
+    final showingGooglePhoto =
+        googlePhotoUrl != null && googlePhotoUrl.isNotEmpty;
+    final previewPhotoUrl =
+        showingGooglePhoto ? googlePhotoUrl : _selectedPhotoDataUrl;
+
     return Scaffold(
       appBar: AppBar(
         leading: const LocalizedBackButton(),
@@ -130,11 +167,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             padding: const EdgeInsets.all(20),
             children: [
               // Big preview avatar at the top so the user sees the
-              // result of their selections immediately.
-              // Priority: locally-uploaded photo > color tile + initial.
-              // (Google profile photo overrides this elsewhere when
-              // signed in — but the editor is for the LOCAL profile
-              // settings, so we show what the user controls.)
+              // result of their selections immediately. Shows the
+              // photo the rest of the app shows — see the
+              // `showingGooglePhoto` note above.
               Center(
                 child: CircleAvatar(
                   radius: 48,
@@ -142,11 +177,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                   foregroundColor: Colors.white,
                   // v1.3.20: ResizeImage caps the preview decode at
                   // 192px (radius 48 → 96px display, 2× for Retina).
-                  backgroundImage: _selectedPhotoDataUrl != null
-                      ? ResizeImage(NetworkImage(_selectedPhotoDataUrl!),
+                  backgroundImage: previewPhotoUrl != null
+                      ? ResizeImage(NetworkImage(previewPhotoUrl),
                           width: 192, height: 192)
                       : null,
-                  child: _selectedPhotoDataUrl != null
+                  child: previewPhotoUrl != null
                       ? null
                       : Text(
                           initial,
@@ -158,8 +193,14 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              // Set / Remove photo actions.
-              if (AvatarPickerService.isAvailable)
+              // Where the photo comes from, when the answer is "not
+              // from here". Shown INSTEAD of the local picker, not
+              // beside it: offering both would be the same lie in a
+              // smaller font.
+              if (showingGooglePhoto)
+                _GooglePhotoProvenance(locale: locale, settings: settings),
+              // Set / Remove photo actions — local photos only.
+              if (!showingGooglePhoto && AvatarPickerService.isAvailable)
                 Center(
                   child: Wrap(
                     spacing: 8,
@@ -305,6 +346,92 @@ class _ColorSwatch extends StatelessWidget {
                 ? Icon(Icons.check,
                     size: 22, color: scheme.onPrimary)
                 : null),
+      ),
+    );
+  }
+}
+
+/// 2026-09-03: where a Google-account photo comes from, and how to
+/// change it — which is not here.
+///
+/// The queue item asked for an opinion as much as a feature: a photo
+/// the app cannot edit should say so and point at the place that can,
+/// rather than render a "Change photo" button that quietly does
+/// nothing to the picture on screen. Signing out of Google is the
+/// other honest answer, so it is stated rather than left to be
+/// discovered.
+class _GooglePhotoProvenance extends StatelessWidget {
+  final String locale;
+  final AppSettings settings;
+  const _GooglePhotoProvenance({required this.locale, required this.settings});
+
+  /// Google's own "Personal info" page — the page that owns the
+  /// account photo. Not a deep link into a photo picker: Google moves
+  /// those, and a 404 would be worse than one extra click.
+  static const String _kGoogleAccountPhotoUrl =
+      'https://myaccount.google.com/personal-info';
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.account_circle_outlined,
+                  size: 18, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  uiStrings['photoFromGoogle']?[locale] ??
+                      'This photo comes from your Google Account.',
+                  style: TextStyle(
+                    fontFamily: settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
+                    fontSize: (settings.fontSize - 2).clamp(12.0, 16.0),
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            uiStrings['photoFromGoogleDetail']?[locale] ??
+                'It cannot be changed in this app. Sign out of Google to '
+                    'use a photo stored on this device instead.',
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize: (settings.fontSize - 3).clamp(11.0, 15.0),
+              color: scheme.onSurfaceVariant,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => LinkOpener.openOrWarn(
+                  context, _kGoogleAccountPhotoUrl,
+                  locale: locale),
+              icon: const Icon(Icons.open_in_new_rounded, size: 16),
+              label: Text(
+                uiStrings['photoChangeInGoogle']?[locale] ??
+                    'Change it in your Google Account',
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -3921,6 +3921,34 @@ const uiStrings = {
     'zh-Hant': '刪除頭像',
     'en': 'Remove photo',
   },
+  // 2026-09-03: the avatar is tappable everywhere and opens the
+  // profile. This is the label a screen reader reads for a circle
+  // that has no text of its own.
+  'openProfile': {
+    'zh-Hans': '打开个人资料',
+    'zh-Hant': '開啟個人資料',
+    'en': 'Open profile',
+  },
+  // 2026-09-03: shown in place of the local photo picker when the
+  // avatar on screen is the signed-in Google Account's. Saying where
+  // the photo comes from and pointing at the page that owns it beats
+  // a "Change photo" button that cannot change it.
+  'photoFromGoogle': {
+    'zh-Hans': '这张头像来自你的 Google 账号。',
+    'zh-Hant': '這張頭像來自你的 Google 帳號。',
+    'en': 'This photo comes from your Google Account.',
+  },
+  'photoFromGoogleDetail': {
+    'zh-Hans': '无法在本应用中更换。退出 Google 登录后，可以改用存在本机的头像。',
+    'zh-Hant': '無法在本應用中更換。登出 Google 後，可以改用存在本機的頭像。',
+    'en': 'It cannot be changed in this app. Sign out of Google to use a '
+        'photo stored on this device instead.',
+  },
+  'photoChangeInGoogle': {
+    'zh-Hans': '在 Google 账号中更换',
+    'zh-Hant': '在 Google 帳號中更換',
+    'en': 'Change it in your Google Account',
+  },
   // ── Bible Evidence (Round 38) ────────────────────────────────────
   'bibleEvidence': {
     'zh-Hans': '圣经实证',

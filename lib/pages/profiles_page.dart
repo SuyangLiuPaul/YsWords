@@ -184,7 +184,30 @@ class _ProfilesPageState extends State<ProfilesPage> {
           final isActive = p.id == svc.currentId;
           final photo = p.photoDataUrl;
           return ListTile(
-            leading: CircleAvatar(
+            // 2026-09-03: the avatar opens that profile, everywhere.
+            // This row's own onTap only switches profiles, and on the
+            // ACTIVE row it is null — so the one face you are most
+            // likely to tap, your own, used to be the one that did
+            // nothing at all. Tapping it now goes where the overflow
+            // menu's "Edit profile" goes, and by the same route:
+            // editing reads ProfileService.current, so a non-active
+            // profile is made current first.
+            //
+            // Deliberately NOT swapped for the shared ProfileAvatar:
+            // this list shows one row per LOCAL profile and its
+            // inactive rows use a muted tile colour that ProfileAvatar
+            // has no notion of. Same tap affordance, same semantics,
+            // different palette.
+            leading: Semantics(
+              button: true,
+              label: uiStrings['openProfile']?[locale] ?? 'Open profile',
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () {
+                  if (!isActive) svc.setCurrent(p.id);
+                  pushPage(const ProfileEditPage());
+                },
+                child: CircleAvatar(
               backgroundColor: p.avatarColorArgb != null
                   ? Color(p.avatarColorArgb!)
                   : (isActive
@@ -206,6 +229,8 @@ class _ProfilesPageState extends State<ProfilesPage> {
                           : p.name.characters.first.toUpperCase(),
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
+                ),
+              ),
             ),
             title: Text(
               p.name,
