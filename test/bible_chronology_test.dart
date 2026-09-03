@@ -600,6 +600,52 @@ void main() {
       );
     });
 
+    testWidgets('tapping the plot reads the year off it, and does not '
+        'scroll the view away', (tester) async {
+      // 2026-09-04, from a phone at ~19 years in view: "我滑动可以，但是
+      // 我按的时候想看具体时间却不行". Scrolling worked; asking the chart
+      // what year you were looking at did not.
+      //
+      // The cursor could only be moved by the slider or the overview
+      // strip, and both map all 4,098 years onto the width of the
+      // screen — about five years per pixel on a phone. So the reader
+      // could scroll to AD 47 and the scrubber would still be reporting
+      // 100 BC, with no way to bring it over short of dragging a slider
+      // by single pixels.
+      await pumpChart(tester, size: tall);
+      for (var i = 0; i < 16; i++) {
+        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+        await tester.pump(const Duration(milliseconds: 60));
+      }
+      await tester.pumpAndSettle();
+
+      final scrolled = plotScroll(tester).position.pixels;
+      final before = find
+          .textContaining(RegExp(r'^AM \d+'))
+          .evaluate()
+          .map((e) => (e.widget as Text).data)
+          .first;
+
+      // Somewhere in the plot that is neither a bar nor a label: the
+      // ruler strip at the very top of the scrolling area.
+      final plotBox = tester.getRect(find.byType(SingleChildScrollView).last);
+      await tester.tapAt(Offset(plotBox.left + plotBox.width * 0.75,
+          plotBox.top + 8));
+      await tester.pumpAndSettle();
+
+      final after = find
+          .textContaining(RegExp(r'^AM \d+'))
+          .evaluate()
+          .map((e) => (e.widget as Text).data)
+          .first;
+      expect(after, isNot(before),
+          reason: 'the scrubber must report the year that was tapped');
+      expect(plotScroll(tester).position.pixels, closeTo(scrolled, 0.5),
+          reason: 'placing the cursor must not move the view — scrolling '
+              'out from under the thing just pointed at is how a '
+              'crosshair stops being usable');
+    });
+
     testWidgets('the scrubber reports who was alive that year',
         (tester) async {
       await pumpChart(tester, size: tall);

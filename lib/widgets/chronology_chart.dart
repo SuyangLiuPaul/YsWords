@@ -112,7 +112,15 @@ class _ChronologyChartState extends State<ChronologyChart> {
   // density that must stay device-dependent because the overview strip
   // and the whole-span view are defined by it.
   static const List<double> _densityLadder = [
-    0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, _maxDensity,
+    0.0625,
+    0.125,
+    0.25,
+    0.5,
+    1,
+    2,
+    4,
+    8,
+    _maxDensity,
   ];
 
   /// The ceiling: 16 pixels per year.
@@ -357,8 +365,10 @@ class _ChronologyChartState extends State<ChronologyChart> {
   double _nameColumnWidth(double content) {
     var widest = 0.0;
     for (final l in widget.data.lifelines) {
-      final w = _measure(l.localizedName(widget.locale),
-          const TextStyle(fontSize: _nameFontSize, fontWeight: FontWeight.w700));
+      final w = _measure(
+          l.localizedName(widget.locale),
+          const TextStyle(
+              fontSize: _nameFontSize, fontWeight: FontWeight.w700));
       if (w > widest) widest = w;
     }
     // The captions and the fold band live in this column too, and a
@@ -368,7 +378,8 @@ class _ChronologyChartState extends State<ChronologyChart> {
       _s('chronologyEras', 'Eras'),
       _s('chronologyEvents', 'Events'),
     ]) {
-      final w = _measure(s, const TextStyle(fontSize: 9, fontWeight: FontWeight.w800));
+      final w = _measure(
+          s, const TextStyle(fontSize: 9, fontWeight: FontWeight.w800));
       if (w > widest) widest = w;
     }
     final fold = _measure(
@@ -385,6 +396,27 @@ class _ChronologyChartState extends State<ChronologyChart> {
     _scrollTo(am);
   }
 
+  /// Put the cursor on a year the reader touched, WITHOUT scrolling.
+  ///
+  /// [_goTo] is for jumping somewhere you are not — a chip, a folded
+  /// band, the overview strip — so it recentres. A tap on the plot is
+  /// the opposite: the year is already under the finger, and moving
+  /// the view would throw away the thing being pointed at.
+  void _placeCursor(int am) {
+    final lo = widget.data.spanStartAm;
+    final hi = widget.data.spanEndAm;
+    setState(() => _cursorAm = am.clamp(lo, hi));
+  }
+
+  /// The year under a horizontal offset in the plot's own coordinates.
+  /// The inverse of [_x].
+  int _amAtPlotX(double dx, double plotWidth) {
+    final span = (widget.data.spanEndAm - widget.data.spanStartAm).abs();
+    if (span == 0 || plotWidth <= 0) return widget.data.spanStartAm;
+    return (widget.data.spanStartAm + (dx / plotWidth).clamp(0.0, 1.0) * span)
+        .round();
+  }
+
   // ── The zoom ladder ─────────────────────────────────────────────
 
   int get _span => (widget.data.spanEndAm - widget.data.spanStartAm).abs();
@@ -393,8 +425,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// span is exactly the viewport. Every rung of the ladder at or below
   /// it is unreachable on this device, because zooming out past it would
   /// leave the plot narrower than the box it lives in.
-  double _fitDensity(double viewport) =>
-      _span == 0 ? 0 : viewport / _span;
+  double _fitDensity(double viewport) => _span == 0 ? 0 : viewport / _span;
 
   /// The rungs this device actually has, coarsest first. A phone gets
   /// all seven; a desktop's fit is already denser than the first four,
@@ -402,7 +433,10 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// readable and has less distance to travel.
   List<double> _rungs(double viewport) {
     final fit = _fitDensity(viewport);
-    return [for (final d in _densityLadder) if (d > fit * 1.02) d];
+    return [
+      for (final d in _densityLadder)
+        if (d > fit * 1.02) d
+    ];
   }
 
   /// Where the chart opens: the coarsest rung holding no more than
@@ -554,11 +588,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
     ColorScheme scheme,
   ) {
     final isZh = widget.locale.startsWith('zh');
-    final creation = isZh
-        ? '公元前 ${active.creationBc} 年'
-        : '${active.creationBc} BC';
-    final line = _s('chronologySchemeBanner', 'Dated by {scheme} · '
-            'Creation = {creation}')
+    final creation =
+        isZh ? '公元前 ${active.creationBc} 年' : '${active.creationBc} BC';
+    final line = _s(
+            'chronologySchemeBanner',
+            'Dated by {scheme} · '
+                'Creation = {creation}')
         .replaceAll('{scheme}', active.localizedName(widget.locale))
         .replaceAll('{creation}', creation);
     return Material(
@@ -586,8 +621,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                 ),
               ),
               const SizedBox(width: 6),
-              Icon(Icons.info_outline_rounded,
-                  size: 16, color: scheme.primary),
+              Icon(Icons.info_outline_rounded, size: 16, color: scheme.primary),
             ],
           ),
         ),
@@ -617,8 +651,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _s('chronologyWhoseChronology',
-                      'Whose chronology is this?'),
+                  _s('chronologyWhoseChronology', 'Whose chronology is this?'),
                   style: const TextStyle(
                       fontSize: 17, fontWeight: FontWeight.w800),
                 ),
@@ -637,16 +670,14 @@ class _ChronologyChartState extends State<ChronologyChart> {
                               size: 15,
                               color: s.supported
                                   ? scheme.primary
-                                  : scheme.onSurface
-                                      .withValues(alpha: 0.4),
+                                  : scheme.onSurface.withValues(alpha: 0.4),
                             ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 s.localizedName(widget.locale),
                                 style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700),
+                                    fontSize: 14, fontWeight: FontWeight.w700),
                               ),
                             ),
                             if (!s.supported)
@@ -654,8 +685,8 @@ class _ChronologyChartState extends State<ChronologyChart> {
                                 _s('chronologyNotPlotted', 'not plotted'),
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: scheme.onSurface
-                                      .withValues(alpha: 0.55),
+                                  color:
+                                      scheme.onSurface.withValues(alpha: 0.55),
                                 ),
                               ),
                           ],
@@ -666,8 +697,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                           style: TextStyle(
                             fontSize: 13,
                             height: 1.6,
-                            color:
-                                scheme.onSurface.withValues(alpha: 0.85),
+                            color: scheme.onSurface.withValues(alpha: 0.85),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -881,9 +911,9 @@ class _ChronologyChartState extends State<ChronologyChart> {
             final w = constraints.maxWidth;
             void handle(Offset local) {
               if (span == 0 || w <= 0) return;
-              final am = (data.spanStartAm +
-                      (local.dx / w).clamp(0.0, 1.0) * span)
-                  .round();
+              final am =
+                  (data.spanStartAm + (local.dx / w).clamp(0.0, 1.0) * span)
+                      .round();
               _goTo(am);
             }
 
@@ -928,8 +958,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
           children: [
             Expanded(
               child: Text(
-                formatChronologyYear(
-                    data.spanStartAm, active, widget.locale),
+                formatChronologyYear(data.spanStartAm, active, widget.locale),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -1077,64 +1106,91 @@ class _ChronologyChartState extends State<ChronologyChart> {
               child: SizedBox(
                 width: plotWidth,
                 height: height,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _GroundPainter(
-                          data: data,
-                          rulerHeight: _rulerHeight,
-                          eraStripHeight: _eraStripHeight,
-                          tickLaneHeight: tickLane,
-                          gridStep: step,
-                          brightness: Theme.of(context).brightness,
-                          scheme: scheme,
-                          boundaryLabel: _s('chronologyComputedEnds',
-                              'Genesis 5 & 11 ages end here'),
-                          contestedLabel: _s('chronologyContestedLabel',
-                              'The two scales disagree here'),
-                        ),
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(
-                          height: _rulerHeight,
-                          child: _ruler(active, scheme, plotWidth, step),
-                        ),
-                        SizedBox(
-                          height: _eraStripHeight,
-                          child: _eraStrip(scheme, plotWidth),
-                        ),
-                        for (final s in slots)
-                          SizedBox(
-                            height: slotHeight(s),
-                            child: s.folded
-                                ? _foldLane(context, s, scheme)
-                                : _lane(
-                                    context, s.lines.first, scheme, plotWidth),
+                // **Tap the chart to read the year off it.**
+                //
+                // Until now the cursor could only be moved by the
+                // slider or the overview strip, and both of those map
+                // the whole 4,098-year span onto the width of the
+                // screen. That is fine at whole span and useless at
+                // nineteen years in view, where one pixel of slider is
+                // five years and the cursor is usually not even on the
+                // part of the plot being looked at — the reader can
+                // scroll to AD 47 and the scrubber still says 100 BC.
+                //
+                // So the plot itself sets the cursor. Nested tap
+                // recognisers resolve innermost-first, so this only
+                // fires where nothing more specific claimed the touch:
+                // a lifeline bar still opens its person, an event label
+                // still opens its event, and everything else — the
+                // hatched ground, the era band, the ruler — answers
+                // with the year under the finger.
+                //
+                // It does not scroll (see [_placeCursor]). Moving the
+                // view out from under the thing just pointed at is the
+                // classic way a crosshair becomes unusable.
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (d) =>
+                      _placeCursor(_amAtPlotX(d.localPosition.dx, plotWidth)),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _GroundPainter(
+                            data: data,
+                            rulerHeight: _rulerHeight,
+                            eraStripHeight: _eraStripHeight,
+                            tickLaneHeight: tickLane,
+                            gridStep: step,
+                            brightness: Theme.of(context).brightness,
+                            scheme: scheme,
+                            boundaryLabel: _s('chronologyComputedEnds',
+                                'Genesis 5 & 11 ages end here'),
+                            contestedLabel: _s('chronologyContestedLabel',
+                                'The two scales disagree here'),
                           ),
-                        SizedBox(
-                          height: tickLane,
-                          child: _tickLane(
-                              context, scheme, plotWidth, tickLane),
-                        ),
-                      ],
-                    ),
-                    // Scrub cursor, drawn over everything.
-                    Positioned(
-                      left: _x(_cursorAm, plotWidth) - 1,
-                      top: 0,
-                      bottom: 0,
-                      width: 2,
-                      child: IgnorePointer(
-                        child: ColoredBox(
-                          color: scheme.primary.withValues(alpha: 0.75),
                         ),
                       ),
-                    ),
-                  ],
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(
+                            height: _rulerHeight,
+                            child: _ruler(active, scheme, plotWidth, step),
+                          ),
+                          SizedBox(
+                            height: _eraStripHeight,
+                            child: _eraStrip(scheme, plotWidth),
+                          ),
+                          for (final s in slots)
+                            SizedBox(
+                              height: slotHeight(s),
+                              child: s.folded
+                                  ? _foldLane(context, s, scheme)
+                                  : _lane(context, s.lines.first, scheme,
+                                      plotWidth),
+                            ),
+                          SizedBox(
+                            height: tickLane,
+                            child:
+                                _tickLane(context, scheme, plotWidth, tickLane),
+                          ),
+                        ],
+                      ),
+                      // Scrub cursor, drawn over everything.
+                      Positioned(
+                        left: _x(_cursorAm, plotWidth) - 1,
+                        top: 0,
+                        bottom: 0,
+                        width: 2,
+                        child: IgnorePointer(
+                          child: ColoredBox(
+                            color: scheme.primary.withValues(alpha: 0.75),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1179,8 +1235,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
 
   static const TextStyle _rulerAmStyle =
       TextStyle(fontSize: _rulerFontSize, fontWeight: FontWeight.w700);
-  static const TextStyle _rulerYearStyle =
-      TextStyle(fontSize: _rulerFontSize);
+  static const TextStyle _rulerYearStyle = TextStyle(fontSize: _rulerFontSize);
 
   /// Width of the widest label the ruler will ever print — both of its
   /// two lines, at the far end of the axis where the digits are longest.
@@ -1228,9 +1283,8 @@ class _ChronologyChartState extends State<ChronologyChart> {
             _plot.position.hasPixels &&
             _plot.position.hasViewportDimension;
         final viewLeft = hasView ? _plot.position.pixels : 0.0;
-        final viewRight = hasView
-            ? viewLeft + _plot.position.viewportDimension
-            : plotWidth;
+        final viewRight =
+            hasView ? viewLeft + _plot.position.viewportDimension : plotWidth;
         final labels = <Widget>[];
         for (var am = widget.data.spanStartAm;
             am <= widget.data.spanEndAm;
@@ -1313,10 +1367,9 @@ class _ChronologyChartState extends State<ChronologyChart> {
     return ListenableBuilder(
       listenable: _plot,
       builder: (context, _) {
-        final viewLeft =
-            _plot.hasClients && _plot.position.hasPixels
-                ? _plot.position.pixels
-                : 0.0;
+        final viewLeft = _plot.hasClients && _plot.position.hasPixels
+            ? _plot.position.pixels
+            : 0.0;
         final children = <Widget>[];
         for (final e in widget.data.eras) {
           final left = _x(e.startAm, plotWidth);
@@ -1334,8 +1387,8 @@ class _ChronologyChartState extends State<ChronologyChart> {
           // Slide the label to the viewport's left edge, but never past
           // the point where it would overhang the end of its own band.
           final maxStart = right - want - 3;
-          final start =
-              (viewLeft + 3).clamp(left + 3, maxStart < left + 3 ? left + 3 : maxStart);
+          final start = (viewLeft + 3)
+              .clamp(left + 3, maxStart < left + 3 ? left + 3 : maxStart);
           children.add(Positioned(
             left: start,
             top: 0,
@@ -1400,16 +1453,14 @@ class _ChronologyChartState extends State<ChronologyChart> {
         TextStyle(
           fontSize: _labelFontSize,
           fontWeight: t.isComputed ? FontWeight.w800 : FontWeight.w500,
-          color: scheme.onSurface
-              .withValues(alpha: t.isComputed ? 0.85 : 0.62),
+          color: scheme.onSurface.withValues(alpha: t.isComputed ? 0.85 : 0.62),
         ),
     ];
     final texts = [
       for (final t in candidates) t.localizedTitle(widget.locale),
     ];
     final wants = [
-      for (var i = 0; i < candidates.length; i++)
-        _measure(texts[i], styles[i]),
+      for (var i = 0; i < candidates.length; i++) _measure(texts[i], styles[i]),
     ];
     final lefts = [
       for (final t in candidates) _x(t.am, plotWidth) + 3,
@@ -1503,7 +1554,17 @@ class _ChronologyChartState extends State<ChronologyChart> {
             best = t;
           }
         }
-        if (best != null) _showEventSheet(context, best);
+        if (best != null) {
+          _showEventSheet(context, best);
+        } else {
+          // Bare lane — no label, no tick within reach. This did
+          // nothing at all, and because the lane's detector is opaque
+          // it also swallowed the tap before the plot-wide handler
+          // below could see it, so the Events row was simply dead to
+          // the touch. Reading a year off the chart is the whole
+          // reason the lane is there, so answer with the year.
+          _placeCursor(_amAtPlotX(p.dx, plotWidth));
+        }
       },
       child: Stack(
         clipBehavior: Clip.hardEdge,
@@ -1571,9 +1632,8 @@ class _ChronologyChartState extends State<ChronologyChart> {
     return ((lo + hi) / 2).round();
   }
 
-  String _foldLabel(_Slot s) =>
-      _s('chronologyRowsFolded', '{n} not in view')
-          .replaceAll('{n}', '${s.lines.length}');
+  String _foldLabel(_Slot s) => _s('chronologyRowsFolded', '{n} not in view')
+      .replaceAll('{n}', '${s.lines.length}');
 
   /// The name column's half of a folded run. It says the count and the
   /// reason in four words, and it is a control: tapping it does the same
@@ -1587,8 +1647,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
     _Slot s,
     ColorScheme scheme,
   ) {
-    final names =
-        s.lines.map((l) => l.localizedName(widget.locale)).join(', ');
+    final names = s.lines.map((l) => l.localizedName(widget.locale)).join(', ');
     final target = _foldTarget(s);
     return Semantics(
       // The visible label is four words in an 88 pt column; a screen
@@ -1769,8 +1828,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        _s('chronologyDerivation',
-                            'How this year is derived'),
+                        _s('chronologyDerivation', 'How this year is derived'),
                         style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -1799,8 +1857,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                             style: TextStyle(
                               fontSize: 12,
                               height: 1.6,
-                              color:
-                                  scheme.onSurface.withValues(alpha: 0.8),
+                              color: scheme.onSurface.withValues(alpha: 0.8),
                             ),
                           ),
                         ),
@@ -1903,8 +1960,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: _readable(
-                                Theme.of(ctx).brightness,
+                            color: _readable(Theme.of(ctx).brightness,
                                 Color(era.colorValue)),
                           ),
                         ),
@@ -1945,10 +2001,9 @@ class _ChronologyChartState extends State<ChronologyChart> {
                           ),
                           child: Text(
                             _s('chronologyAlsoPlaced', '')
+                                .replaceAll('{year}', signedYear(m.placedYear!))
                                 .replaceAll(
-                                    '{year}', signedYear(m.placedYear!))
-                                .replaceAll('{delta}',
-                                    '${m.placedDeltaYears!.abs()}'),
+                                    '{delta}', '${m.placedDeltaYears!.abs()}'),
                             style: TextStyle(
                               fontSize: 12,
                               height: 1.6,
@@ -2509,8 +2564,8 @@ class _GroundPainter extends CustomPainter {
     // chronology, and eight eras this app already has rather than
     // decoration invented for the occasion.
     for (final e in data.eras) {
-      final rect = Rect.fromLTRB(x(e.startAm), lanesTop, x(e.endAm),
-          size.height - tickLaneHeight);
+      final rect = Rect.fromLTRB(
+          x(e.startAm), lanesTop, x(e.endAm), size.height - tickLaneHeight);
       final c = _readable(brightness, Color(e.colorValue));
       canvas.drawRect(rect, Paint()..color = c.withValues(alpha: 0.055));
       canvas.drawRect(
@@ -2536,8 +2591,7 @@ class _GroundPainter extends CustomPainter {
       Rect.fromLTRB(x(data.spanStartAm), groundTop, endX, groundBottom),
       Paint()..color = ground,
     );
-    final fadeWidth =
-        ((size.width - endX) * 0.2).clamp(0.0, 70.0).toDouble();
+    final fadeWidth = ((size.width - endX) * 0.2).clamp(0.0, 70.0).toDouble();
     if (fadeWidth > 0) {
       final fadeRect =
           Rect.fromLTRB(endX, groundTop, endX + fadeWidth, groundBottom);
@@ -2568,8 +2622,7 @@ class _GroundPainter extends CustomPainter {
       // on a near-black ground, and 0.16 alpha put the band below the
       // threshold where a reader notices it at all.
       final dark = brightness == Brightness.dark;
-      _hatch(canvas, rect,
-          scheme.error.withValues(alpha: dark ? 0.30 : 0.16),
+      _hatch(canvas, rect, scheme.error.withValues(alpha: dark ? 0.30 : 0.16),
           spacing: 6, slope: -1);
       final edge = Paint()
         ..color = scheme.error.withValues(alpha: dark ? 0.6 : 0.4)
@@ -2671,8 +2724,7 @@ class _FoldPainter extends CustomPainter {
     final thickness = (pitch * 0.65).clamp(0.8, 3.0);
     for (var i = 0; i < lines.length; i++) {
       final l = lines[i];
-      final base =
-          Color(data.lineById(l.lineId)?.colorValue ?? 0xFF555555);
+      final base = Color(data.lineById(l.lineId)?.colorValue ?? 0xFF555555);
       final y = 4 + pitch * (i + 0.5);
       canvas.drawLine(
         Offset(x(l.birthAm), y),
@@ -2724,9 +2776,8 @@ class _TickPainter extends CustomPainter {
 
     for (final t in data.allTicks) {
       final era = data.eraById(t.era);
-      final base = era == null
-          ? fallback
-          : _readable(brightness, Color(era.colorValue));
+      final base =
+          era == null ? fallback : _readable(brightness, Color(era.colorValue));
       final dx = x(t.am);
       if (t.isComputed) {
         canvas.drawLine(
@@ -2845,8 +2896,8 @@ class _OverviewPainter extends CustomPainter {
         Offset(dx, bandBottom + 3),
         Offset(dx, size.height - 3),
         Paint()
-          ..color = scheme.onSurface
-              .withValues(alpha: t.isComputed ? 0.75 : 0.32)
+          ..color =
+              scheme.onSurface.withValues(alpha: t.isComputed ? 0.75 : 0.32)
           ..strokeWidth = t.isComputed ? 1.4 : 0.8,
       );
     }
@@ -2980,9 +3031,8 @@ class _RefChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navigable = onTap != null;
-    final fg = navigable
-        ? scheme.primary
-        : scheme.onSurface.withValues(alpha: 0.55);
+    final fg =
+        navigable ? scheme.primary : scheme.onSurface.withValues(alpha: 0.55);
     final body = Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
