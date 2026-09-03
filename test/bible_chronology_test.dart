@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -275,6 +276,63 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
   }
 
+  // ── The zoom model, as the tests below have to talk about it ──
+  //
+  // Zoom is a DENSITY — pixels per year — not a multiplier, so "zoom 5"
+  // is no longer a thing a test can say. What a test can say, and what
+  // the reader actually chooses, is how many years are on screen. These
+  // helpers read that straight off the live scroll position, so nothing
+  // below re-derives the layout or assumes a ladder.
+
+  ScrollableState plotScroll(WidgetTester tester) => tester
+      .stateList<ScrollableState>(find.byType(Scrollable))
+      .firstWhere((s) => s.widget.axisDirection == AxisDirection.right);
+
+  double plotWidthOf(WidgetTester tester) {
+    final p = plotScroll(tester).position;
+    return p.viewportDimension + p.maxScrollExtent;
+  }
+
+  double yearsInView(WidgetTester tester) {
+    final p = plotScroll(tester).position;
+    return (data.spanEndAm - data.spanStartAm) *
+        p.viewportDimension /
+        plotWidthOf(tester);
+  }
+
+  /// Zoom all the way out — the whole-span view, which is still the
+  /// floor of the ladder even though it is no longer the default.
+  Future<void> wholeSpan(WidgetTester tester) async {
+    for (var i = 0; i < 12; i++) {
+      if (plotScroll(tester).position.maxScrollExtent == 0) return;
+      await tester.tap(find.byIcon(Icons.zoom_out_rounded));
+      await tester.pump(const Duration(milliseconds: 60));
+    }
+  }
+
+  /// Put [am] in the middle of the plot at the coarsest level holding no
+  /// more than [years] years — the reader's own two controls, driven so
+  /// the assertion is about a stated viewport rather than about where a
+  /// chip happened to land.
+  Future<void> viewAt(
+    WidgetTester tester,
+    int am, {
+    required int years,
+  }) async {
+    await wholeSpan(tester);
+    for (var i = 0; i < 12; i++) {
+      if (yearsInView(tester) <= years) break;
+      await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+      await tester.pump(const Duration(milliseconds: 60));
+    }
+    final pos = plotScroll(tester).position;
+    final x = am / (data.spanEndAm - data.spanStartAm) * plotWidthOf(tester);
+    pos.jumpTo((x - pos.viewportDimension / 2)
+        .clamp(0.0, pos.maxScrollExtent));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+  }
+
   group('ChronologyChart', () {
     testWidgets('renders at 402 pt without overflowing', (tester) async {
       await pumpChart(tester);
@@ -284,7 +342,12 @@ void main() {
 
     testWidgets('every person on the chart is reachable by name',
         (tester) async {
+      // At the whole-span view, which the chart no longer OPENS on but
+      // is always one Zoom out away. Everybody has a row there — that is
+      // what "nothing folds at whole span" means, and it is the view
+      // this assertion has always been about.
       await pumpChart(tester);
+      await wholeSpan(tester);
       for (final l in data.lifelines) {
         expect(find.text(l.localizedName('en')), findsWidgets,
             reason: '${l.personId} is not visible on the chart');
@@ -294,6 +357,7 @@ void main() {
     testWidgets('every person is reachable in Traditional Chinese too',
         (tester) async {
       await pumpChart(tester, locale: 'zh-Hant');
+      await wholeSpan(tester);
       for (final l in data.lifelines) {
         expect(find.text(l.localizedName('zh-Hant')), findsWidgets,
             reason: '${l.personId} is not visible in zh-Hant');
@@ -357,7 +421,7 @@ void main() {
       expect(find.textContaining('969'), findsWidgets);
     });
 
-    testWidgets('the plot fits the width at zoom 1 and only the plot '
+    testWidgets('the whole-span view fits the width, and only the plot '
         'scrolls sideways when zoomed', (tester) async {
       await pumpChart(tester);
 
@@ -368,9 +432,11 @@ void main() {
 
       expect(horizontals(), isNotEmpty,
           reason: 'the plot should live in its own horizontal scroll box');
+
+      await wholeSpan(tester);
       for (final s in horizontals()) {
         expect(s.position.maxScrollExtent, 0,
-            reason: 'at zoom 1 nothing should scroll sideways');
+            reason: 'at whole span nothing should scroll sideways');
       }
 
       await tester.tap(find.byIcon(Icons.zoom_in_rounded));
@@ -382,6 +448,93 @@ void main() {
         reason: 'zooming should widen the plot, not the page',
       );
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('it opens on a level a reader can read, not on the whole '
+        'span', (tester) async {
+      // The reader's second complaint, as an assertion. Opening at
+      // fit-to-width put 4,098 years in 250 pt; the default now holds
+      // about half a millennium, and the plot opens centred on the
+      // cursor rather than at year zero.
+      await pumpChart(tester, size: tall);
+      expect(yearsInView(tester), lessThan(900),
+          reason: 'the default view is still the whole span');
+      expect(yearsInView(tester), greaterThan(120),
+          reason: 'the default should not open deep inside the axis');
+      final flood = data.markers.firstWhere((m) => m.id == 'flood');
+      final pos = plotScroll(tester).position;
+      final x = flood.am /
+          (data.spanEndAm - data.spanStartAm) *
+          plotWidthOf(tester);
+      expect(x, greaterThanOrEqualTo(pos.pixels - 1));
+      expect(x, lessThanOrEqualTo(pos.pixels + pos.viewportDimension + 1),
+          reason: 'the default view should contain the opening cursor');
+    });
+
+    testWidgets('a zoom level is a DENSITY — the same level is the same '
+        'plot on every device', (tester) async {
+      // The defect this pass fixes, stated as a test. "8×" meant eight
+      // times the fitted width, so it delivered four times more pixels
+      // per year on a desktop than on a phone and the same control gave
+      // two different pictures. Pixels per year is the same everywhere;
+      // a wider screen simply holds more years at once.
+      final rungs = <double, List<double>>{};
+      final windows = <double, double>{};
+      for (final w in const [402.0, 834.0, 1280.0]) {
+        await pumpChart(tester, size: Size(w, 1700));
+        await wholeSpan(tester);
+        final seen = <double>[];
+        for (var i = 0; i < 12; i++) {
+          await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+          await tester.pump(const Duration(milliseconds: 60));
+          final p = plotWidthOf(tester);
+          if (seen.isNotEmpty && (seen.last - p).abs() < 0.5) break;
+          seen.add(p);
+          if (p >= 8000) windows[w] ??= yearsInView(tester);
+        }
+        rungs[w] = seen;
+      }
+      final span = (data.spanEndAm - data.spanStartAm).toDouble();
+      // Every level a device offers is a rung of ONE absolute ladder in
+      // pixels per year, shared by all of them. A phone starts lower on
+      // it — its fitted width is less dense — but it climbs the same
+      // ladder and ends on the same rung.
+      for (final e in rungs.entries) {
+        for (final p in e.value) {
+          final d = p / span;
+          expect((d * 16).roundToDouble() / 16, closeTo(d, 0.001),
+              reason: '${e.key} pt offers $d pt/yr, off the ladder: $rungs');
+        }
+        expect(e.value.last, closeTo(rungs[402]!.last, 0.5),
+            reason: 'devices end on different rungs: $rungs');
+      }
+      // And at the SAME rung, the bigger screen holds more years — which
+      // is what a bigger screen is for.
+      expect(windows[1280]!, greaterThan(windows[402]! * 2),
+          reason: 'years in view at 2 pt/yr: $windows');
+    });
+
+    testWidgets('the deepest level is the same density everywhere, and '
+        'it is far past the old 8×', (tester) async {
+      final seen = <double, double>{};
+      for (final w in const [402.0, 900.0, 1280.0]) {
+        await pumpChart(tester, size: Size(w, 1700));
+        for (var i = 0; i < 12; i++) {
+          await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+          await tester.pump(const Duration(milliseconds: 60));
+        }
+        seen[w] = plotWidthOf(tester);
+      }
+      final span = (data.spanEndAm - data.spanStartAm).toDouble();
+      for (final e in seen.entries) {
+        // 4 pt/yr — the measured knee, documented on `_maxDensity`.
+        expect(e.value / span, closeTo(4, 0.01),
+            reason: 'max density at ${e.key} pt: $seen');
+        // The old ceiling was 8 × the fitted width. On a phone the new
+        // one is many times that; the whole point is that it no longer
+        // depends on the width at all.
+        expect(e.value, greaterThan(8 * e.key));
+      }
     });
 
     testWidgets('the scrubber reports who was alive that year',
@@ -652,11 +805,6 @@ void main() {
     testWidgets('Revelation has a chip, and it scrolls the plot to it',
         (tester) async {
       await pumpChart(tester, size: tall);
-      // Zoom in first: at 1x the whole span is on screen and there is
-      // nothing to scroll, which is the point of 1x.
-      await tester.tap(find.byIcon(Icons.zoom_in_rounded));
-      await tester.pump(const Duration(milliseconds: 100));
-
       final chip = find.byKey(const ValueKey('chronoChip_john_patmos'));
       expect(chip, findsOneWidget);
       await tester.tap(chip);
@@ -676,11 +824,12 @@ void main() {
         'locale', (tester) async {
       for (final locale in const ['en', 'zh-Hans', 'zh-Hant']) {
         await pumpChart(tester, locale: locale);
-        for (var z = 1; z < 8; z++) {
+        await wholeSpan(tester);
+        for (var z = 0; z < 10; z++) {
           await tester.tap(find.byIcon(Icons.zoom_in_rounded));
           await tester.pump(const Duration(milliseconds: 60));
           expect(tester.takeException(), isNull,
-              reason: 'zoom ${z + 1} in $locale');
+              reason: 'level $z in $locale');
         }
         // And the ruler never prints two labels on top of each other:
         // the step ladder widens with the plot, so consecutive AM
@@ -689,40 +838,194 @@ void main() {
       }
     });
 
-    testWidgets('no two ruler labels overlap, at any zoom or width',
-        (tester) async {
+    testWidgets('no two ruler labels overlap, at any level, width, or '
+        'text scale', (tester) async {
       // Overlapping year labels are the commonest way this chart type
       // fails, and this one did: at 402 pt with a 1,000-year step,
       // "AM 3000" sat under the pinned "AM 4098". The step ladder and
       // the right-edge reserve are both measured off the text engine
       // now, so this is the assertion that keeps them honest.
-      for (final size in const [Size(320, 900), Size(402, 900),
-        Size(900, 1200)]) {
-        await pumpChart(tester, size: size);
-        for (var z = 1; z <= 8; z++) {
-          final rects = <Rect>[];
-          for (final e in find.byType(Text).evaluate()) {
-            final t = e.widget as Text;
-            if (!(t.data ?? '').startsWith('AM ')) continue;
-            final ro = e.renderObject;
-            if (ro is! RenderBox || !ro.attached) continue;
-            final origin = ro.localToGlobal(Offset.zero);
-            rects.add(origin & ro.size);
-          }
-          for (var i = 0; i < rects.length; i++) {
-            for (var j = i + 1; j < rects.length; j++) {
-              // Same row only: the ruler stacks AM over BC/AD, and the
-              // scrubber's own readout is elsewhere on the page.
-              if ((rects[i].top - rects[j].top).abs() > 2) continue;
-              expect(rects[i].overlaps(rects[j].deflate(0.5)), isFalse,
-                  reason: 'ruler labels collide at $size zoom $z: '
-                      '${rects[i]} vs ${rects[j]}');
+      //
+      // Widened this pass in both directions the reader asked about:
+      // every device class from a 320 pt phone to a 1280 pt desktop, and
+      // — new — a reader at 130% system text, whose labels are wider
+      // than the ones in the screenshots and used to be measured as if
+      // they were not.
+      const sizes = [
+        Size(320, 900), // small phone portrait
+        Size(402, 900), // the typography reference width
+        Size(844, 700), // phone landscape
+        Size(834, 1194), // tablet portrait
+        Size(1194, 834), // tablet landscape
+        Size(1280, 900), // desktop
+      ];
+      for (final scale in const [1.0, 1.3]) {
+        for (final size in sizes) {
+          tester.view.devicePixelRatio = 1.0;
+          tester.view.physicalSize = size;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            host(
+              MediaQuery(
+                data: MediaQueryData(
+                    textScaler: TextScaler.linear(scale)),
+                child: ChronologyChart(data: data, locale: 'en'),
+              ),
+            ),
+          );
+          await tester.pump(const Duration(milliseconds: 100));
+          await wholeSpan(tester);
+          for (var z = 0; z <= 8; z++) {
+            final rects = <Rect>[];
+            for (final e in find.byType(Text).evaluate()) {
+              final t = e.widget as Text;
+              if (!(t.data ?? '').startsWith('AM ')) continue;
+              final ro = e.renderObject;
+              if (ro is! RenderBox || !ro.attached) continue;
+              final origin = ro.localToGlobal(Offset.zero);
+              rects.add(origin & ro.size);
             }
-          }
-          if (z < 8) {
+            for (var i = 0; i < rects.length; i++) {
+              for (var j = i + 1; j < rects.length; j++) {
+                // Same row only: the ruler stacks AM over BC/AD, and the
+                // scrubber's own readout is elsewhere on the page.
+                if ((rects[i].top - rects[j].top).abs() > 2) continue;
+                expect(rects[i].overlaps(rects[j].deflate(0.5)), isFalse,
+                    reason: 'ruler labels collide at $size level $z '
+                        'text scale $scale: ${rects[i]} vs ${rects[j]}');
+              }
+            }
             await tester.tap(find.byIcon(Icons.zoom_in_rounded));
             await tester.pump(const Duration(milliseconds: 60));
           }
+        }
+      }
+    });
+
+    test('the packer never lets a neighbour crowd a label', () {
+      // The pure half of the truncation fix. Pass one used to reserve
+      // `width.clamp(34, 190)`, so any title wider than 190 pt was
+      // under-reserved and then trimmed by the label after it — a cap in
+      // the packer wearing a collision's clothes. The invariant now: a
+      // chosen label is complete unless the END OF THE AXIS cuts it.
+      final rnd = <double>[
+        for (var i = 0; i < 60; i++) i * 37.5 + (i % 7) * 9,
+      ];
+      final wants = <double>[
+        for (var i = 0; i < 60; i++) 30 + (i % 11) * 22.0,
+      ];
+      for (final rows in const [1, 2, 5]) {
+        for (final plotWidth in const [400.0, 1200.0, 4000.0]) {
+          final plan = chronologyLabelPlan(
+            lefts: rnd,
+            wants: wants,
+            rows: rows,
+            plotWidth: plotWidth,
+          );
+          for (final s in plan) {
+            expect(s.complete || rnd[s.index] + wants[s.index] > plotWidth,
+                isTrue,
+                reason: 'label ${s.index} was crowded, not clipped by the '
+                    'axis (rows $rows, plot $plotWidth)');
+            expect(s.row, lessThan(rows));
+          }
+          // And two labels in the same row never sit on top of each
+          // other, which is the other half of the same promise.
+          for (var i = 0; i < plan.length; i++) {
+            for (var j = i + 1; j < plan.length; j++) {
+              if (plan[i].row != plan[j].row) continue;
+              final a = rnd[plan[i].index];
+              final b = rnd[plan[j].index];
+              expect((b - a).abs(), greaterThanOrEqualTo(plan[i].width - 0.5));
+            }
+          }
+        }
+      }
+    });
+
+    testWidgets('an event label on screen is not ellipsised — the '
+        'measurement uses the font the chart actually draws',
+        (tester) async {
+      // The root cause of 「很多都是…」. A bare `TextStyle(fontSize: 8.5)`
+      // in a TextPainter inherits neither the reader's chosen font
+      // family nor their text scale, while the `Text` beside it inherits
+      // both — so the packer sized every label against one font and the
+      // engine drew a wider one, and the lane ellipsised labels it had
+      // just decided would fit. Measured off the reader's own capture,
+      // "Alexander the Great Conquers Persia" had 159 pt of room, was
+      // measured at 142, and drew at about 155.
+      for (final scale in const [1.0, 1.3]) {
+        for (final size in const [Size(402, 1700), Size(1194, 1000)]) {
+          tester.view.devicePixelRatio = 1.0;
+          tester.view.physicalSize = size;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            host(
+              MediaQuery(
+                data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+                child: ChronologyChart(data: data, locale: 'en'),
+              ),
+            ),
+          );
+          await tester.pump(const Duration(milliseconds: 100));
+          // Mid-axis, so the end of the plot — the one thing allowed to
+          // cut a label — is nowhere near the window.
+          await viewAt(tester, 2000, years: 400);
+
+          final titles = {
+            for (final t in data.allTicks) t.localizedTitle('en'),
+          };
+          var seen = 0;
+          for (final e in find.byType(Text).evaluate()) {
+            final t = e.widget as Text;
+            if (!titles.contains(t.data)) continue;
+            final ro = e.renderObject;
+            if (ro is! RenderParagraph || !ro.attached) continue;
+            final x = ro.localToGlobal(Offset.zero).dx;
+            // On screen only: the lane lays out labels for the whole
+            // 16,000 pt plot, most of it scrolled out of the window.
+            if (x < 0 || x + ro.size.width > size.width) continue;
+            seen++;
+            expect(ro.didExceedMaxLines, isFalse,
+                reason: '"${t.data}" is ellipsised at $size, text scale '
+                    '$scale, with nothing beside it');
+          }
+          expect(seen, greaterThan(0),
+              reason: 'no event labels on screen at $size — the assertion '
+                  'proved nothing');
+        }
+      }
+    });
+
+    testWidgets('a name in the left column is never cut short',
+        (tester) async {
+      // 「Nahor (the el…」. The column was a flat 88 pt, which is short
+      // of "Nahor (the elder)" in the app's own font and shorter still
+      // of 拿鹤(亚伯拉罕祖父) — so the one person who needs a
+      // disambiguating parenthetical was the one whose name was cut. It
+      // is measured now, and wraps rather than ellipsising past the cap.
+      for (final locale in const ['en', 'zh-Hans', 'zh-Hant']) {
+        for (final size in const [
+          Size(402, 1700),
+          Size(834, 1700),
+          Size(1280, 1700),
+        ]) {
+          await pumpChart(tester, locale: locale, size: size);
+          await wholeSpan(tester);
+          final names = {
+            for (final l in data.lifelines) l.localizedName(locale),
+          };
+          var checked = 0;
+          for (final e in find.byType(Text).evaluate()) {
+            final t = e.widget as Text;
+            if (!names.contains(t.data)) continue;
+            final ro = e.renderObject;
+            if (ro is! RenderParagraph || !ro.attached) continue;
+            checked++;
+            expect(ro.didExceedMaxLines, isFalse,
+                reason: '"${t.data}" is ellipsised at $size in $locale');
+          }
+          expect(checked, greaterThan(0));
         }
       }
     });
@@ -922,48 +1225,29 @@ void main() {
   });
 
   group('the folded rows say why, and take you back', () {
-    ScrollableState horizontal(WidgetTester tester) => tester
-        .stateList<ScrollableState>(find.byType(Scrollable))
-        .firstWhere((s) => s.widget.axisDirection == AxisDirection.right);
-
     double plotHeight(WidgetTester tester) =>
-        (horizontal(tester).context.findRenderObject()! as RenderBox)
+        (plotScroll(tester).context.findRenderObject()! as RenderBox)
             .size
             .height;
 
-    /// Zoom to [zoom]× and put [am] in the middle of the plot's viewport
-    /// — the reader's own two controls, driven directly so the assertion
-    /// is about a stated viewport rather than about where a chip landed.
-    Future<void> viewAt(WidgetTester tester, int am, int zoom) async {
-      for (var i = 1; i < zoom; i++) {
-        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
-        await tester.pump(const Duration(milliseconds: 60));
-      }
-      final pos = horizontal(tester).position;
-      final viewport = pos.maxScrollExtent / (zoom - 1);
-      final plotWidth = viewport * zoom;
-      final x = am / (data.spanEndAm - data.spanStartAm) * plotWidth;
-      pos.jumpTo((x - viewport / 2).clamp(0.0, pos.maxScrollExtent));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 60));
-    }
-
-    testWidgets('at zoom 1 nothing folds — the whole-span view is intact',
+    testWidgets('at whole span nothing folds — that view is intact',
         (tester) async {
       await pumpChart(tester, size: tall);
+      await wholeSpan(tester);
       expect(find.textContaining('not in view'), findsNothing);
       for (final l in data.lifelines) {
         expect(find.text(l.localizedName('en')), findsWidgets,
-            reason: '${l.personId} vanished at zoom 1');
+            reason: '${l.personId} vanished at whole span');
       }
     });
 
     testWidgets('at the right-hand end the rows fold, and say why',
         (tester) async {
       await pumpChart(tester, size: tall);
+      await wholeSpan(tester);
       final tall1x = plotHeight(tester);
 
-      await viewAt(tester, data.spanEndAm, 5);
+      await viewAt(tester, data.spanEndAm, years: 800);
 
       // The whole column folds into one band, labelled with the count
       // and the reason. Not blank, not gone: twenty rows, named.
@@ -992,7 +1276,7 @@ void main() {
         return tops;
       }
 
-      await viewAt(tester, data.spanEndAm, 5);
+      await viewAt(tester, data.spanEndAm, years: 800);
       // Past AM 2187 the event lane is the only layer with content in
       // it, so it is the layer the folded rows pay. One row of labels
       // became several, which names ticks that used to be anonymous.
@@ -1004,11 +1288,14 @@ void main() {
     testWidgets('a viewport straddling AM 2187 draws the bars that are '
         'in it and folds only the rest', (tester) async {
       await pumpChart(tester, size: tall);
-      await viewAt(tester, data.computedEndAm, 5);
+      await viewAt(tester, data.computedEndAm, years: 800);
 
       // Both at once — which is what "not a hard on/off at AM 2187"
-      // means in the drawing.
-      expect(find.textContaining('not in view'), findsOneWidget);
+      // means in the drawing. One band or several: consecutive folded
+      // rows fuse, and which runs are consecutive depends on where the
+      // window falls, so the assertion is that SOME rows folded and the
+      // ones whose bars are on screen did not.
+      expect(find.textContaining('not in view'), findsWidgets);
       expect(find.text('Eber'), findsWidgets,
           reason: 'Eber dies ON the boundary; his bar is in this window');
       expect(find.text('Abraham'), findsWidgets);
@@ -1020,7 +1307,7 @@ void main() {
     testWidgets('tapping a folded band takes the reader to those bars',
         (tester) async {
       await pumpChart(tester, size: tall);
-      await viewAt(tester, data.spanEndAm, 5);
+      await viewAt(tester, data.spanEndAm, years: 800);
       final fold = find.text('${data.lifelines.length} not in view');
       expect(fold, findsOneWidget);
 
@@ -1037,10 +1324,10 @@ void main() {
     testWidgets('the narrow 402 pt phone survives the fold, at both ends',
         (tester) async {
       await pumpChart(tester, locale: 'zh-Hans', size: const Size(402, 900));
-      await viewAt(tester, data.spanEndAm, 6);
+      await viewAt(tester, data.spanEndAm, years: 400);
       expect(find.textContaining('在视图外'), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await viewAt(tester, 0, 6);
+      await viewAt(tester, 0, years: 400);
       await tester.pump(const Duration(milliseconds: 60));
       expect(tester.takeException(), isNull);
     });
@@ -1050,11 +1337,11 @@ void main() {
       // The fold changes HEIGHT only. If it moved the axis, every year
       // on the chart would be wrong.
       await pumpChart(tester, size: tall);
-      await viewAt(tester, data.spanEndAm, 4);
-      final pos = horizontal(tester).position;
+      await viewAt(tester, data.spanEndAm, years: 1200);
+      final pos = plotScroll(tester).position;
       final before = pos.maxScrollExtent;
       await tester.pump(const Duration(milliseconds: 200));
-      expect(horizontal(tester).position.maxScrollExtent, before);
+      expect(plotScroll(tester).position.maxScrollExtent, before);
       expect(find.text('AM 4098'), findsWidgets);
     });
   });

@@ -59,38 +59,86 @@ class ChronologyChart extends StatefulWidget {
 }
 
 class _ChronologyChartState extends State<ChronologyChart> {
-  static const double _nameColumnWidth = 88;
-  static const double _rowHeight = 26;
-  static const double _rulerHeight = 30;
-  static const double _eraStripHeight = 15;
-  static const double _tickLaneHeight = 32;
+  static const double _nameColumnMin = 64;
   static const double _gap = 8;
 
-  /// How tall the event lane may grow when lifeline rows fold away. The
-  /// reclaimed height goes HERE first, because past AM 2187 the event
-  /// lane is the only layer with anything in it: 80 pt is five rows of
-  /// labels where the lane normally gets one, so a fold does not just
-  /// shorten the chart, it names events that were previously unlabelled
-  /// ticks. Beyond five rows a label is too far from its own tick for
-  /// the leader line to be believed, so the rest of the reclaimed height
-  /// is simply given up and the chart gets shorter — which on a phone is
-  /// the whole point.
-  static const double _tickLaneMaxHeight = 80;
-  static const double _labelRowPitch = 12;
+  static const double _nameFontSize = 11;
+  static const double _labelFontSize = 8.5;
+  static const double _foldFontSize = 9.5;
+  static const double _rulerFontSize = 9;
+  static const double _eraFontSize = 8.5;
 
   /// A folded run of lifeline rows: 8 pt of padding plus 1.8 pt per bar
   /// it stands in for, so the band's HEIGHT still reports how many rows
-  /// were folded even before the label is read.
-  static double _foldHeight(int n) => (8 + n * 1.8).clamp(16.0, 46.0);
+  /// were folded even before the label is read. The floor is a line of
+  /// its own label, so a reader at large system text still gets a band
+  /// that can print "{n} not in view" — the one control that unfolds it.
+  double _foldHeight(int n) {
+    final floor = (_scaler.scale(_foldFontSize) * 1.55).clamp(16.0, 40.0);
+    return (8 + n * 1.8).clamp(floor, floor + 30);
+  }
 
-  /// Zoom now goes to 8, not 4. The span nearly doubled this pass
-  /// (AM 0-2187 → 0-4098) and 24 of the 98 events fall inside the ~95
-  /// years of the New Testament, so 4× no longer separated them. The
-  /// axis itself is NEVER warped to compensate — a broken or log time
-  /// axis is the classic way this chart type starts lying, and this
-  /// chart's whole claim is that its years are real. Density is solved
-  /// with zoom and detail-on-demand instead.
-  static const double _maxZoom = 8;
+  // ── Zoom, in pixels per year ────────────────────────────────────
+  //
+  // **The bare multiplier was the wrong unit.** "8×" meant eight times
+  // the whole span fitted to the plot, so what it delivered depended
+  // entirely on how wide the plot was: on a 1280 pt desktop 8× is about
+  // 2.2 pt per year, on a 390 pt phone about 0.5 — four times less. The
+  // same number read fine in the desktop captures and was unusable on
+  // the reader's iPhone, which is exactly what they reported.
+  //
+  // So zoom is now a DENSITY: pixels per year. A level shows the same
+  // amount of time per centimetre of glass on every device, the plot is
+  // the same number of points wide everywhere, and a bigger screen
+  // simply holds more of it at once — which is what a bigger screen is
+  // for. The axis is still never warped; this only changes the scale it
+  // is drawn at.
+  //
+  // The ladder doubles, so a level is always "twice as close as the one
+  // below". Level 0 is not on it: it is fit-to-width, which is the one
+  // density that must stay device-dependent because the overview strip
+  // and the whole-span view are defined by it.
+  static const List<double> _densityLadder = [
+    0.0625, 0.125, 0.25, 0.5, 1, 2, _maxDensity,
+  ];
+
+  /// **Derived, not chosen.** 4 pt per year is where more density stops
+  /// buying legible labels.
+  ///
+  /// Measured over all 100 ticks of `assets/bible_chronology.json` by
+  /// replaying this file's own label packer at five rows and counting
+  /// the labels that come out COMPLETE — no ellipsis — at real font
+  /// advances:
+  ///
+  ///     pt/yr   1    2    3    4    6    8   12   16   32
+  ///     en     64   79   85   87   88   88   91   93   96
+  ///     zh     74   87   88   88   91   93   94   94   96
+  ///
+  /// Past 4 the curve is flat: each further DOUBLING of the scroll
+  /// extent buys one to three labels out of a hundred. It flattens
+  /// because what is left is not a density limit at all — six events
+  /// share AM 4036 (Triumphal Entry through Pentecost) and fourteen fall
+  /// in the ten years around it, so they stack into label rows and the
+  /// lane has five. No amount of zoom separates marks at the same x.
+  ///
+  /// At 4 pt/yr the plot is 16,392 pt wide on every device. On a 390 pt
+  /// phone that is roughly 65× the old multiplier and about 60 years in
+  /// the viewport; on a 1280 pt desktop the same level is 14× and 285
+  /// years — the same picture, more of it.
+  static const double _maxDensity = 4;
+
+  /// What the DEFAULT level aims to hold: about half a millennium.
+  ///
+  /// Opening at whole-span was the second complaint. Whole span on a
+  /// phone is 0.06 pt per year — every label the lane draws is a pinned
+  /// one and the rest of the chart is texture. The default is now the
+  /// closest level that holds no more than this many years, which lands
+  /// on ~500 years on a phone, ~700 on a tablet and ~570 on a desktop:
+  /// the same reading, not the same number. Whole span is still one tap
+  /// of Zoom out away, and the overview strip above the plot shows it
+  /// permanently, so nothing about the axis is hidden by opening inside
+  /// it.
+  static const double _defaultWindowYears = 800;
 
   final ScrollController _plot = ScrollController();
 
@@ -99,8 +147,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// bar ends exactly on it.
   late int _cursorAm;
 
-  /// 1 = whole span fits the width (no horizontal scrolling).
-  double _zoom = 1;
+  /// Pixels per year, or null for fit-to-width — the whole span, no
+  /// horizontal scrolling. Null until the first layout, which is where
+  /// the default is picked, because the default depends on how wide the
+  /// viewport turned out to be.
+  double? _density;
+  bool _zoomChosen = false;
 
   /// Last plot width laid out, so the overview strip can convert the
   /// scroll offset into an AM range without re-deriving the layout.
@@ -191,7 +243,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// Bring [am] into view, centred where it can be. Chips used to move
   /// only the cursor, which is why "jump to Revelation" did not look
   /// like it went anywhere once the span reached that far.
-  void _scrollTo(int am) {
+  void _scrollTo(int am, {bool animate = true}) {
     if (!_plot.hasClients || _plotWidth <= 0) return;
     final data = widget.data;
     final span = (data.spanEndAm - data.spanStartAm).abs();
@@ -199,6 +251,10 @@ class _ChronologyChartState extends State<ChronologyChart> {
     final x = (am - data.spanStartAm) / span * _plotWidth;
     final target = (x - _plot.position.viewportDimension / 2)
         .clamp(0.0, _plot.position.maxScrollExtent);
+    if (!animate) {
+      _plot.jumpTo(target);
+      return;
+    }
     _plot.animateTo(
       target,
       duration: const Duration(milliseconds: 260),
@@ -206,9 +262,181 @@ class _ChronologyChartState extends State<ChronologyChart> {
     );
   }
 
+  // ── Text metrics ────────────────────────────────────────────────
+  //
+  // **Every measurement in this file used to be against the wrong
+  // font.** A bare `TextStyle(fontSize: 8.5)` handed to a `TextPainter`
+  // inherits nothing: no family, no scale. The `Text` widgets beside it
+  // are merged into `DefaultTextStyle`, which carries the reader's
+  // chosen `settings.fontFamily` and its CJK fallback chain, and are
+  // laid out through `MediaQuery.textScalerOf`. So the packer measured
+  // one font and the chart drew a wider one, and every label it thought
+  // fitted came out ellipsised — which is what the reader photographed.
+  // Measured on their capture: "Alexander the Great Conquers Persia" was
+  // given 159 pt of room for a string the packer sized at 142 and the
+  // engine drew at about 155.
+  //
+  // So: resolve against the ambient style, and measure through the
+  // scaler, everywhere. [_resolve] is what makes a measurement mean the
+  // same thing as the drawing.
+
+  TextStyle _resolve(TextStyle style) =>
+      DefaultTextStyle.of(context).style.merge(style);
+
+  TextScaler get _scaler => MediaQuery.textScalerOf(context);
+
+  double _measure(String text, TextStyle style) {
+    final tp = TextPainter(
+      text: TextSpan(text: text, style: _resolve(style)),
+      maxLines: 1,
+      textScaler: _scaler,
+      textDirection: Directionality.of(context),
+    )..layout();
+    return tp.width;
+  }
+
+  /// One line's height at [fontSize], after the reader's text scale.
+  /// Every lane pitch in this file is derived from it rather than
+  /// hard-coded, because a reader at 150% text would otherwise have
+  /// 12.75 pt of glyph in a 12 pt row.
+  double _lineHeight(double fontSize) => _scaler.scale(fontSize) * 1.4;
+
+  double get _rowHeight =>
+      (_scaler.scale(_nameFontSize) * 2.3).clamp(26.0, 96.0);
+
+  double get _labelRowPitch => _lineHeight(_labelFontSize).clamp(12.0, 40.0);
+
+  /// The ruler stacks AM over BC/AD, so it needs two lines of its own
+  /// font — 30 pt at 100% text, more at 130%, where two 9 pt lines are
+  /// 33 and used to be clipped by the lane below.
+  double get _rulerHeight =>
+      (4 + _lineHeight(_rulerFontSize) * 2).clamp(30.0, 90.0);
+  double get _rulerSecondLineTop => 2 + _lineHeight(_rulerFontSize);
+  double get _eraStripHeight =>
+      (_lineHeight(_eraFontSize) + 3).clamp(15.0, 44.0);
+
+  /// The event lane's floor and ceiling: one label row and five.
+  ///
+  /// Five is where a leader line stops being believable — below that a
+  /// label is too far from its own tick — so the rest of any height the
+  /// folded lifeline rows give back is simply not taken, and the chart
+  /// gets shorter instead. On a phone that is the whole point.
+  double get _tickLaneHeight => 13 + _labelRowPitch + 7;
+  double get _tickLaneMaxHeight => 13 + _labelRowPitch * 5 + 7;
+
+  /// The name column earns its width instead of being told it.
+  ///
+  /// It was a flat 88 pt, which is 7 pt short of "Nahor (the elder)" in
+  /// the app's own font and 10 short of 拿鹤(亚伯拉罕祖父) — so the one
+  /// person on the chart who needs a disambiguating parenthetical was
+  /// the one person whose name ended in an ellipsis. The column is now
+  /// as wide as the widest thing it has to print, capped at a third of
+  /// the chart so a long name can never eat the plot; past the cap the
+  /// name wraps to a second line rather than being cut.
+  double _nameColumnWidth(double content) {
+    var widest = 0.0;
+    for (final l in widget.data.lifelines) {
+      final w = _measure(l.localizedName(widget.locale),
+          const TextStyle(fontSize: _nameFontSize, fontWeight: FontWeight.w700));
+      if (w > widest) widest = w;
+    }
+    // The captions and the fold band live in this column too, and a
+    // column too narrow for "{n} not in view" would hide the one control
+    // that gets a folded row back.
+    for (final s in [
+      _s('chronologyEras', 'Eras'),
+      _s('chronologyEvents', 'Events'),
+    ]) {
+      final w = _measure(s, const TextStyle(fontSize: 9, fontWeight: FontWeight.w800));
+      if (w > widest) widest = w;
+    }
+    final fold = _measure(
+      _s('chronologyRowsFolded', '{n} not in view').replaceAll('{n}', '20'),
+      const TextStyle(fontSize: _foldFontSize, fontWeight: FontWeight.w600),
+    );
+    if (fold > widest) widest = fold;
+    final cap = (content * 0.34).clamp(_nameColumnMin, 168.0);
+    return (widest + 4).clamp(_nameColumnMin, cap);
+  }
+
   void _goTo(int am) {
     setState(() => _cursorAm = am);
     _scrollTo(am);
+  }
+
+  // ── The zoom ladder ─────────────────────────────────────────────
+
+  int get _span => (widget.data.spanEndAm - widget.data.spanStartAm).abs();
+
+  /// Fit-to-width, in pixels per year: the density at which the whole
+  /// span is exactly the viewport. Every rung of the ladder at or below
+  /// it is unreachable on this device, because zooming out past it would
+  /// leave the plot narrower than the box it lives in.
+  double _fitDensity(double viewport) =>
+      _span == 0 ? 0 : viewport / _span;
+
+  /// The rungs this device actually has, coarsest first. A phone gets
+  /// all seven; a desktop's fit is already denser than the first four,
+  /// so it gets three — which is right, since it starts closer to
+  /// readable and has less distance to travel.
+  List<double> _rungs(double viewport) {
+    final fit = _fitDensity(viewport);
+    return [for (final d in _densityLadder) if (d > fit * 1.02) d];
+  }
+
+  /// Where the chart opens: the coarsest rung holding no more than
+  /// [_defaultWindowYears].
+  double _defaultDensity(double viewport) {
+    final rungs = _rungs(viewport);
+    for (final d in rungs) {
+      if (viewport / d <= _defaultWindowYears) return d;
+    }
+    return rungs.isEmpty ? _fitDensity(viewport) : rungs.last;
+  }
+
+  bool get _atFit => _density == null;
+
+  bool _canZoomIn(double viewport) {
+    final rungs = _rungs(viewport);
+    if (rungs.isEmpty) return false;
+    return _density == null || _density! < rungs.last - 1e-9;
+  }
+
+  bool _canZoomOut() => _density != null;
+
+  void _zoomIn(double viewport) {
+    final rungs = _rungs(viewport);
+    if (rungs.isEmpty) return;
+    for (final d in rungs) {
+      if (_density == null || d > _density! + 1e-9) {
+        _stepTo(d);
+        return;
+      }
+    }
+  }
+
+  void _zoomOut(double viewport) {
+    final rungs = _rungs(viewport);
+    double? next;
+    for (final d in rungs) {
+      if (_density != null && d < _density! - 1e-9) next = d;
+    }
+    _stepTo(next);
+  }
+
+  /// Change the scale and keep the cursor where it is on screen. Without
+  /// this a zoom throws the reader somewhere else on a 16,000 pt plot,
+  /// which is how a zoom control stops being usable.
+  void _stepTo(double? density) {
+    setState(() {
+      _density = density;
+      _zoomChosen = true;
+    });
+    if (density != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scrollTo(_cursorAm, animate: false);
+      });
+    }
   }
 
   @override
@@ -218,48 +446,79 @@ class _ChronologyChartState extends State<ChronologyChart> {
     final active = data.activeScheme;
     final alive = data.aliveAt(_cursorAm);
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
-      children: [
-        _schemeBanner(context, active, scheme),
-        const SizedBox(height: 12),
-        _scrubber(context, active, scheme, alive.length),
-        _zoomRow(scheme),
-        const SizedBox(height: 8),
-        // Overview first, then zoom and filter, then details on demand.
-        // With 4,100 years on the axis a zoom button alone leaves the
-        // reader with no idea where the viewport is, so the whole span
-        // stays on screen above the plot with the viewport marked on it.
-        _overview(context, scheme, active),
-        const SizedBox(height: 10),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            // The plot never gets a width smaller than the viewport, so
-            // zoom 1 always fits and never introduces a sideways scroll.
-            final viewport =
-                (constraints.maxWidth - _nameColumnWidth - _gap)
-                    .clamp(80.0, double.infinity);
-            final plotWidth = viewport * _zoom;
-            _plotWidth = plotWidth;
-            return _chart(context, scheme, active, plotWidth);
-          },
-        ),
-        const SizedBox(height: 16),
-        // Below the chart, not above it: the chips wrap to several rows
-        // on a phone, and putting them before the plot pushed the thing
-        // the reader came for off the first screen.
-        Text(
-          _s('chronologyJumpTo', 'Jump to'),
-          style: const TextStyle(
-              fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.4),
-        ),
-        const SizedBox(height: 6),
-        _markerChips(scheme),
-        const SizedBox(height: 16),
-        _legend(context, scheme),
-        const SizedBox(height: 12),
-        _scopeNote(scheme),
-      ],
+    return LayoutBuilder(
+      builder: (context, outer) {
+        // The ListView's own horizontal padding, taken off once here so
+        // the zoom row and the plot agree about how wide the chart is.
+        final content = (outer.maxWidth - 32).clamp(120.0, double.infinity);
+        final nameColumn = _nameColumnWidth(content);
+        final viewport =
+            (content - nameColumn - _gap).clamp(80.0, double.infinity);
+
+        // The default is picked at the FIRST layout, not in initState,
+        // because it depends on the viewport it will be shown in.
+        if (!_zoomChosen) {
+          _zoomChosen = true;
+          _density = _defaultDensity(viewport);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _scrollTo(_cursorAm, animate: false);
+          });
+        }
+
+        // A rotation or a window resize can leave the chosen rung below
+        // the new fit-to-width. That IS the whole-span view, so record
+        // it as one: otherwise the readout would report a window wider
+        // than the axis and Zoom out would look enabled with nowhere to
+        // go. Assigning here rather than in a callback is deliberate —
+        // it is a normalisation of layout input, used in this same
+        // build, not a state change the reader made.
+        if (_density != null && _density! <= _fitDensity(viewport)) {
+          _density = null;
+        }
+
+        // The plot never gets a width smaller than the viewport, so
+        // fit-to-width never introduces a sideways scroll.
+        final plotWidth = _density == null
+            ? viewport
+            : (_density! * _span).clamp(viewport, double.infinity);
+        _plotWidth = plotWidth;
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+          children: [
+            _schemeBanner(context, active, scheme),
+            const SizedBox(height: 12),
+            _scrubber(context, active, scheme, alive.length),
+            _zoomRow(scheme, viewport),
+            const SizedBox(height: 8),
+            // Overview first, then zoom and filter, then details on
+            // demand. With 4,100 years on the axis a zoom button alone
+            // leaves the reader with no idea where the viewport is, so
+            // the whole span stays on screen above the plot with the
+            // viewport marked on it.
+            _overview(context, scheme, active),
+            const SizedBox(height: 10),
+            _chart(context, scheme, active, plotWidth, nameColumn),
+            const SizedBox(height: 16),
+            // Below the chart, not above it: the chips wrap to several
+            // rows on a phone, and putting them before the plot pushed
+            // the thing the reader came for off the first screen.
+            Text(
+              _s('chronologyJumpTo', 'Jump to'),
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.4),
+            ),
+            const SizedBox(height: 6),
+            _markerChips(scheme),
+            const SizedBox(height: 16),
+            _legend(context, scheme),
+            const SizedBox(height: 12),
+            _scopeNote(scheme),
+          ],
+        );
+      },
     );
   }
 
@@ -498,7 +757,34 @@ class _ChronologyChartState extends State<ChronologyChart> {
     );
   }
 
-  Widget _zoomRow(ColorScheme scheme) {
+  /// A round number for a readout, not a measurement: 4,016 reads as
+  /// 4,000 and 63 reads as 63.
+  int _round(double years) {
+    if (years >= 1000) return (years / 100).round() * 100;
+    if (years >= 100) return (years / 10).round() * 10;
+    return years.round().clamp(1, 1 << 30);
+  }
+
+  /// **What the control says.**
+  ///
+  /// Not a multiplier: the multiplier is what lied — 8× meant something
+  /// different on every device, which is the whole reason this pass
+  /// exists — and a computed multiplier would print "1×" for two
+  /// different levels on a wide screen. Not a named bucket either ("a
+  /// century", "a generation"): at a fixed density a phone and an iPad
+  /// genuinely do NOT hold the same century, so the name would be wrong
+  /// on one of them.
+  ///
+  /// Years in view is the one statement that is true on every device,
+  /// and it is exactly the quantity the reader is choosing. It changes
+  /// when the device rotates, because the answer really does change.
+  String _zoomLabel(double viewport) {
+    if (_atFit) return _s('chronologyOverview', 'Whole span');
+    return _s('chronologyYearsInView', '≈ {n} years in view')
+        .replaceAll('{n}', '${_round(viewport / _density!)}');
+  }
+
+  Widget _zoomRow(ColorScheme scheme, double viewport) {
     return Row(
       children: [
         Text(
@@ -509,28 +795,31 @@ class _ChronologyChartState extends State<ChronologyChart> {
             color: scheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
-        const SizedBox(width: 8),
         IconButton(
           visualDensity: VisualDensity.compact,
           iconSize: 20,
           tooltip: _s('chronologyZoomOut', 'Zoom out'),
-          onPressed: _zoom <= 1
-              ? null
-              : () => setState(() => _zoom = (_zoom - 1).clamp(1, _maxZoom)),
+          onPressed: _canZoomOut() ? () => _zoomOut(viewport) : null,
           icon: const Icon(Icons.zoom_out_rounded),
         ),
-        Text(
-          '${_zoom.toStringAsFixed(0)}×',
-          style: const TextStyle(
-              fontSize: 12, fontWeight: FontWeight.w700),
+        Expanded(
+          child: Text(
+            _zoomLabel(viewport),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
         ),
         IconButton(
           visualDensity: VisualDensity.compact,
           iconSize: 20,
           tooltip: _s('chronologyZoomIn', 'Zoom in'),
-          onPressed: _zoom >= _maxZoom
-              ? null
-              : () => setState(() => _zoom = (_zoom + 1).clamp(1, _maxZoom)),
+          onPressed: _canZoomIn(viewport) ? () => _zoomIn(viewport) : null,
           icon: const Icon(Icons.zoom_in_rounded),
         ),
       ],
@@ -657,6 +946,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
     ColorScheme scheme,
     ChronologyScheme active,
     double plotWidth,
+    double nameColumn,
   ) {
     final data = widget.data;
     final rows = data.lifelines;
@@ -704,7 +994,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
           // Fixed name column — stays put while the plot scrolls, so a
           // zoomed-in bar is never anonymous.
           SizedBox(
-            width: _nameColumnWidth,
+            width: nameColumn,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -760,7 +1050,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
             child: SingleChildScrollView(
               controller: _plot,
               scrollDirection: Axis.horizontal,
-              physics: _zoom <= 1
+              physics: _atFit
                   ? const NeverScrollableScrollPhysics()
                   : const ClampingScrollPhysics(),
               child: SizedBox(
@@ -843,11 +1133,16 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// Ruler/grid interval, chosen from a round-number ladder so the
   /// labels never collide however wide the plot is. The old code hard-
   /// coded 500 (and 200 above zoom 3), which was legible across 2,187
-  /// years and is not across 4,098: at zoom 1 on a 402 pt phone the
+  /// years and is not across 4,098: at whole span on a 402 pt phone the
   /// plot is about 290 pt wide, and 500-year labels would sit 35 pt
   /// apart with 46 pt of text in them.
+  ///
+  /// The ladder gained a fine end (10, 20, 25) with the density pass:
+  /// at 4 pt per year a 50-year step is 200 pt, which on a phone is one
+  /// ruler label in the viewport at a time. The rungs are affordable
+  /// because [_ruler] only builds what the window holds.
   int _rulerStep(double plotWidth) {
-    const ladder = [50, 100, 200, 250, 500, 1000, 2000];
+    const ladder = [10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000];
     final span = (widget.data.spanEndAm - widget.data.spanStartAm).abs();
     if (span == 0 || plotWidth <= 0) return ladder.last;
     // Measured, not guessed. A hard-coded pixel budget was wrong twice:
@@ -862,17 +1157,9 @@ class _ChronologyChartState extends State<ChronologyChart> {
   }
 
   static const TextStyle _rulerAmStyle =
-      TextStyle(fontSize: 9, fontWeight: FontWeight.w700);
-  static const TextStyle _rulerYearStyle = TextStyle(fontSize: 9);
-
-  double _measure(String text, TextStyle style) {
-    final tp = TextPainter(
-      text: TextSpan(text: text, style: style),
-      maxLines: 1,
-      textDirection: Directionality.of(context),
-    )..layout();
-    return tp.width;
-  }
+      TextStyle(fontSize: _rulerFontSize, fontWeight: FontWeight.w700);
+  static const TextStyle _rulerYearStyle =
+      TextStyle(fontSize: _rulerFontSize);
 
   /// Width of the widest label the ruler will ever print — both of its
   /// two lines, at the far end of the axis where the digits are longest.
@@ -893,70 +1180,93 @@ class _ChronologyChartState extends State<ChronologyChart> {
     ].reduce((a, b) => a > b ? a : b);
   }
 
+  /// The ruler builds only the labels the reader can SEE.
+  ///
+  /// At the deepest level the plot is 16,392 pt wide, and laying out
+  /// every rung of the ladder across it would be several hundred `Text`
+  /// widgets on a viewport that holds three. Culling to the window is
+  /// what makes the fine end of the step ladder affordable — and the
+  /// fine end is what the deepest level needs, since a 50-year step at
+  /// 4 pt per year puts the labels 200 pt apart and a phone would see
+  /// one at a time.
   Widget _ruler(
     ChronologyScheme active,
     ColorScheme scheme,
     double plotWidth,
     int step,
   ) {
-    final labels = <Widget>[];
     // Room for THIS label plus the pinned end label plus a gap between
     // them. Reserving one label's width was the bug: at 320 pt the last
     // ladder label fitted on its own and then sat under "AM 4098".
     final labelW = _rulerLabelWidth();
     final endReserve = labelW * 2 + 14;
-    for (var am = widget.data.spanStartAm;
-        am <= widget.data.spanEndAm;
-        am += step) {
-      // A tick whose label would run into the pinned label at the right
-      // edge is dropped rather than allowed to collide — the scrubber
-      // above always prints the exact year, so the ruler only has to
-      // give the reader a sense of scale.
-      if (_x(am, plotWidth) + endReserve > plotWidth) break;
-      final year = active.amToYear(am);
-      labels.add(Positioned(
-        left: _x(am, plotWidth) + 2,
-        top: 2,
-        child: Text(
-          'AM $am',
-          style: _rulerAmStyle.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.6)),
-        ),
-      ));
-      labels.add(Positioned(
-        left: _x(am, plotWidth) + 2,
-        top: 14,
-        child: Text(
-          year < 0 ? '${-year} BC' : 'AD $year',
-          style: _rulerYearStyle.copyWith(
-              color: scheme.onSurface.withValues(alpha: 0.45)),
-        ),
-      ));
-    }
-    // The right-hand end of the axis, always printed even when the
-    // ladder above stops short of it. This is the thing the reader
-    // asked for: proof that scrolling right arrives at Revelation.
-    final endYear = active.amToYear(widget.data.spanEndAm);
-    labels.add(Positioned(
-      right: 2,
-      top: 2,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            'AM ${widget.data.spanEndAm}',
-            style: _rulerAmStyle.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.6)),
+    return ListenableBuilder(
+      listenable: _plot,
+      builder: (context, _) {
+        final hasView = _plot.hasClients &&
+            _plot.position.hasPixels &&
+            _plot.position.hasViewportDimension;
+        final viewLeft = hasView ? _plot.position.pixels : 0.0;
+        final viewRight = hasView
+            ? viewLeft + _plot.position.viewportDimension
+            : plotWidth;
+        final labels = <Widget>[];
+        for (var am = widget.data.spanStartAm;
+            am <= widget.data.spanEndAm;
+            am += step) {
+          final x = _x(am, plotWidth);
+          // A tick whose label would run into the pinned label at the
+          // right edge is dropped rather than allowed to collide — the
+          // scrubber above always prints the exact year, so the ruler
+          // only has to give the reader a sense of scale.
+          if (x + endReserve > plotWidth) break;
+          if (x + labelW < viewLeft || x > viewRight) continue;
+          final year = active.amToYear(am);
+          labels.add(Positioned(
+            left: x + 2,
+            top: 2,
+            child: Text(
+              'AM $am',
+              style: _rulerAmStyle.copyWith(
+                  color: scheme.onSurface.withValues(alpha: 0.6)),
+            ),
+          ));
+          labels.add(Positioned(
+            left: x + 2,
+            top: _rulerSecondLineTop,
+            child: Text(
+              year < 0 ? '${-year} BC' : 'AD $year',
+              style: _rulerYearStyle.copyWith(
+                  color: scheme.onSurface.withValues(alpha: 0.45)),
+            ),
+          ));
+        }
+        // The right-hand end of the axis, always printed even when the
+        // ladder above stops short of it. This is the thing the reader
+        // asked for: proof that scrolling right arrives at Revelation.
+        final endYear = active.amToYear(widget.data.spanEndAm);
+        labels.add(Positioned(
+          right: 2,
+          top: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'AM ${widget.data.spanEndAm}',
+                style: _rulerAmStyle.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.6)),
+              ),
+              Text(
+                endYear < 0 ? '${-endYear} BC' : 'AD $endYear',
+                style: _rulerYearStyle.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.45)),
+              ),
+            ],
           ),
-          Text(
-            endYear < 0 ? '${-endYear} BC' : 'AD $endYear',
-            style: _rulerYearStyle.copyWith(
-                color: scheme.onSurface.withValues(alpha: 0.45)),
-          ),
-        ],
-      ),
-    ));
-    return Stack(children: labels);
+        ));
+        return Stack(children: labels);
+      },
+    );
   }
 
   /// Era names on their bands. Each label is clipped to its own band,
@@ -966,48 +1276,77 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// device for a long chronology, and these are the eight eras
   /// `assets/bible_timeline.json` already carries — the same ones the
   /// Events list on this page groups by.
+  ///
+  /// **Sticky, as of the density pass.** The label used to sit at the
+  /// band's START, which was fine when the default view held the whole
+  /// span and every band began on screen. It is not fine now: the chart
+  /// opens inside a five-hundred-year window, and the Primeval band is
+  /// two thousand years wide, so its name was a thousand points off the
+  /// left of the viewport and the reader got an unlabelled colour. So a
+  /// label slides along with the viewport, still INSIDE its own band and
+  /// never past its end — the ordinary sticky-header behaviour, applied
+  /// to a horizontal axis. It never moves onto a band it does not
+  /// belong to, so it cannot mislabel a stretch of the chart.
   Widget _eraStrip(ColorScheme scheme, double plotWidth) {
     final brightness = Theme.of(context).brightness;
-    final children = <Widget>[];
-    for (final e in widget.data.eras) {
-      final left = _x(e.startAm, plotWidth);
-      final right = _x(e.endAm, plotWidth);
-      final w = right - left;
-      if (w < 26) continue;
-      children.add(Positioned(
-        left: left + 3,
-        top: 0,
-        bottom: 0,
-        width: (w - 6).clamp(1.0, double.infinity),
-        child: Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Text(
-            e.localizedName(widget.locale),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            style: TextStyle(
-              fontSize: 8.5,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
-              color: _readable(brightness, Color(e.colorValue)),
+    return ListenableBuilder(
+      listenable: _plot,
+      builder: (context, _) {
+        final viewLeft =
+            _plot.hasClients && _plot.position.hasPixels
+                ? _plot.position.pixels
+                : 0.0;
+        final children = <Widget>[];
+        for (final e in widget.data.eras) {
+          final left = _x(e.startAm, plotWidth);
+          final right = _x(e.endAm, plotWidth);
+          final w = right - left;
+          if (w < 26) continue;
+          final style = TextStyle(
+            fontSize: _eraFontSize,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
+            color: _readable(brightness, Color(e.colorValue)),
+          );
+          final text = e.localizedName(widget.locale);
+          final want = _measure(text, style);
+          // Slide the label to the viewport's left edge, but never past
+          // the point where it would overhang the end of its own band.
+          final maxStart = right - want - 3;
+          final start =
+              (viewLeft + 3).clamp(left + 3, maxStart < left + 3 ? left + 3 : maxStart);
+          children.add(Positioned(
+            left: start,
+            top: 0,
+            bottom: 0,
+            width: (right - 3 - start).clamp(1.0, double.infinity),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: style,
+              ),
             ),
-          ),
-        ),
-      ));
-    }
-    return Stack(clipBehavior: Clip.hardEdge, children: children);
+          ));
+        }
+        return Stack(clipBehavior: Clip.hardEdge, children: children);
+      },
+    );
   }
 
   /// The event lane: every dated thing on the chart as a tick, computed
   /// ones solid, placed ones hollow.
   ///
-  /// Labels are culled twice. First by zoom — pinned only at 1×, the
-  /// computed markers join at 2×, everything is a candidate from 4× —
-  /// and then greedily left to right, dropping any label that would
-  /// touch the one before it. So the lane gets denser as you zoom in
-  /// and never shows two labels on top of each other, which is the way
-  /// this chart type usually fails.
+  /// Labels are culled twice. First by density — pinned only at
+  /// fit-to-width, the computed markers join immediately above it,
+  /// everything competes from a quarter of a point per year — and then
+  /// greedily left to right, dropping any label that would touch the one
+  /// before it. So the lane gets denser as you zoom in and never shows
+  /// two labels on top of each other, which is the way this chart type
+  /// usually fails.
   ///
   /// [laneHeight] is what the lifeline rows did not need. Every 12 pt of
   /// it buys one more row of labels, packed first-fit, so the extra
@@ -1023,82 +1362,71 @@ class _ChronologyChartState extends State<ChronologyChart> {
     final ticks = widget.data.allTicks;
     final brightness = Theme.of(context).brightness;
 
+    // Which ticks are even candidates, by density rather than by a zoom
+    // step: fit-to-width prints only the pinned events, because at
+    // 0.06 pt per year the lane has room for about four labels and they
+    // had better be the four a reader recognises. From a quarter of a
+    // point per year the whole corpus competes.
+    final d = _density ?? 0;
     final candidates = ticks.where((t) {
-      if (_zoom >= 4) return true;
-      if (_zoom >= 2) return t.pin || t.isComputed;
-      return t.pin;
-    });
+      if (_atFit) return t.pin;
+      if (d < 0.25) return t.pin || t.isComputed;
+      return true;
+    }).toList();
 
-    // Pass one: pick which ticks get a label, greedily left to right,
-    // into the first row that has room. With one row — the default, and
-    // the whole of zoom 1 — this is exactly the old single-row greed.
-    // Pass two: give each label all the room up to the NEXT chosen one
-    // IN ITS OWN ROW, so a title is only ellipsised when a neighbour
-    // really is in the way rather than by a blanket cap.
-    final labelRows =
-        ((laneHeight - 13) / _labelRowPitch).floor().clamp(1, 5);
-    final lastRight =
-        List<double>.filled(labelRows, double.negativeInfinity);
-    final chosen = <({ChronologyMarker tick, double left, double want,
-        TextStyle style, String text, int row})>[];
-    for (final t in candidates) {
-      final text = t.localizedTitle(widget.locale);
-      final style = TextStyle(
-        fontSize: 8.5,
-        fontWeight: t.isComputed ? FontWeight.w800 : FontWeight.w500,
-        color: scheme.onSurface.withValues(alpha: t.isComputed ? 0.85 : 0.62),
-      );
-      final tp = TextPainter(
-        text: TextSpan(text: text, style: style),
-        maxLines: 1,
-        textDirection: Directionality.of(context),
-      )..layout();
-      final left = _x(t.am, plotWidth) + 3;
-      if (left + 34 > plotWidth) continue;
-      var row = -1;
-      for (var r = 0; r < labelRows; r++) {
-        if (left >= lastRight[r] + 6) {
-          row = r;
-          break;
-        }
-      }
-      if (row < 0) continue;
-      lastRight[row] = left + tp.width.clamp(34.0, 190.0);
-      chosen.add((tick: t, left: left, want: tp.width, style: style,
-          text: text, row: row));
-    }
+    final styles = [
+      for (final t in candidates)
+        TextStyle(
+          fontSize: _labelFontSize,
+          fontWeight: t.isComputed ? FontWeight.w800 : FontWeight.w500,
+          color: scheme.onSurface
+              .withValues(alpha: t.isComputed ? 0.85 : 0.62),
+        ),
+    ];
+    final texts = [
+      for (final t in candidates) t.localizedTitle(widget.locale),
+    ];
+    final wants = [
+      for (var i = 0; i < candidates.length; i++)
+        _measure(texts[i], styles[i]),
+    ];
+    final lefts = [
+      for (final t in candidates) _x(t.am, plotWidth) + 3,
+    ];
+
+    final pitch = _labelRowPitch;
+    final labelRows = ((laneHeight - 13) / pitch).floor().clamp(1, 5);
+    final plan = chronologyLabelPlan(
+      lefts: lefts,
+      wants: wants,
+      rows: labelRows,
+      plotWidth: plotWidth,
+      minWidth: _scaler.scale(34),
+    );
+
     final labels = <Widget>[];
-    for (var i = 0; i < chosen.length; i++) {
-      final c = chosen[i];
-      var nextLeft = plotWidth;
-      for (var j = i + 1; j < chosen.length; j++) {
-        if (chosen[j].row == c.row) {
-          nextLeft = chosen[j].left - 6;
-          break;
-        }
-      }
-      final w = c.want.clamp(0.0, (nextLeft - c.left).clamp(1.0, 1e9));
+    for (final c in plan) {
       if (c.row > 0) {
         labels.add(Positioned(
-          left: c.left - 3,
+          left: lefts[c.index] - 3,
           top: 11,
           width: 0.8,
-          height: 2 + c.row * _labelRowPitch,
+          height: 2 + c.row * pitch,
           child: ColoredBox(
             color: scheme.onSurface.withValues(alpha: 0.28),
           ),
         ));
       }
       labels.add(Positioned(
-        left: c.left,
-        top: 13 + c.row * _labelRowPitch,
-        width: w + 1,
+        left: lefts[c.index],
+        top: 13 + c.row * pitch,
+        width: c.width + 1,
         child: Text(
-          c.text,
+          texts[c.index],
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           softWrap: false,
-          style: c.style,
+          style: styles[c.index],
         ),
       ));
     }
@@ -1153,11 +1481,18 @@ class _ChronologyChartState extends State<ChronologyChart> {
           padding: const EdgeInsets.only(right: 2),
           child: Text(
             l.localizedName(widget.locale),
-            maxLines: 1,
+            // Two lines, not one. The column is sized to the widest name
+            // it has to print, so this only comes into play on a narrow
+            // window where that width has been capped — and a wrapped
+            // "Nahor (the elder)" is a whole name where "Nahor (the el…"
+            // was not one. The parenthetical is not decoration: it is
+            // what separates him from Nahor son of Terah, two rows down.
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.end,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: _nameFontSize,
+              height: 1.05,
               fontWeight: on ? FontWeight.w700 : FontWeight.w500,
               color: scheme.onSurface.withValues(alpha: on ? 0.95 : 0.4),
             ),
@@ -1219,7 +1554,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.end,
               style: TextStyle(
-                fontSize: 9.5,
+                fontSize: _foldFontSize,
                 fontWeight: FontWeight.w600,
                 // The alpha the chart already uses for a bar whose
                 // person is not alive at the cursor. Same idea — present
@@ -1629,9 +1964,15 @@ class _ChronologyChartState extends State<ChronologyChart> {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    l.localizedName(widget.locale),
-                    style: const TextStyle(fontSize: 12),
+                  // Flexible, not bare: a Wrap hands its children the
+                  // full width as a maximum, and "Shem's line (Genesis
+                  // 11)" at 130% system text is wider than a 402 pt
+                  // phone's content column. It used to overflow the row.
+                  Flexible(
+                    child: Text(
+                      l.localizedName(widget.locale),
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ),
                 ],
               ),
@@ -1852,6 +2193,99 @@ List<bool> chronologyRowsInView({
         return held && b <= exitHi && e >= exitLo;
       }(),
   ];
+}
+
+/// One event label the lane has decided to draw: which candidate it is,
+/// which row it landed in, and how much horizontal room it actually got.
+@visibleForTesting
+class ChronologyLabelSlot {
+  final int index;
+  final int row;
+
+  /// The room the label gets. Equal to its measured width unless the
+  /// right-hand end of the plot cuts it short, in which case the `Text`
+  /// ellipsises — see [complete].
+  final double width;
+
+  /// True when the whole title is drawn. The packer's job is to make
+  /// this true for every label it chooses; a false here is a label that
+  /// ran off the end of the plot, never one crowded by a neighbour.
+  final bool complete;
+
+  const ChronologyLabelSlot({
+    required this.index,
+    required this.row,
+    required this.width,
+    required this.complete,
+  });
+}
+
+/// Which event labels the tick lane draws, and where.
+///
+/// Pass one picks the labels, greedily left to right, into the first row
+/// with room — first-fit, so a long title on row 0 pushes its neighbour
+/// down rather than pushing it out. With one row, which is the whole of
+/// the default view, this is exactly the single-row greed the lane has
+/// always used.
+///
+/// Pass two hands each label all the room up to the NEXT chosen label in
+/// its own row. Because pass one already reserved the label's full
+/// measured width, that room is never less than the title needs: a title
+/// is now only ever cut by the right-hand end of the plot, never by a
+/// neighbour. (It used to be reserved as `width.clamp(34, 190)`, so any
+/// title wider than 190 pt under-reserved and then got trimmed by the
+/// label after it — a cap in the packer masquerading as a collision.)
+///
+/// Pure, and separate from the widget, so the density at which the
+/// corpus becomes legible can be MEASURED — see `_maxDensity`, whose
+/// value is the knee of a sweep of this function over all 100 ticks.
+@visibleForTesting
+List<ChronologyLabelSlot> chronologyLabelPlan({
+  required List<double> lefts,
+  required List<double> wants,
+  required int rows,
+  required double plotWidth,
+  double minWidth = 34,
+  double gap = 6,
+}) {
+  final lastRight = List<double>.filled(rows, double.negativeInfinity);
+  final picked = <int>[];
+  final pickedRow = <int>[];
+  for (var i = 0; i < lefts.length; i++) {
+    final left = lefts[i];
+    if (left + minWidth > plotWidth) continue;
+    var row = -1;
+    for (var r = 0; r < rows; r++) {
+      if (left >= lastRight[r] + gap) {
+        row = r;
+        break;
+      }
+    }
+    if (row < 0) continue;
+    lastRight[row] = left + (wants[i] < minWidth ? minWidth : wants[i]);
+    picked.add(i);
+    pickedRow.add(row);
+  }
+  final out = <ChronologyLabelSlot>[];
+  for (var k = 0; k < picked.length; k++) {
+    final i = picked[k];
+    var nextLeft = plotWidth;
+    for (var j = k + 1; j < picked.length; j++) {
+      if (pickedRow[j] == pickedRow[k]) {
+        nextLeft = lefts[picked[j]] - gap;
+        break;
+      }
+    }
+    final room = (nextLeft - lefts[i]).clamp(1.0, double.infinity);
+    final w = wants[i] < room ? wants[i] : room;
+    out.add(ChronologyLabelSlot(
+      index: i,
+      row: pickedRow[k],
+      width: w,
+      complete: w >= wants[i] - 0.5,
+    ));
+  }
+  return out;
 }
 
 /// The one glyph that separates a counted year from a placed one:
