@@ -130,4 +130,38 @@ void main() {
               'blank on web while looking fine on iOS');
     }
   });
+
+  test('every backgroundImage has an onBackgroundImageError beside it', () {
+    // `Image.network` is not the only way to fetch a picture, and this
+    // audit used to behave as if it were. `CircleAvatar(backgroundImage:)`
+    // builds a `DecorationImage`, which gets NONE of the `Image` widget's
+    // error suppression: since flutter#97077 an `Image` carrying an
+    // `errorBuilder` installs a blank ephemeral error listener, so
+    // `ImageStreamCompleter.reportError` never finds an empty listener
+    // list. A `DecorationImage` has no such hook, so a profile photo that
+    // fails to load mails a real crash report to the user.
+    //
+    // Found 2026-09-03 while proving that the reported "artwork crash"
+    // could NOT have come from Now Playing — the artwork path was already
+    // immune, and this was the shape that genuinely was not.
+    final offenders = <String>[];
+    for (final file in Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))) {
+      final src = file.readAsStringSync();
+      // Count both sides rather than pairing them positionally: these are
+      // multi-line ternaries, so a regex spanning one CircleAvatar would
+      // be more fragile than the imbalance it is trying to catch.
+      final images = 'backgroundImage:'.allMatches(src).length;
+      final guards = 'onBackgroundImageError:'.allMatches(src).length;
+      if (images > guards) {
+        offenders.add('${file.path} ($images backgroundImage, $guards guard)');
+      }
+    }
+    expect(offenders, isEmpty,
+        reason: 'a backgroundImage with no onBackgroundImageError sends a '
+            'crash report when the photo fails to load: '
+            '${offenders.join(', ')}');
+  });
 }

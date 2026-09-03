@@ -221,6 +221,19 @@ class _ProfilesPageState extends State<ProfilesPage> {
               backgroundImage: photo != null
                   ? ResizeImage(NetworkImage(photo), width: 80, height: 80)
                   : null,
+              // 2026-09-03: REQUIRED, not optional politeness. A
+              // `DecorationImage` gets none of the `Image` widget's
+              // error suppression — since flutter#97077 an `Image` with
+              // an `errorBuilder` installs a blank ephemeral listener so
+              // `reportError` never finds an empty list, but
+              // `backgroundImage` has no such hook. Without this
+              // callback a profile photo that fails to load mails a real
+              // crash report, which is the shape the 2026-08-12 "artwork
+              // crash" was wrongly filed against.
+              // Degrades to the plain tile colour rather than the
+              // initial, because CircleAvatar draws `child` ON TOP of
+              // `backgroundImage` and this row cannot show both.
+              onBackgroundImageError: photo != null ? (_, __) {} : null,
               child: photo != null
                   ? null
                   : Text(

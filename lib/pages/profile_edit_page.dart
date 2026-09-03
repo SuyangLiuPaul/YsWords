@@ -181,6 +181,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       ? ResizeImage(NetworkImage(previewPhotoUrl),
                           width: 192, height: 192)
                       : null,
+                  // See the note in profiles_page.dart: `backgroundImage`
+                  // is a DecorationImage and gets none of the `Image`
+                  // widget's error suppression, so without this a photo
+                  // that fails to load mails a crash report. Pinned by
+                  // `test/image_network_audit_test.dart`.
+                  onBackgroundImageError:
+                      previewPhotoUrl != null ? (_, __) {} : null,
                   child: previewPhotoUrl != null
                       ? null
                       : Text(

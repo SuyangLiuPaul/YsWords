@@ -6202,10 +6202,58 @@ has never seen this repo.
       pins that against the real assets and fails on the pre-fix code
       with the right diagnosis (`{'H0': 253, 'G0': 42}`).
 
-- [ ] **Commentary import (public domain).** One module first — Matthew
+- [x] **Commentary import (public domain).** One module first — Matthew
       Henry or JFB — via the published `.cmt.mybible` SQLite file, never
       scraped. Credit the source on the About page even though the
       copyright has expired. 20-60 MB, so lazy per-book loading.
+
+
+      **DONE 2026-09-03 (`p2c/commentary`) — Jamieson, Fausset & Brown (1871),
+      Matthew. 538,530 bytes**, against the 20-60 MB budgeted above: per-book
+      files under `assets/commentary/`, lazily loaded. Surfaces as a Commentary
+      button in the verse-selection action bar, shown only for books a module
+      ships for. Credit on the About page, trilingual.
+      **Source changed from the plan, on purpose.** This item named
+      `.cmt.mybible` SQLite from ph4.org; those aggregators publish **no
+      per-module licence statement at all**, so it came from the CrossWire
+      SWORD module JFB 3.0 instead, whose `.conf` states
+      `DistributionLicense=Public Domain`. Still a published packaged module,
+      never scraped — this item's actual concern is satisfied either way.
+      **Public-domain evidence, three independent grounds**, verbatim and dated
+      in `docs/jfb-commentary-licence.md`: 1871 publication (US PD, everything
+      pre-1931); author death dates (Fausset d. 1910, so life+70 expired 1981);
+      and the distributor's own statement — which carries weight because
+      CrossWire marks its restricted modules differently
+      (`Copyrighted; Permission to distribute granted to CrossWire`), so they
+      distinguish and put JFB in the free column. Archive SHA-256 pinned.
+      **The one soft spot is recorded rather than glossed:** CrossWire's text
+      source is CCEL, whose site terms say "These books may be used for
+      personal, educational, or non-profit purposes" — NOT a PD dedication. The
+      doc records that verbatim, why it does not block us, and **what would
+      change the assessment**. Read it before adding a second module; the
+      finding does not generalise.
+      **Alignment was verified, not assumed, and the checks caught three real
+      bugs.** The verse for each block is derived from the binary zCom4 index,
+      then checked against two things the 1871 text says about ITSELF — all 28
+      chapter-heading slots carry the `osisID` the walk predicts, and the verse
+      number JFB prints at the head of each comment (561 of 600 do) matches the
+      slot it sits in; all 561 agree. Non-circular: one side is the binary
+      index, the other the printed text. Caught: section titles captioning the
+      verse BEFORE their section (SWORD stores the next section's title on the
+      preceding verse); the splitter dragging Mt 22:2's comment onto 22:1; and
+      — via a tiling check — that **Matthew 24 and 26 have no verse-level
+      comment at all**, JFB defers them to Mark and stores the deferral in the
+      chapter-heading slot, 126 verses that an earlier pass dropped silently.
+      610 blocks now tile Matthew exactly, 1071/1071 verses. Negative-tested: a
+      deliberate one-verse shift fails.
+      The test also pins that NASB/LEB/biblexg omit Matt 17:21/18:11/23:14
+      **without renumbering** — the commentary is KJV-versified, and a
+      renumbering there would shift every later block by one verse invisibly.
+      **Left:** only Matthew (adding a book is a converter run plus a
+      `supportedBooks` entry); commentary-internal references are plain text,
+      **not tappable — deliberate**, because this repo has fought citations
+      opening the wrong chapter and tap targets are not shipping without the
+      same verification the verse alignment got.
 
 ## P2 — features the user asked for
 
@@ -8560,7 +8608,7 @@ has never seen this repo.
       different blocks on one site. Getting the runner unblocked needs
       the church, not code.
 
-- [ ] **Only the Bible reader has a URL. Every other page is
+- [x] **Only the Bible reader has a URL. Every other page is
       unshareable, and Back does the wrong thing.**
       Reported 2026-08-17 by a reader of the CN site, forwarded by the
       user: reading sermon #019「你们是世上的光」the address bar still
@@ -8980,6 +9028,59 @@ has never seen this repo.
 
       Batch 2 still has 3 pages left (`VideoSeriesPage`,
       `EvidenceDetailPage`, `MapViewerPage`) — item stays unticked.
+
+
+      **DONE 2026-09-03 (`p2d/routing`) — batches 3, 4 and 5; the conversion is
+      complete except batch 6, which is deferred by design.**
+      First, a correction: the previous note's "batch 2 still has 3 pages left"
+      was wrong — `/videos/:id`, `/evidence/:id` and `/maps/:id` were already
+      landed. The real remainder was batches 3-5.
+      **Batch 3:** `/settings` + `/settings/:section`, `/library` +
+      `/library/:tab`, `/evidence` with its filters as `?book=&chapter=`.
+      **Batch 4:** `/songs/:songId/score` and `/songs/:songId/video` — the only
+      two destinations that never went through `pushPage` at all; a raw
+      `Navigator.push(MaterialPageRoute(...))` carries no route name, so no
+      router could ever have given them an address.
+      **Batch 5:** `ProfileEditPage`, `NowPlayingPage` and split-view
+      `BooksPage` confirmed unrouted BY DESIGN and still reachable with correct
+      Back.
+      **Mechanism findings worth keeping:**
+      * GetX has no optional-segment syntax — `ParseRouteTree` matches
+        segment-for-segment, so each `:x?` in the plan is TWO registrations.
+      * `route.settings.name` for a query-carrying named push is the WHOLE
+        `/evidence?book=John&chapter=3` string, so `matchesRegisteredRoute` now
+        strips a query before matching. Without it a filtered Evidence page
+        fails to recognise its own registered route and `_writeStateToUrl`
+        takes the address bar back to the Bible position — **this item's
+        original bug wearing a different hat.**
+      * **The plan contradicted itself**: §3 proposed `/now-playing` while §6
+        listed the same page as unrouted by design. §6 wins — a URL whose only
+        honest behaviour is to redirect somewhere else is not an address.
+      * **The plan's `bookmarks|notes` ordering is not the tab order — 0 is
+        Notes.** Taking that cell literally would have reproduced the
+        2026-08-11 report through a URL.
+      * Rule adopted: `/sermons/:id` with a bad id says "not found" because the
+        id IS the page, but a bad `:section` or `:tab` opens the page on its
+        default — those name a scroll position and a tab, and dropping a stale
+        one loses nothing the reader came for.
+      **The acceptance test this item never had.**
+      `test/url_routing_address_bar_test.dart` mocks `flutter/navigation`, the
+      platform channel the web engine turns into the address bar, so "what
+      would the URL say" is answerable with no browser. Opening sermon 019 puts
+      `/sermons/019` there and NOT the Bible reference, and it arrives through
+      the registered `getPages` entry — which matters, since the `Get.to`
+      fallback names a route `/${runtimeType}` and release web minifies class
+      names. Back and Forward are driven with the engine's own `popRoute` /
+      `pushRouteInformation`, not `Get.back()`. Red-before/green-after on four
+      claims.
+      Two latent TEST bugs fixed on the way: the stage-3 path scan read an
+      apostrophe inside a Dart comment as an opening quote and harvested the
+      prose after it as a registered path, and it kept only one path per class.
+      **NOT browser-verified, unlike every earlier stage.** A pass on
+      `/#/settings/ai`, `/#/library/bookmarks`,
+      `/#/evidence?book=John&chapter=3` and `/#/songs/cdc%3Ad0180/score`
+      against a real build (fresh browser profile per navigation — stage 3's
+      stale-service-worker trap) is still owed before this deploys.
 
 - [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
@@ -9460,13 +9561,56 @@ has never seen this repo.
       one X button. `test/app_chrome_overlay_test.dart` reproduces the literal
       error on the pre-fix widgets.
 
-- [ ] **Notes need formatting.**
+- [x] **Notes need formatting.**
       User, 2026-08-16: "notes要加format之类的可以做？在chapter里面做笔记的
       时候". Scope it before building: bold/italic/lists is a different
       job from a full rich-text editor, and the notes are synced, so
       the storage format decides whether old notes survive.
 
-- [ ] **The profile photo: should it be tappable?**
+
+      **DONE 2026-09-03 (`p2c/notes`). Scope decided by the user over a full
+      rich-text editor: bold, italic, lists.**
+      **The storage question — which was the whole risk — has the answer
+      "nothing changed".** A note is still a plain `String` in
+      `MainProvider._verseNotes`, `jsonEncode`d into SharedPreferences and the
+      RTDB snapshot; it is now INTERPRETED as a Markdown subset when drawn. No
+      migration exists because every note ever written is already a valid
+      document in that subset, and an older build reads and writes the same
+      field. A structured document would have made every existing note a thing
+      needing conversion, on every device, with no rollback.
+      **The sync path was checked BEFORE anything changed, and it does nothing
+      to the body**: `_snapshotLocal` copies the string verbatim,
+      `_mergeSnapshots` merges per verse id (local wins), `_isInvalidRtdbKey`
+      filters top-level snapshot keys only. No escaping, truncation,
+      sanitisation or size cap, in either sync service.
+      **The grammar is deliberately stricter than `ai_markdown.dart`'s.** That
+      parser exists for text a model wrote, where eating a stray asterisk is a
+      favour; this is text a person wrote years before the feature, where it is
+      DATA LOSS — and that parser italicises `5 * 4 = 20`. `note_markdown.dart`
+      follows CommonMark flanking rules, so `5 * 4 = 20`, `a * b * c`,
+      `Priority: * high * urgent`, `snake_case_name` and a row of
+      fill-in-the-blank underscores all render as themselves.
+      `test/note_formatting_migration_test.dart` is the proof: a 24-note legacy
+      corpus round trips byte-for-byte through the REAL save chain. It failed
+      first on `Undefined name 'NoteMarkdownMode'`, then on a real one — a CJK
+      note's book name rewritten to English — which turned out to be the
+      pre-existing 2026-08-02 locale normalisation, now documented and pinned
+      as the ONLY rewrite in the path, with an assertion that it never touches
+      a formatting character.
+      `render` is the DEFAULT on `buildNoteSpans` (the editor is the only
+      caller that opts out, into `source`, where delimiters are styled but
+      never removed — a `TextEditingController`'s spans must hold exactly its
+      own characters). Pinned by a test, because otherwise "formatted
+      everywhere" is a convention rather than a property.
+      Clipboard copy and both export formats keep the raw markers on purpose —
+      a Markdown subset pastes correctly into anything that reads Markdown, and
+      the .md export is now MORE correct than before.
+      The Library tile's blanket `fontStyle: italic` was dropped: italicising
+      the whole body made the user's own `*italic*` the one emphasis that could
+      not show. A B/I/list strip was added to the editor — nobody should have
+      to know Markdown to bold a word.
+
+- [x] **The profile photo: should it be tappable?**
       User, 2026-08-16, asking for an opinion as much as a feature.
       Local photos can already be changed; a Google-signed-in photo
       comes from the account. Suggested answer: make it tappable
@@ -9474,6 +9618,38 @@ has never seen this repo.
       it comes from and link out rather than pretending it can be
       edited in-app. A control that looks editable and is not is worse
       than one that explains itself.
+
+
+      **DONE 2026-09-03 (`p2c/notes`) — tappable everywhere, opening the
+      profile; a Google photo says where it comes from and links out.**
+      The affordance (ripple, button semantics, accessible label) lives in
+      `ProfileAvatar` itself rather than at each call site, so every face in the
+      app behaves the same.
+      Two sites had nothing: the **Dashboard greeting** avatar now opens
+      `/profiles`, and the **Profiles list rows** open that profile's editor —
+      that row's own `onTap` is null on the ACTIVE row, so **your own face was
+      the one guaranteed to do nothing**. Settings needed no change; its
+      `ListTile` already opens `/profiles` and the avatar hits it.
+      **The editor was lying, and that is the part worth remembering.**
+      Everywhere in the app a signed-in Google photo wins over the local one,
+      but `ProfileEditPage` previewed the LOCAL one and offered "Change photo"
+      — so you could set a photo, see it there, and see something else on every
+      other screen. It now previews what is actually shown, and when that is
+      the Google photo it replaces the picker entirely with where it comes
+      from, that it cannot be changed here, that signing out restores the local
+      one, and a link to the Google Account page. Offering both would have been
+      the same lie in a smaller font.
+      **Consequence to know:** while signed in with Google the local picker is
+      hidden. The stored local photo is untouched and returns on sign-out, but
+      it cannot be SET from that page while signed in.
+      **Found while merging, and fixed here:** `profiles_page.dart` and
+      `profile_edit_page.dart` both built a `CircleAvatar(backgroundImage:)`
+      with no `onBackgroundImageError`. A `DecorationImage` gets NONE of the
+      `Image` widget's error suppression, so a profile photo that failed to
+      load mailed a real crash report — the shape the 2026-08-12 "artwork
+      crash" was wrongly filed against. `test/image_network_audit_test.dart`
+      now fails on any `backgroundImage:` without a guard beside it; verified
+      red by removing one.
 
 - [x] **Enabled the 47 Cahaya songs — and the SoundCloud link they now
       lead to was opening a 401 error page.**
@@ -9519,7 +9695,7 @@ has never seen this repo.
       present, the tappable control is not. `song_model_test.dart` pins
       the URL form and asserts it is *not* the api.soundcloud.com one.
 
-- [ ] **Now Playing: four things from the phone, 2026-08-12.**
+- [x] **Now Playing: four things from the phone, 2026-08-12.**
       All four reported together with a screenshot and a crash report.
       Take them in this order — the second is a functional defect, the
       first is only awkward.
@@ -9608,6 +9784,48 @@ has never seen this repo.
          Whichever ships, an unreachable artwork host must not produce
          a crash report — it is an expected condition on a filtered
          network, and burying real crashes under it is the second cost.
+
+
+      **DONE 2026-09-03 (`p2d/nowplaying`). Two of the four were already
+      fixed, one was stale, and the fourth named the wrong cause.**
+      **3. Sleep timer — already shipped; the item was stale.** 15/30/45/60, a
+      custom stepper (opens at 90, ±5, capped 5-240) and "end of this song" are
+      all wired through to `SongAudioHandler`, which reads the end-of-song flag
+      in `_onTrackFinished` AHEAD of repeat-one so a self-repeating track still
+      stops. Nothing was missing except a test.
+      **4. The "crash" was never true of the current code.** Frame #15 is
+      `ScrollAwareImageProvider.resolveStreamForKey`, which the framework
+      constructs in exactly one place, so the source was an `Image` widget —
+      and since flutter#97077 an `Image` with an `errorBuilder` installs a
+      blank ephemeral error listener, so `reportError` never finds an empty
+      list. Every `Image.network` in lib/ has one. **The 2026-08-12 report came
+      from a phone still on a build older than the 08-11 `RemoteImage`
+      conversion — filed the day AFTER the fix that removed it.** Two tests
+      fire the real errno-60 at a mounted page and at a disposed one and pass
+      on the PRE-fix widget, which is what makes the correction checkable.
+      **Three real defects were underneath it, all in the failure memo:**
+      * it was written from `errorBuilder`, a WIDGET hook, while errno 60 is a
+        ~75-second OS timeout no page and no scrolled-off row survives — so the
+        failure the memo exists for was the exact one it never recorded
+        (pre-fix `failureCount` 0, expected 1);
+      * it was keyed by URL, so one unreachable host still cost one dead socket
+        per song — 199 for fydt;
+      * `_ImageState` clears `_lastException` on a frame or listener rebuild
+        but **not** on a provider change, so the first build after a track
+        change called `errorBuilder` with the PREVIOUS song's exception under
+        the NEW song's URL. With a per-host memo that would have muted a
+        healthy host on a dead one's failure.
+      The memo now lives on the provider, where the URL and the exception
+      cannot come apart: host-wide for socket/TLS/timeout, per-URL for an HTTP
+      status.
+      **Still open, deliberately: the FIRST attempt is still bounded only by
+      the OS.** Bounding it needs an http client with a timeout behind the
+      provider, and web must keep the real `<img>` element for the CORS-less
+      artwork hosts — a conditional-import change and its own decision. Host
+      muting is inert on web (a blocked fetch reports as
+      `NetworkImageLoadException`, no host-level signal).
+      Verified in widget tests only, with a faked `HttpClient` — no real
+      unreachable host, no device, no emulator.
 
 - [x] **Turn the featured video into a SERIES section — SHIPPED
       2026-08-19 (v1.4.110), and the ID table below was WRONG for all
@@ -9949,13 +10167,57 @@ has never seen this repo.
       own title. A "watch the whole series" button is the obvious home
       for them if the user wants one.
 
-- [ ] **The five Good Friday / Easter songs on the same page are not in
+- [x] **The five Good Friday / Easter songs on the same page are not in
       the app.** `4ImxTDU5J0k` `xrHR1ybo1J0` `s3-qcRZrfZk` (Standing at
       the Cross songs 1–3) and `YTp0Z_TYOns` `4GBO6CWR6go` (Easter songs
       1–2), all composed by Rosablanca Suen, all with full bilingual
       lyrics on the church page. They are songs, and this app has a
       Songs section — so the question is whether they belong there
       rather than in the video series. Ask before placing them.
+
+
+      **DONE 2026-09-03 (`p2c/easter`) — in Songs, under a SIXTH source.**
+      The user's call was Songs, and **the page agreed before we did**:
+      `yahwehdehua.net/assets/page/easter/` files these five under its own
+      「Songs / 诗歌」 tab (`id="nav-hymn"`), separately from the ten teachings.
+      The fetcher anchors on that pane rather than sweeping the page, so the
+      site says they are songs — we do not.
+      `ydh` is a new source because none of the five existing ones publishes
+      them; it is the ministry the About page **already** credits for the
+      CUVS-YHWH text this app bundles. Shipped: source key, three localised
+      labels, the site's own favicon as the bundled mark (re-encoded onto white
+      — the original is a black ichthys on transparency and would vanish on a
+      dark row), `fetch_ydh()`, five rows generated by RUNNING it, and a
+      re-merged live fetch that changes nothing.
+      **Lyrics are carried, and that is NOT a reversal of the setapak ruling
+      hours earlier — it is the same rule both ways: carry the words when the
+      publisher owns them.** Setapak's two are covers of 許冠傑 and Hillsong;
+      these five are the ministry's own, credited to Rosablanca Suen and
+      printed in full on its own page.
+      **Three things this entry got wrong, corrected against the page:**
+      * "all with full bilingual lyrics" is FALSE — only song 1 prints a
+        Chinese translation; songs 2-5 are English only. Nothing was
+        translated to fill the gap, and a test pins the asymmetry so a later
+        "backfill" cannot invent a translation the church never published.
+      * the entry above calls `xrHR1ybo1J0` a teaching clip and wonders whether
+        `4ImxTDU5J0k` is an alternate cut of part 10. The Songs tab has them as
+        Standing at the Cross 1 and 2. `1OIZE4HnheE` is in the Videos tab and
+        stays out.
+      * the two citations `add_cross_series_refs.py` once mis-read into episode
+        10 belong to these songs — Luke 9:22-23 on song 1, Acts 5:30-31 on song
+        5. Both verified against `assets/cuvs-yhwh.json` by the test, not
+        trusted from the page.
+      **Open, needs the user:** `lyrics` is ONE string, not a per-locale map,
+      so song 1 carries English then Chinese in the same field as the page
+      prints them. Splitting it per locale is a schema change across the model,
+      the snapshot validator and yswords-data for exactly one row, and would
+      hide from an English reader words the church published together.
+      **yswords-data must grow the same fetcher.** `pull_songs_snapshot.py`
+      already carries a floor of 5 for `ydh`, so the bundle cannot be
+      overwritten by a dataset that has never heard of it. **Check the page
+      answers that runner first** — it has refused datacenter IPs before, and
+      once ydh is published there a 403 trips the zero-rows collapse guard and
+      aborts the WHOLE sync, all six sources, not just this one.
 
 - [x] **DONE 2026-09-02 — the references are on screen and tappable.**
       Data landed `3ff907a7`; the UI half landed today. `VideoRef` +
@@ -10010,7 +10272,7 @@ has never seen this repo.
       accept a webview on three targets and keep the link-out on the
       other two, or leave it as is. A user decision, not an inference.
 
-- [ ] **RETRACTED 2026-09-02 — "the first citation tap lands on verse 1"
+- [x] **RETRACTED 2026-09-02 — "the first citation tap lands on verse 1"
       does not reproduce on any target that actually paints. It was very
       probably my own instrument the whole time.** Read this header
       before any of the investigation below it.
@@ -10175,7 +10437,15 @@ has never seen this repo.
       the registered controller) did NOT help, but that too was measured
       through the same throttled instrument.
 
-- [ ] **`debugPrint` prints NOTHING in a release web build, so the
+
+      **Closed 2026-09-03.** Nothing to do: the claim was withdrawn and the
+      instrument (a hidden browser pane that stops compositing, so Flutter
+      produces no frames) is recorded above. Left open only until someone
+      tapped a citation cold on a target that actually paints — that has now
+      happened repeatedly across this work with no reproduction. Reopen with a
+      fresh measurement if it ever recurs, and read the retraction first.
+
+- [x] **`debugPrint` prints NOTHING in a release web build, so the
       reader's forensic logging — built expressly for users to paste
       console output — has never once worked on the web.** Measured
       2026-09-02 with a single-build control: two adjacent statements at
@@ -10229,6 +10499,43 @@ has never seen this repo.
       another agent had uncommitted work in that same file and this repo
       is one shared working tree: staging it would have swept their
       half-finished change into this commit. Do it once that lands.
+
+
+      **DONE 2026-09-03 (`p2d/diag`). The mechanism recorded above is WRONG,
+      and the correction widens the blast radius.** This is not a web quirk and
+      nothing is tree-shaken: `lib/main.dart:66-68` reassigns `debugPrint` to
+      an empty closure whenever `kReleaseMode` — the intentional 2026-06-11
+      info-disclosure fix — and **that override is platform-blind**. The chains
+      are mute in EVERY release build on EVERY target. The web is only where it
+      was noticed, because the web is where a console is user-visible. Read
+      every "release **web** build" above as "release build".
+      **The count was also low: FIVE chains were mute, not one.** jump (12),
+      `search` (11), `BYOK` (10), `noteRefTap` (4) and `[UrlSync]` (8) — 45
+      sites converted, 104 developer `debugPrint`s left alone. `noteRefTap` was
+      previously unknown: `library_page.dart`'s note-reference popup, whose own
+      comment says it exists "so users reporting 'popup not opening' can paste
+      the browser console output". A file-by-file pass missed it (those four
+      calls wrap after the paren); the app-wide regex sweep found it.
+      Split rule: (a) the `[Yahweh's Words …]` prefix, which is the app's
+      user-visible name and exists so a non-technical user can find the right
+      lines in a console full of Firebase chatter; or (b) the code's own
+      comments name the user report it was added to diagnose.
+      **Considered and deliberately LEFT:** `Bootstrap failed` and
+      `UrlSyncService.init failed` — both already call `ErrorReporter.report`,
+      so they have a channel that survives release; a silent instrument was the
+      defect and these are not silent. `[RTDBSync]` (18) — BYOK's network-side
+      twin, but it fires `not configured, skip` on every boot and converting it
+      would put per-launch noise in every user's console.
+      `diagShouldUsePrint` was **not** widened to all release builds: release
+      iOS/Android have no console a user can paste from, so it would only fill
+      logcat. Rationale in `log_diag.dart`; widening is one line if that changes.
+      Guard: `test/forensic_logging_audit_test.dart` — per chain it requires
+      the import, zero surviving `debugPrint('[<tag>]`, and no lost steps;
+      app-wide it fails on ANY `debugPrint` opening with `[Yahweh`; it pins five
+      message phrases so a tidy-up cannot reword the forensic record; and it
+      pins main.dart's override, since deleting that silently invalidates the
+      helper's reason to exist. Verified red on a reintroduced `debugPrint` —
+      two independent tests fire and name file:line.
 
 - [x] **Position-preserving language switch is not carried over.** The
       self-hosted player kept your place when you switched language;
@@ -10332,6 +10639,19 @@ has never seen this repo.
       express — birth/death years per person, parent links, and the
       chronology scheme each date belongs to — and write the test that
       every year is sourced. The rendering is the easy half.
+
+
+      **2026-09-03 — a branch exists that should not, and it is NOT merged.**
+      `p2c/chrono` holds a working iteration 1, built because a P2 sweep
+      counted this archived copy as a live open item — the `- [ ]` inside this
+      `<details>` block is a KEPT COPY for whoever picks the work up, not a
+      task. The reassignment above stands: do not start it here.
+      The branch was flagged by the agent that built it, not by the sweep, and
+      nothing was merged. If SeekSparks has done this work, discard the branch;
+      if it has not, it is there to take. Either way the decision is the
+      user's, and this note exists so the next sweep does not repeat the
+      mistake — **when counting open items, an entry inside `<details>` is
+      archive, not backlog.**
 
 - [x] **The AI exegesis panel cannot be scrolled — fixed by deleting the
       inner scroll view.** The transcript now flows into the sheet's own
