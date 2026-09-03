@@ -126,7 +126,15 @@ void main() {
       // names the page it resolves TO, `SermonDetailPage`, because that
       // row is about page identity, not the resolver mechanism. Same
       // path, different class name by design — map it before comparing.
-      const resolverAliases = {'SermonByIdPage': 'SermonDetailPage'};
+      // Batch 2 continued added three more of the same shape:
+      // `VideoSeriesByIdPage` -> `VideoSeriesPage`, `EvidenceByIdPage` ->
+      // `EvidenceDetailPage`, `MapByIdPage` -> `MapViewerPage`.
+      const resolverAliases = {
+        'SermonByIdPage': 'SermonDetailPage',
+        'VideoSeriesByIdPage': 'VideoSeriesPage',
+        'EvidenceByIdPage': 'EvidenceDetailPage',
+        'MapByIdPage': 'MapViewerPage',
+      };
 
       // Every registered class's getPages path must match its plan-doc
       // proposed path exactly.

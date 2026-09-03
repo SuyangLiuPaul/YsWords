@@ -6060,11 +6060,13 @@ class _MapTile extends StatelessWidget {
           Icon(Icons.chevron_right_rounded, size: 20, color: scheme.outline),
       onTap: () {
         onClose();
-        pushPage(MapViewerPage(
-          map: map,
-          locale: locale,
-          relatedMaps: related,
-        ));
+        pushPage(
+            MapViewerPage(
+              map: map,
+              locale: locale,
+              relatedMaps: related,
+            ),
+            routeName: '/maps/${map.id}');
       },
     );
   }

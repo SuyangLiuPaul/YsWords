@@ -184,6 +184,11 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   Duration _duration = Duration.zero;
   Timer? _sleepTimer;
   DateTime? _sleepAt;
+  /// "Pause when the current track ends" — no DateTime, because
+  /// seeking, skipping or a track of unknown duration would desync one
+  /// faked from the remaining position. A separate flag instead, read
+  /// by [_onTrackFinished].
+  bool _sleepAtEndOfTrack = false;
 
   /// Songs whose URL failed this session. Prevents an auto-advance
   /// loop: without it a queue of dead links would skip forward
@@ -207,6 +212,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   QueueItem? get currentItem => _queue.current;
   Song? get currentSong => _queue.current?.song;
   DateTime? get sleepAt => _sleepAt;
+  bool get sleepAtEndOfTrack => _sleepAtEndOfTrack;
 
   Duration get duration {
     if (_duration > Duration.zero) return _duration;
@@ -369,11 +375,15 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   Duration? _resumeAt;
 
   /// Sleep timer — pauses playback at [at]. Passing null cancels.
+  ///
+  /// Also disarms "end of this song" ([setSleepAtEndOfTrack]) — only
+  /// one sleep mode is armed at a time.
   void setSleepTimer(Duration? after) {
     _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _sleepAt = null;
+    _sleepAtEndOfTrack = false;
     if (after == null) {
-      _sleepTimer = null;
-      _sleepAt = null;
       _broadcast();
       return;
     }
@@ -382,6 +392,17 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
       _sleepAt = null;
       await pause();
     });
+    _broadcast();
+  }
+
+  /// Arm or disarm pausing at the current track's natural end — see
+  /// [_onTrackFinished]. Arming cancels any DateTime timer, same "one
+  /// mode at a time" contract as [setSleepTimer].
+  void setSleepAtEndOfTrack(bool on) {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _sleepAt = null;
+    _sleepAtEndOfTrack = on;
     _broadcast();
   }
 
@@ -409,6 +430,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _cancelStallWatchdog();
     _sleepTimer?.cancel();
     _sleepAt = null;
+    _sleepAtEndOfTrack = false;
     await _player.stop();
     _playing = false;
     _position = Duration.zero;
@@ -654,6 +676,15 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   Future<void> _onTrackFinished() async {
+    // Checked before repeat-one: "end of this song" means pause, even
+    // for a track set to repeat itself — it must not seek back to zero
+    // and keep playing.
+    if (_sleepAtEndOfTrack) {
+      _sleepAtEndOfTrack = false;
+      await pause();
+      _broadcast();
+      return;
+    }
     if (_queue.repeat == RepeatMode.one) {
       await seek(Duration.zero);
       await _player.resume();

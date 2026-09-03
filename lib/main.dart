@@ -9,11 +9,13 @@ import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/dashboard_page.dart';
+import 'package:yswords/pages/evidence_detail_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/feedback_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/loading_page.dart';
+import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/misconceptions_page.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
@@ -271,6 +273,34 @@ final List<GetPage> _registeredGetPages = [
     name: '/songs/playlists/:id',
     page: () =>
         SongPlaylistDetailPage(playlistId: Get.parameters['id'] ?? ''),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  // URL-routing Stage 4, batch 2 continued: unlike the two above, these
+  // three pages take a fully-built model object, not a raw id — each
+  // needs the same async id -> object resolver wrapper as
+  // `/sermons/:id`'s `SermonByIdPage`. See `VideoSeriesByIdPage`
+  // (videos_page.dart), `EvidenceByIdPage` (evidence_detail_page.dart)
+  // and `MapByIdPage` (map_viewer_page.dart) for the loading/not-found
+  // gating each one does.
+  GetPage(
+    name: '/videos/:id',
+    page: () => VideoSeriesByIdPage(id: Get.parameters['id'] ?? ''),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/evidence/:id',
+    page: () => EvidenceByIdPage(id: Get.parameters['id'] ?? ''),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/maps/:id',
+    page: () => MapByIdPage(id: Get.parameters['id'] ?? ''),
     transition: Transition.rightToLeft,
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,

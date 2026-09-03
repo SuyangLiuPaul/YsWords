@@ -145,6 +145,7 @@ class SongPlayerService extends ChangeNotifier {
   Duration get position => _h.position;
   Duration get duration => _h.duration;
   DateTime? get sleepAt => _h.sleepAt;
+  bool get sleepAtEndOfTrack => _h.sleepAtEndOfTrack;
   String? get currentUrl => _h.currentItem?.url;
 
   /// Which mix is playing, for the UI's chip highlighting.
@@ -256,6 +257,7 @@ class SongPlayerService extends ChangeNotifier {
   Future<void> setShuffle(bool on) => _h.setShuffle(on);
   Future<void> setRepeat(RepeatMode mode) => _h.setRepeat(mode);
   void setSleepTimer(Duration? after) => _h.setSleepTimer(after);
+  void setSleepAtEndOfTrack(bool on) => _h.setSleepAtEndOfTrack(on);
   void clearError() => _h.clearError();
 
   /// Switch the whole queue between the sung take, the instrumental

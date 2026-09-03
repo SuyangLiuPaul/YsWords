@@ -6,7 +6,94 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/services/map_service.dart';
 import 'package:yswords/widgets/illustration_image.dart';
+import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:provider/provider.dart';
+
+/// URL-routing Stage 4 (`docs/url-routing-plan.md` §6 batch 2): the
+/// `/maps/:id` cold-load / shared-link entry point, following the same
+/// pattern as `SermonByIdPage`. Resolves against [MapService.loadMaps]
+/// (bundled `assets/maps_index.json`), then swaps in the real
+/// [MapViewerPage] once found.
+///
+/// A cold `/#/maps/:id` load has no chapter/book context to build a
+/// curated `relatedMaps` list from, so this passes `relatedMaps: const
+/// []` and derives `locale` from the app language. Verified by reading
+/// `_MapViewerPageState.build` directly: `_stripMaps` (line 50) merges
+/// `widget.relatedMaps` with `_allMaps`, which `initState` lazy-loads
+/// from the same [MapService.loadMaps] regardless — so an empty
+/// `relatedMaps` degrades to "full library only" (no "Related" badges,
+/// full strip once loaded), never to an empty strip or a crash. The
+/// only visible difference from the in-app entry point is that no map
+/// carries the small bookmark badge that marks a curated match.
+///
+/// The one in-app call site (`bible_reading_pane.dart`) keeps pushing
+/// [MapViewerPage] directly with its curated `relatedMaps` — only a
+/// cold load or browser Back/Forward into this path goes through the
+/// id lookup here.
+class MapByIdPage extends StatefulWidget {
+  final String id;
+  const MapByIdPage({super.key, required this.id});
+
+  @override
+  State<MapByIdPage> createState() => _MapByIdPageState();
+}
+
+class _MapByIdPageState extends State<MapByIdPage> {
+  BibleMap? _map;
+  bool _resolving = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    final all = await MapService.loadMaps();
+    BibleMap? found;
+    for (final m in all) {
+      if (m.id == widget.id) {
+        found = m;
+        break;
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _map = found;
+      _resolving = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_resolving) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final map = _map;
+    final locale = Provider.of<AppSettings>(context, listen: false).locale;
+    if (map == null) {
+      return Scaffold(
+        appBar: AppBar(leading: const LocalizedBackButton()),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(
+              uiStrings['mapNotFound']?[locale] ?? 'Map not found.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return MapViewerPage(map: map, locale: locale, relatedMaps: const []);
+  }
+}
 
 /// Full-screen map viewer with a glass header and an optional bottom
 /// strip of related maps so the user can switch between them in place.

@@ -783,24 +783,27 @@ class _SecondaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sleepAt = player.sleepAt;
+    final sleepEndOfTrack = player.sleepAtEndOfTrack;
+    final sleepArmed = sleepAt != null || sleepEndOfTrack;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextButton.icon(
           icon: Icon(
-            sleepAt == null
-                ? Icons.bedtime_outlined
-                : Icons.bedtime_rounded,
+            sleepArmed ? Icons.bedtime_rounded : Icons.bedtime_outlined,
             size: 18,
-            color: sleepAt == null ? scheme.onSurfaceVariant : scheme.primary,
+            color: sleepArmed ? scheme.primary : scheme.onSurfaceVariant,
           ),
           label: Text(
-            sleepAt == null
+            !sleepArmed
                 ? (uiStrings['songsSleepTimer']?[locale] ?? 'Sleep timer')
-                : _remaining(sleepAt),
+                : sleepEndOfTrack
+                    ? (uiStrings['songsSleepEndOfSongShort']?[locale] ??
+                        'End of song')
+                    : _remaining(sleepAt!),
             style: TextStyle(
               fontSize: 13,
-              color: sleepAt == null ? scheme.onSurfaceVariant : scheme.primary,
+              color: sleepArmed ? scheme.primary : scheme.onSurfaceVariant,
             ),
           ),
           onPressed: () => _pickSleep(context),
@@ -847,7 +850,25 @@ class _SecondaryRow extends StatelessWidget {
                   Navigator.of(sheetCtx).pop();
                 },
               ),
-            if (player.sleepAt != null)
+            ListTile(
+              leading: const Icon(Icons.tune_rounded),
+              title: Text(
+                  uiStrings['songsSleepCustom']?[locale] ?? 'Custom…'),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                _pickCustomSleep(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.music_note_rounded),
+              title: Text(uiStrings['songsSleepEndOfSong']?[locale] ??
+                  'End of this song'),
+              onTap: () {
+                player.setSleepAtEndOfTrack(true);
+                Navigator.of(sheetCtx).pop();
+              },
+            ),
+            if (player.sleepAt != null || player.sleepAtEndOfTrack)
               ListTile(
                 leading: const Icon(Icons.close),
                 title: Text(
@@ -858,6 +879,64 @@ class _SecondaryRow extends StatelessWidget {
                 },
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// A plain in-sheet stepper rather than a package picker or
+  /// [showTimePicker] — that dialog is a time-of-day, not a duration,
+  /// and pulling in a duration-picker package for one bottom sheet is
+  /// not worth the bundle cost across six targets.
+  void _pickCustomSleep(BuildContext context) {
+    var minutes = 90;
+    showModalBottomSheet<void>(
+      useSafeArea: true,
+      context: context,
+      builder: (sheetCtx) => SafeArea(
+        child: StatefulBuilder(
+          builder: (ctx, setState) => Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: minutes > 5
+                          ? () => setState(() => minutes -= 5)
+                          : null,
+                    ),
+                    SizedBox(
+                      width: 120,
+                      child: Text(
+                        '$minutes '
+                        '${uiStrings['songsMinutes']?[locale] ?? 'minutes'}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: minutes < 240
+                          ? () => setState(() => minutes += 5)
+                          : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: () {
+                    player.setSleepTimer(Duration(minutes: minutes));
+                    Navigator.of(sheetCtx).pop();
+                  },
+                  child: Text(uiStrings['songsSleepSet']?[locale] ?? 'Set'),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

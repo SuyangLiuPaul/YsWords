@@ -733,7 +733,9 @@ class _DashboardPageState extends State<DashboardPage> {
             _DashboardEvidenceCard(
               evidence: _dailyEvidence!,
               locale: locale,
-              onTap: () => pushPage(EvidenceDetailPage(evidence: _dailyEvidence!)),
+              onTap: () => pushPage(
+                  EvidenceDetailPage(evidence: _dailyEvidence!),
+                  routeName: '/evidence/${_dailyEvidence!.id}'),
             ),
           ],
         );

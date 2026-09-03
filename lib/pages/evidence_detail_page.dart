@@ -7,6 +7,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_evidence.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart';
@@ -17,6 +18,84 @@ import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+
+/// URL-routing Stage 4 (`docs/url-routing-plan.md` §6 batch 2): the
+/// `/evidence/:id` cold-load / shared-link entry point, following the
+/// same pattern as `SermonByIdPage`. [BibleEvidenceService.all] is a
+/// [RemoteDataService]-backed load (bundled snapshot first, network
+/// refresh in the background) that "never throws — always returns a
+/// populated bundle" per its own doc comment, so this resolver only
+/// has a loading/found/not-found state to gate, no error branch.
+///
+/// The 3 in-app call sites (`evidence_page.dart` ×2, `dashboard_page.dart`)
+/// keep pushing [EvidenceDetailPage] directly with the entry object
+/// they already have — only a cold load or browser Back/Forward into
+/// this path goes through the id lookup here.
+class EvidenceByIdPage extends StatefulWidget {
+  final String id;
+  const EvidenceByIdPage({super.key, required this.id});
+
+  @override
+  State<EvidenceByIdPage> createState() => _EvidenceByIdPageState();
+}
+
+class _EvidenceByIdPageState extends State<EvidenceByIdPage> {
+  BibleEvidence? _evidence;
+  bool _resolving = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    final all = await BibleEvidenceService.all();
+    BibleEvidence? found;
+    for (final e in all) {
+      if (e.id == widget.id) {
+        found = e;
+        break;
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _evidence = found;
+      _resolving = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_resolving) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final evidence = _evidence;
+    if (evidence == null) {
+      final locale = Provider.of<AppSettings>(context, listen: false).locale;
+      return Scaffold(
+        appBar: AppBar(leading: const LocalizedBackButton()),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(
+              uiStrings['evidenceNotFound']?[locale] ??
+                  'Evidence entry not found.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return EvidenceDetailPage(evidence: evidence);
+  }
+}
 
 /// Full-page view of one [BibleEvidence] entry.
 ///

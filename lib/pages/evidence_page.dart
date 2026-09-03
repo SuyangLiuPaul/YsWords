@@ -378,8 +378,9 @@ class _EvidencePageState extends State<EvidencePage> {
                           itemBuilder: (_, i) => _EvidenceCard(
                             evidence: filtered[i],
                             locale: locale,
-                            onTap: () => pushPage(EvidenceDetailPage(
-                                  evidence: filtered[i])),
+                            onTap: () => pushPage(
+                                EvidenceDetailPage(evidence: filtered[i]),
+                                routeName: '/evidence/${filtered[i].id}'),
                           ),
                         ),
                         ),
@@ -412,7 +413,8 @@ class _EvidencePageState extends State<EvidencePage> {
         all: _all,
         onCitationTap: (ev) {
           Navigator.of(context).pop();
-          pushPage(EvidenceDetailPage(evidence: ev));
+          pushPage(EvidenceDetailPage(evidence: ev),
+              routeName: '/evidence/${ev.id}');
         },
       ),
     );
