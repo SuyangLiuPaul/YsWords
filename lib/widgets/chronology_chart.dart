@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -182,6 +183,11 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// viewport turned out to be.
   double? _density;
   bool _zoomChosen = false;
+
+  /// Where the current press started, in plot coordinates. A press that
+  /// travels further than [kTouchSlop] before lifting was a scroll, not
+  /// a point, and must not move the cursor.
+  Offset? _pressOrigin;
 
   /// Last plot width laid out, so the overview strip can convert the
   /// scroll offset into an AM range without re-deriving the layout.
@@ -1128,10 +1134,39 @@ class _ChronologyChartState extends State<ChronologyChart> {
                 // It does not scroll (see [_placeCursor]). Moving the
                 // view out from under the thing just pointed at is the
                 // classic way a crosshair becomes unusable.
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTapDown: (d) =>
-                      _placeCursor(_amAtPlotX(d.localPosition.dx, plotWidth)),
+                //
+                // **Why a raw Listener and not a GestureDetector.** The
+                // first version of this used `onTapDown`, and the
+                // reader reported that a quick tap did nothing while
+                // press-and-hold worked. That asymmetry is the gesture
+                // arena: a TapGestureRecognizer fires `onTapDown` when
+                // it wins the arena OR when 100 ms elapse, whichever
+                // comes first. Hold past 100 ms and this detector fires
+                // regardless of who eventually wins; tap quickly and
+                // the arena resolves first, an inner recogniser takes
+                // it, and this one is rejected without ever firing. A
+                // widget test cannot see the difference — `tapAt` sends
+                // down and up with nothing in between, and both paths
+                // pass — which is why it reached a device.
+                //
+                // Listener is not in the arena at all, so nothing can
+                // take the press away. Committing on UP within touch
+                // slop keeps a scroll drag from dragging the cursor
+                // along with it, and means this coexists with the inner
+                // handlers rather than competing: tapping an event
+                // label still opens its sheet AND lands the cursor on
+                // that year, which is what a reader means by pointing
+                // at something.
+                child: Listener(
+                  onPointerDown: (e) => _pressOrigin = e.localPosition,
+                  onPointerUp: (e) {
+                    final o = _pressOrigin;
+                    _pressOrigin = null;
+                    if (o == null) return;
+                    if ((e.localPosition - o).distance > kTouchSlop) return;
+                    _placeCursor(_amAtPlotX(e.localPosition.dx, plotWidth));
+                  },
+                  onPointerCancel: (_) => _pressOrigin = null,
                   child: Stack(
                     children: [
                       Positioned.fill(
@@ -1689,10 +1724,22 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// the dimmed alpha the chart already gives a bar nobody is looking
   /// at. So scrolling toward them shows them approaching the edge, and
   /// each one grows back into a full row as it arrives.
+  /// The hatched band that stands in for folded lifeline rows.
+  ///
+  /// **It used to jump on tap** — an opaque detector over `_goTo`, so
+  /// pressing it scrolled the chart somewhere else. On a phone at
+  /// nineteen years in view this band is one of the largest things on
+  /// screen and reads as chart ground, not as a control, so the jump
+  /// arrived as the chart moving for no reason: "我按一下还是不行".
+  ///
+  /// The way back to the folded bars has not gone away; it lives on
+  /// [_foldNameCell], the "{n} not in view" chip in the fixed name
+  /// column, which says in words what it does and is what the test for
+  /// that affordance actually presses. Inside the plot the band is now
+  /// ground like any other, so the pointer handler on the plot places
+  /// the cursor there instead.
   Widget _foldLane(BuildContext context, _Slot s, ColorScheme scheme) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => _goTo(_foldTarget(s)),
+    return IgnorePointer(
       child: CustomPaint(
         painter: _FoldPainter(
           data: widget.data,

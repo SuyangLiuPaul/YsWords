@@ -646,6 +646,100 @@ void main() {
               'crosshair stops being usable');
     });
 
+    testWidgets('EVERY horizontal band of the plot answers a press with '
+        'the year under it', (tester) async {
+      // 2026-09-04, second report: "我按一下还是不行，但是按住不动就在那个
+      // 位置了". Two separate causes, and the band sweep below is what
+      // found them — the first version of this feature was tested with
+      // one tap at one height, which is exactly the row that worked.
+      //
+      //   * `_foldLane`, the hatched "{n} not in view" band, was an
+      //     opaque detector over `_goTo`. It is one of the largest
+      //     things on a phone screen at close zoom and reads as chart
+      //     ground, so pressing it scrolled the chart somewhere else.
+      //   * The cursor handler was a GestureDetector's `onTapDown`,
+      //     which fires on winning the arena OR at 100 ms. Hold and it
+      //     fires; tap and an inner recogniser can take the arena
+      //     first. `tapAt` cannot reproduce that — both paths pass —
+      //     so the sweep asserts the OUTCOME at every height instead.
+      await pumpChart(tester, size: tall);
+      for (var i = 0; i < 16; i++) {
+        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+        await tester.pump(const Duration(milliseconds: 60));
+      }
+      await tester.pumpAndSettle();
+
+      final plot = plotScroll(tester);
+      final box = tester.getRect(find.byType(SingleChildScrollView).last);
+      String cursorText() => tester
+          .widgetList<Text>(find.byType(Text))
+          .map((w) => w.data ?? '')
+          .firstWhere((s) => s.startsWith('AM '));
+
+      final span = (data.spanEndAm - data.spanStartAm).toDouble();
+      for (var dy = 6.0; dy < box.height - 4; dy += 20) {
+        final scrollBefore = plot.position.pixels;
+        // The year that is genuinely under the press point, derived
+        // from the live scroll offset rather than from a reset — some
+        // bands legitimately open a sheet, and a reset tap would land
+        // on that sheet's barrier instead of the chart.
+        final px = scrollBefore + box.width * 0.7;
+        final want = (data.spanStartAm + px / plotWidthOf(tester) * span)
+            .round();
+
+        await tester.tapAt(Offset(box.left + box.width * 0.7, box.top + dy));
+        await tester.pumpAndSettle();
+
+        expect(cursorText(), startsWith('AM $want '),
+            reason: 'the band at dy=$dy did not report the year under the '
+                'press — it either swallowed it or answered with the '
+                'wrong year');
+        expect(plot.position.pixels, closeTo(scrollBefore, 0.5),
+            reason: 'the band at dy=$dy scrolled the chart instead of '
+                'answering — that is the fold band bug');
+
+        // A press may legitimately have opened an event or person
+        // sheet; close it so the next press reaches the chart.
+        if (find.byType(BottomSheet).evaluate().isNotEmpty) {
+          Navigator.of(tester.element(find.byType(BottomSheet))).pop();
+          await tester.pumpAndSettle();
+        }
+      }
+    });
+
+    testWidgets('a scroll drag does not drag the cursor with it',
+        (tester) async {
+      // The reason the press commits on pointer UP within touch slop
+      // rather than on pointer down: the plot is horizontally
+      // scrollable, and a crosshair that moved every time you scrolled
+      // would be worse than one that never moved.
+      await pumpChart(tester, size: tall);
+      for (var i = 0; i < 16; i++) {
+        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+        await tester.pump(const Duration(milliseconds: 60));
+      }
+      await tester.tap(find.byKey(const ValueKey('chronoChip_flood')));
+      await tester.pumpAndSettle();
+
+      final before = tester
+          .widgetList<Text>(find.byType(Text))
+          .map((w) => w.data ?? '')
+          .firstWhere((s) => s.startsWith('AM '));
+      final box = tester.getRect(find.byType(SingleChildScrollView).last);
+      await tester.dragFrom(
+          Offset(box.left + box.width * 0.5, box.top + box.height * 0.5),
+          const Offset(-120, 0));
+      await tester.pumpAndSettle();
+
+      expect(
+          tester
+              .widgetList<Text>(find.byType(Text))
+              .map((w) => w.data ?? '')
+              .firstWhere((s) => s.startsWith('AM ')),
+          before,
+          reason: 'scrolling must leave the cursor where it was');
+    });
+
     testWidgets('the scrubber reports who was alive that year',
         (tester) async {
       await pumpChart(tester, size: tall);
