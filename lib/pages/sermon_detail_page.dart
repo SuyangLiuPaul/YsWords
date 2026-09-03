@@ -20,6 +20,7 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/utils/passage_localizer.dart'
     show localizePassage, passageRefPattern, usesChineseChapterMark;
 import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
+import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
@@ -186,6 +187,12 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   /// scrolls so the AppBar progress indicator reflects it live.
   double _progress = 0.0;
 
+  /// The church's own written edition of this sermon, once looked up.
+  /// Stays null for 253 of the 289 — see [MatthewMessage] — and null
+  /// renders nothing, so a sermon we could not confirm shows no link
+  /// rather than a plausible wrong one.
+  MatthewMessage? _written;
+
   /// True once the user has scrolled past the inline header (title +
   /// meta chips + language toggle). Drives the AppBar title swap from
   /// the generic "Sermon" label to the actual sermon title — a single
@@ -210,6 +217,16 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _loadWrittenEdition();
+  }
+
+  /// Look up the church's written edition. Deliberately independent of
+  /// the body load: it must not delay the transcript, and a failure
+  /// here must not surface as "this sermon failed to load".
+  Future<void> _loadWrittenEdition() async {
+    final w = await SermonService.instance.writtenEdition(widget.sermon.id);
+    if (!mounted || w == null) return;
+    setState(() => _written = w);
   }
 
   @override
@@ -562,6 +579,17 @@ class _SermonDetailPageState extends State<SermonDetailPage> {
               appLocale: settings.locale,
               onSelect: _switchTo,
             ),
+            // The church's own written edition, on the 36 sermons that
+            // have a confirmed one. Below the language toggle because
+            // it is a second edition of this sermon, not a second
+            // language of it.
+            if (_written != null) ...[
+              const SizedBox(height: 14),
+              _WrittenEditionCard(
+                message: _written!,
+                locale: settings.locale,
+              ),
+            ],
             const SizedBox(height: 16),
             // Say what the yellow means. Unexplained highlighting in a
             // transcript reads as the preacher's own emphasis, which
@@ -787,6 +815,117 @@ class _HighlightNotice extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// "The church has published this sermon in writing" — a link out to
+/// the message's page on `christiandiscipleschurch.org` and to its PDF.
+///
+/// Shown on 36 of the 289 sermons. The other 253 show nothing at all,
+/// which is the whole design: the church's written edition is re-titled
+/// and cut finer than the recordings, so most pairings are guesses, and
+/// a guess that opens a message about a different talk is worse for the
+/// reader than no link. What counts as confirmed is
+/// `tools/reconcile_matthew_124.py`; see [MatthewMessage].
+///
+/// Their title is shown verbatim and labelled as theirs. It usually
+/// differs from ours (our 004 is "Temptation after baptism (2)", theirs
+/// is "Temptation after Baptism #2"; our 117 is "Forgiving others",
+/// theirs is "The Parable of the Unforgiving Servant") and a reader who
+/// is not told whose title it is will read it as a correction of ours.
+class _WrittenEditionCard extends StatelessWidget {
+  final MatthewMessage message;
+  final String locale;
+
+  const _WrittenEditionCard({required this.message, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final heading = uiStrings['sermonWrittenEdition']?[locale] ??
+        uiStrings['sermonWrittenEdition']!['en']!;
+    final open = uiStrings['sermonWrittenEditionOpen']?[locale] ??
+        uiStrings['sermonWrittenEditionOpen']!['en']!;
+    final pdf = uiStrings['sermonWrittenEditionPdf']?[locale] ??
+        uiStrings['sermonWrittenEditionPdf']!['en']!;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.menu_book_outlined,
+                  size: 15, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  heading,
+                  style: TextStyle(
+                    fontFamilyFallback: kCjkFontFallback,
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          // Their number and their title, marked as theirs. English
+          // only, because the written edition is only in English —
+          // translating the label would imply a translated message.
+          Text(
+            'Message ${message.message} — ${message.title}',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              height: 1.3,
+            ),
+          ),
+          Text(
+            message.ref,
+            style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 2),
+          Wrap(
+            spacing: 4,
+            children: [
+              TextButton.icon(
+                onPressed: () => LinkOpener.openExternally(
+                    context, message.url,
+                    locale: locale),
+                icon: const Icon(Icons.open_in_new_rounded, size: 15),
+                label: Text(open,
+                    style: TextStyle(
+                        fontFamilyFallback: kCjkFontFallback, fontSize: 12)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: const Size(0, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => LinkOpener.openExternally(
+                    context, message.pdf,
+                    locale: locale),
+                icon: const Icon(Icons.picture_as_pdf_outlined, size: 15),
+                label: Text(pdf, style: const TextStyle(fontSize: 12)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: const Size(0, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
