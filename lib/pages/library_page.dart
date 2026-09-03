@@ -735,8 +735,15 @@ class _AnnotationTile extends StatelessWidget {
                 text: TextSpan(
                   children: buildNoteSpans(
                     noteText: extra!,
+                    // 2026-09-03: the blanket `fontStyle: italic` that
+                    // used to be here is gone. Notes now carry their
+                    // own formatting, and italicising the whole body
+                    // made the user's own *italic* invisible — the one
+                    // emphasis they asked for would have been the one
+                    // emphasis that could not show. `buildNoteSpans`
+                    // defaults to NoteMarkdownMode.render, so bold,
+                    // italic and `- ` lists draw here.
                     baseStyle: TextStyle(
-                      fontStyle: FontStyle.italic,
                       fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                       fontSize: settings.fontSize - 2,
                       color: scheme.onSurfaceVariant,

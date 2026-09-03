@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import 'package:yswords/utils/note_markdown.dart';
 import 'package:yswords/utils/reference_parser.dart' show resolveBookName;
 
 /// 2026-05-19 (v1.2.59): parses user-written note text and returns
@@ -142,26 +143,87 @@ List<int> _parseVerseSpec(String spec) {
 /// [noteText] is empty or contains no references — keeps callers
 /// simple (always render the result via `RichText(text:
 /// TextSpan(children: spans))`).
+///
+/// 2026-09-03: [markdown] layers the note formatting subset —
+/// `**bold**`, `*italic*` / `_italic_`, `- ` lists — on top of the
+/// reference spans. It defaults to [NoteMarkdownMode.render] so that
+/// any display site added later is formatted without having to
+/// remember to ask; the two callers that must opt out say so
+/// explicitly:
+///
+///   • the note editor's `_RefHighlightingController` passes
+///     [NoteMarkdownMode.source], because a `TextEditingController`'s
+///     spans must contain exactly the controller's characters and
+///     [spliceComposingUnderline] indexes them by absolute offset.
+///   • [NoteMarkdownMode.off] reproduces the pre-formatting behaviour
+///     verbatim, for anything that needs the literal text.
+///
+/// Formatting is applied on top of the reference styling, not instead
+/// of it, so `**[John 3:16] matters**` keeps its tappable, underlined
+/// reference AND draws bold.
 List<InlineSpan> buildNoteSpans({
   required String noteText,
   required TextStyle baseStyle,
   required Color refColor,
   void Function(NoteReferenceMatch ref)? onRefTap,
   Color? refBackgroundColor,
+  NoteMarkdownMode markdown = NoteMarkdownMode.render,
 }) {
   if (noteText.isEmpty) {
     return [TextSpan(text: '', style: baseStyle)];
   }
 
+  // A complete tiling of noteText, or empty when formatting is off —
+  // in which case [emit] falls back to one span per segment, exactly
+  // the shape this function returned before formatting existed.
+  final runs = markdown == NoteMarkdownMode.off
+      ? const <NoteMarkdownRun>[]
+      : scanNoteMarkdown(noteText);
+
   final spans = <InlineSpan>[];
+
+  /// Append `noteText[a..b)` styled with [style], split wherever the
+  /// formatting runs change. [recognizer] is shared across the slices
+  /// of one reference so a bold reference stays a single tap target.
+  void emit(int a, int b, TextStyle style, {GestureRecognizer? recognizer}) {
+    if (b <= a) return;
+    if (runs.isEmpty) {
+      spans.add(TextSpan(
+          text: noteText.substring(a, b),
+          style: style,
+          recognizer: recognizer));
+      return;
+    }
+    for (final run in runs) {
+      if (run.end <= a) continue;
+      if (run.start >= b) break;
+      final lo = run.start < a ? a : run.start;
+      final hi = run.end > b ? b : run.end;
+      if (hi <= lo) continue;
+      if (run.isMarker && markdown == NoteMarkdownMode.render) {
+        // Delimiters vanish; a list marker becomes its bullet glyph,
+        // emitted once even if a reference splits the segment.
+        if (run.renderAs.isEmpty || lo != run.start) continue;
+        spans.add(TextSpan(
+          text: run.renderAs,
+          style: styleForNoteRun(run, style, markdown),
+          recognizer: recognizer,
+        ));
+        continue;
+      }
+      spans.add(TextSpan(
+        text: noteText.substring(lo, hi),
+        style: styleForNoteRun(run, style, markdown),
+        recognizer: recognizer,
+      ));
+    }
+  }
+
   int cursor = 0;
   for (final m in _referenceRegex.allMatches(noteText)) {
     // Plain prefix between previous cursor and this match
     if (m.start > cursor) {
-      spans.add(TextSpan(
-        text: noteText.substring(cursor, m.start),
-        style: baseStyle,
-      ));
+      emit(cursor, m.start, baseStyle);
     }
 
     final rawBook = m.group(1)?.trim() ?? '';
@@ -193,9 +255,10 @@ List<InlineSpan> buildNoteSpans({
             (verses.length > 1 && isContiguous) ? verses.last : null,
         verses: verses,
       );
-      spans.add(TextSpan(
-        text: noteText.substring(m.start, m.end),
-        style: refBackgroundColor != null
+      emit(
+        m.start,
+        m.end,
+        refBackgroundColor != null
             // Pill look (note editor, inline highlight): solid
             // background instead of the underlined-link treatment —
             // dotted underlines read as "tap me" against a plain
@@ -216,25 +279,19 @@ List<InlineSpan> buildNoteSpans({
         recognizer: onRefTap == null
             ? null
             : (TapGestureRecognizer()..onTap = () => onRefTap(ref)),
-      ));
+      );
     } else {
       // Looks like a reference but the book name isn't canonical
       // (typo, made-up name, or untranslated abbreviation we don't
       // alias). Fall through to plain text so the user sees what
       // they typed — never a silent drop.
-      spans.add(TextSpan(
-        text: noteText.substring(m.start, m.end),
-        style: baseStyle,
-      ));
+      emit(m.start, m.end, baseStyle);
     }
     cursor = m.end;
   }
   // Trailing plain text after the last match
   if (cursor < noteText.length) {
-    spans.add(TextSpan(
-      text: noteText.substring(cursor),
-      style: baseStyle,
-    ));
+    emit(cursor, noteText.length, baseStyle);
   }
   return spans.isEmpty ? [TextSpan(text: noteText, style: baseStyle)] : spans;
 }

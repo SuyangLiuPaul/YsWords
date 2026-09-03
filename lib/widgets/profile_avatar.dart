@@ -12,6 +12,15 @@ import 'package:flutter/material.dart';
 ///   2. [avatarColor] — picked-by-user tile color, falls back to
 ///      `scheme.primary` if null.
 ///   3. [name] first character — uppercased initial.
+///
+/// 2026-09-03: the avatar is tappable, and it opens the profile.
+/// User, 2026-08-16, asking for an opinion as much as a feature: a
+/// circle showing your own face reads as a control whether or not it
+/// is one, so leaving it inert everywhere but Settings taught people
+/// that tapping their face does nothing. [onTap] lives here rather
+/// than at each call site so the affordance — the ink ripple, the
+/// button semantics, the label — is the same wherever the avatar
+/// appears. Call sites that pass null still get a plain, inert circle.
 class ProfileAvatar extends StatelessWidget {
   /// HTTPS URL or `data:` URL. Null/empty falls through to initial.
   final String? photoUrl;
@@ -19,16 +28,47 @@ class ProfileAvatar extends StatelessWidget {
   final int? avatarColor;
   final double radius;
 
+  /// Opens the profile. Null renders the avatar inert (and, notably,
+  /// without button semantics — a screen reader should not announce a
+  /// control that isn't one).
+  final VoidCallback? onTap;
+
+  /// Accessible label for the tap target. Required in practice
+  /// whenever [onTap] is set: the avatar has no text of its own, so
+  /// without this a screen reader announces an unlabelled button.
+  final String? tapLabel;
+
   const ProfileAvatar({
     super.key,
     required this.photoUrl,
     required this.name,
     this.avatarColor,
     this.radius = 24,
+    this.onTap,
+    this.tapLabel,
   });
 
   @override
   Widget build(BuildContext context) {
+    final circle = _buildCircle(context);
+    if (onTap == null) return circle;
+    // `container: true` matters: without it this Semantics has no node
+    // of its own, so [tapLabel] merges into whatever the CircleAvatar
+    // below already produces (the initial letter, or nothing at all for
+    // a photo) and a screen reader announces an unnamed button.
+    return Semantics(
+      container: true,
+      button: true,
+      label: tapLabel,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: circle,
+      ),
+    );
+  }
+
+  Widget _buildCircle(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final tileColor =
         avatarColor != null ? Color(avatarColor!) : scheme.primary;

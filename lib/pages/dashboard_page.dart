@@ -26,6 +26,7 @@ import 'package:yswords/widgets/liquid_glass.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
+import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/pages/feedback_page.dart';
 import 'package:yswords/pages/search_page.dart';
 import 'package:yswords/pages/settings_page.dart';
@@ -390,12 +391,19 @@ class _DashboardPageState extends State<DashboardPage> {
         toolbarHeight: 68,
         title: Row(
           children: [
+            // 2026-09-03: tappable, opening the profile — the same
+            // destination the Settings account row already used, so
+            // both faces in the app lead to the same place. Uses the
+            // registered '/profiles' route so the browser URL keeps up.
             ProfileAvatar(
               photoUrl: CloudAuthService.instance.currentUser?.photoURL ??
                   ProfileService.instance.current.photoDataUrl,
               name: greetingName ?? ProfileService.instance.current.name,
               avatarColor: ProfileService.instance.current.avatarColorArgb,
               radius: 19,
+              tapLabel: uiStrings['openProfile']?[locale] ?? 'Open profile',
+              onTap: () =>
+                  pushPage(const ProfilesPage(), routeName: '/profiles'),
             ),
             const SizedBox(width: 12),
             Expanded(
