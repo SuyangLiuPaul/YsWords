@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""39 word-tap runs answered a content word with a particle it does not spell.
+"""42 word-tap runs answered a content word with a particle it does not spell.
 
 `assets/tagged/cuvs-yhwh/` is what "tap a word to see the original" prints.
 Each run is `{"w": <Chinese>, "s": <the number the tap shows>, "i": [...]}`,
@@ -27,12 +27,13 @@ truth; the corpus already carries gaps of that kind.
 
 **What the pass COSTS, stated precisely, because "demote the particle" flatters
 it.** `i` is inert, so a number that is no run's `s` anywhere in the verse is a
-number no tap can reach. The pass touches 39 runs in 36 verses and leaves the
-displaced number unreachable in **30 of those verses (33 of the 39 runs)**; in
-the other 6 it survives on a sibling run — 民數記 7:89's 的施恩座以上 still
-shows H5921, 腓立比書 3:3's 真受割禮的 still shows G3588. (Three counts are in
-play and mixing them is easy: 30 is (verse, number) losses, and 歷代志上 24:3,
-以賽亞書 17:3 and 約翰福音 3:5 each spend two runs on one of them.)
+number no tap can reach. The pass touches 42 runs in 39 verses and leaves the
+displaced number unreachable in **30 of those verses (33 of the 42 runs)**; in
+the other 9 it survives on a sibling run — 民數記 7:89's 的施恩座以上 still
+shows H5921, 腓立比書 3:3's 真受割禮的 still shows G3588, and all three of round
+three's rows are of that kind. (Three counts are in play and mixing them is
+easy: 30 is (verse, number) losses, and 歷代志上 24:3, 以賽亞書 17:3 and
+約翰福音 3:5 each spend two runs on one of them.)
 
 Of the 30, **18 are particles** (G3588 x6, H4480 x4, H853 x3, H3605 x3, H5921,
 H1931), **11 are content words** the Chinese genuinely leaves unrendered — ἀνήρ
@@ -63,16 +64,29 @@ one partial answer for another while writing "this text does not render it"
 about a character that plainly does. 王下 3:27's 的長子 spells בֵּן in 子 and
 בְּכוֹר in 長; 創 33:17's 名叫 spells שֵׁם in 名 and קָרָא in 叫, and its `g`
 code H8804 is that verb's Qal perfect, which the promotion would leave parsing a noun.
-Fourteen runs are held for reasons of that kind and are listed in `HELD` below
+Eleven runs are held for reasons of that kind and are listed in `HELD` below
 with the reason on each; the tool refuses to run if a member of the class is in
-neither table, so the exclusions cannot quietly grow or shrink. 39 + 14 = 53.
+neither table, so the exclusions cannot quietly grow or shrink. 42 + 11 = 53.
 
 The gate is a judgement per run, not a rule, so it is worth naming where the
-two passes over this class disagreed. 耶利米書 52:30's 二十 was held first as
+three passes over this class disagreed. 耶利米書 52:30's 二十 was held first as
 "the numeral convention" and is repaired here, because the verse's own four
-sibling numerals show there is no such convention. 以斯拉記 7:11's 誡命 and the
-two 和 rows went the other way: 誡 carries H1697 elsewhere in the corpus and
-bare 和 carries H5921 in 61 runs, so those runs do spell what they show.
+sibling numerals show there is no such convention. 以斯拉記 7:11's 誡命 went the
+other way and still does: 誡 carries H1697 elsewhere in the corpus, so 誡命 does
+spell דִּבְרֵי and the swap would be an even trade.
+
+**Round three, 2026-09-03, moved three rows from `HELD` into `REPAIRS`** —
+王上 1:35 和犹大, 民 19:18 和一切, 猶大書 1:25 永永远远。 — and the reasons are
+on those rows. The short form: the reason they were held was frequency of a
+DIFFERENT string (bare 和, 61 of 1,240) which this file's own docstring calls
+inadmissible; the `i` they carried was a false claim about Chinese that plainly
+does render the word; and the displaced number survives on a sibling run in
+every one of the three verses, so unlike the 39 these cost the reader nothing.
+Widening a scripture pass on one round's say-so is what the queue warned
+against, so each of the three was re-derived from the corpus rather than
+inherited, and the steelman for holding 永永远远 was tested against the data and
+failed. 53 = 42 repaired + 11 held, and the completeness gate below still
+proves the class is fully accounted for.
 
 **Ground truth is the corpus's own tagging of the identical Chinese string, not
 a rarity argument.** `tools/repair_strongs_alignment_core.py` records why that
@@ -212,6 +226,61 @@ REPAIRS = [
     # run's leading character, and only this one inverts. 三 sits in the next
     # run and is tagged H8141, so 二十 spells no part of שָׁלֹשׁ.
     ("jeremiah", "52:30", "二十", "H7969", "H6242"),
+
+    # ---- ROUND THREE, 2026-09-03. Three rows moved out of `HELD`. ----
+    #
+    # These three were held on the reasoning that bare 和 carries H5921 in 61
+    # runs corpus-wide, so 和 renders עַל. **That is frequency of a DIFFERENT
+    # string than the one being judged** — 和 alone, not 和犹大 / 和一切 — and
+    # it is 61 of 1,240, 4.9%, which is the frequency-of-the-wrong-pair
+    # reasoning this file's own docstring declares inadmissible. The evidence
+    # admitted here is the corpus's tagging of the IDENTICAL string, the same
+    # gate every other row clears: 和犹大 is H3063 in 54 of 55, 和一切 is H3605
+    # in 44 of 45, 永永远远 is G165 in 20 of 21 Greek runs.
+    #
+    # Three further findings, none of which the round that proposed these
+    # rows had made, and each checkable rather than asserted:
+    #
+    #  1. **The `i` these runs carry is a false statement.** `i` is documented
+    #     in `lib/services/tagged_text_service.dart` as "numbers the original
+    #     has that this text does not render". 和犹大 `i:["H3063"]` asserts 犹大
+    #     does not render יְהוּדָה; 和一切 `i:["H3605"]` asserts 一切 does not
+    #     render כֹּל; 永永远远 `i:[...,"G165"]` asserts 永远 does not render
+    #     αἰών. All three are plainly untrue, so holding them is not the
+    #     neutral act it looks like — it keeps a false claim in the data.
+    #  2. **All three are strict gains, measured and not asserted** — the
+    #     distinction 約翰福音 3:5 exists to teach. The displaced number
+    #     survives on a sibling run of the SAME verse in every case, so no
+    #     tap loses anything: 王上 1:35 keeps H5921 on 我的位上，; 民 19:18
+    #     keeps it on 帐棚上，, 身上， and 那人身上。 (three siblings, each
+    #     spelling עַל with 上); 猶大書 1:25 keeps G3956 on 从万古. This is the
+    #     one place in this pass where "the reader only gains" is TRUE, and it
+    #     is true because it was recomputed, not because it was hoped.
+    #  3. 王上 1:35 was already settled once in the other direction by this
+    #     very pass. 以色列 in the same verse covers עַל־יִשְׂרָאֵל and was
+    #     repaired to H3478 with H5921 demoted into `i` — the corpus already
+    #     says a run covering עַל + a nation name does not render עַל. Holding
+    #     和犹大 for the opposite reason made one verse contradict itself.
+    ("1_kings", "1:35", "和犹大", "H5921", "H3063"),
+    ("numbers", "19:18", "和一切", "H5921", "H3605"),
+
+    # 猶大書 1:25 was held as "从万古 carries the identical G3956/G165 pair and
+    # is too rare for the audit to see, so repairing one splits a matched
+    # pair". There is no pair: 从万古 is a different Chinese string (a corpus
+    # singleton) rendering a different Greek phrase — πρὸ παντὸς τοῦ αἰῶνος,
+    # singular — where 万 does spell παντός and 古 does spell αἰῶνος. 永永远远
+    # renders εἰς πάντας τοὺς αἰῶνας, and no character of it spells πᾶς.
+    #
+    # The steelman for holding is that the reduplication 永永 might itself
+    # render the quantifier πάντας, which would make the current `s` partial
+    # rather than false and put this row under the same gate as the other 14.
+    # **The corpus refutes it.** 永永远远 occurs 21 times in Greek verses; in
+    # 16 of them the Greek contains no πᾶς at all, so the reduplication is the
+    # Chinese idiom for the αἰών plural and not a rendering of a quantifier.
+    # In the 4 where πᾶς IS present — 彼前 4:11, 提後 4:18, 弗 3:21, 啟 5:13 —
+    # 永永远远 is tagged G165 and πᾶς is carried by a DIFFERENT run, all four
+    # times. Jude 1:25 is the sole verse of the 21 that inverts it.
+    ("jude", "1:25", "永永远远。", "G3956", "G165"),
 ]
 
 # Members of the same class that are NOT repaired, each with the reason. The
@@ -236,20 +305,11 @@ HELD = {
     ("leviticus", "15:24", "所"): "the twin of 出埃及記 16:23, HELD",
     ("genesis", "14:5", "十四"): "十 spells עֶשְׂרֵה and 四 spells אַרְבַּע — "
                                  "neither number is false for it",
-    ("1_kings", "1:35", "和犹大"): "和 spells the וְ of וְעַל־יְהוּדָה, and bare "
-                                   "和 carries H5921 in 61 runs corpus-wide, so "
-                                   "this run does render עַל",
-    ("numbers", "19:18", "和一切"): "同上 — 和 in וְעַל־כָּל renders עַל on the "
-                                     "corpus's own 61-run precedent",
     ("ezra", "7:11", "诫命"): "诫 carries H1697 in both of its other corpus "
                               "occurrences (申 4:13, 10:4, where 十诫 = "
                               "הַדְּבָרִים), so 诫命 does spell דִּבְרֵי",
     ("2_samuel", "1:6", "马兵"): "马 spells פָּרָשׁ and 兵 may spell בַּעֲלֵי",
     ("2_chronicles", "21:6", "为妻，"): "为 may spell הָיְתָה",
-    ("jude", "1:25", "永永远远。"): "the same verse's 从万古 carries the identical "
-                                    "G3956/G165 pair and is too rare a run text "
-                                    "for the audit to see, so repairing one "
-                                    "would split a matched pair",
 }
 
 

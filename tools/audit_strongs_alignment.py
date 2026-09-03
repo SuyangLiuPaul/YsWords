@@ -64,16 +64,55 @@ there and the article is SUBSTANTIVAL (Ὁ ποιῶν, Τῷ δυναμένῳ)
 whole phrase with 神. Saying CUV "supplies" the word there is wrong, and it was
 wrong in this docstring for one draft.
 
+**HOW BIG THE FLOOR IS, measured 2026-09-03 — it had been asserted for months
+and never sized.** Of 360,642 tagged runs that have CJK text and a real number:
+
+    admitted as ground truth (>= 20, disagreeing, >= 95%)    24,480    6.8%
+    below the >= 20-occurrence bar                          185,437   51.4%
+    >= 20 occurrences but dominance < 95% (real polysemy)   140,159   38.9%
+    >= 20 and unanimous, so incapable of producing a hit     10,566    2.9%
+
+**This tool can form an opinion about 6.8% of the corpus.** Over half of it is
+invisible for rarity alone. So the census is not "a floor" as a figure of
+speech: it is a count over one run in fifteen. 馬可福音 6:33's 城的 is the
+standing example — it answers the article G3588 while πόλεων's G4172 is no
+run's `s`, which is the shape this tool hunts, and 城的 is far too rare to
+admit. (That verse has a SECOND unreachable content word nobody had noted:
+认识 answers G1097 γινώσκω where the Greek is ἐπέγνωσαν, G1921 ἐπιγινώσκω.)
+
+**A second ground truth from the originals' word ORDER was tried on 2026-09-03
+and does not work.** The idea is sound-sounding: anchor on numbers appearing
+exactly once in both the runs and the tokens, keep the anchors that are
+monotone in token order, and for each unreachable token blame the single run
+bracketed by its neighbouring anchors. Implemented over all 31,086 verses it
+yields **13,963 candidates**, 635x this tool's 22, and a hand-read of a random
+sample is mostly false positives — 王上 8:7's 约柜 really is אָרוֹן,
+撒上 8:21's 听见 really is שָׁמַע, 猶 1:25's 并 really is καί, 路 6:41's 你
+really is σοῦ. The failure is structural, not a tuning problem: the method
+assumes the translation preserves source order between anchors, and CUV
+reorders constantly — which is the very reason a frequency ground truth was
+built instead. 馬可福音 6:33 is its own refutation. Word order DOES find that
+verse's πόλις gap and then blames the wrong run, 步行， — because πεζῇ is token
+8 in the Greek and is printed after 城的 in the Chinese, so the bracket lands
+one run off. Do not rebuild this without a real word-alignment model; the top
+"displaced" numbers it reports (G846, G2532, H559, G3450, G5216) are just the
+pronouns and conjunctions that anchor worst.
+
 **The 71 above is the FIRST measurement and the tool no longer prints it.** The
-decomposition is what the two repairs were built on, so it is kept as written;
+decomposition is what the repairs were built on, so it is kept as written;
 the census since is 71/53/7/15 -> 65/53/7/9 (`repair_strongs_alignment_core.py`,
-six of the core) -> **26/14/3/9** (`repair_strongs_spans.py`, 39 of the 53
-spans). The 14 spans left are held with a reason each in that tool's `HELD`
-table: their Chinese spells BOTH words, so the number shown is partial rather
-than false. `tagged-number-absent` fell 7 -> 3 because four of the seven were
-also spans and the span repair dropped their displaced number rather than
-demoting it into `i`, which would have claimed the original contains a word it
-does not. `test/strongs_alignment_test.dart` pins the current figures.
+six of the core) -> 26/14/3/9 (`repair_strongs_spans.py`, 39 of the 53 spans)
+-> 23/11/3/9 (that tool's round three, 2026-09-03, three rows moved out of
+`HELD`) -> **22/11/2/9** (the core tool's seventh row, the same day). The 11
+spans left are held with a reason each in that tool's `HELD` table: their
+Chinese spells BOTH words, so the number shown is partial rather than false.
+`tagged-number-absent` fell 7 -> 3 because four of the seven were also spans and
+the span repair dropped their displaced number rather than demoting it into `i`,
+which would have claimed the original contains a word it does not; 3 -> 2 is
+民數記 23:11's 巴勒, which had inherited H319 אַחֲרִית from the last word of
+23:10. The two left are 利未記 4:17 and 詩篇 119:126 and both are recorded as
+questions rather than defects — see the test.
+`test/strongs_alignment_test.dart` pins the current figures.
 
 Usage:
     python3 tools/audit_strongs_alignment.py [--version cuvs-yhwh]
