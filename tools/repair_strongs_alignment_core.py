@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seven word-tap runs answered with the wrong word — six of their own verse.
+"""Eight word-tap runs answered with the wrong word — six of their own verse.
 
 `assets/tagged/cuvs-yhwh/` is what "tap a word to see the original" prints.
 Each run is `{"w": <Chinese>, "s": <the Strong's number the tap shows>}`, so a
@@ -51,6 +51,53 @@ evidence is two adjacent runs in the file rather than an argument.
                                         23:11 at all, so nothing is displaced:
                                         it stays reachable in 23:10, where it
                                         is genuinely the word.
+
+**The eighth, 2026-09-03, is the first row here the audit CANNOT see**, and it
+arrived from another agent's pass over word-less runs rather than from
+`audit_strongs_alignment.py`. 耶利米書 38:16's 寻索 ("to seek out") answered
+H834 אֲשֶׁר, *which*. The Hebrew is אֲשֶׁר מְבַקְשִׁים אֶת־נַפְשֶׁךָ and
+מְבַקְשִׁים is H1245 בָּקַשׁ, immediately after the אֲשֶׁר.
+
+  耶利米書 38:16 寻索  H834  -> H1245   寻索 is H1245 in 16 of its 17 Hebrew
+                                        occurrences, this verse being the lone
+                                        exception, and its one Greek occurrence
+                                        (羅 11:3) is G2212 ζητέω, the same
+                                        sense. H834 is not displaced: the verse
+                                        has two אֲשֶׁר tokens and the run
+                                        我指着那 still shows it.
+
+Why the audit is blind to it, stated because the floor is easy to forget: 寻索
+occurs 17 times in Hebrew, below the >= 20 bar, so no dominant number is
+admitted for it and no hit can be raised. This repair therefore moves NONE of
+the pinned figures — the census stays 22, `dominant` stays 256, the singleton
+pool stays 335. A repair that changes no counter is exactly what the floor
+looks like from the inside.
+
+It also does not invent a claim: the importer had already aligned בָּקַשׁ to
+this verse and parked H1245 on a run with no text, which is why the number was
+"present" and yet unreachable. **That is a second way a number can be
+untappable, and it is the `i` mistake one level further in**: this audit's
+`shown` set counts a run's `s` whether or not the run has any characters to
+tap. Measured 2026-09-03 — 312 runs corpus-wide have no CJK text, 36 of them
+carry a number, and in **24 verses** a number present in the original was some
+run's `s` ONLY on such a run. So the census of 22 is a floor by that much too.
+This repair closed one of the 24 — H1245 had been reachable in 耶 38:16 only on
+its word-less run, and moving it onto 寻索 made it tappable — so the figure is
+**23** afterwards, which is what `test/strongs_alignment_test.dart` pins.
+Neither 耶 38:16 nor the other verse handed over with it would become a hit
+even if the blind spot were closed, because both run texts are below the >= 20
+bar; the remaining 23 have not otherwise been triaged. The word-less runs
+themselves are another pass's subject and are deliberately untouched here —
+only the `s` of a run that HAS text is changed.
+
+**以西結書 35:14 came over with it and is deliberately NOT repaired.** There
+H3541 כֹּה sits on a word-less run while 如此说： answers H559 אָמַר, and it is
+tempting to call that the same defect. It is not: 说 does render אָמַר, so the
+number shown is partial rather than false — the gate that holds eleven runs in
+`repair_strongs_spans.py`. And there is nothing to promote it to on evidence:
+如此说 occurs four times in the whole corpus, split 2 H1696 דָּבַר / 2 H559
+אָמַר, and is tagged H3541 nowhere. Writing H3541 there would be inventing a
+tagging the corpus has never made.
 
 That carry-over was checked for corpus-wide rather than assumed unique. Exactly
 three verses have a first run repeating the previous verse's last number where
@@ -139,6 +186,7 @@ REPAIRS = [
     ("acts", "20:32", "神", "G3588", "G2316"),
     ("1_chronicles", "16:39", "邱坛、", "H4908", "H1116"),
     ("numbers", "23:11", "巴勒", "H319", "H1111"),
+    ("jeremiah", "38:16", "寻索", "H834", "H1245"),
 ]
 
 

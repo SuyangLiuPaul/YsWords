@@ -214,7 +214,7 @@ void main() {
   /// Each of these answered a different word of its own verse. The number
   /// written is the one whose lemma the Chinese chunk literally translates,
   /// and in every case it is an adjacent token of the same verse.
-  test('the seven repaired runs answer the word their Chinese renders', () {
+  test('the eight repaired runs answer the word their Chinese renders', () {
     String tagOf(String book, String ref, String text) {
       final runs = (tagged[book]![ref] as List).cast<Map<String, dynamic>>();
       final match = runs.where((r) => r['w'] == text);
@@ -252,6 +252,93 @@ void main() {
     };
     expect(hebrew, isNot(contains('H319')));
     expect(hebrew, contains('H1111'));
+
+    // The eighth, 2026-09-03, and the first this audit CANNOT see. 耶 38:16's
+    // 寻索 ("seek out") answered H834 אֲשֶׁר, *which*, where the Hebrew is
+    // אֲשֶׁר מְבַקְשִׁים. 寻索 is H1245 in 16 of its 17 Hebrew occurrences and
+    // its one Greek occurrence is G2212 ζητέω, the same sense — but 17 is
+    // below the >= 20 bar, so no dominant number is admitted and no hit is
+    // raised. It came from another agent's pass over word-less runs.
+    expect(tagOf('jeremiah', '38:16', '寻索'), 'H1245');
+    // Nothing displaced: the verse has two אֲשֶׁר and 我指着那 still shows it.
+    expect(tagOf('jeremiah', '38:16', '我指着那'), 'H834');
+    // 以西結書 35:14 came over with it and is NOT repaired: 如此说： answers
+    // H559 אָמַר, which 说 does render, so it is partial and not false — and
+    // 如此说 is tagged H3541 nowhere in the corpus, so there is nothing to
+    // promote it to on evidence.
+    expect(tagOf('ezekiel', '35:14', '如此说：'), 'H559');
+  });
+
+  /// **A number can be untappable in a second way, and the census does not
+  /// count it.** `shown` above takes a run's `s` whether or not the run has
+  /// any characters to tap, so a number parked on a run with empty `w` looks
+  /// reachable and is not — the same mistake as counting `i`, one level
+  /// further in. 耶利米書 38:16 was exactly that: H1245 sat on a word-less run
+  /// while the text that renders it, 寻索, answered אֲשֶׁר.
+  ///
+  /// This pins the size so the next pass need not rediscover it. The word-less
+  /// runs themselves belong to another pass; nothing here asserts they are
+  /// wrong, only that the census cannot see through them.
+  test('word-less runs hide numbers from the census — 23 verses', () {
+    var wordless = 0;
+    var wordlessTagged = 0;
+    final affected = <String>{};
+    for (final book in books) {
+      final originalsFile = File('assets/originals/$book.json');
+      final originals =
+          originalsFile.existsSync() ? readJson('assets/originals/$book.json') : null;
+      (tagged[book]!).forEach((ref, runsRaw) {
+        final runs = (runsRaw as List).cast<Map<String, dynamic>>();
+        for (final run in runs) {
+          if (((run['w'] ?? '') as String).replaceAll(notCjk, '').isEmpty) {
+            wordless++;
+            if (((run['s'] ?? '') as String).isNotEmpty) wordlessTagged++;
+          }
+        }
+        if (originals == null) return;
+        final refs = ((merged[book] as Map<String, dynamic>?)?[ref] ??
+                (base[book] as Map<String, dynamic>?)?[ref] ??
+                [ref]) as List;
+        final present = <String>{};
+        for (final originalRef in refs) {
+          for (final word in (originals[originalRef] as List? ?? const [])) {
+            final n = ((word as Map<String, dynamic>)['s'] ?? '') as String;
+            if (n.isNotEmpty) present.add(n);
+          }
+        }
+        if (present.isEmpty) return;
+        final tappable = <String>{
+          for (final r in runs)
+            if (((r['s'] ?? '') as String).isNotEmpty &&
+                ((r['w'] ?? '') as String).replaceAll(notCjk, '').isNotEmpty)
+              r['s'] as String
+        };
+        final all = <String>{
+          for (final r in runs)
+            if (((r['s'] ?? '') as String).isNotEmpty) r['s'] as String
+        };
+        if (all.difference(tappable).intersection(present).isNotEmpty) {
+          affected.add('$book $ref');
+        }
+      });
+    }
+    expect(wordless, 312);
+    expect(wordlessTagged, 36);
+    expect(affected, hasLength(23),
+        reason: 'verses where a number present in the original is some run\'s '
+            '`s` ONLY on a run with no tappable text. The census above is a '
+            'floor by this much, on top of the >= 20-occurrence floor. This '
+            'was 24 when first measured on 2026-09-03 and the repair of '
+            '耶利米書 38:16 in the same pass closed one of them: H1245 had '
+            'been reachable only on that verse\'s word-less run, and putting '
+            'it on 寻索 — the text that renders it — made it tappable. The '
+            'other 23 are untriaged, and 以西結書 35:14 is one of them');
+    // 以西結書 35:14 is still in the set: H3541 כֹּה remains on a word-less
+    // run there, and that is a coverage gap left standing on purpose, because
+    // 如此说： answers H559 which 说 genuinely renders.
+    expect(affected, contains('ezekiel 35:14'));
+    // 耶利米書 38:16 is the one that left.
+    expect(affected, isNot(contains('jeremiah 38:16')));
   });
 
   test('the residue of the core is still flagged, so the tool still bites', () {
