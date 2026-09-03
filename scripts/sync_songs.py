@@ -238,6 +238,26 @@ CDC_ROW_RE = re.compile(
     flags=re.IGNORECASE | re.DOTALL,
 )
 
+# CDC cover art. 2026-09-03: the catalogue recorded "CDC publishes no
+# artwork" for a month on the strength of an investigation that ran
+# entirely while the host was refusing connections. It answers now, and
+# the claim was false — every CDC song page carries a per-song 600×300
+# cover (a photograph with the song's title set over it) at
+# `/sites/default/files/music/jpg/<CODE>.jpg`. Nothing looked, because
+# `artworkUrl` was only ever read from fydt's WordPress API.
+#
+# Anchored on the DIRECTORY, not on the code. Deriving the filename
+# from the catalogue code is the mistake [fetch_cdc]'s docstring
+# records having already made once with the mp3s; the page's own <img>
+# is the church's answer, and reading it costs nothing extra because
+# the page is already being fetched for the media links.
+#
+# The URL still has to be verified — see [prune_derived_urls]. Of the
+# 298 pages: 283 carry the <img>, and 92 of those point at a file that
+# was never uploaded (all e-coded, i.e. English). 191 resolve.
+CDC_IMG_RE = re.compile(
+    r'<img[^>]+src="(/sites/default/files/music/jpg/[^"]+)"', re.IGNORECASE)
+
 # Both Cahaya pages wrap one song per <p>: a bolded title, then the
 # embed, then (audio page only) a "Download lembar lagu" sheet link.
 CAHAYA_BLOCK_RE = re.compile(r'<p[^>]*>(.*?)</p>', re.IGNORECASE | re.DOTALL)
@@ -722,7 +742,7 @@ def classify_cdc_track(filename, code):
 def parse_cdc_media(page_html, code):
     """Pull the real media links out of one CDC song page."""
     if not page_html:
-        return {'tracks': [], 'score': None}
+        return {'tracks': [], 'score': None, 'artwork': None}
 
     # Keyed on the normalised filename stem, NOT on (kind, lang):
     # since unrecognised suffixes all classify as plain vocal, keying
@@ -751,11 +771,18 @@ def parse_cdc_media(page_html, code):
     # Sung takes first (language-tagged before the bare one), then the
     # instrumental, then the minus-one — the order the detail sheet
     # shows them in.
+    artwork = None
+    m = CDC_IMG_RE.search(page_html)
+    if m:
+        artwork = urllib.parse.urljoin(CDC_ROOT, m.group(1).replace('\\/', '/'))
+
     def rank(t):
         kind_rank = {'vocal': 0, 'instrumental': 1, 'accompaniment': 2}
         return (kind_rank.get(t['kind'], 3), t['lang'] is None, t['url'])
 
-    return {'tracks': sorted(tracks.values(), key=rank), 'score': score}
+    return {'tracks': sorted(tracks.values(), key=rank),
+            'score': score,
+            'artwork': artwork}
 
 
 def build_tracks(candidates):
@@ -825,11 +852,21 @@ def prune_derived_urls(entries, workers=4):
     A play button that 404s is precisely the failure that got the
     Songs feature deleted in v1.3.126, so the guesses are checked here
     and dropped rather than shipped on a hope.
+
+    **`artworkUrl` is checked here too, and it is not a guess** — it is
+    read straight off the song page's own `<img>`. It still needs the
+    check, which is the surprising part: 92 of the 160 English CDC
+    pages link `music/jpg/<CODE>.jpg` for a file the church never
+    uploaded, in markup identical to the 191 that work. A dead artwork
+    URL is cheaper than a dead play button but it is not free — it
+    costs a request per row at runtime and poisons `RemoteImage`'s
+    failure memo before the row degrades to its source mark — so it is
+    dropped here instead, once, where nobody is waiting.
     """
     import concurrent.futures
 
     targets = [(e, f) for e in entries
-               for f in ('audioUrl', 'scoreUrl') if e.get(f)]
+               for f in ('audioUrl', 'scoreUrl', 'artworkUrl') if e.get(f)]
     if not targets:
         return 0
 
@@ -907,6 +944,10 @@ def fetch_cdc(verify=True):
             accompanimentUrl=_track_url(media['tracks'], 'accompaniment'),
             audioTracks=media['tracks'],
             scoreUrl=media['score'],
+            # Per-song, and the page's own <img> rather than a guess at
+            # the filename. Verified in prune_derived_urls — 92 of the
+            # English pages link a cover that was never uploaded.
+            artworkUrl=media['artwork'],
             themes=infer_themes(title),
             verse=infer_verse(title),
         )

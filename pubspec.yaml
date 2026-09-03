@@ -206,6 +206,12 @@ flutter:
     # which copies the published dataset — NOT with sync_songs.py,
     # which would re-scrape all four church sites a second time.
     - assets/songs.json
+    # 2026-09-03: one site icon per song source, 52 KB for all four.
+    # 168 of the 621 songs publish no artwork, so these are what the
+    # list row shows instead — bundled rather than hot-linked because
+    # four extra remote images behind every row is the exact shape of
+    # the errno=60 crash (see lib/constants/song_source_icons.dart).
+    - assets/song_sources/
     - assets/videos.json
     - assets/misconceptions.json
     # assets/subtitles/01/ and assets/onegod.json are deliberately NOT
