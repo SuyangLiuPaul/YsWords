@@ -17,6 +17,7 @@ import 'package:yswords/utils/verse_citation.dart';
 import 'package:yswords/utils/progress_pill_geometry.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
+import 'package:yswords/widgets/commentary_sheet.dart';
 import 'package:yswords/widgets/note_reference_picker_sheet.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
@@ -40,6 +41,7 @@ import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/constants/sermon_topics.dart';
 import 'package:yswords/models/sermon.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
+import 'package:yswords/services/commentary_service.dart';
 import 'package:yswords/services/cross_reference_service.dart';
 import 'package:yswords/services/fetch_verses.dart';
 import 'package:yswords/services/book_intro_service.dart';
@@ -2419,6 +2421,16 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 locale: settings.locale,
                                 mainProvider: mainProvider,
                               ),
+                              commentaryBook: mainProvider
+                                      .selectedVerses.isEmpty
+                                  ? ''
+                                  : mainProvider.selectedVerses.first.book,
+                              onCommentary: () => showCommentarySheet(
+                                context: context,
+                                verses: mainProvider.selectedVerses,
+                                locale: settings.locale,
+                                fontSize: settings.fontSize,
+                              ),
                               onSermons: () => _showRelatedSermonsSheet(
                                 context: context,
                                 verses: mainProvider.selectedVerses,
@@ -2848,6 +2860,11 @@ class _SelectionActionBar extends StatelessWidget {
   final VoidCallback onRemoveHighlight;
   final VoidCallback onOriginal;
   final VoidCallback onCrossRefs;
+  final VoidCallback onCommentary;
+
+  /// Book of the current selection, in whatever language the reader is in.
+  /// Used only to decide whether the Commentary button is shown at all.
+  final String commentaryBook;
   final VoidCallback onSermons;
   /// v1.3.x: AI plain-language explanation of the selected verse(s),
   /// in the user's locale.
@@ -2872,6 +2889,8 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onRemoveHighlight,
     required this.onOriginal,
     required this.onCrossRefs,
+    required this.onCommentary,
+    required this.commentaryBook,
     required this.onSermons,
     required this.onAiExplain,
     required this.onNote,
@@ -2998,6 +3017,19 @@ class _SelectionActionBar extends StatelessWidget {
         // tappable on phones.
         visualDensity: VisualDensity.standard,
       ),
+      // 2026-09-03: public-domain commentary (JFB 1871). Shown only for
+      // books a module actually ships for — Matthew today — because a
+      // button that always opens "nothing here yet" trains people to stop
+      // pressing it. `hasBook` is a Set lookup, safe in a build method.
+      if (CommentaryService.hasBook(
+          toEnglish(commentaryBook) ?? commentaryBook))
+        IconButton(
+          tooltip:
+              uiStrings['commentary']?[settings.locale] ?? 'Commentary',
+          onPressed: onCommentary,
+          icon: const Icon(Icons.article_outlined),
+          visualDensity: VisualDensity.standard,
+        ),
       IconButton(
         tooltip: uiStrings['relatedSermons']?[settings.locale] ??
             'Related sermons',
