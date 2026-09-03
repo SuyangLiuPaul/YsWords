@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/sermon_audio_service.dart';
 import 'package:yswords/widgets/sermon_audio_bar.dart';
@@ -41,6 +42,63 @@ void main() {
     // whole sermon page on the way in.
     await pump(tester, '002');
     expect(tester.takeException(), isNull);
+  });
+
+  // 2026-09-04 (from a crash report — iPhone, /sermons/421,
+  // `PlaybackBlockedException(AbortError: The operation was aborted.)`):
+  // `SermonAudioService._playPart` and the resume branch of `play()`
+  // used to let a `PlaybackBlockedException` from the browser refusing
+  // to start playback propagate uncaught — `_loading` stuck true
+  // forever with the Listen button disabled, and the exception reached
+  // the app's Zone-level crash reporter as an unhandled error instead
+  // of a reader-visible message. `song_audio_handler.dart` already
+  // catches the identical exception for songs; these two tests pin the
+  // sermon path's now-matching behaviour: the 'blocked' error string
+  // gets the "tap again" copy, not the generic failure message, and
+  // the button re-enables so the tap the message asks for can land.
+  //
+  // The real throw site is web-only (`song_playback_engine_web.dart`;
+  // `flutter test`'s VM runtime resolves the native engine instead,
+  // which never throws this exception — see `song_playback_engine_
+  // native.dart`), so `setBlockedForTest` drives the state a caught
+  // exception would have produced, rather than a real play() call.
+  group('the blocked-playback state (2026-09-04, /sermons/421)', () {
+    testWidgets('shows the shared "tap again" copy, not the generic '
+        'failure message', (tester) async {
+      SermonAudioService.instance.setBlockedForTest('421');
+      await pump(tester, '421');
+
+      // Locale-agnostic on purpose: `AppSettings()` defaults to
+      // zh-Hans here (its own default, not English), so this checks
+      // "one of the localized songsPlaybackBlocked strings is on
+      // screen and none of sermonAudioError's are" rather than
+      // assuming which language rendered.
+      final blockedShown = uiStrings['songsPlaybackBlocked']!
+          .values
+          .where((s) => find.text(s).evaluate().isNotEmpty);
+      expect(blockedShown, hasLength(1),
+          reason: 'exactly one localized "tap play again" string should '
+              'be on screen');
+      for (final generic in uiStrings['sermonAudioError']!.values) {
+        expect(find.text(generic), findsNothing,
+            reason: '"blocked" must not fall through to the generic '
+                'failure message — the track is fine, the browser just '
+                'needs another tap');
+      }
+    });
+
+    testWidgets('re-enables the Listen button so the tap can land',
+        (tester) async {
+      SermonAudioService.instance.setBlockedForTest('421');
+      await pump(tester, '421');
+
+      final button =
+          tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.play_circle_fill_rounded));
+      expect(button.onPressed, isNotNull,
+          reason: '_loading must be false again, or a blocked play can '
+              'never be retried — the whole point of the "tap play '
+              'again" message');
+    });
   });
 
   test('the service reports every sermon as playable', () async {

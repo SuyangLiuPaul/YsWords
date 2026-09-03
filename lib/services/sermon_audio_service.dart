@@ -202,7 +202,15 @@ class SermonAudioService extends ChangeNotifier {
         await _player.pause();
       } else {
         await MediaFocus.instance.claim(this);
-        await _player.resume();
+        try {
+          await _player.resume();
+        } on PlaybackBlockedException catch (e) {
+          // See the note on `_playPart` below — same exception, same
+          // "say so and let one more tap recover it" handling.
+          debugPrint('[SermonAudioService] playback blocked (resume): $e');
+          _error = 'blocked';
+          notifyListeners();
+        }
       }
       return;
     }
@@ -225,7 +233,26 @@ class SermonAudioService extends ChangeNotifier {
     _position = Duration.zero;
     _duration = Duration.zero;
     _pendingSeek = resumeAt;
-    await _player.play(urlFor(parts[_partIndex]));
+    try {
+      await _player.play(urlFor(parts[_partIndex]));
+    } on PlaybackBlockedException catch (e) {
+      // The browser refused to START — not a dead file (see
+      // `playback_blocked.dart`'s own doc comment on why that
+      // distinction needs its own type). `song_audio_handler.dart`'s
+      // `_playCurrent` catches the identical exception for songs; this
+      // is the sermon path's missing counterpart. Both callers of
+      // `_playPart` (`play()`, `_advancePart()`) previously let this
+      // propagate uncaught: `_loading` stayed true forever with the
+      // Listen button disabled, and the exception reached the app's
+      // Zone-level crash reporter as `source: 'Zone'` instead of a
+      // reader-visible message — reported from an iPhone at
+      // /sermons/421, `PlaybackBlockedException(AbortError: The
+      // operation was aborted.)`.
+      debugPrint('[SermonAudioService] playback blocked: $e');
+      _error = 'blocked';
+      _loading = false;
+      notifyListeners();
+    }
   }
 
   Duration? _pendingSeek;
@@ -360,5 +387,43 @@ class SermonAudioService extends ChangeNotifier {
     final m = d.inMinutes % 60;
     final s = (d.inSeconds % 60).toString().padLeft(2, '0');
     return h > 0 ? '$h:${m.toString().padLeft(2, '0')}:$s' : '$m:$s';
+  }
+
+  // ── Test surface ────────────────────────────────────────────────
+  //
+  // `PlaybackBlockedException` is only ever thrown by
+  // `song_playback_engine_web.dart` — the conditional import resolves
+  // to the NATIVE engine under `flutter test`'s VM runtime (see
+  // `song_playback_engine_native.dart`, which routes every failure
+  // through `onError` and never throws it). So the 'blocked' state
+  // `_playPart` and the resume branch of `play()` now set on catching
+  // it can never be reached by driving a real play() call in a test —
+  // this lets a widget test set it directly instead, the same
+  // reasoning as `ErrorReporter.resetForTest`.
+
+  /// @visibleForTesting — puts the service into the state it would be
+  /// in right after `_playPart` (or the resume branch of `play()`)
+  /// caught a `PlaybackBlockedException` for [sermonId], without
+  /// needing a real (web-only) playback engine to throw one.
+  ///
+  /// Also seeds a minimal one-part index entry for [sermonId] if the
+  /// real index has not loaded — `SermonAudioBar.hasAudio` gates the
+  /// whole bar on a non-empty `_index` entry, and `load()`'s
+  /// `rootBundle` read is not reliable inside a plain `testWidgets`
+  /// (see `sermon_audio_index_test.dart`'s header note, and this
+  /// file's `load()`-does-not-throw test — both work around the same
+  /// thing rather than depend on it).
+  @visibleForTesting
+  void setBlockedForTest(String sermonId) {
+    _index ??= {};
+    if ((_index![sermonId] ?? const []).isEmpty) {
+      _index![sermonId] = const [
+        SermonAudioPart(part: 'a', file: 'test.mp3', bytes: 1),
+      ];
+    }
+    _sermonId = sermonId;
+    _error = 'blocked';
+    _loading = false;
+    notifyListeners();
   }
 }

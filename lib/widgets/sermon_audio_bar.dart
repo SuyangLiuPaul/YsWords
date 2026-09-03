@@ -96,8 +96,20 @@ class _SermonAudioBarState extends State<SermonAudioBar> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
-                    _t('sermonAudioError',
-                        'This recording will not play right now', locale),
+                    // 'blocked' means the browser refused to START
+                    // playback without a tap still "fresh" — the
+                    // recording is fine and one more tap plays it. The
+                    // generic message below would send someone
+                    // hunting for a broken sermon that does not exist;
+                    // see `global_mini_player.dart`'s identical case
+                    // for the songs player.
+                    _svc.error == 'blocked'
+                        ? (uiStrings['songsPlaybackBlocked']?[locale] ??
+                            'Tap play again — the browser needs a tap '
+                                'before it will start audio.')
+                        : _t('sermonAudioError',
+                            'This recording will not play right now',
+                            locale),
                     style: TextStyle(
                       fontSize: 11.5,
                       color: scheme.error,
