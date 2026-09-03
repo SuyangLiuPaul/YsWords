@@ -243,9 +243,15 @@ void main() {
         '遇见犹大王亚哈谢的弟兄，问他们说：你们是谁？回答说：我们是亚哈谢的弟兄，'
             '现在下去要问王和太后的众子安。'
       ],
+      // 2026-09-03: the space this line used to carry after 说： was the
+      // hole the deleted 「“」 left behind — this repair took the mark out
+      // and left its spacing in. `tools/repair_tagged_stray_spaces.py`
+      // closed it, and the reading asset reads 「说：你是」 with no space,
+      // so the verse is now nearer the line it renders in place of, not
+      // further from it.
       '2_samuel': [
         '15:19',
-        '王对迦特人以太说： 你是外邦逃来的人，为什么与我们同去呢？'
+        '王对迦特人以太说：你是外邦逃来的人，为什么与我们同去呢？'
             '你可以回去与新王同住，或者回你本地去吧！'
       ],
     };
