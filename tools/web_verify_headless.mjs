@@ -573,12 +573,22 @@ async function waitForText(cdp, re, timeoutMs = 20000) {
 /// `element.click()` is deliberately NOT used — only `role=button`
 /// semantics nodes forward a DOM click to the framework, and half the
 /// targets here (list rows, posters, chips) are not that.
-async function clickText(cdp, re, { index = 0, timeoutMs = 15000 } = {}) {
+/// `box` is [x0, y0, x1, y1] in CSS px: only nodes whose centre lies
+/// inside it are candidates. It exists because the chronology plot is a
+/// horizontally scrolling box — every event label in it is laid out and
+/// carries a semantics node even when it is scrolled a thousand pixels
+/// off the right of the window, and one of those out-of-frame labels
+/// prints the same title as the chip below the chart. Without a box the
+/// first match is the invisible one, and the click goes nowhere at all.
+async function clickText(cdp, re, { index = 0, timeoutMs = 15000,
+    box = null } = {}) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     const s = await semantics(cdp);
     const hits = (s.nodes || []).filter(
-      (n) => re.test(n.text) && n.w > 0 && n.h > 0 && n.cy > 0);
+      (n) => re.test(n.text) && n.w > 0 && n.h > 0 && n.cy > 0 &&
+        (!box || (n.cx >= box[0] && n.cy >= box[1] &&
+                  n.cx <= box[2] && n.cy <= box[3])));
     if (hits[index]) {
       const n = hits[index];
       for (const type of ['mousePressed', 'mouseReleased']) {
@@ -1380,7 +1390,13 @@ async function runChronology(origin) {
         await clickText(cdp, /^(Zoom in|放大)$/);
         await sleep(400);
       }
-      const hit = await clickText(cdp, /拔摩|Patmos/);
+      // Zooming folds the rows that are no longer in view, which makes
+      // the chart shorter and moves the chips UP. `clickText` aims at a
+      // semantics node's centre, so let the tree settle at the new
+      // height before aiming at anything below the chart.
+      await sleep(1600);
+      const hit = await clickText(cdp, /^(John Exiled|拔摩)/,
+        { box: [0, 0, 900, 1500] });
       await sleep(1400);
       shots.push(await screenshot(cdp, 'chronology-02-right-end-revelation'));
       const text = await pageText(cdp);
@@ -1388,6 +1404,47 @@ async function runChronology(origin) {
         clickedPatmos: !!hit,
         cursorAtRevelation: /公元 95 年|AD 95/.test(text),
         saysNoLifelines: /此处无生平横条|no lifelines here/.test(text),
+      };
+    },
+  });
+
+  // (b2) A viewport STRADDLING AM 2187 — the case a hard on/off at the
+  //      boundary would get wrong. "Abraham dies, aged 175" is AM 2183,
+  //      four years short of it, so jumping there centres the viewport
+  //      on the boundary: the bars still running (Eber, Abraham, Terah,
+  //      Shem) keep full rows and only the rest fold.
+  notes.straddle = await capture('chrono-straddle', {
+    width: 900, height: 1500,
+    steps: async ({ cdp }) => {
+      for (let i = 0; i < 4; i++) {
+        await clickText(cdp, /^(Zoom in|放大)$/);
+        await sleep(400);
+      }
+      // Zooming folds the rows that are no longer in view, which makes
+      // the chart shorter and moves the chips UP. `clickText` aims at a
+      // semantics node's centre, so let the tree settle at the new
+      // height before aiming at anything below the chart.
+      await sleep(1600);
+      // ANCHORED, and boxed to the window. The whole event lane is one
+      // merged semantics node whose text is every event title joined by
+      // newlines, so an unanchored /Abraham dies/ matches the lane
+      // itself — first, since it is above the chips in tree order — and
+      // the click lands on a tick instead of the chip. `^` cannot match
+      // it (the lane's text starts at "Creation"), and the box keeps
+      // out the tick labels scrolled off the right of the plot.
+      const hit = await clickText(cdp, /^(Abraham dies|亚伯拉罕)/,
+        { box: [0, 0, 900, 1500] });
+      await sleep(1400);
+      shots.push(await screenshot(cdp, 'chronology-06-straddle-boundary'));
+      const text = await pageText(cdp);
+      // The whole claim in one number. 0 would mean the fold never
+      // fired; 20 would mean it fired as a switch at AM 2187 and threw
+      // away bars that are on screen. It has to be in between.
+      const m = /(\d+) not in view|(\d+) 条在视图外|(\d+) 條在視圖外/
+        .exec(text);
+      return {
+        clickedAbrahamDies: !!hit,
+        foldedRows: m ? Number(m[1] ?? m[2] ?? m[3]) : 0,
       };
     },
   });
@@ -1402,7 +1459,12 @@ async function runChronology(origin) {
         await clickText(cdp, /^(Zoom in|放大)$/);
         await sleep(400);
       }
-      await clickText(cdp, /^(创造|Creation)$/);
+      // Zooming folds the rows that are no longer in view, which makes
+      // the chart shorter and moves the chips UP. `clickText` aims at a
+      // semantics node's centre, so let the tree settle at the new
+      // height before aiming at anything below the chart.
+      await sleep(1600);
+      await clickText(cdp, /^(创造|Creation)$/, { box: [0, 0, 900, 1500] });
       await sleep(1400);
       shots.push(await screenshot(cdp, 'chronology-03-left-end-genesis'));
       return {};
@@ -1426,11 +1488,37 @@ async function runChronology(origin) {
     },
   });
 
+  // (f) The 402 pt phone at the right-hand end — the case the fold was
+  //     for. Twenty empty rows on a 402 pt screen pushed the event lane,
+  //     the chips and the legend clean off it.
+  notes.narrowRight = await capture('chrono-narrow-right', {
+    width: 402, height: 1500,
+    steps: async ({ cdp }) => {
+      for (let i = 0; i < 4; i++) {
+        await clickText(cdp, /^(Zoom in|放大)$/);
+        await sleep(400);
+      }
+      // Zooming folds the rows that are no longer in view, which makes
+      // the chart shorter and moves the chips UP. `clickText` aims at a
+      // semantics node's centre, so let the tree settle at the new
+      // height before aiming at anything below the chart.
+      await sleep(1600);
+      await clickText(cdp, /^(John Exiled|拔摩)/, { box: [0, 0, 402, 1500] });
+      await sleep(1400);
+      shots.push(await screenshot(cdp, 'chronology-07-narrow-402-right-end'));
+      const text = await pageText(cdp);
+      return { foldsRows: /not in view|在视图外|在視圖外/.test(text) };
+    },
+  });
+
   for (const f of shots) console.log(`  captured ${f}`);
   console.log(`  reaches Revelation on screen: ${notes.overview.reachesRevelation}`);
   console.log(`  names the computed/placed boundary: ${notes.overview.namesBoundary}`);
   console.log(`  jump-to-Patmos worked: ${notes.rightEnd.clickedPatmos}, ` +
     `cursor lands on AD 95: ${notes.rightEnd.cursorAtRevelation}`);
+  console.log(`  straddling AM 2187 folds ${notes.straddle.foldedRows} of ` +
+    `20 rows — neither 0 nor 20 is the point`);
+  console.log(`  402 pt right-hand end folds the empty rows: ${notes.narrowRight.foldsRows}`);
   return { shots, ...notes };
 }
 

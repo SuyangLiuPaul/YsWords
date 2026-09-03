@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/chronology.dart';
@@ -64,6 +66,23 @@ class _ChronologyChartState extends State<ChronologyChart> {
   static const double _tickLaneHeight = 32;
   static const double _gap = 8;
 
+  /// How tall the event lane may grow when lifeline rows fold away. The
+  /// reclaimed height goes HERE first, because past AM 2187 the event
+  /// lane is the only layer with anything in it: 80 pt is five rows of
+  /// labels where the lane normally gets one, so a fold does not just
+  /// shorten the chart, it names events that were previously unlabelled
+  /// ticks. Beyond five rows a label is too far from its own tick for
+  /// the leader line to be believed, so the rest of the reclaimed height
+  /// is simply given up and the chart gets shorter — which on a phone is
+  /// the whole point.
+  static const double _tickLaneMaxHeight = 80;
+  static const double _labelRowPitch = 12;
+
+  /// A folded run of lifeline rows: 8 pt of padding plus 1.8 pt per bar
+  /// it stands in for, so the band's HEIGHT still reports how many rows
+  /// were folded even before the label is read.
+  static double _foldHeight(int n) => (8 + n * 1.8).clamp(16.0, 46.0);
+
   /// Zoom now goes to 8, not 4. The span nearly doubled this pass
   /// (AM 0-2187 → 0-4098) and 24 of the 98 events fall inside the ~95
   /// years of the New Testament, so 4× no longer separated them. The
@@ -87,9 +106,19 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// scroll offset into an AM range without re-deriving the layout.
   double _plotWidth = 0;
 
+  /// Which lifeline rows earned a full row on the LAST build, parallel
+  /// to `data.lifelines`. Two jobs: it is the `previous` state the
+  /// hysteresis in [chronologyRowsInView] needs, and it is what the
+  /// scroll listener compares against so the chart rebuilds ~20 times
+  /// over a full scroll rather than once per frame — the tick lane
+  /// measures every label it draws, and doing that at 60 Hz for no
+  /// change would be paid for by the reader.
+  List<bool>? _rowsInView;
+
   @override
   void initState() {
     super.initState();
+    _plot.addListener(_onPlotScroll);
     // Default the scrub cursor to the Flood: Methuselah's bar ends
     // exactly there, so the view opens already demonstrating what it is
     // for instead of needing to be discovered.
@@ -105,8 +134,53 @@ class _ChronologyChartState extends State<ChronologyChart> {
 
   @override
   void dispose() {
+    _plot.removeListener(_onPlotScroll);
     _plot.dispose();
     super.dispose();
+  }
+
+  /// The plan for the CURRENT scroll offset, fed the last one so the
+  /// hysteresis has something to hold onto. Before the plot has been
+  /// laid out — and at zoom 1, where the viewport IS the whole span —
+  /// every row is in view, which is why the default view is untouched
+  /// by any of this.
+  List<bool> _planFor(List<bool>? previous) {
+    final data = widget.data;
+    if (!_plot.hasClients ||
+        _plotWidth <= 0 ||
+        !_plot.position.hasPixels ||
+        !_plot.position.hasViewportDimension) {
+      return List<bool>.filled(data.lifelines.length, true);
+    }
+    final px = _plot.position.pixels;
+    final vp = _plot.position.viewportDimension;
+    return chronologyRowsInView(
+      lifelines: data.lifelines,
+      spanStartAm: data.spanStartAm,
+      spanEndAm: data.spanEndAm,
+      viewStartFrac: px / _plotWidth,
+      viewEndFrac: (px + vp) / _plotWidth,
+      previous: previous,
+    );
+  }
+
+  /// Rebuild only when the SET of rows in view changes, never per scroll
+  /// frame. A scroll notification can arrive while the tree is already
+  /// building (a viewport correction during layout), so a change found
+  /// in that phase is deferred to the next frame instead of calling
+  /// `setState` inside a build.
+  void _onPlotScroll() {
+    final next = _planFor(_rowsInView);
+    final now = _rowsInView;
+    if (now != null && listEquals(next, now)) return;
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
+    } else {
+      setState(() {});
+    }
   }
 
   String _s(String key, String fallback) =>
@@ -587,9 +661,40 @@ class _ChronologyChartState extends State<ChronologyChart> {
     final data = widget.data;
     final rows = data.lifelines;
     final lanesTop = _rulerHeight + _eraStripHeight;
-    final height =
-        lanesTop + rows.length * _rowHeight + _tickLaneHeight;
     final step = _rulerStep(plotWidth);
+
+    // Rows earn their height from the viewport. Assigning the result
+    // back is a cache for the scroll listener and for the hysteresis,
+    // not layout state: `_planFor` is a pure function of the scroll
+    // offset and the plan it is handed, so building twice in a row
+    // yields the same answer.
+    final inView = _planFor(_rowsInView);
+    _rowsInView = inView;
+
+    // Consecutive out-of-view rows fuse into ONE band, in place. Order
+    // is never disturbed, so a folded run sits exactly where its rows
+    // were and the reader can see how far down the column they are.
+    final slots = <_Slot>[];
+    for (var i = 0; i < rows.length; i++) {
+      if (inView[i]) {
+        slots.add(_Slot.row(rows[i]));
+      } else if (slots.isNotEmpty && slots.last.folded) {
+        slots.last.lines.add(rows[i]);
+      } else {
+        slots.add(_Slot.fold(rows[i]));
+      }
+    }
+    double slotHeight(_Slot s) =>
+        s.folded ? _foldHeight(s.lines.length) : _rowHeight;
+    final rowsHeight = slots.fold<double>(0, (a, s) => a + slotHeight(s));
+
+    // The reclaimed height goes to the layer that HAS content out
+    // there. Past AM 2187 the event lane was one row tall under twenty
+    // empty ones; now it is the tall layer and the lifelines are the
+    // thin one, which is the true shape of the data in that stretch.
+    final tickLane = (_tickLaneHeight + rows.length * _rowHeight - rowsHeight)
+        .clamp(_tickLaneHeight, _tickLaneMaxHeight);
+    final height = lanesTop + rowsHeight + tickLane;
 
     return SizedBox(
       height: height,
@@ -621,13 +726,15 @@ class _ChronologyChartState extends State<ChronologyChart> {
                     ),
                   ),
                 ),
-                for (final l in rows)
+                for (final s in slots)
                   SizedBox(
-                    height: _rowHeight,
-                    child: _nameCell(context, l, scheme),
+                    height: slotHeight(s),
+                    child: s.folded
+                        ? _foldNameCell(context, s, scheme)
+                        : _nameCell(context, s.lines.first, scheme),
                   ),
                 SizedBox(
-                  height: _tickLaneHeight,
+                  height: tickLane,
                   child: Align(
                     alignment: AlignmentDirectional.topEnd,
                     child: Padding(
@@ -667,7 +774,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                           data: data,
                           rulerHeight: _rulerHeight,
                           eraStripHeight: _eraStripHeight,
-                          tickLaneHeight: _tickLaneHeight,
+                          tickLaneHeight: tickLane,
                           gridStep: step,
                           brightness: Theme.of(context).brightness,
                           scheme: scheme,
@@ -689,14 +796,18 @@ class _ChronologyChartState extends State<ChronologyChart> {
                           height: _eraStripHeight,
                           child: _eraStrip(scheme, plotWidth),
                         ),
-                        for (final l in rows)
+                        for (final s in slots)
                           SizedBox(
-                            height: _rowHeight,
-                            child: _lane(context, l, scheme, plotWidth),
+                            height: slotHeight(s),
+                            child: s.folded
+                                ? _foldLane(context, s, scheme)
+                                : _lane(
+                                    context, s.lines.first, scheme, plotWidth),
                           ),
                         SizedBox(
-                          height: _tickLaneHeight,
-                          child: _tickLane(context, scheme, plotWidth),
+                          height: tickLane,
+                          child: _tickLane(
+                              context, scheme, plotWidth, tickLane),
                         ),
                       ],
                     ),
@@ -897,10 +1008,17 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// touch the one before it. So the lane gets denser as you zoom in
   /// and never shows two labels on top of each other, which is the way
   /// this chart type usually fails.
+  ///
+  /// [laneHeight] is what the lifeline rows did not need. Every 12 pt of
+  /// it buys one more row of labels, packed first-fit, so the extra
+  /// height is spent naming ticks rather than on white space — and a
+  /// label below the first row gets a leader down to its own tick, so
+  /// stacking never leaves a title ambiguous about which mark it names.
   Widget _tickLane(
     BuildContext context,
     ColorScheme scheme,
     double plotWidth,
+    double laneHeight,
   ) {
     final ticks = widget.data.allTicks;
     final brightness = Theme.of(context).brightness;
@@ -911,13 +1029,18 @@ class _ChronologyChartState extends State<ChronologyChart> {
       return t.pin;
     });
 
-    // Pass one: pick which ticks get a label, greedily left to right.
-    // Pass two: give each label all the room up to the NEXT chosen one,
-    // so a title is only ellipsised when a neighbour really is in the
-    // way rather than by a blanket cap.
+    // Pass one: pick which ticks get a label, greedily left to right,
+    // into the first row that has room. With one row — the default, and
+    // the whole of zoom 1 — this is exactly the old single-row greed.
+    // Pass two: give each label all the room up to the NEXT chosen one
+    // IN ITS OWN ROW, so a title is only ellipsised when a neighbour
+    // really is in the way rather than by a blanket cap.
+    final labelRows =
+        ((laneHeight - 13) / _labelRowPitch).floor().clamp(1, 5);
+    final lastRight =
+        List<double>.filled(labelRows, double.negativeInfinity);
     final chosen = <({ChronologyMarker tick, double left, double want,
-        TextStyle style, String text})>[];
-    var lastRight = double.negativeInfinity;
+        TextStyle style, String text, int row})>[];
     for (final t in candidates) {
       final text = t.localizedTitle(widget.locale);
       final style = TextStyle(
@@ -931,21 +1054,44 @@ class _ChronologyChartState extends State<ChronologyChart> {
         textDirection: Directionality.of(context),
       )..layout();
       final left = _x(t.am, plotWidth) + 3;
-      if (left < lastRight + 6) continue;
       if (left + 34 > plotWidth) continue;
-      lastRight = left + tp.width.clamp(34.0, 190.0);
+      var row = -1;
+      for (var r = 0; r < labelRows; r++) {
+        if (left >= lastRight[r] + 6) {
+          row = r;
+          break;
+        }
+      }
+      if (row < 0) continue;
+      lastRight[row] = left + tp.width.clamp(34.0, 190.0);
       chosen.add((tick: t, left: left, want: tp.width, style: style,
-          text: text));
+          text: text, row: row));
     }
     final labels = <Widget>[];
     for (var i = 0; i < chosen.length; i++) {
       final c = chosen[i];
-      final limit = (i + 1 < chosen.length ? chosen[i + 1].left - 6 : plotWidth)
-          - c.left;
-      final w = c.want.clamp(0.0, limit.clamp(1.0, double.infinity));
+      var nextLeft = plotWidth;
+      for (var j = i + 1; j < chosen.length; j++) {
+        if (chosen[j].row == c.row) {
+          nextLeft = chosen[j].left - 6;
+          break;
+        }
+      }
+      final w = c.want.clamp(0.0, (nextLeft - c.left).clamp(1.0, 1e9));
+      if (c.row > 0) {
+        labels.add(Positioned(
+          left: c.left - 3,
+          top: 11,
+          width: 0.8,
+          height: 2 + c.row * _labelRowPitch,
+          child: ColoredBox(
+            color: scheme.onSurface.withValues(alpha: 0.28),
+          ),
+        ));
+      }
       labels.add(Positioned(
         left: c.left,
-        top: 13,
+        top: 13 + c.row * _labelRowPitch,
         width: w + 1,
         child: Text(
           c.text,
@@ -1016,6 +1162,93 @@ class _ChronologyChartState extends State<ChronologyChart> {
               color: scheme.onSurface.withValues(alpha: on ? 0.95 : 0.4),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// The AM a folded run is asking to be taken to: the middle of the
+  /// stretch its bars actually occupy.
+  int _foldTarget(_Slot s) {
+    var lo = s.lines.first.birthAm;
+    var hi = lo;
+    for (final l in s.lines) {
+      if (l.birthAm < lo) lo = l.birthAm;
+      final e = l.endAm(widget.data.spanEndAm);
+      if (e > hi) hi = e;
+    }
+    return ((lo + hi) / 2).round();
+  }
+
+  String _foldLabel(_Slot s) =>
+      _s('chronologyRowsFolded', '{n} not in view')
+          .replaceAll('{n}', '${s.lines.length}');
+
+  /// The name column's half of a folded run. It says the count and the
+  /// reason in four words, and it is a control: tapping it does the same
+  /// thing a "Jump to" chip does — moves the cursor and scrolls the plot
+  /// to where those bars are. That is the way back. Nothing here is a
+  /// claim about the people; "not in view" is a fact about the viewport,
+  /// and the row is still in its place in the column, so a folded run
+  /// can never be misread the way a deleted one could.
+  Widget _foldNameCell(
+    BuildContext context,
+    _Slot s,
+    ColorScheme scheme,
+  ) {
+    final names =
+        s.lines.map((l) => l.localizedName(widget.locale)).join(', ');
+    final target = _foldTarget(s);
+    return Semantics(
+      // The visible label is four words in an 88 pt column; a screen
+      // reader has room for the names, and losing them to a fold would
+      // be the one way this really did make people vanish.
+      label: '$names — ${_foldLabel(s)}',
+      button: true,
+      excludeSemantics: true,
+      onTap: () => _goTo(target),
+      child: InkWell(
+        onTap: () => _goTo(target),
+        child: Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 2),
+            child: Text(
+              _foldLabel(s),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontSize: 9.5,
+                fontWeight: FontWeight.w600,
+                // The alpha the chart already uses for a bar whose
+                // person is not alive at the cursor. Same idea — present
+                // but not what you are looking at — so the same value.
+                color: scheme.onSurface.withValues(alpha: 0.45),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The plot's half of a folded run: the same bars, on the same axis,
+  /// squeezed. Not a placeholder and not a new device — each folded
+  /// lifeline is still drawn at its own x, in its own descent colour, at
+  /// the dimmed alpha the chart already gives a bar nobody is looking
+  /// at. So scrolling toward them shows them approaching the edge, and
+  /// each one grows back into a full row as it arrives.
+  Widget _foldLane(BuildContext context, _Slot s, ColorScheme scheme) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _goTo(_foldTarget(s)),
+      child: CustomPaint(
+        painter: _FoldPainter(
+          data: widget.data,
+          lines: s.lines,
+          brightness: Theme.of(context).brightness,
+          rule: scheme.onSurface.withValues(alpha: 0.10),
         ),
       ),
     );
@@ -1546,6 +1779,81 @@ class _ChronologyChartState extends State<ChronologyChart> {
   }
 }
 
+/// One vertical slot in the lifeline stack: either a single lifeline in
+/// a full row, or a run of consecutive lifelines folded into one band.
+class _Slot {
+  final List<Lifeline> lines;
+  final bool folded;
+
+  _Slot.row(Lifeline l)
+      : lines = [l],
+        folded = false;
+  _Slot.fold(Lifeline l)
+      : lines = [l],
+        folded = true;
+}
+
+/// Which lifeline rows earn a full row at the plot's current viewport.
+///
+/// **Why this exists.** The chart's axis runs AM 0 → 4098 but its bars
+/// stop at AM 2187, because that is where Scripture stops stating the
+/// begetting ages. Scrolled to the right-hand end, all twenty rows were
+/// still drawn — twenty names against 700 BC, no bars, more than half
+/// the chart's height spent saying nothing. That is the defect this
+/// fixes. It is NOT a change to where the lifelines end: [lifelines] is
+/// the same list, drawn on the same axis, and nothing is invented past
+/// [spanEndAm] or hidden before it.
+///
+/// **Why it is not a switch at AM 2187.** A viewport that straddles the
+/// boundary has real bars in it, and a binary "past the boundary" test
+/// would drop them. The test here is plain overlap between each bar and
+/// the viewport, so partial overlap — the normal case at high zoom —
+/// keeps exactly the bars that are on screen.
+///
+/// **Why it takes [previous].** A single threshold flickers: a bar
+/// resting on the edge of the viewport would fold and unfold with every
+/// pixel of scroll jitter, and each flip moves 26 pt of layout. So the
+/// row enters at [enterMargin] and only leaves at the wider
+/// [exitMargin] — real hysteresis, with the side effect that every fold
+/// and unfold happens for a bar that is off screen at the moment it
+/// happens, so the row that changes height is never the row being read.
+///
+/// At zoom 1 the viewport is the whole span and this returns all true,
+/// which is why the default view is byte-for-byte what it was.
+@visibleForTesting
+List<bool> chronologyRowsInView({
+  required List<Lifeline> lifelines,
+  required int spanStartAm,
+  required int spanEndAm,
+  required double viewStartFrac,
+  required double viewEndFrac,
+  List<bool>? previous,
+  double enterMargin = 0.06,
+  double exitMargin = 0.25,
+}) {
+  final span = (spanEndAm - spanStartAm).abs();
+  final width = viewEndFrac - viewStartFrac;
+  if (span == 0 || width <= 0 || width >= 1) {
+    return List<bool>.filled(lifelines.length, true);
+  }
+  double lo(double m) => spanStartAm + (viewStartFrac - width * m) * span;
+  double hi(double m) => spanStartAm + (viewEndFrac + width * m) * span;
+  final enterLo = lo(enterMargin);
+  final enterHi = hi(enterMargin);
+  final exitLo = lo(exitMargin);
+  final exitHi = hi(exitMargin);
+  return [
+    for (var i = 0; i < lifelines.length; i++)
+      () {
+        final b = lifelines[i].birthAm.toDouble();
+        final e = lifelines[i].endAm(spanEndAm).toDouble();
+        if (b <= enterHi && e >= enterLo) return true;
+        final held = previous != null && i < previous.length && previous[i];
+        return held && b <= exitHi && e >= exitLo;
+      }(),
+  ];
+}
+
 /// The one glyph that separates a counted year from a placed one:
 /// filled diamond vs hollow circle. Shape and fill, never hue — the
 /// chart already spends colour on the two lines of descent and the
@@ -1834,6 +2142,74 @@ class _GroundPainter extends CustomPainter {
       old.scheme != scheme ||
       old.boundaryLabel != boundaryLabel ||
       old.contestedLabel != contestedLabel;
+}
+
+/// A folded run of lifeline rows, drawn as the same bars on the same
+/// axis at a smaller pitch.
+///
+/// This is deliberately NOT a new mark. The bars keep their descent
+/// colour and take the alpha the chart already gives a bar whose person
+/// is not alive at the cursor (0.25) — present, not what you are looking
+/// at. So the band is the picture the reader already knows, compressed,
+/// and scrolling toward it shows the bars approaching the viewport and
+/// growing back into rows one at a time. A blank strip, or a hatch,
+/// would have been a second visual word for something the chart can say
+/// with the word it has. (The hatch in particular is spoken for: on this
+/// chart it means "not counted", and a folded row is counted — it is
+/// just elsewhere.)
+class _FoldPainter extends CustomPainter {
+  final ChronologyData data;
+  final List<Lifeline> lines;
+  final Brightness brightness;
+  final Color rule;
+
+  const _FoldPainter({
+    required this.data,
+    required this.lines,
+    required this.brightness,
+    required this.rule,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final span = (data.spanEndAm - data.spanStartAm).abs();
+    if (span == 0 || size.width <= 0 || lines.isEmpty) return;
+    double x(int am) => (am - data.spanStartAm) / span * size.width;
+
+    final usable = (size.height - 8).clamp(1.0, double.infinity);
+    final pitch = usable / lines.length;
+    final thickness = (pitch * 0.65).clamp(0.8, 3.0);
+    for (var i = 0; i < lines.length; i++) {
+      final l = lines[i];
+      final base =
+          Color(data.lineById(l.lineId)?.colorValue ?? 0xFF555555);
+      final y = 4 + pitch * (i + 0.5);
+      canvas.drawLine(
+        Offset(x(l.birthAm), y),
+        Offset(x(l.endAm(data.spanEndAm)), y),
+        Paint()
+          ..color = _readable(brightness, base).withValues(alpha: 0.25)
+          ..strokeWidth = thickness
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+    // A hairline under the band, so the fold reads as one object rather
+    // than as a lifeline row that has gone thin.
+    canvas.drawLine(
+      Offset(0, size.height - 0.5),
+      Offset(size.width, size.height - 0.5),
+      Paint()
+        ..color = rule
+        ..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_FoldPainter old) =>
+      old.data != data ||
+      old.brightness != brightness ||
+      old.rule != rule ||
+      !listEquals(old.lines, lines);
 }
 
 /// The event lane's marks. Filled diamond = counted from stated ages;

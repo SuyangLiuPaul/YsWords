@@ -7131,6 +7131,16 @@ const uiStrings = {
     'zh-Hans': '此处无生平横条',
     'zh-Hant': '此處無生平橫條',
   },
+  // The label on a folded run of lifeline rows. It has to do two jobs in
+  // about eleven characters: say that the rows are still there, and say
+  // why they are not drawn. "not in view" is the reason — a fact about
+  // the viewport, never about the people — and the count says how many,
+  // so nobody reads a fold as a claim that a line of descent stopped.
+  'chronologyRowsFolded': {
+    'en': '{n} not in view',
+    'zh-Hans': '{n} 条在视图外',
+    'zh-Hant': '{n} 條在視圖外',
+  },
   'chronologyEras': {
     'en': 'Eras',
     'zh-Hans': '时代',
