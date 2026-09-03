@@ -748,10 +748,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               // rather than showing a gesture that answers nothing.
               //
               // `coversVerse` is the same trade made once more: the
-              // tagged runs are a separate import and on 238 verses
-              // they lose a word or a whole clause the reader's verse
-              // has. The text outranks the gesture, so those fall back
-              // to the plain line.
+              // tagged runs are a separate import and on 223 verses —
+              // measured on the `sanitizeForSearch` text passed below,
+              // which is this call's actual input — they lose a word or
+              // a whole clause the reader's verse has. The text outranks
+              // the gesture, so those fall back to the plain line.
+              // (Was 238 here until 2026-09-03; that figure described
+              // neither this input nor the raw one, which is 270.)
               child: vo.tagged == null ||
                       vo.tagged!.isEmpty ||
                       !TaggedTextService.coversVerse(vo.tagged!, verseText)
