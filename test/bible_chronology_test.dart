@@ -800,6 +800,265 @@ void main() {
     });
   });
 
+  // ── Lifeline rows earn their height ───────────────────────────
+  //
+  // 2026-09-04, the pass after the span reached Revelation. Scrolled to
+  // the right-hand end, all twenty lifeline rows were still drawn — the
+  // names in the left column, no bars, Adam through Abraham listed
+  // against 700 BC — and they took well over half the chart's height.
+  // On a phone that pushed everything worth seeing off the screen.
+  //
+  // What follows pins the fix at BOTH ends and, most importantly, ACROSS
+  // the boundary: the fold is a function of the viewport, not a switch
+  // at AM 2187, because a viewport straddling the boundary has real bars
+  // in it and must show them.
+
+  group('lifeline rows fold to the space they earn', () {
+    // The pure half first. `chronologyRowsInView` is the whole decision,
+    // and it is a function of the viewport and the previous plan only —
+    // no widget, no scroll controller, no zoom.
+
+    List<bool> plan(double a, double b, {List<bool>? previous}) =>
+        chronologyRowsInView(
+          lifelines: data.lifelines,
+          spanStartAm: data.spanStartAm,
+          spanEndAm: data.spanEndAm,
+          viewStartFrac: a,
+          viewEndFrac: b,
+          previous: previous,
+        );
+
+    String named(List<bool> p) => [
+          for (var i = 0; i < p.length; i++)
+            if (p[i]) data.lifelines[i].personId,
+        ].join(',');
+
+    test('zoom 1 — the whole span in view — folds nothing', () {
+      final p = plan(0, 1);
+      expect(p.length, data.lifelines.length);
+      expect(p.every((v) => v), isTrue,
+          reason: 'the default view must be exactly what it was');
+    });
+
+    test('the right-hand end folds every row, because no bar is there',
+        () {
+      // AM 2187 is 53% of the way along a 4,098-year axis, so the last
+      // tenth of it — Rome, the Gospels, Patmos — contains no bar at
+      // all. That is the defect: twenty names and no bars.
+      final p = plan(0.9, 1.0);
+      expect(p.any((v) => v), isFalse, reason: 'in view: ${named(p)}');
+    });
+
+    test('the left-hand end keeps the rows that are actually there', () {
+      final p = plan(0.0, 0.1);
+      // 10% of 4,098 is AM 0-410 (plus the entry margin). Adam, Seth,
+      // Enosh, Kenan and Mahalalel are born inside it; Abraham is not
+      // born for another 1,600 years.
+      final byId = {
+        for (var i = 0; i < data.lifelines.length; i++)
+          data.lifelines[i].personId: p[i],
+      };
+      expect(byId['adam'], isTrue);
+      expect(byId['seth'], isTrue);
+      expect(byId['mahalalel'], isTrue);
+      expect(byId['abraham'], isFalse);
+      expect(byId['terah'], isFalse);
+    });
+
+    test('a viewport straddling AM 2187 shows the bars that are in it',
+        () {
+      // THE case this must not get wrong. A binary "past the boundary"
+      // test would fold every row here; overlap does not.
+      const span = 4098;
+      const half = 400 / span; // an 800-year window, ~zoom 5
+      final c = data.computedEndAm / span;
+      final p = plan(c - half, c + half);
+      final byId = {
+        for (var i = 0; i < data.lifelines.length; i++)
+          data.lifelines[i].personId: p[i],
+      };
+      // Eber dies ON the boundary — AM 2187 is read off his bar — and
+      // Abraham, Terah and Shem all run into the window.
+      expect(byId['eber'], isTrue);
+      expect(byId['abraham'], isTrue);
+      expect(byId['terah'], isTrue);
+      expect(byId['shem'], isTrue);
+      // Adam has been dead 900 years by then. Nothing to draw.
+      expect(byId['adam'], isFalse);
+      expect(byId['enoch'], isFalse);
+      // And it is a mixture, which is the point: neither all nor none.
+      expect(p.where((v) => v).length,
+          allOf(greaterThan(3), lessThan(data.lifelines.length)));
+    });
+
+    test('the fold is hysteretic, so a bar on the edge cannot flicker',
+        () {
+      // A row leaves at a wider margin than it enters at. Without that,
+      // a bar resting on the viewport edge folds and unfolds with every
+      // pixel of scroll, and each flip moves 26 pt of layout.
+      final wide = plan(0.30, 0.55); // Abraham (2008-2183) is in view
+      final abraham =
+          data.lifelines.indexWhere((l) => l.personId == 'abraham');
+      expect(wide[abraham], isTrue);
+
+      // Nudge the window past him: AM 0-1721, which reaches AM 1824
+      // with the enter margin (short of his birth at 2008) and AM 2151
+      // with the wider exit margin (past it).
+      const a = 0.0, b = 0.42;
+      expect(plan(a, b)[abraham], isFalse,
+          reason: 'the enter test alone should drop him here');
+      // Warm — he was in view a moment ago — he is held.
+      expect(plan(a, b, previous: wide)[abraham], isTrue,
+          reason: 'hysteresis should hold a row that just left');
+      // But held is not forever: scroll well away and he goes.
+      expect(plan(0.0, 0.30, previous: wide)[abraham], isFalse);
+    });
+
+    test('a row that is out stays out until it really arrives', () {
+      final cold = plan(0.9, 1.0);
+      expect(plan(0.9, 1.0, previous: cold).any((v) => v), isFalse,
+          reason: 'hysteresis must not resurrect a folded row');
+    });
+  });
+
+  group('the folded rows say why, and take you back', () {
+    ScrollableState horizontal(WidgetTester tester) => tester
+        .stateList<ScrollableState>(find.byType(Scrollable))
+        .firstWhere((s) => s.widget.axisDirection == AxisDirection.right);
+
+    double plotHeight(WidgetTester tester) =>
+        (horizontal(tester).context.findRenderObject()! as RenderBox)
+            .size
+            .height;
+
+    /// Zoom to [zoom]× and put [am] in the middle of the plot's viewport
+    /// — the reader's own two controls, driven directly so the assertion
+    /// is about a stated viewport rather than about where a chip landed.
+    Future<void> viewAt(WidgetTester tester, int am, int zoom) async {
+      for (var i = 1; i < zoom; i++) {
+        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+        await tester.pump(const Duration(milliseconds: 60));
+      }
+      final pos = horizontal(tester).position;
+      final viewport = pos.maxScrollExtent / (zoom - 1);
+      final plotWidth = viewport * zoom;
+      final x = am / (data.spanEndAm - data.spanStartAm) * plotWidth;
+      pos.jumpTo((x - viewport / 2).clamp(0.0, pos.maxScrollExtent));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+    }
+
+    testWidgets('at zoom 1 nothing folds — the whole-span view is intact',
+        (tester) async {
+      await pumpChart(tester, size: tall);
+      expect(find.textContaining('not in view'), findsNothing);
+      for (final l in data.lifelines) {
+        expect(find.text(l.localizedName('en')), findsWidgets,
+            reason: '${l.personId} vanished at zoom 1');
+      }
+    });
+
+    testWidgets('at the right-hand end the rows fold, and say why',
+        (tester) async {
+      await pumpChart(tester, size: tall);
+      final tall1x = plotHeight(tester);
+
+      await viewAt(tester, data.spanEndAm, 5);
+
+      // The whole column folds into one band, labelled with the count
+      // and the reason. Not blank, not gone: twenty rows, named.
+      expect(find.text('${data.lifelines.length} not in view'),
+          findsOneWidget);
+      // And the chart is now a fraction of its height. This is the
+      // defect: it used to be all 597 pt of it, most of it empty.
+      expect(plotHeight(tester), lessThan(tall1x * 0.45),
+          reason: 'folded: ${plotHeight(tester)} vs $tall1x at zoom 1');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the reclaimed height goes to the event lane, which '
+        'stacks its labels', (tester) async {
+      await pumpChart(tester, size: tall);
+      Set<double> labelRows() {
+        final titles = {for (final t in data.allTicks) t.localizedTitle('en')};
+        final tops = <double>{};
+        for (final e in find.byType(Text).evaluate()) {
+          final t = e.widget as Text;
+          if (!titles.contains(t.data)) continue;
+          final ro = e.renderObject;
+          if (ro is! RenderBox || !ro.attached) continue;
+          tops.add(ro.localToGlobal(Offset.zero).dy.roundToDouble());
+        }
+        return tops;
+      }
+
+      await viewAt(tester, data.spanEndAm, 5);
+      // Past AM 2187 the event lane is the only layer with content in
+      // it, so it is the layer the folded rows pay. One row of labels
+      // became several, which names ticks that used to be anonymous.
+      expect(labelRows().length, greaterThan(1),
+          reason: 'the taller lane should stack labels, not pad itself');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a viewport straddling AM 2187 draws the bars that are '
+        'in it and folds only the rest', (tester) async {
+      await pumpChart(tester, size: tall);
+      await viewAt(tester, data.computedEndAm, 5);
+
+      // Both at once — which is what "not a hard on/off at AM 2187"
+      // means in the drawing.
+      expect(find.textContaining('not in view'), findsOneWidget);
+      expect(find.text('Eber'), findsWidgets,
+          reason: 'Eber dies ON the boundary; his bar is in this window');
+      expect(find.text('Abraham'), findsWidgets);
+      expect(find.text('Adam'), findsNothing,
+          reason: 'Adam has been dead 1,250 years at this viewport');
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('tapping a folded band takes the reader to those bars',
+        (tester) async {
+      await pumpChart(tester, size: tall);
+      await viewAt(tester, data.spanEndAm, 5);
+      final fold = find.text('${data.lifelines.length} not in view');
+      expect(fold, findsOneWidget);
+
+      await tester.tap(fold);
+      await tester.pumpAndSettle();
+
+      // The way back is the same mechanism a "Jump to" chip uses: it
+      // scrolls the plot to where those bars are, and they unfold.
+      expect(find.text('${data.lifelines.length} not in view'), findsNothing);
+      expect(find.text('Adam'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the narrow 402 pt phone survives the fold, at both ends',
+        (tester) async {
+      await pumpChart(tester, locale: 'zh-Hans', size: const Size(402, 900));
+      await viewAt(tester, data.spanEndAm, 6);
+      expect(find.textContaining('在视图外'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await viewAt(tester, 0, 6);
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('folding does not disturb the ruler or the plot width',
+        (tester) async {
+      // The fold changes HEIGHT only. If it moved the axis, every year
+      // on the chart would be wrong.
+      await pumpChart(tester, size: tall);
+      await viewAt(tester, data.spanEndAm, 4);
+      final pos = horizontal(tester).position;
+      final before = pos.maxScrollExtent;
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(horizontal(tester).position.maxScrollExtent, before);
+      expect(find.text('AM 4098'), findsWidgets);
+    });
+  });
+
   // ── Registration ──────────────────────────────────────────────
 
   group('the section is actually reachable in the app', () {
