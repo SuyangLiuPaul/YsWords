@@ -6871,6 +6871,25 @@ const uiStrings = {
     'zh-Hans': '讲道尚未加载完成 — 请等待内容显示',
     'zh-Hant': '講道尚未載入完成 — 請等待內容顯示',
   },
+  // The church's own written edition of this sermon, on
+  // christiandiscipleschurch.org. Shown on the 36 sermons that have a
+  // confirmed counterpart and on no others — see
+  // `MatthewMessage` in lib/services/sermon_service.dart.
+  'sermonWrittenEdition': {
+    'en': 'The church has published this sermon in writing',
+    'zh-Hans': '教会已将这篇讲道出版为文字版',
+    'zh-Hant': '教會已將這篇講道出版為文字版',
+  },
+  'sermonWrittenEditionOpen': {
+    'en': 'Read on the church site',
+    'zh-Hans': '在教会网站阅读',
+    'zh-Hant': '在教會網站閱讀',
+  },
+  'sermonWrittenEditionPdf': {
+    'en': 'PDF',
+    'zh-Hans': 'PDF',
+    'zh-Hant': 'PDF',
+  },
   'sermonAttribution': {
     'en': "From Yahweh's Words (雅伟之言) — bilingual Bible app",
     'zh-Hans': '来自雅伟之言 — 双语圣经应用',

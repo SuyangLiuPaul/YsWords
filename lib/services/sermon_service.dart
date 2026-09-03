@@ -15,6 +15,71 @@ class SermonRefs {
   bool get isEmpty => byVerse.isEmpty && bySermon.isEmpty;
 }
 
+/// The church's own written edition of one sermon.
+///
+/// Pastor Eric's Matthew series exists twice: as the 289 cassette
+/// recordings we transcribed, and as *124 Messages*, a nine-volume
+/// written edition on `christiandiscipleschurch.org`. They are not the
+/// same series renumbered — the written one is re-titled and cut
+/// finer, so several of its messages can cover one recording and most
+/// pairs cannot be established at all.
+///
+/// **36 can, and only those 36 are here.** The rule, and the full list
+/// of what it rejected and why, is the docstring of
+/// `tools/reconcile_matthew_124.py`. The short version: identical
+/// passage range, no partial-verse suffix, nothing else on either side
+/// starting at the same verse, and — independently of all of that —
+/// the preaching date printed on their page equal to the date in our
+/// index. 36 of the 37 pairs that survived the passage rules agreed on
+/// the date to the day; the one that did not is not here.
+///
+/// Reading a sermon and being sent to a written message about a
+/// different talk is the same class of error as a citation that opens
+/// the wrong verse, so a sermon with no confirmed counterpart shows no
+/// link rather than a plausible one.
+class MatthewMessage {
+  /// Their message number, `"010"`. Display-only; the app never
+  /// orders by it, because the church's numbering is theirs.
+  final String message;
+
+  /// Their title for it, which is usually not ours.
+  final String title;
+
+  /// Their reference string, verbatim — "Luke 4:5-13, Matthew 4:5-11".
+  final String ref;
+
+  /// The message's web page. `/content/matthew-010`, NOT
+  /// `/matthew-010`: the listing's hrefs are relative to `/content/`
+  /// and the absolute form 404s.
+  final String url;
+
+  /// The same message as a PDF, on the church's other domain.
+  final String pdf;
+
+  /// The date their page says it was preached — equal to the sermon's
+  /// own `date` by construction, since that equality is what admitted
+  /// the pair.
+  final String date;
+
+  const MatthewMessage({
+    required this.message,
+    required this.title,
+    required this.ref,
+    required this.url,
+    required this.pdf,
+    required this.date,
+  });
+
+  factory MatthewMessage.fromJson(Map<String, dynamic> j) => MatthewMessage(
+        message: j['message'] as String? ?? '',
+        title: j['title'] as String? ?? '',
+        ref: j['ref'] as String? ?? '',
+        url: j['url'] as String? ?? '',
+        pdf: j['pdf'] as String? ?? '',
+        date: j['date'] as String? ?? '',
+      );
+}
+
 /// Loads and caches the Pastor Eric sermon corpus.
 ///
 /// The full corpus is 289 sermons × 3 languages = 867 body files
@@ -41,6 +106,10 @@ class SermonService {
   /// service so both surfaces (sermon-detail body links + bible-pane
   /// "related sermons" chip) hit the same data.
   SermonRefs? _refs;
+
+  /// Cached `assets/sermons/matthew_124.json` — our sermon id → the
+  /// church's written message. See [MatthewMessage].
+  Map<String, MatthewMessage>? _matthew;
 
   /// Reverse index from "Book chapter[:verse]" → list of sermon ids,
   /// plus the inverse list per sermon. Loaded once per process.
@@ -81,6 +150,41 @@ class SermonService {
     if (ids == null || ids.isEmpty) return const [];
     final byId = {for (final s in all) s.id: s};
     return [for (final id in ids) if (byId[id] != null) byId[id]!];
+  }
+
+  /// The church's written edition of [sermonId], or null when this
+  /// recording has no confirmed counterpart.
+  ///
+  /// **Null is the normal answer** — 253 of the 289 return it. See
+  /// [MatthewMessage] for why a near-match is not offered instead.
+  Future<MatthewMessage?> writtenEdition(String sermonId) async {
+    final all = await loadMatthewMessages();
+    return all[sermonId];
+  }
+
+  /// `assets/sermons/matthew_124.json`, keyed by OUR sermon id.
+  /// Loaded once per process; ~10 KB.
+  Future<Map<String, MatthewMessage>> loadMatthewMessages() async {
+    final cached = _matthew;
+    if (cached != null) return cached;
+    try {
+      final raw =
+          await rootBundle.loadString('assets/sermons/matthew_124.json');
+      final j = json.decode(raw) as Map<String, dynamic>;
+      final links = j['links'] as Map<String, dynamic>? ?? const {};
+      _matthew = {
+        for (final e in links.entries)
+          e.key: MatthewMessage.fromJson(e.value as Map<String, dynamic>),
+      };
+    } catch (_) {
+      // Missing or corrupt asset — show no links rather than failing
+      // the page. Silent degradation is the right behaviour here and
+      // the wrong thing to leave untested, so
+      // test/matthew_124_links_test.dart asserts the asset is really
+      // in pubspec and really parses.
+      _matthew = const {};
+    }
+    return _matthew!;
   }
 
   /// All verse references known for one sermon — used by the sermon
