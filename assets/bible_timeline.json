@@ -1,7 +1,12 @@
 {
   "_meta": {
-    "count": 97,
-    "source": "YsWords curated"
+    "count": 98,
+    "source": "YsWords curated",
+    "yearSystem": "signed BC/AD — negative is BC, positive is AD, and there is no year 0 (1 BC is followed by AD 1). No event in this file carries year 0; tools/build_bible_chronology.py refuses one.",
+    "dating": "Every year here is a PLACEMENT, not a computed figure. Scripture states a continuous chain of ages only through Genesis 5 and 11; these dates are the conventional scholarly placements this app has curated, and the patriarchal ones follow the same late-date scheme as assets/family_tree.json (Abraham 2166-1991 BC).",
+    "knownConflict": "That late-date scheme does NOT join up with the Anno Mundi count in assets/bible_chronology.json, which puts Abram's birth at AM 2008 = 1996 BC on the 4004 BC anchor. The two disagree by about 170 years across the patriarchs. This is left unreconciled on purpose; the chronology chart draws the disagreement rather than averaging it away. See the `contested` block in assets/bible_chronology.json.",
+    "consumers": "lib/services/timeline_service.dart (the event list) and tools/build_bible_chronology.py, which projects these events onto the chart's AM axis. Changing an `id`, `year` or `era` here changes the chart too.",
+    "notFrom": "docs/reference/364673272-World-History-Chart-Bible-Chronology.pdf is under copyright (Bible Charts and Maps, LLC). Nothing in this file is transcribed from it."
   },
   "events": [
     {

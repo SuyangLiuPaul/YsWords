@@ -60,7 +60,18 @@ class _ChronologyChartState extends State<ChronologyChart> {
   static const double _nameColumnWidth = 88;
   static const double _rowHeight = 26;
   static const double _rulerHeight = 30;
+  static const double _eraStripHeight = 15;
+  static const double _tickLaneHeight = 32;
   static const double _gap = 8;
+
+  /// Zoom now goes to 8, not 4. The span nearly doubled this pass
+  /// (AM 0-2187 → 0-4098) and 24 of the 98 events fall inside the ~95
+  /// years of the New Testament, so 4× no longer separated them. The
+  /// axis itself is NEVER warped to compensate — a broken or log time
+  /// axis is the classic way this chart type starts lying, and this
+  /// chart's whole claim is that its years are real. Density is solved
+  /// with zoom and detail-on-demand instead.
+  static const double _maxZoom = 8;
 
   final ScrollController _plot = ScrollController();
 
@@ -71,6 +82,10 @@ class _ChronologyChartState extends State<ChronologyChart> {
 
   /// 1 = whole span fits the width (no horizontal scrolling).
   double _zoom = 1;
+
+  /// Last plot width laid out, so the overview strip can convert the
+  /// scroll offset into an AM range without re-deriving the layout.
+  double _plotWidth = 0;
 
   @override
   void initState() {
@@ -97,6 +112,31 @@ class _ChronologyChartState extends State<ChronologyChart> {
   String _s(String key, String fallback) =>
       uiStrings[key]?[widget.locale] ?? fallback;
 
+  bool get _isZh => widget.locale.startsWith('zh');
+
+  /// Bring [am] into view, centred where it can be. Chips used to move
+  /// only the cursor, which is why "jump to Revelation" did not look
+  /// like it went anywhere once the span reached that far.
+  void _scrollTo(int am) {
+    if (!_plot.hasClients || _plotWidth <= 0) return;
+    final data = widget.data;
+    final span = (data.spanEndAm - data.spanStartAm).abs();
+    if (span == 0) return;
+    final x = (am - data.spanStartAm) / span * _plotWidth;
+    final target = (x - _plot.position.viewportDimension / 2)
+        .clamp(0.0, _plot.position.maxScrollExtent);
+    _plot.animateTo(
+      target,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _goTo(int am) {
+    setState(() => _cursorAm = am);
+    _scrollTo(am);
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -112,6 +152,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
         _scrubber(context, active, scheme, alive.length),
         _zoomRow(scheme),
         const SizedBox(height: 8),
+        // Overview first, then zoom and filter, then details on demand.
+        // With 4,100 years on the axis a zoom button alone leaves the
+        // reader with no idea where the viewport is, so the whole span
+        // stays on screen above the plot with the viewport marked on it.
+        _overview(context, scheme, active),
+        const SizedBox(height: 10),
         LayoutBuilder(
           builder: (context, constraints) {
             // The plot never gets a width smaller than the viewport, so
@@ -120,11 +166,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
                 (constraints.maxWidth - _nameColumnWidth - _gap)
                     .clamp(80.0, double.infinity);
             final plotWidth = viewport * _zoom;
+            _plotWidth = plotWidth;
             return _chart(context, scheme, active, plotWidth);
           },
         ),
         const SizedBox(height: 16),
-        // Below the chart, not above it: seven chips wrap to four rows
+        // Below the chart, not above it: the chips wrap to several rows
         // on a phone, and putting them before the plot pushed the thing
         // the reader came for off the first screen.
         Text(
@@ -306,13 +353,20 @@ class _ChronologyChartState extends State<ChronologyChart> {
                 ),
               ),
             ),
+            // Past the computed stretch there are no bars, and "0 alive"
+            // would read as a claim that nobody was. Say instead that
+            // the chart has nothing to draw there.
             Text(
-              _s('chronologyAliveCount', '{count} alive')
-                  .replaceAll('{count}', '$aliveCount'),
+              _cursorAm > data.computedEndAm
+                  ? _s('chronologyNoLifelines', 'no lifelines here')
+                  : _s('chronologyAliveCount', '{count} alive')
+                      .replaceAll('{count}', '$aliveCount'),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: scheme.primary,
+                color: _cursorAm > data.computedEndAm
+                    ? scheme.onSurface.withValues(alpha: 0.55)
+                    : scheme.primary,
               ),
             ),
           ],
@@ -337,20 +391,34 @@ class _ChronologyChartState extends State<ChronologyChart> {
     );
   }
 
-  /// Dated events, as chips that move the scrubber. The ruler shows them
-  /// as ticks; the labels live here because seven labels across a
-  /// 280 pt ruler would collide on a phone.
+  /// Dated events, as chips that move the scrubber AND scroll the plot
+  /// to them. Only the pinned ones: 100 chips is not a control. The
+  /// rest are reached by tapping their tick, which is the "details on
+  /// demand" end of the same interaction.
+  ///
+  /// The computed markers are marked with a filled glyph and the placed
+  /// events with a hollow one — the same distinction the ticks make, so
+  /// a reader who learned it in one place reads it in the other.
   Widget _markerChips(ColorScheme scheme) {
+    final chips = [
+      ...widget.data.markers,
+      ...widget.data.events.where((e) => e.pin),
+    ]..sort((a, b) => a.am.compareTo(b.am));
     return Wrap(
       spacing: 6,
       runSpacing: 6,
       children: [
-        for (final m in widget.data.markers)
+        for (final m in chips)
           _Chip(
+            // Stable handle for tests and for anything that needs to
+            // point at one chip: the tick lane prints some of the same
+            // titles, so text alone is ambiguous.
+            key: ValueKey('chronoChip_${m.id}'),
             label: m.localizedTitle(widget.locale),
             selected: m.am == _cursorAm,
+            computed: m.isComputed,
             scheme: scheme,
-            onTap: () => setState(() => _cursorAm = m.am),
+            onTap: () => _goTo(m.am),
           ),
       ],
     );
@@ -374,7 +442,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
           tooltip: _s('chronologyZoomOut', 'Zoom out'),
           onPressed: _zoom <= 1
               ? null
-              : () => setState(() => _zoom = (_zoom - 1).clamp(1, 4)),
+              : () => setState(() => _zoom = (_zoom - 1).clamp(1, _maxZoom)),
           icon: const Icon(Icons.zoom_out_rounded),
         ),
         Text(
@@ -386,10 +454,123 @@ class _ChronologyChartState extends State<ChronologyChart> {
           visualDensity: VisualDensity.compact,
           iconSize: 20,
           tooltip: _s('chronologyZoomIn', 'Zoom in'),
-          onPressed: _zoom >= 4
+          onPressed: _zoom >= _maxZoom
               ? null
-              : () => setState(() => _zoom = (_zoom + 1).clamp(1, 4)),
+              : () => setState(() => _zoom = (_zoom + 1).clamp(1, _maxZoom)),
           icon: const Icon(Icons.zoom_in_rounded),
+        ),
+      ],
+    );
+  }
+
+  // ── Overview strip ──────────────────────────────────────────────
+  //
+  // Shneiderman's order, applied literally: overview first (this),
+  // zoom and filter (the zoom row and the scrub cursor), details on
+  // demand (the sheets). It is deliberately the SAME vocabulary as the
+  // plot below — same era bands, same computed/placed grounds, same
+  // cursor — at 1/zoom scale, plus an outlined rectangle showing which
+  // slice of it the plot is currently showing. Tapping or dragging it
+  // moves both the cursor and the plot.
+  Widget _overview(
+    BuildContext context,
+    ColorScheme scheme,
+    ChronologyScheme active,
+  ) {
+    final data = widget.data;
+    final span = (data.spanEndAm - data.spanStartAm).abs();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          _s('chronologyOverview', 'Whole span'),
+          style: TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.4,
+            color: scheme.onSurface.withValues(alpha: 0.7),
+          ),
+        ),
+        const SizedBox(height: 4),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            void handle(Offset local) {
+              if (span == 0 || w <= 0) return;
+              final am = (data.spanStartAm +
+                      (local.dx / w).clamp(0.0, 1.0) * span)
+                  .round();
+              _goTo(am);
+            }
+
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (d) => handle(d.localPosition),
+              onHorizontalDragUpdate: (d) => handle(d.localPosition),
+              child: ListenableBuilder(
+                listenable: _plot,
+                builder: (context, _) {
+                  double? viewStart;
+                  double? viewEnd;
+                  if (_plot.hasClients && _plotWidth > 0) {
+                    final vp = _plot.position.viewportDimension;
+                    viewStart = _plot.position.pixels / _plotWidth;
+                    viewEnd = (_plot.position.pixels + vp) / _plotWidth;
+                  }
+                  return SizedBox(
+                    height: 40,
+                    child: CustomPaint(
+                      painter: _OverviewPainter(
+                        data: data,
+                        cursorAm: _cursorAm,
+                        viewStartFrac: viewStart,
+                        viewEndFrac: viewEnd,
+                        brightness: Theme.of(context).brightness,
+                        scheme: scheme,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 3),
+        // The two ends of the axis, printed under the ends they belong
+        // to. This is the answer to the complaint that started this
+        // pass, in words as well as in the drawing: the axis really
+        // does run from Creation to Revelation.
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                formatChronologyYear(
+                    data.spanStartAm, active, widget.locale),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color: scheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                formatChronologyYear(data.spanEndAm, active, widget.locale),
+                maxLines: 1,
+                textAlign: TextAlign.end,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color: scheme.onSurface.withValues(alpha: 0.75),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -405,7 +586,10 @@ class _ChronologyChartState extends State<ChronologyChart> {
   ) {
     final data = widget.data;
     final rows = data.lifelines;
-    final height = _rulerHeight + rows.length * _rowHeight;
+    final lanesTop = _rulerHeight + _eraStripHeight;
+    final height =
+        lanesTop + rows.length * _rowHeight + _tickLaneHeight;
+    final step = _rulerStep(plotWidth);
 
     return SizedBox(
       height: height,
@@ -419,12 +603,47 @@ class _ChronologyChartState extends State<ChronologyChart> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: _rulerHeight),
+                SizedBox(
+                  height: lanesTop,
+                  child: Align(
+                    alignment: AlignmentDirectional.bottomEnd,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 2, bottom: 2),
+                      child: Text(
+                        _s('chronologyEras', 'Eras'),
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                          color: scheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 for (final l in rows)
                   SizedBox(
                     height: _rowHeight,
                     child: _nameCell(context, l, scheme),
                   ),
+                SizedBox(
+                  height: _tickLaneHeight,
+                  child: Align(
+                    alignment: AlignmentDirectional.topEnd,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 2, top: 3),
+                      child: Text(
+                        _s('chronologyEvents', 'Events'),
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                          color: scheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -444,13 +663,18 @@ class _ChronologyChartState extends State<ChronologyChart> {
                   children: [
                     Positioned.fill(
                       child: CustomPaint(
-                        painter: _GridPainter(
+                        painter: _GroundPainter(
                           data: data,
                           rulerHeight: _rulerHeight,
-                          gridColor:
-                              scheme.outlineVariant.withValues(alpha: 0.5),
-                          markerColor:
-                              scheme.onSurface.withValues(alpha: 0.22),
+                          eraStripHeight: _eraStripHeight,
+                          tickLaneHeight: _tickLaneHeight,
+                          gridStep: step,
+                          brightness: Theme.of(context).brightness,
+                          scheme: scheme,
+                          boundaryLabel: _s('chronologyComputedEnds',
+                              'Genesis 5 & 11 ages end here'),
+                          contestedLabel: _s('chronologyContestedLabel',
+                              'The two scales disagree here'),
                         ),
                       ),
                     ),
@@ -459,13 +683,21 @@ class _ChronologyChartState extends State<ChronologyChart> {
                       children: [
                         SizedBox(
                           height: _rulerHeight,
-                          child: _ruler(active, scheme, plotWidth),
+                          child: _ruler(active, scheme, plotWidth, step),
+                        ),
+                        SizedBox(
+                          height: _eraStripHeight,
+                          child: _eraStrip(scheme, plotWidth),
                         ),
                         for (final l in rows)
                           SizedBox(
                             height: _rowHeight,
                             child: _lane(context, l, scheme, plotWidth),
                           ),
+                        SizedBox(
+                          height: _tickLaneHeight,
+                          child: _tickLane(context, scheme, plotWidth),
+                        ),
                       ],
                     ),
                     // Scrub cursor, drawn over everything.
@@ -497,33 +729,87 @@ class _ChronologyChartState extends State<ChronologyChart> {
     return (am - data.spanStartAm) / span * plotWidth;
   }
 
+  /// Ruler/grid interval, chosen from a round-number ladder so the
+  /// labels never collide however wide the plot is. The old code hard-
+  /// coded 500 (and 200 above zoom 3), which was legible across 2,187
+  /// years and is not across 4,098: at zoom 1 on a 402 pt phone the
+  /// plot is about 290 pt wide, and 500-year labels would sit 35 pt
+  /// apart with 46 pt of text in them.
+  int _rulerStep(double plotWidth) {
+    const ladder = [50, 100, 200, 250, 500, 1000, 2000];
+    final span = (widget.data.spanEndAm - widget.data.spanStartAm).abs();
+    if (span == 0 || plotWidth <= 0) return ladder.last;
+    // Measured, not guessed. A hard-coded pixel budget was wrong twice:
+    // the app's own font is wider than the estimate, so "AM 3000" and
+    // the pinned "AM 4098" still overlapped at 402 pt after the budget
+    // was raised once. `_labelWidth` asks the text engine instead.
+    final need = _rulerLabelWidth() + 14;
+    for (final s in ladder) {
+      if (s / span * plotWidth >= need) return s;
+    }
+    return ladder.last;
+  }
+
+  static const TextStyle _rulerAmStyle =
+      TextStyle(fontSize: 9, fontWeight: FontWeight.w700);
+  static const TextStyle _rulerYearStyle = TextStyle(fontSize: 9);
+
+  double _measure(String text, TextStyle style) {
+    final tp = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: 1,
+      textDirection: Directionality.of(context),
+    )..layout();
+    return tp.width;
+  }
+
+  /// Width of the widest label the ruler will ever print — both of its
+  /// two lines, at the far end of the axis where the digits are longest.
+  double _rulerLabelWidth() {
+    final end = widget.data.spanEndAm;
+    final start = widget.data.spanStartAm;
+    final active = widget.data.activeScheme;
+    String yearText(int am) {
+      final y = active.amToYear(am);
+      return y < 0 ? '${-y} BC' : 'AD $y';
+    }
+
+    return [
+      _measure('AM $end', _rulerAmStyle),
+      _measure('AM $start', _rulerAmStyle),
+      _measure(yearText(start), _rulerYearStyle),
+      _measure(yearText(end), _rulerYearStyle),
+    ].reduce((a, b) => a > b ? a : b);
+  }
+
   Widget _ruler(
     ChronologyScheme active,
     ColorScheme scheme,
     double plotWidth,
+    int step,
   ) {
-    // One label every 500 years at zoom 1; denser as the plot widens.
-    final step = _zoom >= 3 ? 200 : 500;
     final labels = <Widget>[];
+    // Room for THIS label plus the pinned end label plus a gap between
+    // them. Reserving one label's width was the bug: at 320 pt the last
+    // ladder label fitted on its own and then sat under "AM 4098".
+    final labelW = _rulerLabelWidth();
+    final endReserve = labelW * 2 + 14;
     for (var am = widget.data.spanStartAm;
         am <= widget.data.spanEndAm;
         am += step) {
-      // A tick whose two-line label would run past the right edge is
-      // dropped rather than clipped — the scrubber above always prints
-      // the exact year, so the ruler only has to give the reader a
-      // sense of scale.
-      if (_x(am, plotWidth) + 46 > plotWidth) break;
+      // A tick whose label would run into the pinned label at the right
+      // edge is dropped rather than allowed to collide — the scrubber
+      // above always prints the exact year, so the ruler only has to
+      // give the reader a sense of scale.
+      if (_x(am, plotWidth) + endReserve > plotWidth) break;
       final year = active.amToYear(am);
       labels.add(Positioned(
         left: _x(am, plotWidth) + 2,
         top: 2,
         child: Text(
           'AM $am',
-          style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
-            color: scheme.onSurface.withValues(alpha: 0.6),
-          ),
+          style: _rulerAmStyle.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.6)),
         ),
       ));
       labels.add(Positioned(
@@ -531,14 +817,180 @@ class _ChronologyChartState extends State<ChronologyChart> {
         top: 14,
         child: Text(
           year < 0 ? '${-year} BC' : 'AD $year',
-          style: TextStyle(
-            fontSize: 9,
-            color: scheme.onSurface.withValues(alpha: 0.45),
+          style: _rulerYearStyle.copyWith(
+              color: scheme.onSurface.withValues(alpha: 0.45)),
+        ),
+      ));
+    }
+    // The right-hand end of the axis, always printed even when the
+    // ladder above stops short of it. This is the thing the reader
+    // asked for: proof that scrolling right arrives at Revelation.
+    final endYear = active.amToYear(widget.data.spanEndAm);
+    labels.add(Positioned(
+      right: 2,
+      top: 2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            'AM ${widget.data.spanEndAm}',
+            style: _rulerAmStyle.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.6)),
+          ),
+          Text(
+            endYear < 0 ? '${-endYear} BC' : 'AD $endYear',
+            style: _rulerYearStyle.copyWith(
+                color: scheme.onSurface.withValues(alpha: 0.45)),
+          ),
+        ],
+      ),
+    ));
+    return Stack(children: labels);
+  }
+
+  /// Era names on their bands. Each label is clipped to its own band,
+  /// so two era names can never overlap; a band too narrow for even an
+  /// ellipsis prints nothing and keeps only its colour, which the
+  /// legend names. Background era banding is the standard orienting
+  /// device for a long chronology, and these are the eight eras
+  /// `assets/bible_timeline.json` already carries — the same ones the
+  /// Events list on this page groups by.
+  Widget _eraStrip(ColorScheme scheme, double plotWidth) {
+    final brightness = Theme.of(context).brightness;
+    final children = <Widget>[];
+    for (final e in widget.data.eras) {
+      final left = _x(e.startAm, plotWidth);
+      final right = _x(e.endAm, plotWidth);
+      final w = right - left;
+      if (w < 26) continue;
+      children.add(Positioned(
+        left: left + 3,
+        top: 0,
+        bottom: 0,
+        width: (w - 6).clamp(1.0, double.infinity),
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(
+            e.localizedName(widget.locale),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: TextStyle(
+              fontSize: 8.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
+              color: _readable(brightness, Color(e.colorValue)),
+            ),
           ),
         ),
       ));
     }
-    return Stack(children: labels);
+    return Stack(clipBehavior: Clip.hardEdge, children: children);
+  }
+
+  /// The event lane: every dated thing on the chart as a tick, computed
+  /// ones solid, placed ones hollow.
+  ///
+  /// Labels are culled twice. First by zoom — pinned only at 1×, the
+  /// computed markers join at 2×, everything is a candidate from 4× —
+  /// and then greedily left to right, dropping any label that would
+  /// touch the one before it. So the lane gets denser as you zoom in
+  /// and never shows two labels on top of each other, which is the way
+  /// this chart type usually fails.
+  Widget _tickLane(
+    BuildContext context,
+    ColorScheme scheme,
+    double plotWidth,
+  ) {
+    final ticks = widget.data.allTicks;
+    final brightness = Theme.of(context).brightness;
+
+    final candidates = ticks.where((t) {
+      if (_zoom >= 4) return true;
+      if (_zoom >= 2) return t.pin || t.isComputed;
+      return t.pin;
+    });
+
+    // Pass one: pick which ticks get a label, greedily left to right.
+    // Pass two: give each label all the room up to the NEXT chosen one,
+    // so a title is only ellipsised when a neighbour really is in the
+    // way rather than by a blanket cap.
+    final chosen = <({ChronologyMarker tick, double left, double want,
+        TextStyle style, String text})>[];
+    var lastRight = double.negativeInfinity;
+    for (final t in candidates) {
+      final text = t.localizedTitle(widget.locale);
+      final style = TextStyle(
+        fontSize: 8.5,
+        fontWeight: t.isComputed ? FontWeight.w800 : FontWeight.w500,
+        color: scheme.onSurface.withValues(alpha: t.isComputed ? 0.85 : 0.62),
+      );
+      final tp = TextPainter(
+        text: TextSpan(text: text, style: style),
+        maxLines: 1,
+        textDirection: Directionality.of(context),
+      )..layout();
+      final left = _x(t.am, plotWidth) + 3;
+      if (left < lastRight + 6) continue;
+      if (left + 34 > plotWidth) continue;
+      lastRight = left + tp.width.clamp(34.0, 190.0);
+      chosen.add((tick: t, left: left, want: tp.width, style: style,
+          text: text));
+    }
+    final labels = <Widget>[];
+    for (var i = 0; i < chosen.length; i++) {
+      final c = chosen[i];
+      final limit = (i + 1 < chosen.length ? chosen[i + 1].left - 6 : plotWidth)
+          - c.left;
+      final w = c.want.clamp(0.0, limit.clamp(1.0, double.infinity));
+      labels.add(Positioned(
+        left: c.left,
+        top: 13,
+        width: w + 1,
+        child: Text(
+          c.text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+          style: c.style,
+        ),
+      ));
+    }
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      // Details on demand: tap anywhere in the lane and the nearest
+      // tick within 14 pt opens. Hit boxes per tick would be 100
+      // stacked widgets, and the ones in the New Testament would
+      // overlap each other anyway.
+      onTapDown: (d) {
+        ChronologyMarker? best;
+        var bestDx = 14.0;
+        for (final t in ticks) {
+          final dx = (_x(t.am, plotWidth) - d.localPosition.dx).abs();
+          if (dx <= bestDx) {
+            bestDx = dx;
+            best = t;
+          }
+        }
+        if (best != null) _showEventSheet(context, best);
+      },
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _TickPainter(
+                data: widget.data,
+                brightness: brightness,
+                fallback: scheme.onSurface,
+              ),
+            ),
+          ),
+          ...labels,
+        ],
+      ),
+    );
   }
 
   Widget _nameCell(
@@ -762,6 +1214,158 @@ class _ChronologyChartState extends State<ChronologyChart> {
     );
   }
 
+  // ── Event detail ────────────────────────────────────────────────
+
+  /// Details on demand for one tick. The first thing it says is where
+  /// the year came from, because that is the one fact the picture
+  /// cannot carry on its own and the one this chart is most at risk of
+  /// being quoted for.
+  void _showEventSheet(BuildContext context, ChronologyMarker m) {
+    final scheme = Theme.of(context).colorScheme;
+    final active = widget.data.activeScheme;
+    final locale = widget.locale;
+    final era = widget.data.eraById(m.era);
+
+    String signedYear(int y) {
+      if (y < 0) return _isZh ? '公元前 ${-y} 年' : '${-y} BC';
+      return _isZh ? '公元 $y 年' : 'AD $y';
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.8,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _BasisGlyph(computed: m.isComputed, scheme: scheme),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        m.localizedTitle(locale),
+                        style: const TextStyle(
+                            fontSize: 19, fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      Text(
+                        formatChronologyYear(m.am, active, locale),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.onSurface.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      if (era != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          era.localizedName(locale),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _readable(
+                                Theme.of(ctx).brightness,
+                                Color(era.colorValue)),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 14),
+                      Text(
+                        _s('chronologyBasis', 'Where this year comes from'),
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.4),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        m.isComputed
+                            ? _s('chronologyBasisComputed', '')
+                            : _s('chronologyBasisPlaced', '').replaceAll(
+                                '{year}',
+                                signedYear(m.year ?? active.amToYear(m.am))),
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.6,
+                          color: scheme.onSurface.withValues(alpha: 0.85),
+                        ),
+                      ),
+                      // A deduped disagreement is never silent: if the
+                      // event list dates the same thing differently,
+                      // this says so and by how much.
+                      if (m.placedYear != null &&
+                          (m.placedDeltaYears ?? 0) != 0) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerHighest
+                                .withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _s('chronologyAlsoPlaced', '')
+                                .replaceAll(
+                                    '{year}', signedYear(m.placedYear!))
+                                .replaceAll('{delta}',
+                                    '${m.placedDeltaYears!.abs()}'),
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1.6,
+                              color: scheme.onSurface.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (m.refs.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: [
+                            for (final r in m.refs)
+                              _RefChip(
+                                raw: r,
+                                locale: locale,
+                                scheme: scheme,
+                                onTap: (widget.onTapRef == null ||
+                                        firstResolvableReference(r) == null)
+                                    ? null
+                                    : () {
+                                        Navigator.of(ctx).pop();
+                                        widget.onTapRef!(r);
+                                      },
+                              ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ── Legend + scope ──────────────────────────────────────────────
 
   Widget _legend(BuildContext context, ColorScheme scheme) {
@@ -809,16 +1413,129 @@ class _ChronologyChartState extends State<ChronologyChart> {
             color: scheme.onSurface.withValues(alpha: 0.65),
           ),
         ),
+        const SizedBox(height: 14),
+        // The computed/placed key. It is a SECOND statement of a
+        // distinction the chart already makes in the drawing — solid
+        // vs hollow tick, plain vs hatched ground, and the labelled
+        // rule where one ends — never the only place it is made. A
+        // legend that is the only separator between sourced data and
+        // inference is how a chart like this gets quoted wrongly.
+        Text(
+          _s('chronologyBasis', 'Where this year comes from'),
+          style: const TextStyle(
+              fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 0.4),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _BasisGlyph(computed: true, scheme: scheme),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _s('chronologyComputedKey',
+                    'Computed from ages Scripture states'),
+                style: const TextStyle(fontSize: 12, height: 1.4),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _BasisGlyph(computed: false, scheme: scheme),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _s('chronologyPlacedKey',
+                    'Placed event — dated by scholarship, not counted'),
+                style: const TextStyle(fontSize: 12, height: 1.4),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // The boundary rule on the chart carries this same sentence,
+        // but it is PAINTED, which means a screen reader never sees it.
+        // Repeating it as real text is the accessible copy of a mark
+        // the drawing makes.
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.linear_scale_rounded,
+                size: 14, color: scheme.onSurface.withValues(alpha: 0.7)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${_s('chronologyComputedEnds', 'Genesis 5 & 11 ages end '
+                    'here')} · '
+                '${formatChronologyYear(widget.data.computedEndAm, widget.data.activeScheme, widget.locale)}',
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.4,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface.withValues(alpha: 0.85),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          widget.data.localizedComputedNote(widget.locale),
+          style: TextStyle(
+            fontSize: 11.5,
+            height: 1.6,
+            color: scheme.onSurface.withValues(alpha: 0.7),
+          ),
+        ),
+        if (widget.data.contested != null) ...[
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: 0.8),
+                width: 0.8,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _s('chronologyContestedLabel',
+                      'The two scales disagree here'),
+                  style: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.data.contested!.localizedNote(widget.locale),
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    height: 1.6,
+                    color: scheme.onSurface.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
 
   Widget _scopeNote(ColorScheme scheme) {
+    final span = _s('chronologySpanNote', '').replaceAll(
+        '{years}', '${widget.data.spanEndAm - widget.data.spanStartAm}');
     return Text(
-      _s('chronologyScopeNote',
-          'First pass: Genesis 5 and 11 only — Adam to Abraham, the span '
-              'where Scripture states the ages these years are computed '
-              'from.'),
+      '$span '
+      '${_s('chronologyScopeNote', 'The bars cover Genesis 5 and 11 only '
+          '— Adam to Abraham, the span where Scripture states the ages '
+          'these years are computed from.')}',
       style: TextStyle(
         fontSize: 11.5,
         height: 1.6,
@@ -827,6 +1544,64 @@ class _ChronologyChartState extends State<ChronologyChart> {
       ),
     );
   }
+}
+
+/// The one glyph that separates a counted year from a placed one:
+/// filled diamond vs hollow circle. Shape and fill, never hue — the
+/// chart already spends colour on the two lines of descent and the
+/// eight era bands, and a third meaning carried by hue alone would
+/// vanish in greyscale and for a colour-blind reader.
+class _BasisGlyph extends StatelessWidget {
+  final bool computed;
+  final ColorScheme scheme;
+  const _BasisGlyph({required this.computed, required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 14,
+      height: 14,
+      child: CustomPaint(
+        painter: _BasisGlyphPainter(
+          computed: computed,
+          color: scheme.onSurface.withValues(alpha: 0.8),
+        ),
+      ),
+    );
+  }
+}
+
+class _BasisGlyphPainter extends CustomPainter {
+  final bool computed;
+  final Color color;
+  const _BasisGlyphPainter({required this.computed, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = Offset(size.width / 2, size.height / 2);
+    if (computed) {
+      final p = Path()
+        ..moveTo(c.dx, c.dy - 5)
+        ..lineTo(c.dx + 4.2, c.dy)
+        ..lineTo(c.dx, c.dy + 5)
+        ..lineTo(c.dx - 4.2, c.dy)
+        ..close();
+      canvas.drawPath(p, Paint()..color = color);
+    } else {
+      canvas.drawCircle(
+        c,
+        4.2,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.4,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BasisGlyphPainter old) =>
+      old.computed != computed || old.color != color;
 }
 
 /// Lighten a tuned-for-light-surfaces palette colour for the dark theme,
@@ -839,63 +1614,436 @@ Color _readable(Brightness brightness, Color base) {
   return base;
 }
 
-/// Vertical century gridlines behind the lanes, plus a faint tick for
-/// every dated marker. Painted rather than laid out because there are
-/// dozens of them and none of them is interactive.
-class _GridPainter extends CustomPainter {
+/// Diagonal hatching. The chart's texture for "this is not counted
+/// data" — texture rather than a tint, so it survives greyscale and
+/// does not compete with the two descent colours or the eight era
+/// colours already spending hue.
+void _hatch(
+  Canvas canvas,
+  Rect rect,
+  Color color, {
+  double spacing = 7,
+  double slope = 1,
+  double stroke = 0.7,
+}) {
+  if (rect.width <= 0 || rect.height <= 0) return;
+  canvas.save();
+  canvas.clipRect(rect);
+  final p = Paint()
+    ..color = color
+    ..strokeWidth = stroke;
+  final reach = rect.width + rect.height;
+  for (var i = -rect.height; i < reach; i += spacing) {
+    final x0 = rect.left + i;
+    // slope > 0 leans one way ("\"), slope < 0 the other ("/"), so the
+    // two hatches can be laid over each other and still be told apart.
+    canvas.drawLine(
+      Offset(x0, slope > 0 ? rect.top : rect.bottom),
+      Offset(x0 + rect.height, slope > 0 ? rect.bottom : rect.top),
+      p,
+    );
+  }
+  canvas.restore();
+}
+
+void _paintLabel(
+  Canvas canvas,
+  String text,
+  Offset at,
+  TextStyle style, {
+  double rotation = 0,
+  TextDirection direction = TextDirection.ltr,
+}) {
+  final tp = TextPainter(
+    text: TextSpan(text: text, style: style),
+    maxLines: 1,
+    textDirection: direction,
+  )..layout();
+  canvas.save();
+  canvas.translate(at.dx, at.dy);
+  if (rotation != 0) canvas.rotate(rotation);
+  tp.paint(canvas, Offset.zero);
+  canvas.restore();
+}
+
+/// Everything behind the lanes: era bands, the computed ground, the
+/// fade and hatch where it stops, the contested band, and the gridlines.
+///
+/// The fade is deliberate reuse. `_lane` already fades a bar out at the
+/// tail when Scripture gives no death year — that is this chart's
+/// existing word for "we do not know". So the ground fades out at the
+/// end of the computed stretch in exactly the same way, and what lies
+/// beyond is hatched rather than blank: there IS something there
+/// (events), it is simply not counted from stated ages.
+class _GroundPainter extends CustomPainter {
   final ChronologyData data;
   final double rulerHeight;
-  final Color gridColor;
-  final Color markerColor;
+  final double eraStripHeight;
+  final double tickLaneHeight;
+  final int gridStep;
+  final Brightness brightness;
+  final ColorScheme scheme;
+  final String boundaryLabel;
+  final String contestedLabel;
 
-  const _GridPainter({
+  const _GroundPainter({
     required this.data,
     required this.rulerHeight,
-    required this.gridColor,
-    required this.markerColor,
+    required this.eraStripHeight,
+    required this.tickLaneHeight,
+    required this.gridStep,
+    required this.brightness,
+    required this.scheme,
+    this.boundaryLabel = '',
+    this.contestedLabel = '',
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final span = (data.spanEndAm - data.spanStartAm).abs();
-    if (span == 0) return;
+    if (span == 0 || size.width <= 0) return;
     double x(int am) => (am - data.spanStartAm) / span * size.width;
 
+    final stripTop = rulerHeight;
+    final lanesTop = rulerHeight + eraStripHeight;
+
+    // Era banding — the standard orienting device for a long
+    // chronology, and eight eras this app already has rather than
+    // decoration invented for the occasion.
+    for (final e in data.eras) {
+      final rect = Rect.fromLTRB(x(e.startAm), lanesTop, x(e.endAm),
+          size.height - tickLaneHeight);
+      final c = _readable(brightness, Color(e.colorValue));
+      canvas.drawRect(rect, Paint()..color = c.withValues(alpha: 0.055));
+      canvas.drawRect(
+        Rect.fromLTRB(
+            x(e.startAm), stripTop, x(e.endAm), stripTop + eraStripHeight),
+        Paint()..color = c.withValues(alpha: 0.22),
+      );
+      canvas.drawLine(
+        Offset(x(e.startAm), stripTop),
+        Offset(x(e.startAm), size.height - tickLaneHeight),
+        Paint()
+          ..color = c.withValues(alpha: 0.45)
+          ..strokeWidth = 0.8,
+      );
+    }
+
+    // The computed ground, then the fade, then the hatch.
+    final groundTop = lanesTop;
+    final groundBottom = size.height;
+    final endX = x(data.computedEndAm);
+    final ground = scheme.onSurface.withValues(alpha: 0.05);
+    canvas.drawRect(
+      Rect.fromLTRB(x(data.spanStartAm), groundTop, endX, groundBottom),
+      Paint()..color = ground,
+    );
+    final fadeWidth =
+        ((size.width - endX) * 0.2).clamp(0.0, 70.0).toDouble();
+    if (fadeWidth > 0) {
+      final fadeRect =
+          Rect.fromLTRB(endX, groundTop, endX + fadeWidth, groundBottom);
+      canvas.drawRect(
+        fadeRect,
+        Paint()
+          ..shader = LinearGradient(
+            colors: [ground, ground.withValues(alpha: 0)],
+          ).createShader(fadeRect),
+      );
+    }
+    _hatch(
+      canvas,
+      Rect.fromLTRB(endX, groundTop, size.width, groundBottom),
+      scheme.onSurface.withValues(alpha: 0.10),
+      spacing: 8,
+    );
+
+    // The contested band: the same hatch, crossed. Two textures on top
+    // of each other read as "both things are true here" — there IS a
+    // computed count under it AND placed events over it, and they do
+    // not agree.
+    final contested = data.contested;
+    if (contested != null) {
+      final rect = Rect.fromLTRB(
+          x(contested.startAm), groundTop, x(contested.endAm), groundBottom);
+      // Heavier on the dark theme: `scheme.error` there is a pale red
+      // on a near-black ground, and 0.16 alpha put the band below the
+      // threshold where a reader notices it at all.
+      final dark = brightness == Brightness.dark;
+      _hatch(canvas, rect,
+          scheme.error.withValues(alpha: dark ? 0.30 : 0.16),
+          spacing: 6, slope: -1);
+      final edge = Paint()
+        ..color = scheme.error.withValues(alpha: dark ? 0.6 : 0.4)
+        ..strokeWidth = 1;
+      canvas.drawLine(
+          Offset(rect.left, groundTop), Offset(rect.left, groundBottom), edge);
+      if (contestedLabel.isNotEmpty && rect.width > 130) {
+        _paintLabel(
+          canvas,
+          contestedLabel,
+          Offset(rect.left + 4, groundTop + 3),
+          TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+            color: scheme.error.withValues(alpha: 0.9),
+          ),
+        );
+      }
+    }
+
+    // Gridlines last of the fills, so they read over the bands.
     final grid = Paint()
-      ..color = gridColor
+      ..color = scheme.outlineVariant.withValues(alpha: 0.5)
       ..strokeWidth = 0.5;
-    for (var am = data.spanStartAm; am <= data.spanEndAm; am += 500) {
+    for (var am = data.spanStartAm; am <= data.spanEndAm; am += gridStep) {
       final dx = x(am);
       canvas.drawLine(Offset(dx, 0), Offset(dx, size.height), grid);
     }
 
-    final mark = Paint()
-      ..color = markerColor
-      ..strokeWidth = 1;
-    for (final m in data.markers) {
-      final dx = x(m.am);
-      canvas.drawLine(
-          Offset(dx, rulerHeight - 6), Offset(dx, size.height), mark);
+    // The boundary itself — named on the chart, not only in the legend.
+    canvas.drawLine(
+      Offset(endX, rulerHeight - 4),
+      Offset(endX, size.height),
+      Paint()
+        ..color = scheme.onSurface.withValues(alpha: 0.55)
+        ..strokeWidth = 1.4,
+    );
+    if (boundaryLabel.isNotEmpty && size.height - lanesTop > 120) {
+      // Rotated, hard against the rule: a horizontal label here would
+      // sit across the lifelines and collide with the era names.
+      _paintLabel(
+        canvas,
+        boundaryLabel,
+        Offset(endX - 3, lanesTop + 6),
+        TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          color: scheme.onSurface.withValues(alpha: 0.7),
+        ),
+        rotation: 1.5707963,
+      );
     }
   }
 
   @override
-  bool shouldRepaint(_GridPainter old) =>
+  bool shouldRepaint(_GroundPainter old) =>
       old.data != data ||
-      old.gridColor != gridColor ||
-      old.markerColor != markerColor;
+      old.gridStep != gridStep ||
+      old.brightness != brightness ||
+      old.scheme != scheme ||
+      old.boundaryLabel != boundaryLabel ||
+      old.contestedLabel != contestedLabel;
 }
 
-/// A small selectable pill — used for the marker shortcuts.
+/// The event lane's marks. Filled diamond = counted from stated ages;
+/// hollow circle = placed. Shape and fill, not hue: the tick is also
+/// coloured by its era, and that colour must stay free to mean the era.
+class _TickPainter extends CustomPainter {
+  final ChronologyData data;
+  final Brightness brightness;
+  final Color fallback;
+
+  const _TickPainter({
+    required this.data,
+    required this.brightness,
+    required this.fallback,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final span = (data.spanEndAm - data.spanStartAm).abs();
+    if (span == 0 || size.width <= 0) return;
+    double x(int am) => (am - data.spanStartAm) / span * size.width;
+
+    for (final t in data.allTicks) {
+      final era = data.eraById(t.era);
+      final base = era == null
+          ? fallback
+          : _readable(brightness, Color(era.colorValue));
+      final dx = x(t.am);
+      if (t.isComputed) {
+        canvas.drawLine(
+          Offset(dx, 0),
+          Offset(dx, 11),
+          Paint()
+            ..color = base.withValues(alpha: 0.95)
+            ..strokeWidth = 1.4,
+        );
+        final p = Path()
+          ..moveTo(dx, 1)
+          ..lineTo(dx + 3.4, 5.5)
+          ..lineTo(dx, 10)
+          ..lineTo(dx - 3.4, 5.5)
+          ..close();
+        canvas.drawPath(p, Paint()..color = base.withValues(alpha: 0.95));
+      } else {
+        canvas.drawLine(
+          Offset(dx, 2),
+          Offset(dx, 11),
+          Paint()
+            ..color = base.withValues(alpha: 0.5)
+            ..strokeWidth = 0.8,
+        );
+        canvas.drawCircle(
+          Offset(dx, 5.5),
+          2.8,
+          Paint()
+            ..color = base.withValues(alpha: 0.9)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.1,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_TickPainter old) =>
+      old.data != data ||
+      old.brightness != brightness ||
+      old.fallback != fallback;
+}
+
+/// The overview strip: the whole 4,100-year span at 1× with the plot's
+/// current viewport outlined on it. Same vocabulary as the plot — era
+/// bands, computed ground, hatch, ticks, cursor — because a second,
+/// competing visual language for the same data is how a reader loses
+/// track of which picture they are looking at.
+class _OverviewPainter extends CustomPainter {
+  final ChronologyData data;
+  final int cursorAm;
+  final double? viewStartFrac;
+  final double? viewEndFrac;
+  final Brightness brightness;
+  final ColorScheme scheme;
+
+  const _OverviewPainter({
+    required this.data,
+    required this.cursorAm,
+    required this.viewStartFrac,
+    required this.viewEndFrac,
+    required this.brightness,
+    required this.scheme,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final span = (data.spanEndAm - data.spanStartAm).abs();
+    if (span == 0 || size.width <= 0) return;
+    double x(int am) => (am - data.spanStartAm) / span * size.width;
+
+    const bandBottom = 13.0;
+    final ground = Rect.fromLTRB(0, bandBottom, size.width, size.height);
+
+    for (final e in data.eras) {
+      final c = _readable(brightness, Color(e.colorValue));
+      canvas.drawRect(
+        Rect.fromLTRB(x(e.startAm), 0, x(e.endAm), bandBottom),
+        Paint()..color = c.withValues(alpha: 0.55),
+      );
+    }
+
+    final endX = x(data.computedEndAm);
+    canvas.drawRect(
+      Rect.fromLTRB(0, bandBottom, endX, size.height),
+      Paint()..color = scheme.onSurface.withValues(alpha: 0.07),
+    );
+    _hatch(
+      canvas,
+      Rect.fromLTRB(endX, bandBottom, size.width, size.height),
+      scheme.onSurface.withValues(alpha: 0.13),
+      spacing: 6,
+    );
+    final contested = data.contested;
+    if (contested != null) {
+      _hatch(
+        canvas,
+        Rect.fromLTRB(
+            x(contested.startAm), bandBottom, x(contested.endAm), size.height),
+        scheme.error.withValues(alpha: 0.2),
+        spacing: 5,
+        slope: -1,
+      );
+    }
+    canvas.drawLine(
+      Offset(endX, 0),
+      Offset(endX, size.height),
+      Paint()
+        ..color = scheme.onSurface.withValues(alpha: 0.6)
+        ..strokeWidth = 1.2,
+    );
+
+    for (final t in data.allTicks) {
+      final dx = x(t.am);
+      canvas.drawLine(
+        Offset(dx, bandBottom + 3),
+        Offset(dx, size.height - 3),
+        Paint()
+          ..color = scheme.onSurface
+              .withValues(alpha: t.isComputed ? 0.75 : 0.32)
+          ..strokeWidth = t.isComputed ? 1.4 : 0.8,
+      );
+    }
+
+    canvas.drawRect(
+      ground.deflate(0.25),
+      Paint()
+        ..color = scheme.outlineVariant
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5,
+    );
+
+    // Where the plot below is currently looking.
+    if (viewStartFrac != null && viewEndFrac != null) {
+      final l = (viewStartFrac! * size.width).clamp(0.0, size.width);
+      final r = (viewEndFrac! * size.width).clamp(0.0, size.width);
+      final rect = Rect.fromLTRB(l, 0, r < l + 5 ? l + 5 : r, size.height);
+      canvas.drawRect(
+          rect, Paint()..color = scheme.primary.withValues(alpha: 0.10));
+      canvas.drawRect(
+        rect.deflate(0.75),
+        Paint()
+          ..color = scheme.primary.withValues(alpha: 0.85)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
+    }
+
+    final cx = x(cursorAm);
+    canvas.drawLine(
+      Offset(cx, 0),
+      Offset(cx, size.height),
+      Paint()
+        ..color = scheme.primary.withValues(alpha: 0.9)
+        ..strokeWidth = 1.5,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OverviewPainter old) =>
+      old.data != data ||
+      old.cursorAm != cursorAm ||
+      old.viewStartFrac != viewStartFrac ||
+      old.viewEndFrac != viewEndFrac ||
+      old.brightness != brightness ||
+      old.scheme != scheme;
+}
+
+/// A small selectable pill — used for the marker shortcuts. Carries the
+/// same filled/hollow glyph as the tick it jumps to, so the chip says
+/// which layer it belongs to without needing a colour to do it.
 class _Chip extends StatelessWidget {
   final String label;
   final bool selected;
+  final bool computed;
   final ColorScheme scheme;
   final VoidCallback onTap;
 
   const _Chip({
+    super.key,
     required this.label,
     required this.selected,
+    required this.computed,
     required this.scheme,
     required this.onTap,
   });
@@ -911,14 +2059,27 @@ class _Chip extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 11.5,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: scheme.onSurface.withValues(alpha: 0.9),
-            ),
+          padding: const EdgeInsets.fromLTRB(7, 5, 10, 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _BasisGlyph(computed: computed, scheme: scheme),
+              const SizedBox(width: 5),
+              // Flexible, not a bare Text: the longest chip label —
+              // "The Flood (Noah's 600th year)" — is wider than a
+              // 402 pt phone's content column once the glyph is in
+              // front of it, and must wrap rather than overflow.
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: scheme.onSurface.withValues(alpha: 0.9),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

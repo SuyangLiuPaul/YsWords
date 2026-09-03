@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
-"""Build `assets/bible_chronology.json` — the lifeline layer behind the
+"""Build `assets/bible_chronology.json` — the data behind the
 interactive chronology chart on the Bible Timeline page.
+
+Two layers, one axis:
+
+  * LIFELINES, computed from the Masoretic begetting ages of Genesis 5
+    and 11 (Adam → Abraham). Every year traces to a verse.
+  * EVENTS, read from `assets/bible_timeline.json` and PLACED on the
+    same Anno Mundi axis through the 4004 BC anchor, so the chart spans
+    Creation → Revelation exactly as the event list on the same page
+    does. Nothing is re-dated on the way across; where both files date
+    the same event the computed marker governs and the timeline's own
+    figure is carried beside it (see DUPLICATES).
 
 Why a separate asset from `assets/family_tree.json`:
 
@@ -31,7 +42,91 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FAMILY = os.path.join(ROOT, "assets", "family_tree.json")
+TIMELINE = os.path.join(ROOT, "assets", "bible_timeline.json")
 OUT = os.path.join(ROOT, "assets", "bible_chronology.json")
+
+# ── The AM axis, and how a BC/AD year lands on it ───────────────────
+#
+# `assets/bible_timeline.json` dates its events in signed BC/AD years.
+# The chart's axis is Anno Mundi. Converting between them needs the
+# anchor and nothing else, and the anchor is `creationBc` on the active
+# scheme — 4004, Ussher. There is NO year zero: 1 BC is followed by
+# AD 1, so the two branches below are off by one from each other on
+# purpose. Checked at both ends in `test/bible_chronology_test.dart`:
+# AD 1 is AM 4004 and AD 95 (Revelation) is AM 4098.
+CREATION_BC = 4004
+
+
+def year_to_am(year):
+    if year == 0:
+        raise ValueError("there is no year zero")
+    if year < 0:
+        return CREATION_BC + year          # -4000 BC → AM 4
+    return CREATION_BC - 1 + year          # AD 1 → AM 4004
+
+
+# ── Where the two files describe the SAME event ─────────────────────
+#
+# Both assets date Creation, Enoch, the Flood, Abram's call and Isaac's
+# birth. Showing each of those twice would be a bug; showing them at two
+# different years would be worse. So one governs, and it is the
+# chronology marker — its year is COMPUTED from the ages Genesis 5 and
+# 11 state, whereas the timeline's is a placement. The timeline's figure
+# is not thrown away: it is carried on the marker as `placedYear` and
+# surfaced in the marker's detail sheet, so a reader sees the size of
+# the disagreement rather than being handed the winner silently.
+#
+# Measured deltas (timeline year → chronology marker, in years):
+#   creation      -4000 vs 4004 BC   →  the timeline rounds; 4 years
+#   enoch_walks   -3000 vs 3017 BC   →  the timeline rounds; 17 years
+#   flood         -2348 vs 2348 BC   →  exact agreement, 0 years
+#   abram_called  -2091 vs 1921 BC   →  170 years — a real scheme clash
+#   isaac_born    -2066 vs 1896 BC   →  170 years — the same clash
+#
+# The last two are the late-date scheme `assets/family_tree.json` uses
+# for the patriarchs, already documented there as deliberately
+# unreconciled. It is not fudged here either: see CONTESTED below.
+DUPLICATES = {
+    # timeline event id : chronology marker id it duplicates
+    "creation": "creation",
+    "enoch_walks": "enoch_taken",
+    "flood": "flood",
+    "abram_called": "abram_call",
+    "isaac_born": "isaac_born",
+}
+
+# Placed events that earn a "Jump to" chip beside the computed markers.
+# Kept short on purpose: the chips wrap, and a phone cannot carry 98 of
+# them. Everything else is reachable by tapping its tick.
+PINNED_EVENTS = [
+    "exodus",
+    "temple_built",
+    "judah_falls",
+    "jesus_born",
+    "crucifixion",
+    "john_patmos",
+]
+
+# Era palette and labels. These MIRROR `_eraColor` / `_eraLabel` in
+# `lib/pages/bible_timeline_page.dart` so the two views of the one page
+# band the same centuries the same colour; the test file asserts every
+# hex below still appears in that source.
+ERA_STYLE = {
+    "antediluvian": ("#6B5E3F", "Antediluvian (Creation → Flood)",
+                     "洪水之前（创世 → 洪水）", "洪水之前（創世 → 洪水）"),
+    "patriarchs": ("#8C5A2F", "Patriarchs (Abraham → Joseph)",
+                   "列祖时代（亚伯拉罕 → 约瑟）", "列祖時代（亞伯拉罕 → 約瑟）"),
+    "mosaic": ("#B42E2E", "Exodus & Wilderness",
+               "出埃及与旷野", "出埃及與曠野"),
+    "conquest": ("#2F7C5C", "Conquest & Judges",
+                 "征服与士师", "征服與士師"),
+    "monarchy": ("#2A4FB0", "United & Divided Monarchy",
+                 "联合与分裂王国", "聯合與分裂王國"),
+    "exile": ("#5F3F86", "Exile & Return", "被掳与回归", "被擄與回歸"),
+    "intertestamental": ("#505590", "Inter-Testamental Period",
+                         "两约之间", "兩約之間"),
+    "nt": ("#B8860B", "New Testament", "新约", "新約"),
+}
 
 # ── The Masoretic chronology of Genesis 5 and 11 ────────────────────
 #
@@ -230,11 +325,69 @@ UNDRAWN = {
 }
 
 
-def marker(mid, am, refs, en, hans, hant):
+def marker(mid, am, era, refs, en, hans, hant):
     return {
-        "id": mid, "am": am, "refs": refs,
+        "id": mid, "am": am, "era": era, "refs": refs,
+        # Every marker's year comes out of the Genesis 5/11 arithmetic
+        # above. The flag is stored rather than inferred so the chart
+        # never has to guess which layer a tick belongs to.
+        "amBasis": "computed",
+        "pin": True,
         "titleEn": en, "titleZhHans": hans, "titleZhHant": hant,
     }
+
+
+# Trilingual copy for the two things the extended span forces the chart
+# to say out loud. Kept in the generator, next to the arithmetic that
+# makes them true, rather than in the widget.
+COMPUTED_NOTE = {
+    "en": (
+        "Left of this line every year is COMPUTED: it is the sum of the "
+        "begetting ages Genesis 5 and 11 state, and each bar carries the "
+        "arithmetic. Right of it Scripture stops giving a continuous "
+        "chain of ages, so there are no lifelines to draw — only events, "
+        "PLACED on the BC/AD years of assets/bible_timeline.json. The "
+        "ground fades out there for the same reason a bar with no stated "
+        "death year fades out: the chart is saying it does not know."
+    ),
+    "zh-Hans": (
+        "此线以左，每一个年份都是「推算」出来的：把创世记 5、11 章所记的生子"
+        "年龄相加而得，每根横条都附着算式。此线以右，经文不再给出连续的年岁"
+        "链条，因此没有生平横条可画——只有事件，按 assets/bible_timeline.json "
+        "的公元前后年份「定位」。那一段的底色会淡出，理由和没有记载卒年的横条"
+        "淡出是同一个：本图在说它不知道。"
+    ),
+    "zh-Hant": (
+        "此線以左，每一個年份都是「推算」出來的：把創世記 5、11 章所記的生子"
+        "年齡相加而得，每根橫條都附著算式。此線以右，經文不再給出連續的年歲"
+        "鏈條，因此沒有生平橫條可畫——只有事件，按 assets/bible_timeline.json "
+        "的公元前後年份「定位」。那一段的底色會淡出，理由和沒有記載卒年的橫條"
+        "淡出是同一個：本圖在說它不知道。"
+    ),
+}
+
+CONTESTED_NOTE = {
+    "en": (
+        "Inside this band the two scales disagree by about 170 years. "
+        "The lifelines put Abram's birth at AM 2008 (1996 BC on this "
+        "anchor); assets/bible_timeline.json places his call at 2091 BC "
+        "on the late-date scheme, which is earlier than the lifelines "
+        "have him born. Both are shown where their own source puts "
+        "them. Neither has been shifted to make the picture tidy."
+    ),
+    "zh-Hans": (
+        "在这一带，两套刻度相差约 170 年。生平横条把亚伯兰的出生定在创世纪元 "
+        "2008 年（本锚点下为公元前 1996 年）；assets/bible_timeline.json 依晚期"
+        "定年方案把他蒙召定在公元前 2091 年，比横条所记的出生还早。两者都按各自"
+        "来源的位置照实画出，没有为了图面好看而挪动任何一方。"
+    ),
+    "zh-Hant": (
+        "在這一帶，兩套刻度相差約 170 年。生平橫條把亞伯蘭的出生定在創世紀元 "
+        "2008 年（本錨點下為公元前 1996 年）；assets/bible_timeline.json 依晚期"
+        "定年方案把他蒙召定在公元前 2091 年，比橫條所記的出生還早。兩者都按各自"
+        "來源的位置照實畫出，沒有為了圖面好看而挪動任何一方。"
+    ),
+}
 
 
 def build():
@@ -338,26 +491,28 @@ def build():
 
     flood = birth_of["noah"] + 600
     markers = [
-        marker("creation", 0, ["Genesis 1:1", "Genesis 1:31"],
+        marker("creation", 0, "antediluvian",
+               ["Genesis 1:1", "Genesis 1:31"],
                "Creation", "创造", "創造"),
-        marker("enoch_taken", birth_of["enoch"] + 365,
+        marker("enoch_taken", birth_of["enoch"] + 365, "antediluvian",
                ["Genesis 5:24", "Hebrews 11:5"],
                "Enoch is taken", "以诺被接去", "以諾被接去"),
-        marker("flood", flood, ["Genesis 7:6", "Genesis 7:11"],
+        marker("flood", flood, "antediluvian",
+               ["Genesis 7:6", "Genesis 7:11"],
                "The Flood (Noah's 600th year)", "洪水（挪亚 600 岁）",
                "洪水（挪亞 600 歲）"),
-        marker("abram_born", birth_of["abraham"],
+        marker("abram_born", birth_of["abraham"], "patriarchs",
                ["Genesis 11:26", "Genesis 11:32", "Acts 7:4"],
                "Abram is born", "亚伯兰出生", "亞伯蘭出生"),
-        marker("abram_call", birth_of["abraham"] + 75,
+        marker("abram_call", birth_of["abraham"] + 75, "patriarchs",
                ["Genesis 12:1-4"],
                "Abram leaves Haran, aged 75", "亚伯兰 75 岁离开哈兰",
                "亞伯蘭 75 歲離開哈蘭"),
-        marker("isaac_born", birth_of["abraham"] + 100,
+        marker("isaac_born", birth_of["abraham"] + 100, "patriarchs",
                ["Genesis 21:5"],
                "Isaac is born, Abraham aged 100",
                "以撒出生，亚伯拉罕 100 岁", "以撒出生，亞伯拉罕 100 歲"),
-        marker("abraham_dies", birth_of["abraham"] + 175,
+        marker("abraham_dies", birth_of["abraham"] + 175, "patriarchs",
                ["Genesis 25:7", "Genesis 25:8"],
                "Abraham dies, aged 175", "亚伯拉罕去世，享年 175 岁",
                "亞伯拉罕去世，享年 175 歲"),
@@ -371,43 +526,175 @@ def build():
             "Methuselah dies AM %s but the Flood is AM %s"
             % (meth["deathAm"], flood))
 
+    # ── The placed-event layer ──────────────────────────────────────
+    #
+    # The complaint this pass answers: the chart stopped at Abraham
+    # while the event list on the SAME page ran to Revelation, so
+    # scrolling right never arrived anywhere. Scripture gives no
+    # continuous begetting ages past Abraham, so no lifelines are
+    # invented — what extends is the span and the events.
+    timeline = json.load(open(TIMELINE, encoding="utf-8"))
+    by_marker = {m["id"]: m for m in markers}
+    events = []
+    seen_ids = set()
+    for e in timeline["events"]:
+        eid = e["id"]
+        if eid in seen_ids:
+            problems.append("duplicate timeline event id %s" % eid)
+            continue
+        seen_ids.add(eid)
+        am = year_to_am(e["year"])
+        dup = DUPLICATES.get(eid)
+        if dup is not None:
+            m = by_marker.get(dup)
+            if m is None:
+                problems.append(
+                    "%s claims to duplicate unknown marker %s" % (eid, dup))
+                continue
+            # The computed marker governs; the timeline's own figure is
+            # carried alongside so the gap is visible, not hidden.
+            m["placedEventId"] = eid
+            m["placedYear"] = e["year"]
+            m["placedDeltaYears"] = am - m["am"]
+            continue
+        if e["era"] not in ERA_STYLE:
+            problems.append("%s is in unknown era %s" % (eid, e["era"]))
+            continue
+        events.append({
+            "id": eid,
+            "am": am,
+            "year": e["year"],
+            "era": e["era"],
+            "amBasis": "placed",
+            "pin": eid in PINNED_EVENTS,
+            "refs": list(e.get("refs") or []),
+            "titleEn": e["titleEn"],
+            "titleZhHans": e["titleZhHans"],
+            "titleZhHant": e["titleZhHant"],
+        })
+    events.sort(key=lambda x: (x["am"], x["id"]))
+
+    for pid in PINNED_EVENTS:
+        if not any(x["id"] == pid for x in events):
+            problems.append("pinned event %s is not in the timeline" % pid)
+
     if problems:
         for p in problems:
             sys.stderr.write("FAIL: %s\n" % p)
         raise SystemExit(1)
 
-    span_end = max(x["deathAm"] for x in lifelines if x["deathAm"] is not None)
+    # Where the computed chain runs out. NOT Abraham's death — Eber
+    # outlives him on the Masoretic count — so it is read off the bars
+    # rather than assumed.
+    computed_end = max(
+        x["deathAm"] for x in lifelines if x["deathAm"] is not None)
+    span_end = max([computed_end] + [x["am"] for x in events])
+
+    # Era bands, for background orientation across 4,100 years. Each
+    # band starts at its era's first dated thing and runs to the next
+    # era's, so the bands tile the axis without gaps. Two eras genuinely
+    # overlap in the sources (Moses dies and Jordan is crossed in the
+    # same year), so a band is an ORIENTATION device — the precise claim
+    # is the tick, which carries its own era colour.
+    era_order = []
+    for e in timeline["events"]:
+        if e["era"] not in era_order:
+            era_order.append(e["era"])
+    first_am = {}
+    for x in events + markers:
+        era = x["era"]
+        if era not in first_am or x["am"] < first_am[era]:
+            first_am[era] = x["am"]
+    eras = []
+    for i, era in enumerate(era_order):
+        style = ERA_STYLE[era]
+        start = 0 if i == 0 else first_am[era]
+        end = first_am[era_order[i + 1]] if i + 1 < len(era_order) else span_end
+        eras.append({
+            "id": era,
+            "startAm": start,
+            "endAm": end,
+            "colorHex": style[0],
+            "nameEn": style[1],
+            "nameZhHans": style[2],
+            "nameZhHant": style[3],
+        })
+
+    # The stretch where the computed count and the placed events are
+    # both present and provably disagree.
+    #
+    # The test for "provably" is ordering, not a hand-picked list: an
+    # event placed EARLIER than the first computed event of its own era
+    # is in the wrong order however you read it — Ishmael cannot be born
+    # before Abram is. Those are exactly the patriarchal events dated on
+    # family_tree.json's late-date scheme, ~170 years adrift of the AM
+    # count. Nothing is moved to fix it; the band is drawn and named.
+    first_computed_in_era = {}
+    for m in markers:
+        era = m["era"]
+        if era not in first_computed_in_era or m["am"] < first_computed_in_era[era]:
+            first_computed_in_era[era] = m["am"]
+    misordered = [
+        x for x in events
+        if x["era"] in first_computed_in_era
+        and x["am"] < first_computed_in_era[x["era"]]
+    ]
+    contested = None
+    if misordered:
+        contested = {
+            "startAm": min(x["am"] for x in misordered),
+            "endAm": computed_end,
+            "eventCount": len(misordered),
+            "note": CONTESTED_NOTE,
+        }
+
     doc = {
         "_meta": {
-            "version": 1,
-            "generated": "2026-09-03",
+            "version": 2,
+            "generated": "2026-09-04",
             "generator": "tools/build_bible_chronology.py",
             "defaultScheme": "masoretic-ussher",
             "spanStartAm": 0,
             "spanEndAm": span_end,
+            # Left of this the years are computed from stated ages;
+            # right of it there is only the placed-event layer.
+            "computedEndAm": computed_end,
             "count": len(lifelines),
+            "eventCount": len(events),
             "description": (
-                "Lifeline layer for the interactive chronology chart. "
-                "Iteration 1 covers Genesis 5 and 11 — Adam to Abraham — "
-                "the span where Scripture states the ages the years are "
-                "computed from. Names come from assets/family_tree.json; "
-                "years are recomputed from the Masoretic begetting ages "
-                "and cross-checked against it. No data is taken from the "
-                "copyrighted reference sheet in docs/reference/."
+                "Two layers on one Anno Mundi axis. (1) LIFELINES — "
+                "Genesis 5 and 11, Adam to Abraham, the only span where "
+                "Scripture states a continuous chain of begetting ages; "
+                "names from assets/family_tree.json, years recomputed "
+                "from the Masoretic ages and cross-checked against it. "
+                "(2) EVENTS — the same 98 events the event list on this "
+                "page shows, from assets/bible_timeline.json, placed on "
+                "the AM axis by their stated BC/AD year through the "
+                "4004 BC anchor, so both views of the page span "
+                "Creation to Revelation. The two layers are drawn "
+                "differently and labelled, because a placed year is not "
+                "a computed one. No data is taken from the copyrighted "
+                "reference sheet in docs/reference/."
             ),
+            "computedNote": COMPUTED_NOTE,
             "undrawnLines": UNDRAWN,
         },
         "schemes": SCHEMES,
         "lines": LINES,
+        "eras": eras,
         "lifelines": lifelines,
         "markers": markers,
+        "events": events,
+        "contested": contested,
     }
 
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    print("wrote %s — %d lifelines, %d markers, span AM 0-%d"
-          % (OUT, len(lifelines), len(markers), span_end))
+    print("wrote %s — %d lifelines, %d computed markers, %d placed "
+          "events, span AM 0-%d (computed to AM %d)"
+          % (OUT, len(lifelines), len(markers), len(events), span_end,
+             computed_end))
 
 
 if __name__ == "__main__":

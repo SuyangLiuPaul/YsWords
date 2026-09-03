@@ -124,7 +124,8 @@ const OUT_DIR = resolvePath(flag('--out', 'build/web-verify'));
 const positional = argv.filter((a, i) =>
   !a.startsWith('--') && !VALUE_FLAGS.has(argv[i - 1]));
 const CMD = positional[0] || 'all';
-const KNOWN = ['all', 'routes', 'sermon', 'history', 'youtube', 'typography'];
+const KNOWN = ['all', 'routes', 'sermon', 'history', 'youtube', 'typography',
+               'chronology'];
 if (!KNOWN.includes(CMD)) {
   console.error(`Unknown subcommand ${JSON.stringify(CMD)}. One of: ${KNOWN.join(', ')}`);
   process.exit(2);
@@ -1311,6 +1312,128 @@ async function runTypography(origin) {
 
 // ── main ─────────────────────────────────────────────────────────────
 
+// ── case 5: the chronology chart's span ──────────────────────────────
+//
+// 2026-09-04. The chart stopped at Abraham (AM 2187) while the event
+// list on the SAME page ran to Revelation, so scrolling right never
+// arrived: 「chronology chart为什么不能一直往右边一直到今天」, three
+// times, then 「直接做到跟event一致就行了」 and 「我只要看到结果」.
+//
+// `flutter test` can assert the numbers and the widget tree; it cannot
+// show anybody the picture, and a golden here would render every glyph
+// as a box because the test font is not the app's. So this case drives
+// a real release bundle and captures what a reader actually sees, at
+// both ends of the axis, in light and dark, wide and narrow.
+async function runChronology(origin) {
+  console.log('\n════ 5. Chronology chart — does the axis reach Revelation? ════');
+  const shots = [];
+  const notes = {};
+
+  async function capture(label, { width, height, dark, steps }) {
+    const b = await Browser.launch(label);
+    const cdp = await b.openTab();
+    await b.metrics({ width, height, dsr: 2 });
+    if (dark) {
+      await cdp.send('Emulation.setEmulatedMedia', {
+        features: [{ name: 'prefers-color-scheme', value: 'dark' }],
+      });
+    }
+    try {
+      await navigate(cdp, origin + '/#/chronology');
+      await waitForFlutter(cdp, 40000);
+      await enableSemantics(cdp);
+      await sleep(2500);
+      const tour = await dismissOnboarding(cdp);
+      await sleep(1200);
+      const out = await steps({ cdp, label });
+      return { tour, ...out };
+    } finally {
+      b.close();
+    }
+  }
+
+  // (a) The default view: zoom 1, whole span on one screen. The left
+  //     end (Genesis 5/11 lifelines) and the right end (the placed
+  //     events out to Revelation) are both in this one frame, which is
+  //     the comparison asked for.
+  notes.overview = await capture('chrono-overview', {
+    width: 900, height: 1500,
+    steps: async ({ cdp }) => {
+      const text = await pageText(cdp);
+      shots.push(await screenshot(cdp, 'chronology-01-whole-span'));
+      return {
+        reachesRevelation: /公元 95 年|AD 95/.test(text),
+        namesBoundary: /岁数到此为止|ages end here/.test(text),
+        text: text.slice(0, 1200),
+      };
+    },
+  });
+
+  // (b) Zoomed in and scrolled to the RIGHT-HAND END. The chip for
+  //     John on Patmos now scrolls the plot as well as the cursor, so
+  //     this is the reader's own route to the far end rather than a
+  //     scripted scroll the UI does not offer.
+  notes.rightEnd = await capture('chrono-right', {
+    width: 900, height: 1500,
+    steps: async ({ cdp }) => {
+      for (let i = 0; i < 4; i++) {
+        await clickText(cdp, /^(Zoom in|放大)$/);
+        await sleep(400);
+      }
+      const hit = await clickText(cdp, /拔摩|Patmos/);
+      await sleep(1400);
+      shots.push(await screenshot(cdp, 'chronology-02-right-end-revelation'));
+      const text = await pageText(cdp);
+      return {
+        clickedPatmos: !!hit,
+        cursorAtRevelation: /公元 95 年|AD 95/.test(text),
+        saysNoLifelines: /此处无生平横条|no lifelines here/.test(text),
+      };
+    },
+  });
+
+  // (c) The LEFT end at the same zoom, for comparison: this is where
+  //     the lifelines are, and the ground under them is plain rather
+  //     than hatched.
+  notes.leftEnd = await capture('chrono-left', {
+    width: 900, height: 1500,
+    steps: async ({ cdp }) => {
+      for (let i = 0; i < 4; i++) {
+        await clickText(cdp, /^(Zoom in|放大)$/);
+        await sleep(400);
+      }
+      await clickText(cdp, /^(创造|Creation)$/);
+      await sleep(1400);
+      shots.push(await screenshot(cdp, 'chronology-03-left-end-genesis'));
+      return {};
+    },
+  });
+
+  // (d) Dark theme, and (e) a 402 pt phone — the width the team
+  //     measures typography at, and the one that bites.
+  notes.dark = await capture('chrono-dark', {
+    width: 900, height: 1500, dark: true,
+    steps: async ({ cdp }) => {
+      shots.push(await screenshot(cdp, 'chronology-04-dark'));
+      return {};
+    },
+  });
+  notes.narrow = await capture('chrono-narrow', {
+    width: 402, height: 1500,
+    steps: async ({ cdp }) => {
+      shots.push(await screenshot(cdp, 'chronology-05-narrow-402'));
+      return {};
+    },
+  });
+
+  for (const f of shots) console.log(`  captured ${f}`);
+  console.log(`  reaches Revelation on screen: ${notes.overview.reachesRevelation}`);
+  console.log(`  names the computed/placed boundary: ${notes.overview.namesBoundary}`);
+  console.log(`  jump-to-Patmos worked: ${notes.rightEnd.clickedPatmos}, ` +
+    `cursor lands on AD 95: ${notes.rightEnd.cursorAtRevelation}`);
+  return { shots, ...notes };
+}
+
 async function main() {
   const s = await stat(join(WEB_ROOT, 'index.html')).catch(() => null);
   if (!s) {
@@ -1338,6 +1461,9 @@ async function main() {
     }
     if (CMD === 'all' || CMD === 'youtube') out.youtube = await runYoutube(origin);
     if (CMD === 'all' || CMD === 'typography') out.typography = await runTypography(origin);
+    if (CMD === 'all' || CMD === 'chronology') {
+      out.chronology = await runChronology(origin);
+    }
   } finally {
     srv.close();
   }
