@@ -54,7 +54,15 @@ evidence against a convention. Both are the signature *of* the
 convention. Nothing in the assets could have corrected it — only this
 page could.
 
-## Open question for the publisher
+## Open questions for the publisher
+
+**All five are now drafted as `docs/和合本雅伟版-请教出版方.md`**, one
+document, written so a publisher can answer it without the codebase:
+使徒行傳 9:29 (below), 馬太福音 17:21 (apparatus or scripture),
+H3069/H3068 across ~60 places, 利未記 4:17's second 血, and the one
+convention question behind 代下 4:3 / 腓 1:29 / 約一 5:3 / 耶 33:1.
+**Not sent** — it is the user's to send. Change nothing in any of the
+five until an answer arrives, and record the answer here verbatim first.
 
 **使徒行傳 9:29** — 「奉主的名放膽傳道」. The word-tap corpus carries `主*`
 here; the reading assets never have, in any version back through 2025.
