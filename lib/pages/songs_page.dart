@@ -1317,31 +1317,32 @@ class _SongFilterSheetState extends State<_SongFilterSheet> {
                             'Theme',
                         scheme: scheme),
                     const SizedBox(height: 6),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                          maxHeight:
-                              MediaQuery.of(context).size.height * 0.22),
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            ChoiceChip(
-                              label: Text(allLabel),
-                              selected: _theme == 'all',
-                              onSelected: (_) =>
-                                  setState(() => _theme = 'all'),
-                            ),
-                            for (final t in widget.availableThemes)
-                              ChoiceChip(
-                                label: Text(localizedSongTheme(t, locale)),
-                                selected: _theme == t,
-                                onSelected: (_) =>
-                                    setState(() => _theme = t),
-                              ),
-                          ],
+                    // 2026-09-03: the theme chips used to sit in their
+                    // own `ConstrainedBox(0.22 h) → SingleChildScrollView`
+                    // INSIDE this sheet's outer scroll view. Two
+                    // scrollables in one axis: the sheet took every
+                    // drag, so the inner box never moved while its own
+                    // scrollbar rendered as though it would — the exact
+                    // defect fixed in the AI exegesis panel, which the
+                    // earlier sweep missed because it looked only for
+                    // fixed-POINT caps and this one is a fraction. The
+                    // chips flow into the sheet's one scroll view now.
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        ChoiceChip(
+                          label: Text(allLabel),
+                          selected: _theme == 'all',
+                          onSelected: (_) => setState(() => _theme = 'all'),
                         ),
-                      ),
+                        for (final t in widget.availableThemes)
+                          ChoiceChip(
+                            label: Text(localizedSongTheme(t, locale)),
+                            selected: _theme == t,
+                            onSelected: (_) => setState(() => _theme = t),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 14),
                     _SectionLabel(
@@ -1350,35 +1351,29 @@ class _SongFilterSheetState extends State<_SongFilterSheet> {
                             'Book',
                         scheme: scheme),
                     const SizedBox(height: 6),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                          maxHeight:
-                              MediaQuery.of(context).size.height * 0.30),
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            ChoiceChip(
-                              label: Text(allLabel),
-                              selected: _book == 'all',
-                              onSelected: (_) =>
-                                  setState(() => _book = 'all'),
-                            ),
-                            for (final b in standardBookOrder)
-                              _BookChip(
-                                book: b,
-                                locale: locale,
-                                hasSongs:
-                                    widget.availableBooks.contains(b),
-                                selected: _book == b,
-                                onTap: () => setState(() {
-                                  _book = _book == b ? 'all' : b;
-                                }),
-                              ),
-                          ],
+                    // Same as the theme section above: 66 book chips
+                    // used to be clipped into a 0.30-viewport box that
+                    // could not be dragged.
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        ChoiceChip(
+                          label: Text(allLabel),
+                          selected: _book == 'all',
+                          onSelected: (_) => setState(() => _book = 'all'),
                         ),
-                      ),
+                        for (final b in standardBookOrder)
+                          _BookChip(
+                            book: b,
+                            locale: locale,
+                            hasSongs: widget.availableBooks.contains(b),
+                            selected: _book == b,
+                            onTap: () => setState(() {
+                              _book = _book == b ? 'all' : b;
+                            }),
+                          ),
+                      ],
                     ),
                   ],
                 ),

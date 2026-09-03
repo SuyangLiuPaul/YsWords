@@ -56,8 +56,34 @@ class GlobalMiniPlayer extends StatelessWidget {
             // `prefer_const_constructors` hint put it back: that lint is
             // wrong for a widget whose entire purpose is to re-read
             // mutable state on every notification.
+            //
+            // ── Why TooltipVisibility(visible: false) ──────────────
+            //
+            // This strip is mounted by `MaterialApp.builder`, i.e.
+            // ABOVE the Navigator, so nothing in it has an `Overlay`
+            // ancestor — the app's only Overlay belongs to the
+            // Navigator, which is `child` above, INSIDE this widget.
+            // A `Tooltip` is an `OverlayPortal`: `RawTooltipState.build`
+            // asserts `debugCheckHasOverlay` on every build in debug,
+            // and in release throws `No Overlay widget found` the
+            // moment the portal is shown. The close button used to
+            // carry `tooltip:` and that is the crash reported twice —
+            // 2026-08-17 on macOS at /SongsPage and 2026-08-19 on web
+            // and Windows at /minified:ag2, both with `nav:pop` as the
+            // last breadcrumb, which is simply when this strip last
+            // rebuilt. Neither platform nor window size was the
+            // variable; having a mouse to hover with was.
+            //
+            // `TooltipVisibility(visible: false)` is the framework's own
+            // way to say "no tooltips in this region": `TooltipState`
+            // then never builds a `RawTooltip` at all, so nothing looks
+            // for an Overlay. It is applied to the whole strip rather
+            // than to the one button, so a control added here later
+            // cannot reintroduce the crash. Accessible names come from
+            // `Icon.semanticLabel` instead, which needs no overlay.
+            // `test/app_chrome_overlay_test.dart` pins both halves.
             // ignore: prefer_const_constructors
-            return _Strip();
+            return TooltipVisibility(visible: false, child: _Strip());
           },
         ),
       ],
@@ -327,12 +353,21 @@ class _Strip extends StatelessWidget {
                     // would not have hidden the strip anyway, since it
                     // keeps the queue. Reported as "去其他页面底下还是有
                     // 播放器，一直在那里，但是每次退出才没有".
+                    //
+                    // The label is on the Icon, not in `tooltip:`.
+                    // A tooltip here has no Overlay to open into and
+                    // crashes the app — see the note in
+                    // `GlobalMiniPlayer.build`. `semanticLabel` gives
+                    // a screen reader the same words with no overlay.
                     IconButton(
                       visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.close_rounded),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        semanticLabel:
+                            uiStrings['songsClosePlayer']?[locale] ??
+                                'Close player',
+                      ),
                       color: scheme.onSurfaceVariant,
-                      tooltip: uiStrings['songsClosePlayer']?[locale] ??
-                          'Close player',
                       onPressed: player.dismiss,
                     ),
                   ],

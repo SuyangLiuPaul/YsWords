@@ -139,6 +139,58 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
   });
 
+  // 2026-09-03. User, 2026-08-16: "很多时候这些框框都是上下滑动很多地方都是
+  // 这样是不是全部要找出来fix".
+  //
+  // The Theme and Book sections each sat in their own
+  // `ConstrainedBox(0.22 / 0.30 of the viewport) → SingleChildScrollView`
+  // INSIDE this sheet's own scroll view. Two scrollables in one axis:
+  // the sheet takes the drag, the inner box never moves, and its
+  // scrollbar renders as though it would. `test/nested_scrollable_test`
+  // guards the shape across `lib/`; this pins the behaviour here, where
+  // the user met it.
+  testWidgets('the filter sheet scrolls as ONE list, not three',
+      (tester) async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    addTearDown(tester.view.reset);
+
+    await pumpSongsPage(tester, const Size(390, 844));
+    await openFilterSheet(tester);
+
+    // Every vertically scrolling Scrollable inside the sheet. Pre-fix
+    // this was 3 — the body plus one clipped box per capped section.
+    // Scoped to the sheet's own subtree so the page behind it does not
+    // count, and filtered by axis so a horizontal chip rail does not.
+    final verticalScrollables = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.byWidgetPredicate((w) =>
+          w is Scrollable && w.axisDirection == AxisDirection.down),
+    );
+    expect(
+      verticalScrollables,
+      findsOneWidget,
+      reason: 'the sheet body should be the only thing in it that '
+          'scrolls vertically — a section that scrolls by itself '
+          'inside a scrolling sheet cannot be dragged at all, because '
+          'the sheet takes the gesture first',
+    );
+
+    // And the sections that used to be clipped now reach their end
+    // through that one scroll view: the last book chip is reachable,
+    // which inside a 0.30-viewport box it was not.
+    final lastBook = find.byWidgetPredicate(
+      (w) => w is ChoiceChip && w.label is Text,
+      skipOffstage: false,
+    );
+    expect(lastBook, findsWidgets);
+    await tester.drag(find.text(languageLabel), const Offset(0, -2000));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 400));
+  });
+
   // cgdc publishes one album a year and its congregation refers to
   // songs that way ("the 2024 ones"), so the year picker has to reach
   // the real catalogue rather than a fixture — if a sync ever drops the

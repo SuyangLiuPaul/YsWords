@@ -1463,71 +1463,77 @@ class _OverviewBookFilterSheetState
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final locale = widget.locale;
+    // One scroll view per sheet — see the note on the sermons passage
+    // filter. The book chips used to live in their own 0.55-viewport
+    // scroll box while the sheet around them did not scroll at all;
+    // they flow into the sheet's single scrollable now, with the only
+    // height cap on the sheet as a whole.
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.bookmark,
-                    size: 18, color: scheme.primary),
-                const SizedBox(width: 8),
-                Text(
-                  uiStrings['sermonFilterByPassage']?[locale] ??
-                      'Filter by passage',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const Spacer(),
-                if (widget.initialBook != null)
-                  TextButton(
-                    onPressed: widget.onClear,
-                    child: Text(
-                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.bookmark,
+                      size: 18, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    uiStrings['sermonFilterByPassage']?[locale] ??
+                        'Filter by passage',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
-                IconButton(
-                  icon: const Icon(Icons.close, size: 20),
-                  onPressed: () =>
-                      Navigator.of(context).maybePop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight:
-                    MediaQuery.of(context).size.height * 0.55,
+                  const Spacer(),
+                  if (widget.initialBook != null)
+                    TextButton(
+                      onPressed: widget.onClear,
+                      child: Text(
+                          uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () =>
+                        Navigator.of(context).maybePop(),
+                  ),
+                ],
               ),
-              child: SingleChildScrollView(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final b in standardBookOrder)
-                      _OverviewBookChip(
-                        book: b,
-                        locale: locale,
-                        hasData: widget.availableBooks.contains(b),
-                        selected: _selectedBook == b,
-                        onTap: () => setState(() {
-                          _selectedBook =
-                              _selectedBook == b ? null : b;
-                        }),
-                      ),
-                  ],
+              const SizedBox(height: 8),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final b in standardBookOrder)
+                        _OverviewBookChip(
+                          book: b,
+                          locale: locale,
+                          hasData: widget.availableBooks.contains(b),
+                          selected: _selectedBook == b,
+                          onTap: () => setState(() {
+                            _selectedBook =
+                                _selectedBook == b ? null : b;
+                          }),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 14),
-            FilledButton(
-              onPressed: () => widget.onApply(_selectedBook),
-              child: Text(
-                  uiStrings['apply']?[locale] ?? 'Apply'),
-            ),
-          ],
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: () => widget.onApply(_selectedBook),
+                child: Text(
+                    uiStrings['apply']?[locale] ?? 'Apply'),
+              ),
+            ],
+          ),
         ),
       ),
     );

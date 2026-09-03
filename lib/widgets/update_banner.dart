@@ -41,9 +41,20 @@ class _UpdateBannerState extends State<UpdateBanner> {
             if (version == null || version == _dismissed) {
               return const SizedBox.shrink();
             }
-            return _Strip(
-              version: version,
-              onDismiss: () => setState(() => _dismissed = version),
+            // Mounted by `MaterialApp.builder`, i.e. above the
+            // Navigator, so this strip has no `Overlay` ancestor and a
+            // `Tooltip` here would throw `No Overlay widget found` the
+            // moment it opened — see the long note in
+            // `GlobalMiniPlayer.build` for the two crash reports that
+            // came from exactly that in the player strip. Nothing here
+            // carries a tooltip today; this keeps it that way by
+            // construction rather than by memory.
+            return TooltipVisibility(
+              visible: false,
+              child: _Strip(
+                version: version,
+                onDismiss: () => setState(() => _dismissed = version),
+              ),
             );
           },
         ),
