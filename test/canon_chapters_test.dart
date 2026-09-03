@@ -177,10 +177,15 @@ void main() {
             'table and the pattern): 7 more matches, 6 for 約拿記/约拿记 in '
             'sermon 069 and 1 for 哥罗西书 in EC013, all previously '
             'unmatched prose.');
-    expect(totalParsed, 12471,
+    expect(totalParsed, 12473,
         reason: '12464 before queue-7296: +7, matching the 7 new '
             'matches above — Jonah 2 and Colossians 1:19 are both '
-            'in-canon, so every new match parses.');
+            'in-canon, so every new match parses. +2 more on 2026-09-03: '
+            '331\'s 「诗篇一一九篇103节」 in both Chinese bodies, which '
+            'passageRefPattern already matched and cnNumber refused '
+            'until it learned to read a run of three or more bare '
+            'digits as 119. totalMatches is unchanged, because the '
+            'pattern was not touched.');
   });
 
   test(

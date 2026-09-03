@@ -304,25 +304,68 @@ void main() {
       }
       expect(markMatches, greaterThan(5000),
           reason: 'the form the transcripts actually speak');
-      // 一一九 is the digit-string reading of 119 and neither this
-      // parser nor `cn_number` in the Python extractor admits it —
-      // both are structural, which is what rejects 十十. The two sites
-      // render as plain text, exactly as they did before the pattern
-      // reached them, so nothing is underlined that does nothing when
-      // tapped. Named rather than counted so that any NEW unresolvable
-      // shape still fails here.
+      // 331's 一一九 pair used to be here: 119 read digit by digit, which
+      // neither parser admitted because both are structural — the thing
+      // that rejects 十十. [cnNumber] now reads a run of three or more
+      // BARE digits as a digit string, which cannot collide with the
+      // structural form (a well-formed numeral that long always carries
+      // a 十 or a 百), and the two sites resolve. Measured 2026-09-03:
+      // the corpus holds 238 two-character pure-digit runs and every one
+      // is prose, so the three-character floor is what the reading rests
+      // on; the case below pins the pair itself.
       //
-      // The other four (2026-08-31): sermon 232's "阿摩司书第12章" (Amos
-      // has 9 chapters) and CP37's "启示录三十七章十七节" (Revelation has
-      // 22), in both zh-CN and zh-TW, now refuse to parse at all —
-      // `parseReference` itself gained the chapter-canon check that used
-      // to live only at the sermon page's own call sites (queue line
-      // 7042). Same "underlines nothing" property as the 一一九 pair.
+      // The four that remain (2026-08-31): sermon 232's "阿摩司书第12章"
+      // (Amos has 9 chapters) and CP37's "启示录三十七章十七节"
+      // (Revelation has 22), in both zh-CN and zh-TW, refuse to parse at
+      // all — `parseReference` itself gained the chapter-canon check
+      // that used to live only at the sermon page's own call sites
+      // (queue line 7042). They render as plain text, so nothing is
+      // underlined that does nothing when tapped. Named rather than
+      // counted so any NEW unresolvable shape still fails here.
       expect(unresolved, {
-        '诗篇一一九篇103节', '詩篇一一九篇103節',
         '阿摩司书第12章', '阿摩司書第12章',
         '启示录三十七章十七节', '啓示錄三十七章十七節',
       }, reason: 'a match the parser cannot resolve underlines nothing');
+    });
+
+    // 331's real sentence, in both bodies. It reached `passageRefPattern`
+    // for the first time when the 第-less relaxation shipped and resolved
+    // to nothing until the digit-string reading; the sermon index held
+    // Psalms 119:103 only through 331's ENGLISH transcript.
+    test('一一九 is 119 read digit by digit', () {
+      for (final s in ['诗篇一一九篇103节', '詩篇一一九篇103節']) {
+        final ref = parseReference(s);
+        expect(ref, isNotNull, reason: s);
+        expect(ref!.englishBook, 'Psalms');
+        expect(ref.chapter, 119);
+        expect(ref.verseStart, 103);
+      }
+    });
+
+    // The floor, and why it is three rather than two. Every one of these
+    // is a corpus spelling: 「三四年」 is "three or four years", 「五五分
+    // 成」 is a fifty-fifty split, 「唯一一節」 is "the only verse". A
+    // two-character digit-string reading would turn all 238 of them into
+    // numbers.
+    test('a two-character run of bare digits is still prose', () {
+      for (final s in ['一一', '三四', '五六', '四五', '六四']) {
+        expect(cnNumber(s), isNull, reason: s);
+      }
+    });
+
+    // Three characters and up, the corpus holds 13 runs in 4 spellings.
+    // Only 一一九 lands in 1..199; the years and 042's 二一四 are turned
+    // away by the range check that was always there, not by a rule
+    // written for them.
+    test('a digit string outside 1..199 is still refused', () {
+      expect(cnNumber('一一九'), 119);
+      expect(cnNumber('二一四'), isNull);
+      expect(cnNumber('一九五八'), isNull);
+      expect(cnNumber('一九五三'), isNull);
+      // …and the structural readings are untouched.
+      expect(cnNumber('一百一十九'), 119);
+      expect(cnNumber('二十三'), 23);
+      expect(cnNumber('十十'), isNull);
     });
 
     // The defect this pattern order was changed for. A match that stops
