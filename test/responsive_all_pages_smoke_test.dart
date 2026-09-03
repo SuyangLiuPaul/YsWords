@@ -71,6 +71,11 @@ void main() {
     'ProfilesPage': () => const ProfilesPage(),
     'ProfileEditPage': () => const ProfileEditPage(),
     'BibleTimelinePage': () => const BibleTimelinePage(),
+    // The same page on its chronology-chart view. Listed separately
+    // because the chart is a fixed-name-column + horizontally scrolling
+    // plot, which is a different layout risk from the event list.
+    'BibleTimelinePage/chart': () =>
+        const BibleTimelinePage(initialView: TimelineView.chart),
     'BooksPage': () => const BooksPage(chapterIdx: 0, bookIdx: 'Genesis'),
     'StrongsEntryPage': () => const StrongsEntryPage(number: 'H430'),
   };

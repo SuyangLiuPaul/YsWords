@@ -6854,6 +6854,120 @@ const uiStrings = {
     'zh-Hans': '未找到符合的事件。',
     'zh-Hant': '未找到符合的事件。',
   },
+  // ── Chronology chart ──────────────────────────────────────────
+  // The second view on the Bible Timeline page: parallel lifelines
+  // from Genesis 5 and 11, so contemporaneity is visible. Asked for
+  // 2026-08-12 「我要你参考这个图，你做一个可以iteractive的放在一个板块
+  // 里面…而且是featured」.
+  'chronologyChart': {
+    'en': 'Chronology chart',
+    'zh-Hans': '年代对照图',
+    'zh-Hant': '年代對照圖',
+  },
+  'chronologyTabEvents': {
+    'en': 'Events',
+    'zh-Hans': '事件',
+    'zh-Hant': '事件',
+  },
+  'chronologyTabChart': {
+    'en': 'Lifelines',
+    'zh-Hans': '生平对照',
+    'zh-Hant': '生平對照',
+  },
+  'chronologyFeaturedSubtitle': {
+    'en': 'Who was alive at the same time — Adam to Abraham, drag the '
+        'year and see',
+    'zh-Hans': '谁与谁同时在世——从亚当到亚伯拉罕，拖动年份即可查看',
+    'zh-Hant': '誰與誰同時在世——從亞當到亞伯拉罕，拖動年份即可查看',
+  },
+  // The scheme banner. Never buried: biblical dates are contested, and
+  // a chart that prints "4004 BC" without saying whose figure it is
+  // reads plausibly, is wrong, and gets quoted.
+  'chronologySchemeBanner': {
+    'en': 'Dated by {scheme} · Creation = {creation}. Tap to see the '
+        'other readings.',
+    'zh-Hans': '采用{scheme} · 创造 = {creation}。点击查看其他读法。',
+    'zh-Hant': '採用{scheme} · 創造 = {creation}。點擊查看其他讀法。',
+  },
+  'chronologyWhoseChronology': {
+    'en': 'Whose chronology is this?',
+    'zh-Hans': '这是谁的年代学？',
+    'zh-Hant': '這是誰的年代學？',
+  },
+  'chronologyNotPlotted': {
+    'en': 'not plotted',
+    'zh-Hans': '未绘出',
+    'zh-Hant': '未繪出',
+  },
+  'chronologyAliveCount': {
+    'en': '{count} alive',
+    'zh-Hans': '{count} 人在世',
+    'zh-Hant': '{count} 人在世',
+  },
+  'chronologyZoom': {
+    'en': 'Zoom',
+    'zh-Hans': '缩放',
+    'zh-Hant': '縮放',
+  },
+  'chronologyZoomIn': {
+    'en': 'Zoom in',
+    'zh-Hans': '放大',
+    'zh-Hant': '放大',
+  },
+  'chronologyZoomOut': {
+    'en': 'Zoom out',
+    'zh-Hans': '缩小',
+    'zh-Hant': '縮小',
+  },
+  'chronologyJumpTo': {
+    'en': 'Jump to',
+    'zh-Hans': '跳至',
+    'zh-Hant': '跳至',
+  },
+  'chronologyLegend': {
+    'en': 'Lines of descent',
+    'zh-Hans': '家系',
+    'zh-Hant': '家系',
+  },
+  'chronologyBorn': {
+    'en': 'Born',
+    'zh-Hans': '生于',
+    'zh-Hant': '生於',
+  },
+  'chronologyDied': {
+    'en': 'Died',
+    'zh-Hans': '卒于',
+    'zh-Hant': '卒於',
+  },
+  'chronologyDeathUnknown': {
+    'en': 'Death year not given in Scripture',
+    'zh-Hans': '经文未记载卒年',
+    'zh-Hant': '經文未記載卒年',
+  },
+  'chronologyLifespan': {
+    'en': 'lived {n} years',
+    'zh-Hans': '共活了 {n} 年',
+    'zh-Hant': '共活了 {n} 年',
+  },
+  'chronologyContemporaries': {
+    'en': 'Overlaps {count} others on this chart',
+    'zh-Hans': '与图中另外 {count} 人同时在世',
+    'zh-Hant': '與圖中另外 {count} 人同時在世',
+  },
+  'chronologyDerivation': {
+    'en': 'How this year is derived',
+    'zh-Hans': '此年份的推算依据',
+    'zh-Hant': '此年份的推算依據',
+  },
+  'chronologyScopeNote': {
+    'en': 'First pass: Genesis 5 and 11 only — Adam to Abraham, the '
+        'span where Scripture states the ages these years are computed '
+        'from.',
+    'zh-Hans': '第一版仅涵盖创世记第 5、11 章——从亚当到亚伯拉罕，'
+        '即经文明载岁数、可据以推算年份的一段。',
+    'zh-Hant': '第一版僅涵蓋創世記第 5、11 章——從亞當到亞伯拉罕，'
+        '即經文明載歲數、可據以推算年份的一段。',
+  },
   // Share-link toasts (sermons + bible verses)
   'shareLink': {
     'en': 'Share',

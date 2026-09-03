@@ -29,6 +29,7 @@ const Set<String> kRegisteredRoutePaths = {
   '/profiles',
   '/family-tree',
   '/timeline',
+  '/chronology',
   '/sermons',
   '/misconceptions',
   '/sermons/:id',
