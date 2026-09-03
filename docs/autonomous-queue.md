@@ -11373,6 +11373,137 @@ has never seen this repo.
       mistake — **when counting open items, an entry inside `<details>` is
       archive, not backlog.**
 
+      **SHIPPED 2026-09-03/04, then rebuilt three times against real use.**
+      The chart landed, and then the user opened it and asked the obvious
+      question three times over: 「chronology chart为什么不能一直往右边一直
+      到今天」. It stopped at Abraham while the event list **on the same
+      page** ran to Revelation. Three follow-up passes, each of which
+      found the brief it was given to be wrong about something:
+
+      **`d/chrono2` — span.** Axis is now AM 0 → 4098 (Creation → AD 95),
+      carrying `bible_timeline.json`'s 98 events as a second, visually
+      distinct layer. **No lifelines were invented past Genesis 5/11** —
+      Scripture stops giving the continuous begetting ages there, and the
+      chart's whole standing is that every year traces to a verse. Five
+      events both assets date are deduped, the computed marker governing
+      and the timeline's figure shown beside it, so the reader sees the
+      size of each disagreement instead of being handed a winner. The
+      ~170-year late-date clash across the patriarchs is drawn as a named
+      contested band; nothing was shifted to tidy the picture. Corrected
+      the brief: `spanEndAm` is 2187, not Abraham's death — **Eber
+      outlives Abraham** on the Masoretic count; `bible_timeline.json`
+      has no `eras` key at all (8 eras exist only as a per-event string
+      plus a hardcoded palette); `_meta.count` said 97 for 98 events.
+
+      **`d/chrono3` — dead space.** Scrolled past AM 2187, all 20 lifeline
+      rows were still drawn, names and no bars, over half the chart's
+      height. Rows now fold on **plain bar/viewport overlap, never a
+      switch at AM 2187** (straddling the boundary: 13 drawn, 7 folded),
+      into one in-place band at the dimmed alpha the chart already uses
+      for "alive but not at the cursor" — hatching it would have been a
+      lie in the chart's own language, because a folded row *is* counted,
+      just elsewhere. Not animated, on purpose: hysteretic instead (enter
+      6%, leave 25%), so nothing changes height under the reader's eye.
+      597 pt → 169 pt at 900×1500; 25 events gained labels.
+
+      Found in passing: **`tools/web_verify_headless.mjs chronology` had
+      been photographing the wrong viewport since it was written.** The
+      event lane merges into ONE semantics node holding all 64 titles, so
+      an unanchored chip regex matched the lane (above the chips in tree
+      order) and clicked a tick. Anchored, and `clickText` gained a `box`
+      filter. **The other four cases in that file were not swept for the
+      same pattern.**
+
+      **`d/chrono4` — devices.** The user tested on an iPhone: 「By
+      default这个可以大点不单单8x 或者15 20x？而且很多都是… 在手机上看不爽
+      iPad不知道如何但是不同devices都要考虑清楚」. Raising 8 to 20 would
+      have papered over the real defect: **the multiplier was the wrong
+      unit.** "8×" meant eight times the *fitted* width, so it delivered
+      ~2.2 pt/yr on a 1280 pt desktop and ~0.5 on a 390 pt phone — one
+      control, two pictures. Zoom is a density now (1/16 … 4 pt/yr), one
+      absolute ladder shared by every device, fit-to-width as the floor,
+      and the readout says **years in view** rather than a multiplier,
+      because the multiplier is precisely what lied.
+
+      The ceiling is DERIVED, not chosen: sweeping the lane's own packer
+      over all 100 ticks at real advances, complete labels go 64 → 79 →
+      87 at 1 → 2 → 4 pt/yr and then flatten — past 4, each *doubling* of
+      the extent buys 1–3 labels in 100, because six events share AM 4036
+      and the lane has five rows. **A rows limit, not a density one; no
+      zoom separates marks at the same x.**
+
+      **And the ellipses were mostly a different bug entirely.** Every
+      `TextPainter` in the file used a bare `TextStyle(fontSize: 8.5)`,
+      inheriting neither `settings.fontFamily` (with its CJK fallback)
+      nor `MediaQuery.textScalerOf`, while the `Text` beside it did both
+      — an 8–10% underestimate on every label. Measured off the user's
+      own capture: "Alexander the Great Conquers Persia" was given 159 pt,
+      sized at 142, drawn at ~155. **Desktop was affected too, just with
+      more slack to hide it** — which is why the earlier desktop-width
+      captures looked fine and the phone did not. Also fixed: the 88 pt
+      name column (7 pt short of "Nahor (the elder)"), the packer's 190 pt
+      reservation cap, text scale in the geometry rather than only the
+      glyphs, a legend row overflowing at 130% text, and era names that
+      sat off-screen once the default view stopped being whole-span.
+
+      Verified headless across five form factors, each captured as it
+      opens and at its deepest: phone portrait/landscape, tablet
+      portrait/landscape, desktop — 520/710/700/410/410 years on open,
+      64/180/180/210/210 deepest, which is **viewport ÷ 4 on every row**.
+
+      **Left open, deliberately.** The NT's densest decade still cannot
+      label every tick — fourteen events in ten years, six on one year,
+      five label rows. That needs a different device (a tap-to-expand
+      cluster, or a callout list), not more zoom. The merged event-lane
+      semantics node is also an accessibility defect in its own right: a
+      screen reader is read all 64 titles as one utterance. Splitting it
+      needs per-tick hit boxes, which the lane deliberately avoids.
+
+- [x] **A sermon that would not play left its Listen button dead, because
+      only songs caught `PlaybackBlockedException`.** Reported from a live
+      iPhone on 2026-09-03, `/sermons/421`, web, and mailed to the crash
+      inbox as `Source: Zone` — which is itself the signature: nothing
+      caught it, so it surfaced as an unhandled Future error in
+      `main.dart`'s guarded zone.
+
+      **It was not the v1.4.200 release, and that was checked rather than
+      assumed.** The throw site, the exception class and
+      `SermonAudioService` all shipped in **v1.4.197** on 2026-09-02 —
+      confirmed with `git merge-base --is-ancestor` against the release
+      commit, three releases earlier. The v1.4.199→.200 diff touches
+      `main.dart`, `url_sync_service_web.dart`, `song_audio_handler.dart`
+      and `global_mini_player.dart`, none of which are on the sermon
+      playback path.
+
+      The engine's own doc comment says browsers reject `play()` with
+      `NotAllowedError` without a gesture and **`AbortError` when a new
+      load interrupts a pending play**. Songs have caught it since
+      `c03c6143` and show "tap play again". Sermons caught it nowhere, so
+      `_loading` stayed true forever and `onPressed: loading ? null : …`
+      left the button permanently disabled behind a stuck spinner. Fixed
+      on `d/playback`: caught in `_playPart()` and in the resume branch of
+      `play()`, with the copy songs already use.
+
+- [ ] **Which race actually produces that `AbortError` is NOT settled, and
+      nothing was changed on the strength of a guess.** Two mechanisms are
+      both readable in the code and neither was reproduced: a second tap
+      landing in the window before `_loading` disables the button (in
+      `SermonAudioService.play()` the flag is set only *after* two awaits,
+      where `SongAudioHandler._playCurrent()` sets it synchronously — the
+      songs path structurally cannot race this way), or a saved-position
+      seek firing on `durationchange` before the `play()` promise settles,
+      which WebKit rejects with exactly this error. Sermon 421 is a
+      three-part ~45-minute talk, so a resume position is very likely.
+
+      **Headless Chrome came back negative and that settles nothing** —
+      Chromium's play()/seek() interaction is materially more permissive
+      than WebKit's. The iOS Simulator attempt failed on tap injection,
+      not on the app: the sermon loaded and the audio bar was visible,
+      taps never registered. **Do not "fix" this by guessing.** If it
+      recurs, a breadcrumb per `play()`/`_playPart` call settles it: a
+      double tap shows two calls close together, the seek race shows
+      `applyPendingSeek` firing before the first `playing` event.
+
 - [x] **The AI exegesis panel cannot be scrolled — fixed by deleting the
       inner scroll view.** The transcript now flows into the sheet's own
       `ListView` and scrolls with everything else; the direction chips
