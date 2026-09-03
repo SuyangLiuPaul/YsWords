@@ -6308,6 +6308,23 @@ has never seen this repo.
       Retiring the three `yswords-cn*` Netlify sites (`tools/release_web.sh:406-411`)
       stays out of scope — a live deploy-topology change needs its own go/no-go.
 
+
+      **DECIDED 2026-09-03 by the user: convert it to runtime detection.**
+      Asked whether `kChinaMode` should still skip Firebase Auth/RTDB
+      outright, the answer was to make it a runtime probe rather than to
+      leave it or to retire the CN build. So the `FirebaseReachabilityService`
+      sketched above is approved work, not a proposal.
+      **Still blocked on file ownership, not on the decision:** the gate is
+      `lib/main.dart:401` and that file was held by a concurrent url-routing
+      change. Take this the moment `lib/main.dart` is free. Mirror
+      `lib/services/google_fonts_reachability.dart` exactly — three-state
+      verdict, SharedPreferences-cached, re-probed at most once per 24 h,
+      **failing OPEN** — and probe a real Firebase byte URL rather than
+      guessing at Google's CORS behaviour.
+      Retiring the three `yswords-cn*` Netlify sites was NOT approved here
+      and stays out of scope; it is a deploy-topology change and needs its
+      own go/no-go.
+
 - [x] **Sermon passage filter: highlight the match, and filter by verse
       — SHIPPED 2026-08-23 (v1.4.119).** The filter travels into the
       sermon as a `PassageFilter`; every mention is highlighted on top
@@ -6644,7 +6661,7 @@ has never seen this repo.
       documented as "someone who preached through all of John 17
       preached verse 3", and these sermons did not preach the chapter.
 
-- [ ] **C175 is filed under 1 Corinthians 10:4 while expounding 2
+- [x] **C175 is filed under 1 Corinthians 10:4 while expounding 2
       Corinthians 10:4-5, and the fix above promotes the error from a
       chapter hit to an exact one.** The transcript reads "In 1
       Corinthians 10, 4, Paul says, that we, the weapons of our warfare,
@@ -6664,6 +6681,25 @@ has never seen this repo.
       the transcriber dropped the ordinal; nothing in the text settles
       it, and the argument works either way. Needs the audio, which is
       on the T7 — same class as the CP18 item above.
+
+
+      **RULED 2026-09-03 by the user: record faithfully what the preacher
+      said. Do not correct a citation on his behalf.** Asked directly —
+      index it as spoken, index it as spoken with an on-page caveat, or
+      change it to the passage he was actually expounding — the answer was
+      the first. So the extraction here is already right and there is
+      nothing to change; what was missing was the ruling, not the code.
+      This now settles the whole class, so a later pass does not have to
+      re-open each one: **C175** (1 Cor 10:4 spoken, 2 Cor 10:4-5
+      expounded), **097** (2 Kings 8:8 spoken, the bronze sea of 1 Kings
+      7:23-26 described), **CP18** (「Mark 7th chapter 7」, possibly a
+      transcript mishearing of Matthew — and still not to be guessed at),
+      and **012** (the English and Chinese transcripts disagree; the index
+      takes the union, which is the faithful record of what each
+      transcript says).
+      The standing rule this rests on is unchanged and older than the
+      question: sermon transcripts are testimony, not copy, and nothing in
+      this repo re-punctuates or rewrites a preacher's words.
 
 - [x] **"Matthew 5, 6 and 7 are the Sermon on the Mount" would index
       two verses, and the guard cannot see it. SHIPPED 2026-08-25 — but
@@ -6832,13 +6868,32 @@ has never seen this repo.
       105" would reach only Psalm 119. 356 is the corpus's instance and
       it is masked by an explicit citation one sentence earlier.
 
-- [ ] **`CP18` says "You can from the Mark 7th chapter 7" and is filed
+- [x] **`CP18` says "You can from the Mark 7th chapter 7" and is filed
       under `Mark 7`.** The sentence before is "the end of Matthew
       chapter 7, very familiar", so the transcript may have heard Mark
       where the preacher said Matthew — or may be right. Garbled speech
       recognition, one sermon, and nothing in the text settles it.
       Recorded 2026-08-25; do not guess. Needs the audio, which is on
       the T7.
+
+
+      **RULED 2026-09-03 by the user: record faithfully what the preacher
+      said. Do not correct a citation on his behalf.** Asked directly —
+      index it as spoken, index it as spoken with an on-page caveat, or
+      change it to the passage he was actually expounding — the answer was
+      the first. So the extraction here is already right and there is
+      nothing to change; what was missing was the ruling, not the code.
+      This now settles the whole class, so a later pass does not have to
+      re-open each one: **C175** (1 Cor 10:4 spoken, 2 Cor 10:4-5
+      expounded), **097** (2 Kings 8:8 spoken, the bronze sea of 1 Kings
+      7:23-26 described), **CP18** (「Mark 7th chapter 7」, possibly a
+      transcript mishearing of Matthew — and still not to be guessed at),
+      and **012** (the English and Chinese transcripts disagree; the index
+      takes the union, which is the faithful record of what each
+      transcript says).
+      The standing rule this rests on is unchanged and older than the
+      question: sermon transcripts are testimony, not copy, and nothing in
+      this repo re-punctuates or rewrites a preacher's words.
 
 - [x] **A range spelled with "and" reaches only its first verse. Fixed
       2026-08-25 — the adjacency rule was right, and it needed two
@@ -7583,7 +7638,7 @@ has never seen this repo.
       fix both from one table — and fold this into the 90-aliases item's
       generate-and-assert fix rather than doing it twice.
 
-- [ ] **The English and Chinese transcripts of 012 disagree about a
+- [x] **The English and Chinese transcripts of 012 disagree about a
       citation, and the index silently takes the union. Needs a
       decision, not a rule.** Found 2026-08-26 when the alias fix above
       made the Chinese bodies visible and turned an existing test red.
@@ -7611,7 +7666,26 @@ has never seen this repo.
       English sentence itself in `sermon_ref_extraction_test.dart`,
       where no other body can reach it.
 
-- [ ] **097 is filed under `2 Kings 8:8`, faithfully, because the
+
+      **RULED 2026-09-03 by the user: record faithfully what the preacher
+      said. Do not correct a citation on his behalf.** Asked directly —
+      index it as spoken, index it as spoken with an on-page caveat, or
+      change it to the passage he was actually expounding — the answer was
+      the first. So the extraction here is already right and there is
+      nothing to change; what was missing was the ruling, not the code.
+      This now settles the whole class, so a later pass does not have to
+      re-open each one: **C175** (1 Cor 10:4 spoken, 2 Cor 10:4-5
+      expounded), **097** (2 Kings 8:8 spoken, the bronze sea of 1 Kings
+      7:23-26 described), **CP18** (「Mark 7th chapter 7」, possibly a
+      transcript mishearing of Matthew — and still not to be guessed at),
+      and **012** (the English and Chinese transcripts disagree; the index
+      takes the union, which is the faithful record of what each
+      transcript says).
+      The standing rule this rests on is unchanged and older than the
+      question: sermon transcripts are testimony, not copy, and nothing in
+      this repo re-punctuates or rewrites a preacher's words.
+
+- [x] **097 is filed under `2 Kings 8:8`, faithfully, because the
       preacher misspoke.** Raised by the refuter 2026-08-26 against the
       alias fix. He says "In 2nd Kings, chapter 8, and verse 8, we read
       of the sea in front of the temple" — the bronze sea is 1 Kings
@@ -7619,6 +7693,25 @@ has never seen this repo.
       Elisha. The extraction is correct; the citation is not. Same class
       as C175 and CP18 above: needs the audio, which is on the T7, and
       **do not guess which he meant.**
+
+
+      **RULED 2026-09-03 by the user: record faithfully what the preacher
+      said. Do not correct a citation on his behalf.** Asked directly —
+      index it as spoken, index it as spoken with an on-page caveat, or
+      change it to the passage he was actually expounding — the answer was
+      the first. So the extraction here is already right and there is
+      nothing to change; what was missing was the ruling, not the code.
+      This now settles the whole class, so a later pass does not have to
+      re-open each one: **C175** (1 Cor 10:4 spoken, 2 Cor 10:4-5
+      expounded), **097** (2 Kings 8:8 spoken, the bronze sea of 1 Kings
+      7:23-26 described), **CP18** (「Mark 7th chapter 7」, possibly a
+      transcript mishearing of Matthew — and still not to be guessed at),
+      and **012** (the English and Chinese transcripts disagree; the index
+      takes the union, which is the faithful record of what each
+      transcript says).
+      The standing rule this rests on is unchanged and older than the
+      question: sermon transcripts are testimony, not copy, and nothing in
+      this repo re-punctuates or rewrites a preacher's words.
 
 - [x] **`passageRefPattern` cannot match a 「第N章」 citation for ANY
       book, so most Chinese references in the sermon reader are not
