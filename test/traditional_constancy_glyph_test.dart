@@ -98,11 +98,17 @@ void main() {
   });
 
   test('the sermon corpus is not swept — it never had this hole', () {
-    // Produced by a different, phrase-aware converter: 276 恆 against 2 恒, so
-    // none of the tools in tools/ applies to it. Its two stray 恒 are spot
-    // errors tracked separately in the queue; this test exists so that a
-    // repo-wide sweep, or a fix to those two, is a deliberate act rather than
-    // a side effect of this instalment.
+    // Produced by a different, phrase-aware converter, so none of the tools in
+    // tools/ applies to it. It held 276 恆 against 2 恒, and this test pinned
+    // that 276/2 so that fixing the two would have to be a deliberate act
+    // rather than a side effect of some later sweep.
+    //
+    // UPDATED 2026-09-03, which is what "deliberate" looks like. The two —
+    // 156.txt 「背景中恒常存在的」 and 327.txt 「永恒生命」 — were repaired by
+    // tools/repair_tw_sermon_spot_glyphs.py, with the corpus's own 276:2 as
+    // the whole of the evidence (there is no witness edition for sermon text).
+    // 278 / 0 now. The pin stays, in the same spirit: the corpus is still not
+    // swept, and 恒 reappearing means an unreviewed import, not a fix.
     var traditional = 0;
     var mainland = 0;
     for (final f in Directory('assets/sermons/zh-TW').listSync()) {
@@ -111,8 +117,8 @@ void main() {
       traditional += s.split('恆').length - 1;
       mainland += s.split('恒').length - 1;
     }
-    expect(traditional, 276);
-    expect(mainland, 2);
+    expect(traditional, 278);
+    expect(mainland, 0);
   });
 
   test('the independently translated NT agrees on 伯利恆', () {
