@@ -182,6 +182,13 @@ flutter:
     # renders which original word. 13 MB, one file per book,
     # loaded lazily by TaggedTextService (never all at once).
     - assets/tagged/cuvs-yhwh/
+    # Public-domain commentary, one file per book, loaded lazily by
+    # CommentaryService. Matthew only so far (~526 KB). Without this
+    # line the failure is SILENT — the service catches the load error
+    # and caches null, so the Commentary button opens an empty sheet
+    # forever. test/jfb_commentary_test.dart loads it through
+    # rootBundle precisely to catch that.
+    - assets/commentary/
     - assets/sermons/index.json
     - assets/sermons/refs.json
     # 2026-09-02: was missing, and its absence was silent. The

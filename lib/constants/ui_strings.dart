@@ -4353,6 +4353,39 @@ const uiStrings = {
             'OpenBible.info community votes (CC-BY). 29,319 source '
             'verses indexed.',
   },
+  'aboutLexJfb': {
+    'zh-Hans': 'JFB 圣经注释（马太福音）',
+    'zh-Hant': 'JFB 聖經註釋（馬太福音）',
+    'en': 'Jamieson-Fausset-Brown commentary (Matthew)',
+  },
+  'aboutLicenseJfb': {
+    'zh-Hans': '公有领域（Robert Jamieson、A. R. Fausset、David Brown，1871）· '
+        '数字文本取自 CrossWire SWORD 模块 JFB 3.0，该模块自述为公有领域。'
+        '马太福音 1,071 节全部覆盖。',
+    'zh-Hant': '公有領域（Robert Jamieson、A. R. Fausset、David Brown，1871）· '
+        '數位文本取自 CrossWire SWORD 模組 JFB 3.0，該模組自述為公有領域。'
+        '馬太福音 1,071 節全部覆蓋。',
+    'en': 'Public domain (Robert Jamieson, A. R. Fausset and David '
+        'Brown, 1871) · digital text from the CrossWire SWORD module '
+        'JFB 3.0, which states Public Domain. All 1,071 verses of '
+        'Matthew covered.',
+  },
+  // Commentary sheet (verse-selection action bar).
+  'commentary': {
+    'zh-Hans': '注释',
+    'zh-Hant': '註釋',
+    'en': 'Commentary',
+  },
+  'commentaryNone': {
+    'zh-Hans': '这节经文暂无注释。',
+    'zh-Hant': '這節經文暫無註釋。',
+    'en': 'No commentary is available for this verse yet.',
+  },
+  'commentaryPublicDomain': {
+    'zh-Hans': '公有领域。',
+    'zh-Hant': '公有領域。',
+    'en': 'Public domain.',
+  },
   // Other resources.
   'aboutMaps': {
     'zh-Hans': '圣经历史地图（assets/maps/）',

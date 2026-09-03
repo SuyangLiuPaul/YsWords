@@ -660,6 +660,19 @@ class _LexiconsTable extends StatelessWidget {
         licence: uiStrings['aboutLicenseTsk']?[locale] ??
             'Public domain (R.A. Torrey, 1834) · merged with OpenBible.info community votes (CC-BY).',
         url: 'https://www.openbible.info/labs/cross-references',
+      ),
+      // 2026-09-03: the JFB copyright expired in 1981 at the latest and
+      // in the US in 1927, so nothing here is legally owed — the credit
+      // is deliberate anyway. Evidence: docs/jfb-commentary-licence.md.
+      // test/jfb_commentary_test.dart fails if this row disappears.
+      _AttribRow(
+        name: uiStrings['aboutLexJfb']?[locale] ??
+            'Jamieson-Fausset-Brown commentary (Matthew)',
+        licence: uiStrings['aboutLicenseJfb']?[locale] ??
+            'Public domain (Robert Jamieson, A. R. Fausset and David '
+                'Brown, 1871) · digital text from the CrossWire SWORD '
+                'module JFB 3.0, which states Public Domain.',
+        url: 'https://www.crosswire.org/sword/modules/',
         last: true,
       ),
     ];
