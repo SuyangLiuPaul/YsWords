@@ -10,6 +10,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart' show Clipboard;
 import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/app_version.dart';
@@ -226,24 +227,93 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
     }
   }
 
+  /// Cache extent used for the one frame (or few) in which a
+  /// `/settings/:section` deep link still has to find its target.
+  ///
+  /// The settings list is about 8 000 pt tall; 100 000 is "the whole
+  /// page, with room to spare" without being `double.infinity`, which
+  /// `RenderViewport` would have to do arithmetic on.
+  static const ScrollCacheExtent _kDeepLinkCacheExtent =
+      ScrollCacheExtent.pixels(100000.0);
+
+  /// Bounded. Six frames, then give up — a section that genuinely is not
+  /// in the tree (a future enum value whose `KeyedSubtree` was forgotten)
+  /// must leave the reader on plain Settings, not spin.
+  static const int _kMaxScrollAttempts = 5;
+
+  /// Non-null only while a deep-link scroll is outstanding. See
+  /// [initState].
+  ScrollCacheExtent? _deepLinkCacheExtent;
+
   @override
   void initState() {
     super.initState();
     final target = _keyFor(widget.initialSection);
     if (target == null) return;
-    // Wait for the first frame so the target has a render box, then
-    // smooth-scroll to it. Using ensureVisible keeps us inside the
-    // existing ListView controller without us needing to manage one.
+    // 2026-09-03: this used to be a single post-frame callback that read
+    // `target.currentContext` and returned early when it was null. It
+    // was ALWAYS null for every section below the fold, so
+    // `/#/settings/ai` navigated, rendered SettingsPage, and never
+    // scrolled — byte-identical to bare `/#/settings`, which is how the
+    // headless harness (`tools/web_verify_headless.mjs routes`) found it.
+    //
+    // MEASURED, not reasoned: a `logDiag` probe in this very callback,
+    // in a real `flutter build web --release` bundle driven by headless
+    // Chrome, printed
+    //
+    //     [PROBE] settings initState section=SettingsSection.ai target=true
+    //     [PROBE] postFrame ctx=false
+    //
+    // — so the route → `initialSection` plumbing was fine and the
+    // `GlobalKey` lookup was fine; the section simply had no element.
+    // `ListView(children: [...])` is lazy: its `SliverList` only builds
+    // the children inside the viewport plus `cacheExtent` (250 pt by
+    // default), and `_aiKey` sits ~7 000 pt down the list.
+    //
+    // The fix is to make the target exist for the frame we need it in,
+    // by widening the cache extent to cover the whole page — but only
+    // while the deep link is pending, so the ordinary `/settings` open
+    // keeps its lazy build. [_scrollToInitialSection] drops it again as
+    // soon as the scroll finishes.
+    _deepLinkCacheExtent = _kDeepLinkCacheExtent;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final ctx = target.currentContext;
-      if (ctx == null) return;
-      Scrollable.ensureVisible(
-        ctx,
-        duration: AppMotion.slow,
-        curve: AppMotion.enter,
-        alignment: 0.05, // header just below the AppBar
-      );
+      _scrollToInitialSection(target, attempt: 0);
     });
+  }
+
+  /// Scroll to [target], retrying for at most [_kMaxScrollAttempts] more
+  /// frames if it still has no element.
+  ///
+  /// Deliberately frame-counted rather than "retry until it appears":
+  /// an unbounded retry would spin forever on a section that is not in
+  /// the tree at all, and this callback runs on every frame it is
+  /// scheduled for.
+  void _scrollToInitialSection(GlobalKey target, {required int attempt}) {
+    if (!mounted) return;
+    final ctx = target.currentContext;
+    if (ctx == null) {
+      if (attempt >= _kMaxScrollAttempts) {
+        _endDeepLinkScroll();
+        return;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToInitialSection(target, attempt: attempt + 1);
+      });
+      return;
+    }
+    Scrollable.ensureVisible(
+      ctx,
+      duration: AppMotion.slow,
+      curve: AppMotion.enter,
+      alignment: 0.05, // header just below the AppBar
+    ).whenComplete(_endDeepLinkScroll);
+  }
+
+  /// Back to the default (lazy) cache extent once the deep link has been
+  /// served — the target is on screen by then, so it stays built.
+  void _endDeepLinkScroll() {
+    if (!mounted || _deepLinkCacheExtent == null) return;
+    setState(() => _deepLinkCacheExtent = null);
   }
 
   @override
@@ -292,6 +362,10 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: maxW),
               child: ListView(
+            // Null for every ordinary open — the list stays lazy. Only a
+            // `/settings/:section` deep link widens it, and only until
+            // the scroll lands. See [initState].
+            scrollCacheExtent: _deepLinkCacheExtent,
             padding: EdgeInsets.all(16 * s),
             children: [
               // Account section now FIRST — see comment below at the

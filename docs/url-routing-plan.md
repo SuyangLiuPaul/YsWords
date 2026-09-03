@@ -216,7 +216,16 @@ moves.
 This is the item's "worse of the two" symptom, traced to its actual
 mechanism by reading (not by reproducing in a browser — no automated
 web-history harness exists in this repo to verify the following against
-a live `popstate` event):
+a live `popstate` event).
+
+> **2026-09-03 — points 5 and 6 below were WRONG, and were wrong in the
+> direction that mattered.** A harness now exists
+> (`tools/web_verify_headless.mjs`, added 2026-09-02), and the first
+> time anyone actually pressed Back in a browser it disagreed with both.
+> They are kept below, struck through, rather than quietly reworded: the
+> whole point of this correction is that they were argued from reading
+> the code and read plausibly for two weeks. See **§5a** immediately
+> after the list for what the browser actually does.
 
 1. A `pushPage` call (e.g. `pushPage(SermonDetailPage(...))`) drives
    `Get.to`, which pushes a Flutter `Route` — a **Flutter Navigator
@@ -237,7 +246,7 @@ a live `popstate` event):
    direct mechanism of "the address bar still read Micah 2:1" while
    reading a sermon — confirmed by reading the code path the bug
    report's symptom would have to go through, not by reproducing it.
-5. Because `history.pushState` (called inside `_writeStateToUrl`) adds
+5. ~~Because `history.pushState` (called inside `_writeStateToUrl`) adds
    a **new** history entry every time it runs, regardless of whether
    the URL text differs from the previous entry, each `pushPage`
    navigation still creates a browser history entry — just one that
@@ -245,14 +254,87 @@ a live `popstate` event):
    the app actually went. The browser's history stack and Flutter's
    Navigator stack are therefore two different stacks of the same
    *length* (roughly) but different *content*: browser history is a
-   list of Bible positions; the Navigator stack is a list of pages.
-6. Pressing Back fires `popstate`, which is wired only to
+   list of Bible positions; the Navigator stack is a list of pages.~~
+   **False — see §5a.**
+6. ~~Pressing Back fires `popstate`, which is wired only to
    `_applyHashToState` (state ← URL) — it does **not** call
    `Navigator.pop()`. So Back moves the browser history pointer to an
    entry that, per step 4, usually holds the *same* Bible position as
    the entry it left (a no-op the user perceives as "Back did
    nothing"), while the Flutter Navigator stack — which never heard
-   about the `popstate` at all — still has the sermon page on top.
+   about the `popstate` at all — still has the sermon page on top.~~
+   **False — see §5a.**
+
+### 5a. What the browser actually does (measured 2026-09-03)
+
+Points 1–4 above survive; they describe the address-bar symptom and they
+are right. Points 5 and 6 do not.
+
+**How this was found.** `tools/web_verify_headless.mjs history` serves a
+release `build/web` from 127.0.0.1, drives it in headless Chrome, and —
+because Chrome's own `Page.getNavigationHistory` reports a merged view
+that cannot tell a push from a replace after the fact — wraps
+`History.prototype.pushState` / `replaceState` before any page script
+runs. Cold-loading `/#/sermons` and opening sermon 004 printed:
+
+```
++     0ms  replaceState /#/sermons
++    18ms  replaceState /              <- the engine's ORIGIN entry
++    18ms  pushState    /#/sermons     <- the engine's FLUTTER entry
++  8038ms  replaceState /#/sermons/004 <- opening the sermon: REPLACE
++ 19142ms  popstate
++ 19143ms  pushState    /#/sermons/004 <- engine re-pushes on popstate
++ 19144ms  replaceState /#/sermons     <- pop 1
++ 19144ms  replaceState /              <- pop 2
++ 19495ms  pushState    #/genesis/1:1?v=kjv
+```
+
+Three history entries before opening the sermon; three after. Reproduced
+identically with and without a planted Bible position.
+
+**Why point 5 is false.** `pushPage` → `Get.toNamed` → `Navigator` does
+not reach `_writeStateToUrl` at all; the engine writes the address bar.
+Flutter builds the root `Navigator` with `reportsRouteUpdateToEngine:
+true` (`widgets/app.dart`), and that navigator's `initState` calls
+`SystemNavigator.selectSingleEntryHistory()` (`widgets/navigator.dart`).
+In single-entry mode the web engine keeps exactly ONE entry of its own on
+top of the page's origin entry, and `SingleEntryBrowserHistory
+.setRouteName` calls `_setupFlutterEntry(replace: true)` — a
+`replaceState`. **No in-app navigation can add a browser history entry
+while the app uses `home:` rather than the Router API.** Real per-page
+entries need `GetMaterialApp.router` and the multi-entry history the
+`Router` widget selects; that migration has not been made, and until it
+is, **Forward is unreachable by construction** — the engine re-pushes its
+entry on every `popstate`, which truncates the forward list. Measured
+forward count after Back: 0 at every sample from +40 ms to +3 s.
+
+**Why point 6 is false.** The Navigator hears about Back perfectly well.
+`SingleEntryBrowserHistory.onPopState` re-pushes its entry and sends the
+framework a `popRoute` platform message; `WidgetsApp.didPopRoute` turns
+that into `navigator.maybePop()`. That has already happened by the time
+this repo's own `popstate` listener runs. Probing both, one Back gave:
+
+```
+[PROBE] didPop popped=/sermons/004 -> now=/sermons     <- the engine
+[PROBE] popstate current=/sermons leavingRegistered=true
+[PROBE] popRouteCallback canPop=true                   <- ours, redundant
+[PROBE] didPop popped=/sermons -> now=/
+```
+
+So the `setPopRouteCallback` → `Get.back()` wiring added on 2026-09-01 to
+"collapse the two stacks" was a **second** pop on top of the engine's,
+and because the engine's pop had already moved `_currentRouteName` down
+to the route below, the "am I leaving a registered route?" test still
+passed and popped that one too. One Back therefore skipped `/#/sermons`
+entirely and landed on the Dashboard, after which the Bible writer's
+350 ms correction rewrote the address bar to a reference the reader never
+asked for. Fixed 2026-09-03 by deleting that callback outright (web impl,
+facade and stub); the engine owns the Back gesture.
+
+**What is still true.** There genuinely are two stacks, and points 1–4
+still describe how the address bar gets clobbered for unregistered pages.
+What is *not* true is that they are the same length, or that the Flutter
+stack never hears `popstate`.
 
 **What the later stage needs to do, stated as a requirement, not
 code:** the two stacks must become one. Concretely, the state → URL
@@ -272,6 +354,19 @@ the *current* `pushPage` without also replacing `_UrlRestoreObserver`'s
 entries with the same duplication bug, which is exactly the outcome the
 queue item's own instruction warns against ("Do NOT bolt `pushState`
 calls onto `pushPage`").
+
+**2026-09-03 amendment to the requirement above.** The second half —
+"`popstate` needs to drive `Navigator.pop()`/`Get.back()`" — was
+implemented in Stage 2 and has now been **removed**, because §5a shows
+the engine already does exactly that and doing it twice unwound two pages
+per Back. The first half stands and is what `onRouteChanged`'s
+registered-route guard implements. The sentence "the browser and Flutter
+stacks collapse into one by construction" is also too strong for what
+`getPages` alone buys: with `home:` set there is only ever one browser
+entry, so what actually collapsed is that the app stopped writing a
+competing one for registered routes. A genuine per-page browser stack —
+and with it a working Forward button — remains unbuilt and needs the
+Router API.
 
 ## 6. Staged conversion order (for Stage 3)
 

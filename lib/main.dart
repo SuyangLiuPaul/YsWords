@@ -1319,14 +1319,15 @@ class _RootRouterState extends State<_RootRouter> {
       if (!mounted) return;
       setState(() => _bootHashLandingPending = true);
     });
-    // URL-routing Stage 2: a way to pop the Flutter Navigator when the
-    // browser Back button leaves a registered route (docs/url-routing-
-    // plan.md §5), and a way to navigate to one when the app was
-    // opened with its path already in the address bar (a bookmark to
-    // `/#/about`, not just a same-session push).
-    UrlSyncService.setPopRouteCallback(() {
-      if (Get.key.currentState?.canPop() ?? false) Get.back();
-    });
+    // URL-routing Stage 2: a way to navigate to a registered route when
+    // the app was opened with its path already in the address bar (a
+    // bookmark to `/#/about`, not just a same-session push).
+    //
+    // 2026-09-03: a `setPopRouteCallback(() => Get.back())` used to sit
+    // here too, to pop the Flutter Navigator on browser Back. It has
+    // been removed — the Flutter web engine already delivers Back as a
+    // `popRoute` that `WidgetsApp.didPopRoute` pops, so this made one
+    // Back unwind two pages. Measured; see `url_sync_service_web.dart`.
     UrlSyncService.setBootRouteCallback((routeName) {
       if (!mounted) return;
       Get.toNamed(routeName);

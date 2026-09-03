@@ -135,14 +135,12 @@ void setKnownRoutes(Set<String> routeNames) {
 /// untouched by Stage 2").
 String? _currentRouteName;
 
-/// URL-routing Stage 2: fired by `main.dart` on `popstate` when the
-/// browser navigated away from a route in [_knownRoutes]. See
-/// `UrlSyncService.setPopRouteCallback`.
-void Function()? _popRouteCallback;
-
-void setPopRouteCallback(void Function() cb) {
-  _popRouteCallback = cb;
-}
+// 2026-09-03: `_popRouteCallback` / `setPopRouteCallback` used to live
+// here. It popped the Flutter Navigator from this file's own `popstate`
+// listener whenever a registered route was on top. It was the direct
+// cause of "one Back skips a page and lands on the Dashboard", because
+// the Flutter web engine ALREADY delivers that same Back as a pop. See
+// the popstate listener below for the measured trace.
 
 /// URL-routing Stage 2: fired once, at boot, when the captured boot
 /// hash names a path in [_knownRoutes] (e.g. opening `/#/about`
@@ -269,20 +267,41 @@ Future<void> urlSyncInit({
   // (B) Listen for browser back/forward so popstate drives state.
   try {
     _window.addEventListener('popstate', ((JSAny? event) {
-      // URL-routing Stage 2: if a registered route (e.g. `/about`) was
-      // on top when this fired, the browser just navigated AWAY from
-      // it, but the Flutter Navigator stack never heard `popstate` —
-      // docs/url-routing-plan.md §5's "two stacks of the same length,
-      // different content." Pop the Flutter route to match instead of
-      // treating this as a Bible-hash change; the URL already reflects
-      // where the browser went.
-      final leavingRegisteredRoute = _currentRouteName != null &&
+      // 2026-09-03 — "one Back leaves the app". MEASURED against a real
+      // release web build in headless Chrome, with `logDiag` probes in
+      // this listener and in `_UrlRestoreObserver.didPop`. Opening
+      // sermon 004 from `/#/sermons` and pressing Back ONCE printed, in
+      // this order:
+      //
+      //   [PROBE] didPop popped=/sermons/004 -> now=/sermons
+      //   [PROBE] popstate current=/sermons leavingRegistered=true
+      //   [PROBE] popRouteCallback canPop=true
+      //   [PROBE] didPop popped=/sermons -> now=/
+      //
+      // Two pops for one Back. The first one is not ours: Flutter's web
+      // engine keeps its own history entry on top of the page's origin
+      // entry (`SingleEntryBrowserHistory`), and its popstate handler
+      // re-pushes that entry and sends the framework a `popRoute`
+      // platform message, which `WidgetsApp.didPopRoute` turns into
+      // `navigator.maybePop()`. That has already run by the time this
+      // listener is called. The second pop was this listener calling
+      // `_popRouteCallback` — and because the first pop had already
+      // moved `_currentRouteName` on to the route BELOW, the
+      // "am I leaving a registered route?" test still passed and popped
+      // that one too. Hence: Back from a sermon landed on the Dashboard
+      // with `/#/sermons` skipped, and 350 ms later the Bible writer
+      // rewrote the address bar to a reference the reader never asked
+      // for.
+      //
+      // So: do not pop here. The engine owns the Back gesture. All this
+      // listener still has to do is stay out of the way when the route
+      // on top is a registered one — running the Bible `_applyHashToState`
+      // against a hash like `#/sermons` would be a no-op anyway
+      // (`_parseHash` only knows book slugs), but returning early keeps
+      // that explicit rather than accidental.
+      final onRegisteredRoute = _currentRouteName != null &&
           matchesRegisteredRoute(_currentRouteName!, _knownRoutes);
-      if (leavingRegisteredRoute) {
-        _currentRouteName = null;
-        _popRouteCallback?.call();
-        return;
-      }
+      if (onRegisteredRoute) return;
       _applyHashToState(_window.location.hash)
           .catchError((Object e, StackTrace st) {
         logDiag('[UrlSync] popstate apply failed: $e');

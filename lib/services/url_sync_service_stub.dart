@@ -27,8 +27,5 @@ void onRouteChanged({String? routeName}) {}
 /// Native targets: no `getPages` table to track.
 void setKnownRoutes(Set<String> routeNames) {}
 
-/// Native targets: no browser Back/Forward to react to.
-void setPopRouteCallback(void Function() cb) {}
-
 /// Native targets: no boot URL to resolve into a registered route.
 void setBootRouteCallback(void Function(String routeName) cb) {}

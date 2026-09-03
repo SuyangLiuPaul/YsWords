@@ -45,6 +45,16 @@
 //   typography  sermon 004 at 402x874, captured, with the paragraph gap
 //               measured off the live layout
 //
+// 2026-09-03: this is now also a REGRESSION GATE, not only a report.
+// Two of the things it found have been fixed — `/settings/:section` not
+// scrolling, and one Back unwinding two pages — and neither is reachable
+// from `flutter test` (a lazily-built `ListView` in a real release
+// bundle; a `popstate` listener behind `dart:js_interop`). So the
+// process now EXITS 1 when either regresses. See the "regression gate"
+// block at the bottom of `main()` for exactly what is gated and what is
+// deliberately only reported (anything network-dependent, and Forward,
+// which cannot work in single-entry history mode).
+//
 // Artifacts (screenshots + `results.json`) land in `--out`. Build the
 // bundle the way tools/release_web.sh does before running:
 //
@@ -685,6 +695,15 @@ const ROUTE_CASES = [
     // oracle that passes whether or not the feature works is not one.
     wantPage: /Settings|设置|設定/i,
     wantState: /Gemini|AI response depth|AI 响应深度|AI 回應深度/i,
+    // 2026-09-03: `wantState` alone is not enough here, and finding that
+    // out is what this line is. The semantics tree carries every node the
+    // list has BUILT, including ones scrolled off the top — and after the
+    // deep-link fix the sections above AI are exactly that. So a text
+    // match proves the section exists, not that the reader can see it.
+    // `wantVisible` is checked against each node's own
+    // `getBoundingClientRect()` instead: the AI header has to sit inside
+    // the viewport, which is the whole claim `/settings/:section` makes.
+    wantVisible: /^AI$/,
     what: 'SettingsPage, scrolled to the AI section (Gemini key card visible)',
   },
   {
@@ -749,6 +768,8 @@ async function runRoutes(origin) {
       const tour = await dismissOnboarding(cdp);
       await sleep(2500);
       const text = await pageText(cdp);
+      const sem = await semantics(cdp);
+      const viewportH = await evalJs(cdp, 'window.innerHeight');
       const hashAfter = await evalJs(cdp, 'location.hash');
       // Watch a further 4 s: the clobber this item exists to prevent is
       // a 350 ms-delayed rewrite, and a dialog closing re-fires
@@ -766,6 +787,15 @@ async function runRoutes(origin) {
       r.hashChanges = log.map((e) => e.hash);
       r.pageOk = c.wantPage.test(text);
       r.stateOk = c.wantState.test(text) && !(c.wantNot && c.wantNot.test(text));
+      if (c.wantVisible) {
+        const onScreen = (sem.nodes || []).filter((n) =>
+          c.wantVisible.test(n.text) && n.h > 0 && n.y >= 0 && n.y < viewportH);
+        r.visibleOk = onScreen.length > 0;
+        r.visibleAt = onScreen.map((n) => Math.round(n.y));
+        r.matchedAnywhere = (sem.nodes || [])
+          .filter((n) => c.wantVisible.test(n.text))
+          .map((n) => Math.round(n.y));
+      }
       // Percent-decode both sides. `#/songs/cdc%3Ad0180/score` comes back
       // as `#/songs/cdc:d0180/score` — GetX re-writes the fragment with
       // the DECODED route name, and a literal colon is legal in a path
@@ -793,6 +823,12 @@ async function runRoutes(origin) {
       console.log(`   right page:            ${r.pageOk ? 'YES' : 'NO'}  (/${c.wantPage.source}/)`);
       console.log(`   state restored:        ${r.stateOk ? 'YES' : 'NO'}  (/${c.wantState.source}/` +
         (c.wantNot ? ` and NOT /${c.wantNot.source}/` : '') + ')');
+      if (c.wantVisible) {
+        console.log(`   ON SCREEN:             ${r.visibleOk ? 'YES' : 'NO'}  ` +
+          `(/${c.wantVisible.source}/ inside the ${viewportH}px viewport; ` +
+          `matched at y=${JSON.stringify(r.matchedAnywhere)}, ` +
+          `on-screen at y=${JSON.stringify(r.visibleAt)})`);
+      }
       if (errs.length) console.log(`   page errors:           ${JSON.stringify(errs)}`);
       // Off-origin responses, so a page that renders but cannot fetch
       // its own remote content (the CDC score PDF is on
@@ -1350,7 +1386,73 @@ async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
   writeFileSync(join(OUT_DIR, 'results.json'), JSON.stringify(out, null, 2));
   console.log(`\n  machine-readable results: ${join(OUT_DIR, 'results.json')}`);
-  process.exit(0);
+
+  // ── regression gate ─────────────────────────────────────────────────
+  //
+  // Added 2026-09-03, when this harness's first two findings were fixed.
+  // Both live here rather than in `flutter test` because neither is
+  // reachable from the VM: one is a lazily-built `ListView` in a real
+  // release bundle, and the other is a `popstate` listener behind
+  // `dart:js_interop`. Until now every case printed a number and exited
+  // 0 regardless, so a regression would have had to be noticed by eye.
+  //
+  // Only the two behaviours this pass actually fixed are gated. Nothing
+  // that depends on the network is (the YouTube handshake, the CDC score
+  // PDF), and a case that errored inside the harness is reported as
+  // INCONCLUSIVE rather than counted as a pass.
+  const gate = [];
+  if (out.routes) {
+    const ai = out.routes.find((r) => r.hash === '#/settings/ai');
+    const bare = out.routes.find((r) => r.hash === '#/settings');
+    if (!ai || !bare || ai.error || bare.error) {
+      gate.push(['INCONCLUSIVE', '/settings/:section',
+        'the /settings/ai or /settings case did not complete']);
+    } else if ((ai.text || '') === (bare.text || '')) {
+      gate.push(['FAIL', '/settings/:section',
+        '/#/settings/ai renders identical text to bare /#/settings — the ' +
+        'section slug scrolled nothing']);
+    } else if (!ai.stateOk || ai.visibleOk === false) {
+      gate.push(['FAIL', '/settings/:section',
+        '/#/settings/ai differs from bare /settings but the AI section ' +
+        'header is not inside the viewport — built is not the same as ' +
+        `visible (matched at y=${JSON.stringify(ai.matchedAnywhere)})`]);
+    } else {
+      gate.push(['PASS', '/settings/:section',
+        'the AI section is scrolled into view and the page differs from ' +
+        'bare /settings']);
+    }
+  }
+  for (const [label, s] of [['sermon', out.sermon],
+                            ['sermon CONTROL', out.sermonControl]]) {
+    if (!s) continue;
+    if (s.error || !s.openedRow || !s.backTrace) {
+      gate.push(['INCONCLUSIVE', `Back (${label})`,
+        'the walk did not reach the Back step']);
+    } else if (!s.backShowsList) {
+      gate.push(['FAIL', `Back (${label})`,
+        'one Back did not land on /#/sermons — it unwound more than one ' +
+        `page (hash after Back: ${JSON.stringify(s.hashAfterBack)})`]);
+    } else {
+      gate.push(['PASS', `Back (${label})`,
+        'one Back returns to the sermon list']);
+    }
+    // Reported, never gated. Forward is unreachable by construction while
+    // the app uses `home:` instead of the Router API: Flutter's
+    // `SingleEntryBrowserHistory` re-pushes its own entry on every
+    // popstate, which truncates the forward list. Gating on it would be
+    // gating on a migration this repo has not made.
+    gate.push(['KNOWN-GAP', `Forward (${label})`,
+      `forward entries after Back: ${s.forwardEntriesAfterSettling ?? 0} ` +
+      '— single-entry browser history, see docs/url-routing-plan.md §5']);
+  }
+  if (gate.length) {
+    console.log('\n════ regression gate ════');
+    for (const [verdict, what, why] of gate) {
+      console.log(`  ${verdict.padEnd(12)} ${what}\n               ${why}`);
+    }
+  }
+  const failed = gate.filter(([v]) => v === 'FAIL');
+  process.exit(failed.length ? 1 : 0);
 }
 
 main();
