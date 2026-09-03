@@ -628,74 +628,86 @@ class _TriviaBookFilterSheetState extends State<_TriviaBookFilterSheet> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final locale = widget.locale;
+    // One scroll view per sheet — see the note on the sermons passage
+    // filter. The book chips used to live in their own 0.50-viewport
+    // scroll box while the sheet around them did not scroll at all.
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.bookmark, size: 18, color: scheme.primary),
-                const SizedBox(width: 8),
-                Text(
-                  uiStrings['sermonFilterByPassage']?[locale] ??
-                      'Filter by passage',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const Spacer(),
-                if (widget.initialBook != null)
-                  TextButton(
-                    onPressed: widget.onClear,
-                    child: Text(
-                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.bookmark, size: 18, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    uiStrings['sermonFilterByPassage']?[locale] ??
+                        'Filter by passage',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
-                IconButton(
-                  icon: const Icon(Icons.close, size: 20),
-                  onPressed: () => Navigator.of(context).maybePop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              uiStrings['sermonFilterBookLabel']?[locale] ?? 'Book',
-              style: TextStyle(
-                  fontSize: 12,
-                  color: scheme.onSurface.withValues(alpha: 0.65)),
-            ),
-            const SizedBox(height: 6),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.50,
+                  const Spacer(),
+                  if (widget.initialBook != null)
+                    TextButton(
+                      onPressed: widget.onClear,
+                      child: Text(
+                          uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                ],
               ),
-              child: SingleChildScrollView(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final book in standardBookOrder)
-                      _TriviaBookChip(
-                        book: book,
-                        locale: locale,
-                        hasEntries: widget.availableBooks.contains(book),
-                        selected: _selectedBook == book,
-                        onTap: () => setState(() {
-                          _selectedBook =
-                              _selectedBook == book ? null : book;
-                        }),
+              const SizedBox(height: 8),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        uiStrings['sermonFilterBookLabel']?[locale] ?? 'Book',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurface.withValues(alpha: 0.65)),
                       ),
-                  ],
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final book in standardBookOrder)
+                            _TriviaBookChip(
+                              book: book,
+                              locale: locale,
+                              hasEntries:
+                                  widget.availableBooks.contains(book),
+                              selected: _selectedBook == book,
+                              onTap: () => setState(() {
+                                _selectedBook =
+                                    _selectedBook == book ? null : book;
+                              }),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 14),
-            FilledButton(
-              onPressed: () => widget.onApply(_selectedBook),
-              child: Text(uiStrings['apply']?[locale] ?? 'Apply'),
-            ),
-          ],
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: () => widget.onApply(_selectedBook),
+                child: Text(uiStrings['apply']?[locale] ?? 'Apply'),
+              ),
+            ],
+          ),
         ),
       ),
     );

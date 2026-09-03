@@ -486,15 +486,36 @@ class PersonDetailSheet extends StatelessWidget {
     );
   }
 
+  /// One verse-reference chip.
+  ///
+  /// `onPressed` is null when nothing in the citation resolves to a
+  /// passage the app can open, which renders the chip disabled — the
+  /// reference is still shown, because the record cites it, but it is
+  /// no longer dressed as a link. It used to be wired unconditionally,
+  /// so an unresolvable citation offered a tap that could only answer
+  /// 「Couldn't parse reference」 — the same defect the evidence chip
+  /// was fixed for. Today's `assets/family_tree.json` resolves 665 of
+  /// 665, so nothing on screen changes; what changes is what happens
+  /// when an import does not.
   Widget _refChip(BuildContext context, String ref, ColorScheme scheme) {
+    final navigable = firstResolvableReference(ref) != null;
     return ActionChip(
-      avatar: Icon(Icons.menu_book_outlined, size: 14, color: scheme.primary),
+      avatar: Icon(Icons.menu_book_outlined,
+          size: 14,
+          color: navigable
+              ? scheme.primary
+              : scheme.onSurface.withValues(alpha: 0.5)),
       label: Text(_localizedRef(ref),
           style: const TextStyle(fontSize: 12)),
-      onPressed: () => _jumpToRef(context, ref),
+      onPressed: navigable ? () => _jumpToRef(context, ref) : null,
       visualDensity: VisualDensity.compact,
-      backgroundColor: scheme.primaryContainer.withValues(alpha: 0.18),
-      side: BorderSide(color: scheme.primary.withValues(alpha: 0.3)),
+      backgroundColor: navigable
+          ? scheme.primaryContainer.withValues(alpha: 0.18)
+          : scheme.surfaceContainerHighest.withValues(alpha: 0.35),
+      side: BorderSide(
+          color: navigable
+              ? scheme.primary.withValues(alpha: 0.3)
+              : scheme.outlineVariant.withValues(alpha: 0.6)),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
     );
   }
@@ -512,9 +533,11 @@ class PersonDetailSheet extends StatelessWidget {
   }
 
   Future<void> _jumpToRef(BuildContext context, String raw) async {
-    // Take only the first segment of `;`-separated chains so the
-    // parser handles e.g. "Genesis 1:26-27" cleanly.
-    final ref = parseReference(raw);
+    // Same resolver the chip's affordance is drawn from, so the two
+    // cannot come apart. The null branch below is unreachable from a
+    // tap now — a chip that cannot open is disabled — and is kept only
+    // for callers that arrive some other way.
+    final ref = firstResolvableReference(raw);
     if (ref == null) {
       final msg = (uiStrings['couldNotParseRef']?[locale] ??
               "Couldn't parse reference: {ref}")

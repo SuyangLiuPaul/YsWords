@@ -73,6 +73,32 @@ class BibleReference {
   }
 }
 
+/// Where a tap on a citation should go, or null when NOTHING in it
+/// resolves to a passage the app can open.
+///
+/// [parseReference] truncates at the first `;` — it answers "where does
+/// ONE tap go" — so it reports null for a citation whose first part is
+/// outside every shipped version even when a later part is real.
+/// `Ecclesiasticus (Sirach) 44:1; Exodus 14:21-22` is that shape and is
+/// a real value in `assets/bible_evidence.json`.
+///
+/// Callers use this for BOTH the affordance and the jump, so the two
+/// cannot come apart: a chip is tappable exactly when this is non-null,
+/// and the tap goes exactly where this points. `cardJumpTarget` in
+/// `evidence_page.dart` is the same rule, written before this one
+/// existed; it should delegate here once nothing else is mid-flight in
+/// that file.
+BibleReference? firstResolvableReference(String raw) {
+  final whole = parseReference(raw);
+  if (whole != null) return whole;
+  if (!raw.contains(';')) return null;
+  for (final part in raw.split(';')) {
+    final ref = parseReference(part.trim());
+    if (ref != null) return ref;
+  }
+  return null;
+}
+
 /// Parse a free-form reference string and return a [BibleReference],
 /// or null if the input doesn't look like a reference.
 ///

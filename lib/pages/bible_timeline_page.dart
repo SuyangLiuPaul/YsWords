@@ -234,7 +234,11 @@ class _BibleTimelinePageState extends State<BibleTimelinePage> {
   }
 
   Future<void> _jumpToRef(BuildContext context, String raw) async {
-    final ref = parseReference(raw);
+    // Same resolver the chip's affordance is drawn from, so the two
+    // cannot come apart. The null branch below is unreachable from a
+    // tap now — a chip that cannot open is not tappable — and is kept
+    // only for callers that arrive some other way.
+    final ref = firstResolvableReference(raw);
     if (ref == null) {
       final locale = context.read<AppSettings>().locale;
       final msg = (uiStrings['couldNotParseRef']?[locale] ??
@@ -453,7 +457,11 @@ class _EventTile extends StatelessWidget {
                                 raw: r,
                                 locale: locale,
                                 scheme: scheme,
-                                onTap: () => onTapRef(r),
+                                // Null when nothing in the citation
+                                // opens — see [_RefChip].
+                                onTap: firstResolvableReference(r) == null
+                                    ? null
+                                    : () => onTapRef(r),
                               ),
                           ],
                         ),
@@ -470,11 +478,22 @@ class _EventTile extends StatelessWidget {
   }
 }
 
+/// One verse-reference chip under an event.
+///
+/// [onTap] is null when nothing in the citation resolves to a passage
+/// the app can open, and then the chip is drawn as plain text rather
+/// than as a link. It used to be an unconditional `VoidCallback`, which
+/// meant every citation LOOKED navigable and an unresolvable one could
+/// answer only 「Couldn't parse reference」 — the same defect the
+/// evidence chip was fixed for. Today's `assets/bible_timeline.json`
+/// resolves 123 of 123, so nothing on screen changes; what changes is
+/// what happens when an import does not, which
+/// `test/reference_chip_unresolvable_test.dart` pins.
 class _RefChip extends StatelessWidget {
   final String raw;
   final String locale;
   final ColorScheme scheme;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   const _RefChip({
     required this.raw,
     required this.locale,
@@ -492,38 +511,58 @@ class _RefChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The citation is still printed either way — the event cites it and
+    // the row goes on saying so. Only the affordance is withdrawn.
+    final navigable = onTap != null;
+    final fg = navigable
+        ? scheme.primary
+        : scheme.onSurface.withValues(alpha: 0.55);
+    final body = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: navigable
+            ? scheme.primaryContainer.withValues(alpha: 0.25)
+            : scheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: navigable
+              ? scheme.primary.withValues(alpha: 0.35)
+              : scheme.outlineVariant.withValues(alpha: 0.6),
+          width: 0.7,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.menu_book_rounded, size: 11, color: fg),
+          const SizedBox(width: 3),
+          // Flexible, not a bare Text: a citation the parser rejects is
+          // printed RAW, and raw can be prose — `Various NT references`
+          // is a real value in the evidence corpus — which overflows
+          // this row on a phone and throws in debug. A parsed citation
+          // is short enough that this never engages. `Wrap` hands its
+          // children the line's maxWidth, so the flex has something to
+          // resolve against.
+          Flexible(
+            child: Text(
+              _localized(),
+              style: TextStyle(
+                fontSize: 11,
+                color: fg,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (!navigable) return body;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(4),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: scheme.primaryContainer.withValues(alpha: 0.25),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: scheme.primary.withValues(alpha: 0.35),
-              width: 0.7,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.menu_book_rounded,
-                  size: 11, color: scheme.primary),
-              const SizedBox(width: 3),
-              Text(
-                _localized(),
-                style: TextStyle(
-                  fontSize: 11,
-                  color: scheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: body,
       ),
     );
   }

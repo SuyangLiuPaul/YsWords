@@ -557,174 +557,192 @@ class _PassageFilterSheetState extends State<_PassageFilterSheet> {
     final locale = widget.locale;
     final chapters = _chapters;
     final verses = _verses;
+    // 2026-09-03: Book / Chapter / Verse each used to be its own
+    // `ConstrainedBox → SingleChildScrollView` — 0.30, 0.16 and 0.16 of
+    // the viewport — so this one sheet held THREE little regions that
+    // scrolled by themselves while the sheet did not, and with all
+    // three showing their fixed fractions plus labels and the Apply
+    // button could push past the sheet's own height.
+    //
+    // User, 2026-08-16: "很多时候这些框框都是上下滑动很多地方都是这样是不是
+    // 全部要找出来fix".
+    //
+    // The pattern applied here and in the other three filter sheets:
+    // ONE scroll view per sheet. The header and the Apply button are
+    // pinned, everything between them flows into a single scrollable,
+    // and the only height cap is on the sheet as a whole — the same
+    // 0.85 the song detail sheet uses. Sections then size to their
+    // content instead of being clipped to a fraction nobody chose.
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.bookmark, size: 18, color: scheme.primary),
-                const SizedBox(width: 8),
-                Text(
-                  uiStrings['sermonFilterByPassage']?[locale] ??
-                      'Filter by passage',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const Spacer(),
-                if (widget.initial != null)
-                  TextButton(
-                    onPressed: widget.onClear,
-                    child: Text(
-                        uiStrings['clearFilter']?[locale] ?? 'Clear'),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.bookmark, size: 18, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    uiStrings['sermonFilterByPassage']?[locale] ??
+                        'Filter by passage',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
-                IconButton(
-                  icon: const Icon(Icons.close, size: 20),
-                  onPressed: () => Navigator.of(context).maybePop(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              uiStrings['sermonFilterBookLabel']?[locale] ?? 'Book',
-              style: TextStyle(
-                  fontSize: 12,
-                  color: scheme.onSurface.withValues(alpha: 0.65)),
-            ),
-            const SizedBox(height: 6),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.30,
+                  const Spacer(),
+                  if (widget.initial != null)
+                    TextButton(
+                      onPressed: widget.onClear,
+                      child: Text(
+                          uiStrings['clearFilter']?[locale] ?? 'Clear'),
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                ],
               ),
-              child: SingleChildScrollView(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final book in standardBookOrder)
-                      _BookChip(
-                        book: book,
-                        locale: locale,
-                        hasSermons: widget.versesByBook.containsKey(book),
-                        selected: _selectedBook == book,
-                        onTap: () => setState(() {
-                          if (_selectedBook == book) {
-                            _selectedBook = null;
-                          } else {
-                            _selectedBook = book;
-                          }
-                          _selectedChapter = null;
-                          _selectedVerse = null;
-                        }),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            if (_selectedBook != null && chapters.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              Text(
-                uiStrings['sermonFilterChapterLabel']?[locale] ?? 'Chapter',
-                style: TextStyle(
-                    fontSize: 12,
-                    color: scheme.onSurface.withValues(alpha: 0.65)),
-              ),
-              const SizedBox(height: 6),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.16,
-                ),
+              const SizedBox(height: 8),
+              Flexible(
                 child: SingleChildScrollView(
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      ChoiceChip(
-                        label: Text(
-                            uiStrings['sermonFilterAllChapters']?[locale] ??
-                                'All'),
-                        selected: _selectedChapter == null,
-                        onSelected: (_) => setState(() {
-                          _selectedChapter = null;
-                          _selectedVerse = null;
-                        }),
+                      Text(
+                        uiStrings['sermonFilterBookLabel']?[locale] ?? 'Book',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurface.withValues(alpha: 0.65)),
                       ),
-                      for (final ch in chapters)
-                        ChoiceChip(
-                          label: Text('$ch'),
-                          selected: _selectedChapter == ch,
-                          onSelected: (_) => setState(() {
-                            _selectedChapter = ch;
-                            _selectedVerse = null;
-                          }),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final book in standardBookOrder)
+                            _BookChip(
+                              book: book,
+                              locale: locale,
+                              hasSermons:
+                                  widget.versesByBook.containsKey(book),
+                              selected: _selectedBook == book,
+                              onTap: () => setState(() {
+                                if (_selectedBook == book) {
+                                  _selectedBook = null;
+                                } else {
+                                  _selectedBook = book;
+                                }
+                                _selectedChapter = null;
+                                _selectedVerse = null;
+                              }),
+                            ),
+                        ],
+                      ),
+                      if (_selectedBook != null && chapters.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Text(
+                          uiStrings['sermonFilterChapterLabel']?[locale] ??
+                              'Chapter',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  scheme.onSurface.withValues(alpha: 0.65)),
                         ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            ChoiceChip(
+                              label: Text(
+                                  uiStrings['sermonFilterAllChapters']
+                                          ?[locale] ??
+                                      'All'),
+                              selected: _selectedChapter == null,
+                              onSelected: (_) => setState(() {
+                                _selectedChapter = null;
+                                _selectedVerse = null;
+                              }),
+                            ),
+                            for (final ch in chapters)
+                              ChoiceChip(
+                                label: Text('$ch'),
+                                selected: _selectedChapter == ch,
+                                onSelected: (_) => setState(() {
+                                  _selectedChapter = ch;
+                                  _selectedVerse = null;
+                                }),
+                              ),
+                          ],
+                        ),
+                      ],
+                      // 2026-08-23, from the user: "Right now, you only
+                      // have the chapter. Wonder whether it is possible
+                      // to have also the verses also."
+                      //
+                      // Only offered once a chapter is chosen, and only
+                      // for chapters some sermon cites by verse. A
+                      // chapter that is only ever cited whole — "he
+                      // preached on John 17" — has no verses to choose
+                      // between, and showing an empty row there would
+                      // read as a loading failure.
+                      if (_selectedChapter != null && verses.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Text(
+                          uiStrings['sermonFilterVerseLabel']?[locale] ??
+                              'Verse',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  scheme.onSurface.withValues(alpha: 0.65)),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            ChoiceChip(
+                              label: Text(
+                                  uiStrings['sermonFilterAllVerses']
+                                          ?[locale] ??
+                                      'All'),
+                              selected: _selectedVerse == null,
+                              onSelected: (_) =>
+                                  setState(() => _selectedVerse = null),
+                            ),
+                            for (final v in verses)
+                              ChoiceChip(
+                                label: Text('$v'),
+                                selected: _selectedVerse == v,
+                                onSelected: (_) =>
+                                    setState(() => _selectedVerse = v),
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
-            ],
-            // 2026-08-23, from the user: "Right now, you only have the
-            // chapter. Wonder whether it is possible to have also the
-            // verses also."
-            //
-            // Only offered once a chapter is chosen, and only for
-            // chapters some sermon cites by verse. A chapter that is
-            // only ever cited whole — "he preached on John 17" — has no
-            // verses to choose between, and showing an empty row there
-            // would read as a loading failure.
-            if (_selectedChapter != null && verses.isNotEmpty) ...[
               const SizedBox(height: 14),
-              Text(
-                uiStrings['sermonFilterVerseLabel']?[locale] ?? 'Verse',
-                style: TextStyle(
-                    fontSize: 12,
-                    color: scheme.onSurface.withValues(alpha: 0.65)),
-              ),
-              const SizedBox(height: 6),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.16,
-                ),
-                child: SingleChildScrollView(
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      ChoiceChip(
-                        label: Text(
-                            uiStrings['sermonFilterAllVerses']?[locale] ??
-                                'All'),
-                        selected: _selectedVerse == null,
-                        onSelected: (_) =>
-                            setState(() => _selectedVerse = null),
-                      ),
-                      for (final v in verses)
-                        ChoiceChip(
-                          label: Text('$v'),
-                          selected: _selectedVerse == v,
-                          onSelected: (_) =>
-                              setState(() => _selectedVerse = v),
-                        ),
-                    ],
-                  ),
-                ),
+              FilledButton(
+                onPressed: _selectedBook == null
+                    ? null
+                    : () => widget.onApply(PassageFilter(
+                          _selectedBook!,
+                          chapter: _selectedChapter,
+                          verse: _selectedVerse,
+                        )),
+                child: Text(uiStrings['apply']?[locale] ?? 'Apply'),
               ),
             ],
-            const SizedBox(height: 14),
-            FilledButton(
-              onPressed: _selectedBook == null
-                  ? null
-                  : () => widget.onApply(PassageFilter(
-                        _selectedBook!,
-                        chapter: _selectedChapter,
-                        verse: _selectedVerse,
-                      )),
-              child: Text(uiStrings['apply']?[locale] ?? 'Apply'),
-            ),
-          ],
+          ),
         ),
       ),
     );
