@@ -20,6 +20,7 @@ import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/remote_image.dart';
 import 'package:yswords/widgets/youtube_embed.dart';
 
 const String kVideosAssetPath = 'assets/videos.json';
@@ -208,10 +209,15 @@ class _VideosPageState extends State<VideosPage> {
             if (cover != null)
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  cover.thumbnailUrl,
+                // RemoteImage, not Image.network, for one reason: the
+                // failure memo. See [_episodeThumb] for the whole
+                // argument — the short version is that these point at
+                // i.ytimg.com, which is unreachable for the users this
+                // app deliberately ships an offline snapshot for.
+                child: RemoteImage(
+                  url: cover.thumbnailUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => ColoredBox(
+                  fallback: (_) => ColoredBox(
                     color: scheme.surfaceContainerHighest,
                     child: Icon(Icons.ondemand_video_rounded,
                         size: 40, color: scheme.onSurfaceVariant),
@@ -539,6 +545,36 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
     pushPage(const HomePage(), routeName: '/HomePage');
   }
 
+  /// The poster frame behind the play overlay.
+  ///
+  /// 2026-09-03. The queue listed "convert the other `Image.network`
+  /// calls to `RemoteImage`" and then corrected itself: the others
+  /// already carry `errorBuilder`, a decode cap and
+  /// `webHtmlElementStrategy`, so there is nothing to fix. Re-audited
+  /// all 9 call sites, and that is true of 6 of them. These two were
+  /// the exception, and two of the three concerns really do not apply:
+  ///
+  ///   • **The decode cap is moot here.** YouTube's `hqdefault.jpg` is
+  ///     480×360 — about 690 KB decoded. Capping it would save nothing.
+  ///     That is why it was never added, and it stays absent.
+  ///   • **`webHtmlElementStrategy` is not needed.** It exists for
+  ///     hosts that send no `Access-Control-Allow-Origin`, which is
+  ///     what blanked the song artwork on web. `i.ytimg.com` answers
+  ///     `access-control-allow-origin: *` (checked, not assumed), so
+  ///     CanvasKit is allowed to read the bytes and the default
+  ///     `never` is correct. Do not add `prefer` here by analogy.
+  ///
+  /// **What does apply is the failure memo**, and for a reason the
+  /// original note did not weigh: this app is built for users behind
+  /// the GFW — `pubspec.yaml` bundles a whole song catalogue snapshot
+  /// on exactly that premise — and `i.ytimg.com` is blocked there.
+  /// For those users every one of these thumbnails is a socket that
+  /// will never answer, `NetworkImage` has no timeout, and nothing
+  /// remembered the failure, so scrolling back paid the full OS wait
+  /// again. That is the same mechanism as the `errno = 60` song-list
+  /// crash at 7–10 images instead of 199: not a crash, but a page that
+  /// hangs grey for a minute every time it is opened, in the one
+  /// region that cannot fix it by trying again.
   Widget _player(ColorScheme scheme, String locale) {
     final track = _selected;
     if (track == null) {
@@ -558,10 +594,10 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              track.thumbnailUrl,
+            RemoteImage(
+              url: track.thumbnailUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => ColoredBox(color: scheme.surface),
+              fallback: (_) => ColoredBox(color: scheme.surface),
             ),
             const ColoredBox(color: Color(0x33000000)),
             Center(

@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:provider/provider.dart';
 
+import 'package:yswords/constants/song_source_icons.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
@@ -1662,6 +1663,11 @@ class _PlayButton extends StatelessWidget {
   /// unreachable, `NetworkImage` has no timeout, and every row opened
   /// its own 60-second socket. RemoteImage adds the decode budget, the
   /// per-URL failure memo and the silence.
+  ///
+  /// Precedence is **real artwork → the source's own site icon → the
+  /// plain button**, and the middle step lives inside `RemoteImage`'s
+  /// `fallback:` so it is reached both when a song has no `artworkUrl`
+  /// and when the artwork fails to load. See [_sourceMark].
   Widget _withArtwork(BuildContext context, Widget Function(bool onArt) face,
       bool active) {
     // 40 logical px at the device's own ratio: decoding a full-size
@@ -1677,7 +1683,7 @@ class _PlayButton extends StatelessWidget {
       url: song.artworkUrl,
       cacheWidth: px,
       cacheHeight: px,
-      fallback: (_) => face(false),
+      fallback: (ctx) => _sourceMark(ctx, face, active, px),
       onLoaded: (_, img) => Stack(
         fit: StackFit.expand,
         children: [
@@ -1688,6 +1694,70 @@ class _PlayButton extends StatelessWidget {
           face(true),
         ],
       ),
+    );
+  }
+
+  /// The source's own site icon, washed back behind the play glyph.
+  ///
+  /// 168 of the 621 songs publish no artwork at all (cdc 107, cahaya
+  /// 47, fydt 14) — it was 359 until CDC was re-checked and turned out
+  /// to publish 191 real covers after all. The user asked for the fix
+  /// — "没有封面的你可以用他们来源的封面做为歌曲的吗？" — and every one
+  /// of the four sources does ship a square site mark. They are bundled
+  /// as assets, never fetched; see `song_source_icons.dart` for where
+  /// each file came from and why CDC's is only 48×48.
+  ///
+  /// **It stays a source mark, not a fake cover.** The wash is heavy
+  /// and it is the *background colour of the plain button*, not a black
+  /// scrim — so what lands on screen is the same button with the site's
+  /// colours tinting it, and [face] is still called with `false`. Two
+  /// things follow from that, both deliberate:
+  ///
+  ///   • Contrast cannot regress. The composite is within 32% of the
+  ///     colour the glyph was already legible against, in both the
+  ///     active and idle states, in either theme — unlike the artwork
+  ///     path, which needs its own white-on-black treatment precisely
+  ///     because a photograph can be any colour.
+  ///   • A row does not claim album art it does not have. The dark
+  ///     scrim and white glyph continue to mean "this song has a real
+  ///     cover"; a pale tint of the church's own logo means "this is
+  ///     where the song came from", which is the only claim the asset
+  ///     can honestly make.
+  ///
+  /// **The two alphas were chosen by rendering them, not by taste.**
+  /// 0.68 over `surface` leaves the four marks plainly legible on an
+  /// idle row in both themes. The playing row needed to go further:
+  /// at 0.68 over `primary` the cahaya and fydt marks turn the control
+  /// a muddy olive and it stops reading as "this one is playing", which
+  /// is the single most important state in the list. 0.88 keeps it
+  /// unmistakably primary with the mark surviving as a ghost — the
+  /// mark fades on play rather than vanishing, so nothing jumps.
+  ///
+  /// A source with no bundled mark falls through to the plain button.
+  Widget _sourceMark(BuildContext context, Widget Function(bool onArt) face,
+      bool active, int px) {
+    final asset = songSourceIcon(song.source);
+    if (asset == null) return face(false);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          asset,
+          fit: BoxFit.cover,
+          cacheWidth: px,
+          cacheHeight: px,
+          // An asset cannot 404, but a mistyped path in the map would
+          // throw during paint and take the whole list with it. The
+          // plain button is a complete presentation; a red error box
+          // in every row is not.
+          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+        ),
+        Container(
+          color: (active ? scheme.primary : scheme.surface)
+              .withValues(alpha: active ? 0.88 : 0.68),
+        ),
+        face(false),
+      ],
     );
   }
 
