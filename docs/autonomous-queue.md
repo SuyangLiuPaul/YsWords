@@ -2778,7 +2778,7 @@ reported. Work these top-down before P2.
       פֶּה, מִסְפָּר, עֵת ×2, מִשְׁפָּחָה, שָׁלֹשׁ, בֵּן ×3. Pinned by
       `test/strongs_alignment_test.dart`.
 
-- [ ] **Round two says 3 of the 14 HELD spans should be repaired after all.
+- [x] **Round two says 3 of the 14 HELD spans should be repaired after all.
       Recorded, not acted on — one refuter round is not enough to widen a
       scripture pass.** The hold on 王上 1:35 `和犹大` rests on "bare 和 carries
       H5921 in 61 runs corpus-wide", i.e. 61/1236 = **4.9%**, and on a
@@ -2802,6 +2802,25 @@ reported. Work these top-down before P2.
       also that repairing 和犹大 would settle 王上 1:35 twice — 以色列 in the
       same verse was already repaired in this pass.
 
+
+      **REPAIRED 2026-09-03 — round two's claim survived re-derivation on
+      stronger evidence than it had.**
+      The hold rested on "bare 和 carries H5921 in 61 runs corpus-wide" —
+      **frequency of a DIFFERENT string than the one judged** (61 of 1,240),
+      which is the frequency-of-the-wrong-pair argument this area exists to
+      refuse. Three things round two did not have: (a) the `i` each run
+      carried was **false** — it asserted that 犹大 does not render יְהוּדָה,
+      that 一切 does not render כֹּל, that 永远 does not render αἰών; (b) a
+      full-corpus before/after showing 3 numbers newly reachable and **zero
+      made unreachable**, because the displaced number survives on a sibling
+      run in all three verses — the one place "only gains" is true here, and
+      it is measured rather than asserted; (c) 王上 1:35 had already been
+      settled the other way by the same pass, so the hold made one verse
+      contradict itself.
+      The steelman for holding 永永远远 (that 永永 renders πάντας) is killed by
+      data: 16 of its 21 Greek runs sit in verses with no πᾶς at all, and in
+      the 4 that have it, πᾶς is on another run every time.
+
 - [ ] **A draft of the span repair claimed the reader "only gains", and
       約翰福音 3:5 shows that is false — worth remembering, not fixing.**
       Pre-repair BOTH 神 and 的国。 showed G3588, so ὁ was reachable twice over
@@ -2812,6 +2831,18 @@ reported. Work these top-down before P2.
       whole cost — but it changes what a widget reads, which
       `test/strongs_alignment_test.dart` deliberately pins, so it needs the
       user rather than a loop iteration.
+
+
+      **2026-09-03 — reframed, and the reframing makes the original question
+      much smaller.** 約 3:5 verified as described. But measured corpus-wide:
+      **21,390 verses (69%) have a number that is reachable nowhere but sits
+      in some run's `i`** — 39,868 pairs. The span repair's 30 are **0.075% of
+      a condition the corpus already has everywhere**.
+      So the question is not whether those 30 are worth the trade. It is
+      **whether the word-tap sheet should show `i` as a secondary line at
+      all** — which would make 39,868 pairs reachable and retire this item's
+      whole cost. `TaggedRun.implied` is already parsed and its own doc says
+      "Worth showing as secondary". **Needs a decision, not another pass.**
 
 - [x] **SUPERSEDED by the entry above — this is the original item, kept for
       the record of what it got wrong.** It read: "the number the run should
@@ -2865,7 +2896,18 @@ reported. Work these top-down before P2.
         Hebrew has the pronoun, so H1931 is the word behind that chunk. H3414
         remains no run's `s`.
 
-- [ ] **代上 16:39's neighbour was deliberately left half-repaired.** 邱坛 now
+
+      **2026-09-03 — all four are ONE question asked four times**, and that is
+      the finding: *when the CUV names a referent the original leaves as a
+      pronoun, should the tap show the pronoun or the noun?* One answer
+      settles 代下 4:3, 腓 1:29, 約一 5:3 and 耶 33:1 together.
+      **Two of them contain the REVERSE in the same verse** — 約一 5:3's 他
+      maps to the article, 耶 33:1's 临到他 puts H3414 in `i` — which is what
+      proves this is a convention rather than four slips.
+      Also confirmed: 加 1:4 has no G5547, so it never was a precedent for
+      腓 1:29.
+
+- [x] **代上 16:39's neighbour was deliberately left half-repaired.** 邱坛 now
       answers H1116, but 的帐幕前 still answers H6440 פָּנִים when it also spans
       מִשְׁכָּן, so H4908 is now no run's `s` in that verse. That is a coverage
       gap, not a falsehood, which is why it was not swept in with the six. The
@@ -2873,7 +2915,16 @@ reported. Work these top-down before P2.
       corpus, far below the ≥20-occurrence ground-truth bar. The honest options
       are to split the run into 的帐幕 / 前, or to leave it.
 
-- [ ] **The three runs in the `absent` bucket display a number the verse does
+
+      **LEAVE — 2026-09-03, and for a reason the entry did not have: neither
+      half of the proposed split has ground truth.** 的帐幕 is H168 ten times
+      against H4908 nine; 前 is H6440 101 of 199. The run spells BOTH words,
+      so promoting either head trades one partial answer for another. Splitting
+      it would also have to change `w`, and **no repair in this area has ever
+      changed `w`** — the convention is that only `s` moves. Half-repaired is
+      the honest state here, not an oversight.
+
+- [x] **The three runs in the `absent` bucket display a number the verse does
       not contain at all, and 民數記 23:11 is the worst of them.** 巴勒 (Balak)
       answers H319 אַחֲרִית, "latter end", while H1111 בָּלָק sits untapped;
       利未記 4:17 血 answers H853 where H1818 דָּם is the word; 詩篇 119:126
@@ -2886,7 +2937,21 @@ reported. Work these top-down before P2.
       already been dismissed there for a reason** (trap 31: a dismissal is only
       as wide as the question that earned it).
 
-- [ ] **Two runs carry G2962 κύριος in `i` for a verse whose Greek has no
+
+      **ONE REPAIRED, TWO LEFT — 2026-09-03.**
+      **民數記 23:11's 巴勒 H319 -> H1111**: H319 is the **last word of
+      23:10**, a verse-boundary carry-over visible in two adjacent runs.
+      Checked corpus-wide: only three such cases exist, and the other two are
+      the G3450/G1473 inflection convention, not carry-over.
+      **利未記 4:17 left** — already dismissed by the tagging audit as
+      headword-printed, and it has three defensible readings, one of which is
+      the `H0` supplied-marker question.
+      **詩篇 119:126 left, and this is the load-bearing reason: it is not a
+      one-off.** 61 runs share the same H3069/H3068 disagreement with the
+      originals. Fixing one would make the corpus LESS consistent, not more.
+      Whether to sweep all 61 is a question for the publisher, filed below.
+
+- [x] **Two runs carry G2962 κύριος in `i` for a verse whose Greek has no
       κύριος — 使徒行傳 12:24, 20:32 and 馬太福音 21:29.** Measured 2026-08-24:
       13 runs corpus-wide have G2962 in `i` and ten of them are in verses that
       really do contain it. The other three sit exactly where the manuscript
@@ -2897,7 +2962,16 @@ reported. Work these top-down before P2.
       `assets/originals/` ships, and that is worth knowing before the 53-span
       pass trusts `i` as ground truth.
 
-- [ ] **馬可福音 6:33's 城的 is NOT in the 71 and that is a gap worth closing.**
+
+      **RECORDED, NO CHANGE — 2026-09-03. The measurement reproduces exactly
+      (13/10/3) and the entry has two errors, both of which STRENGTHEN its
+      conclusion.**
+      It says "Two runs" while naming three. And the stated reason is wrong
+      for 太 21:29: this is not a θεοῦ/κυρίου split but the **two-sons
+      transposition** — κύριε is at 21:**30**, token 11. The conclusion holds
+      either way; the reasoning behind it did not.
+
+- [x] **馬可福音 6:33's 城的 is NOT in the 71 and that is a gap worth closing.**
       It carries the article's G3588 while πόλεων's G4172 appears in no run of
       the verse — the exact shape the audit hunts — but 城的 is too rare a run
       text to reach the ≥20-occurrence bar, so the detector cannot admit it.
@@ -2906,7 +2980,20 @@ reported. Work these top-down before P2.
       run-text frequency would find them; the originals' word ORDER is the
       obvious candidate and has not been tried.
 
-- [ ] **182 stray spaces inside the word-tap corpus, low priority.** Measured
+
+      **MEASURED, VERSE LEFT UNREPAIRED — 2026-09-03. The entry's real ask
+      was the detector's reach, and the answer is small: it can judge 6.8% of
+      the corpus** (24,480 of 360,642 runs); 51.4% is below the >=20
+      occurrence bar.
+      The word-order ground truth this entry proposed was **built and
+      rejected**: 13,963 candidates, mostly false positives, structurally
+      unfixable — **and 馬可福音 6:33 itself refutes the method**, finding the
+      πόλις gap and then blaming 步行，.
+      城的 left unrepaired: 的 does correspond to τῶν, G4172 appears in no
+      run's `i`, and the verse carries a **second, unnoted gap** — 认识
+      answers G1097 where the Greek is ἐπέγνωσαν, G1921.
+
+- [x] **182 stray spaces inside the word-tap corpus, low priority.** Measured
       2026-08-24: 621 spaces in all, of which 429 are the edition's own gloss
       (`主 [雅偉] 誇口`) and 10 sit before a punctuation mark in a name list
       (`以巴錄 、`). The remaining 182 look like import residue —
@@ -2915,7 +3002,27 @@ reported. Work these top-down before P2.
       deliberately: a space is untidy, not untrue, and `coversVerse` ignores
       it. Anything done here must not touch the 429.
 
-- [ ] **The remaining stray ASCII punctuation in the word-tap corpus.**
+
+      **DONE 2026-09-03 — `tools/repair_tagged_stray_spaces.py`, 128 deleted
+      in 103 verses. The 182/10 carve-up above is wrong.**
+      621 total = **429 gloss** (untouched — `_tightenGloss` needs them as
+      input) + **64 that the FROZEN reading asset also spaces** + 128 that are
+      the import's alone. `cuvs-yhwh.json` carries 1,273 spaces of its own, 84
+      of them in running text, and 64 of the corpus's non-gloss spaces stand
+      in a context the SAME VERSE of it spaces — 撒迦利亞書 1:6 「他已照樣行
+      了。’ ”」, 1:9, 哈該書 2:3.
+      **Two independent transcriptions of one edition agreeing is the
+      strongest witness this repo has, and this is precisely the class it has
+      been burned on.** They stay. The gate is therefore per verse, not per
+      corpus: the same `” 他` survives in 撒迦利亞書 1:9 and goes in
+      撒母耳記上 3:5.
+      One test literal moved: `speaker_attribution_test.dart`'s expected
+      撒母耳記下 15:19 carried `说： 你是`, and that space was the hole THIS
+      REPO's own earlier `“`-deletion left behind. The reading asset reads
+      `说：你是`, so closing it moves the tagged line toward the verse it
+      renders in place of.
+
+- [x] **The remaining stray ASCII punctuation in the word-tap corpus.**
       Measured 2026-08-24, against zero occurrences in the reading assets:
       `,` 27 (21 verses), `.` 16 (13 verses), `!` 11 (11 verses), `;` 4
       (4 verses). Smaller and less certain than the bracket class — a comma
@@ -2930,7 +3037,29 @@ reported. Work these top-down before P2.
       verses of both reading assets** is the edition's translator-note feature,
       not import damage — it has a renderer.
 
-- [ ] **253 runs are tagged `H0`, which is not a Strong's number.** Mostly
+
+      **DONE 2026-09-03 — `tools/repair_tagged_ascii_punctuation.py`, 51
+      verses, 46 widened / 12 deleted / 4 kept. The counts above reproduce
+      exactly; two of the CONCLUSIONS were wrong.**
+      **`.` is not absent from the reading assets.** 羅馬書 8:34 stores
+      `<note: 有基督....或作…>` in BOTH `cuvs-yhwh.json` and
+      `cuvs-yhwh-tr.json`, and the tagged corpus stores the same four dots in
+      its own 〔…〕. Three transcription lines agreeing makes that the
+      edition's own ellipsis, so it stays and the real `.` population is 12,
+      not 16.
+      **`:` x56 is not wholly legitimate.** 52 do live inside cross-reference
+      notes, but **four stand in running text** — 使徒行傳 1:24, 路加福音
+      18:37, 羅馬書 4:18 and 約伯記 11:6 — where the reading asset sets the
+      full-width `：` in the same slot. Those four were outside the filed
+      scope and are now included.
+      Where the two transcriptions choose a DIFFERENT mark (a `,` at a break
+      the reading asset sets `；`), **only the width moved** — which mark this
+      transcription uses is its own choice, the rule settled at 約伯記 6:8.
+      Every position is in an explicit `DECISIONS` table; the tool refuses any
+      verse it has no decision for, and gates each on Chinese conserved and
+      `markup.distance` not increased.
+
+- [x] **253 runs are tagged `H0`, which is not a Strong's number.** Mostly
       雅伟 (1_chronicles 2:3, 16:21, 21:26 …). Measured 2026-08-24 while
       checking 耶利米書 4:22. Worth one iteration to find what the lexicon
       sheet does when a reader taps one: if it opens an empty or wrong entry
@@ -2939,7 +3068,19 @@ reported. Work these top-down before P2.
       behaviour before filing it as a defect** — the tag being odd is not
       itself a user-visible fault.
 
-- [ ] **Twelve runs carry a Strong's number and no word.** Ten shipped that
+
+      **SETTLED 2026-09-03: this was filed against a fix that had already
+      shipped, twelve days earlier.** The count is also 253 `H0` **+ 42 `G0`
+      = 295** — the entry counted `H0` only. `TaggedRun.isSuppliedMarker` has
+      mapped both to untagged since `663b798b` (2026-08-12), so
+      `_taggedVerseLine` draws no underline and attaches no recognizer:
+      **tapping one does nothing**, and 「Lexicon entry not found for H0」 has
+      been unreachable for three weeks. `test/tagged_supplied_words_test.dart`
+      pins 295. The 178-of-295 divine-name analysis re-derives exactly.
+      Nothing to do — the entry was written from the raw data without checking
+      what the shipped code does with it.
+
+- [x] **Twelve runs carry a Strong's number and no word.** Ten shipped that
       way (the importer numbered a Hebrew word this translation does not
       render); the 2026-08-24 bracket repair emptied two more whose only
       character was the stray brace. They no longer render — `_taggedVerseLine`
@@ -2947,6 +3088,27 @@ reported. Work these top-down before P2.
       is **data tidiness, not a reader-visible defect**, and is filed low
       deliberately. `test/tagged_stray_brackets_test.dart` pins the count at
       12; growth means a new import is dropping words.
+
+
+      **CLOSED 2026-09-03: all twelve explained against `assets/originals/`,
+      all twelve kept — and it is ELEVEN that carry a number.** 約伯記 5:3's
+      run is `{"w":"","s":"","g":["H8799"]}`: no text, no number, only the
+      aspect of the verb whose own run stands immediately in front. So the
+      entry's "twelve carry a Strong's number" is eleven.
+      Every one of the eleven names a word really present in that verse's
+      Hebrew, in the slot the run occupies. **Nine are genuinely unrendered**
+      — H853's object marker, prepositions folded into a verb, the second half
+      of a doubled Hebrew phrase the CUV prints once — and deleting them would
+      throw away the importer's record that the original carries a word the
+      translation does not. **Two are a number stranded one word off**
+      (以西結書 35:14, 耶利米書 38:16); those are the ALIGNMENT class, and
+      putting a fix for one defect inside the tool for another is how this
+      corpus gets worse — handed off rather than fixed here.
+      Not reader-visible either way: `_taggedVerseLine` emits
+      `runs.where((r) => r.text.isNotEmpty)`.
+      `test/tagged_wordless_runs_test.dart` pins **which** twelve and the
+      number each carries. A count alone cannot tell a re-import that swapped
+      one word-less run for another from one that changed nothing.
 
 - [x] **SETTLED 2026-08-24: production passes SANITISED text, the fallback is
       223, and the refuter that claimed otherwise was wrong.** The lead was
@@ -2973,7 +3135,7 @@ reported. Work these top-down before P2.
       figure directly (`fallback` 223, and 1,153 verses that pass the guard
       while reading long on sanitised input) so neither can drift again.
 
-- [ ] **Correct the stale 238 in `coversVerse`'s docstring and in
+- [x] **Correct the stale 238 in `coversVerse`'s docstring and in
       `originals_sheet.dart`.** Both say the guard costs the word-tap gesture
       on "238 of 31,102 (0.77%)". The measured figure on production's own
       input is **223** (0.72%), pinned by
@@ -2983,6 +3145,15 @@ reported. Work these top-down before P2.
       "compared on ideographs alone… the 〔…〕 the tagged import prints around
       a note differ freely" is describing the RAW comparison, which is not the
       one it performs.
+
+
+      **Corrected 2026-09-03, and re-measured rather than copied.** **223
+      (0.72%)** on `sanitizeForSearch(vo.verse.text)` — production's own input
+      — confirmed twice, by an independent Python census and by the pinned
+      Dart test. The raw census is 270. **238 is neither number.** Both places
+      now say WHICH input they mean, and the docstring's 〔…〕 clause is marked
+      as describing the raw comparison rather than the one the method
+      performs.
 
 - [ ] **馬太福音 17:21's tagged line supplies an apparatus this edition does
       not print there.** Found 2026-08-24 by the refuter, which broke my
@@ -3002,7 +3173,25 @@ reported. Work these top-down before P2.
       apparatus to make two imports agree is a call for the user, not a
       repair. Held in `EXPLAINED` in `audit_tagged_rendered_extras.py`.
 
-- [ ] **Four verses print a WORD the tagged import supplies and this edition
+
+      **2026-09-03: a third line of evidence, structural rather than external
+      — and it is not the symmetric standoff described above.**
+      The frozen reading asset's 太 17:20 ends with its quotation still
+      **OPEN** and closes it at the end of 17:21. **An apparatus bracket does
+      not close a quotation**, so this edition can only be reading 17:21 as
+      scripture inside the speech. `7a2dc43` does the same, AND sets
+      （有古卷加：…） across 18:10/18:11 where the convention does apply. That
+      is two independent lines against the tagged import.
+      **Still not fixed, and the reason has narrowed to one:** what would be
+      deleted is an instance of the publisher's OWN apparatus notation — the
+      exact class `docs/cuv-yhwh-publisher-notes.md` exists to protect after
+      three deletions of the same kind. Undoing it also needs a second edit
+      (the tagged 17:20's `”`, which the frozen asset lacks) or 17:21's closer
+      is orphaned and we create the defect the quote-balance item is about.
+      Both edits are ready and neither touches a Strong's number.
+      **It needs the publisher's word, not a script's.**
+
+- [x] **Four verses print a WORD the tagged import supplies and this edition
       does not: 士師記 15:2 我請求, 15:5 葡萄園, 15:18 現在, 撒下 21:2 大.**
       Confirmed 2026-08-24 to be on screen — they pass `coversVerse` and are
       rendered in place of the reader's verse. Deliberately NOT deleted with
@@ -3014,6 +3203,30 @@ reported. Work these top-down before P2.
       Strong's of its own and is the weakest of the four. The print reads the
       short form in all four. **Needs the user:** should the word-tap sheet
       show only what this edition prints, or what its tagger saw?
+
+
+      **FIXED 2026-09-03 — and the argument that held these for four months
+      was checkable and wrong.** The entry declined to delete because three of
+      the four render something the Hebrew really has, and removing them would
+      cost the app its account of the Hebrew.
+      **The app's account of the Hebrew is not in this corpus.**
+      `originals_sheet.dart` builds the word-chip row from
+      `OriginalsService.forVerse` -> `assets/originals/`, a different asset
+      with a different provenance, and נָא/H4994, כֶּרֶם/H3754, וְעַתָּה/H6258
+      and בְּקַנֹּאתוֹ/H7065 are all there with their own chip and lexicon
+      entry, before and after. The choice was never "print the edition or keep
+      the Hebrew" — it was "print the edition on the line that claims to BE
+      the edition, and keep the Hebrew where it already is".
+      Four witness lines read the short form (both frozen assets, `7a2dc43`,
+      the printed 1919) — the same 4-against-1 margin the fifteen restorations
+      required, pointing the other way. Two of the four are not even readings
+      of an unrendered word: 士 15:2 already renders נָא as 吧 later in the
+      same clause, and 撒下 21:2's 大 has no Hebrew word at all.
+      Two are in-run trims; 15:5's and 15:18's whole runs fold their number
+      into the following run's `i` (列王紀上 19:18's convention), so no run is
+      emptied. `audit_tagged_rendered_extras.py` now holds them in
+      `REPAIRED_SUPPLIED`, so a re-import that brings one back is a
+      REGRESSION rather than a fresh hit.
 
 - [x] **哥林多後書 13:5 (在你們裏面 / 在你們心裏) got its four-witness check
       on 2026-08-23 — and the fourth witness sided with US.** Our own tagged
@@ -3445,6 +3658,14 @@ reported. Work these top-down before P2.
       other pass, which is exactly how this repo has lost decisions before.
 
 
+      **2026-09-03 — re-measured, unchanged, and it needs ONE answer from the
+      user.** 爲/為 1883:0 vs 0:7952, 着/著 419:0 vs 0:2651, plus 羣/群, 衆/眾,
+      喫/吃, 牀/床 — **2,816 positions, sitting side by side on the word-tap
+      sheet.** The question: *should the Strong's lexicon be re-set in this
+      edition's orthography (為/著/群/眾/吃/床), or is OpenCC's standard
+      Traditional acceptable there?* One answer settles all of them.
+
+
 - [x] **The eleven word-level differences got their third witness — and it
       split them three ways: 2 repaired, 1 where OURS IS RIGHT and both
       witnesses are wrong, 10 that genuinely cannot be settled.** Done
@@ -3581,7 +3802,15 @@ reported. Work these top-down before P2.
       as-is to Traditional readers — `section_titles.json` at least has a proper
       `cuv` / `cuv-tr` split, so it is probably fine.
 
-- [ ] **`assets/sermons/zh-TW/` is a DIFFERENT and much smaller defect — do not
+
+      **2026-09-03 — measured, pinned, NOT touched: 951 of 1,575 `zh-Hant`
+      fields (60.4%) are untranslated, and 223 of 225 entries have at least
+      one.** There is **no render-time converter in `lib/`** — checked, not
+      assumed — so this prints Simplified prose to Traditional readers today.
+      Fixing it means converting 951 paragraphs of reader-facing copy. That is
+      a content decision, not a glyph repair, and it needs the user.
+
+- [x] **`assets/sermons/zh-TW/` is a DIFFERENT and much smaller defect — do not
       treat it as another instalment of the converter hole.** Found 2026-08-18
       while scoping 卜/蔔. 289 files. It was produced by a **phrase-aware**
       converter that does **not** have the hole at all: it holds 隻 453, 淨 358,
@@ -3710,6 +3939,19 @@ reported. Work these top-down before P2.
       merely unlikely. The refuter also corrected the arithmetic being claimed:
       67 of the substitutions are 谷→穀 and one is 殼→穀, and 3 of the 68 sit at
       a verse boundary so their "two-sided" match was really one-sided.
+
+
+      **DONE 2026-09-03 — and it was 109 more than filed, in two classes the
+      entry did not know about.** 恒 2, 採 4, **斗 12**, **麪 93**.
+      **斗 written 鬥 twelve times, and it is scripture**: 馬太福音 5:15 reads
+      「放在鬥底下」 nine times — the lamp under a *fight*. The tenth was found
+      by the repair's own test rather than by the survey, because the survey's
+      cue came from Matthew's wording while 075.txt quotes Luke 8:16 as
+      「或鬥底下」.
+      麪: 079.txt is a sermon on the leaven parable that writes 麪粉/麪包 21
+      times and 面 for the same word 61 times.
+      All 61 changed lines are identical in length — 129 single-character
+      swaps, no preacher's words altered.
 
 - [x] **以賽亞書 36:17 promised a land of husks — 「五殼」/「五壳」 in all three
       assets, 2026-08-17.** Not a conversion defect but a plain textual
@@ -3938,7 +4180,7 @@ reported. Work these top-down before P2.
       The bundled CJK subset `assets/fonts/NotoSansSC-YsWords.otf` already
       covers U+7F48, so 罈 renders rather than tofu.
 
-- [ ] **The Strong's glosses have the same converter hole, and they carry
+- [x] **The Strong's glosses have the same converter hole, and they carry
       their own witness.** Found 2026-08-18 by the refuter attacking the
       幹 instalment, which had claimed no other asset needed the repair —
       that claim was wrong, and this is the better half of what it found.
@@ -4044,7 +4286,17 @@ reported. Work these top-down before P2.
         Simplified twin reading 仑 rather than 伦. Prefer the twin over a rule
         about names, always.
 
-- [ ] **17 wrong 幹 in the Traditional sermon assets.** `assets/sermons/zh-TW/`
+
+      **APPLIED 2026-09-03 — 89 substitutions across 84 fields. The script had
+      been committed UNAPPLIED since 2026-08-18.**
+      All 39 rules were verified against their Simplified twin one at a time
+      before running, and **two proposed rules died on that check**:
+      複合->復合 would have corrupted 5 of 7 (複合字 is a compound *word*), and
+      回覆->回復 6 of 10 — G611/612/627 read 回覆 in their **Simplified**
+      fields, so opencc never chose it and there is nothing to undo.
+      Left alone: H6867 傷愈, which belongs to the 愈/癒 spin-off.
+
+- [x] **17 wrong 幹 in the Traditional sermon assets.** `assets/sermons/zh-TW/`
       holds 142 幹 across 60 files and **the great majority are correct** —
       才幹 (~40), 幹活, 幹什麼, 幹部, 樹幹, 軀幹, 主幹道, 幹掉. The 發/髮 shape
       again. The wrong ones are dryness: 哭幹了眼淚, 排幹了, 水庫幹了,
@@ -4052,6 +4304,11 @@ reported. Work these top-down before P2.
       幹擾 ×2 which is 干. Lower priority than the Strong's item — these are
       sermon transcripts, not scripture — but they are reader-visible prose
       and there is no witness for them, so each has to be read.
+
+
+      **DONE 2026-09-03 — 18, not 17.** Applied by
+      `tools/repair_tw_sermon_dry_glyph.py`. No preacher's words changed: the
+      changed lines are identical in length, single-character swaps only.
 
 - [x] **`丶` stood in for the enumeration comma 、 in 53 places, in BOTH
       editions. DONE 2026-08-19 — 150 substitutions across 30 verses per
@@ -4409,7 +4666,7 @@ reported. Work these top-down before P2.
       fail on the pre-fix data (the fourth is the only-punctuation-moved
       invariant, which holds both ways by design).
 
-- [ ] **The word-tap corpus has 2,480 verses with more opening than closing
+- [x] **The word-tap corpus has 2,480 verses with more opening than closing
       quotation marks, and 35 of its 66 books never reconcile.** Measured by
       the refuter 2026-08-24 while attacking the three-verse fix above, and it
       is the honest framing of that fix: three verses is a real repair and a
@@ -4425,6 +4682,42 @@ reported. Work these top-down before P2.
       The tractable next cut, for whoever takes this: the 9 close-before-open
       events, which cannot be house style — a `”` with nothing open is either a
       stray or evidence of an opening mark lost earlier.
+
+
+      **CLOSED 2026-09-03: 2,485 verses, and NONE of them is a repairable
+      defect.**
+      The headline number is not reproducible at any commit — 2,487 before
+      `d03c81d2`, 2,485 at all nine commits since. **Every other figure here
+      reproduces exactly once the premise is stated, which it was not:**
+      `“`/`”` only (`‘`/`’` balances on its own books; `「」` does not occur),
+      〔…〕 stripped, a running stack **per book**. The per-book figures are
+      unclosed opens, not net difference, which is why 結 is 70 and not 69.
+      Take the 2,488 verses carrying an open that closes elsewhere or never
+      (1,884 later, 604 never) and ask what the frozen reading asset does at
+      the same reference: **1,244 punctuate identically** — this edition's own
+      house style, in a file we cannot edit; **1,243 carry no quotation mark
+      in that verse at all** — the corpus is a separate transcription line
+      that punctuates 4,043 verses the reading text leaves bare, so there is
+      no second reading to repair towards; and **one**, 詩篇 11:1, where the
+      two imports differ — and that is **scope, not loss**: the frozen edition
+      closes the taunt at the end of 11:1, the corpus runs it to 11:3, both
+      are complete quotations. Left under the 使徒行傳 9:29 rule.
+      The editorial-`[…]` bucket is **empty by construction** (stripping notes
+      moves the total by zero), and "spans runs" is not a category at all —
+      quotation marks are not required to balance within a run.
+      **The tractable cut — the 9 orphan closers — split down the same line.**
+      Four are carried identically by the frozen asset (出 3:5, 得 1:17,
+      可 5:34, 西 1:23) and are the publisher's; repairing them in the corpus
+      alone would make the sheet disagree with the pane behind it. Five lived
+      in three verses the reading asset does not punctuate at all and were
+      repaired: **`：”` occurred exactly TWICE in 31,102 verses against 5,096
+      `：“`**, at 撒上 23:7 and 摩 9:13; and 結 3:9's closer was right while
+      3:4's opener was lost — 3:4 is the only `他對我說：` in 以西結書 2-3 with
+      no mark, and the witness reads `說：「` there and closes at 3:9.
+      Nine events -> four, 35 unreconciled books -> 33, no ideograph moved.
+      **The invariant `test/tagged_quote_balance_test.dart` pins is not the
+      count — it is that every orphan closer left is one the frozen edition
+      also carries**, so a newly imported one fails even if the total holds.
 
 - [x] **啟示錄 2:1, 2:8, 2:12, 2:18 and 3:1 nested `「` directly inside `「` —
       FIXED 2026-08-24, five substitutions in all three assets, and ONLY five.**
@@ -4477,7 +4770,7 @@ reported. Work these top-down before P2.
       have sent a later iteration to "restore" a character that is already
       there. **Check the asset before working an item, not just the queue.**
 
-- [ ] **梁家鏗's Traditional NT has the same classifier defect, smaller.**
+- [x] **梁家鏗's Traditional NT has the same classifier defect, smaller.**
       `assets/biblexg-v2-tr.json` has 398 只 against only 50 隻, and at
       least one is certainly wrong: **路加福音 5:7 「把兩只船裝得滿滿的」**
       — a classifier after 兩, which its own 「一隻羊」 elsewhere shows it
@@ -4492,7 +4785,29 @@ reported. Work these top-down before P2.
       So its converter was not the same one, but it was not clean either, and
       **the notes are as reader-visible as the verses**.
 
-- [ ] **Audit every OTHER Traditional asset for the eight glyph holes already
+
+      **THERE IS NO DEFECT — 2026-09-03, and it took a revert to find that
+      out. This is the most useful entry in this section; read it before
+      "correcting" any biblexg reading.**
+      Ten readings were measured that looked exactly like one-to-many
+      conversion errors (隻, 崙, 穀, 癒), a guarded idempotent repair was
+      written and applied — and `test/traditional_conversion_test.dart`
+      failed. **Its docstring already said why**: *"This test asserts
+      conformity to the publisher's own Traditional edition, not to good
+      Chinese"*, and it names 谷糧/踹谷 as readings a previous pass had
+      "corrected" and been wrong about. The identical mistake was made on the
+      identical two readings plus eight more.
+      Settled by checking the SOURCE rather than arguing: 讀_繁_註釋本 2025
+      第二版, five PDFs, extracted with `pdftotext`. **The print reads all ten
+      exactly as our asset already had them** — 兩只麻雀, 兩只船, 希斯侖, 治愈,
+      愈合, 谷糧, 踹谷. Reverted in full (`ff610db9`).
+      **The most convincing argument was the most wrong.** 兩只麻雀 was
+      justified by the same verse reading 「一隻也不會」 nine characters later,
+      and by 路 12:6 reading 「五隻麻雀」. Both are true — **of the printed
+      edition**. An asset's internal inconsistency is evidence about the
+      SOURCE, not about our conversion.
+
+- [x] **Audit every OTHER Traditional asset for the eight glyph holes already
       fixed in the CUV.** Every instalment so far (隻, 淨/牆/餘, 髮, 鬍/鬚/採,
       麵, 罈, 穀, 鬆) was counted in `assets/cuvs-yhwh-tr.json` and nowhere
       else, so the same holes may sit unfixed in the other Traditional-bearing
@@ -4519,6 +4834,18 @@ reported. Work these top-down before P2.
       same hole signature the CUV had. Do NOT blanket-substitute — several of
       these (松/杜松, 谷/山谷, 發/出發, 面/前面, 余/其余) are correct far more
       often than not.
+
+
+      **DONE 2026-09-03 — 23 glyph pairs x every asset, and the audit only
+      became meaningful after two corrections.**
+      **Lanes:** most assets are bilingual in ONE file (`zh-Hans` beside
+      `zh-Hant`, `sets.cuv` beside `sets.cuv-tr`, `glossZh` beside
+      `glossZhTw`), so counting whole-file produced **12 spurious HOLEs**.
+      **Variant sets: 麵 and 麪 are BOTH standard and this repo uses both** —
+      CUV and biblexg set 麵, the Strong's lexicon and the zh-TW sermons set
+      麪 — so counting only 麵 reported the lexicon and all 289 transcripts as
+      flour holes. A `--suspects` mode does the actionable work; a raw count
+      of 面 decides nothing.
 
 - [x] **20 Bible Evidence cards printed a narrower passage than the one
       they cite.** Found while investigating the 「两个经文只能去一个」
