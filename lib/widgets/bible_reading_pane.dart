@@ -56,6 +56,8 @@ import 'package:yswords/utils/illustration_grouping.dart';
 // scroll-restore complexity. Only `prepareJumpToVerse` is still
 // used in this file (jump-to-reference flow on a verse tap).
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
+import 'package:yswords/utils/note_markdown.dart'
+    show NoteFormatAction, NoteMarkdownMode, applyNoteFormat;
 import 'package:yswords/utils/note_reference_parser.dart'
     show
         extractNoteReferences,
@@ -4512,6 +4514,14 @@ class _RefHighlightingController extends TextEditingController {
       baseStyle: style ?? const TextStyle(),
       refColor: scheme.primary,
       refBackgroundColor: scheme.primaryContainer.withValues(alpha: 0.35),
+      // 2026-09-03: SOURCE, not render. Bold / italic / list markers
+      // are styled but never removed, so these spans still contain
+      // exactly `text` — which Flutter requires of a
+      // TextEditingController, and which spliceComposingUnderline
+      // below relies on to place the IME underline by absolute
+      // character offset. Hiding a delimiter here would desynchronise
+      // the caret from the glyphs on the first `**` the user typed.
+      markdown: NoteMarkdownMode.source,
     );
 
     // Splice the IME composing-region underline into our highlighted
@@ -4602,6 +4612,13 @@ void showNoteEditor({
   }
   final controller = _RefHighlightingController(text: initialBody);
   final titleController = TextEditingController(text: prefillTitle ?? '');
+  // 2026-09-03: the body field needs a node the formatting strip can
+  // hand focus back to. Tapping B / I / list moves focus to the
+  // IconButton, and without this the caret `applyNoteFormat` just
+  // placed between a fresh `**` pair would be somewhere the next
+  // keystroke never reaches. Requesting focus back is what makes
+  // "tap bold, then type" behave the way it does in any other editor.
+  final bodyFocus = FocusNode();
   // Reference label: single verse → "Genesis 1:16"; range → "Genesis 1:16-18".
   String ref;
   if (verses.length == 1) {
@@ -4968,6 +4985,62 @@ void showNoteEditor({
                 color: scheme.outlineVariant.withValues(alpha: 0.6),
                 height: 12,
                 thickness: 1),
+            // 2026-09-03: the formatting strip — bold, italic, list,
+            // and nothing else. That is the scope the user picked over
+            // a full rich-text editor.
+            //
+            // The buttons write Markdown into the same plain String the
+            // note has always been (see note_markdown.dart for why the
+            // storage did not change). They exist because nobody should
+            // have to know Markdown to get a bold word — but a user who
+            // does know it can type `**x**` directly and get the same
+            // result, and the field renders both live in source mode.
+            Builder(builder: (fmtCtx) {
+              Widget button(
+                  NoteFormatAction action, IconData icon, String stringKey) {
+                final label = uiStrings[stringKey]?[locale] ?? '';
+                return Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: IconButton(
+                    icon: Icon(icon, size: 20),
+                    tooltip: label,
+                    visualDensity: VisualDensity.compact,
+                    constraints:
+                        const BoxConstraints(minWidth: 40, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                    color: scheme.onSurfaceVariant,
+                    onPressed: () {
+                      final edit = applyNoteFormat(
+                          controller.text, controller.selection, action);
+                      controller.value = TextEditingValue(
+                        text: edit.text,
+                        selection: edit.selection,
+                      );
+                      // Same reason the "+ Verse" button below calls
+                      // this: a programmatic controller write never
+                      // fires TextField.onChanged, so the ref-chip
+                      // strip would not rebuild on its own.
+                      setSheetState(() {});
+                      bodyFocus.requestFocus();
+                    },
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    button(NoteFormatAction.bold, Icons.format_bold_rounded,
+                        'noteFormatBold'),
+                    button(NoteFormatAction.italic,
+                        Icons.format_italic_rounded, 'noteFormatItalic'),
+                    button(NoteFormatAction.bulletList,
+                        Icons.format_list_bulleted_rounded, 'noteFormatList'),
+                  ],
+                ),
+              );
+            }),
             // 2026-05-24 (v1.2.92): always-fullscreen body TextField.
             // Was a compact/fullscreen branching (v1.2.62) before
             // the v1.2.92 simplification. Wrap in Expanded so the
@@ -5007,6 +5080,7 @@ void showNoteEditor({
                 },
                 child: TextField(
                   controller: controller,
+                  focusNode: bodyFocus,
                   autofocus: true,
                   maxLines: null,
                   expands: true,
@@ -5312,6 +5386,7 @@ void showNoteEditor({
     // 2026-05-24 (v1.2.91): same hygiene for the new title
     // controller.
     titleController.dispose();
+    bodyFocus.dispose();
     Future.delayed(const Duration(milliseconds: 50), restoreScroll);
   });
   // After the sheet has had time to animate up + the keyboard to

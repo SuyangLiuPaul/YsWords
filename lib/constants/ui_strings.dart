@@ -305,6 +305,17 @@ const uiStrings = {
   },
   'noteSave': {'zh-Hans': '保存', 'zh-Hant': '儲存', 'en': 'Save'},
   'noteDelete': {'zh-Hans': '删除', 'zh-Hant': '刪除', 'en': 'Delete'},
+  // 2026-09-03: the note editor's formatting strip. Bold, italic and
+  // lists — the scope the user picked over a full rich-text editor.
+  // These are tooltips on icon-only buttons, so they carry the whole
+  // accessible label; keep them noun-free and imperative.
+  'noteFormatBold': {'zh-Hans': '加粗', 'zh-Hant': '粗體', 'en': 'Bold'},
+  'noteFormatItalic': {'zh-Hans': '斜体', 'zh-Hant': '斜體', 'en': 'Italic'},
+  'noteFormatList': {
+    'zh-Hans': '项目符号列表',
+    'zh-Hant': '項目符號清單',
+    'en': 'Bulleted list',
+  },
   // 2026-05-20 (v1.2.62): WeChat-style fullscreen toggle on the
   // note editor sheet. Compact ↔ fullscreen.
   'noteExpand': {
