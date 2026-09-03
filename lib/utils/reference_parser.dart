@@ -248,8 +248,24 @@ final RegExp _cnNumShape = RegExp(
   r'(?:[〇零]?([一二三四五六七八九]))?$',
 );
 
+/// 119 read digit by digit — 331's 「詩篇一一九篇103節」, which is how a
+/// three-digit psalm is spoken. It cannot collide with [_cnNumShape]: a
+/// well-formed numeral of three characters or more always carries a 十
+/// or a 百, so a run of nothing but single digits is exactly the set
+/// that shape already refuses.
+///
+/// THREE characters, measured rather than fitted. The sermon corpus
+/// holds 238 two-character pure-digit runs in 14 spellings and every one
+/// is prose — 「三四年」 is "three or four years", 「唯一一節」 is "the only
+/// verse" — so a two-character reading would invent citations wholesale.
+/// At three and up there are 13 runs in 4 spellings, and only 一一九
+/// lands in 1..199; 二一四 and the years 一九五八 / 一九五三 are refused by
+/// the range check that was already here.
+final RegExp _cnDigitString = RegExp(r'^[〇零一二三四五六七八九]{3,}$');
+
 /// Parse 一 / 十二 / 二十三 / 一百一十九 to an int in 1..199, or null when
-/// [s] is not a well-formed numeral.
+/// [s] is not a well-formed numeral. A run of three or more bare digits
+/// is read as a digit STRING: 一一九 is 119, not a sum.
 ///
 /// Ported from `cn_number` in `scripts/extract_sermon_refs.py`. The two
 /// must agree: the script decides which references the sermon index
@@ -258,7 +274,14 @@ final RegExp _cnNumShape = RegExp(
 /// will not underline.
 int? cnNumber(String s) {
   final m = _cnNumShape.firstMatch(s);
-  if (m == null) return null;
+  if (m == null) {
+    if (!_cnDigitString.hasMatch(s)) return null;
+    var d = 0;
+    for (final c in s.split('')) {
+      d = d * 10 + (_cnDigits[c] ?? 0);
+    }
+    return (d > 0 && d < 200) ? d : null;
+  }
   var n = 0;
   if (m.group(1) != null) n += _cnDigits[m.group(1)]! * 100;
   if (m.group(3) != null) {

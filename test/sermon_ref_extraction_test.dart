@@ -43,6 +43,136 @@ json.dump([mod.extract_refs(t) for t in json.loads(sys.argv[1])], sys.stdout)
       .toList();
 }
 
+/// Counts, over the whole sermon corpus, of the shapes the open queue
+/// entries around this script are priced on. Driven through the REAL
+/// module — `REF_RE`, `_AND_SECOND_REF`, `cn_number`, `_UNIT_AFTER` and
+/// the reach-back helper — because a Dart transcription of those regexes
+/// would only prove Dart agrees with Dart.
+///
+/// One process for all of it: a `REF_RE` pass over 28 MB costs about
+/// seven seconds and the counts are read once per suite run.
+Map<String, int> _corpusCensus() {
+  const driver = r'''
+import importlib.util, json, re, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location(
+    "esr", "scripts/extract_sermon_refs.py")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+
+S = Path("assets/sermons")
+texts = []
+for s in json.loads((S / "index.json").read_text(encoding="utf-8")):
+    if s.get("passage"):
+        texts.append(s["passage"])
+    for lang in ("en", "zh-CN", "zh-TW"):
+        p = S / lang / f'{s["id"]}.txt'
+        if p.exists():
+            texts.append(p.read_text(encoding="utf-8"))
+
+CANON, ALIAS = mod.CANON, mod.ALIAS
+c = dict(bodies=len(texts))
+
+# A bare ordinal plus an ABBREVIATED numbered-book name, in the chapter
+# slot of another book: NUMBERED_TAIL_RE is built from full names only.
+_tails = set()
+for _canon, _lst in mod.ENGLISH_ALIASES.items():
+    if _canon[0].isdigit() and " " in _canon:
+        for _a in _lst:
+            _t = re.sub(r"^(?:[123]|I{1,3})\s*", "", _a)
+            if _t and _t != _canon.split(" ", 1)[1]:
+                _tails.add(_t)
+_ABB = "(?:" + "|".join(re.escape(t) for t in
+                        sorted(_tails, key=lambda s: (-len(s), s))) + ")"
+_SHAPE2 = re.compile(
+    rf"(?:{mod.BOOK_RE})\s*[,，]?\s*(?:chapters?|ch\.|第)?\s*[1-3]\s+{_ABB}\b")
+
+# English clock markers only. 时/時 is the ordinary word "when", counted
+# separately as the price of ever writing a Chinese half.
+_CLOCK = re.compile(r"\s*(?:[ap]\.?m\.?\b|o'clock\b)", re.IGNORECASE)
+_WHEN = re.compile(r"\s*[时時]")
+_CV = re.compile(r"\b\d{1,2}\s*[:：]\s*\d{2}\b")
+
+_RUN = re.compile(rf"{mod._CN_NUM_RE}+")
+_D2 = re.compile(r"^[〇零一二三四五六七八九]{2}$")
+_D3 = re.compile(r"^[〇零一二三四五六七八九]{3,}$")
+
+c.update(abbrevTailSites=0, newlineCarryMatches=0, clockAfterCitation=0,
+         clockTokens=0, clockTokensMarked=0, whenAfterCitation=0,
+         markedUnitWordSites=0, bareCommaVerseMatches=0, gappedTailRoom=0,
+         bareGappedAndLists=0, bareGappedVerseLists=0,
+         digitRuns2=0, digitRuns3plus=0, digitRunsResolved=0,
+         verseMarkGuardSites=0, reachBackSites=0)
+
+for text in texts:
+    c["abbrevTailSites"] += len(_SHAPE2.findall(text))
+    for m in mod._AND_SECOND_REF.finditer(text):
+        if "\n" in m.group(0):
+            c["newlineCarryMatches"] += 1
+    for m in _CV.finditer(text):
+        c["clockTokens"] += 1
+        if _CLOCK.match(text, m.end()):
+            c["clockTokensMarked"] += 1
+    for m in _RUN.finditer(text):
+        s = m.group(0)
+        if _D2.match(s):
+            c["digitRuns2"] += 1
+        elif _D3.match(s):
+            c["digitRuns3plus"] += 1
+            if mod.cn_number(s) is not None:
+                c["digitRunsResolved"] += 1
+    for m in mod.REF_RE.finditer(text):
+        canon = ALIAS.get(mod.normalize_alias(m.group("book")))
+        if not canon:
+            continue
+        if _CLOCK.match(text, m.end()):
+            c["clockAfterCitation"] += 1
+        if _WHEN.match(text, m.end()):
+            c["whenAfterCitation"] += 1
+        ch = (int(m.group("ch")) if m.group("ch") is not None
+              else mod.cn_number(m.group("chcn")))
+        if ch is None:
+            continue
+        verse = mod._int(m.group("v") or m.group("v2"),
+                         m.group("vcn") or m.group("vcn2"))
+        last = mod._int(m.group("vend") or m.group("vend2"),
+                        m.group("vendcn") or m.group("vendcn2"))
+        word = (m.group("chword") is not None
+                or m.group("chcomma") is not None)
+        marked = word or m.group("chmark") is not None
+        if marked and not verse and mod._UNIT_AFTER.match(text, m.end()):
+            c["markedUnitWordSites"] += 1
+        if not m.group("chmark"):
+            end = m.end("ch") if m.group("ch") else m.end("chcn")
+            if (text[end:end + 1] in ("节", "節")
+                    and len(CANON.get(canon, {1: 0})) > 1):
+                c["verseMarkGuardSites"] += 1
+                if mod._same_sentence_chapter(text, m.start()) is not None:
+                    c["reachBackSites"] += 1
+        if m.group("vbare") is None or verse is None:
+            continue
+        c["bareCommaVerseMatches"] += 1
+        if ch < verse <= max(CANON.get(canon, {0})):
+            c["gappedTailRoom"] += 1
+        if (m.group("vand") is not None and last is not None
+                and last != verse + 1):
+            c["bareGappedAndLists"] += 1
+            if not word:
+                c["bareGappedVerseLists"] += 1
+
+json.dump(c, sys.stdout)
+''';
+  final process = Process.runSync(
+    'python3',
+    ['-c', driver],
+    stdoutEncoding: utf8,
+    stderrEncoding: utf8,
+  );
+  expect(process.exitCode, 0, reason: process.stderr.toString());
+  return (jsonDecode(process.stdout as String) as Map<String, dynamic>)
+      .map((k, v) => MapEntry(k, v as int));
+}
+
 /// `_zhAliasToEn` is private, so it is read from source — which is also
 /// what the extraction script does, and pins the shape both rely on.
 Map<String, String> _zhAliasToEnFromSource() {
@@ -263,23 +393,14 @@ void main() {
     // mid-word — 010's real sentence has a hard punctuation break right
     // before 詩篇, so `infix` is unset and the old guard (restricted to
     // the infix branch) let "Psalms 27" through even though the
-    // paragraph is expounding Psalm 37 and 27 is the verse. 247's real
-    // sentence states the chapter (19) three words before the book name
-    // repeats with a verse-marked number; nothing is filed for it
-    // because the chapter is not adjacent to the book name here, and
-    // 247 loses nothing corpus-wide because two other, chapter-marked
-    // citations of Revelation 12 survive elsewhere in the same file.
+    // paragraph is expounding Psalm 37 and 27 is the verse. Its chapter
+    // is three SENTENCES back, so the reach-back below cannot reach it
+    // either and nothing is filed.
     test('refuses the boundary form too, not just the infix one', () {
       expect(
-          _extractAll([
-            '他是一个行义的人。诗篇第二十七节说："你当离恶行善。"第二十九节：'
-                '"义人必承受地土。"',
-            '然后在第19章，启示录12节，一个荣耀的人物出现，头戴冠冕。',
-          ]),
-          [
-            <String>[],
-            <String>[],
-          ]);
+          _extractRefs('他是一个行义的人。诗篇第二十七节说："你当离恶行善。"'
+              '第二十九节："义人必承受地土。"'),
+          isEmpty);
     });
 
     // 第二次 is "a second TIME". The English unit-word guard had no
@@ -493,6 +614,193 @@ void main() {
         }
       }
       expect(missed, isEmpty, reason: missed.join(', '));
+    });
+  });
+
+  // 2026-09-03. 247 states its chapter three words before the book name
+  // repeats with a verse-marked number, and the 節-says-verse refusal
+  // above was throwing the whole clause away. The rescue lives INSIDE
+  // that refusal, so its firing zone is the refusal's own 12 corpus
+  // sites and cannot be wider; four of the twelve find a chapter and
+  // both readings are right. Corpus effect: +1 key, −0.
+  group('a chapter stated earlier in the same sentence', () {
+    test('247 recovers Revelation 19:12', () {
+      expect(
+          _extractRefs('然后在第19章，启示录12节，一个荣耀的人物出现，头戴冠冕。'),
+          ['Revelation 19:12']);
+    });
+
+    // The other live site. 365 already held Psalms 40:6 from the very
+    // next clause, which is why the rescue is +1 and not +2 — and why
+    // this sentence is the one that shows the reading is right rather
+    // than merely new.
+    test('365 reads 「取自第40篇詩篇第6節起」 as Psalms 40:6', () {
+      expect(
+          _extractRefs('这是多么奇妙的经文！取自第40篇诗篇第6节起，诗篇40:6。'),
+          contains('Psalms 40:6'));
+    });
+
+    // A sentence, not a paragraph. 010's Psalm 37 is real and three
+    // sentences back; reaching it would mean reaching any number that
+    // ended a paragraph, and 016 names no chapter at all.
+    test('does not reach across a sentence stop', () {
+      // 010's shape. Psalm 37 is stated, and stated citations are filed
+      // as themselves — but the 第二十七節 two sentences later reaches
+      // nothing, so neither Psalms 37:27 nor a bare Psalms 27 appears.
+      expect(
+          _extractRefs('主耶稣从诗篇第三十七篇取了这些话。他是一个行义的人。'
+              '诗篇第二十七节说："你当离恶行善。"'),
+          ['Psalms 37']);
+      // 016 names no chapter anywhere in the sentence.
+      expect(_extractRefs('你看，在马太福音第十八节，那里的词是"恶念"'), isEmpty);
+    });
+
+    // A comma is not a sentence stop — 247's chapter sits behind exactly
+    // one 「，」, so this is the boundary the rule turns on.
+    test('a comma is not a stop', () {
+      expect(_extractRefs('然后在第19章，启示录12节'), ['Revelation 19:12']);
+      expect(_extractRefs('然后在第19章。启示录12节'), isEmpty);
+    });
+
+    // The chapter must be BARE. Here it belongs to Matthew, which REF_RE
+    // has already filed, and lending it to Luke would invent a citation.
+    // No corpus site has this shape; it is the one the rule would be
+    // wrong for, so it is refused by construction rather than by luck.
+    test('does not borrow a chapter that belongs to another book', () {
+      expect(_extractRefs('在马太福音第5章，路加福音12节'), ['Matthew 5']);
+    });
+
+    // 但 is "but", and the single-CJK-character abbreviation rule demands
+    // a verse or a 章 as proof that it is Daniel. The rescue must not be
+    // the thing that supplies that proof. Inert on the corpus — 106 and
+    // 150's real sentences begin at the clause — and asserted because it
+    // is one transcript away from firing.
+    test('does not rescue a single-character abbreviation', () {
+      expect(_extractRefs('在第13章，但第11节给出了更深的含义'), isEmpty);
+    });
+  });
+
+  // The open queue entries around this script rest on counts, and a
+  // count measured once decays silently. These run the REAL regexes over
+  // the whole corpus so that the day a transcript changes the picture,
+  // the suite says so instead of the entry going on claiming a number
+  // nobody has re-derived. Every figure here was re-measured 2026-09-03.
+  group('the corpus census the open entries rest on', () {
+    // Computed once for the group. `expect` cannot run in a group body,
+    // and the census is a seven-second `REF_RE` pass, so neither a
+    // per-test call nor a group-body call will do.
+    late final Map<String, int> c;
+    setUpAll(() => c = _corpusCensus());
+
+    test('the census actually read the corpus', () {
+      expect(c['bodies'], greaterThan(1000));
+    });
+
+    // "The 2026-08-25 boundary relaxation is not additive by
+    // construction." `NUMBERED_TAIL_RE` is built from full names only,
+    // so a constructed 「在馬太福音 2 Cor 5:17」 eats the 2 and loses
+    // 2 Corinthians 5:17. Teaching the tail rule about abbreviations was
+    // built and measured: +0 −0. Zero sites is why it did not ship.
+    test('no citation puts an abbreviated numbered book in a chapter slot',
+        () {
+      expect(c['abbrevTailSites'], 0,
+          reason: 'the first Chinese sentence with an English citation '
+              'inside it lands here — see docs/autonomous-queue.md');
+    });
+
+    // "The list carry's `\s*` crosses a newline." Closed 2026-09-03 with
+    // `[^\S\n]*`, which is what `zhChapterMarkTailPattern` always used.
+    // The corpus never had a site, and this pins that the pattern cannot
+    // grow one back.
+    test('the list carry never spans a newline', () {
+      expect(c['newlineCarryMatches'], 0);
+      expect(_extractRefs('Genesis 1:1\n\nand 2:2'), ['Genesis 1:1']);
+      expect(_extractRefs('Genesis 1:1 and 2:2'),
+          ['Genesis 1:1', 'Genesis 2:2']);
+    });
+
+    // "A clock time would be carried if one ever followed a citation."
+    // The corpus has 1,328 `C:V`-shaped tokens and exactly two are
+    // clocks — 160's "Communion at 1:15" and 230's "9:20 pm" — and
+    // neither sits after a citation. No guard shipped.
+    //
+    // `whenAfterCitation` is why a Chinese half of that guard must never
+    // be written: 时/時 after a citation is the ordinary word "when"
+    // (「當你回頭看馬太福音第5章時」), 28 times, every one of them real.
+    test('no clock time sits where a citation could carry it', () {
+      expect(c['clockAfterCitation'], 0);
+      expect(c['clockTokens'], 1328);
+      expect(c['clockTokensMarked'], 2);
+      expect(c['whenAfterCitation'], 28,
+          reason: 'a 时/時 guard would delete this many real citations');
+    });
+
+    // "`marked` disables the unit-word guard." Zero sites, and the
+    // measurement is symmetric: removing `not marked` from the guard is
+    // also +0 −0, so the corpus cannot price the exemption in either
+    // direction and the reasoning stands unchallenged.
+    test('no marked citation is followed by a unit word', () {
+      expect(c['markedUnitWordSites'], 0);
+      // The class it would be about, kept executable.
+      expect(_extractRefs('in Genesis, chapter 3 times'), ['Genesis 3']);
+      expect(_extractRefs('the word occurs in Deuteronomy 43 times'),
+          isEmpty);
+    });
+
+    // "The same chapter-list defect survives when the list is NOT
+    // consecutive." Attempted and deliberately not shipped 2026-08-26;
+    // these are the four counts that decision was priced on, re-derived
+    // rather than copied. The one gapped bare list in the corpus is
+    // 004's CHAPTER list, which the spelled-out chapter word already
+    // refuses — so the rule would be inert, and an inert rule cannot be
+    // validated by the corpus at all.
+    test('the corpus still holds no bare gapped VERSE list', () {
+      expect(c['bareGappedVerseLists'], 0,
+          reason: 'one of these prices the trade — see the queue entry');
+      expect(c['bareGappedAndLists'], 1, reason: "004's chapter list");
+      expect(c['bareCommaVerseMatches'], 20);
+      expect(c['gappedTailRoom'], 4,
+          reason: 'the rule would fire on this many of the 20');
+    });
+
+    // What the rule would have destroyed: three genuine verse citations
+    // that survive today only because no gapped `and` happens to follow
+    // them. Asserted as the sentences one word away from the defect.
+    test('the three at-risk citations still read as verses', () {
+      expect(_extractAll([
+        'for example, fear of man we have in Matthew 10, 26. Where the '
+            'Lord says, do not fear',
+        'the reality of our living, in him. Zechariah 2, 5. Even going '
+            'back to the',
+        'Matthew 5, 10 to 12. And this is what we read',
+      ]), [
+        ['Matthew 10:26'],
+        ['Zechariah 2:5'],
+        ['Matthew 5:10', 'Matthew 5:11', 'Matthew 5:12'],
+      ]);
+    });
+
+    // "一一九 is 119 read digit-by-digit." Shipped 2026-09-03 in both
+    // implementations. The floor is three characters and these are the
+    // counts it rests on: 242 two-character bare-digit runs, all prose,
+    // against 13 longer ones of which only 一一九 lands in 1..199.
+    test('the digit-string reading admits exactly one corpus spelling',
+        () {
+      expect(c['digitRuns2'], 242);
+      expect(c['digitRuns3plus'], 13);
+      expect(c['digitRunsResolved'], 2, reason: "331's two bodies");
+      expect(_extractRefs('也在诗篇十九篇10节；诗篇一一九篇103节等等'),
+          ['Psalms 19:10', 'Psalms 119:103']);
+      // 042's 二一四 and the years stay out on the range check.
+      expect(_extractRefs('诗篇二一四篇3节'), isEmpty);
+    });
+
+    // The reach-back's firing zone, pinned so that a widening of the
+    // 節-says-verse refusal cannot quietly widen the rescue with it.
+    test('the reach-back can only fire inside the refusal it rescues',
+        () {
+      expect(c['verseMarkGuardSites'], 12);
+      expect(c['reachBackSites'], 4, reason: "247 and 365, both bodies");
     });
   });
 

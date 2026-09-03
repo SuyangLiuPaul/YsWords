@@ -441,11 +441,43 @@ _CN_NUM_SHAPE = re.compile(
     r"(?:[〇零]?(?P<u>[一二三四五六七八九]))?$")
 
 
+# 119 read digit by digit — 331's 「詩篇一一九篇103節」, which is how a
+# three-digit psalm is spoken. It cannot collide with the structural
+# form above: a well-formed numeral of three characters or more always
+# carries a 十 or a 百, so a run that is nothing but single digits is
+# exactly the set `_CN_NUM_SHAPE` already refuses.
+#
+# THREE characters, and the threshold is measured rather than fitted.
+# The corpus holds 238 two-character pure-digit runs in 14 spellings
+# (一一 100×, 三四 44×, 五六 28×, 四五 25× …) and every one of them is
+# prose — 「三四年」 is "three or four years", 「五五分成」 is a fifty-fifty
+# split, 「唯一一節」 is "the only verse". Reading those as 11, 34, 56
+# would invent citations wholesale. At three characters and up the whole
+# corpus holds 13 runs in 4 spellings: 二一四 (8×, sermon 042 — and the
+# preacher reads it digit by digit himself), 一九五八 and 一九五三
+# (years), and 一一九 (2×, 331). Of those only 一一九 lands in 1..199, so
+# the range check the structural form already applies is what refuses
+# the other three, not a rule written for them.
+#
+# Corpus effect, measured both ways: +2 −0, the two bodies of 331's
+# Psalms 119:103. 331 already held that key from its ENGLISH transcript,
+# so the index gains nothing here — what it buys is the two parsers
+# agreeing, and `parseReference` on the Dart side turning the same
+# sentence into a link the reader can tap.
+_CN_DIGIT_STRING = re.compile(r"[〇零一二三四五六七八九]{3,}")
+
+
 def cn_number(s: str) -> int | None:
     """Parse 一 / 十二 / 二十三 / 一百一十九 to an int in 1..199, or None
-    when [s] is not a well-formed numeral."""
+    when [s] is not a well-formed numeral. A run of three or more bare
+    digits is read as a digit STRING: 一一九 is 119, not a sum."""
     m = _CN_NUM_SHAPE.fullmatch(s)
     if not m:
+        if _CN_DIGIT_STRING.fullmatch(s):
+            n = 0
+            for c in s:
+                n = n * 10 + _CN_DIGIT.get(c, 0)
+            return n if 0 < n < 200 else None
         return None
     n = 0
     if m.group("h"):
@@ -739,9 +771,47 @@ _RANGE_LINK = re.compile(
 # preacher's prose actually uses (` — `, `——`) is excluded twice over.
 # Without it 057's "Isaiah 29:18–20, 35:5–6, and 61:1" stops dead at
 # the dash and loses 61:1 as well as 35:6.
+# Every join is `[^\S\n]*` rather than `\s*`, so the carry cannot cross a
+# line break: a citation ending a paragraph must not adopt the number
+# that opens the next one. "Genesis 1:1\n\nand 2:2" used to carry.
+#
+# Measured 2026-09-03 before the change and after: the carry fires 71
+# times over the whole corpus and NOT ONE of those 71 spans a newline;
+# scanning the pattern free-floating over all 867 bodies finds no
+# newline-spanning match either, and the corpus extraction is +0 −0. So
+# this is a closed exposure, not a repaired defect — the number is
+# recorded because a zero measured once is worth nothing later.
+# `zhChapterMarkTailPattern` in `lib/utils/reference_parser.dart` was
+# written this way from the start; this is the extractor catching up.
 _AND_SECOND_REF = re.compile(
-    r"\s*(?:[,;，；]\s*(?:and\s+)?|and\s+)"
-    r"(\d+\s*[:：]\s*\d+(?:[-–]\d+)?)", re.IGNORECASE)
+    r"[^\S\n]*(?:[,;，；][^\S\n]*(?:and[^\S\n]+)?|and[^\S\n]+)"
+    r"(\d+[^\S\n]*[:：][^\S\n]*\d+(?:[-–]\d+)?)", re.IGNORECASE)
+
+
+# A sentence stop. Only the terminators — a comma does NOT end a
+# sentence, and 247's chapter sits behind exactly one 「，」.
+_SENTENCE_STOP = re.compile(r"[。！？!?\n]")
+
+# A chapter stated with no book in front of it: 「第19章」, 「第40篇」.
+_BARE_CHAPTER = re.compile(
+    rf"第\s*(?:(?P<d>\d+)|(?P<cn>{_CN_NUM_RE}))\s*[章篇]")
+
+
+def _same_sentence_chapter(text: str, upto: int) -> int | None:
+    """The chapter of the nearest bare 「第N章/篇」 in the sentence ending
+    at [upto], or None. See the caller for why this is scoped this way;
+    it exists only to rescue the 節-says-verse refusal."""
+    start = 0
+    for stop in _SENTENCE_STOP.finditer(text, 0, upto):
+        start = stop.end()
+    found = None
+    for m in _BARE_CHAPTER.finditer(text, start, upto):
+        # A book alias flush in front makes the chapter that book's, and
+        # REF_RE has already read it as such.
+        if re.search(rf"(?:{BOOK_RE})\s*$", text[start:m.start()]):
+            continue
+        found = _int(m.group("d"), m.group("cn"))
+    return found
 
 
 def _walk(book: str, c1: int, v1: int, c2: int, v2: int):
@@ -832,11 +902,51 @@ def extract_refs(text: str) -> list[str]:
         # "but", read as Daniel) never reached this guard either way:
         # the single-CJK-character abbreviation rule below already
         # refuses them for lack of a verse or 章.
+        #
+        # 2026-09-03: the refusal now has one escape — a bare 「第N章/篇」
+        # EARLIER IN THE SAME SENTENCE, which is where 247 states its
+        # chapter: 「然後在第19章，啟示錄12節」. That reads as Revelation
+        # 19:12, and 247 held no Revelation 19 key of any kind before.
+        #
+        # The firing zone is the guard's own 12 sites and nothing wider,
+        # because the rescue lives inside the guard. Measured over the
+        # whole corpus: of those 12, exactly FOUR find a same-sentence
+        # chapter — 247's two bodies (Revelation 19:12, new) and 365's
+        # 「取自第40篇詩篇第6節起」 (Psalms 40:6, which the very next
+        # clause states as 詩篇40:6 and which 365 already held). The
+        # other eight reach back to nothing and stay refused: 010's
+        # Psalm 37 is three sentences away, 016 names no chapter at all,
+        # and 106/150's 但 sentences start at the clause. Corpus effect
+        # +1 −0.
+        #
+        # Three restrictions, each of them load-bearing rather than
+        # decoration:
+        #  · Same SENTENCE, nearest first. 010 is the case that says why:
+        #    its chapter is real and three sentences back, and a rule
+        #    that reached it would also reach any other number ending a
+        #    paragraph. A sentence is the widest span the preacher can
+        #    be assumed to be still holding one chapter in.
+        #  · The 章/篇 may not have a book alias flush in front of it. In
+        #    「在馬太福音第5章，路加福音12節」 the chapter belongs to the
+        #    OTHER book, and REF_RE has already filed it as one. All four
+        #    live sites are bare (取自 / 然後在), so this costs nothing
+        #    and refuses the shape that would be wrong.
+        #  · Single-CJK-character aliases are excluded, because the
+        #    rescue would hand them the verse that the abbreviation rule
+        #    below demands as evidence — 「在第13章，但第11節」 would file
+        #    Daniel 13:11 out of the word "but". Inert today (106 and 150
+        #    reach back to nothing), and declining to defeat a measured
+        #    rule is not the same as inventing one.
         if not m.group("chmark"):
             ch_end = m.end("ch") if m.group("ch") else m.end("chcn")
             if (text[ch_end:ch_end + 1] in ("节", "節")
                     and len(CANON.get(canon, {1: 0})) > 1):
-                continue
+                reach = (None if _CJK.match(alias_raw)
+                         and len(alias_raw) == 1
+                         else _same_sentence_chapter(text, m.start()))
+                if reach is None:
+                    continue
+                ch, verse, last = reach, ch, None
         # 「同一诗篇第九和第十节」 (009) — 和 joins two things of the same
         # kind, and the 节 on the second says both of them are VERSES, so
         # the first is not the chapter and the chapter is nowhere in the

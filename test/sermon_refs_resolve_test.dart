@@ -595,7 +595,13 @@ void main() {
     // stops at the first failing expect, and every widening of group 1
     // already breaks the literal below, so the second assertion only
     // ever ran on edits that were harmless.
-    expect(pattern, contains(r"(\d+\s*[:：]\s*\d+(?:[-–]\d+)?)"),
+    //
+    // 2026-09-03: the joins are `[^\S\n]*` rather than `\s*`, so the
+    // carry cannot cross a line break and adopt the number that opens
+    // the next paragraph. That is a NARROWING — the shape this
+    // assertion guards is unchanged — and it is +0 −0 on the corpus:
+    // the carry fires 71 times and not one of those spans a newline.
+    expect(pattern, contains(r"(\d+[^\S\n]*[:：][^\S\n]*\d+(?:[-–]\d+)?)"),
         reason: 'a spaced or worded range tail here walks a span the '
             'preacher never named — the citations are endpoints, not a '
             'passage');
