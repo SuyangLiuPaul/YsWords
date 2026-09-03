@@ -136,19 +136,19 @@ accept the parameter that would make it so (documented per-row).
 |---|---|---|---|---|
 | `DashboardPage` | `/` (empty hash) | none | n/a | yes — frozen, already works |
 | `HomePage` | `/<bookSlug>/<chapter>[:verse][?v=]` | see §1 | book+chapter (+verse, +version) | yes — frozen, already works |
-| `SettingsPage` | `/settings/:section?` | `initialSection` (enum) | enum name, e.g. `ai`, `display` | yes |
+| `SettingsPage` | `/settings` + `/settings/:section` | `initialSection` (enum) | slug, e.g. `ai`, `display`, `dashboard` | yes |
 | `SermonDetailPage` | `/sermons/:id` | `sermon` (object), `highlight` (UI-only filter) | `Sermon.id` (e.g. `"004"`, `"EC010"`, `"397-1"`) | yes — sermon index loads at boot; drop `highlight` from the URL, it's a search-result artifact not page identity |
-| `LibraryPage` | `/library/:tab?` | `initialTab` (0/1) | tab name (`bookmarks`\|`notes`) | yes |
+| `LibraryPage` | `/library` + `/library/:tab` | `initialTab` (0/1) | tab name — `notes` is 0, `bookmarks` is 1 (Stage 5: NOT the order this cell originally listed them in; see `library_page.dart`) | yes |
 | `StrongsEntryPage` | `/strongs/:number` | `number` (String, e.g. `H430`) | the Strong's number itself | yes — lexicon is a bundled asset |
 | `SearchPage` | `/search` | none today (query text is local `TextEditingController` state) | — | **partial** — landing on blank search works now; a shareable pre-filled query needs a new `q` param plumbed into the widget, not just the router (later-stage work, not a Stage-1 gap) |
 | `EvidenceDetailPage` | `/evidence/:id` | `evidence` (object) | `BibleEvidence.id` | yes — evidence list loads on demand by id |
-| `NowPlayingPage` | `/now-playing` | none (reads the live playback provider) | — | **no** — nothing is playing on a cold load; recommend a cold hit here redirect to `SongsPage` rather than render empty |
+| `NowPlayingPage` | — | none (reads the live playback provider) | — | **no** — nothing is playing on a cold load. Stage 5 correction: this cell used to propose `/now-playing`, which contradicted §6 item 5, where the same page is listed as explicitly unrouted by design. §6 wins and the path is withdrawn — a URL whose only honest behaviour is to redirect somewhere else is not an address for this page, it is an address for `SongsPage`, which has one already |
 | `BibleTriviaPage` | `/trivia` | none (tag filter is local `setState`) | — | **partial** — same shape as `SearchPage`: base page addressable, the active tag filter isn't parameterized yet |
 | `HighlightsPage` | `/highlights` | none | — | yes — reads local storage |
 | `VideosPage` | `/videos` | none | — | yes |
 | `SongsPage` | `/songs` | none | — | yes |
 | `StatsPage` | `/stats` | none | — | yes — reads accumulated local stats |
-| `EvidencePage` | `/evidence` | `filterBook?`, `filterChapter?` | canonical English book name + chapter int (both already used as URL-safe strings elsewhere) | yes |
+| `EvidencePage` | `/evidence` | `filterBook?`, `filterChapter?` — Stage 5 carries both in the QUERY STRING (`/evidence?book=John&chapter=3`), not path segments: they are optional, independent and unordered | canonical English book name + chapter int (both already used as URL-safe strings elsewhere) | yes |
 | `SongDownloadsPage` | `/songs/downloads` | none | — | yes |
 | `SongPlaylistsPage` | `/songs/playlists` | none | — | yes |
 | `VideoSeriesPage` | `/videos/:id` | `series` (object) | `VideoSeries.id` | yes — series list is a bundled asset |
@@ -310,6 +310,37 @@ runtime-only gap (§3) is attempted:
 Batch 1 lands first and on its own, per the item's "land each stage on
 its own so a bad stage can be reverted" — this document does not ship
 any of these batches.
+
+### 6b. Status (updated as each batch lands)
+
+| Batch | Status |
+|---|---|
+| 1 — zero-param leaf pages | **done** — Stage 2 (`/about`, `/highlights`, proving the mechanism), Stage 3 (the other 11) |
+| 2 — single-id detail pages | **done** — Stage 4, in two commits: `/sermons/:id` first, then `/strongs/:number` + `/songs/playlists/:id`, then `/videos/:id` + `/evidence/:id` + `/maps/:id` |
+| 3 — multi-param / enum pages | **done** — Stage 5: `/settings` + `/settings/:section`, `/library` + `/library/:tab`, `/evidence` (+ `?book=&chapter=`) |
+| 4 — the 2 raw-`Navigator.push` sites | **done** — Stage 5: `/songs/:songId/score`, `/songs/:songId/video`. Landed with batch 3 rather than alongside `SongPlaylistDetailPage` as this section originally suggested; by the time batch 3 was reached they were the only two destinations left, and splitting them into their own commit would have left the inventory incomplete for no reviewability gain |
+| 5 — explicitly unrouted | **confirmed** — Stage 5: `ProfileEditPage`, `NowPlayingPage` and split-view `BooksPage` have no registered path and are asserted to still be pushable, with Back returning to the parent that pushed them (`url_routing_stage5_test.dart`). `NowPlayingPage`'s §3 row proposed `/now-playing` while this section listed it as unrouted — the two contradicted each other; §6 wins and the row was corrected |
+| 6 — deferred, needs a widget change first | **not started, deliberately** — `SearchPage` / `BibleTriviaPage` / `SermonsPage` filter state. Unchanged: do not convert the base page until the widget accepts the filter as a param |
+
+Three things learned converting batches 3–4 that the earlier batches
+did not surface:
+
+- **GetX has no optional-segment syntax.** `/settings/:section?` as
+  written in §3 is not a thing `ParseRouteTree` understands; the
+  optional form is two registrations, bare and parameterized. The §3
+  rows now say so.
+- **A query string is not a path segment, and the matcher had to learn
+  that.** `route.settings.name` for a query-carrying named push is the
+  whole `/evidence?book=John&chapter=3` string, so
+  `matchesRegisteredRoute` strips the query before matching — without
+  it a filtered Evidence page would fail to recognise its own route and
+  the Bible writer would take the address bar back, which is this
+  item's original bug in a new place.
+- **Not every parameter deserves a not-found state.** `/sermons/:id`
+  with a bad id says so, because the id *is* the page. A bad
+  `:section` or `:tab` opens the page on its default instead: those
+  name a scroll position and a tab, and dropping a stale one loses
+  nothing the reader came for.
 
 ## 7. Drift detector
 

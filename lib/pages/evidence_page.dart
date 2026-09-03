@@ -1153,8 +1153,10 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
                             style: const TextStyle(fontSize: 12),
                           ),
                           onPressed: () {
-                            pushPage(const SettingsPage(
-                                  initialSection: SettingsSection.ai));
+                            pushPage(
+                                const SettingsPage(
+                                    initialSection: SettingsSection.ai),
+                                routeName: '/settings/ai');
                           },
                         ),
                       ),

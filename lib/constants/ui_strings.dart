@@ -5405,6 +5405,16 @@ const uiStrings = {
     'zh-Hant': '未找到該地圖。',
     'en': 'Map not found.',
   },
+  // URL-routing Stage 5 batch 4: the same cold-load not-found state for
+  // /songs/:songId/score and /songs/:songId/video. One string for both —
+  // what is missing is the SONG, not the score or the video, and a
+  // reader who followed a stale link needs to know that much and no
+  // more.
+  'songNotFound': {
+    'zh-Hans': '未找到该首诗歌。',
+    'zh-Hant': '未找到該首詩歌。',
+    'en': 'Song not found.',
+  },
   'loadErrorBody': {
     'zh-Hans': '无法加载圣经经文，请检查网络或重试。',
     'zh-Hant': '無法載入聖經經文，請檢查網絡或重試。',

@@ -105,6 +105,24 @@ class SongService {
         .toList();
   }
 
+  /// One song by its stable `<source>:<slug>` id, or null if the
+  /// catalogue has no such row.
+  ///
+  /// URL-routing Stage 5 (`docs/url-routing-plan.md` §6 batch 4): the
+  /// cold-load lookup behind `/songs/:songId/score` and
+  /// `/songs/:songId/video`. Goes through [load], so it inherits its
+  /// never-throws cache → bundle → network path: a cold deep link
+  /// resolves against the bundled `assets/songs.json` with no network at
+  /// all. Searches the UNFILTERED catalogue is NOT what this does — it
+  /// reuses [load], so a song from a hidden source stays unreachable by
+  /// URL exactly as it is unreachable in the list.
+  static Future<Song?> byId(String id) async {
+    for (final s in await load()) {
+      if (s.id == id) return s;
+    }
+    return null;
+  }
+
   /// Force a network pull, e.g. from pull-to-refresh. Best-effort —
   /// a failure leaves the current catalogue in place.
   static Future<List<Song>> refresh() async {

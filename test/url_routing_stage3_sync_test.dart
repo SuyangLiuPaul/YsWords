@@ -75,9 +75,16 @@ void main() {
           reason: 'the unknown-route fallback belongs on GetMaterialApp, '
               'not inside the registered list');
 
-      final getPagesByClass = <String, String>{};
+      // 2026-09-03 (Stage 5): a SET of paths per class, not one path.
+      // `/settings/:section?` and `/library/:tab?` in the plan's §3 are
+      // each registered TWICE — bare and parameterized — because GetX's
+      // route tree has no optional-segment syntax. A `Map<String,
+      // String>` silently kept only whichever GetPage came last, which
+      // would have let the bare path drift out of the plan doc without
+      // failing anything.
+      final getPagesByClass = <String, Set<String>>{};
       for (final m in getPageEntry.allMatches(registeredBlock)) {
-        getPagesByClass[m.group(2)!] = m.group(1)!;
+        (getPagesByClass[m.group(2)!] ??= <String>{}).add(m.group(1)!);
       }
       expect(
         getPagesByClass,
@@ -87,7 +94,7 @@ void main() {
             'formatting changed and this test needs updating along with '
             'it, not silently passing empty',
       );
-      final getPagesPaths = getPagesByClass.values.toSet();
+      final getPagesPaths = getPagesByClass.values.expand((p) => p).toSet();
 
       // 2. `route_paths.dart`'s `kRegisteredRoutePaths`.
       final registeredSetBlock = RegExp(
@@ -99,8 +106,22 @@ void main() {
         reason: 'kRegisteredRoutePaths set literal not found in '
             'lib/utils/route_paths.dart — it may have been renamed',
       );
+      // 2026-09-03 (Stage 5): strip `//` comments BEFORE pulling quoted
+      // strings out. The bare `'([^']+)'` scan treated an apostrophe in
+      // a comment ("GetX's route tree", "the plan's §3") as an opening
+      // quote and harvested the prose between it and the next
+      // apostrophe as a registered path — so the set looked to have
+      // drifted the moment anyone wrote an ordinary English possessive
+      // inside this literal. Caught by writing exactly that comment.
       final registeredPaths = RegExp(r"'([^']+)'")
-          .allMatches(registeredSetBlock!.group(1)!)
+          .allMatches(registeredSetBlock!
+              .group(1)!
+              .split('\n')
+              .map((l) {
+                final c = l.indexOf('//');
+                return c < 0 ? l : l.substring(0, c);
+              })
+              .join('\n'))
           .map((m) => m.group(1)!)
           .toSet();
 
@@ -112,12 +133,18 @@ void main() {
         r'^\|\s*`([A-Za-z_][A-Za-z0-9_]*)`\s*\|\s*(.*?)\s*\|',
         multiLine: true,
       );
-      final planPathByClass = <String, String>{};
+      // Stage 5: EVERY `` `code span` `` in the path cell, not just the
+      // first — the two-registrations rows write both, e.g.
+      // `` `/settings` + `/settings/:section` ``.
+      final planPathByClass = <String, Set<String>>{};
       for (final m in tableRow.allMatches(planText)) {
         final pathCell = m.group(2)!;
-        final pathMatch = RegExp('`([^`]+)`').firstMatch(pathCell);
-        if (pathMatch == null) continue; // "—" (not addressable) rows
-        planPathByClass[m.group(1)!] = pathMatch.group(1)!;
+        final paths = RegExp('`([^`]+)`')
+            .allMatches(pathCell)
+            .map((p) => p.group(1)!)
+            .toSet();
+        if (paths.isEmpty) continue; // "—" (not addressable) rows
+        planPathByClass[m.group(1)!] = paths;
       }
 
       // URL-routing Stage 4: `SermonByIdPage` is registered in getPages
@@ -129,11 +156,16 @@ void main() {
       // Batch 2 continued added three more of the same shape:
       // `VideoSeriesByIdPage` -> `VideoSeriesPage`, `EvidenceByIdPage` ->
       // `EvidenceDetailPage`, `MapByIdPage` -> `MapViewerPage`.
+      // Stage 5 added the last two of the same shape:
+      // `SongScoreByIdPage` -> `SongScorePage`, `SongVideoByIdPage` ->
+      // `SongVideoPage`.
       const resolverAliases = {
         'SermonByIdPage': 'SermonDetailPage',
         'VideoSeriesByIdPage': 'VideoSeriesPage',
         'EvidenceByIdPage': 'EvidenceDetailPage',
         'MapByIdPage': 'MapViewerPage',
+        'SongScoreByIdPage': 'SongScorePage',
+        'SongVideoByIdPage': 'SongVideoPage',
       };
 
       // Every registered class's getPages path must match its plan-doc
@@ -141,15 +173,16 @@ void main() {
       final planMismatches = <String>[];
       for (final entry in getPagesByClass.entries) {
         final planClass = resolverAliases[entry.key] ?? entry.key;
-        final planPath = planPathByClass[planClass];
-        if (planPath == null) {
+        final planPaths = planPathByClass[planClass];
+        if (planPaths == null) {
           planMismatches
               .add('${entry.key}: registered as ${entry.value} but has no §3 '
                   'table row with a `/path`');
-        } else if (planPath != entry.value) {
+        } else if (planPaths.length != entry.value.length ||
+            !planPaths.containsAll(entry.value)) {
           planMismatches
               .add('${entry.key}: getPages says ${entry.value}, plan doc §3 '
-                  'says $planPath');
+                  'says $planPaths');
         }
       }
       expect(

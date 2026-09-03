@@ -546,8 +546,10 @@ class _SearchPageState extends State<SearchPage> {
                         style: const TextStyle(fontSize: 12),
                       ),
                       onPressed: () {
-                        pushPage(const SettingsPage(
-                              initialSection: SettingsSection.ai));
+                        pushPage(
+                            const SettingsPage(
+                                initialSection: SettingsSection.ai),
+                            routeName: '/settings/ai');
                       },
                     ),
                   ],

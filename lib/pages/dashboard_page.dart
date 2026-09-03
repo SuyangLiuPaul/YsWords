@@ -446,7 +446,8 @@ class _DashboardPageState extends State<DashboardPage> {
           IconButton(
             tooltip: uiStrings['settings']?[locale] ?? 'Settings',
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => pushPage(const SettingsPage()),
+            onPressed: () =>
+                pushPage(const SettingsPage(), routeName: '/settings'),
           ),
         ],
       ),
@@ -608,7 +609,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 tint: scheme.primary,
                 // Tab 1. Both count tiles used to push the identical
                 // `const LibraryPage()`, so this one opened Notes.
-                onTap: () => pushPage(const LibraryPage(initialTab: 1)),
+                onTap: () => pushPage(const LibraryPage(initialTab: 1),
+                    routeName: '/library/bookmarks'),
               ),
             ),
             const SizedBox(width: 8),
@@ -618,7 +620,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 count: mainProvider.verseNotes.length,
                 label: uiStrings['tabNotes']?[locale] ?? 'Notes',
                 tint: scheme.secondary,
-                onTap: () => pushPage(const LibraryPage(initialTab: 0)),
+                onTap: () => pushPage(const LibraryPage(initialTab: 0),
+                    routeName: '/library/notes'),
               ),
             ),
             const SizedBox(width: 8),
@@ -792,7 +795,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 _LinkTile(
                   icon: Icons.collections_bookmark_outlined,
                   label: uiStrings['library']?[locale] ?? 'Library',
-                  onTap: () => pushPage(const LibraryPage()),
+                  onTap: () =>
+                      pushPage(const LibraryPage(), routeName: '/library'),
                 ),
                 _LinkTile(
                   icon: Icons.menu_book_outlined,
@@ -802,7 +806,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 _LinkTile(
                   icon: Icons.settings_outlined,
                   label: uiStrings['settings']?[locale] ?? 'Settings',
-                  onTap: () => pushPage(const SettingsPage()),
+                  onTap: () =>
+                      pushPage(const SettingsPage(), routeName: '/settings'),
                 ),
               ],
             ),
@@ -828,7 +833,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     icon: Icons.museum_outlined,
                     label:
                         uiStrings['bibleEvidence']?[locale] ?? 'Bible Evidence',
-                    onTap: () => pushPage(const EvidencePage()),
+                    onTap: () => pushPage(const EvidencePage(),
+                        routeName: '/evidence'),
                   ),
                 _LinkTile(
                   icon: Icons.account_tree_outlined,

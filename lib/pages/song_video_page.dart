@@ -1,14 +1,20 @@
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:yswords/services/media_focus.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
+import 'package:yswords/pages/song_score_page.dart' show SongNotFoundScaffold;
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/song_player_service.dart';
+import 'package:yswords/services/song_service.dart';
+import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/route_paths.dart' show songSubPagePath;
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// The music video, played inside the app.
@@ -53,10 +59,12 @@ class SongVideoPage extends StatefulWidget {
       await LinkOpener.openOrWarn(context, url, locale: locale);
       return;
     }
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => SongVideoPage(song: song, locale: locale),
-      ),
+    // URL-routing Stage 5 (`docs/url-routing-plan.md` §6 batch 4) — the
+    // second of the two raw-`Navigator.push` sites §2 found. See
+    // `SongScorePage.open` for why this moved onto `pushPage`.
+    await pushPage<void>(
+      SongVideoPage(song: song, locale: locale),
+      routeName: songSubPagePath(song.id, 'video'),
     );
   }
 
@@ -230,5 +238,53 @@ class _SongVideoPageState extends State<SongVideoPage> {
         ),
       ],
     );
+  }
+}
+
+/// URL-routing Stage 5 (`docs/url-routing-plan.md` §6 batch 4): the
+/// cold-load resolver behind `/songs/:songId/video`. Twin of
+/// `SongScoreByIdPage` — see that class for why the async id → [Song]
+/// step needs a widget of its own, and `SongNotFoundScaffold` (shared
+/// with it) for the not-found body.
+///
+/// A song that exists but publishes no mp4 falls through to
+/// [SongVideoPage], which already renders its own "no video" state — so
+/// this wrapper only answers "is there such a song."
+class SongVideoByIdPage extends StatefulWidget {
+  final String id;
+  const SongVideoByIdPage({super.key, required this.id});
+
+  @override
+  State<SongVideoByIdPage> createState() => _SongVideoByIdPageState();
+}
+
+class _SongVideoByIdPageState extends State<SongVideoByIdPage> {
+  Song? _song;
+  bool _resolving = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    final found = await SongService.byId(widget.id);
+    if (!mounted) return;
+    setState(() {
+      _song = found;
+      _resolving = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_resolving) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final locale = Provider.of<AppSettings>(context, listen: false).locale;
+    final song = _song;
+    if (song == null) return SongNotFoundScaffold(locale: locale);
+    return SongVideoPage(song: song, locale: locale);
   }
 }

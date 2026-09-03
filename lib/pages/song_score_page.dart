@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/song_download_service.dart';
 import 'package:yswords/services/song_player_service.dart';
+import 'package:yswords/services/song_service.dart';
+import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/route_paths.dart' show songSubPagePath;
 import 'package:yswords/widgets/localized_back_button.dart';
 
 /// Sheet music, shown inside the app.
@@ -48,10 +53,18 @@ class SongScorePage extends StatefulWidget {
       await LinkOpener.openOrWarn(context, song.scoreUrl!, locale: locale);
       return;
     }
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => SongScorePage(song: song, locale: locale),
-      ),
+    // URL-routing Stage 5 (`docs/url-routing-plan.md` §6 batch 4). This
+    // was a raw `Navigator.of(context).push(MaterialPageRoute(...))` —
+    // one of the only two pushes in the app that bypassed `pushPage`
+    // entirely, which §2 called out as "a real gap the 'pushPage is the
+    // only way pages are pushed' assumption would have missed." A raw
+    // MaterialPageRoute has no route name at all, so it could never
+    // reach the address bar however the router was built. Routed
+    // through `pushPage` with the registered path instead, so the score
+    // is shareable and Back behaves like every other page's.
+    await pushPage<void>(
+      SongScorePage(song: song, locale: locale),
+      routeName: songSubPagePath(song.id, 'score'),
     );
   }
 
@@ -243,4 +256,87 @@ String _describe(Object? error, String? url, String locale) {
   }
 
   return '$error';
+}
+
+/// URL-routing Stage 5 (`docs/url-routing-plan.md` §6 batch 4): the
+/// cold-load resolver behind `/songs/:songId/score`.
+///
+/// Same shape as `SermonByIdPage` / `VideoSeriesByIdPage` /
+/// `EvidenceByIdPage` / `MapByIdPage`: `GetPage.page`'s signature is
+/// synchronous and the catalogue lookup is not, so the async id → [Song]
+/// step gets its own widget rather than being faked at the route level.
+/// Spinner while resolving, an explicit localized not-found for an
+/// unknown id — never a silent redirect, per the rule Stage 4 set for
+/// `/sermons/:id`: a bad shared link should say it's bad.
+///
+/// A song that exists but publishes no score renders the same
+/// not-found state the page itself already shows for a null
+/// `scoreUrl` — [SongScorePage] handles that case internally, so this
+/// wrapper only answers "is there such a song."
+class SongScoreByIdPage extends StatefulWidget {
+  final String id;
+  const SongScoreByIdPage({super.key, required this.id});
+
+  @override
+  State<SongScoreByIdPage> createState() => _SongScoreByIdPageState();
+}
+
+class _SongScoreByIdPageState extends State<SongScoreByIdPage> {
+  Song? _song;
+  bool _resolving = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    final found = await SongService.byId(widget.id);
+    if (!mounted) return;
+    setState(() {
+      _song = found;
+      _resolving = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_resolving) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final locale = Provider.of<AppSettings>(context, listen: false).locale;
+    final song = _song;
+    if (song == null) return SongNotFoundScaffold(locale: locale);
+    return SongScorePage(song: song, locale: locale);
+  }
+}
+
+/// The not-found body shared by both song sub-page resolvers
+/// (`/songs/:songId/score`, `/songs/:songId/video`). Extracted because
+/// the two are word-for-word identical and the string is the same one —
+/// what a stale link is missing is the song, not the score or the video.
+class SongNotFoundScaffold extends StatelessWidget {
+  final String locale;
+  const SongNotFoundScaffold({super.key, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(leading: const LocalizedBackButton()),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            uiStrings['songNotFound']?[locale] ?? 'Song not found.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

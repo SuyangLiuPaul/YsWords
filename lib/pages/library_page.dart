@@ -30,6 +30,33 @@ import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
 /// Each tab shows the user's saved annotations for the current
 /// loaded Bible version, sorted in canonical Bible order.
 /// Tapping any item navigates to that verse.
+/// URL slug ↔ tab index for `/library/:tab`
+/// (`docs/url-routing-plan.md` §3).
+///
+/// The plan's §3 cell writes the two names in the order
+/// `bookmarks`|`notes`, which is NOT the tab order — 0 is Notes and 1 is
+/// Bookmarks, per [LibraryPage.initialTab]'s own doc comment and both
+/// dashboard count tiles (`dashboard_page.dart`: the Bookmarks tile
+/// pushes `initialTab: 1`). Getting this backwards would reproduce the
+/// 2026-08-11 report "按书签，跳到的是笔记" through a URL instead of a
+/// tile, so the mapping is by meaning, not by the order the plan
+/// happened to list them in.
+const Map<String, int> kLibraryTabSlugs = {
+  'notes': 0,
+  'bookmarks': 1,
+};
+
+/// Tab index for `/library/<slug>`; null when the slug names no tab, so
+/// the caller can fall back to the default rather than guess. Same
+/// degrade-don't-fail rule as `settingsSectionForSlug`: the tab is a
+/// view of one page, not the page's identity.
+int? libraryTabForSlug(String? slug) =>
+    slug == null ? null : kLibraryTabSlugs[slug];
+
+/// The slug for a tab index, for building a shareable path at a call
+/// site that already knows which tab it means.
+String libraryTabSlug(int tab) => tab == 1 ? 'bookmarks' : 'notes';
+
 class LibraryPage extends StatelessWidget {
   /// Which tab to open on: 0 = Notes, 1 = Bookmarks.
   ///

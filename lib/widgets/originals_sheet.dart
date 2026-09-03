@@ -1590,8 +1590,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                     !context.read<AppSettings>().hasUserGeminiKey)
                   TextButton.icon(
                     onPressed: () {
-                      pushPage(const SettingsPage(
-                            initialSection: SettingsSection.ai));
+                      pushPage(
+                          const SettingsPage(
+                              initialSection: SettingsSection.ai),
+                          routeName: '/settings/ai');
                     },
                     icon: const Icon(Icons.key_rounded, size: 16),
                     label: Text(

@@ -45,7 +45,8 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/error_reporter.dart';
 import 'package:yswords/services/fetch_books.dart';
 import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/utils/route_paths.dart' show matchesRegisteredRoute;
+import 'package:yswords/utils/route_paths.dart'
+    show hashToRoutePath, matchesRegisteredRoute;
 import 'package:yswords/utils/version_mapper.dart' show translateBookName;
 
 // ── JS interop bindings ─────────────────────────────────────────
@@ -165,18 +166,6 @@ void setBootRouteCallback(void Function(String routeName) cb) {
   }
 }
 
-/// Strips a raw location hash down to its path (no leading `#`, no
-/// query string), or null for an empty/root hash. Deliberately
-/// separate from `_parseHash`, which is Bible-grammar-specific and
-/// stays untouched per docs/url-routing-plan.md §1.
-String? _hashToPath(String rawHash) {
-  var h = rawHash.startsWith('#') ? rawHash.substring(1) : rawHash;
-  final qIdx = h.indexOf('?');
-  if (qIdx >= 0) h = h.substring(0, qIdx);
-  if (h.isEmpty || h == '/') return null;
-  return h.startsWith('/') ? h : '/$h';
-}
-
 /// Restore the canonical hash after a navigator push/pop. The engine
 /// writes the pushed route's minified name into the fragment
 /// (`#/minified:Xt`); 350 ms later we put the share link back. The
@@ -251,7 +240,14 @@ Future<void> urlSyncInit({
     // (`/about`, `/highlights`) is not Bible grammar at all — hand it
     // to the boot-route callback instead of the Bible apply path,
     // which would just silently no-op on it.
-    final bootPath = _hashToPath(bootHash);
+    // URL-routing Stage 5: `hashToRoutePath` (moved here from a private
+    // `_hashToPath` so it is testable off-web) now KEEPS the query
+    // string. `/#/evidence?book=John&chapter=3` has to reach
+    // `Get.toNamed` intact or the shared link silently drops its
+    // filters and opens the unfiltered list; `matchesRegisteredRoute`
+    // strips the query itself before matching, so the recognition step
+    // is unaffected.
+    final bootPath = hashToRoutePath(bootHash);
     if (bootPath != null && matchesRegisteredRoute(bootPath, _knownRoutes)) {
       _bootRouteApplied = true;
       _pendingBootRoute = bootPath;

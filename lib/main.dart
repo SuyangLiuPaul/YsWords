@@ -10,10 +10,12 @@ import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/dashboard_page.dart';
 import 'package:yswords/pages/evidence_detail_page.dart';
+import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/feedback_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
 import 'package:yswords/pages/home_page.dart';
+import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/loading_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/misconceptions_page.dart';
@@ -24,6 +26,8 @@ import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/song_downloads_page.dart';
 import 'package:yswords/pages/song_playlist_detail_page.dart';
 import 'package:yswords/pages/song_playlists_page.dart';
+import 'package:yswords/pages/song_score_page.dart';
+import 'package:yswords/pages/song_video_page.dart';
 import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
@@ -308,6 +312,98 @@ final List<GetPage> _registeredGetPages = [
   GetPage(
     name: '/misconceptions',
     page: () => const MisconceptionsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  // ── URL-routing Stage 5 (docs/url-routing-plan.md §6 batch 3): the
+  // multi-param / enum pages. Two shapes appear here for the first
+  // time, and both are deliberate.
+  //
+  // (a) The plan writes `/settings/:section?` and `/library/:tab?` with
+  // an OPTIONAL segment. GetX has no optional-segment syntax — its
+  // ParseRouteTree matches segment-for-segment, same rule as
+  // route_paths.dart's own matcher — so each is registered twice, bare
+  // and parameterized. Verified in a widget test that a literal and a
+  // template sibling coexist and each resolve to their own page.
+  //
+  // (b) Unlike the id pages, an unknown `:section` / `:tab` does NOT
+  // produce a not-found state: the slug helpers return null and the
+  // page opens on its default. The section is a scroll position and the
+  // tab is a view of one page — neither is the page's identity, so
+  // dropping a stale one loses nothing the reader came for. `/sermons/
+  // :id` with a bad id still says so, because there the id IS the page.
+  GetPage(
+    name: '/settings',
+    page: () => const SettingsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/settings/:section',
+    page: () => SettingsPage(
+      initialSection: settingsSectionForSlug(Get.parameters['section']),
+    ),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/library',
+    page: () => const LibraryPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/library/:tab',
+    page: () => LibraryPage(
+      initialTab: libraryTabForSlug(Get.parameters['tab']) ?? 0,
+    ),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  // `/evidence`'s two optional filters ride in a QUERY STRING
+  // (`/evidence?book=John&chapter=3`), not path segments — they are
+  // optional, independent and unordered. GetX populates
+  // `Get.parameters` from the query of a named push (verified in a
+  // widget test rather than assumed), and `matchesRegisteredRoute`
+  // strips the query before matching so the route on top still
+  // recognises itself as registered. A malformed `chapter` degrades to
+  // no chapter filter rather than throwing, matching how §1's Bible
+  // parser treats a malformed segment.
+  GetPage(
+    name: '/evidence',
+    page: () => EvidencePage(
+      filterBook: Get.parameters['book'],
+      filterChapter: int.tryParse(Get.parameters['chapter'] ?? ''),
+    ),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  // Stage 5, batch 4: the last two destinations in the inventory, and
+  // the only two that never went through `pushPage` at all — they used
+  // a raw `Navigator.push(MaterialPageRoute(...))`, which carries no
+  // route name and so could never have reached the address bar however
+  // the router was built (docs/url-routing-plan.md §2). Both `open()`
+  // helpers now push the registered path instead. `SongScoreByIdPage` /
+  // `SongVideoByIdPage` do the async id → Song lookup, same shape as
+  // `SermonByIdPage`; the id is percent-encoded on the way out
+  // (`songSubPagePath`) because song ids carry a literal colon
+  // (`cdc:d0180`), and GetX decodes it back.
+  GetPage(
+    name: '/songs/:songId/score',
+    page: () => SongScoreByIdPage(id: Get.parameters['songId'] ?? ''),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  GetPage(
+    name: '/songs/:songId/video',
+    page: () => SongVideoByIdPage(id: Get.parameters['songId'] ?? ''),
     transition: Transition.rightToLeft,
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,
@@ -1342,7 +1438,7 @@ class _RootRouterState extends State<_RootRouter> {
         // lands on the row they were actually using rather than the top
         // of a long page.
         pushPage(const SettingsPage(initialSection: SettingsSection.display),
-            routeName: '/SettingsPage');
+            routeName: '/settings/display');
       });
     }
     // After Round 32: Dashboard is the home / root page. The Bible

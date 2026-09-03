@@ -113,6 +113,44 @@ enum SettingsSection {
   about,
 }
 
+/// URL slug for a settings section — the durable identifier
+/// `docs/url-routing-plan.md` §3 names for `/settings/:section`.
+///
+/// Spelled out rather than derived from `Enum.name` on purpose. `name`
+/// is a class member, and `flutter build web --release` minifies class
+/// members; the app already paid for that lesson once, when Stage 2's
+/// first cut keyed route dispatch off `runtimeType.toString()` and
+/// silently no-op'd in the only build that ships (see `app_nav.dart`).
+/// String literals survive minification; reflected names do not.
+/// `dashboardLayout` also reads better hyphenated in a URL than in
+/// camelCase.
+const Map<SettingsSection, String> kSettingsSectionSlugs = {
+  SettingsSection.display: 'display',
+  SettingsSection.reading: 'reading',
+  SettingsSection.account: 'account',
+  SettingsSection.dashboardLayout: 'dashboard',
+  SettingsSection.notifications: 'notifications',
+  SettingsSection.ai: 'ai',
+  SettingsSection.about: 'about',
+};
+
+/// The reverse lookup, for `/settings/<slug>`.
+///
+/// Returns null for an unknown slug, and the `GetPage` builder passes
+/// that straight to `SettingsPage(initialSection: null)` — a stale or
+/// mistyped section lands on plain Settings rather than on a not-found
+/// page. That is the opposite of the id pages' behaviour (§3's
+/// `/sermons/:id` says a bad shared link should say it's bad), and
+/// deliberately so: the section is a scroll position, not the page's
+/// identity, so dropping it loses nothing the reader came for.
+SettingsSection? settingsSectionForSlug(String? slug) {
+  if (slug == null || slug.isEmpty) return null;
+  for (final entry in kSettingsSectionSlugs.entries) {
+    if (entry.value == slug) return entry.key;
+  }
+  return null;
+}
+
 class SettingsPage extends StatelessWidget {
   /// When non-null, the page scrolls to that section on first build.
   /// Used by the dashboard greeting-card profile tap to land the user

@@ -13,6 +13,7 @@ import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/route_paths.dart' show evidencePath;
 import 'package:yswords/utils/verse_citation.dart';
 import 'package:yswords/utils/progress_pill_geometry.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart'
@@ -1608,7 +1609,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                     const SingleActivator(LogicalKeyboardKey.comma,
                         meta: true): () {
                       if (widget.showSearchAndSettings) {
-                        pushPage(const SettingsPage());
+                        pushPage(const SettingsPage(),
+                            routeName: '/settings');
                       }
                     },
                     // Ctrl+ variants for Windows / Linux desktop users
@@ -2208,7 +2210,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                       },
                       onSettings: () {
                         mainProvider.clearSelectedVerses();
-                        pushPage(SettingsPage());
+                        pushPage(const SettingsPage(),
+                            routeName: '/settings');
                       },
                       highlightCount:
                           mainProvider.highlights.length,
@@ -2345,7 +2348,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                         onNextChapter: _goToNextChapter,
                         onOpenNotes: () {
                           mainProvider.clearSelectedVerses();
-                          pushPage(const LibraryPage());
+                          pushPage(const LibraryPage(),
+                              routeName: '/library');
                         },
                         onOpenIllustrations: (_chapterMaps.isEmpty &&
                                 _bookMaps.isEmpty)
@@ -7451,10 +7455,14 @@ class _FloatingHeader extends StatelessWidget {
                             onHighlights?.call();
                             break;
                           case 'evidence':
-                            pushPage(EvidencePage(
-                              filterBook: toEnglish(book),
-                              filterChapter: chapter,
-                            ));
+                            pushPage(
+                              EvidencePage(
+                                filterBook: toEnglish(book),
+                                filterChapter: chapter,
+                              ),
+                              routeName: evidencePath(
+                                  book: toEnglish(book), chapter: chapter),
+                            );
                             break;
                           case 'synopsis':
                             _showSynopsisSheet(
@@ -7497,7 +7505,8 @@ class _FloatingHeader extends StatelessWidget {
                             onToggleParagraphMode?.call();
                             break;
                           case 'library':
-                            pushPage(const LibraryPage());
+                            pushPage(const LibraryPage(),
+                                routeName: '/library');
                             break;
                           case 'stats':
                             pushPage(const StatsPage(), routeName: '/stats');
