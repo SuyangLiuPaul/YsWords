@@ -1,24 +1,25 @@
 {
  "_meta": {
-  "generatedAt": "2026-09-03T07:38:19Z",
+  "generatedAt": "2026-09-03T08:29:25Z",
   "generator": "scripts/sync_songs.py v2",
-  "count": 623,
+  "count": 628,
   "bySource": {
    "cahaya": 47,
    "cdc": 298,
    "cgdc": 63,
    "fydt": 213,
-   "setapak": 2
+   "setapak": 2,
+   "ydh": 5
   },
   "byLanguage": {
    "id": 47,
-   "en": 138,
+   "en": 143,
    "zh": 438
   },
   "withAudio": 599,
-  "withVideo": 120,
+  "withVideo": 125,
   "withScore": 595,
-  "withLyrics": 213,
+  "withLyrics": 218,
   "sources": {
    "fydt": {
     "label": "福音电台 FYDT",
@@ -39,6 +40,10 @@
    "setapak": {
     "label": "Setapak CDC",
     "home": "https://www.setapakcdc.com"
+   },
+   "ydh": {
+    "label": "雅伟的话 Yahweh De Hua",
+    "home": "https://yahwehdehua.net"
    }
   },
   "notes": {
@@ -23719,6 +23724,155 @@
    "verse": null,
    "firstSeenAt": "2026-09-03T07:38:19Z",
    "updatedAt": "2026-09-03T07:38:19Z"
+  },
+  {
+   "id": "ydh:YTp0Z_TYOns",
+   "title": "Easter Song 1: Hallelujah! Our Risen Lord, Our Coming King",
+   "language": "en",
+   "source": "ydh",
+   "sourceLabel": "雅伟的话 Yahweh De Hua",
+   "code": null,
+   "url": "https://yahwehdehua.net/assets/page/easter/",
+   "album": null,
+   "artist": null,
+   "composer": "Rosablanca Suen",
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
+   "videoUrl": null,
+   "youtubeId": "YTp0Z_TYOns",
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": "[Stanza 1]\nHallelujah!\nHallelujah!\nYahweh raised His Son\nStone rolled from the Garden tomb\nMorning light has come\n\nJesus, You are living\nDeath has lost its claim\nSeated with the Father now\nClothed in holy flame\n\n[Chorus]\nOur risen Lord\nOur coming King\nHallelujah!\nHallelujah! (Hallelujah)\nHallelujah!\nJesus Messiah\nWe will sing\nHallelujah!\nHallelujah!\nYou took the cross\nYou broke the grave\nO Son of God who saves (who saves)\nOur risen Lord\nOur coming King\nHallelujah!\nHallelujah!\n\n[Stanza 2]\nThank you\nFather Yahweh\nFor mercy in Your Son\nSalvation work completed\nIt is finished\nIt is done\nJesus Our Messiah\nYou’ll split the skies one day\nKingdom of the Holy One\nFilling earth with grace\n\n[Chorus]\nOur risen Lord\nOur coming King\nHallelujah! (Hallelujah)\nHallelujah!\nJesus Messiah\nWe will sing\nHallelujah!\nHallelujah!\nYou took the cross\nYou broke the grave\nO Son of God who saves (who saves)\nOur risen Lord\nOur coming King\nHallelujah!\n\n[Bridge]\nEvery tribe\nEvery tongue will cry\nWorthy is the Lamb\nEvery knee\nEvery heart bow down\nAs heaven’s reign touches this ground\n\n[Chorus]\nOur risen Lord\nOur coming King\nHallelujah! (Hallelujah)\nHallelujah!\nJesus Messiah\nWe will sing\nHallelujah!\nHallelujah!\nYou took the cross\nYou broke the grave\nO Son of God who saves (who saves)\nOur risen Lord\nOur coming King\nHallelujah!\nHallelujah!",
+   "themes": [
+    "神的名"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-09-03T08:29:25Z",
+   "updatedAt": "2026-09-03T08:29:25Z"
+  },
+  {
+   "id": "ydh:4GBO6CWR6go",
+   "title": "Easter Song 2: Our Risen Lord, Our Messiah Jesus! Hallelujah!",
+   "language": "en",
+   "source": "ydh",
+   "sourceLabel": "雅伟的话 Yahweh De Hua",
+   "code": null,
+   "url": "https://yahwehdehua.net/assets/page/easter/",
+   "album": null,
+   "artist": null,
+   "composer": "Rosablanca Suen",
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
+   "videoUrl": null,
+   "youtubeId": "4GBO6CWR6go",
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": "[Stanza 1]\nHallelujah, Hallelujah\nYahweh, You have raised Your Son\nJesus, You are alive now\nDeath is finished\nVictory won\n\n[Chorus]\nOur risen Lord\nOur Messiah\nSeated by the Father's side\nHallelujah, Hallelujah\nJesus Christ is glorified\nOur risen Lord\nOur Messiah\nKing of kings forever praised\nHallelujah, Hallelujah\nYahweh God\nYour Son You raised\n\n[Stanza 2]\nO thank You\nFather Yahweh\nFor salvation through Your Son\nBy his cross and resurrection\nEvery chain is overcome\n\n[Chorus]\nOur risen Lord\nOur Messiah\nSeated by the Father's side\nHallelujah, Hallelujah\nJesus Christ is glorified\nOur risen Lord\nOur Messiah\nKing of kings forever praised\nHallelujah, Hallelujah\nYahweh God\nYour Son You raised\n\n[Bridge]\nJesus will return in glory (oh oh)\nHe will bring Your kingdom near\nEvery knee will bow before You\nEvery tongue will shout You’re here\n\n[Chorus]\nOur risen Lord\nOur Messiah\nSeated by the Father's side\nHallelujah, Hallelujah\nJesus Christ is glorified\nOur risen Lord\nOur Messiah\nKing of kings forever praised\nHallelujah, Hallelujah\nYahweh God\nYour Son You raised",
+   "themes": [
+    "神的名"
+   ],
+   "verse": "Acts 5:30-31",
+   "firstSeenAt": "2026-09-03T08:29:25Z",
+   "updatedAt": "2026-09-03T08:29:25Z"
+  },
+  {
+   "id": "ydh:4ImxTDU5J0k",
+   "title": "Standing at the Cross 1 – A prayer to stay true / 站在十字架下 1 – 忠心的祈祷",
+   "language": "en",
+   "source": "ydh",
+   "sourceLabel": "雅伟的话 Yahweh De Hua",
+   "code": null,
+   "url": "https://yahwehdehua.net/assets/page/easter/",
+   "album": null,
+   "artist": null,
+   "composer": "Rosablanca Suen",
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
+   "videoUrl": null,
+   "youtubeId": "4ImxTDU5J0k",
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": "[Stanza 1]\nStanding at the cross\nMy heart laid bare\nDust on the road\nI follow Jesus there\nSome drew close in the breaking light\nSome turned away\nLost in the night\nAnd I wonder…\nwhere would I be?\nAmong the witnesses\nwhat would they see?\n\n[Chorus]\nStanding at the Cross\nStanding at the Cross\nSo I’ll stand I will stay\nIn the dust I will pray\nTo love and to follow\nRemain true to the end\n\n[Stanza 2]\nI see the hammer\nI hear the cry\nBlood on the wood\nLove lifted high\nWould I be running?\nWould I deny?\nOr cling to Your feet\nAnd finally die to my pride\nAnd I wonder… where would I be?\nAmong the witnesses what would they see?\n\n[Chorus]\nStanding at the Cross\nStanding at the Cross\nSo I’ll stand I will stay\nIn the dust I will pray\nTo love and to follow\nRemain true to the end\n\n【第一节】\n站在十字架下\n敞开心扉 尘土\n飞扬 我随耶稣到此。\n有人往前靠 朦胧暮光中，\n有人转身走 迷失黑夜中。\n我不禁思索…\n我会站在哪里？\n\n大家在見證\n他们会看见什么？\n\n【副歌】\n站在十字架下\n站在十字架下\n我站住，\n我停留 尘土中，\n我祈祷\n去爱，去跟随\n至死忠心不变\n\n【第二节】\n我看见铁锤\n我听见呼喊\n血染木头上\n爱被高举起\n我会逃跑吗？\n我会否认吗？\n还是在你脚前\n舍弃我骄傲自我？\n我不禁思索…\n我会站在哪里？\n在众见证人中 他们会看见什么？\n\n【副歌】\n站在十字架下\n站在十字架下\n我站住，\n我停留 尘土中，\n我祈祷\n去爱，去跟随\n至死忠心不变",
+   "themes": [
+    "心",
+    "祷告"
+   ],
+   "verse": "Luke 9:22-23",
+   "firstSeenAt": "2026-09-03T08:29:25Z",
+   "updatedAt": "2026-09-03T08:29:25Z"
+  },
+  {
+   "id": "ydh:xrHR1ybo1J0",
+   "title": "Standing at the Cross 2 – I take up my cross to follow Jesus",
+   "language": "en",
+   "source": "ydh",
+   "sourceLabel": "雅伟的话 Yahweh De Hua",
+   "code": null,
+   "url": "https://yahwehdehua.net/assets/page/easter/",
+   "album": null,
+   "artist": null,
+   "composer": "Rosablanca Suen",
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
+   "videoUrl": null,
+   "youtubeId": "xrHR1ybo1J0",
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": "[Stanza]\nStanding at the cross\nStanding at the cross\nEmpty hands\nTrembling heart\nI have nothing left to hide\nNothing left to prove\nJust this fragile faltering step\nAnd the hope of You\n\n[Chorus 1]\nI take up my cross to follow Jesus\nI deny myself and walk Your way\nNot my will, O Lord\nBut Yours forever\nShape my heart in what You say\nI take up my cross to follow Jesus\nEvery breath\nA simple “yes”\nNot my will, O Lord\nBut Yours forever\nIn surrender\nI am blessed\n\n[Bridge]\nWhen the path feels long and lonely (oh Lord)\nAnd my courage starts to fade\nTeach me how You prayed in that Garden\nAs the night gave way\n\"Father, Let Your will be done\"\nLet that be my song\nHold me close and keep me steady\nWhen the walk feels lame\n\n[Chorus 2]\nI take up my cross to follow Jesus\nI deny myself and walk Your way\nNot my will, O Lord\nBut Yours forever\nBe my strength from day to day\nI take up my cross to follow Jesus\nEvery breath\nA simple \"yes\"\nNot my will, O Lord\nBut Yours forever\nIn Your will\nMy soul finds rest",
+   "themes": [
+    "顺服"
+   ],
+   "verse": null,
+   "firstSeenAt": "2026-09-03T08:29:25Z",
+   "updatedAt": "2026-09-03T08:29:25Z"
+  },
+  {
+   "id": "ydh:s3-qcRZrfZk",
+   "title": "Standing at the Cross 3 – Through the Torn Veil into Abba Father’s Presence",
+   "language": "en",
+   "source": "ydh",
+   "sourceLabel": "雅伟的话 Yahweh De Hua",
+   "code": null,
+   "url": "https://yahwehdehua.net/assets/page/easter/",
+   "album": null,
+   "artist": null,
+   "composer": "Rosablanca Suen",
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
+   "videoUrl": null,
+   "youtubeId": "s3-qcRZrfZk",
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": "[Stanza]\nStanding at the cross\nI step into the light of grace\nThrough Jesus’ death\nThe veil is torn\nThe way is open to all\n\nThe one who died now lives again\nThe risen Lord calls my name\nI deny myself\nTake up my cross\nTo walk the path Jesus walked\n\n[Bridge]\nTo love and to follow\nStay faithful to the end\nWith every breath I’m praying\nMake my heart your home again\n\n[Chorus]\nAbba Father\nHere I am\nForgive my sins and let me draw near\nYou tore the veil\nYou made a way\nI stand in love\nI stand in grace\n\nAbba Father\nHere I am\nAll I am is Yours today\nYou tore the veil\nYou called my name\nI run into Your arms again\n\n[Bridge]\nHere at Your feet, I surrender\nEvery crown\nEvery fear\nEvery plan\nHere at Your feet, I remember\nIt is finished\nIt is done\nin the Lamb (oh-oh)\n\n[Chorus]\nAbba Father\nHere I am\nForgive my sins and let me draw near\nYou tore the veil\nYou made a way\nI stand in love\nI stand in grace\n\nAbba Father\nHere I am\nAll I am is Yours today\nYou tore the veil\nYou called my name\nI run into Your arms again",
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-09-03T08:29:25Z",
+   "updatedAt": "2026-09-03T08:29:25Z"
   }
  ]
 }

@@ -4393,18 +4393,31 @@ const uiStrings = {
   // the rest of this line makes — the sentence names them as links to
   // the congregation's own YouTube uploads instead, which is all the
   // app actually does with them.
+  // 2026-09-03: yahwehdehua.net's five Good Friday / Easter songs
+  // added. They belong beside FYDT and CDC in the first sentence, not
+  // beside setapakcdc.com in the second: they are the ministry's OWN
+  // compositions, credited on its page to Rosablanca Suen, and their
+  // lyrics ship with them — which is a claim this line has to be able
+  // to carry, so it names the composer the page names.
   'aboutLicenseSongs': {
-    'zh-Hans': '© 福音电台 / 基督门徒福音会 / cgdc.hk · 经授权使用。'
-        '音频、视频与乐谱均从原站串流，本应用不作转存。'
+    'zh-Hans': '© 福音电台 / 基督门徒福音会 / cgdc.hk / 雅伟的话 · '
+        '经授权使用。音频、视频与乐谱均从原站串流，本应用不作转存。'
+        'yahwehdehua.net 的五首诗歌由 Rosablanca Suen 创作，'
+        '歌词按该站所刊载的原文收录。'
         'setapakcdc.com 的条目为原站 YouTube 链接，版权归各自权利人所有。',
-    'zh-Hant': '© 福音電台 / 基督門徒福音會 / cgdc.hk · 經授權使用。'
-        '音訊、影片與樂譜均從原站串流，本應用不作轉存。'
+    'zh-Hant': '© 福音電台 / 基督門徒福音會 / cgdc.hk / 雅偉的話 · '
+        '經授權使用。音訊、影片與樂譜均從原站串流，本應用不作轉存。'
+        'yahwehdehua.net 的五首詩歌由 Rosablanca Suen 創作，'
+        '歌詞按該站所刊載的原文收錄。'
         'setapakcdc.com 的條目為原站 YouTube 連結，版權歸各自權利人所有。',
-    'en': '© FYDT / Christian Disciples Church / CGDC Hong Kong · '
-        'used with permission. Audio, video and scores stream from the '
-        'source sites; nothing is rehosted. The setapakcdc.com entries '
-        'are links to YouTube uploads by that congregation; those '
-        'songs remain the copyright of their respective owners.',
+    'en': '© FYDT / Christian Disciples Church / CGDC Hong Kong / '
+        'Yahweh De Hua Ministry · used with permission. Audio, video '
+        'and scores stream from the source sites; nothing is rehosted. '
+        'The five yahwehdehua.net songs were composed by Rosablanca '
+        'Suen and their lyrics are reproduced as that site publishes '
+        'them. The setapakcdc.com entries are links to YouTube uploads '
+        'by that congregation; those songs remain the copyright of '
+        'their respective owners.',
   },
   'aboutFontsBundled': {
     'zh-Hans': '内置字体：Roboto',
@@ -5583,21 +5596,27 @@ const uiStrings = {
   // rule this string has carried since Cahaya was re-enabled still
   // holds: the listed sources must match what the user can actually
   // see in the filter, so a source is named here or it is not shipped.
+  // 2026-09-03: yahwehdehua.net added — five Good Friday / Easter
+  // songs. Same standing rule: a source is named here or it is not
+  // shipped, because this paragraph is the reader's only account of
+  // what the filter chips mean.
   'songsIntroBody': {
-    'zh-Hans': '来自福音电台 (fydt.org)、基督门徒福音会、香港 cgdc.hk '
-        '与吉隆坡 setapakcdc.com 的诗歌，每天自动更新。点 ▶ 直接收听，'
+    'zh-Hans': '来自福音电台 (fydt.org)、基督门徒福音会、香港 cgdc.hk、'
+        '吉隆坡 setapakcdc.com 与雅伟的话 (yahwehdehua.net) 的诗歌，'
+        '每天自动更新。点 ▶ 直接收听，'
         '或打开条目查看伴奏、MV、乐谱与歌词。'
         '筛选后可整批播放、随机播放、存为歌单或下载离线收听。',
-    'zh-Hant': '來自福音電台 (fydt.org)、基督門徒福音會、香港 cgdc.hk '
-        '與吉隆坡 setapakcdc.com 的詩歌，每天自動更新。點 ▶ 直接收聽，'
+    'zh-Hant': '來自福音電台 (fydt.org)、基督門徒福音會、香港 cgdc.hk、'
+        '吉隆坡 setapakcdc.com 與雅偉的話 (yahwehdehua.net) 的詩歌，'
+        '每天自動更新。點 ▶ 直接收聽，'
         '或開啟條目查看伴奏、MV、樂譜與歌詞。'
         '篩選後可整批播放、隨機播放、存為歌單或下載離線收聽。',
     'en': 'Songs from 福音电台 (fydt.org), Christian Disciples Church, '
-        'CGDC Hong Kong and setapakcdc.com in Kuala Lumpur, refreshed '
-        'daily. Tap ▶ to listen, or open an entry for the '
-        'instrumental, music video, sheet music and lyrics. Filter, '
-        'then play or shuffle the result, save it as a playlist, or '
-        'download it for offline listening.',
+        'CGDC Hong Kong, setapakcdc.com in Kuala Lumpur and '
+        'yahwehdehua.net, refreshed daily. Tap ▶ to listen, or open an '
+        'entry for the instrumental, music video, sheet music and '
+        'lyrics. Filter, then play or shuffle the result, save it as a '
+        'playlist, or download it for offline listening.',
   },
   'songsSearchHint': {
     'zh-Hans': '搜索歌名、主题或编号…',

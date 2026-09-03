@@ -18,8 +18,16 @@
 ///   • `cdc`     — Christian Disciples Church (English + Chinese)
 ///   • `cgdc`    — cgdc.hk, Hong Kong (Chinese)
 ///   • `setapak` — setapakcdc.com, Kuala Lumpur (2 songs, 2026-09-03)
+///   • `ydh`     — yahwehdehua.net, 雅伟的话 (5 songs, 2026-09-03)
 ///
-/// The last of those is the odd one out and is meant to be: both its
+/// `ydh` is the ministry whose Bible text this app already bundles.
+/// Its five songs are the church's OWN compositions, published with
+/// full lyrics on its Good Friday / Easter series page — so unlike
+/// `setapak` they carry `lyrics`, and they are the only rows outside
+/// `fydt` that do. They are YouTube-only otherwise: no audio file, no
+/// score, no code, no album.
+///
+/// `setapak` is the odd one out and is meant to be: both its
 /// songs are members' own YouTube uploads with no audio file, no
 /// score, no code and no album, and neither is the church's own
 /// composition. It was added at the user's explicit direction over a
@@ -77,8 +85,8 @@ class Song {
   /// shows up under.
   final String language;
 
-  /// 'fydt' | 'cahaya' | 'cdc' | 'cgdc' | 'setapak'. Which church site
-  /// publishes it. Every value must have an entry in
+  /// 'fydt' | 'cahaya' | 'cdc' | 'cgdc' | 'setapak' | 'ydh'. Which
+  /// church site publishes it. Every value must have an entry in
   /// [songSourceLabels] and in `songSourceIcons`; both are enforced by
   /// tests rather than by convention.
   final String source;
@@ -381,6 +389,15 @@ const Map<String, Map<String, String>> songSourceLabels = {
     'en': 'Setapak CDC, Kuala Lumpur',
     'zh-Hans': '基督门徒福音会（吉隆坡）',
     'zh-Hant': '基督門徒福音會（吉隆坡）',
+  },
+  // yahwehdehua.net — the ministry this app already credits for the
+  // CUVS-YHWH text on the About page, under the same name it uses
+  // there. Nothing to disambiguate against: it is not one of the
+  // 基督门徒福音会 congregations.
+  'ydh': {
+    'en': 'Yahweh De Hua Ministry',
+    'zh-Hans': '雅伟的话',
+    'zh-Hant': '雅偉的話',
   },
 };
 
