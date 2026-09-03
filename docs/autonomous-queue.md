@@ -2821,7 +2821,7 @@ reported. Work these top-down before P2.
       data: 16 of its 21 Greek runs sit in verses with no πᾶς at all, and in
       the 4 that have it, πᾶς is on another run every time.
 
-- [ ] **A draft of the span repair claimed the reader "only gains", and
+- [x] **A draft of the span repair claimed the reader "only gains", and
       約翰福音 3:5 shows that is false — worth remembering, not fixing.**
       Pre-repair BOTH 神 and 的国。 showed G3588, so ὁ was reachable twice over
       while θεός and βασιλεία were reachable nowhere. The promotion is right,
@@ -2843,6 +2843,49 @@ reported. Work these top-down before P2.
       all** — which would make 39,868 pairs reachable and retire this item's
       whole cost. `TaggedRun.implied` is already parsed and its own doc says
       "Worth showing as secondary". **Needs a decision, not another pass.**
+
+      **DONE 2026-09-03 — the word-tap sheet shows `i`, and that retires
+      this item's cost.** `lib/widgets/implied_coverage_line.dart`, wired
+      into the verse block of `originals_sheet.dart`, pinned by
+      `test/implied_coverage_census_test.dart`.
+
+      **Measured on production's input, not the raw corpus, and the unit
+      is a RUN.** 30,879 of 31,102 verses render a tagged line at all.
+      **22,672 of them (73.4%) hold at least one run that can print the
+      line; 304,831 of 364,539 rendered runs (83.6%) gain nothing.** The
+      figure comparable to this item's own 39,868 / 21,390 is **39,534
+      pairs over 21,230 verses** — lower because 223 verses fall back to
+      plain text, because 846 `i` entries only repeat their run's own
+      `s`, and because 7 untagged runs carry an `i` and no tap target.
+      Say which figure you are quoting.
+
+      **The wording carries the whole risk and was written first.** `i`
+      is the importer's record that a span COVERS a word, not a second
+      opinion about the tapped one. It does **not** say "not rendered
+      word for word": in the 14 HELD spans the Chinese spells both words,
+      and 王下 3:27's 的長子 would make that a lie.
+
+      **The span repair's 11 HELD runs are no longer worth repairing, but
+      `HELD` stays exactly as it is.** 27 of the 30 displaced numbers are
+      reachable again as coverage. Three are not: 太 6:8 G2316 **should**
+      stay unreachable (θεός is not in that verse), and 賽 2:3 / 賽 17:3's
+      H4480 מִן are a genuine residue — the repair promoted a number out
+      of `i` into `s` without putting the old `s` back into `i`, so מִן is
+      now in neither field. `HELD` is a record of 14 per-verse judgements
+      about whether the Chinese renders one word or two; a coverage line
+      does not answer that question and is not licence to sweep them.
+
+      **Does not retire the alignment class.** A wrong `s` is still
+      wrong — 民 11:8 answering 百姓 with שֶׁמֶן, *oil*, would not have been
+      acceptable with a footnote.
+
+      **Found on the way, fixed because the feature needed it: word-tap
+      was dead on the first tap of every sheet.** The entry card was gated
+      on `_selectedWord`, which only an original-word chip sets, so
+      tapping the Chinese line resolved an entry and then rendered
+      nothing at all. That has been true for as long as the line has
+      existed.
+
 
 - [x] **SUPERSEDED by the entry above — this is the original item, kept for
       the record of what it got wrong.** It read: "the number the run should
@@ -2906,6 +2949,40 @@ reported. Work these top-down before P2.
       proves this is a convention rather than four slips.
       Also confirmed: 加 1:4 has no G5547, so it never was a precedent for
       腓 1:29.
+
+      **Letter drafted, awaiting the user's send** — §五 of
+      `docs/和合本雅伟版-请教出版方.md`, asked as ONE convention question
+      rather than four slips, with 約一 5:3 and 耶 33:1's same-verse
+      reverse mappings shown as the proof that it IS a convention. All
+      four verified against `assets/originals/` this iteration. Keep all
+      four unchanged.
+
+- [ ] **H3069 vs H3068 — the "filed below" item that was never actually
+      filed. Now asked.** §三 of `docs/和合本雅伟版-请教出版方.md`.
+      **Restate the count before acting:** the queue said 61; a fresh
+      sweep finds **57** verses where the corpus tags H3069 and the
+      `assets/originals/` verse carries H3068, plus **12** where the
+      originals verse carries neither (Psalms/Ezekiel versification
+      offsets) = 69. The letter says 約六十處 rather than pick a disputed
+      figure. Sweep nothing until they answer — repairing one makes the
+      corpus LESS consistent, not more.
+
+- [ ] **利未記 4:17's second 血 — asked, not repaired.** §四 of the CUV
+      letter. Verified against `assets/originals/leviticus.json`: וְהִזָּה
+      takes no object here (4:6, same construction, DOES carry the second
+      הַדָּם), and the verse-final אֵת is **H854** — the אֵת פְּנֵי idiom — not
+      the object marker. The one confident claim is that H853 is not in
+      this verse at all; whether H1818, H854 or no number replaces it is
+      the publisher's call.
+
+- [ ] **使徒行傳 9:29's `主*` — the two imports disagree at source.** §一
+      of the CUV letter. The word-tap corpus carries `主*` here; the
+      reading assets never have, in any version back through 2025.
+      Deliberately NOT restored with the other 123: printing 耶穌 in a
+      verse whose scripture does not contain the word is the defect
+      `test/tagged_rendered_duplication_test.dart` exists to catch, and
+      it did catch it. Ask which reading is right rather than guessing.
+
 
 - [x] **代上 16:39's neighbour was deliberately left half-repaired.** 邱坛 now
       answers H1116, but 的帐幕前 still answers H6440 פָּנִים when it also spans
@@ -3190,6 +3267,18 @@ reported. Work these top-down before P2.
       is orphaned and we create the defect the quote-balance item is about.
       Both edits are ready and neither touches a Strong's number.
       **It needs the publisher's word, not a script's.**
+
+      **Letter drafted, awaiting the user's send** — §二 of
+      `docs/和合本雅伟版-请教出版方.md`. A **third** line of evidence,
+      internal to this edition: the reading asset's 太 18:10 ends
+      `……常见我天父的面。〔有古卷在此有` and 18:11 closes it — that split
+      bracket IS this edition's apparatus convention — and 17:20 does not
+      do it. With the unclosed quotation that makes two structural signs
+      plus the printed 1919. The letter states we lean to 17:21 being
+      scripture here, shows both reasons so they can be refuted in one
+      sentence, and invites correction. **Change nothing until they
+      answer.**
+
 
 - [x] **Four verses print a WORD the tagged import supplies and this edition
       does not: 士師記 15:2 我請求, 15:5 葡萄園, 15:18 現在, 撒下 21:2 大.**
@@ -3665,6 +3754,63 @@ reported. Work these top-down before P2.
       edition's orthography (為/著/群/眾/吃/床), or is OpenCC's standard
       Traditional acceptable there?* One answer settles all of them.
 
+      **2026-09-03 — the user's call is IN (convert), the tool is built
+      and verified, and the apply is still owed.**
+      `tools/reset_lexicon_orthography.py` (`--measure` / `--verify` /
+      `--apply --user-ruled`). Premise checks pass: `cuvs-yhwh-tr.json`
+      holds zero of all six, all six are safe one-to-one merges, and
+      nothing touches 幹/乾/干, 發/髮, 後/后, 里/裡 or 復/覆.
+
+      The decision was delegated by the user (「这个你决定吧」) and the
+      answer is to follow the edition, on the same reasoning as
+      「参考和合本最新版本的繁体版…用他们的」. What settles it is
+      **adjacency, not volume**: `originals_sheet.dart` renders the CBOL
+      definition and the tapped scripture word in ONE panel, and that
+      file's own comment at the attribution line already calls mixed
+      script inside the panel the defect ("no script-mixing inside the
+      panel").
+
+      **The measured objection, recorded because it is right about the
+      numbers:** `assets/sermons/zh-TW/` — 289 files, 2.88 MB of
+      reader-facing Traditional — is in the LEXICON's orthography: 23,701
+      爲 / 6,915 着 / 728 喫 / 470 羣 / 408 衆 / 108 牀 = **32,330 positions
+      against the lexicon's 2,816.** Converting the lexicon alone moves
+      8%. That is a real second question and it is filed below — but it
+      is a different surface with a different provenance (transcribed
+      preaching, which this repo does not rewrite), not an argument
+      against fixing the panel.
+
+      **Two corrections to this item, both load-bearing:** the 5 吃 are
+      NOT untidiness — every one is 口吃, a *stammer* (H3933, G945), a
+      different word from 喫, and a sweep must exclude them; and **51 of
+      the 419 着 are wrong in both orthographies**, filed below.
+
+- [ ] **Decide whether `assets/sermons/zh-TW/` follows the lexicon into
+      the edition's orthography — 32,330 positions, and the user has not
+      been asked.** 289 files, 2.88 MB. It is the last asset in the old
+      convention once the lexicon converts. Two things make it unlike the
+      lexicon and neither has been weighed by a person: it is a separate
+      surface (a sermon page, not the word-tap panel, so nothing sits
+      beside it in the other orthography), and it is **transcribed
+      preaching**, where this repo's standing rule is not to rewrite the
+      speaker. Glyph normalisation is arguably not rewriting — that is
+      exactly the judgement to put to the user rather than assume.
+      `tools/reset_lexicon_orthography.py --measure` prints the table.
+
+- [ ] **The Strong's lexicon spells 著名/著稱/著作/著述/顯著 with 着 in 51
+      places — wrong in BOTH orthographies, so it is not blocked on the
+      orthography decision.** H210 「以產金着名的地方」, H1316 「以土壤肥沃着
+      稱」, H1862 「以智慧着稱」, H3792 「寫作着述」. 着 is never the zhù.
+      Inherited, not introduced: all 419 Simplified twins write 着, so
+      upstream CBOL carries it and `opencc s2t` passed it through —
+      meaning **the Simplified lexicon has the same 51 defects**. Not
+      fixed 2026-09-03 because the repair puts 51 著 into the lexicon and
+      trips `test/lexicon_traditional_orthography_test.dart`, whose
+      著-count assertion cannot tell a correction from the start of a
+      sweep. Do it in the same pass as the orthography apply, or teach
+      that test the difference.
+
+
 
 - [x] **The eleven word-level differences got their third witness — and it
       split them three ways: 2 repaired, 1 where OURS IS RIGHT and both
@@ -3776,7 +3922,7 @@ reported. Work these top-down before P2.
       carrying this and the earlier typo family. Gitignored build output, so a
       rebuild clears them — but never deploy from a stale one.
 
-- [ ] **`assets/bible_evidence.json` has zh-Hant fields holding wholly SIMPLIFIED
+- [x] **`assets/bible_evidence.json` has zh-Hant fields holding wholly SIMPLIFIED
       prose — not a glyph hole, an untranslated field.** Found 2026-08-18 while
       scoping 恆/恒, and confirmed independently by the refuter: the 42 恒 in
       `zh-Hant` values mirror the 44 in `zh-Hans` field for field, because for
@@ -3809,6 +3955,37 @@ reported. Work these top-down before P2.
       assumed — so this prints Simplified prose to Traditional readers today.
       Fixing it means converting 951 paragraphs of reader-facing copy. That is
       a content decision, not a glyph repair, and it needs the user.
+
+      **DONE 2026-09-03 — 830 fields converted, plus 12 repairs to damage
+      that was already shipping.** `tools/repair_untranslated_hant.py`,
+      idempotent, refuses on drift.
+
+      **The measurement was off and the correction matters:** the audit
+      reports 951, but **121 are false positives** of its
+      `zh-Hant == zh-Hans` clause — script-neutral strings (`1946–1956`,
+      死海古卷, 但以理石碑) that are correctly identical. 830 carry
+      Simplified text: **32,638 occurrences over 785 distinct code
+      points.**
+
+      **s2twp is provably what made this file (594/624 clean fields,
+      95.19%; s2tw 54.01%, s2t 49.68%) and re-running it was the wrong
+      move — the file's own converted portion is the evidence.** Its
+      vocabulary layer had already shipped 伊斯坦布爾 → **伊斯坦布林** ×3
+      (the 布爾→布林 rule exists for "Boolean") and 保存 → **儲存** ×5; four
+      more name corruptions of the same shape make 12, all repaired
+      against their zh-Hans twins.
+
+      So `s2tw` for the glyph layer only, plus **50 enumerated
+      corrections to s2tw's own one-to-many mistakes** — 28 names with
+      里→裡 (馬里, 瑪里卜, 胡里安), 11 发→髮 where the sense is 發 (被發掘,
+      騷亂發生), 3 覆活→復活, 2 乾河谷 (a wadi is not a 幹河谷), 4 石製, 1
+      羊皮卷, 1 爐竈. **Wording untouched** — 公元 stays 公元, 意大利 stays
+      意大利, and the 9 surviving 儲存 are the real word. Pinned by
+      `test/bible_evidence_traditional_test.dart` (repairs *and* keep
+      side); `test/bible_evidence_untranslated_hant_test.dart` rewritten
+      from defect-measurement to regression guard, keeping its check that
+      nothing in `lib/` converts at render time.
+
 
 - [x] **`assets/sermons/zh-TW/` is a DIFFERENT and much smaller defect — do not
       treat it as another instalment of the converter hole.** Found 2026-08-18
@@ -5883,7 +6060,7 @@ has never seen this repo.
       so a re-import that starts dropping clauses turns the suite red,
       and asserts 約伯記 10:20 is in the set.
 
-- [ ] **Decide the 427 wording differences with the publisher.**
+- [x] **Decide the 427 wording differences with the publisher.**
       Not ours to change. They cluster in 路加福音 (178) and 馬可福音 (89)
       and read as one consistent later revision — the 2025 印刷版 replaces
       pronouns with names (馬可福音 9:20「帶到耶穌面前」where we have
@@ -5893,6 +6070,54 @@ has never seen this repo.
       `docs/梁家鏗譯本-請教出版方.md`. **Until the publisher answers,
       change nothing** — adopting a revision by guess is rewriting
       scripture.
+
+      **DONE 2026-09-03 — the gate was circular, 423 triaged, and none of
+      them is ours.** This item held the letter back until every
+      difference had a verdict, 「是出版方的修訂，還是我們的缺陷」. That
+      cannot be answered: whether a difference is their revision depends
+      on which edition governs, and which edition governs is what §四之二
+      asks them. Letter unsendable, question unasked, forever.
+
+      Replaced with a question that needs no answer from them — does our
+      reading match their CURRENT electronic Traditional?
+      `tools/triage_ljk_tr_427.py`, reusing `proofread_ljk_tr.py`'s
+      containment method unchanged. **733 print differences: 310
+      punctuation, 423 wording. Of the 423 — 411 are their current
+      electronic file character for character, 8 are their file as we
+      downloaded it in 2026-04 (since revised upstream), 4 differ only in
+      毀/毁 內/内 託/托 話/话 that §三 took from the print, and 0 are in no
+      publisher file.** Nothing to repair; the batch really is an edition
+      question. Letter now 定稿，可以寄出.
+
+      Not 427 but 423, and traced rather than fudged: rerun against the
+      asset at `038b28dd` the total is **734 exactly** (309+425), so 2
+      verses sit on the other side of a punctuation/wording line whose
+      original drawing was never recorded; the other 2 are 路加福音 9:5 and
+      羅馬書 16:24, already fixed, and 路加福音 23:34a joined the punctuation
+      bucket when §五 split it out.
+
+      **`ljk-nt-bible-webapp/public/resources/tw-*.json` is NOT the
+      current electronic edition** — untracked in the publisher's own
+      repo, dated 2026-04-24, and its 啟示錄 20:4 is our reading character
+      for character including 「參啟1.2註」. It is our import source. Use
+      the live files `audit_biblexg_notes.py` caches; the snapshot is a
+      second authority only, and the tool warns loudly when it is absent
+      because skipping it silently moves upstream revisions onto the
+      "ours" pile.
+
+- [ ] **Adopt the 8 verses the publisher has revised since our import —
+      after they name the governing edition.** 馬太福音 7:11, 哥林多前書
+      15:1, 15:4, 15:6, 15:7, 15:9, 15:10, 彼得前書 2:18. We hold their
+      2026-04 electronic reading; their current file reads otherwise, and
+      at 彼得前書 2:18 the 2025 print agrees with their current file (主人)
+      against ours (主子). Not a defect — we are carrying a superseded
+      publisher reading — but it is the one group where "which edition
+      governs" changes actual words on screen. **Change nothing until
+      §四之二 is answered**; adopting a revision by guess is rewriting
+      scripture. Re-run `tools/triage_ljk_tr_427.py --snapshot
+      ljk-nt-bible-webapp/public/resources` after any re-import: the
+      bottom class must stay at 0.
+
 
 - [x] **The printed 註釋本 DOES distinguish the editor's voice from
       scripture — it is in the type size. 4 verses repaired, 27 asked.**
@@ -5991,6 +6216,15 @@ has never seen this repo.
       the 95-verse revision question again rather than damage. Take one
       volume per iteration and count before changing anything.
 
+      **2026-09-03 — now stated to the publisher as a DEPENDENCY, not a
+      question** (§六 of `docs/梁家鏗譯本-請教出版方.md`), so they do not
+      think we are ignoring their material. Do not start it before §四之二
+      is answered: a per-volume review before then can only find
+      "differs", never "who is right". The 423 triage above already
+      settled the part that WAS answerable without them — none of the 423
+      is our own defect.
+
+
 - [x] **Count the swallowed verse numbers properly — it was 5, not 117.**
       The old figure counted digits inside `<note:>` citations
       (馬太福音 15:12's note is 「參11.6，13.57」). Stripping markup first
@@ -6073,6 +6307,11 @@ has never seen this repo.
       `docs/梁家鏗譯本-請教出版方.md`; pinned as a known hole in the
       integrity test so it cannot quietly grow.
 
+      **Letter drafted, awaiting the user's send** — §一 of
+      `docs/梁家鏗譯本-請教出版方.md`, complete and unchanged this
+      iteration. The letter is now 定稿，可以寄出.
+
+
 - [ ] **Ask the publisher about the two official editions disagreeing.**
       Drafted in `docs/梁家鏗譯本-請教出版方.md` — the user is passing it
       to the pastor. Two items, both the publisher's own text: 馬可福音
@@ -6085,6 +6324,10 @@ has never seen this repo.
       **約翰一書 4:16 used to be the headline here and is no longer a
       question at all** — the official Simplified does carry the clause,
       and we were the ones misreading it. See the fixed item above.
+
+      **Letter drafted, awaiting the user's send** — §一 of
+      `docs/梁家鏗譯本-請教出版方.md`. The letter is now 定稿，可以寄出.
+
 
 - [x] **The Simplified proofread was silently checking only 22 of 27
       books — and 羅馬書 3:10 had lost the scripture it quotes.**
@@ -6135,6 +6378,12 @@ has never seen this repo.
       **§四之二 is the only ⏳ left**, so the Traditional 427 is now the
       one thing standing between this letter and being sendable.
 
+      **Letter drafted, awaiting the user's send.** §四 is ✅ and
+      unchanged; the letter now folds it under the same governing
+      question as the 423 and the 27 of §四之三之二 — 貴方目前以哪一份為
+      現行定本？
+
+
 - [ ] **Then rebuild the Traditional from the corrected Simplified.**
       Only after the Simplified matches the publisher. Our Traditional
       is a conversion, and it currently disagrees with the Simplified in
@@ -6162,6 +6411,10 @@ has never seen this repo.
       憑着, 靠着, 得着) and **兇 8 / 凶 8 splitting the same words** (兇惡
       once, 凶惡 twice; 兇殺 beside 行凶). Not worth a sweep before the
       rebuild — it would regenerate the file anyway.
+
+      **2026-09-03 — stated to the publisher as a DEPENDENCY** (§六 of
+      `docs/梁家鏗譯本-請教出版方.md`). Blocked on the same answer.
+
 
 - [x] **Make the audit a permanent test — done for 梁家鏗譯本.**
       `test/biblexg_verse_integrity_test.dart` fails on duplicate
@@ -9408,6 +9661,127 @@ has never seen this repo.
       `/#/evidence?book=John&chapter=3` and `/#/songs/cdc%3Ad0180/score`
       against a real build (fresh browser profile per navigation — stage 3's
       stale-service-worker trap) is still owed before this deploys.
+
+      **PAID OFF 2026-09-03 — and it found two defects that reading could
+      not have.** `tools/web_verify_headless.mjs` (new, zero-dependency
+      sibling of `boot_trap_headless_repro.mjs`; serves `build/web` from
+      127.0.0.1 with a fresh Chrome profile per navigation, and takes no
+      origin argument at all, so it structurally cannot reach prod).
+      Run: `node tools/web_verify_headless.mjs`.
+
+      **Verified.** All four addresses cold-load the right page and
+      restore state, and the hash survives the first-run tour opening over
+      it — the `PopupRoute` shape `main.dart:1261-1269` says once broke it.
+      `/library/bookmarks`'s empty state proves tab **1**, not 0;
+      `/evidence?book=John&chapter=3` receives both params;
+      `/songs/cdc%3Ad0180/score` actually renders the PDF (GetX rewrites
+      `%3A` to a literal `:`, which is legal and still names the song).
+      **The original bug is fixed**: with Micah 2 planted, opening a sermon
+      puts `#/sermons/004` in the address bar and it never reverts. The
+      YouTube handshake is verified end to end against a real player —
+      `enablejsapi=1`+`origin` in the src, 11 `listening` posts (1 on load
+      + 10 at ~500 ms), **41 `infoDelivery` frames carrying `currentTime`
+      back**, and a language switch re-mounting at `&start=10`. Sermon
+      typography at 402 pt measures a 6.01 pt paragraph gap against 35.0 pt
+      line boxes (20 × 1.75). Caveat recorded by the pass itself: at 402 pt
+      the **screen** is the measure, not `fontSize*34`, so that width does
+      not exercise the measure lever — 1280 is the shot where it binds.
+
+      Three things had to be solved to drive CanvasKit at all, and they are
+      the reusable part: text is painted to `<canvas>` so `innerText` is
+      empty on a healthy boot (clicking the engine's
+      `<flt-semantics-placeholder>` turns on the accessibility tree, giving
+      both the page-identity oracle and real coordinates); a fresh profile
+      means the first-run tour opens **asynchronously**, seconds after
+      paint, over every page; and `netlify.toml`'s `/song-media/*` proxy has
+      to be honoured or `/score` fails with `FPDF_ERR_FORMAT (3)` — which
+      the first run misreported as a routing defect. It was the server.
+
+- [x] **`/settings/:section` scrolled nothing — every such deep link was an
+      alias for `/settings`.** Found 2026-09-03 by the pass above, fixed
+      the same day. `/#/settings/ai` rendered **byte-identically** to bare
+      `/#/settings` (same screenshot hash, same semantics text): it
+      navigates, so it looks like it worked, and lands somewhere else.
+
+      Mechanism MEASURED, not assumed — `logDiag` probes in a real release
+      bundle: `[PROBE] settings initState section=SettingsSection.ai
+      target=true` then `[PROBE] postFrame ctx=false`. Route plumbing and
+      the `GlobalKey` both work; `_aiKey.currentContext` is null because
+      `ListView` is lazy (250 pt cache extent) and `_aiKey` sits ~7,000 pt
+      down, so the single post-frame `ensureVisible` returned early every
+      time. Fixed by widening `scrollCacheExtent` **only while a deep link
+      is pending** and dropping it back via `.whenComplete`; the backing
+      retry is frame-counted (five frames, then give up), deliberately not
+      "retry until it appears". `test/settings_deep_link_scroll_test.dart`,
+      4 cases, verified red on the unfixed page. The harness now **exits 1**
+      on this and checks the AI header's real `getBoundingClientRect()` —
+      the semantics tree carries off-screen built nodes, so "found the
+      words" was never proof a reader could see them.
+
+      Noted, not touched: the probe also showed a second `SettingsPage`
+      built with `section=null` on the same cold load —
+      `Navigator.defaultGenerateInitialRoutes` decomposing `/settings/ai`
+      into `/`, `/settings`, `/settings/ai`. The `ai` one ends up on top,
+      so it is not a defect, but a cold deep link builds Settings twice.
+
+- [x] **Back left the app: one Back skipped a whole page and landed on the
+      Dashboard.** Found and fixed 2026-09-03. From a sermon, one Back went
+      past `/#/sermons` to the Dashboard, and `_writeStateToUrl` then
+      pushed a Bible reference the reader never asked for. Reproduced
+      identically with and without a planted Bible position.
+
+      **The guess was wrong and the record should say so.** The dispatch
+      brief supposed `_popRouteCallback` was idle wiring with nothing to
+      pop back to. It is the cause. One Back produced two pops:
+      `[PROBE] didPop popped=/sermons/004 -> now=/sermons` (Flutter's
+      engine) then `[PROBE] popRouteCallback canPop=true` and
+      `[PROBE] didPop popped=/sermons -> now=/` (ours). The root Navigator
+      is built with `reportsRouteUpdateToEngine: true`, so
+      `SingleEntryBrowserHistory.onPopState` re-pushes the engine entry and
+      sends `popRoute`, which `WidgetsApp.didPopRoute` turns into
+      `maybePop()` — already run before this repo's listener fires. Ours
+      popped again, and because the engine's pop had moved
+      `_currentRouteName` down one, the "leaving a registered route?" test
+      still passed and took the second page too. `setPopRouteCallback`
+      removed outright (web impl, facade, stub, and the `main.dart`
+      registration). Back now lands on the sermon list.
+
+      `docs/url-routing-plan.md` §5 points 5 and 6 asserted the opposite —
+      "each `pushPage` navigation still creates a browser history entry" —
+      argued from reading the code. They are struck through with **"False —
+      see §5a"**, and §5a carries the measured pushState/replaceState trace
+      and says plainly that the claim read plausibly for two weeks and the
+      browser disagreed the first time anyone pressed Back.
+
+- [ ] **Forward is structurally unreachable in the web app.** Not fixed
+      2026-09-03 and deliberately not papered over: `push-added-history-
+      entry=false` is unchanged and forward count is 0 at every sample.
+      It cannot be otherwise while the app sets `home:` on
+      `GetMaterialApp` — `setRouteName` calls
+      `_setupFlutterEntry(replace: true)`, so no in-app navigation adds a
+      browser entry, and `onPopState` re-pushes on every popstate, which
+      truncates the forward list. `/#/sermons/004` is therefore shareable
+      but not *revisitable* by the browser chrome.
+
+      Fixing it means moving to `GetMaterialApp.router` (Router API →
+      `MultiEntriesBrowserHistory`). **Do NOT shortcut it with
+      `SystemNavigator.selectMultiEntryHistory()` alone** — verified
+      against the Flutter 3.44.2 source, not guessed: in multi-entry mode
+      Back arrives as `pushRouteInformation` and `WidgetsApp` answers with
+      `pushNamed`, so Back would GROW the stack instead of unwinding it.
+      Land it on its own branch. `tools/web_verify_headless.mjs history`
+      already prints `forward-available` as a KNOWN-GAP line rather than
+      asserting it — turning that into a gated assertion is the definition
+      of done.
+
+- [ ] **On the Bible reader, Back pushes a route instead of popping.**
+      Pre-existing, orthogonal to the two defects above, flagged rather
+      than touched 2026-09-03. `_writeStateToUrl` issues a raw
+      `history.pushState` for an entry the engine believes it owns; a Back
+      onto one of those lands in `onPopState`'s third branch, which does
+      `go(-1)` and then dispatches **`pushRoute`**. Measure it with
+      `tools/web_verify_headless.mjs history` before changing anything —
+      that is the instrument that caught the sermon case.
 
 - [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是
