@@ -266,6 +266,28 @@ const uiStrings = {
     'zh-Hant': '未找到該 Strong\'s 詞條。',
     'en': 'Lexicon entry not found.',
   },
+  // The secondary line under a tapped run of the tagged Chinese verse.
+  //
+  // The tagged corpus gives a run a primary number (`s`) and a list of
+  // "implied" ones (`i`). `i` is NOT a second opinion about the tapped
+  // word: it is the importer's record that the stretch of original this
+  // Chinese covers ALSO contains those words. So the label must say
+  // "other words", never "also means" or "or"; and the note must claim
+  // only coverage, not that the Chinese leaves them untranslated —
+  // in 14 known runs the Chinese spells both words (王下 3:27's 的長子
+  // spells בֵּן in 子 and בְּכוֹר in 長), so "not rendered" would be
+  // false there. `{w}` is the tapped run's text.
+  'impliedCoverageLabel': {
+    'zh-Hans': '「{w}」这段译文一并涵盖的其他原文词',
+    'zh-Hant': '「{w}」這段譯文一併涵蓋的其他原文詞',
+    'en': 'Other original words “{w}” also covers',
+  },
+  'impliedCoverageNote': {
+    'zh-Hans': '标记者记录它们落在这段译文所涵盖的原文范围内；这不是所点词本身的编号。',
+    'zh-Hant': '標記者記錄它們落在這段譯文所涵蓋的原文範圍內；這不是所點詞本身的編號。',
+    'en': 'The tagger recorded these as falling inside the original this '
+        'text covers. They are not the tapped word\'s own number.',
+  },
   'concordanceUsed': {
     'zh-Hans': '出现 {count} 次',
     'zh-Hant': '出現 {count} 次',

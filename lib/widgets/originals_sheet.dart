@@ -16,6 +16,7 @@ import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
 import 'package:yswords/widgets/collapsible_english_ref.dart';
+import 'package:yswords/widgets/implied_coverage_line.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/services/tagged_text_service.dart';
 import 'package:yswords/services/ai_word_service.dart';
@@ -73,6 +74,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   StrongsEntry? _rootEntry;
   ConcordanceResult? _rootConcordance;
   bool _loadingEntry = false;
+  // The run of the tagged Chinese line the reader last tapped, or null.
+  // Held so [ImpliedCoverageLine] can print the OTHER original words
+  // that run's span covers — its `i`, which until 2026-09-03 no widget
+  // read at all. The run itself and not just its numbers, because the
+  // line quotes the tapped text back and has to filter against that
+  // run's own `s`. Cleared whenever the reader asks a different
+  // question, so a stale line cannot outlive the tap that opened it.
+  TaggedRun? _impliedRun;
   // TapGestureRecognizers for inline derivation links — disposed on change.
   final _tapRecognizers = <TapGestureRecognizer>[];
 
@@ -225,7 +234,18 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       for (final w in r.words ?? const <OriginalWord>[]) {
         uniqueNums.add(w.strongs);
       }
+      // The tagged line's own numbers too — both the primary `s` and the
+      // `i` behind the implied-coverage line, which needs the lemma and
+      // gloss resolved before it can decide whether a number is
+      // printable at all. Same lexicon map, so these are map lookups
+      // after the first await, not extra file reads.
+      for (final run in r.tagged ?? const <TaggedRun>[]) {
+        if (run.strongs.isNotEmpty) uniqueNums.add(run.strongs);
+        uniqueNums.addAll(run.implied);
+      }
     }
+    uniqueNums.removeWhere(
+        (n) => n.isEmpty || TaggedRun.isSuppliedMarker(n));
     await Future.wait(uniqueNums.map((n) async {
       if (_glossCache.containsKey(n)) return;
       _glossCache[n] = await StrongsService.lookup(n);
@@ -240,6 +260,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     _pivotFromNumber = null;
     setState(() {
       _selectedWord = w;
+      // A chip tap is a different question from a Chinese-word tap, so
+      // the implied-coverage line for the previous run stops applying.
+      _impliedRun = null;
       _selectedEntry = null;
       _selectedConcordance = null;
       _rootEntry = null;
@@ -295,9 +318,20 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   /// arrives. Untagged runs — opening quotes, inserted connectives —
   /// render as ordinary text: a word the tagger left unmarked has no
   /// answer to give, and making it look tappable would promise one.
+  ///
+  /// That rule is why the implied-coverage line is offered on tagged
+  /// runs only. Every run in the corpus whose `s` is empty while its `i`
+  /// is populated — all **7** of them, measured 2026-09-03 — is an
+  /// `H0`/`G0` supplied-marker run, six of them the divine name
+  /// (民數記 7:89 「要与雅伟」, 以賽亞書 2:6 「雅伟，」,
+  /// 提摩太前書 3:16 「就是神」 …). Those were deliberately left untappable
+  /// because no original word stands behind them; giving them a tap
+  /// target to reach H854 אֵת or G2532 καί would reopen that decision to
+  /// buy 7 runs out of 364,539. Pinned by
+  /// `test/implied_coverage_census_test.dart`.
   Widget _taggedVerseLine(List<TaggedRun> runs, ColorScheme scheme) {
     final base = TextStyle(
-      fontSize: 14,
+      fontSize: kTaggedVerseFontSize,
       color: scheme.onSurface,
       height: 1.5,
     );
@@ -326,7 +360,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   decorationColor: scheme.primary.withValues(alpha: 0.45),
                 ),
                 recognizer: (TapGestureRecognizer()
-                  ..onTap = () => _loadRootEntry(run.strongs)),
+                  ..onTap = () {
+                    setState(() => _impliedRun = run);
+                    _loadRootEntry(run.strongs);
+                  }),
               ),
         ],
       ),
@@ -387,6 +424,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     setState(() {
       _rootEntry = null;
       _rootConcordance = null;
+      // Backing out of the entry backs out of the coverage line with
+      // it: the line describes the span whose entry is being dismissed.
+      _impliedRun = null;
       _wordFamily = const [];
       _compareWords = const [];
       _relatedConcordances = const {};
@@ -677,7 +717,18 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                     children: [
                       for (final vo in data) _buildVerseBlock(vo, scheme),
-                      if (_selectedWord != null) ...[
+                      // `_rootEntry` as well as `_selectedWord`: tapping
+                      // a word in the Chinese line, or a chip on the
+                      // implied-coverage line, goes through
+                      // `_loadRootEntry` and never sets `_selectedWord`,
+                      // so gating on the chip selection alone meant the
+                      // first tap of a sheet resolved an entry and then
+                      // rendered nothing at all. `_loadingEntry` keeps
+                      // the spinner in the tree while that first lookup
+                      // is still in flight.
+                      if (_selectedWord != null ||
+                          _rootEntry != null ||
+                          _loadingEntry) ...[
                         const SizedBox(height: 16),
                         _buildEntryCard(context, scheme, locale),
                       ] else ...[
@@ -799,9 +850,42 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 ],
               ),
             ),
+          // Last in the verse block: under the span it describes, and
+          // under the row of original-word chips that already shows the
+          // tapped run's OWN number with its lemma and gloss. So the
+          // primary answer is above it on screen, not merely somewhere
+          // else in the sheet.
+          //
+          // Not after the entry card, which was the first placement and
+          // was wrong: measured on 創世記 1:1 the card and its
+          // concordance run 2,500 logical pixels, so the line landed
+          // where nobody scrolls and the reachability it exists to
+          // provide would have been theoretical.
+          if (_impliedRunOf(vo) case final run?)
+            ImpliedCoverageLine(
+              run: run,
+              lexicon: _glossCache,
+              locale: widget.locale,
+              onTapNumber: _loadRootEntry,
+            ),
         ],
       ),
     );
+  }
+
+  /// The tapped run, when it belongs to [vo]'s verse — so a sheet opened
+  /// on several verses puts the coverage line under the one the reader
+  /// actually tapped. Identity, not equality: two verses can hold runs
+  /// with the same text and the same number, and the run lists are built
+  /// once per load and cached, so the instances are stable while the
+  /// sheet is open.
+  TaggedRun? _impliedRunOf(_VerseOriginals vo) {
+    final run = _impliedRun;
+    if (run == null) return null;
+    for (final candidate in vo.tagged ?? const <TaggedRun>[]) {
+      if (identical(candidate, run)) return run;
+    }
+    return null;
   }
 
   Widget _wordChip(
@@ -1029,7 +1113,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   }
 
   Widget _buildEntryCard(BuildContext context, ColorScheme scheme, String locale) {
-    final w = _selectedWord!;
+    // Null when the reader arrived from the Chinese line or an
+    // implied-coverage chip rather than from an original-word chip;
+    // the entry itself then carries everything the header needs.
+    final w = _selectedWord;
     if (_loadingEntry) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
@@ -1041,7 +1128,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     final entry = isBrowsingRoot ? _rootEntry : _selectedEntry;
     final concordance = isBrowsingRoot ? _rootConcordance : _selectedConcordance;
     // The displayed number: root number when browsing, otherwise the word's.
-    final displayNumber = entry?.number ?? w.strongs;
+    final displayNumber = entry?.number ?? w?.strongs ?? '';
     // Round 56 (continued — Aramaic highlight, entry card): tag the
     // header row when this Strong's entry is Aramaic. Detection
     // mirrors the chip-side rule: NT entries → curated Greek
@@ -1131,7 +1218,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  entry?.lemma ?? w.text,
+                  entry?.lemma ?? w?.text ?? displayNumber,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,

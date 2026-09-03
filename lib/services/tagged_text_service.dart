@@ -47,9 +47,21 @@ class TaggedRun {
   /// (opening quotes, inserted connectives).
   final String strongs;
 
-  /// Numbers the original has that this text does not render — the
-  /// Hebrew direct-object marker אֵת, the Greek article. Worth showing
-  /// as secondary, never as the word's own identity.
+  /// Numbers the original has that this run's span covers without this
+  /// text rendering them word for word — the Hebrew direct-object
+  /// marker אֵת, the Greek article. Worth showing as secondary, never
+  /// as the word's own identity.
+  ///
+  /// Shown since 2026-09-03 by `lib/widgets/implied_coverage_line.dart`,
+  /// at the foot of the verse block — under the verse and under the
+  /// original-word chips that carry the tapped run's own number — and in
+  /// its own weaker wording.
+  /// Before that this field was parsed and read by nothing, which meant
+  /// a number that was no run's `s` could not be reached from anywhere:
+  /// 39,534 (verse, number) pairs over 21,230 verses were invisible.
+  /// `test/implied_coverage_census_test.dart` holds the measurement and
+  /// the filters — a number equal to the run's own `s`, an `H0`/`G0`,
+  /// and anything the lexicon cannot answer are not printed.
   final List<String> implied;
 
   /// Grammar codes: Hebrew stem/aspect, Greek tense-voice-mood.

@@ -46,10 +46,22 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// **The premise is `s`, never `i`, and getting that wrong made the count six
 /// times too small.** A first version counted a run's `i` as coverage, so a
-/// verse whose θεός sat in some run's `i` looked fine. It is not fine:
-/// `tagged_text_service.dart` parses `i` into `TaggedRun.implied` and no
-/// widget reads it, so a number that appears only there is invisible to every
+/// verse whose θεός sat in some run's `i` looked fine. It was not fine: at the
+/// time `tagged_text_service.dart` parsed `i` into `TaggedRun.implied` and no
+/// widget read it, so a number that appeared only there was invisible to every
 /// reader. On the corrected premise the census went 11 -> 71.
+///
+/// **Since 2026-09-03 a widget does read `i`** —
+/// `lib/widgets/implied_coverage_line.dart`, measured by
+/// `test/implied_coverage_census_test.dart` — and the premise here is
+/// unchanged anyway, for a reason worth keeping straight. That line says
+/// "the stretch of original this Chinese covers also contains these words".
+/// It does not say "this word is that word", and it does not correct an `s`
+/// that names the wrong one. 民數記 11:8 answering 百姓 with שֶׁמֶן, *oil*,
+/// would still have been wrong with a coverage line under it. What the
+/// display does change is REACHABILITY, which is the subject of `the span
+/// repair left 30 displaced numbers unreachable` below and is called out
+/// there.
 ///
 /// **The total was never a mistake count, and it is not the size of the class
 /// either.** It decomposes, and the three kinds want different fixes:
@@ -573,13 +585,34 @@ void main() {
   /// What the span repair GAVE UP, recomputed rather than asserted.
   ///
   /// Promoting `s` to the word the Chinese renders displaces whatever `s` held
-  /// before. `i` is inert — no widget reads it — so once the displaced number
-  /// is no run's `s` anywhere in the verse, no tap can reach it. A draft of
-  /// `tools/repair_strongs_spans.py` called that cost-free and got 約翰福音
-  /// 3:5 backwards: both 神 and 的国。 showed G3588 there beforehand, so ὁ was
-  /// reachable twice while θεός and βασιλεία were reachable nowhere. The trade
-  /// is worth making; it is still a trade, and these figures are the size of
-  /// it.
+  /// before. When this was written `i` was inert — no widget read it — so once
+  /// the displaced number was no run's `s` anywhere in the verse, no tap could
+  /// reach it. A draft of `tools/repair_strongs_spans.py` called that
+  /// cost-free and got 約翰福音 3:5 backwards: both 神 and 的国。 showed G3588
+  /// there beforehand, so ὁ was reachable twice while θεός and βασιλεία were
+  /// reachable nowhere. The trade is worth making; it is still a trade, and
+  /// these figures are the size of it.
+  ///
+  /// **2026-09-03: 27 of the 30 are reachable again, and the list stays.**
+  /// The implied-coverage line prints a tapped run's `i`, and most of these
+  /// numbers sit in the `i` of the very run whose `s` displaced them — that
+  /// is what made them `spans-the-word` to begin with. Counted below rather
+  /// than assumed, because it is not all of them:
+  ///
+  ///   * **馬太福音 6:8 G2316** stays unreachable and should. That verse's
+  ///     Greek is ὁ πατὴρ ὑμῶν with no θεός in it; the removal was a
+  ///     correction, and a coverage line naming θεός would put the error
+  ///     back in smaller type.
+  ///   * **以賽亞書 2:3 and 17:3, H4480 מִן** stay unreachable and are a real
+  ///     residue. The repair promoted a number OUT of `i` into `s` and did
+  ///     not put the old `s` back into `i`, so 賽 17:3's מִן is now in
+  ///     neither field of any run. Two verses; recorded, not swept.
+  ///
+  /// What the line retires is the COST, not the record. These rows still
+  /// prove the promotion happened and still catch a re-import that undoes
+  /// it. And reachable as coverage is not the same as reachable as the
+  /// word's own number — that distinction is exactly what the line's wording
+  /// exists to keep.
   test('the span repair left 30 displaced numbers unreachable', () {
     // (book, ref, run text, the number the run showed before the repair).
     const displaced = <List<String>>[
@@ -695,6 +728,32 @@ void main() {
     };
     expect(greek, isNot(contains('G2316')));
     expect(greek, contains('G3962'));
+
+    // How many of the 30 the implied-coverage line puts back within reach,
+    // counted here rather than claimed in prose. 27 sit in some run's `i`
+    // and are printable; three do not — and one of those three is 太 6:8,
+    // which must stay out of reach because the number is not in the verse.
+    final reachableAsCoverage = <String>{};
+    final stillUnreachable = <String>{};
+    for (final row in displaced) {
+      final key = '${row[0]} ${row[1]} ${row[3]}';
+      if (!unreachable.contains(key)) continue;
+      final runs = (tagged[row[0]]![row[1]] as List)
+          .cast<Map<String, dynamic>>();
+      final implied = <String>{
+        for (final r in runs)
+          for (final n in ((r['i'] as List?) ?? const []).cast<String>())
+            if (n != r['s']) n,
+      };
+      (implied.contains(row[3]) ? reachableAsCoverage : stillUnreachable)
+          .add(key);
+    }
+    expect(reachableAsCoverage, hasLength(27));
+    expect(stillUnreachable, {
+      'matthew 6:8 G2316',
+      'isaiah 2:3 H4480',
+      'isaiah 17:3 H4480',
+    });
   });
 
   /// The argument that nearly justified the repair, kept as a failing test of
@@ -788,28 +847,66 @@ void main() {
   /// "the repair caused this condition" would be false too. The condition is
   /// the norm and the repair added 30 to it.
   ///
-  /// Whether to surface `implied` as a secondary line is NOT a loop
-  /// iteration's call, which is why this stays a pin and not a change:
-  /// `TaggedRun.implied` is already parsed and carried, and its own doc
-  /// comment says "Worth showing as secondary, never as the word's own
-  /// identity", so the data model anticipated the display. But turning it on
-  /// changes what a reader sees on 21,390 verses at once, and it would
-  /// invalidate the premise of this entire census — every count above is
-  /// computed on `s` alone. Ask before doing it.
-  test('`i` is inert, which is why the census counts `s` alone', () {
+  /// **The premise changed on 2026-09-03: `i` is no longer inert, and this
+  /// test says so instead of pretending otherwise.**
+  ///
+  /// The version above asserted that NO widget under `lib/widgets` contains
+  /// the string `implied`, and it was a real pin: it existed so that turning
+  /// the display on could not happen silently, because every count in this
+  /// file is computed on `s` alone. The user decided to turn it on.
+  /// `lib/widgets/implied_coverage_line.dart` now prints a run's `i` as a
+  /// clearly secondary line at the foot of the verse block, and
+  /// `test/implied_coverage_census_test.dart` measures what that reaches:
+  /// 39,534 (verse, number) pairs over 21,230 verses, on production's own
+  /// input rather than the raw corpus.
+  ///
+  /// **What that does NOT do is make the census above wrong.** It counts the
+  /// misaligned-tag class — runs whose `s` names a different word from the
+  /// one the Chinese renders — and a wrong `s` is still wrong when a
+  /// secondary line beside it happens to name the right word. 民數記 11:8
+  /// answering 百姓 with שֶׁמֶן, *oil*, would not have been acceptable with a
+  /// footnote. The reachability figures in `the span repair left 30 displaced
+  /// numbers unreachable` are the ones the new line touches: 27 of those 30
+  /// are now reachable as coverage, counted there rather than claimed here.
+  ///
+  /// So this test keeps the half that is still true — the census's own
+  /// premise — and drops the half that became false. It asserts that `i` is
+  /// parsed, that the census code above never consults it, and that the
+  /// display is exactly where it is documented to be, so a second widget
+  /// growing its own opinion about `i` still turns the suite red.
+  test('the census counts `s` alone, though `i` is displayed since '
+      '2026-09-03', () {
     final source =
         File('lib/services/tagged_text_service.dart').readAsStringSync();
     expect(source.contains("j['i']"), isTrue,
         reason: 'the field is still parsed into TaggedRun.implied');
-    final widgets = Directory('lib/widgets')
+
+    // The premise of every count in this file: the hit list is built from
+    // `s`, and reads `i` only to LABEL a hit as `spans-the-word`.
+    final self = File('test/strongs_alignment_test.dart').readAsStringSync();
+    expect(self.contains("shown.contains(expected)"), isTrue,
+        reason: 'the census still asks whether the right number is any run\'s '
+            '`s`; if it ever starts counting `i` as coverage the totals here '
+            'are not comparable with anything above — that mistake gave 11 '
+            'where the answer was 71');
+
+    // Two widgets touch `implied`, and only one of them shows anything:
+    // `implied_coverage_line.dart`, whose whole job is to present it as
+    // weaker than `s`, and `originals_sheet.dart`, which only resolves the
+    // lexicon entries that line needs and hands it the run. A third would be
+    // a new claim to the reader and needs its own argument.
+    final readers = Directory('lib/widgets')
         .listSync(recursive: true)
         .whereType<File>()
-        .where((f) => f.path.endsWith('.dart'));
-    for (final widget in widgets) {
-      expect(widget.readAsStringSync().contains('implied'), isFalse,
-          reason: '${widget.path} reads `implied`. If a widget ever displays '
-              'it, the premise of this whole census changes: a number sitting '
-              'in `i` would then be reachable and the count is too high.');
-    }
+        .where((f) => f.path.endsWith('.dart'))
+        .where((f) => f.readAsStringSync().contains('run.implied'))
+        .map((f) => f.path.split('/').last)
+        .toList()
+      ..sort();
+    expect(readers, ['implied_coverage_line.dart', 'originals_sheet.dart'],
+        reason: 'a widget outside those two is reading `i`. That is not '
+            'forbidden, but it is a decision: `i` is the tagger\'s record '
+            'that a span COVERS a word, not a second opinion about the word '
+            'tapped, and any surface showing it has to say so.');
   });
 }
