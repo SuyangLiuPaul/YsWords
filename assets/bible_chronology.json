@@ -1,0 +1,543 @@
+{
+  "_meta": {
+    "version": 1,
+    "generated": "2026-09-03",
+    "generator": "tools/build_bible_chronology.py",
+    "defaultScheme": "masoretic-ussher",
+    "spanStartAm": 0,
+    "spanEndAm": 2187,
+    "count": 20,
+    "description": "Lifeline layer for the interactive chronology chart. Iteration 1 covers Genesis 5 and 11 — Adam to Abraham — the span where Scripture states the ages the years are computed from. Names come from assets/family_tree.json; years are recomputed from the Masoretic begetting ages and cross-checked against it. No data is taken from the copyrighted reference sheet in docs/reference/.",
+    "undrawnLines": {
+      "en": "Cain's line (Genesis 4), Ham's and Japheth's (Genesis 10) are not drawn. Scripture names them but gives no ages, so there is nothing to plot without inventing it.",
+      "zh-Hans": "该隐的家系（创世记 4）与含、雅弗的家系（创世记 10）未绘出。经文有名字却没有岁数，不杜撰就无从落笔。",
+      "zh-Hant": "該隱的家系（創世記 4）與含、雅弗的家系（創世記 10）未繪出。經文有名字卻沒有歲數，不杜撰就無從落筆。"
+    }
+  },
+  "schemes": [
+    {
+      "id": "masoretic-ussher",
+      "supported": true,
+      "creationBc": 4004,
+      "nameEn": "Masoretic text (Ussher anchor)",
+      "nameZhHans": "马所拉文本（乌雪锚点）",
+      "nameZhHant": "馬所拉文本（烏雪錨點）",
+      "noteEn": "Every year on this chart is counted in Anno Mundi — years since Creation — using the ages the Masoretic (Hebrew) text gives in Genesis 5 and 11. Those intervals are what Scripture states; the BC labels are not. They come from anchoring AM 0 at 4004 BC, which is Ussher's date and the one the reference chart uses. Read the AM column as the sourced figure and the BC column as one scholar's placement of it.",
+      "noteZhHans": "本图的年份以「创世纪元」（AM，自创造起算的年数）计算，取自马所拉（希伯来）文本创世记第 5、11 章所记的岁数。经文陈述的是这些间隔，而非公元前年份；公元前标签来自把 AM 0 锚定在公元前 4004 年，那是乌雪的定年，也是参考图所用的。请把 AM 一栏视为有经文出处的数字，把公元前一栏视为某一位学者对它的定位。",
+      "noteZhHant": "本圖的年份以「創世紀元」（AM，自創造起算的年數）計算，取自馬所拉（希伯來）文本創世記第 5、11 章所記的歲數。經文陳述的是這些間隔，而非公元前年份；公元前標籤來自把 AM 0 錨定在公元前 4004 年，那是烏雪的定年，也是參考圖所用的。請把 AM 一欄視為有經文出處的數字，把公元前一欄視為某一位學者對它的定位。"
+    },
+    {
+      "id": "septuagint",
+      "supported": false,
+      "creationBc": 5500,
+      "nameEn": "Septuagint (LXX)",
+      "nameZhHans": "七十士译本",
+      "nameZhHant": "七十士譯本",
+      "noteEn": "The Greek Septuagint gives most of the Genesis 5 and 11 fathers a begetting age 100 years higher, and adds a second Cainan in Genesis 11 — the one Luke 3:36 also names. Its Creation falls near 5500 BC, roughly 1,500 years earlier. Not plotted yet: doing it honestly means carrying its own ages, not shifting this chart's anchor.",
+      "noteZhHans": "希腊文七十士译本给创世记 5、11 章多数先祖的生子年龄高出 100 年，并在创世记 11 章多出一位该南——路加福音 3:36 也提到他。其创造年代约在公元前 5500 年，比上者早约 1500 年。本次尚未绘出：要诚实呈现就得录入它自己的岁数，而不是挪动本图的锚点。",
+      "noteZhHant": "希臘文七十士譯本給創世記 5、11 章多數先祖的生子年齡高出 100 年，並在創世記 11 章多出一位該南——路加福音 3:36 也提到他。其創造年代約在公元前 5500 年，比上者早約 1500 年。本次尚未繪出：要誠實呈現就得錄入它自己的歲數，而不是挪動本圖的錨點。"
+    },
+    {
+      "id": "samaritan",
+      "supported": false,
+      "creationBc": 4700,
+      "nameEn": "Samaritan Pentateuch",
+      "nameZhHans": "撒玛利亚五经",
+      "nameZhHant": "撒瑪利亞五經",
+      "noteEn": "The Samaritan Pentateuch differs from both — shorter lifespans before the Flood, longer begetting ages after it — putting Creation near 4700 BC. The three witnesses disagree by around 1,500 years in total. That is a genuine textual division, not an error with a right answer.",
+      "noteZhHans": "撒玛利亚五经与前两者都不同——洪水前寿数较短，洪水后生子年龄较长——创造年代约在公元前 4700 年。三个文本证据之间相差合计约 1500 年。这是真实的抄本分歧，不是有标准答案的错误。",
+      "noteZhHant": "撒瑪利亞五經與前兩者都不同——洪水前壽數較短，洪水後生子年齡較長——創造年代約在公元前 4700 年。三個文本證據之間相差合計約 1500 年。這是真實的抄本分歧，不是有標準答案的錯誤。"
+    }
+  ],
+  "lines": [
+    {
+      "id": "sethite",
+      "colorHex": "#6B5E3F",
+      "nameEn": "Seth's line (Genesis 5)",
+      "nameZhHans": "塞特的家系（创世记 5）",
+      "nameZhHant": "塞特的家系（創世記 5）"
+    },
+    {
+      "id": "shemite",
+      "colorHex": "#8C5A2F",
+      "nameEn": "Shem's line (Genesis 11)",
+      "nameZhHans": "闪的家系（创世记 11）",
+      "nameZhHant": "閃的家系（創世記 11）"
+    }
+  ],
+  "lifelines": [
+    {
+      "personId": "adam",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Adam",
+      "nameZhHans": "亚当",
+      "nameZhHant": "亞當",
+      "fatherId": null,
+      "birthAm": 0,
+      "deathAm": 930,
+      "lifespan": 930,
+      "refs": [
+        "Genesis 5:1-2",
+        "Genesis 5:5"
+      ],
+      "derivationEn": "Year zero of the scale: the count runs from Creation. Adam lived 930 years (Genesis 5:5).",
+      "derivationZhHans": "本刻度的零年：年数自创造起算。亚当共活了 930 年（创世记 5:5）。",
+      "derivationZhHant": "本刻度的零年：年數自創造起算。亞當共活了 930 年（創世記 5:5）。"
+    },
+    {
+      "personId": "seth",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Seth",
+      "nameZhHans": "塞特",
+      "nameZhHant": "塞特",
+      "fatherId": "adam",
+      "birthAm": 130,
+      "deathAm": 1042,
+      "lifespan": 912,
+      "refs": [
+        "Genesis 5:3",
+        "Genesis 5:8"
+      ],
+      "derivationEn": "Adam was 130 when Seth was born (Genesis 5:3); Seth lived 912 years (Genesis 5:8).",
+      "derivationZhHans": "亚当 130 岁生塞特（创世记 5:3）；塞特共活了 912 年（创世记 5:8）。",
+      "derivationZhHant": "亞當 130 歲生塞特（創世記 5:3）；塞特共活了 912 年（創世記 5:8）。"
+    },
+    {
+      "personId": "enosh",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Enosh",
+      "nameZhHans": "以挪士",
+      "nameZhHant": "以挪士",
+      "fatherId": "seth",
+      "birthAm": 235,
+      "deathAm": 1140,
+      "lifespan": 905,
+      "refs": [
+        "Genesis 5:6",
+        "Genesis 5:11"
+      ],
+      "derivationEn": "Seth was 105 when Enosh was born (Genesis 5:6); Enosh lived 905 years (Genesis 5:11).",
+      "derivationZhHans": "塞特 105 岁生以挪士（创世记 5:6）；以挪士共活了 905 年（创世记 5:11）。",
+      "derivationZhHant": "塞特 105 歲生以挪士（創世記 5:6）；以挪士共活了 905 年（創世記 5:11）。"
+    },
+    {
+      "personId": "kenan",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Kenan",
+      "nameZhHans": "该南",
+      "nameZhHant": "該南",
+      "fatherId": "enosh",
+      "birthAm": 325,
+      "deathAm": 1235,
+      "lifespan": 910,
+      "refs": [
+        "Genesis 5:9",
+        "Genesis 5:14"
+      ],
+      "derivationEn": "Enosh was 90 when Kenan was born (Genesis 5:9); Kenan lived 910 years (Genesis 5:14).",
+      "derivationZhHans": "以挪士 90 岁生该南（创世记 5:9）；该南共活了 910 年（创世记 5:14）。",
+      "derivationZhHant": "以挪士 90 歲生該南（創世記 5:9）；該南共活了 910 年（創世記 5:14）。"
+    },
+    {
+      "personId": "mahalalel",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Mahalalel",
+      "nameZhHans": "玛勒列",
+      "nameZhHant": "瑪勒列",
+      "fatherId": "kenan",
+      "birthAm": 395,
+      "deathAm": 1290,
+      "lifespan": 895,
+      "refs": [
+        "Genesis 5:12",
+        "Genesis 5:17"
+      ],
+      "derivationEn": "Kenan was 70 when Mahalalel was born (Genesis 5:12); Mahalalel lived 895 years (Genesis 5:17).",
+      "derivationZhHans": "该南 70 岁生玛勒列（创世记 5:12）；玛勒列共活了 895 年（创世记 5:17）。",
+      "derivationZhHant": "該南 70 歲生瑪勒列（創世記 5:12）；瑪勒列共活了 895 年（創世記 5:17）。"
+    },
+    {
+      "personId": "jared",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Jared",
+      "nameZhHans": "雅列",
+      "nameZhHant": "雅列",
+      "fatherId": "mahalalel",
+      "birthAm": 460,
+      "deathAm": 1422,
+      "lifespan": 962,
+      "refs": [
+        "Genesis 5:15",
+        "Genesis 5:20"
+      ],
+      "derivationEn": "Mahalalel was 65 when Jared was born (Genesis 5:15); Jared lived 962 years (Genesis 5:20).",
+      "derivationZhHans": "玛勒列 65 岁生雅列（创世记 5:15）；雅列共活了 962 年（创世记 5:20）。",
+      "derivationZhHant": "瑪勒列 65 歲生雅列（創世記 5:15）；雅列共活了 962 年（創世記 5:20）。"
+    },
+    {
+      "personId": "enoch",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Enoch",
+      "nameZhHans": "以诺",
+      "nameZhHant": "以諾",
+      "fatherId": "jared",
+      "birthAm": 622,
+      "deathAm": 987,
+      "lifespan": 365,
+      "refs": [
+        "Genesis 5:18",
+        "Genesis 5:23",
+        "Genesis 5:24"
+      ],
+      "derivationEn": "Jared was 162 when Enoch was born (Genesis 5:18); Enoch lived 365 years (Genesis 5:23, Genesis 5:24).",
+      "derivationZhHans": "雅列 162 岁生以诺（创世记 5:18）；以诺共活了 365 年（创世记 5:23、创世记 5:24）。",
+      "derivationZhHant": "雅列 162 歲生以諾（創世記 5:18）；以諾共活了 365 年（創世記 5:23、創世記 5:24）。"
+    },
+    {
+      "personId": "methuselah",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Methuselah",
+      "nameZhHans": "玛土撒拉",
+      "nameZhHant": "瑪土撒拉",
+      "fatherId": "enoch",
+      "birthAm": 687,
+      "deathAm": 1656,
+      "lifespan": 969,
+      "refs": [
+        "Genesis 5:21",
+        "Genesis 5:27"
+      ],
+      "derivationEn": "Enoch was 65 when Methuselah was born (Genesis 5:21); Methuselah lived 969 years (Genesis 5:27).",
+      "derivationZhHans": "以诺 65 岁生玛土撒拉（创世记 5:21）；玛土撒拉共活了 969 年（创世记 5:27）。",
+      "derivationZhHant": "以諾 65 歲生瑪土撒拉（創世記 5:21）；瑪土撒拉共活了 969 年（創世記 5:27）。"
+    },
+    {
+      "personId": "lamech",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Lamech",
+      "nameZhHans": "拉麦",
+      "nameZhHant": "拉麥",
+      "fatherId": "methuselah",
+      "birthAm": 874,
+      "deathAm": 1651,
+      "lifespan": 777,
+      "refs": [
+        "Genesis 5:25",
+        "Genesis 5:31"
+      ],
+      "derivationEn": "Methuselah was 187 when Lamech was born (Genesis 5:25); Lamech lived 777 years (Genesis 5:31).",
+      "derivationZhHans": "玛土撒拉 187 岁生拉麦（创世记 5:25）；拉麦共活了 777 年（创世记 5:31）。",
+      "derivationZhHant": "瑪土撒拉 187 歲生拉麥（創世記 5:25）；拉麥共活了 777 年（創世記 5:31）。"
+    },
+    {
+      "personId": "noah",
+      "lineId": "sethite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Noah",
+      "nameZhHans": "挪亚",
+      "nameZhHant": "挪亞",
+      "fatherId": "lamech",
+      "birthAm": 1056,
+      "deathAm": 2006,
+      "lifespan": 950,
+      "refs": [
+        "Genesis 5:28-29",
+        "Genesis 9:29"
+      ],
+      "derivationEn": "Lamech was 182 when Noah was born (Genesis 5:28-29); Noah lived 950 years (Genesis 9:29).",
+      "derivationZhHans": "拉麦 182 岁生挪亚（创世记 5:28-29）；挪亚共活了 950 年（创世记 9:29）。",
+      "derivationZhHant": "拉麥 182 歲生挪亞（創世記 5:28-29）；挪亞共活了 950 年（創世記 9:29）。"
+    },
+    {
+      "personId": "shem",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Shem",
+      "nameZhHans": "闪",
+      "nameZhHant": "閃",
+      "fatherId": "noah",
+      "birthAm": 1558,
+      "deathAm": 2158,
+      "lifespan": 600,
+      "refs": [
+        "Genesis 5:32",
+        "Genesis 11:10",
+        "Genesis 11:11"
+      ],
+      "derivationEn": "Noah was 502 when Shem was born (Genesis 5:32, Genesis 11:10); Shem lived 600 years (Genesis 11:11).",
+      "derivationZhHans": "挪亚 502 岁生闪（创世记 5:32、创世记 11:10）；闪共活了 600 年（创世记 11:11）。",
+      "derivationZhHant": "挪亞 502 歲生閃（創世記 5:32、創世記 11:10）；閃共活了 600 年（創世記 11:11）。"
+    },
+    {
+      "personId": "arphaxad",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Arphaxad",
+      "nameZhHans": "亚法撒",
+      "nameZhHant": "亞法撒",
+      "fatherId": "shem",
+      "birthAm": 1658,
+      "deathAm": 2096,
+      "lifespan": 438,
+      "refs": [
+        "Genesis 11:10",
+        "Genesis 11:12",
+        "Genesis 11:13"
+      ],
+      "derivationEn": "Shem was 100 when Arphaxad was born (Genesis 11:10); Arphaxad lived 438 years (Genesis 11:12, Genesis 11:13).",
+      "derivationZhHans": "闪 100 岁生亚法撒（创世记 11:10）；亚法撒共活了 438 年（创世记 11:12、创世记 11:13）。",
+      "derivationZhHant": "閃 100 歲生亞法撒（創世記 11:10）；亞法撒共活了 438 年（創世記 11:12、創世記 11:13）。"
+    },
+    {
+      "personId": "shelah",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Shelah",
+      "nameZhHans": "沙拉",
+      "nameZhHant": "沙拉",
+      "fatherId": "arphaxad",
+      "birthAm": 1693,
+      "deathAm": 2126,
+      "lifespan": 433,
+      "refs": [
+        "Genesis 11:12",
+        "Genesis 11:14",
+        "Genesis 11:15"
+      ],
+      "derivationEn": "Arphaxad was 35 when Shelah was born (Genesis 11:12); Shelah lived 433 years (Genesis 11:14, Genesis 11:15).",
+      "derivationZhHans": "亚法撒 35 岁生沙拉（创世记 11:12）；沙拉共活了 433 年（创世记 11:14、创世记 11:15）。",
+      "derivationZhHant": "亞法撒 35 歲生沙拉（創世記 11:12）；沙拉共活了 433 年（創世記 11:14、創世記 11:15）。"
+    },
+    {
+      "personId": "eber",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Eber",
+      "nameZhHans": "希伯",
+      "nameZhHant": "希伯",
+      "fatherId": "shelah",
+      "birthAm": 1723,
+      "deathAm": 2187,
+      "lifespan": 464,
+      "refs": [
+        "Genesis 11:14",
+        "Genesis 11:16",
+        "Genesis 11:17"
+      ],
+      "derivationEn": "Shelah was 30 when Eber was born (Genesis 11:14); Eber lived 464 years (Genesis 11:16, Genesis 11:17).",
+      "derivationZhHans": "沙拉 30 岁生希伯（创世记 11:14）；希伯共活了 464 年（创世记 11:16、创世记 11:17）。",
+      "derivationZhHant": "沙拉 30 歲生希伯（創世記 11:14）；希伯共活了 464 年（創世記 11:16、創世記 11:17）。"
+    },
+    {
+      "personId": "peleg",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Peleg",
+      "nameZhHans": "法勒",
+      "nameZhHant": "法勒",
+      "fatherId": "eber",
+      "birthAm": 1757,
+      "deathAm": 1996,
+      "lifespan": 239,
+      "refs": [
+        "Genesis 11:16",
+        "Genesis 11:18",
+        "Genesis 11:19"
+      ],
+      "derivationEn": "Eber was 34 when Peleg was born (Genesis 11:16); Peleg lived 239 years (Genesis 11:18, Genesis 11:19).",
+      "derivationZhHans": "希伯 34 岁生法勒（创世记 11:16）；法勒共活了 239 年（创世记 11:18、创世记 11:19）。",
+      "derivationZhHant": "希伯 34 歲生法勒（創世記 11:16）；法勒共活了 239 年（創世記 11:18、創世記 11:19）。"
+    },
+    {
+      "personId": "reu",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Reu",
+      "nameZhHans": "拉吴",
+      "nameZhHant": "拉吳",
+      "fatherId": "peleg",
+      "birthAm": 1787,
+      "deathAm": 2026,
+      "lifespan": 239,
+      "refs": [
+        "Genesis 11:18",
+        "Genesis 11:20",
+        "Genesis 11:21"
+      ],
+      "derivationEn": "Peleg was 30 when Reu was born (Genesis 11:18); Reu lived 239 years (Genesis 11:20, Genesis 11:21).",
+      "derivationZhHans": "法勒 30 岁生拉吴（创世记 11:18）；拉吴共活了 239 年（创世记 11:20、创世记 11:21）。",
+      "derivationZhHant": "法勒 30 歲生拉吳（創世記 11:18）；拉吳共活了 239 年（創世記 11:20、創世記 11:21）。"
+    },
+    {
+      "personId": "serug",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Serug",
+      "nameZhHans": "西鹿",
+      "nameZhHant": "西鹿",
+      "fatherId": "reu",
+      "birthAm": 1819,
+      "deathAm": 2049,
+      "lifespan": 230,
+      "refs": [
+        "Genesis 11:20",
+        "Genesis 11:22",
+        "Genesis 11:23"
+      ],
+      "derivationEn": "Reu was 32 when Serug was born (Genesis 11:20); Serug lived 230 years (Genesis 11:22, Genesis 11:23).",
+      "derivationZhHans": "拉吴 32 岁生西鹿（创世记 11:20）；西鹿共活了 230 年（创世记 11:22、创世记 11:23）。",
+      "derivationZhHant": "拉吳 32 歲生西鹿（創世記 11:20）；西鹿共活了 230 年（創世記 11:22、創世記 11:23）。"
+    },
+    {
+      "personId": "nahor_elder",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Nahor (the elder)",
+      "nameZhHans": "拿鹤(亚伯拉罕祖父)",
+      "nameZhHant": "拿鶴(亞伯拉罕祖父)",
+      "fatherId": "serug",
+      "birthAm": 1849,
+      "deathAm": 1997,
+      "lifespan": 148,
+      "refs": [
+        "Genesis 11:22",
+        "Genesis 11:24",
+        "Genesis 11:25"
+      ],
+      "derivationEn": "Serug was 30 when Nahor (the elder) was born (Genesis 11:22); Nahor (the elder) lived 148 years (Genesis 11:24, Genesis 11:25).",
+      "derivationZhHans": "西鹿 30 岁生拿鹤(亚伯拉罕祖父)（创世记 11:22）；拿鹤(亚伯拉罕祖父)共活了 148 年（创世记 11:24、创世记 11:25）。",
+      "derivationZhHant": "西鹿 30 歲生拿鶴(亞伯拉罕祖父)（創世記 11:22）；拿鶴(亞伯拉罕祖父)共活了 148 年（創世記 11:24、創世記 11:25）。"
+    },
+    {
+      "personId": "terah",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Terah",
+      "nameZhHans": "他拉",
+      "nameZhHant": "他拉",
+      "fatherId": "nahor_elder",
+      "birthAm": 1878,
+      "deathAm": 2083,
+      "lifespan": 205,
+      "refs": [
+        "Genesis 11:24",
+        "Genesis 11:32"
+      ],
+      "derivationEn": "Nahor (the elder) was 29 when Terah was born (Genesis 11:24); Terah lived 205 years (Genesis 11:32).",
+      "derivationZhHans": "拿鹤(亚伯拉罕祖父) 29 岁生他拉（创世记 11:24）；他拉共活了 205 年（创世记 11:32）。",
+      "derivationZhHant": "拿鶴(亞伯拉罕祖父) 29 歲生他拉（創世記 11:24）；他拉共活了 205 年（創世記 11:32）。"
+    },
+    {
+      "personId": "abraham",
+      "lineId": "shemite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Abraham",
+      "nameZhHans": "亚伯拉罕",
+      "nameZhHant": "亞伯拉罕",
+      "fatherId": "terah",
+      "birthAm": 2008,
+      "deathAm": 2183,
+      "lifespan": 175,
+      "refs": [
+        "Genesis 11:26",
+        "Genesis 11:32",
+        "Genesis 12:4",
+        "Acts 7:4",
+        "Genesis 25:7"
+      ],
+      "derivationEn": "Terah was 130 when Abraham was born (Genesis 11:26, Genesis 11:32, Genesis 12:4, Acts 7:4); Abraham lived 175 years (Genesis 25:7).",
+      "derivationZhHans": "他拉 130 岁生亚伯拉罕（创世记 11:26、创世记 11:32、创世记 12:4、使徒行传 7:4）；亚伯拉罕共活了 175 年（创世记 25:7）。",
+      "derivationZhHant": "他拉 130 歲生亞伯拉罕（創世記 11:26、創世記 11:32、創世記 12:4、使徒行傳 7:4）；亞伯拉罕共活了 175 年（創世記 25:7）。",
+      "noteEn": "assets/family_tree.json dates Abraham 2166-1991 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2008-2183 is 1996-1821 BC on the 4004 BC anchor). Reconciling the two scales past Abraham is deliberately left to a later pass rather than fudged.",
+      "noteZhHans": "assets/family_tree.json 把亚伯拉罕定在公元前 2166-1991 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2008-2183 在 4004 锚点下为公元前 1996-1821 年）。亚伯拉罕之后两套刻度的调和刻意留待后续，不作勉强弥合。",
+      "noteZhHant": "assets/family_tree.json 把亞伯拉罕定在公元前 2166-1991 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2008-2183 在 4004 錨點下為公元前 1996-1821 年）。亞伯拉罕之後兩套刻度的調和刻意留待後續，不作勉強彌合。"
+    }
+  ],
+  "markers": [
+    {
+      "id": "creation",
+      "am": 0,
+      "refs": [
+        "Genesis 1:1",
+        "Genesis 1:31"
+      ],
+      "titleEn": "Creation",
+      "titleZhHans": "创造",
+      "titleZhHant": "創造"
+    },
+    {
+      "id": "enoch_taken",
+      "am": 987,
+      "refs": [
+        "Genesis 5:24",
+        "Hebrews 11:5"
+      ],
+      "titleEn": "Enoch is taken",
+      "titleZhHans": "以诺被接去",
+      "titleZhHant": "以諾被接去"
+    },
+    {
+      "id": "flood",
+      "am": 1656,
+      "refs": [
+        "Genesis 7:6",
+        "Genesis 7:11"
+      ],
+      "titleEn": "The Flood (Noah's 600th year)",
+      "titleZhHans": "洪水（挪亚 600 岁）",
+      "titleZhHant": "洪水（挪亞 600 歲）"
+    },
+    {
+      "id": "abram_born",
+      "am": 2008,
+      "refs": [
+        "Genesis 11:26",
+        "Genesis 11:32",
+        "Acts 7:4"
+      ],
+      "titleEn": "Abram is born",
+      "titleZhHans": "亚伯兰出生",
+      "titleZhHant": "亞伯蘭出生"
+    },
+    {
+      "id": "abram_call",
+      "am": 2083,
+      "refs": [
+        "Genesis 12:1-4"
+      ],
+      "titleEn": "Abram leaves Haran, aged 75",
+      "titleZhHans": "亚伯兰 75 岁离开哈兰",
+      "titleZhHant": "亞伯蘭 75 歲離開哈蘭"
+    },
+    {
+      "id": "isaac_born",
+      "am": 2108,
+      "refs": [
+        "Genesis 21:5"
+      ],
+      "titleEn": "Isaac is born, Abraham aged 100",
+      "titleZhHans": "以撒出生，亚伯拉罕 100 岁",
+      "titleZhHant": "以撒出生，亞伯拉罕 100 歲"
+    },
+    {
+      "id": "abraham_dies",
+      "am": 2183,
+      "refs": [
+        "Genesis 25:7",
+        "Genesis 25:8"
+      ],
+      "titleEn": "Abraham dies, aged 175",
+      "titleZhHans": "亚伯拉罕去世，享年 175 岁",
+      "titleZhHant": "亞伯拉罕去世，享年 175 歲"
+    }
+  ]
+}

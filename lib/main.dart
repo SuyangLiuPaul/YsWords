@@ -233,6 +233,17 @@ final List<GetPage> _registeredGetPages = [
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,
   ),
+  // The chronology chart is the SAME page opened on its other view, not
+  // a page of its own — see the `TimelineView` doc comment in
+  // `bible_timeline_page.dart`. It gets its own path because it is a
+  // Featured destination and has to be linkable.
+  GetPage(
+    name: '/chronology',
+    page: () => const ChronologyChartPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
   GetPage(
     name: '/sermons',
     page: () => const SermonsPage(),

@@ -206,6 +206,7 @@ flutter:
     - assets/sermons/matthew_124.json
     - assets/family_tree.json
     - assets/bible_timeline.json
+    - assets/bible_chronology.json
     # 2026-08-09 (Songs v2): the combined church-song catalogue — 606
     # songs across fydt.org, christiandiscipleschurch.org, cgdc.hk and
     # cahayapengharapan.org. Metadata + media URLs only (~790 KB); the

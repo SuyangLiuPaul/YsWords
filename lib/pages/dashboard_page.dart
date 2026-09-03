@@ -725,6 +725,27 @@ class _DashboardPageState extends State<DashboardPage> {
               settings: settings,
               onTap: () => pushPage(const SongsPage(), routeName: '/songs'),
             ),
+            const SizedBox(height: 8),
+            // 2026-09-03: the chronology chart, Featured because the
+            // user asked for it that way (2026-08-12, 「而且是
+            // featured」). It opens the Bible Timeline page on its
+            // chart view — the same page the quick-link grid's
+            // "Bible Timeline" tile opens on its event view, so this
+            // is a second door, not a second timeline.
+            _FeaturedCard(
+              icon: Icons.stacked_bar_chart_rounded,
+              title: uiStrings['chronologyChart']?[locale] ??
+                  'Chronology chart',
+              subtitle: uiStrings['chronologyFeaturedSubtitle']?[locale] ??
+                  'Who was alive at the same time — Adam to Abraham, drag '
+                      'the year and see',
+              scheme: scheme,
+              settings: settings,
+              onTap: () => pushPage(
+                const ChronologyChartPage(),
+                routeName: '/chronology',
+              ),
+            ),
           ],
         );
 

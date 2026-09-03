@@ -6,10 +6,13 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/chronology.dart';
 import 'package:yswords/models/timeline_event.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/chronology_service.dart';
 import 'package:yswords/services/timeline_service.dart';
+import 'package:yswords/widgets/chronology_chart.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
@@ -32,8 +35,47 @@ import 'package:yswords/widgets/localized_back_button.dart';
 ///
 /// Search at top filters by title / description / id.
 /// Tap a verse-ref chip → jumps to that verse in the reader.
+///
+/// 2026-09-03: the page now hosts TWO views, switched by the segmented
+/// control under the AppBar.
+///
+///   • [TimelineView.events] — the list above. "What happened, in order."
+///   • [TimelineView.chart]  — [ChronologyChart]. "Who was alive at the
+///                             same time", which a list of points cannot
+///                             express, because points have no duration.
+///
+/// The chart is a second VIEW rather than a second page on purpose. The
+/// queue item that asked for it (`docs/autonomous-queue.md`, user
+/// 2026-08-12) named the outcome to avoid in as many words: "shipping a
+/// second, prettier timeline beside the existing one". One page, one
+/// dataset family, two lenses.
+enum TimelineView { events, chart }
+
+/// `/chronology` — the timeline page opened on its chart view.
+///
+/// A named class rather than a second `GetPage` pointing at
+/// `BibleTimelinePage`, because a registered route in this app is
+/// identified by its page class: `test/url_routing_stage3_sync_test.dart`
+/// keys `getPages` and the §3 table of `docs/url-routing-plan.md` off the
+/// class name, so one class cannot hold two paths. It is four lines and
+/// no state — the page is still one page.
+class ChronologyChartPage extends StatelessWidget {
+  const ChronologyChartPage({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      const BibleTimelinePage(initialView: TimelineView.chart);
+}
+
 class BibleTimelinePage extends StatefulWidget {
-  const BibleTimelinePage({super.key});
+  /// Which view opens first. `/timeline` lands on the event list;
+  /// `/chronology` and the Featured card land on the chart.
+  final TimelineView initialView;
+
+  const BibleTimelinePage({
+    super.key,
+    this.initialView = TimelineView.events,
+  });
 
   @override
   State<BibleTimelinePage> createState() => _BibleTimelinePageState();
@@ -41,14 +83,22 @@ class BibleTimelinePage extends StatefulWidget {
 
 class _BibleTimelinePageState extends State<BibleTimelinePage> {
   Future<List<TimelineEvent>>? _future;
+  Future<ChronologyData>? _chronologyFuture;
   String _query = '';
   late final TextEditingController _searchController;
   final Set<String> _expanded = <String>{};
+  late TimelineView _view;
 
   @override
   void initState() {
     super.initState();
     _future = TimelineService.instance.loadAll();
+    _view = widget.initialView;
+    // Loaded lazily: someone who only ever opens the event list should
+    // not pay for the chart's asset.
+    if (_view == TimelineView.chart) {
+      _chronologyFuture = ChronologyService.instance.load();
+    }
     _searchController = TextEditingController();
   }
 
@@ -67,11 +117,106 @@ class _BibleTimelinePageState extends State<BibleTimelinePage> {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(
-          uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline',
+          _view == TimelineView.chart
+              ? (uiStrings['chronologyChart']?[locale] ?? 'Chronology chart')
+              : (uiStrings['bibleTimeline']?[locale] ?? 'Bible Timeline'),
         ),
         actions: const [LanguageSwitcherButton(), HomeIconButton()],
       ),
-      body: FutureBuilder<List<TimelineEvent>>(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 960),
+          child: Column(
+            children: [
+              _viewSwitcher(locale, scheme),
+              Expanded(
+                child: _view == TimelineView.chart
+                    ? _buildChart(locale, scheme)
+                    : _buildEvents(locale, scheme),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The two-lens control. A `SegmentedButton` rather than tabs: there
+  /// are exactly two, and a `TabBar` would imply the chart is more event
+  /// list than it is.
+  Widget _viewSwitcher(String locale, ColorScheme scheme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+      child: SizedBox(
+        width: double.infinity,
+        child: SegmentedButton<TimelineView>(
+          showSelectedIcon: false,
+          style: ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            textStyle: WidgetStatePropertyAll(
+              TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+              ),
+            ),
+          ),
+          segments: [
+            ButtonSegment(
+              value: TimelineView.events,
+              icon: const Icon(Icons.timeline_rounded, size: 16),
+              label: Text(
+                uiStrings['chronologyTabEvents']?[locale] ?? 'Events',
+              ),
+            ),
+            ButtonSegment(
+              value: TimelineView.chart,
+              icon: const Icon(Icons.stacked_bar_chart_rounded, size: 16),
+              label: Text(
+                uiStrings['chronologyTabChart']?[locale] ?? 'Lifelines',
+              ),
+            ),
+          ],
+          selected: {_view},
+          onSelectionChanged: (s) => setState(() {
+            _view = s.first;
+            _chronologyFuture ??= ChronologyService.instance.load();
+          }),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChart(String locale, ColorScheme scheme) {
+    return FutureBuilder<ChronologyData>(
+      future: _chronologyFuture,
+      builder: (context, snap) {
+        if (snap.hasError) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                '${uiStrings['loadErrorTitle']?[locale] ?? 'Failed to load'}'
+                ': ${snap.error}',
+                style: TextStyle(color: scheme.error),
+              ),
+            ),
+          );
+        }
+        if (!snap.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return ChronologyChart(
+          data: snap.data!,
+          locale: locale,
+          onTapRef: (raw) => _jumpToRef(context, raw),
+        );
+      },
+    );
+  }
+
+  Widget _buildEvents(String locale, ColorScheme scheme) {
+    return FutureBuilder<List<TimelineEvent>>(
         future: _future,
         builder: (context, snap) {
           if (!snap.hasData) {
@@ -118,10 +263,10 @@ class _BibleTimelinePageState extends State<BibleTimelinePage> {
             items.add(_ListItem.event(e));
           }
 
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 960),
-              child: Column(
+          // The 960 pt cap and the outer Center now live on the page's
+          // body, shared with the chart view, so this returns the column
+          // bare.
+          return Column(
                 children: [
                   _buildSearchField(locale),
                   Padding(
@@ -188,12 +333,9 @@ class _BibleTimelinePageState extends State<BibleTimelinePage> {
                           ),
                   ),
                 ],
-              ),
-            ),
-          );
+              );
         },
-      ),
-    );
+      );
   }
 
   // 2026-08-02 (round 60): filled rounded "pill" search field,
