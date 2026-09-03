@@ -188,6 +188,49 @@ void main() {
     });
   });
 
+  group('alignment across the other shipped editions', () {
+    // The commentary is keyed to KJV versification, which is what
+    // assets/kjv.json and assets/cuvs-yhwh.json hold (1,071 verses in
+    // Matthew). NASB, LEB and biblexg-v2 hold 1,068 — they drop the three
+    // bracketed verses 17:21, 18:11 and 23:14.
+    //
+    // That is only safe because they drop them WITHOUT renumbering: verse 21
+    // is simply absent and verse 22 is still verse 22. If any of them ever
+    // renumbered instead, every commentary block after the gap would be one
+    // verse out in that edition — invisibly, because the text would still
+    // look plausible. This test is the tripwire for that.
+    test('editions that omit 17:21 / 18:11 / 23:14 leave a gap rather than '
+        'renumbering', () {
+      const omitted = {17: 21, 18: 11, 23: 14};
+      const lastVerse = {17: 27, 18: 35, 23: 39};
+      for (final version in const ['nasb', 'leb', 'biblexg-v2']) {
+        final rows = jsonDecode(File('assets/$version.json').readAsStringSync())
+            as List<dynamic>;
+        for (final entry in omitted.entries) {
+          final chapter = entry.key;
+          final numbers = rows
+              .cast<Map<String, dynamic>>()
+              .where((r) =>
+                  const {'Matthew', '马太福音', '馬太福音'}
+                      .contains(r['book'] as String) &&
+                  int.parse(r['chapter'] as String) == chapter)
+              .map((r) => int.parse(r['verse'] as String))
+              .toSet();
+          expect(numbers.contains(entry.value), isFalse,
+              reason: '$version unexpectedly has Matthew $chapter:'
+                  '${entry.value}; the pinned expectation is that it omits '
+                  'it.');
+          expect(numbers.reduce((a, b) => a > b ? a : b), lastVerse[chapter],
+              reason: 'RENUMBERED: $version Matthew $chapter now ends at a '
+                  'different verse. The JFB commentary is keyed to KJV '
+                  'versification, so a renumbering here silently shifts '
+                  'every block after ${entry.value} by one verse for '
+                  'readers of $version.');
+        }
+      }
+    });
+  });
+
   group('service behaviour', () {
     test('an unsupported book returns null rather than throwing', () async {
       CommentaryService.resetForTest();
