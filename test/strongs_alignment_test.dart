@@ -17,14 +17,17 @@ import 'package:flutter_test/flutter_test.dart';
 /// usually present. `tools/audit_strongs_alignment.py` asks the reader's
 /// question instead, and this test pins its census.
 ///
-/// **Three repair passes have run.**
+/// **Repairs to date.**
 /// `tools/repair_strongs_alignment_core.py` (2026-08-24) took six of the core,
 /// which is why the examples above are already fixed: 百姓 now answers H5971 and
 /// 使徒行傳 12:24's 神 now answers G2316. `tools/repair_strongs_spans.py`
 /// (2026-08-24) then took 39 of the 53 `spans-the-word` runs, and a round three
 /// on 2026-09-03 took 3 more that the first span pass had held. The same day
-/// the core tool took a seventh run, 民數記 23:11's 巴勒. The census has gone
-/// 71/53/7/15 -> 65/53/7/9 -> 26/14/3/9 -> 23/11/3/9 -> **22/11/2/9**.
+/// the core tool took a seventh run, 民數記 23:11's 巴勒, and an eighth,
+/// 耶利米書 38:16's 寻索 — the first repair here that this audit cannot see at
+/// all, since 寻索 occurs 17 times and the floor is 20. The census has gone
+/// 71/53/7/15 -> 65/53/7/9 -> 26/14/3/9 -> 23/11/3/9 -> **22/11/2/9**, and the
+/// eighth moved none of it, which is what a floor looks like from the inside.
 ///
 /// **Round three is the only pass here where "the reader only gains" is true,
 /// and it is true because it was recomputed rather than hoped.** 王上 1:35's
@@ -279,6 +282,61 @@ void main() {
   /// This pins the size so the next pass need not rediscover it. The word-less
   /// runs themselves belong to another pass; nothing here asserts they are
   /// wrong, only that the census cannot see through them.
+  /// **The size of the floor, measured 2026-09-03.** "It is a FLOOR" had been
+  /// said for months without a number behind it. Here is the number: of the
+  /// tagged runs that have CJK text and a real Strong's number, the detector
+  /// can form an opinion about **6.8%**. Over half the corpus is invisible for
+  /// rarity alone, and another 38.9% is genuinely polysemous.
+  ///
+  /// So the census above is a count over one run in fifteen. 馬可福音 6:33's
+  /// 城的 is the standing example of what that hides: it answers the article
+  /// G3588 while πόλεων's G4172 is no run's `s`. It is deliberately NOT
+  /// repaired — 城 spells πόλις but 的 does correspond to τῶν, so the number
+  /// shown is partial rather than false; G4172 is in no run's `i`, so the span
+  /// pass's corroboration is missing; and the same verse has a second
+  /// unreachable content word (认识 answers G1097 γινώσκω where the Greek is
+  /// ἐπέγνωσαν, G1921) which makes a spot fix of one of two gaps arbitrary.
+  /// The precedent cuts both ways — 約 3:5's 的国。 WAS promoted G3588 -> G932
+  /// with 的 in the run — so this is recorded as an open question, not settled.
+  test('the detector can judge only 6.8% of the corpus', () {
+    final groups = <String, Map<String, int>>{};
+    var totalRuns = 0;
+    for (final verses in tagged.values) {
+      for (final runs in verses.values) {
+        for (final run in (runs as List).cast<Map<String, dynamic>>()) {
+          final text = ((run['w'] ?? '') as String).replaceAll(notCjk, '');
+          final number = (run['s'] ?? '') as String;
+          if (text.isEmpty || number.isEmpty || number == 'H0') continue;
+          totalRuns++;
+          (groups['$text ${number[0]}'] ??= <String, int>{})
+              .update(number, (v) => v + 1, ifAbsent: () => 1);
+        }
+      }
+    }
+    var admitted = 0, belowBar = 0, polysemous = 0, unanimous = 0;
+    groups.forEach((_, byNumber) {
+      final total = byNumber.values.reduce((a, b) => a + b);
+      final best = byNumber.values.reduce((a, b) => a >= b ? a : b);
+      if (total < 20) {
+        belowBar += total;
+      } else if (byNumber.length == 1) {
+        unanimous += total;
+      } else if (best / total >= 0.95) {
+        admitted += total;
+      } else {
+        polysemous += total;
+      }
+    });
+    expect(totalRuns, 360642);
+    expect(admitted, 24480);
+    expect(belowBar, 185437);
+    expect(polysemous, 140159);
+    expect(unanimous, 10566);
+    expect(admitted + belowBar + polysemous + unanimous, totalRuns);
+    // The headline: one run in fifteen is judgeable at all.
+    expect(admitted / totalRuns, closeTo(0.068, 0.001));
+  });
+
   test('word-less runs hide numbers from the census — 23 verses', () {
     var wordless = 0;
     var wordlessTagged = 0;
@@ -347,12 +405,55 @@ void main() {
         orElse: () => throw StateError('$where $text is no longer flagged; if '
             'it was repaired, drop it here and lower the counts above'));
 
+    /// The `s` of the nth run reading exactly [text]. 約翰一書 5:3 carries 他
+    /// twice and the two are the point, so this cannot key on text alone.
+    String tagOfRun(String book, String ref, String text, int nth) {
+      final runs = (tagged[book]![ref] as List).cast<Map<String, dynamic>>();
+      final match = runs.where((r) => r['w'] == text).toList();
+      if (match.length <= nth) {
+        throw StateError('$book $ref has ${match.length} runs "$text"');
+      }
+      return (match[nth]['s'] ?? '') as String;
+    }
+
     // Held with two positions on record — a sweep must not resolve these
     // quietly in either direction. See docs/autonomous-queue.md.
+    //
+    // **Re-derived 2026-09-03, and all four turn out to be ONE question asked
+    // four times, which the record had been treating as four.** In every one,
+    // CUV NAMES A REFERENT THAT THE ORIGINAL LEAVES AS A PRONOUN, and the
+    // tagger followed the original rather than the Chinese:
+    //   代下 4:3   海 for תַּחַת / אֹתוֹ — "under it", "surrounding it"
+    //   腓 1:29   基督 for αὐτόν of τὸ εἰς αὐτὸν πιστεύειν
+    //   約一 5:3   神 for αὐτοῦ of τὰς ἐντολὰς αὐτοῦ
+    //   耶 33:1   耶利米 for הוּא of וְהוּא עוֹדֶנּוּ עָצוּר
+    // Two of them contain the REVERSE in the same verse, which is the
+    // sharpest evidence that it is one convention and not four slips:
+    // 約一 5:3's 他 answers the article of τοῦ θεοῦ, and 耶 33:1's 临到他
+    // carries H3414 יִרְמְיָה in its `i`. The Chinese and the Greek/Hebrew
+    // swap noun and pronoun in both directions, and the tagging is consistent
+    // with the source every time. So this is an editorial policy question —
+    // does the sheet name the word the original has, or the word the Chinese
+    // says? — and NOT a data defect. It needs the publisher, not a sweep.
     expect(hit('2_chronicles 4:3', '海')['spans'], isFalse);
     expect(hit('philippians 1:29', '基督')['spans'], isFalse);
     expect(hit('1_john 5:3', '神')['spans'], isFalse);
     expect(hit('jeremiah 33:1', '耶利米')['spans'], isFalse);
+    // The reverse halves, pinned so the pairing cannot be lost: each verse
+    // has the same swap running the other way.
+    expect(tagOfRun('1_john', '5:3', '他', 0), 'G3588');
+    expect(tagOfRun('jeremiah', '33:1', '临到他', 0), 'H413');
+    // 加拉太書 1:4 is NOT a precedent for 腓 1:29, and the first dismissal of
+    // 腓 1:29 said it was. 加 1:4's Greek is τοῦ δόντος ἑαυτόν and contains no
+    // G5547 at all, so its 基督 = G3588 is the substantival-article type this
+    // audit correctly declines to flag. 腓 1:29 does have Χριστοῦ, unshown.
+    final galatians = readJson('assets/originals/galatians.json');
+    expect(
+        {
+          for (final w in (galatians['1:4'] as List))
+            ((w as Map<String, dynamic>)['s'] ?? '') as String
+        },
+        isNot(contains('G5547')));
     // A plain false positive: 撒上 13:6 opens וְאִישׁ יִשְׂרָאֵל, so 百姓 is
     // H376 and must stay H376.
     expect(hit('1_samuel 13:6', '百姓')['spans'], isFalse);
