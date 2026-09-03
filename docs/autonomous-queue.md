@@ -10916,6 +10916,25 @@ has never seen this repo.
       original write-up, including the copyright and Ussher-chronology
       constraints, is kept below because whoever picks it up needs it.
 
+
+      **2026-09-03 — MERGED after all, and here is the decision trail so it
+      is auditable rather than quietly reversed.**
+      The reassignment above stands as a record of what was asked in August.
+      What changed is the evidence: `git log --all` over every ref finds **no
+      chronology commit from any session in the three weeks since**, and the
+      app still shipped only `bible_timeline_page.dart` / `bible_timeline.json`.
+      SeekSparks did not take it. A finished, tested branch left unmerged on
+      that basis would be waste, not caution.
+      **How it got built is still a mistake worth keeping:** a P2 sweep
+      counted the archived `- [ ]` copy inside the `<details>` block below as
+      live backlog and dispatched it. The agent that built it found the
+      reassignment itself and flagged it; the sweep did not. **When counting
+      open items, an entry inside `<details>` is archive, not backlog.**
+      **If SeekSparks does ship one, this is the collision to look at first.**
+      It is a second VIEW on the existing timeline page (segmented control:
+      Events | Lifelines), not a second page — the queue's own "shipping a
+      second, prettier timeline beside the existing one" is what it avoided.
+
 <details><summary>original</summary>
 
 - [ ] **An interactive Bible chronology chart — LOW priority, several
