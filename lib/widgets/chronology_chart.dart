@@ -62,11 +62,24 @@ class _ChronologyChartState extends State<ChronologyChart> {
   static const double _nameColumnMin = 64;
   static const double _gap = 8;
 
+  // **Nothing here may go below 10.** The chart was drawn at 8.5–9 pt on
+  // the argument that a dense plot needs small type, and on a tablet the
+  // reader could not read it — "我看小字看不见". Material's own smallest
+  // role (labelSmall) is 11, and 8.5 is under every platform minimum:
+  // iOS HIG puts the floor at 11, Material at 12 for body. Small type is
+  // not a legitimate way to buy density; the zoom ladder is, and it now
+  // goes four times further (see [_maxDensity]).
+  //
+  // These are BASE sizes — every one of them passes through [_scaler],
+  // so a reader who has raised the system text size gets more again, and
+  // the lane and row heights below are all derived from them rather than
+  // hard-coded, so growing the type grows its container instead of
+  // clipping it.
   static const double _nameFontSize = 11;
-  static const double _labelFontSize = 8.5;
-  static const double _foldFontSize = 9.5;
-  static const double _rulerFontSize = 9;
-  static const double _eraFontSize = 8.5;
+  static const double _labelFontSize = 10.5;
+  static const double _foldFontSize = 10;
+  static const double _rulerFontSize = 10;
+  static const double _eraFontSize = 10;
 
   /// A folded run of lifeline rows: 8 pt of padding plus 1.8 pt per bar
   /// it stands in for, so the band's HEIGHT still reports how many rows
@@ -99,33 +112,41 @@ class _ChronologyChartState extends State<ChronologyChart> {
   // density that must stay device-dependent because the overview strip
   // and the whole-span view are defined by it.
   static const List<double> _densityLadder = [
-    0.0625, 0.125, 0.25, 0.5, 1, 2, _maxDensity,
+    0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, _maxDensity,
   ];
 
-  /// **Derived, not chosen.** 4 pt per year is where more density stops
-  /// buying legible labels.
+  /// The ceiling: 16 pixels per year.
   ///
-  /// Measured over all 100 ticks of `assets/bible_chronology.json` by
-  /// replaying this file's own label packer at five rows and counting
-  /// the labels that come out COMPLETE — no ellipsis — at real font
-  /// advances:
+  /// **It used to be 4, and 4 was the wrong reading of a real
+  /// measurement.** The measurement was label COMPLETENESS — how many of
+  /// the 100 ticks in `assets/bible_chronology.json` come out with no
+  /// ellipsis, replaying this file's own packer at five rows and real
+  /// font advances:
   ///
   ///     pt/yr   1    2    3    4    6    8   12   16   32
   ///     en     64   79   85   87   88   88   91   93   96
   ///     zh     74   87   88   88   91   93   94   94   96
   ///
-  /// Past 4 the curve is flat: each further DOUBLING of the scroll
-  /// extent buys one to three labels out of a hundred. It flattens
-  /// because what is left is not a density limit at all — six events
-  /// share AM 4036 (Triumphal Entry through Pentecost) and fourteen fall
-  /// in the ten years around it, so they stack into label rows and the
-  /// lane has five. No amount of zoom separates marks at the same x.
+  /// That curve does flatten past 4, and the reason it flattens is
+  /// sound: six events share AM 4036 (Triumphal Entry through Pentecost)
+  /// and fourteen fall in the ten years around it, so they stack into
+  /// label rows rather than spreading, and no amount of zoom separates
+  /// marks at the same x.
   ///
-  /// At 4 pt/yr the plot is 16,392 pt wide on every device. On a 390 pt
-  /// phone that is roughly 65× the old multiplier and about 60 years in
-  /// the viewport; on a 1280 pt desktop the same level is 14× and 285
-  /// years — the same picture, more of it.
-  static const double _maxDensity = 4;
+  /// But "no more labels appear" is not "the reader is done". Stopping
+  /// at 4 capped a tablet at about 400 years in view, which is the whole
+  /// New Testament plus three centuries of silence in one screen: the
+  /// labels were all present and all crammed into the right-hand fifth,
+  /// five rows deep, which is what the reader reported. Zoom past the
+  /// completeness knee no longer buys labels — it buys SEPARATION
+  /// between the ones already there, and separation is the thing a
+  /// cluster needs. So the ladder keeps doubling to 16, where the ten
+  /// crowded New Testament years occupy 160 pt instead of 40.
+  ///
+  /// The cost of the extra rungs is scroll extent, not memory: labels
+  /// are already culled by what falls in the viewport, so the widget
+  /// count at 16 pt/yr is the same as at 4.
+  static const double _maxDensity = 16;
 
   /// What the DEFAULT level aims to hold: about half a millennium.
   ///
@@ -1405,7 +1426,20 @@ class _ChronologyChartState extends State<ChronologyChart> {
     );
 
     final labels = <Widget>[];
+    // Where each drawn label actually sits, so a tap can open the one
+    // the reader touched rather than the one nearest in x. See the
+    // hit test below for why this list has to exist.
+    final labelHits = <(Rect, ChronologyMarker)>[];
     for (final c in plan) {
+      labelHits.add((
+        Rect.fromLTWH(
+          lefts[c.index],
+          13 + c.row * pitch,
+          c.width + 1,
+          pitch,
+        ),
+        candidates[c.index],
+      ));
       if (c.row > 0) {
         labels.add(Positioned(
           left: lefts[c.index] - 3,
@@ -1433,15 +1467,37 @@ class _ChronologyChartState extends State<ChronologyChart> {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      // Details on demand: tap anywhere in the lane and the nearest
-      // tick within 14 pt opens. Hit boxes per tick would be 100
-      // stacked widgets, and the ones in the New Testament would
-      // overlap each other anyway.
+      // Details on demand, in two stages.
+      //
+      // **A label you can see is a label you can hit.** This used to
+      // match on x alone: the nearest tick within 14 pt, ignoring
+      // dy entirely. In the New Testament that is wrong nearly every
+      // time — fourteen events fall in ten years, so they are stacked
+      // five rows deep and several ticks sit inside the same 14 pt of
+      // x. Tapping 「耶稣十二岁在圣殿」 on the bottom row opened whatever
+      // tick happened to be closest horizontally, which in a
+      // left-to-right stack is usually an EARLIER one. The sheet does
+      // not scroll the chart — verified — so what the reader saw was a
+      // sheet about some earlier event they had not touched, which
+      // reads as "it jumped back". A hit-testing bug, not a scrolling
+      // one, and it is why the fix belongs here and not in `_scrollTo`.
+      //
+      // So try the drawn label rects first, which carry both
+      // coordinates and are exactly what the reader aimed at. Only if
+      // the tap landed on bare lane — a tick with no room for a label —
+      // fall back to the nearest tick by x.
       onTapDown: (d) {
+        final p = d.localPosition;
+        for (final (rect, marker) in labelHits) {
+          if (rect.inflate(2).contains(p)) {
+            _showEventSheet(context, marker);
+            return;
+          }
+        }
         ChronologyMarker? best;
         var bestDx = 14.0;
         for (final t in ticks) {
-          final dx = (_x(t.am, plotWidth) - d.localPosition.dx).abs();
+          final dx = (_x(t.am, plotWidth) - p.dx).abs();
           if (dx <= bestDx) {
             bestDx = dx;
             best = t;

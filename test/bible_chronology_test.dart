@@ -519,7 +519,7 @@ void main() {
       final seen = <double, double>{};
       for (final w in const [402.0, 900.0, 1280.0]) {
         await pumpChart(tester, size: Size(w, 1700));
-        for (var i = 0; i < 12; i++) {
+        for (var i = 0; i < 16; i++) {
           await tester.tap(find.byIcon(Icons.zoom_in_rounded));
           await tester.pump(const Duration(milliseconds: 60));
         }
@@ -527,14 +527,77 @@ void main() {
       }
       final span = (data.spanEndAm - data.spanStartAm).toDouble();
       for (final e in seen.entries) {
-        // 4 pt/yr — the measured knee, documented on `_maxDensity`.
-        expect(e.value / span, closeTo(4, 0.01),
+        // 16 pt/yr. This asserted 4 until 2026-09-04, when a reader on a
+        // tablet hit the ceiling with the New Testament still crammed
+        // into the right-hand fifth of the plot. 4 was the knee of a
+        // measurement of label COMPLETENESS, and completeness was
+        // already satisfied there — what the cluster still needed was
+        // separation. See `_maxDensity` for the full argument.
+        expect(e.value / span, closeTo(16, 0.01),
             reason: 'max density at ${e.key} pt: $seen');
         // The old ceiling was 8 × the fitted width. On a phone the new
         // one is many times that; the whole point is that it no longer
         // depends on the width at all.
         expect(e.value, greaterThan(8 * e.key));
       }
+    });
+
+    testWidgets('tapping a stacked label opens THAT event, not the one '
+        'nearest in x', (tester) async {
+      // 2026-09-04. The lane's hit test matched on x alone, within
+      // 14 pt, and ignored dy. Where labels stack — fourteen New
+      // Testament events fall in ten years, five rows deep — several
+      // ticks sit inside the same 14 pt, so tapping a label on a lower
+      // row opened whichever tick was nearest horizontally: almost
+      // always an earlier one, which is why the reader described it as
+      // jumping backwards.
+      //
+      // The test picks the DEEPEST visible label, because a label on a
+      // row below the first is by construction one that could not fit
+      // beside its neighbours — exactly the case the old code got
+      // wrong.
+      await pumpChart(tester, size: const Size(900, 1700));
+      for (var i = 0; i < 16; i++) {
+        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+        await tester.pump(const Duration(milliseconds: 60));
+      }
+      // Into the New Testament, where the crowding is.
+      await tester.tap(find.byKey(const ValueKey('chronoChip_john_patmos')));
+      await tester.pumpAndSettle();
+
+      // The lane builds every label in the span, most of them scrolled
+      // out of the plot's viewport — a tap on one of those lands
+      // nowhere. Only the ones actually on glass are candidates.
+      final onGlass = find
+          .byWidgetPredicate((w) =>
+              w is Text &&
+              w.style?.fontSize != null &&
+              (w.style!.fontSize! - 10.5).abs() < 0.01)
+          .evaluate()
+          .map((e) => (tester.getRect(find.byWidget(e.widget)), e.widget as Text))
+          .where((r) => r.$1.left >= 0 && r.$1.right <= 900)
+          .toList()
+        ..sort((a, b) => b.$1.top.compareTo(a.$1.top));
+      expect(onGlass, isNotEmpty,
+          reason: 'no event labels drawn at max zoom in the New Testament');
+
+      final target = onGlass.first.$2;
+      final title = target.data!;
+      // Confirm it really is a stacked one: another label sits above it.
+      expect(onGlass.first.$1.top, greaterThan(onGlass.last.$1.top),
+          reason: 'every label landed on one row — nothing to test');
+
+      await tester.tap(find.byWidget(target));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text(title),
+        ),
+        findsOneWidget,
+        reason: 'the sheet must name the label that was tapped',
+      );
     });
 
     testWidgets('the scrubber reports who was alive that year',
