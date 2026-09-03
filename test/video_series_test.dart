@@ -44,12 +44,12 @@ const _crossYue = [
 /// Which 在十字架下 episodes have a Mandarin recording YET.
 ///
 /// The user is producing them one at a time and hands over a link when
-/// each is done: `01` on 2026-08-25, `02` on 2026-09-01. Add an id here
-/// only after confirming by YouTube oEmbed that its title carries BOTH
-/// the right ordinal and 普通话版 — the church's page layout is one row
-/// out for this series, which is the mistake `_meta.pairingEvidence`
-/// exists to prevent.
-const _crossWithMandarin = {'01', '02', '03'};
+/// each is done: `01` on 2026-08-25, `02` on 2026-09-01, `03` on
+/// 2026-09-02, `04` on 2026-09-03. Add an id here only after confirming
+/// by YouTube oEmbed that its title carries BOTH the right ordinal and
+/// 普通话版 — the church's page layout is one row out for this series,
+/// which is the mistake `_meta.pairingEvidence` exists to prevent.
+const _crossWithMandarin = {'01', '02', '03', '04'};
 
 /// Not episodes, and must never be listed as one: these are the whole
 /// series in a single video. Putting either in the episode list makes a
