@@ -1,22 +1,23 @@
 {
  "_meta": {
-  "generatedAt": "2026-08-30T11:03:57Z",
+  "generatedAt": "2026-09-03T07:38:19Z",
   "generator": "scripts/sync_songs.py v2",
-  "count": 621,
+  "count": 623,
   "bySource": {
    "cahaya": 47,
    "cdc": 298,
    "cgdc": 63,
-   "fydt": 213
+   "fydt": 213,
+   "setapak": 2
   },
   "byLanguage": {
    "id": 47,
-   "en": 137,
-   "zh": 437
+   "en": 138,
+   "zh": 438
   },
   "withAudio": 599,
-  "withVideo": 118,
-  "withScore": 580,
+  "withVideo": 120,
+  "withScore": 595,
   "withLyrics": 213,
   "sources": {
    "fydt": {
@@ -34,6 +35,10 @@
    "cgdc": {
     "label": "基督門徒福音會 CGDC",
     "home": "https://cgdc.hk"
+   },
+   "setapak": {
+    "label": "Setapak CDC",
+    "home": "https://www.setapakcdc.com"
    }
   },
   "notes": {
@@ -23658,6 +23663,62 @@
    "verse": "Zechariah 10:3-8",
    "firstSeenAt": "2026-08-09T09:15:52Z",
    "updatedAt": "2026-08-09T10:53:53Z"
+  },
+  {
+   "id": "setapak:2899",
+   "title": "Man of sorrow",
+   "language": "en",
+   "source": "setapak",
+   "sourceLabel": "Setapak CDC",
+   "code": null,
+   "url": "https://www.setapakcdc.com/man-of-sorrrow/",
+   "album": null,
+   "artist": "Tham Chen Tong",
+   "composer": "Hillsong Worship and Jadwin Gillies",
+   "lyricist": null,
+   "durationSec": null,
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
+   "videoUrl": null,
+   "youtubeId": "jhKTDLBX-Bk",
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-09-03T07:38:19Z",
+   "updatedAt": "2026-09-03T07:38:19Z"
+  },
+  {
+   "id": "setapak:2902",
+   "title": "父母恩",
+   "language": "zh",
+   "source": "setapak",
+   "sourceLabel": "Setapak CDC",
+   "code": null,
+   "url": "https://www.setapakcdc.com/fu-mu-en/",
+   "album": null,
+   "artist": "Setapak Christian Disciples Church",
+   "composer": "許冠傑",
+   "lyricist": "許冠傑/黎彼得",
+   "durationSec": null,
+   "audioUrl": null,
+   "instrumentalUrl": null,
+   "accompanimentUrl": null,
+   "audioTracks": [],
+   "videoUrl": null,
+   "youtubeId": "qUW0l4r8oPY",
+   "soundcloudTrackId": null,
+   "scoreUrl": null,
+   "artworkUrl": null,
+   "lyrics": null,
+   "themes": [],
+   "verse": null,
+   "firstSeenAt": "2026-09-03T07:38:19Z",
+   "updatedAt": "2026-09-03T07:38:19Z"
   }
  ]
 }

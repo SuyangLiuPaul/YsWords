@@ -13,9 +13,18 @@
 /// platform.
 ///
 /// Sources (see `_meta.sources` in `assets/songs.json`):
-///   • `fydt`   — 福音电台, fydt.org (Chinese)
-///   • `cahaya` — Cahaya Pengharapan, cahayapengharapan.org (Indonesian)
-///   • `cdc`    — Christian Disciples Church (English + Chinese)
+///   • `fydt`    — 福音电台, fydt.org (Chinese)
+///   • `cahaya`  — Cahaya Pengharapan, cahayapengharapan.org (Indonesian)
+///   • `cdc`     — Christian Disciples Church (English + Chinese)
+///   • `cgdc`    — cgdc.hk, Hong Kong (Chinese)
+///   • `setapak` — setapakcdc.com, Kuala Lumpur (2 songs, 2026-09-03)
+///
+/// The last of those is the odd one out and is meant to be: both its
+/// songs are members' own YouTube uploads with no audio file, no
+/// score, no code and no album, and neither is the church's own
+/// composition. It was added at the user's explicit direction over a
+/// recommendation against it. The shape is not new — 20 `cahaya` rows
+/// are the same YouTube-only shape — so nothing here special-cases it.
 ///
 /// fuyindiantai.org is *not* a fourth source: it is fydt.org's former
 /// domain, its songs are already here under `fydt`, and its DNS no
@@ -68,7 +77,10 @@ class Song {
   /// shows up under.
   final String language;
 
-  /// 'fydt' | 'cahaya' | 'cdc'. Which church site publishes it.
+  /// 'fydt' | 'cahaya' | 'cdc' | 'cgdc' | 'setapak'. Which church site
+  /// publishes it. Every value must have an entry in
+  /// [songSourceLabels] and in `songSourceIcons`; both are enforced by
+  /// tests rather than by convention.
   final String source;
 
   /// Display name for the source ('福音电台 FYDT', …). Shown on the
@@ -358,6 +370,17 @@ const Map<String, Map<String, String>> songSourceLabels = {
     'en': 'CGDC Hong Kong',
     'zh-Hans': '基督门徒福音会（香港）',
     'zh-Hant': '基督門徒福音會（香港）',
+  },
+  // Third church of the same denomination, third similar name — the
+  // Kuala Lumpur congregation at setapakcdc.com. The labels
+  // disambiguate by CITY for exactly that reason: "Christian Disciples
+  // Church", "CGDC Hong Kong" and "Setapak CDC" sit next to each other
+  // in the source filter, and a reader has no other way to tell them
+  // apart. Two songs, both YouTube-only.
+  'setapak': {
+    'en': 'Setapak CDC, Kuala Lumpur',
+    'zh-Hans': '基督门徒福音会（吉隆坡）',
+    'zh-Hant': '基督門徒福音會（吉隆坡）',
   },
 };
 

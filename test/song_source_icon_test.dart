@@ -97,8 +97,9 @@ void main() {
         .whereType<File>()
         .fold<int>(0, (a, f) => a + f.lengthSync());
     expect(bytes, lessThan(128 * 1024),
-        reason: 'four site icons should cost tens of KB, not hundreds — '
-            'if this grows, something other than an icon got in');
+        reason: 'a handful of site icons should cost tens of KB, not '
+            'hundreds — if this grows, something other than an icon '
+            'got in');
   });
 
   test('every mapped file is one of the files actually on disk', () {
@@ -113,7 +114,7 @@ void main() {
             'missing would throw at paint');
   });
 
-  test('the catalogue snapshot names the same four sources', () {
+  test('the catalogue snapshot names no source without a mark', () {
     // Guards the other direction from the first test: _meta.sources is
     // what the sync writes, so a fifth source is announced there before
     // any song carries it.
