@@ -24,14 +24,41 @@ import 'package:flutter/material.dart';
 /// registers its own observer, and without the [ModalRoute.isCurrent]
 /// check a status-bar tap would also scroll three pages the user cannot
 /// see — which they would discover later as "it lost my place".
+///
+/// A route is not the only thing that hides a list. Inside a
+/// [TabBarView] every mounted tab shares ONE route, so [ModalRoute]
+/// says "current" for all of them at once — see [tabIndex].
 class ScrollToTopOnStatusBarTap extends StatefulWidget {
   final ScrollController controller;
   final Widget child;
+
+  /// The index of the tab this wrapper lives in, when it lives inside a
+  /// [TabBarView].
+  ///
+  /// Needed because the [ModalRoute.isCurrent] check above cannot see
+  /// tabs. `TabBarView` keeps the adjacent tab mounted, and a tab that
+  /// mixes in `AutomaticKeepAliveClientMixin` (all three of
+  /// `stats_page`'s do) stays mounted for the life of the page — so its
+  /// observer is registered and its route IS current while the reader is
+  /// looking at a different tab entirely. Wiring such a tab without this
+  /// guard makes a status-bar tap on the visible tab silently scroll the
+  /// hidden one to the top, which is the same "it lost my place" failure
+  /// the route check exists to prevent, just across tabs instead of
+  /// across routes.
+  ///
+  /// Compared against `DefaultTabController.of(context).index`. When it
+  /// is non-null and there is no controller above this widget the tap is
+  /// REFUSED rather than honoured: a caller that passes an index is
+  /// declaring it is inside tabs, so a missing controller is a wiring
+  /// mistake, and the safe answer to "I cannot tell whether this list is
+  /// visible" is to leave the reader's place alone.
+  final int? tabIndex;
 
   const ScrollToTopOnStatusBarTap({
     super.key,
     required this.controller,
     required this.child,
+    this.tabIndex,
   });
 
   @override
@@ -59,6 +86,14 @@ class _ScrollToTopOnStatusBarTapState extends State<ScrollToTopOnStatusBarTap>
     if (!mounted) return;
     // Backgrounded routes keep their observers registered.
     if (ModalRoute.of(context)?.isCurrent != true) return;
+
+    // …and so do backgrounded TABS, which the route check cannot see.
+    final tabIndex = widget.tabIndex;
+    if (tabIndex != null) {
+      final tabs = DefaultTabController.maybeOf(context);
+      if (tabs == null) return;
+      if (tabs.index != tabIndex) return;
+    }
 
     final c = widget.controller;
     // `hasClients` is not enough on its own: a controller attached to

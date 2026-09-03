@@ -27,6 +27,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yswords/utils/relative_time.dart' show relativeTime;
 import 'package:yswords/utils/responsive.dart';
@@ -1589,7 +1590,15 @@ class _SearchPageState extends State<SearchPage> {
             const HomeIconButton(),
           ],
         ),
-        body: Center(
+        // Status-bar tap → back to the first hit. Wrapped once around
+        // the whole body rather than around each list, because
+        // `_scrollController` is shared by four mutually exclusive
+        // result lists (text results, boolean refs, Strong's refs, AI
+        // refs) and only ever one of them is mounted at a time — a
+        // single wrapper here covers all four and cannot double-register.
+        body: ScrollToTopOnStatusBarTap(
+          controller: _scrollController,
+          child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: ResponsiveBreakpoints.isTabletOrWider(
@@ -1899,6 +1908,7 @@ class _SearchPageState extends State<SearchPage> {
           ],
             ),
           ),
+        ),
         ),
         ),
     );
