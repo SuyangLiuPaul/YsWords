@@ -5,6 +5,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
+import 'package:yswords/widgets/youtube_embed_src.dart';
+
 /// The YouTube player, embedded in-app on iOS, Android and macOS.
 ///
 /// 2026-08-23, from the user watching a featured video on the iPhone:
@@ -19,17 +21,31 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 /// has no implementation, so the gate is a RUNTIME platform check —
 /// which is exactly what keeps all six targets building from one file
 /// where a compile-time split could not tell desktop apart.
-Widget? youtubeEmbed(String videoId) {
+Widget? youtubeEmbed(String videoId, {int startSeconds = 0}) {
   if (!(Platform.isIOS || Platform.isAndroid || Platform.isMacOS)) {
     return null;
   }
-  return _YoutubeEmbed(videoId: videoId);
+  return _YoutubeEmbed(videoId: videoId, startSeconds: startSeconds);
 }
 
+/// Always null here: the position-preserving language switch is web-only
+/// for now.
+///
+/// The web build reads the player over `postMessage`. This one runs the
+/// same iframe one layer down, inside a `webview_flutter` page we wrote,
+/// so the answer would have to come back over a JS channel from that
+/// wrapper — a second, differently-shaped mechanism, on the three
+/// platforms hardest to verify from here. Returning null means
+/// [youtubeEmbed]'s `startSeconds` stays 0 on native and the URL is
+/// byte-for-byte the one that has been shipping, so nothing about
+/// native playback changes while this is unbuilt.
+int? youtubeEmbedPositionSeconds(String videoId) => null;
+
 class _YoutubeEmbed extends StatefulWidget {
-  const _YoutubeEmbed({required this.videoId});
+  const _YoutubeEmbed({required this.videoId, this.startSeconds = 0});
 
   final String videoId;
+  final int startSeconds;
 
   @override
   State<_YoutubeEmbed> createState() => _YoutubeEmbedState();
@@ -70,7 +86,8 @@ class _YoutubeEmbedState extends State<_YoutubeEmbed> {
       // page, and `baseUrl` names an origin we control — the same one
       // the media-proxy fallback uses — which is what the Referer is
       // derived from.
-      ..loadHtmlString(_wrapperHtml(widget.videoId),
+      ..loadHtmlString(
+          _wrapperHtml(widget.videoId, widget.startSeconds),
           baseUrl: 'https://yswords-qat.netlify.app');
     final platform = _controller.platform;
     if (platform is AndroidWebViewController) {
@@ -83,12 +100,18 @@ class _YoutubeEmbedState extends State<_YoutubeEmbed> {
   /// player's own "copy link" needs), plus `playsinline` and
   /// `autoplay` — the widget only mounts after the thumbnail tap, so
   /// starting immediately is honouring that tap.
-  static String _wrapperHtml(String id) => '''
+  ///
+  /// The URL now comes from the shared [youtubeEmbedSrc] rather than a
+  /// second copy of the same string, which is how the two stopped
+  /// mirroring each other last time. `enableJsApi` is off here and
+  /// [startSeconds] is always 0 (see [youtubeEmbedPositionSeconds]), so
+  /// what this builds is byte-for-byte the URL that was here before.
+  static String _wrapperHtml(String id, int startSeconds) => '''
 <!doctype html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>html,body{margin:0;height:100%;background:#000}
 iframe{border:0;width:100%;height:100%}</style></head><body>
-<iframe src="https://www.youtube-nocookie.com/embed/$id?rel=0&playsinline=1&autoplay=1"
+<iframe src="${youtubeEmbedSrc(id, startSeconds: startSeconds)}"
  allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write"
  allowfullscreen></iframe></body></html>''';
 

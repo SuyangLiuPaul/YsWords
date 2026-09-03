@@ -22,6 +22,7 @@ import 'package:yswords/utils/version_mapper.dart' show toEnglish, localeAwareBo
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Bible Tools page — three tabs (Overview / Lookup / Distribution).
@@ -896,7 +897,18 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
             // is the whole-Bible aggregate; otherwise it's a derived
             // slice keyed off lemma.byBook[bookName].
             final view = _buildViewModel(stats, allLemmas);
-            return Scrollbar(
+            return ScrollToTopOnStatusBarTap(
+              controller: _scrollCtrl,
+              // This tab is index 0 of the page's three-tab
+              // `DefaultTabController`, and it keeps itself alive
+              // (`wantKeepAlive`), so its observer stays registered while
+              // the reader is on Lookup or Distribution. Without the
+              // index the guard would be `ModalRoute.isCurrent` alone —
+              // true for all three tabs at once — and a status-bar tap
+              // taken on another tab would quietly scroll this one's
+              // Top-25 lists back to the top.
+              tabIndex: 0,
+              child: Scrollbar(
               controller: _scrollCtrl,
               thumbVisibility: true,
               child: SingleChildScrollView(
@@ -927,6 +939,7 @@ class _OriginalsOverviewTabState extends State<_OriginalsOverviewTab>
                   ),
                 ),
               ),
+            ),
             );
           },
         );

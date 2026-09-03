@@ -960,8 +960,45 @@ class _SermonBody extends StatelessWidget {
     // the same pixel width holds about twice as many of them, and
     // Chinese typography wants roughly 30 characters a line where
     // English wants 65-75.
+    //
+    // 2026-08-11, the user on the result of the above: "每个段落一个
+    // block也不好experience". Nothing draws a card or a border here, so
+    // "block" is how it READS, and the reason is the third lever: a
+    // 22pt gap against a 35pt line box (20pt × 1.75) put nearly two
+    // thirds of a line of air between paragraphs. Space is the only
+    // signal the layout used, so every break became a full stop and a
+    // continuous argument arrived as a stack of tiles.
+    //
+    // The fix is the one printed prose has used for five centuries:
+    // say "new paragraph" with a FIRST-LINE INDENT and take the air
+    // back out. The two levers that actually answered the wall-of-text
+    // complaint — the measure and the 1.75 line height — are untouched,
+    // because that complaint was real too.
+    //
+    //   line height          1.75          → 1.75   (unchanged)
+    //   gap between paras    22.0 pt fixed → fontSize * 0.3
+    //                                        (6.0 pt at the default 20)
+    //   first-line indent    none          → 2 em, every paragraph
+    //
+    // The indent is two real space characters rather than a leading
+    // `WidgetSpan`, because this body is a `SelectableText` and a
+    // placeholder span lands in the clipboard as U+FFFC. A space
+    // copies as a space. U+3000 (ideographic space) is exactly one em
+    // in CJK and is the character Chinese typesetting already uses for
+    // this; U+2003 (em space) is its Latin equivalent.
+    //
+    // Every paragraph is indented, including the first. Western books
+    // set the opening paragraph flush, but this body opens under a
+    // title, a credit line and a chip row rather than at the top of a
+    // page, so a flush first line reads as an inconsistency instead of
+    // an opening — and Chinese convention indents it regardless.
     final isCjk = settings.locale.startsWith('zh');
     final measure = fontSize * (isCjk ? 30 : 34);
+    // U+3000 IDEOGRAPHIC SPACE / U+2003 EM SPACE, written as escapes
+    // because two of anything invisible in a source file is how an
+    // indent quietly becomes one em after a careless edit.
+    final indent = isCjk ? '\u3000\u3000' : '\u2003\u2003';
+    final paragraphGap = fontSize * 0.3;
 
     return Center(
       child: ConstrainedBox(
@@ -972,9 +1009,12 @@ class _SermonBody extends StatelessWidget {
             for (final p in paragraphs)
               if (p.trim().isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 22),
+                  padding: EdgeInsets.only(bottom: paragraphGap),
                   child: SelectableText.rich(
-                    _buildSpans(context, p.trim(), fontSize, scheme),
+                    TextSpan(children: [
+                      TextSpan(text: indent),
+                      _buildSpans(context, p.trim(), fontSize, scheme),
+                    ]),
                     scrollPhysics: kSelectableTextPhysics,
                     style: TextStyle(
                       fontSize: fontSize,
