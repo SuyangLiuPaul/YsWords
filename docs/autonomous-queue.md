@@ -6198,7 +6198,7 @@ has never seen this repo.
       all — without one, the tile has nothing current to compare against
       even though the mechanism is now honest.
 
-- [ ] **Retire the China bundle: make the two `kChinaMode` gates
+- [x] **Retire the China bundle: make the two `kChinaMode` gates
       runtime-detected.** 2026-08-30, user: "我没有cn版本的了发现现在的
       yswords中国可以用yahwehword的" — several people in mainland China
       run the international build over yahwehword.com and report it
@@ -6285,6 +6285,28 @@ has never seen this repo.
         change that deserves its own explicit go/no-go, not a
         side-effect of a font-picker patch). `kChinaMode` and its ~10
         UI/copy call sites are untouched, as instructed.
+
+
+      **2026-09-03 — attempted, BLOCKED by file ownership, nothing changed and
+      no workaround attempted.** The font gate was already done 2026-08-30
+      (`lib/utils/font_catalog.dart:373`). The only remaining functional gate is
+      the Firebase Auth/RTDB one at **`lib/main.dart:401`** (`if (!kChinaMode)`),
+      and that file was held by a concurrent change. It was read, not edited.
+      **What it would take:** a `FirebaseReachabilityService` mirroring the
+      shipped `lib/services/google_fonts_reachability.dart` — three-state
+      `unknown | reachable | unreachable`, SharedPreferences-cached, re-probed
+      at most once per 24 h, failing OPEN — replacing `!kChinaMode` at that
+      line, and probing a real Firebase byte URL rather than guessing at
+      Google's CORS behaviour.
+      **But the framing should change first.** As the 2026-08-30 note above
+      already establishes, that call has been `unawaited(...).timeout(8s)` and
+      off the `FetchVerses` critical path since v1.3.145, so **this is not a
+      latency fix** — the "waits ~4 s for the watchdog" premise describes
+      pre-v1.3.145 code. What is actually left is the product question: should
+      `kChinaMode` still skip Firebase Auth/RTDB outright? **That needs the
+      user.**
+      Retiring the three `yswords-cn*` Netlify sites (`tools/release_web.sh:406-411`)
+      stays out of scope — a live deploy-topology change needs its own go/no-go.
 
 - [x] **Sermon passage filter: highlight the match, and filter by verse
       — SHIPPED 2026-08-23 (v1.4.119).** The filter travels into the
@@ -6689,7 +6711,7 @@ has never seen this repo.
       test of any kind over this script — it runs the REAL Python
       through `python3`, not a Dart reimplementation of its regex.
 
-- [ ] **The same chapter-list defect survives when the list is NOT
+- [x] **The same chapter-list defect survives when the list is NOT
       consecutive.** "John 12, 14 and 16 all say this" yields John
       12:14, and "Romans 6, 7 and 9" yields Romans 6:7 — 004's and 356's
       sentences with the chapter word dropped. Zero occurrences today.
@@ -6744,6 +6766,21 @@ has never seen this repo.
       three real ones here. Do NOT reuse "both are plausible chapters"
       (measured and rejected above), and do not fit a threshold such as
       `and_last - ch <= 4` to 004 — that is one data point.
+
+
+      **Re-derived 2026-09-03 without reference to the numbers above, and the
+      decision stands.** **20** bare-comma verse matches; **4** with room for a
+      gapped tail (004, 848's `Matthew 10, 26`, EC013's `Zechariah 2, 5`, 015's
+      `Matthew 5, 10 to 12` — exactly the four named above); **1** bare gapped
+      `and` list, which is 004's CHAPTER list, already refused by the
+      spelled-out-chapter-word guard; **0** bare gapped VERSE lists.
+      One correction to the record: I count **189** `and`-pairs and **150**
+      adjacent, not 187/148. The 39 non-adjacent is exact. I did not chase the
+      two and I report my own number rather than matching the old one.
+      The counts are executable now — `bareGappedVerseLists == 0` is the one
+      that would move if a transcript ever priced the trade, and the three
+      at-risk citations are asserted from their own sentences so a later
+      attempt cannot claim they were never at risk.
 
 - [x] **The bare-comma verse is recovered after a chapter word where M
       cannot be a chapter of that book. SHIPPED 2026-08-25 (v1.4.161) —
@@ -7834,7 +7871,7 @@ has never seen this repo.
       newline..."), left alone. `flutter analyze` clean, full suite
       green.
 
-- [ ] **一一九 is 119 read digit-by-digit, and neither implementation
+- [x] **一一九 is 119 read digit-by-digit, and neither implementation
       admits it — 331's 「诗篇一一九篇103节」 resolves to nothing.**
       Surfaced 2026-08-26 by the 第-less relaxation, which made the
       string match `passageRefPattern` for the first time. It costs
@@ -7858,6 +7895,30 @@ has never seen this repo.
       by the chapter, the verse and the range end, so it re-decides all
       5,548 existing chapter-mark matches — a large blast radius to buy
       two sites that already render correctly.
+
+
+      **DONE 2026-09-03 (`p2/citation`), in BOTH implementations, which
+      overturns the "costs nothing, leave it" verdict above.**
+      The measurement, over every Chinese numeral run in the corpus:
+      **103,132** runs, **2,236** rejected by `cn_number` in 66 spellings. Of
+      the shape a digit-string reading would admit — pure single digits, no 十
+      or 百 — there are **242 two-character runs in 14 spellings and every one
+      is prose** (一一 100x, 三四 44x, 五六 28x: 「唯一一節」, 「三四年」,
+      「五五分成」), against **13 runs in 4 spellings at three characters and
+      up**: 二一四 x8, 一九五八 x2, 一九五三 x1, 一一九 x2.
+      **Only 一一九 lands in 1..199** — the years and 042's 214 are turned away
+      by the range check that was ALREADY there, not by a rule written for
+      them. So the three-character floor is measured rather than fitted, and
+      the reading cannot collide with the structural form: a well-formed
+      numeral that long always carries a 十 or a 百, and the digit-string set is
+      exactly what `_CN_NUM_SHAPE` refuses.
+      Corpus **+2 -0**; `refs.json` unchanged, because 331 already held
+      `Psalms 119:103` from its ENGLISH transcript, exactly as recorded above.
+      What it buys is the two parsers agreeing and 331's Chinese bodies
+      becoming tappable. `totalParsed` in `canon_chapters_test.dart` moved
+      12471 -> 12473 and `totalMatches` did NOT move, because no pattern was
+      touched. The rejected alternative above — making `_numRun` structural —
+      is still rejected and still unnecessary.
 
 - [x] **Two non-glyph spellings the alias table misses: 約拿記/约拿记
       (Jonah written with 記, 6 sites, sermon 069, including 「約拿記第2
@@ -7995,7 +8056,7 @@ has never seen this repo.
       files rather than trusting this text, including the CUV
       cross-check, and found only the 7-vs-8 count wrong.
 
-- [ ] **Same-sentence chapter reach-back for 247's `Revelation 19:12`.**
+- [x] **Same-sentence chapter reach-back for 247's `Revelation 19:12`.**
       「然后在第19章，启示录12节」 states its chapter (19) three words
       before the book name repeats with a verse-marked number. Recovering
       it needs a way to carry a bare 「第N章」 forward to the next 书名+
@@ -8006,7 +8067,36 @@ has never seen this repo.
       right for 247 and wrong for one other sermon is a worse trade than
       the current silence. Not attempted 2026-08-31 for that reason.
 
-- [ ] **The 2026-08-25 boundary relaxation is not additive *by
+
+      **DONE 2026-09-03 (`p2/citation`).** Shipped as a rescue INSIDE the
+      節-says-verse refusal, so the firing zone can never be wider than that
+      refusal's own sites.
+      The measurement this item asked for, re-derived from scratch: the refusal
+      fires on **12** sites, not the 8 recorded above — 010, 016, 106, 150, 247
+      and 365, each in zh-CN and zh-TW (016 and 365 were missing from the old
+      count). Exactly **4** of the 12 find a bare 「第N章/篇」 earlier in the
+      same sentence, and both readings are right: 247's 「然後在第19章，啟示錄12節」
+      -> `Revelation 19:12` (new — 247 held no Revelation 19 key at all) and
+      365's 「取自第40篇詩篇第6節起」 -> `Psalms 40:6`, which the very next clause
+      states outright and 365 already held. **Corpus +1 key / +2 occurrences,
+      -0.** The other 8 reach back to nothing and stay refused.
+      Three restrictions carry the rule, each measured: a sentence stop ends
+      the reach (a comma does not — 247's chapter sits behind one 「，」); the
+      章/篇 must be bare, so 「在馬太福音第5章，路加福音12節」 cannot lend Matthew's
+      chapter to Luke; and single-CJK-character aliases are excluded so the
+      rescue cannot hand 但 ("but") the verse the abbreviation rule demands as
+      proof.
+
+      **NEW, and NOT fixed: the Dart reader now DISAGREES with the index on
+      this sentence.** `passageRefPattern` matches 「启示录12」 and
+      `parseReference` returns Revelation **12**, so 247's page underlines a
+      jump to the wrong chapter while `refs.json` says 19:12. Verified live.
+      An index that is right while the tap is wrong is more misleading than
+      both being wrong. Recovering it needs the reach-back on the Dart side
+      too, over a different pattern — unmeasured, so recorded rather than
+      guessed at.
+
+- [x] **The 2026-08-25 boundary relaxation is not additive *by
       construction*, though it is additive on this corpus.**
       `NUMBERED_TAIL_RE` is full-names-only, so a constructed
       「在马太福音 2 Cor 5:17」 loses the real reference the boundary form
@@ -8016,7 +8106,18 @@ has never seen this repo.
       ever grows a Chinese sentence with an English citation inside it,
       this is the first thing to check.
 
-- [ ] **The list carry's `\s*` crosses a newline, so a citation at the
+
+      **Re-measured 2026-09-03, two independent ways, and the verdict holds.**
+      (a) The fix was actually BUILT — abbreviated tails (Cor, Sam, Kgs, Ki,
+      Pet, Pe, Tim, Ti, Th, Thess, Chr, Ch, Jn, Jo, Co, Corinth, Thes) added to
+      `NUMBERED_TAIL_RE` — and diffed over the whole corpus: **+0 -0**.
+      (b) A direct scan for the shape `<book alias> [,]? [chapter-word]? [1-3]
+      <abbreviated numbered book>` finds **0 sites**.
+      Still not shipped: an inert widening of the tail rule buys nothing. The
+      zero is now executable rather than recorded — `test/sermon_ref_extraction_test.dart`,
+      "no citation puts an abbreviated numbered book in a chapter slot".
+
+- [x] **The list carry's `\s*` crosses a newline, so a citation at the
       end of a paragraph could adopt a number at the start of the next.**
       "Genesis 1:1\n\nand 2:2" carries. Zero sites in the corpus, and
       REF_RE has the same exposure in `_RANGE_LINK` already, so it adds
@@ -8025,7 +8126,21 @@ has never seen this repo.
       wrapped across a line break is a shape the transcripts may well
       have.
 
-- [ ] **A clock time would be carried if one ever followed a citation.**
+
+      **DONE 2026-09-03 (`p2/citation`).** Closed with `[^\S\n]*` on every
+      join in `_AND_SECOND_REF` — which is what `zhChapterMarkTailPattern` in
+      `lib/utils/reference_parser.dart` has used from the start, so this is the
+      extractor catching up rather than a new idea.
+      Measured before and after: the carry fires **71** times corpus-wide and
+      **not one** spans a newline, and the pattern scanned free-floating over
+      all 867 bodies finds no newline-spanning match either. The rewrite is
+      **+0 -0**. (The corpus holds 0 carriage returns, so `\n` is the whole of
+      it.) **A closed exposure, not a repaired defect.** Pinned two ways:
+      `newlineCarryMatches == 0` in the census, and `"Genesis 1:1\n\nand 2:2"`
+      yielding only Genesis 1:1 while the same sentence on one line still
+      carries.
+
+- [x] **A clock time would be carried if one ever followed a citation.**
       160 has "Communion at 1:15" and 230 has "9:20 pm", so the corpus
       does contain times in `C:V` shape; "Luke 4:18, 1:15" would index
       Luke 1:15. **Zero sites where a time sits after a citation and a
@@ -8035,13 +8150,35 @@ has never seen this repo.
       is a hypothetical class, so measure before trading anything real
       for it.
 
-- [ ] **`marked` disables the unit-word guard, so "in Genesis, chapter
+
+      **Re-measured 2026-09-03: still no sites — and there is now a reason not
+      to write this guard later that is stronger than "zero members".** The
+      corpus holds **1,328** `C:V`-shaped tokens, exactly **2** of them clocks
+      (160's "Communion at 1:15", 230's "9:20 pm"), **0** after a citation, and
+      **0** of the 71 list-carry firings consume one.
+      **But a Chinese half of the guard keyed on 时/時 would fire on 28
+      citations, and every one of them is the ordinary word "when"** —
+      「當你回頭看馬太福音第5章時」. It would delete 28 real chapter keys to
+      protect against a class with zero members. So this is not merely
+      unnecessary; writing it is a way to be wrong. All three counts pinned in
+      the census test.
+
+- [x] **`marked` disables the unit-word guard, so "in Genesis, chapter
       3 times" would index Genesis 3.** Zero occurrences in the corpus
       today, and the neighbouring "Deuteronomy, chapter 43 times" case
       is caught only by the canon check rather than by the guard.
       Recorded by the refuter, 2026-08-25; not acted on, because a
       spelled-out "chapter" really is proof the number is a chapter and
       the fix would trade a real class for a hypothetical one.
+
+
+      **Re-measured 2026-09-03: still 0 sites, and the zero is SYMMETRIC** —
+      removing `and not marked` from the guard is also **+0 -0** on the corpus,
+      so nothing in the corpus can price this in either direction and the
+      reasoning above is doing all the work. That is the honest reading.
+      Now executable rather than recorded: `markedUnitWordSites == 0` in the
+      corpus census, with "in Genesis, chapter 3 times" -> `Genesis 3` and
+      "Deuteronomy 43 times" -> nothing kept beside it.
 
 - [x] **SUPERSEDED by the DONE entry above — the original statement of
       the problem, kept because its reasoning is what made the fix
@@ -8107,7 +8244,7 @@ has never seen this repo.
       `test/cdc_hymn_scores_test.dart` fails if a sync overwrites them.
 
       Original note follows.
-- [ ] **Sweep the CDC network's country sites for songs we do not have.**
+- [x] **Sweep the CDC network's country sites for songs we do not have.**
       User, 2026-08-18, pointing at the "WHERE WE MEET" menu on
       `christiandiscipleschurch.org`: Australia, Canada, Hong Kong,
       India, Indonesia, Malaysia, Nepal, The Philippines, Singapore,
@@ -8142,6 +8279,34 @@ has never seen this repo.
       country pages that actually list a local site of their own. Most
       congregations will have no separate website; the sweep is only
       worth doing for the few that do.
+
+
+      **2026-09-03 — SWEPT. No songs to add, and the two that exist should not
+      be added without your say-so.** The host answers now. All 11 country
+      pages read, plus `where-we-meet` and `worship-music`. **No country page
+      publishes songs of its own** — every song/music mention is the shared nav
+      ("Worship in Music", "Integrated List of Songs") or service-time
+      boilerplate, and `worship-music`'s 8 mp3s are D0152-D0166, already ours.
+      Four congregations link a site of their own, plus one blog:
+      **torontocdc.org** (Home/Events/Sermons/Books/About — no music section);
+      **cgdchkc.org** (sermons and book studies; 下載區 and 影片分享 hold zero
+      mp3/pdf — `歌羅西書` is Colossians, a keyword false positive);
+      **gobiblestudy.wordpress.com** (one prose "Music Ministry" post, no
+      media); **setapakcdc.com** (needs a browser UA — a plain one gets 406);
+      and **yl.cgdc.org.hk**, which is **STILL UNSURVEYED**: DNS resolves to
+      149.28.134.60, ports 80/443 open, answers **403** to this machine. That
+      is "not looked at", not "nothing there".
+      Setapak's Media page has exactly two entries and both are songs we lack —
+      父母恩 (`qUW0l4r8oPY`) and Man of sorrow (`jhKTDLBX-Bk`).
+      **Deliberately not added; this is the user's call, which is what this
+      item asked for.** oEmbed resolves both to channel "Don Tham", one titled
+      "Man Of Sorrow **Cover** by Don": a member's personal uploads embedded on
+      a congregation page, not a published songbook. Adding them means a fifth
+      source — key, three localised labels, a bundled icon, scraper support and
+      a yswords-data change — permanently, for two YouTube-only rows with no
+      audio file, score, code or album.
+      `song_source_icon_test.dart` fails if a fifth source ever appears without
+      its mark.
 
 - [x] **The daily "Refresh songs" failure email — SHIPPED 2026-08-23
       (yswords-data 5bf317a).** Exactly as specified below: the guard is
@@ -8891,7 +9056,7 @@ has never seen this repo.
       to confirm neither surface could navigate. It did correct one piece
       of wording, and the correction is the item below.
 
-- [ ] **The timeline and person-detail reference chips have the same
+- [x] **The timeline and person-detail reference chips have the same
       unconditional `onTap` — safe only because their data resolves.**
       Raised by the refuter on the item above, which had claimed the
       defect "does not exist" there. It does exist in the code:
@@ -8910,13 +9075,67 @@ has never seen this repo.
       that test ever goes red, fix the chip the way the evidence chip was
       fixed rather than repairing the reference by guess.
 
-- [ ] **Bounded scroll boxes are everywhere, not just the AI panel.**
+
+      **2026-09-03 — FIXED (`p2/ui`). The refuter was right: the defect was in
+      the code.** The earlier decision not to fix it ("defending against data
+      that does not exist adds dead UI code") cost more than it saved — the
+      guard is one null check per chip, and writing the test found a **second,
+      non-hypothetical** defect: `bible_timeline_page.dart:546` prints an
+      unparsed citation RAW, raw can be prose (`Various NT references`), and at
+      402pt that overflowed the tile by **111pt and threw**. The label is
+      `Flexible` now. That is the "must not crash" half, and it was real.
+      Both surfaces now gate the affordance on the SAME resolver the jump uses
+      — new `firstResolvableReference` in `reference_parser.dart` — so
+      affordance and destination cannot drift apart. `cardJumpTarget` in
+      `evidence_page.dart` is the same rule and should delegate to it once that
+      file is free of its concurrent change.
+      Side effect worth knowing: `parseReference` truncates at the first `;`,
+      so moving the jump to `firstResolvableReference` also WIDENS it —
+      `Ecclesiasticus (Sirach) 44:1; Exodus 14:21-22` now opens at Exodus
+      instead of refusing. Pinned by test.
+      The data check in `evidence_unresolvable_citation_test.dart` stays; this
+      adds the widget check.
+
+- [x] **Bounded scroll boxes are everywhere, not just the AI panel.**
       User, 2026-08-16: "很多时候这些框框都是上下滑动很多地方都是这样是不是
       全部要找出来fix". Supersedes the narrower AI-panel item: when
       that was queued I searched only `maxHeight` + scroll view and
       found one. The user is seeing more, so the search was too narrow
       — check `SizedBox(height:` and `Expanded` inside sheets too, and
       list what is found before fixing.
+
+
+      **2026-09-03 — SWEPT AND FIXED (`p2/ui`). The user was right and the old
+      search was wrong in two ways:** it required a fixed-POINT cap, and it
+      assumed a fractional cap always means "the sheet's own scrollable". That
+      second assumption is false for a cap on a SECTION of a sheet — and every
+      real offender turned out to be a fraction.
+      Scanned all of `lib/` for `ConstrainedBox`/`Container` with a height cap,
+      `SizedBox(height:)`, and `Expanded`/`Flexible` whose subtree contains a
+      scroll view: **41 candidates, 7 real offenders.**
+
+      | site | cap | why it was wrong |
+      |---|---|---|
+      | `songs_page.dart:1320` | 0.22 | **nested inside the sheet's own scroll view** — the AI-panel defect verbatim |
+      | `songs_page.dart:1353` | 0.30 | same; 66 book chips unreachable |
+      | `sermons_page.dart:598/636/687` | 0.30/0.16/0.16 | three regions scrolling by themselves in one sheet; 0.62 of the viewport plus labels and Apply could overflow it |
+      | `stats_page.dart:1499` | 0.55 | 66 chips clipped while the sheet did not scroll |
+      | `bible_trivia_page.dart:669` | 0.50 | same |
+
+      **One pattern applied to all four filter sheets: ONE scroll view per
+      sheet** — header and Apply pinned, sections flowing, the only height cap
+      on the sheet itself at 0.85 and never on a section.
+      `nested_scrollable_test.dart` now flags ANY cap and checks the cap's OWN
+      child rather than its whole subtree, so capping a sheet is not
+      false-flagged: 7 offenders before, 0 after.
+      **Examined and deliberately NOT changed** (so a later sweep does not
+      re-open them): the export dialog's 280pt `SelectableText` preview (child
+      owns its scroller, nothing scrollable around it), its 280/140 `TextField`
+      cap (capping an editor is the point), the onboarding 240pt `PageView`
+      (cross-axis), eight horizontal chip rails (cross-axis), and twenty
+      `Expanded`-sole-scrollable sites, which are the CORRECT pattern.
+      The files held by a concurrent change were each inspected too, and none
+      is the defect shape — nothing is left undone there.
 
 - [x] **Pull-to-refresh removed — DONE 2026-08-24 (v1.4.134).**
       Verified inert (warm caches, date-deterministic picks, everything
@@ -8933,7 +9152,7 @@ has never seen this repo.
       rather than animate it. A refresh control that always appears to
       do nothing teaches people the app is unresponsive.
 
-- [ ] **The book-picker blocks look wrong — redesign.**
+- [x] **The book-picker blocks look wrong — redesign.**
       User, 2026-08-16: "我怎么看左边那个blocks其实看起来很奇怪设计能够更好
       些吗，好好思考". The 66 uniform rounded squares of 1-2 characters
       read as a keypad rather than a table of contents, and the
@@ -8941,7 +9160,33 @@ has never seen this repo.
       actually scans for — Old/New, the five divisions, book length —
       before moving pixels.
 
-- [ ] **`No Overlay widget found` — an OverlayPortal rebuilding as its
+
+      **2026-09-03 — REDESIGNED (`p2/misc`).** The default book view is now a
+      table of contents, not a keypad. Books group under the canonical
+      divisions (律法书 / 历史书 / 诗歌智慧书 / 大先知书 / 小先知书, and the NT
+      five), each header naming the group and its size; each book is a
+      full-width row carrying the three things the grid hid: its **full name**
+      (约珥书, not 珥), its chapter count, and a length bar.
+      The divisions are data — `kBibleDivisions` in `book_groups.dart`, matched
+      through `toEnglish`, so one table serves every locale and version.
+      **Do NOT "improve" the length bar with a sqrt or log scale.** It is drawn
+      linearly against the longest book on screen (诗篇 full width, 创世纪 a
+      third of it), clamped at 3% so one-chapter books still draw a mark. The
+      whole point of the bar is that its length can be trusted.
+      Tapping a row drills into the SAME chapter grid the grid view uses
+      (`_buildBookDrillDown`, lifted out of `_buildGridView` unchanged), so
+      book -> chapter -> verse is byte-for-byte the path that already shipped
+      and is already tested. `grid` and `list` are untouched on a now three-way
+      toggle, and a STORED choice is always honoured — only users who never
+      opened the toggle move to Contents.
+      `test/book_picker_sections_test.dart` is a census before it is a design
+      test: all 39 OT and all 27 NT books must have a row under the right
+      header, an unrecognised title still gets one under a catch-all, and
+      picking still reaches `onChapterSelected` with the right book/chapter/
+      verse. **A redesign that loses a book is worse than an ugly keypad.**
+      Verified red (catch-all removed -> the unrecognised-book test fails).
+
+- [x] **`No Overlay widget found` — an OverlayPortal rebuilding as its
       route is popped.** Two reports, and the second corrects the first.
 
       | | report 1 | report 2 |
@@ -8980,6 +9225,37 @@ has never seen this repo.
       **Reproduce by popping, not by resizing:** open a sheet
       containing a tooltip, hover or long-press to arm it, and dismiss
       the sheet in the same moment.
+
+
+      **2026-09-03 — FIXED (`p2/ui`). BOTH write-ups had the wrong cause.**
+      It is not window geometry (report 1), and not a tooltip inside a popping
+      sheet (report 2's inference) — that last was tested directly and throws
+      nothing on Flutter 3.44.2.
+      **The real cause:** `main.dart:1089` mounts
+      `UpdateBanner(child: GlobalMiniPlayer(child: child!))` from
+      `MaterialApp.builder`, and the builder's `child` **IS the Navigator** —
+      so everything the builder adds sits ABOVE the app's only `Overlay`. The
+      mini-player's close button carried `tooltip:`, and `Tooltip` ->
+      `RawTooltip` -> `OverlayPortal` asserts on every build in debug and
+      throws the literal reported error from `_OverlayPortalState._getLocation`
+      the moment the portal is shown — i.e. **on hover**.
+      **The shared variable is having a mouse**, which is why both reporters
+      (macOS native, web/Windows) hit it and no phone ever did. `nav:pop` as
+      the last breadcrumb is not causal; it is just when that subtree last
+      rebuilt. The strip went app-wide 2026-08-10; report 1 is 2026-08-17.
+      Fix: `TooltipVisibility(visible: false)` — the framework's own way to say
+      "no Overlay in this region" — wrapping the **whole strip** and the update
+      banner, not just the one button, so a control added later cannot
+      reintroduce it. The accessible name moved to `Icon.semanticLabel`, which
+      needs no overlay.
+      **Deliberate trade-off: the close button loses its hover tooltip.** The
+      alternative — giving the chrome its own `Overlay` — means hosting the
+      entire app inside an `OverlayEntry`, whose builder does not rerun when
+      the parent rebuilds, and would re-target every
+      `Overlay.maybeOf(rootOverlay: true)` call in `floating_toast.dart`,
+      `person_detail_sheet.dart` and `family_tree_page.dart`. Not worth it for
+      one X button. `test/app_chrome_overlay_test.dart` reproduces the literal
+      error on the pre-fix widgets.
 
 - [ ] **Notes need formatting.**
       User, 2026-08-16: "notes要加format之类的可以做？在chapter里面做笔记的
@@ -9751,13 +10027,44 @@ has never seen this repo.
       is one shared working tree: staging it would have swept their
       half-finished change into this commit. Do it once that lands.
 
-- [ ] **Position-preserving language switch is not carried over.** The
+- [x] **Position-preserving language switch is not carried over.** The
       self-hosted player kept your place when you switched language;
       the YouTube embed re-arms the poster instead. `enablejsapi` is
       already on the iframe, so asking the player for its current time
       and passing it as `?start=` is the way back to it — worth doing,
       but it is web-only and needs the native decision above settled
       first.
+
+
+      **2026-09-03 — DONE for web (`p2/readux`), and the premise above was
+      false. `enablejsapi` was NOT already on the iframe.**
+      `youtube_embed_web.dart` said so in a COMMENT while its `src` carried
+      `rel=0&playsinline=1&autoplay=1` and nothing else — the player had never
+      been asked anything. Now: `enablejsapi=1` plus the `origin` the player
+      requires or it refuses the handshake; the page posts the `listening`
+      handshake on iframe load and 10x at 500 ms; `infoDelivery` frames are
+      cached per video id; the language chip reads that cache BEFORE `setState`
+      unmounts the iframe and hands it to the new embed as `?start=`. Playing
+      stays playing at the same place in the other take; browsing still leaves
+      the poster armed. Origin-checked against the two YouTube hosts before
+      parsing.
+      **One trap worth keeping:** the platform-view key now includes the start
+      second. `registerViewFactory` keeps the FIRST factory registered under a
+      name, so a video-id-only key would silently reuse the `start=0` factory
+      on a switch-back and reintroduce this exact bug one layer down.
+      **Native is deliberately still not carried over**, per this item's own
+      "web-only": `youtubeEmbedPositionSeconds` returns null on io,
+      `startSeconds` stays 0, and the native URL is byte-for-byte what ships
+      (pinned by a test). Native runs the same iframe inside our own wrapper
+      page, so it needs a JS channel through that wrapper — a second mechanism
+      on the three platforms hardest to verify headlessly.
+      **NOT verified in a browser.** The postMessage handshake is unproven
+      end-to-end; every string that matters was moved into plain Dart
+      (`lib/widgets/youtube_embed_src.dart`, 16 tests) and `flutter build web`
+      run as a real compile check, but watch one switch on the web build.
+      Follow-on now half-unblocked: `_wholeSeriesRow` opens the hour-long
+      compilations on YouTube *because* "the page's player has no position
+      memory (see the language-switch note)" (`videos_page.dart:385-388`).
 
 - [x] **Rename 獨一真神 to "Featured video"** — folded into the series
       item above, 2026-08-12; doing it alone would be work thrown away.
@@ -9951,7 +10258,7 @@ has never seen this repo.
 
 </details>
 
-- [ ] **Re-probe the blocked hosts EVERY iteration, and take the work
+- [x] **Re-probe the blocked hosts EVERY iteration, and take the work
       the moment they answer.**
       **2026-09-02: `christiandiscipleschurch.org` ANSWERS** — 200 in
       1.2 s. It had been recorded as unreachable, and that record was
@@ -9985,6 +10292,41 @@ has never seen this repo.
       Jamf) and no amount of retrying will change it there. The probe
       exists so the answer can change by itself when the same work is
       run somewhere else, or when the policy does.
+
+
+      **2026-09-03 — ALL FOUR HOSTS ANSWER. `tools/check_media_hosts.sh` exits
+      0 for the first time on record.** Measured: fydt.org 301 / 0.72 s,
+      www.christiandiscipleschurch.org 200 / 1.02 s, cgdc.hk 200 / 1.37 s,
+      cahayapengharapan.org 200 / 3.53 s. Deep endpoints too, with real bytes:
+      `/content/124-messages` 200 (99,979 B), `fydt.org/.../S01_010R.mp3` 200
+      (4,909,369 B, audio/mpeg), its thumbnail PNG 200 (136,660 B).
+
+      **Taken the same day:** the CDC country-site sweep and the per-source
+      cover fallback (both below) — the cover item's blocker was literally
+      "do not start until fydt.org and christiandiscipleschurch.org are both
+      reachable, and do NOT guess their icon URLs", and the icons were read
+      rather than guessed.
+
+      **Now unblocked and NOT taken:** reconcile our Matthew sermons against
+      the church's 124 — `/content/124-messages` returns 200 with ~100 KB of
+      HTML, so the seventeen-consecutive-failure record and the "tell the user,
+      they can reach Bentley faster than the server will come back" note are
+      both stale. **This is now purely the link-61-or-offer-124 product
+      decision, and it needs the user, not the network.** Also: the 75 s
+      artwork hang is no longer reproducible from here (it was always a
+      filtered-network defect, not an fydt defect).
+
+      **`fydt.org` has been RENAMED to `fuyindiantai.org`** — the bare host
+      301s there. **But `netlify.toml`'s `/song-media/fydt/*` proxy is NOT
+      broken and should not be "fixed":** all 1237 fydt media URLs in the
+      catalogue still point at `fydt.org`, and those media paths still serve
+      200 directly. Only the bare host redirects. Anything that follows the
+      site's own HTML will now be handed `fuyindiantai.org` URLs.
+
+      **Caveat on all of the above:** these probes ran from an agent sandbox,
+      NOT the maintainer's managed Mac. Four-of-four answering is real and
+      actionable for work run there; it is NOT evidence the
+      GlobalProtect/CrowdStrike/Jamf block has lifted on the Mac.
 
 - [x] **Native should fall back to the Netlify media proxy when a host
       — SHIPPED 2026-08-23 (v1.4.129).** One retry per song per session:
@@ -10102,7 +10444,7 @@ has never seen this repo.
       index) before it can be wired safely — a second batch, not a
       mechanical wrap.
 
-- [ ] **Tap-the-status-bar-to-scroll-to-top, batch 2: `search_page` and
+- [x] **Tap-the-status-bar-to-scroll-to-top, batch 2: `search_page` and
       the tab-aware guard `stats_page` needs.** Follow-up to the item
       above (2026-09-02). `search_page` was skipped only because it was
       dirty under a concurrent session that hour — re-check it owns
@@ -10115,7 +10457,29 @@ has never seen this repo.
       separate tabs of one `TabBarView`, both stay mounted, and neither
       is on its own route.
 
-- [ ] **Sermon reading: "每个段落一个block也不好experience".**
+
+      **2026-09-03 — DONE (`p2/readux`).** `search_page` was clean and took one
+      wrapper around the whole Scaffold body: its `_scrollController` is shared
+      by four MUTUALLY EXCLUSIVE result lists (text, boolean refs, Strong's
+      refs, AI refs), so four wrappers would mean four observers for one
+      controller. `ScrollToTopOnStatusBarTap` gained an optional `tabIndex`
+      compared against `DefaultTabController.of(context).index`; passing an
+      index with no controller above **refuses** the tap rather than guessing.
+      **The premise here was half stale.** `_OriginalsBooksTab` is DEAD CODE —
+      Round 56 replaced the Books tab with the Strong's lookup and nothing
+      references it. The live `TabBarView` is Overview / Lookup / Distribution,
+      and only Overview owns a controller; the other two use controller-less
+      scroll views the Scaffold's `PrimaryScrollController` path already
+      covers. The guard was still required, but for one keep-alive tab against
+      two visible ones — not two tabs against each other.
+      Why the guard is needed at all: `ModalRoute.isCurrent` is true for EVERY
+      mounted child of a `TabBarView` (they share one route), and all three
+      tabs mix in `AutomaticKeepAliveClientMixin`. Worth keeping: unlike the
+      opaque-route shape batch 1 hit, an off-screen `TabBarView` child keeps
+      its ticker, so this shape genuinely exercises the guard. Five new tests,
+      all three guard branches confirmed red-on-break.
+
+- [x] **Sermon reading: "每个段落一个block也不好experience".**
       User, 2026-08-11. This is a follow-up on the v1.4.x paragraph work
       (`lib/pages/sermon_detail_page.dart:749`), which added a line
       measure, a 1.75 line height and 22pt between paragraphs. That
@@ -10146,6 +10510,32 @@ has never seen this repo.
       **The standing rule still applies: nothing may re-paragraph a
       sermon.** Inserting or removing breaks in another man's preaching
       is an expressive decision he did not make. Only typography moves.
+
+
+      **2026-09-03 — DONE (`p2/readux`).** Lever 1 was the right one, and the
+      diagnosis is worth keeping: 22pt of air against a 35pt line box
+      (20pt x 1.75) is nearly two thirds of a line BETWEEN paragraphs and a
+      fifth of one INSIDE them. Space was the only signal, so every break read
+      as a full stop. Indent now carries the signal and the air comes out.
+
+      | | before | after |
+      |---|---|---|
+      | line height | 1.75 | **1.75 (unchanged)** |
+      | line measure | `fontSize * 34` (30 CJK) | **unchanged** |
+      | paragraph gap | 22.0pt fixed | **`fontSize * 0.3` -> 6.0pt at 20pt** |
+      | first-line indent | none | **2 em, every paragraph** |
+
+      **This does NOT revert the wall-of-text fix** — the two levers that
+      answered it are untouched, and `test/sermon_body_typography_test.dart`
+      pins that in both directions so a later "simplification" cannot quietly
+      reopen the old complaint. The indent is real space characters
+      (U+3000 x2 CJK, U+2003 x2 Latin), not a leading `WidgetSpan`: the body is
+      a `SelectableText` and a placeholder span reaches the clipboard as
+      U+FFFC. Nothing re-paragraphs anything.
+      **Still open: nobody has LOOKED at it.** Argued from the numbers and
+      pinned in a test; open one real sermon at 402pt before release.
+      Note the code is at `_SermonBody.build`, ~`sermon_detail_page.dart:960-1022`
+      — the `:749` above is stale.
 
 - [x] **The splash no longer loads a single version — the pre-load now
       waits for it to go.** The line the user objected to is gone,
@@ -10234,7 +10624,7 @@ has never seen this repo.
 > do not; those two are unexplained and do not need explaining if the
 > proxy-fallback item above is ever taken.
 
-- [ ] **Per-source cover fallback for the 393 songs with no artwork.**
+- [x] **Per-source cover fallback for the 393 songs with no artwork.**
       User, 2026-08-11: "没有封面的你可以用他们来源的封面做为歌曲的吗？
       我相信网站都有相应的网站特有的封面图". They are right — every one of
       these WordPress sites publishes a 180×180 `apple-touch-icon`,
@@ -10267,7 +10657,30 @@ has never seen this repo.
       album art it does not have would be its own small lie.
 
 
-- [ ] **`RemoteImage` for the other image sites — LOW priority, and the
+      **2026-09-03 — DONE, and the recipe above was wrong about the source
+      that mattered most.** Re-measured first: **359** songs with no artwork,
+      not 393 (cdc 298, cahaya 47, fydt 14, cgdc 0 — cgdc's had already
+      shipped). Three sources do publish a 180x180 apple-touch-icon.
+      **`christiandiscipleschurch.org` is Drupal, not WordPress**: one
+      `rel="shortcut icon"`, a .ico holding 48x48 and 32x32 frames, nothing
+      else — and it was the source with **298 of the 359**. The four marks are
+      bundled under `assets/song_sources/` (52 KB), mapped in
+      `lib/constants/song_source_icons.dart`, and wired as `RemoteImage`'s
+      `fallback:` so precedence is real artwork -> source mark -> plain button.
+      (Read alongside the CDC cover sweep below, which cut the fallback's job
+      from 359 songs to 168.)
+      **The mark is a tint, never a cover** — a favicon blown up to fill a slot
+      looks worse than an empty one. Wash alphas 0.68 idle / 0.88 playing,
+      picked by rendering all four marks in both themes and both states and
+      LOOKING at them: at 0.68 over `primary` the cahaya and fydt marks turned
+      the playing control a muddy olive and it stopped reading as playing.
+      CDC's `logo.jpg` (950x170 wordmark) and `music-small.jpg` (a photo of
+      musicians, which would read as album art) were both rejected.
+      `test/song_source_icon_test.dart` fails if the catalogue gains a source
+      with no mark.
+
+
+- [x] **`RemoteImage` for the other image sites — LOW priority, and the
       earlier note here overstated it.** Corrected 2026-08-11 after
       actually reading them: the other 14 `Image.network` calls already
       carry `errorBuilder`, a `cacheWidth`/`cacheHeight` decode cap, and
@@ -10287,7 +10700,27 @@ has never seen this repo.
       silently blanking the image on web. `RemoteImage` now takes the
       parameter for exactly that reason.
 
-- [ ] **CGDC publishes album art we never look for.** 393 of 606 songs
+
+      **2026-09-03 — AUDITED, and this correction was right in substance,
+      wrong in two details.** There are **9** call sites, not 14; **6** carry
+      all three guards. The three that did not: both `videos_page` thumbnails
+      (errorBuilder only) and `profile_avatar` (no `webHtmlElementStrategy`).
+      Neither gap was the feared one. A decode cap on YouTube's 480x360
+      `hqdefault.jpg` saves nothing, and `webHtmlElementStrategy` exists for
+      hosts that withhold CORS — `i.ytimg.com` and `lh3.googleusercontent.com`
+      both answer `access-control-allow-origin: *` (curl'd, not assumed), so
+      its absence is CORRECT there and adding `prefer` by analogy would have
+      been the mistake, not the fix.
+      **What does apply, and was never weighed here: `i.ytimg.com` is blocked
+      behind the GFW** — the population this app bundles an offline snapshot
+      for. For them each thumbnail was a timeout-less socket with no failure
+      memory: the errno=60 mechanism at 7-10 images instead of 199. Only those
+      two converted, for the memo alone. `profile_avatar` left alone (one image
+      per screen, caps present, CORS-clean host).
+      `test/image_network_audit_test.dart` parses `lib/` and fails on any
+      `Image.network` with no `errorBuilder`.
+
+- [x] **CGDC publishes album art we never look for.** 393 of 606 songs
       have no `artworkUrl` — CDC, CGDC and Cahaya publish none, and the
       sync only ever reads it from fydt's WordPress API
       (`sync_songs.py:547`). But a CGDC song page carries a per-album
@@ -10302,6 +10735,27 @@ has never seen this repo.
 **All four done in v1.4.39** (2026-08-11, at the user's request to
 finish the Songs module in one night). Left ticked rather than deleted
 so the bundle-size answer stays on the record.
+
+
+      **2026-09-03 — DONE. CGDC needed nothing; CDC did.** CGDC album art
+      had already shipped: all 63 songs carry their songbook logo. The
+      per-track `poster` this item hoped for does not exist — `data-albumArt=""`
+      on every one of the 63 tracks across all four songbook pages, and the WP
+      REST `sr_playlist` records expose no track meta (`featured_media: 0`).
+      **The hedge in this item — "re-check CDC, 'CDC has no images' is
+      unverified" — is what saved it, and the claim was false.** Every CDC song
+      page carries a per-song 600x300 cover at `music/jpg/<CODE>.jpg`. All 298
+      pages read and every image HEAD-checked: 123/123 d-coded resolve,
+      68/160 e-coded resolve, **92/160 e-coded link a file the church never
+      uploaded**, 15/15 hymns have none. **191 real covers; songs with no
+      artwork 359 -> 168.** Those 92 are exactly why this had to be verified
+      rather than derived — identical markup, missing file.
+      `tools/add_cdc_artwork.py` wrote them (idempotent, refuses a partial
+      survey, requires 200 AND `image/*`).
+      **STILL OPEN: `scripts/sync_songs.py` here is the reference copy. The run
+      that publishes lives in yswords-data and needs the same change** — until
+      it lands, a snapshot pull blanks all 191. `test/cdc_artwork_test.dart`
+      fails loudly if that happens.
 
 - [x] **In-app score (PDF) and video.** `SongScorePage` (pdfrx) and
       `SongVideoPage` (video_player). The real count was **579** songs
