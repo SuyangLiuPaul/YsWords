@@ -76,7 +76,8 @@ GLYPH_PAIRS = [
     ('蹟', '跡', 'FROZEN — a real collapse, and we are not fixing it'),
     ('鍊', '鏈', 'FROZEN — same collapse, same answer'),
     ('癒', '愈', 'FROZEN — two spin-offs, closed unswept'),
-    ('幹', '干', 'sermons/zh-TW carries 17 wrong 幹 — STILL OURS, still open'),
+    ('幹', '干', 'sermons/zh-TW: DONE 2026-09-03 — 18, not 17 '
+     '(tools/repair_tw_sermon_dry_glyph.py)'),
 ]
 
 
