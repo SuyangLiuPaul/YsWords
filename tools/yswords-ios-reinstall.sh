@@ -34,6 +34,48 @@
 #
 # Manual re-run if a scheduled fire misses (e.g. WiFi was down):
 #   ~/Documents/yswords/tools/yswords-ios-reinstall.sh
+#
+# ─── 0xe8008012 on ONE device while another succeeds ──────────────
+#
+# 2026-09-04: the iPhone failed three passes with
+#
+#   Failed to install embedded profile for com.example.yswords :
+#   0xe8008012 (This provisioning profile cannot be installed on this
+#   device.)  LegacyErrorString = ApplicationVerificationFailed
+#
+# while the iPad installed the same .app minutes earlier. **This is
+# not the 7-day cert expiring** — that was the first guess and it was
+# wrong. The profile had been regenerated that morning and was good
+# for another week; the device was simply absent from its
+# ProvisionedDevices list, i.e. never registered with the team.
+#
+# Why the retry passes above can never fix that, and why a device can
+# stay unregistered indefinitely: `flutter build ios --release` builds
+# for a GENERIC iOS device. Flutter does pass
+# `-allowProvisioningDeviceRegistration` when it codesigns
+# (flutter_tools/lib/src/ios/mac.dart), but that flag registers the
+# build DESTINATION — and a generic build has none. The install
+# afterwards is devicectl, which never talks to the developer portal.
+# So a device not already on the team is never added, by any number of
+# runs of this script.
+#
+# To register one, build once aimed AT it. This does not launch
+# anything on the device:
+#
+#   UDID=$(xcrun devicectl device info details --device <identifier> \
+#            | awk '/udid:/{print $NF}')
+#   xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner \
+#     -configuration Release -destination "id=$UDID" \
+#     -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
+#     build
+#
+# Then re-run this script. Confirm with:
+#
+#   security cms -D -i "$IOS_APP/embedded.mobileprovision" | grep -c "$UDID"
+#
+# Note that `devicectl list devices` prints a CoreDevice IDENTIFIER,
+# which is NOT the UDID a profile lists — mistaking one for the other
+# is how the first diagnosis went wrong.
 
 # NOTE: NO `set -e` here — we want install failures on one device
 # to not abort the others.
