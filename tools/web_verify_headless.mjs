@@ -1339,6 +1339,45 @@ async function runChronology(origin) {
   const shots = [];
   const notes = {};
 
+  // 2026-09-04. Zoom stopped being a multiplier and became a density —
+  // pixels per year — so "four clicks of Zoom in" no longer names a
+  // level, and the chart no longer OPENS at whole span. Every step below
+  // that wants a stated view therefore goes to the floor first and
+  // climbs from there.
+  //
+  // The readout is anchored: `^≈ …` (and the zh forms), because the
+  // event lane merges into one semantics node carrying every event
+  // title, and an unanchored match finds that lane instead of the
+  // control — the same trap the previous pass documented for the chips.
+  const YEARS_RE = /(?:≈|约|約)\s*([\d,]+)\s*(?:years in view|年在视图内|年在視圖內)/;
+
+  async function zoomOutFully(cdp) {
+    for (let i = 0; i < 12; i++) {
+      const hit = await clickText(cdp, /^(Zoom out|缩小|縮小)$/,
+        { timeoutMs: 1500 });
+      if (!hit) break;
+      await sleep(220);
+      // The floor is where the readout STOPS saying "years in view" and
+      // says "Whole span" instead. Testing for "Whole span" directly
+      // would be wrong: the overview strip's own caption says it too, in
+      // every view. A disabled Zoom out is a harmless no-op click.
+      if (!YEARS_RE.test(await pageText(cdp))) break;
+    }
+  }
+
+  async function zoomIn(cdp, n) {
+    for (let i = 0; i < n; i++) {
+      await clickText(cdp, /^(Zoom in|放大)$/, { timeoutMs: 2500 });
+      await sleep(320);
+    }
+  }
+
+  /// Years in view, straight off the control the reader reads.
+  async function yearsInView(cdp) {
+    const m = YEARS_RE.exec(await pageText(cdp));
+    return m ? Number(m[1].replace(/,/g, '')) : null;
+  }
+
   async function capture(label, { width, height, dark, steps }) {
     const b = await Browser.launch(label);
     const cdp = await b.openTab();
@@ -1362,18 +1401,22 @@ async function runChronology(origin) {
     }
   }
 
-  // (a) The default view: zoom 1, whole span on one screen. The left
-  //     end (Genesis 5/11 lifelines) and the right end (the placed
-  //     events out to Revelation) are both in this one frame, which is
-  //     the comparison asked for.
+  // (a) The whole-span view — still the floor of the ladder, still the
+  //     frame that holds the left end (Genesis 5/11 lifelines) and the
+  //     right end (the placed events out to Revelation) at once, which
+  //     is the comparison the previous pass was asked for. It is no
+  //     longer where the chart OPENS, so this one zooms out to it.
   notes.overview = await capture('chrono-overview', {
     width: 900, height: 1500,
     steps: async ({ cdp }) => {
+      await zoomOutFully(cdp);
+      await sleep(900);
       const text = await pageText(cdp);
       shots.push(await screenshot(cdp, 'chronology-01-whole-span'));
       return {
         reachesRevelation: /公元 95 年|AD 95/.test(text),
         namesBoundary: /岁数到此为止|ages end here/.test(text),
+        atFloor: (await yearsInView(cdp)) === null,
         text: text.slice(0, 1200),
       };
     },
@@ -1386,10 +1429,8 @@ async function runChronology(origin) {
   notes.rightEnd = await capture('chrono-right', {
     width: 900, height: 1500,
     steps: async ({ cdp }) => {
-      for (let i = 0; i < 4; i++) {
-        await clickText(cdp, /^(Zoom in|放大)$/);
-        await sleep(400);
-      }
+      await zoomOutFully(cdp);
+      await zoomIn(cdp, 4);
       // Zooming folds the rows that are no longer in view, which makes
       // the chart shorter and moves the chips UP. `clickText` aims at a
       // semantics node's centre, so let the tree settle at the new
@@ -1416,10 +1457,8 @@ async function runChronology(origin) {
   notes.straddle = await capture('chrono-straddle', {
     width: 900, height: 1500,
     steps: async ({ cdp }) => {
-      for (let i = 0; i < 4; i++) {
-        await clickText(cdp, /^(Zoom in|放大)$/);
-        await sleep(400);
-      }
+      await zoomOutFully(cdp);
+      await zoomIn(cdp, 4);
       // Zooming folds the rows that are no longer in view, which makes
       // the chart shorter and moves the chips UP. `clickText` aims at a
       // semantics node's centre, so let the tree settle at the new
@@ -1455,10 +1494,8 @@ async function runChronology(origin) {
   notes.leftEnd = await capture('chrono-left', {
     width: 900, height: 1500,
     steps: async ({ cdp }) => {
-      for (let i = 0; i < 4; i++) {
-        await clickText(cdp, /^(Zoom in|放大)$/);
-        await sleep(400);
-      }
+      await zoomOutFully(cdp);
+      await zoomIn(cdp, 4);
       // Zooming folds the rows that are no longer in view, which makes
       // the chart shorter and moves the chips UP. `clickText` aims at a
       // semantics node's centre, so let the tree settle at the new
@@ -1494,10 +1531,8 @@ async function runChronology(origin) {
   notes.narrowRight = await capture('chrono-narrow-right', {
     width: 402, height: 1500,
     steps: async ({ cdp }) => {
-      for (let i = 0; i < 4; i++) {
-        await clickText(cdp, /^(Zoom in|放大)$/);
-        await sleep(400);
-      }
+      await zoomOutFully(cdp);
+      await zoomIn(cdp, 4);
       // Zooming folds the rows that are no longer in view, which makes
       // the chart shorter and moves the chips UP. `clickText` aims at a
       // semantics node's centre, so let the tree settle at the new
@@ -1511,8 +1546,47 @@ async function runChronology(origin) {
     },
   });
 
+  // (g) THE DEVICE SWEEP. 2026-09-04:「不同devices都要考虑清楚」.
+  //
+  //     Five form factors, each photographed twice: as the chart OPENS,
+  //     and at the deepest level the ladder offers. The number that
+  //     matters is on the control itself — how many years are in the
+  //     viewport — because that is the quantity the old multiplier hid.
+  //     A phone and a desktop at the same rung must report windows in
+  //     proportion to their widths, and the deepest rung must be the
+  //     same density on all five.
+  notes.devices = {};
+  for (const dev of [
+    { id: 'phone-portrait', width: 390, height: 844 },
+    { id: 'phone-landscape', width: 844, height: 390 },
+    { id: 'tablet-portrait', width: 834, height: 1194 },
+    { id: 'tablet-landscape', width: 1194, height: 834 },
+    { id: 'desktop', width: 1280, height: 900 },
+  ]) {
+    notes.devices[dev.id] = await capture(`chrono-${dev.id}`, {
+      width: dev.width, height: dev.height,
+      steps: async ({ cdp }) => {
+        const opensAt = await yearsInView(cdp);
+        shots.push(await screenshot(cdp, `chronology-10-${dev.id}-default`));
+        await zoomIn(cdp, 12);
+        await sleep(1400);
+        const deepest = await yearsInView(cdp);
+        shots.push(await screenshot(cdp, `chronology-11-${dev.id}-deepest`));
+        // Plot width in points, from the two numbers the reader can see:
+        // the axis is 4,098 years and `deepest` of them fill the plot
+        // viewport, so the whole plot is 4098/deepest viewports wide.
+        return { opensAt, deepest };
+      },
+    });
+  }
+
   for (const f of shots) console.log(`  captured ${f}`);
   console.log(`  reaches Revelation on screen: ${notes.overview.reachesRevelation}`);
+  console.log('  per device — years in view at open, and at the deepest level:');
+  for (const [id, v] of Object.entries(notes.devices)) {
+    console.log(`    ${id.padEnd(17)} opens ${String(v.opensAt).padStart(5)} yr` +
+      `   deepest ${String(v.deepest).padStart(4)} yr`);
+  }
   console.log(`  names the computed/placed boundary: ${notes.overview.namesBoundary}`);
   console.log(`  jump-to-Patmos worked: ${notes.rightEnd.clickedPatmos}, ` +
     `cursor lands on AD 95: ${notes.rightEnd.cursorAtRevelation}`);

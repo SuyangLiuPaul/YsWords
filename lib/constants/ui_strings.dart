@@ -7042,6 +7042,16 @@ const uiStrings = {
     'zh-Hans': '缩小',
     'zh-Hant': '縮小',
   },
+  // The zoom READOUT. Not a multiplier — "8×" meant a different amount
+  // of chart on every device, which is the defect this replaced — and
+  // not a named bucket like "a century", because at a fixed pixels-per-
+  // year a phone and a tablet do not hold the same century. How many
+  // years are on screen is the one thing that is true on both.
+  'chronologyYearsInView': {
+    'en': '≈ {n} years in view',
+    'zh-Hans': '约 {n} 年在视图内',
+    'zh-Hant': '約 {n} 年在視圖內',
+  },
   'chronologyJumpTo': {
     'en': 'Jump to',
     'zh-Hans': '跳至',
