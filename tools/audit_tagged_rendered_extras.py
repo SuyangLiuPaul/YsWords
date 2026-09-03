@@ -30,19 +30,16 @@ prints. Seven of those dismissed artifacts were on screen.
 WHAT COMES OUT, over 31,102 verses:
 
     270  hidden by the guard, sheet falls back to the reader's verse
- 30,719  tagged line matches ideograph for ideograph
-    113  PASS the guard and read long   <- this file
+ 30,730  tagged line matches ideograph for ideograph
+    102  PASS the guard and read long   <- this file
 
-and the 113 split:
+and the 102 split:
 
      89  note formatting only — identical once notes are stripped from both
          sides. This edition writes a translator note as `<note: …>` in the
          reading asset and inlines it as `〔…〕` in the tagged corpus, and the
          two imports word them differently.
-     24  still read long, of which
-          7  DUPLICATION — a character of scripture printed twice. REPAIRED,
-             see `repair_tagged_rendered_duplication.py`; listed here so a
-             re-import that brings them back fails the run.
+     13  still read long, of which
           6  divine-name or cross-reference NOTE WORDING
           6  the 〔有古卷在此有…〕 textual-variant convention, where the
              reading asset opens the bracket at the end of the PREVIOUS verse
@@ -53,17 +50,18 @@ and the 113 split:
              not open a bracket, and the print sets 17:21 as plain text with a
              footnote, so the tagged corpus's 「有古卷在此有21節：」 is an
              editorial claim neither this edition nor the print makes there.
-             Left alone: the claim is TRUE (17:21 is absent from the critical
-             text, and this edition marks other verses that way), so deleting
-             it is an editorial call and not a repair. Queued.
-          4  words the tagged import SUPPLIES that the print does not have.
-             Not deletable unattended — see the queue.
+             Still queued for the publisher — see the note on EXPLAINED below.
 
-Only the 7 were repaired. The other 17 print something a reader could read as
-scripture but none of them prints anything FALSE, and three of the four
-supplied words render something real in the Hebrew (我請求 = H4994 נָא,
-葡萄園 = H3754 כֶּרֶם, 現在 = H6258 עַתָּה; 撒下 21:2's 大 has no number of
-its own and is the weakest of the four).
+and two classes that USED to be here and are not any more, both kept in tables
+so a re-import that brings one back is reported as a REGRESSION:
+
+      7  DUPLICATION — a character of scripture printed twice. Repaired
+         2026-08-24, `repair_tagged_rendered_duplication.py`.
+      4  words the tagged import SUPPLIED that this edition does not print.
+         Repaired 2026-09-03, `repair_tagged_supplied_words.py`, after four
+         witness lines were read for each and the Hebrew was found to be
+         carried independently by `assets/originals/` — so deleting the word
+         from the sheet costs the app no Strong's number. See that file.
 """
 import json
 import re
@@ -120,9 +118,26 @@ EXPLAINED = {
     # NOT one of the six below, though it reads like one. 太 17:20 ends
     # 「…沒有一件不能做的事了。」 and opens no bracket, and the printed 1919
     # sets 17:21 as plain text with a footnote. The tagged corpus supplies the
-    # whole 「有古卷在此有21節：」 apparatus by itself. Kept rather than deleted
-    # because the claim it makes is true and this edition marks other variant
-    # verses the same way — an editorial call, not a repair.
+    # whole 「有古卷在此有21節：」 apparatus by itself.
+    #
+    # 2026-09-03, a THIRD line of evidence, structural and from inside the
+    # frozen asset itself: the reading asset's 太 17:20 ends 「…不能做的事了。」
+    # with its quotation still OPEN, and closes it at the end of 17:21
+    # (「…不能趕它出來>。”」). This edition can only be reading 17:21 as
+    # scripture inside the speech opened at 17:20 — an apparatus bracket would
+    # not close a quotation. Blob `7a2dc43` does exactly the same thing, AND
+    # sets （有古卷加：…） across 18:10/18:11 where the convention does apply.
+    # So it is two independent lines against the tagged import, not the
+    # symmetric standoff this entry used to describe.
+    #
+    # STILL not deleted, and the reason is now the only one left: what would be
+    # deleted is an instance of the publisher's OWN apparatus notation, which
+    # is the exact class docs/cuv-yhwh-publisher-notes.md was written about
+    # after this repo removed the publisher's notation three times. Undoing it
+    # also needs a SECOND edit — the tagged 17:20's `”`, which the frozen asset
+    # does not carry — or 17:21's closer would be left orphaned. Both edits are
+    # ready and neither touches a Strong's number (the tagged 17:21 is one
+    # untagged run); they need the publisher's word, not a script's.
     "040017021": "tagged supplies a 有古卷在此有21節 apparatus 太 17:20 does not open",
     "040018011": "有古卷在此有 bracket; opener is on 太 18:10",
     "040023014": "有古卷在此有 bracket; opener is on 太 23:13",
@@ -132,19 +147,22 @@ EXPLAINED = {
     "044024007": "有古卷在此有 bracket; opener and 要按我们的律法审问 are on 徒 24:6",
 }
 
-# Words the tagged import supplies that this edition does not print, verified
-# against the printed 1919 rather than against the two external witnesses.
+# The four supplied words, repaired 2026-09-03. Kept here rather than deleted
+# so a re-import that reintroduces one is reported as a REGRESSION, not as a
+# new unexamined hit.
 #
-# NOT deletable by this loop. Deleting is the safe direction only when the
-# added text is impossible — a doubled character is. These four are readings:
-# 士 15:5's 葡萄园 renders כֶּרֶם, which the Hebrew of that verse really has
-# (וְעַד־כֶּרֶם זָיִת), so removing it from the sheet is a defensible tidy-up
-# and removing it from the app's account of the Hebrew is not. Queued.
-SUPPLIED = {
-    "007015002": "tagged supplies 我请求; print reads 你可以娶來代替他罷",
-    "007015005": "tagged supplies 葡萄园; print reads 並橄欖園盡都燒了",
-    "007015018": "tagged supplies 现在; print reads 豈可任我渴死",
-    "010021002": "tagged reads 大发热心; print reads 卻爲以色列人和猶大人發熱心",
+# They were held for four months on the argument that three of them render
+# something the Hebrew really has (我請求 = H4994 נָא, 葡萄園 = H3754 כֶּרֶם,
+# 現在 = H6258 עַתָּה) and that deleting them would cost the app its account of
+# the Hebrew. It does not: the word-chip row under the verse is built from
+# `assets/originals/`, where all four words already sit with their own chip and
+# lexicon entry. `repair_tagged_supplied_words.py` carries the four witness
+# lines and the rest of the reasoning.
+REPAIRED_SUPPLIED = {
+    "007015002": "tagged supplied 我请求; print reads 你可以娶來代替他罷",
+    "007015005": "tagged supplied 葡萄园; print reads 並橄欖園盡都燒了",
+    "007015018": "tagged supplied 现在; print reads 豈可任我渴死",
+    "010021002": "tagged read 大发热心; print reads 卻爲以色列人和猶大人發熱心",
 }
 
 
@@ -212,13 +230,14 @@ def main():
     print(f"  note formatting only: {len(note_only)}")
     print(f"  reads long on scripture: {len(real)}")
 
-    known = REPAIRED_DUPLICATION.keys() | EXPLAINED.keys() | SUPPLIED.keys()
-    regressed = [h for h in real if h[0] in REPAIRED_DUPLICATION]
+    repaired = {**REPAIRED_DUPLICATION, **REPAIRED_SUPPLIED}
+    known = repaired.keys() | EXPLAINED.keys()
+    regressed = [h for h in real if h[0] in repaired]
     fresh = [h for h in real if h[0] not in known]
 
     for vid, row, line in regressed:
         print(f"\nREGRESSION {vid}  {row['book']} {row['chapter']}:{row['verse']}"
-              f"  — {REPAIRED_DUPLICATION[vid]} is back")
+              f"  — {repaired[vid]} is back")
     for vid, row, line in fresh:
         extra = "".join(
             ideographs(line)[j1:j2]
@@ -234,12 +253,10 @@ def main():
 
     # A triage note whose verse stopped reading long is drift too: a stale
     # entry can go on to swallow a real hit at the same id.
-    gone = sorted(
-        (EXPLAINED.keys() | SUPPLIED.keys()) - {vid for vid, _, _ in real}
-    )
+    gone = sorted(EXPLAINED.keys() - {vid for vid, _, _ in real})
     for vid in gone:
         print(f"\n{vid} no longer reads long — update the tables: "
-              f"{EXPLAINED.get(vid) or SUPPLIED[vid]}")
+              f"{EXPLAINED[vid]}")
 
     return 1 if regressed or fresh or gone else 0
 

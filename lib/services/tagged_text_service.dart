@@ -199,16 +199,30 @@ class TaggedTextService {
   /// looked like it was quoting the verse in full.
   ///
   /// So the tagged line is only rendered when it loses nothing.
-  /// Measured over the whole corpus that costs the word-tap gesture on
-  /// **238 of 31,102 verses (0.77%)** and never costs a word of text;
-  /// the sheet falls back to the reader's own verse, exactly as it
-  /// already does for an untagged version.
+  /// Measured on the input production actually passes — `originals_sheet`
+  /// hands this the reader's verse through `sanitizeForSearch` — that
+  /// costs the word-tap gesture on **223 of 31,102 verses (0.72%)** and
+  /// never costs a word of text; the sheet falls back to the reader's own
+  /// verse, exactly as it already does for an untagged version. Pinned by
+  /// `test/tagged_rendered_duplication_test.dart`.
+  ///
+  /// This docstring said 238 until 2026-09-03, and 238 is neither figure.
+  /// The RAW census — this verse against the reading text with its
+  /// `<note: …>` still in it — is **270**, reported by
+  /// `tools/audit_tagged_rendered_extras.py`. Say which input a number
+  /// came from when quoting one: the two differ by a factor the note
+  /// asymmetry alone accounts for, and this repo has already reasoned
+  /// from the stale third number twice.
   ///
   /// Compared on ideographs alone, deliberately. Punctuation, quotation
   /// marks and the 〔…〕 the tagged import prints around a note differ
   /// freely between two imports and are not scripture; and the check is
   /// one-directional — text the tagged import has and the reader's
-  /// verse does not is not a reason to hide the gesture.
+  /// verse does not is not a reason to hide the gesture. Note that the
+  /// 〔…〕 clause describes the RAW comparison and not the one this
+  /// method performs in production: `sanitizeForSearch` has already
+  /// removed the reader's `<note: …>` by the time the text arrives, so
+  /// the asymmetry it tolerates is the tagged side's alone.
   static bool coversVerse(List<TaggedRun> runs, String verseText) {
     final verse = _ideographs(verseText);
     if (verse.isEmpty) return true;

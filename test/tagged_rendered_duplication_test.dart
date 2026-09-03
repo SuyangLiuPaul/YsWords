@@ -23,19 +23,25 @@ import 'package:yswords/services/tagged_text_service.dart';
 /// the sheet prints. `audit_tagged_rendered_extras.py` asks instead which
 /// verses PASS the guard while reading long: 113 of 31,102, of which 89 are
 /// note formatting, 17 are apparatus or supplied readings, and these 7 are
-/// characters no edition has.
+/// characters no edition has. The four supplied readings were repaired on
+/// 2026-09-03 (`tagged_supplied_word_deletions_test.dart`), which is why the figures
+/// pinned below are 102 and 13 rather than 113 and 17.
 ///
-/// That 113 is measured RAW against RAW. Production is not: `originals_sheet`
-/// passes `sanitizeForSearch(vo.verse.text)`, so the reader's `<note: …>` is
-/// gone while the tagged line still inlines it as `〔…〕`, and on that input
-/// the class is 1,160 — dominated by the asymmetry rather than by scripture.
-/// The 113 is a strict subset of the 1,160, so a defect found in it is a
-/// defect on screen; the test below pins the production number directly.
+/// That census is measured RAW against RAW. Production is not:
+/// `originals_sheet` passes `sanitizeForSearch(vo.verse.text)`, so the
+/// reader's `<note: …>` is gone while the tagged line still inlines it as
+/// `〔…〕`, and on that input the class is 1,149 — dominated by the asymmetry
+/// rather than by scripture. The raw census is a strict subset of it, so a
+/// defect found in it is a defect on screen; the test below pins the
+/// production number directly.
 ///
-/// Only duplications were repaired, because deleting is the safe direction
-/// only when the added text is impossible. The four verses where the tagged
-/// import supplies a whole WORD are left alone and queued: 士師記 15:5's
-/// 葡萄園 renders כֶּרֶם, which that verse's Hebrew really has.
+/// Only duplications were repaired in this pass, because deleting is the safe
+/// direction only when the added text is impossible. The four verses where the
+/// tagged import supplied a whole WORD were left alone and queued — 士師記
+/// 15:5's 葡萄園 renders כֶּרֶם, which that verse's Hebrew really has — and
+/// went on their own evidence four months later, once it was established that
+/// `assets/originals/` carries that Hebrew independently of this corpus. See
+/// `tagged_supplied_word_deletions_test.dart`.
 ///
 /// `tools/repair_tagged_rendered_duplication.py` applies it.
 void main() {
@@ -139,13 +145,15 @@ void main() {
         }
       }
     }
-    // 113 before the repair, 106 after: the seven duplications now match the
-    // reader's verse exactly and drop out of the count entirely.
-    expect(long, 106);
-    // The 17 that remain are apparatus, note wording and supplied readings —
-    // enumerated in `audit_tagged_rendered_extras.py`. None of the seven is
-    // here any more, and nothing new may appear without a decision.
-    expect(onScripture, hasLength(17));
+    // 113 before the duplication repair, 106 after, 102 once the four supplied
+    // words went too: a repaired verse matches the reader's verse exactly and
+    // drops out of the count entirely.
+    expect(long, 102);
+    // The 13 that remain are apparatus and note wording — enumerated in
+    // `audit_tagged_rendered_extras.py`. Neither the seven duplications nor
+    // the four supplied words is here any more, and nothing new may appear
+    // without a decision.
+    expect(onScripture, hasLength(13));
     expect(
         onScripture,
         isNot(anyElement(isIn(<String>[
@@ -183,7 +191,7 @@ void main() {
       }
     }
     expect(fallback, 223);
-    expect(production, 1153);
+    expect(production, 1149);
   });
 
   test('馬太福音 9:28 keeps the αὐτοῖς the deleted run would have thrown away',
