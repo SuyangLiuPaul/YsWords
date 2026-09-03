@@ -4387,14 +4387,24 @@ const uiStrings = {
   // audio / lyrics / PDFs are embedded". That is no longer accurate —
   // the app plays the media now. It still isn't *rehosted*, so the
   // licence line says exactly that instead.
+  // 2026-09-03: setapakcdc.com added. Its two songs are COVERS of
+  // songs neither it nor we own (許冠傑's 父母恩 and Hillsong's "Man of
+  // Sorrows"), so they sit outside the "used with permission" claim
+  // the rest of this line makes — the sentence names them as links to
+  // the congregation's own YouTube uploads instead, which is all the
+  // app actually does with them.
   'aboutLicenseSongs': {
     'zh-Hans': '© 福音电台 / 基督门徒福音会 / cgdc.hk · 经授权使用。'
-        '音频、视频与乐谱均从原站串流，本应用不作转存。',
+        '音频、视频与乐谱均从原站串流，本应用不作转存。'
+        'setapakcdc.com 的条目为原站 YouTube 链接，版权归各自权利人所有。',
     'zh-Hant': '© 福音電台 / 基督門徒福音會 / cgdc.hk · 經授權使用。'
-        '音訊、影片與樂譜均從原站串流，本應用不作轉存。',
+        '音訊、影片與樂譜均從原站串流，本應用不作轉存。'
+        'setapakcdc.com 的條目為原站 YouTube 連結，版權歸各自權利人所有。',
     'en': '© FYDT / Christian Disciples Church / CGDC Hong Kong · '
         'used with permission. Audio, video and scores stream from the '
-        'source sites; nothing is rehosted.',
+        'source sites; nothing is rehosted. The setapakcdc.com entries '
+        'are links to YouTube uploads by that congregation; those '
+        'songs remain the copyright of their respective owners.',
   },
   'aboutFontsBundled': {
     'zh-Hans': '内置字体：Roboto',
@@ -5569,18 +5579,25 @@ const uiStrings = {
   // 2026-08-09: rewritten after Cahaya was hidden (its songs live on
   // SoundCloud/YouTube and cannot play in-app) and cgdc.hk was added.
   // The listed sources must match what the user can actually see.
+  // 2026-09-03: setapakcdc.com (Kuala Lumpur) added — two songs. The
+  // rule this string has carried since Cahaya was re-enabled still
+  // holds: the listed sources must match what the user can actually
+  // see in the filter, so a source is named here or it is not shipped.
   'songsIntroBody': {
-    'zh-Hans': '来自福音电台 (fydt.org)、基督门徒福音会与香港 cgdc.hk '
-        '的诗歌，每天自动更新。点 ▶ 直接收听，或打开条目查看伴奏、MV、'
-        '乐谱与歌词。筛选后可整批播放、随机播放、存为歌单或下载离线收听。',
-    'zh-Hant': '來自福音電台 (fydt.org)、基督門徒福音會與香港 cgdc.hk '
-        '的詩歌，每天自動更新。點 ▶ 直接收聽，或開啟條目查看伴奏、MV、'
-        '樂譜與歌詞。篩選後可整批播放、隨機播放、存為歌單或下載離線收聽。',
-    'en': 'Songs from 福音电台 (fydt.org), Christian Disciples Church '
-        'and CGDC Hong Kong, refreshed daily. Tap ▶ to listen, or open '
-        'an entry for the instrumental, music video, sheet music and '
-        'lyrics. Filter, then play or shuffle the result, save it as a '
-        'playlist, or download it for offline listening.',
+    'zh-Hans': '来自福音电台 (fydt.org)、基督门徒福音会、香港 cgdc.hk '
+        '与吉隆坡 setapakcdc.com 的诗歌，每天自动更新。点 ▶ 直接收听，'
+        '或打开条目查看伴奏、MV、乐谱与歌词。'
+        '筛选后可整批播放、随机播放、存为歌单或下载离线收听。',
+    'zh-Hant': '來自福音電台 (fydt.org)、基督門徒福音會、香港 cgdc.hk '
+        '與吉隆坡 setapakcdc.com 的詩歌，每天自動更新。點 ▶ 直接收聽，'
+        '或開啟條目查看伴奏、MV、樂譜與歌詞。'
+        '篩選後可整批播放、隨機播放、存為歌單或下載離線收聽。',
+    'en': 'Songs from 福音电台 (fydt.org), Christian Disciples Church, '
+        'CGDC Hong Kong and setapakcdc.com in Kuala Lumpur, refreshed '
+        'daily. Tap ▶ to listen, or open an entry for the '
+        'instrumental, music video, sheet music and lyrics. Filter, '
+        'then play or shuffle the result, save it as a playlist, or '
+        'download it for offline listening.',
   },
   'songsSearchHint': {
     'zh-Hans': '搜索歌名、主题或编号…',
@@ -5718,6 +5735,21 @@ const uiStrings = {
     'zh-Hant': '由本教會牧者發布。音訊、影片與樂譜均從原站串流。',
     'en': 'Published by our church. Audio, video and sheet music '
         'stream from the source site.',
+  },
+  // 2026-09-03. The line above is a promise about three things this
+  // app can play, and 22 rows have none of them — 20 Cahaya videos
+  // and the 2 Setapak songs are a YouTube link and nothing else. On
+  // those the sentence described media that is not there, on a sheet
+  // whose only two buttons are "YouTube" and "Original page". This is
+  // the same paragraph, narrowed to what the row actually offers.
+  'songsAttributionLinkOnly': {
+    'zh-Hans': '本条目在原站只有影片链接：没有可播放的音频，也没有乐谱。'
+        '影片在 YouTube 上播放，本应用不作转存。',
+    'zh-Hant': '本條目在原站只有影片連結：沒有可播放的音訊，也沒有樂譜。'
+        '影片在 YouTube 上播放，本應用不作轉存。',
+    'en': 'This entry is a video link only — the source site publishes '
+        'no audio file and no sheet music for it. The video plays on '
+        'YouTube; nothing is rehosted here.',
   },
   // ── Downloads (2026-08-09) ────────────────────────────────────
   'songsDownloads': {

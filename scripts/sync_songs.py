@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild `assets/songs.json` from the three church song catalogues.
+"""Rebuild `assets/songs.json` from the church song catalogues.
 
 2026-08-09 (v2 — API rewrite). The original version of this script
 scraped fydt.org's WordPress *sitemap* and then re-parsed every song
@@ -35,6 +35,17 @@ Sources
           for its real media links. An earlier version DERIVED those
           from the catalogue code and got it badly wrong — see
           [fetch_cdc] for what that cost.
+
+  setapak https://www.setapakcdc.com          — Kuala Lumpur (2)
+          Added 2026-09-03. WordPress with the REST API open, so this
+          reads `wp/v2/posts` filtered to the `music`/`video`
+          categories. Two songs, both YouTube-only: no audio file, no
+          score, no code, no album. Note the site's mod_security
+          answers **406 to any `Python-urllib/*` User-Agent** — this
+          script's own `USER_AGENT` is fine, so nothing special is
+          needed, but a bare `urlopen()` added later will 406 and the
+          reason will not be obvious. See [fetch_setapak] for why the
+          lyrics on those two pages are deliberately not carried.
 
   fuyindiantai.org is deliberately NOT fetched. It is fydt.org's old
   domain (it 301'd to fydt.org through 2025) and its DNS delegation is
@@ -108,6 +119,11 @@ SOURCES = {
         'home': 'https://cgdc.hk',
         'language': 'zh',
     },
+    'setapak': {
+        'label': 'Setapak CDC',
+        'home': 'https://www.setapakcdc.com',
+        'language': 'en',
+    },
 }
 
 _FUYINDIANTAI_NOTE = (
@@ -135,6 +151,51 @@ CGDC_PAGES = (f'{CGDC_ROOT}/wp-json/wp/v2/pages'
 # point: a 2027mk page goes live and the next weekly sync picks it up
 # with no code change.
 CGDC_MK_SLUG_RE = re.compile(r'^(\d{4})mk$')
+
+# ── setapakcdc.com ────────────────────────────────────────────────
+# 2026-09-03. The Kuala Lumpur congregation, added as a fifth source
+# for the two songs it publishes. WordPress with the REST API open, so
+# this is an API read rather than a scrape.
+#
+# The two songs are POSTS, not a song custom-post-type: this site has
+# no songbook, no catalogue codes and no albums. `/wp-json/wp/v2/posts`
+# filtered to the song-ish categories is the whole index.
+#
+# Categories are resolved by SLUG, never by the numeric id the API
+# returns — WordPress term ids are per-install and would silently point
+# at some other category if the site were ever rebuilt.
+SETAPAK_ROOT = 'https://www.setapakcdc.com'
+
+# `music` and `video` are where a song lands; `media` is the generic
+# parent both also carry, so it adds nothing and is not asked for.
+SETAPAK_SONG_CATEGORIES = ('music', 'video')
+
+# `messages` is the sermon category. Nothing is in both today, but a
+# recorded sermon posted as a video is the one realistic way this
+# fetcher starts inventing songs, so it is excluded up front.
+SETAPAK_EXCLUDE_CATEGORIES = ('messages',)
+
+# The YouTube embed WordPress writes for an oEmbed block.
+SETAPAK_YT_RE = re.compile(
+    r'youtube(?:-nocookie)?\.com/embed/([A-Za-z0-9_-]{11})')
+
+# Credits sit in their own <p>, above the lyrics, in one of two shapes:
+#   作曲：許冠傑, 作词：許冠傑/黎彼得   /   翻唱：Setapak Christian …
+#   <em>Song by Hillsong Worship and Jadwin Gillies</em>
+#   <em>Cover by Tham Chen Tong</em>
+# Both are real conventions rather than one-off phrasing, so they are
+# matched by their LABEL. Anything unlabelled is left null — a wrong
+# credit on a cover is worse than no credit.
+SETAPAK_CREDIT_RES = {
+    'composer': re.compile(r'作曲\s*[:：]\s*([^,，。\n]+)'),
+    'lyricist': re.compile(r'作[词詞]\s*[:：]\s*([^,，。\n]+)'),
+    'artist': re.compile(
+        r'(?:翻唱|演唱|主唱)\s*[:：]\s*([^,，。\n]+)'
+        r'|(?:^|\n)\s*Cover by\s+([^\n]+)'),
+}
+# "Song by Hillsong Worship and Jadwin Gillies" — the written-by credit
+# on an English cover, which maps to `composer`.
+SETAPAK_SONG_BY_RE = re.compile(r'(?:^|\n)\s*Song by\s+([^\n]+)')
 
 # Those pages render through the Sonaar player, which emits one <li>
 # per track carrying everything we need as data-attributes.
@@ -1092,6 +1153,125 @@ def fetch_cgdc():
     return entries
 
 
+# ── setapakcdc.com ────────────────────────────────────────────────
+
+def _setapak_category_ids(slugs):
+    """WordPress term ids for [slugs], resolved through the API.
+
+    Returns {} when the lookup fails, which the caller treats as "do
+    not fetch" rather than "fetch everything" — an unfiltered
+    `wp/v2/posts` here would sweep in 83 Moments posts and 26 sermons.
+    """
+    out = {}
+    for slug in slugs:
+        terms = http_json(
+            f'{SETAPAK_ROOT}/wp-json/wp/v2/categories'
+            f'?slug={urllib.parse.quote(slug)}&_fields=id,slug') or []
+        for t in terms:
+            if t.get('slug') == slug and t.get('id'):
+                out[slug] = t['id']
+    return out
+
+
+def _setapak_credits(text):
+    """Composer / lyricist / performer from a post's credit lines.
+
+    Label-anchored on purpose (see SETAPAK_CREDIT_RES). An unlabelled
+    line yields nothing: with a catalogue this small a guess would be
+    indistinguishable from data, and both songs here are COVERS, where
+    a mis-assigned credit names the wrong person entirely.
+    """
+    out = {}
+    for field, rx in SETAPAK_CREDIT_RES.items():
+        m = rx.search(text)
+        if m:
+            value = next((g for g in m.groups() if g), None)
+            if value:
+                out[field] = value.strip()
+    if 'composer' not in out:
+        m = SETAPAK_SONG_BY_RE.search(text)
+        if m:
+            out['composer'] = m.group(1).strip()
+    return out
+
+
+def fetch_setapak():
+    """The Setapak (Kuala Lumpur) congregation's two songs.
+
+    Added 2026-09-03 at the user's direction, over a recommendation not
+    to: both are members' own YouTube uploads, one of them explicitly a
+    cover, with no audio file, no score, no catalogue code and no album.
+    That is a real shape the app already renders — 20 Cahaya rows are
+    the same YouTube-only shape — so the objection was to the *value*,
+    not to the mechanics, and the decision was the user's to make.
+
+    **Lyrics are deliberately not carried.** Both posts print the full
+    lyrics, and both are covers of songs this church does not own —
+    許冠傑's 父母恩 and Hillsong's "Man of Sorrows". Every other source
+    in this catalogue publishes its OWN songs, which is what the app's
+    "used with permission" line rests on; that permission does not
+    reach a third party's lyrics. `lyrics` is in `_REFRESH_FIELDS`, so
+    a fresh non-empty value would overwrite a stored null — not
+    scraping them is therefore the only way the omission survives a
+    sync, and this comment is why it must not be "fixed" later.
+
+    Artwork is likewise left null. YouTube publishes a thumbnail for
+    both, but hot-linking i.ytimg.com is the failure mode
+    `song_source_icons.dart` exists to avoid; the bundled Setapak mark
+    fills the slot instead, exactly as it does for the Cahaya rows.
+    """
+    cats = _setapak_category_ids(
+        SETAPAK_SONG_CATEGORIES + SETAPAK_EXCLUDE_CATEGORIES)
+    wanted = [cats[s] for s in SETAPAK_SONG_CATEGORIES if s in cats]
+    if not wanted:
+        print('  setapak: no song categories resolved — skipping',
+              file=sys.stderr)
+        return []
+    excluded = {cats[s] for s in SETAPAK_EXCLUDE_CATEGORIES if s in cats}
+
+    posts = http_json(
+        f'{SETAPAK_ROOT}/wp-json/wp/v2/posts'
+        f'?categories={",".join(str(c) for c in wanted)}'
+        '&per_page=100&_fields=id,slug,link,title,content,categories') or []
+
+    entries = []
+    seen = set()
+    for p in posts:
+        if p['id'] in seen:
+            continue
+        if excluded & set(p.get('categories') or []):
+            continue
+
+        content = (p.get('content') or {}).get('rendered') or ''
+        yt = SETAPAK_YT_RE.search(content)
+        if not yt:
+            # A song post with no video is nothing this app can offer:
+            # there is no audio file anywhere on this site.
+            continue
+
+        title = clean_title((p.get('title') or {}).get('rendered'))
+        if not title:
+            continue
+        seen.add(p['id'])
+
+        # Post id, not slug, as the stable half of the row id. The
+        # slug is editable — this site's own is `man-of-sorrrow`, a
+        # typo someone may well correct one day, and that would orphan
+        # every playlist and favourite pointing at the old id.
+        credits = _setapak_credits(strip_lyrics(content) or '')
+        entries.append(make_entry(
+            'setapak', str(p['id']), title, p.get('link'),
+            language=detect_language(title, default='en'),
+            youtubeId=yt.group(1),
+            themes=infer_themes(title),
+            verse=infer_verse(title),
+            **credits,
+        ))
+
+    print(f'  setapak: {len(entries)} songs')
+    return entries
+
+
 # ── Merge ─────────────────────────────────────────────────────────
 
 # Fields refreshed from upstream, keeping the stored value when the
@@ -1144,8 +1324,24 @@ def merge(existing, new):
             changed = True
 
     for k in _MEDIA_FIELDS:
-        v = new.get(k) or None
-        if merged.get(k) != v:
+        # `audioTracks` is a LIST field, so its empty value is `[]`, not
+        # None. Coercing both sides through the same empty is what makes
+        # this comparison honest.
+        #
+        # 2026-09-03: without it, `new.get('audioTracks') or None` gave
+        # None while the stored row held `[]`, `[] != None` counted as a
+        # change, and `updatedAt` moved. Measured against the stored
+        # catalogue, a NO-OP re-sync restamped 48 of 621 rows that way —
+        # all 47 cahaya plus one fydt, i.e. exactly the rows with no
+        # audio file. `normalise` turned the None back into `[]` on the
+        # way out, so the data was never wrong and nothing looked
+        # broken; the damage was to `updatedAt`, which is the sort key
+        # for "Recently updated" and which this function's whole
+        # docstring is about not moving. The two `setapak` rows have
+        # empty audioTracks too and would have joined that set.
+        empty = [] if k in LIST_FIELDS else None
+        v = new.get(k) or empty
+        if (merged.get(k) or empty) != v:
             merged[k] = v
             changed = True
 
@@ -1334,7 +1530,8 @@ def main():
     fresh = (fetch_fydt(taxonomy, wp_index)
              + fetch_cahaya()
              + fetch_cdc(verify=not args.no_prune)
-             + fetch_cgdc())
+             + fetch_cgdc()
+             + fetch_setapak())
 
     if not fresh:
         print('ERROR: every source returned nothing — refusing to write an '
@@ -1367,7 +1564,12 @@ def main():
         collapsed = []
         for source, was in before.items():
             now = after.get(source, 0)
-            if was >= 10 and now < was * 0.5:
+            # The 50% rule needs a source big enough for a proportion to
+            # mean anything. `setapak` has two songs, so it would sit
+            # under that threshold forever and could be dropped in
+            # silence by one 406 — hence the second clause: a source
+            # going to ZERO is a failed fetch at any size.
+            if (was >= 10 and now < was * 0.5) or (was > 0 and now == 0):
                 collapsed.append(f'{source}: {was} → {now}')
         if collapsed:
             print('ERROR: a source collapsed — almost certainly a failed '

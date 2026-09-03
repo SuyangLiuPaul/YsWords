@@ -91,13 +91,29 @@ void main() {
   });
 
   test('no CDC song gained or lost anything else', () {
-    // The patcher edits one field on 191 of 621 entries in an 800 KB
-    // file. Cheap structural check that it did not reshape the rest.
-    expect(songs, hasLength(621));
+    // The patcher edits one field on 191 of the CDC entries in an
+    // 800 KB file. Cheap structural check that it did not reshape the
+    // rest.
+    //
+    // 2026-09-03: the total was pinned at 621 and is now 623 — the
+    // `setapak` source added two rows. A whole-catalogue TOTAL is the
+    // wrong guard for a CDC patcher: it fails on any new song
+    // anywhere, which is a fact about the catalogue growing and not
+    // about this patcher reshaping anything. What the count was
+    // standing in for is that the rows it did not target still have
+    // their fields, so that is now asserted directly — over the whole
+    // file, which is strictly stronger than the number was.
     expect(cdc(), hasLength(298));
-    for (final s in cdc()) {
+    for (final s in songs) {
+      expect(s['id'], isNotNull);
+      expect(s['title'], isNotNull);
       expect(s['url'], isNotNull);
+      expect(s['source'], isNotNull);
       expect(s['sourceLabel'], isNotNull);
+      // The patcher writes `artworkUrl`; every row must still carry
+      // the key, present-and-null included.
+      expect(s.containsKey('artworkUrl'), isTrue,
+          reason: '${s['id']} lost the artworkUrl key entirely');
     }
   });
 }

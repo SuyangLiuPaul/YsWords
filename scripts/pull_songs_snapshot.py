@@ -47,7 +47,27 @@ DEFAULT_URL = 'https://yswords-data.netlify.app/data/songs.json'
 # A published catalogue that fails these is a bad publish, not new
 # news — writing it into the bundle would ship a broken directory to
 # every user who is offline or on first launch.
-REQUIRED_SOURCES = {'fydt', 'cdc', 'cgdc', 'cahaya'}
+# Source → the fewest rows a good publish can have for it. The floor
+# used to be a flat `< 10` applied to a set of names; `setapak` has two
+# songs and always will unless that congregation posts more, so a
+# single global floor cannot express it — 2 is the healthy count there,
+# not a collapsed one.
+#
+# 2026-09-03: `setapak` is listed here even though yswords-data does
+# not publish it yet, and that is deliberate. Until the fetcher is
+# added there (see the note in the queue), this script will REFUSE to
+# overwrite the bundle — which is the point. A pull from a dataset that
+# has never heard of the source would otherwise silently delete both
+# rows, and two rows out of 623 is exactly the size of loss nobody
+# notices. `check_regression` catches the same thing, but that can be
+# waived with --allow-regression; this cannot.
+REQUIRED_SOURCES = {
+    'fydt': 10,
+    'cdc': 10,
+    'cgdc': 10,
+    'cahaya': 10,
+    'setapak': 2,
+}
 MIN_SONGS = 400
 
 # A source's audio ratio is allowed to wobble by this many percentage
@@ -211,12 +231,14 @@ def main():
     if meta.get('count') != len(songs):
         problems.append(
             f"_meta.count {meta.get('count')} != {len(songs)} rows")
-    missing = REQUIRED_SOURCES - set(by_source)
+    missing = set(REQUIRED_SOURCES) - set(by_source)
     if missing:
         problems.append(f'missing sources: {sorted(missing)}')
-    for source in REQUIRED_SOURCES & set(by_source):
-        if by_source[source] < 10:
-            problems.append(f'{source} has only {by_source[source]} songs')
+    for source, floor in REQUIRED_SOURCES.items():
+        if source in by_source and by_source[source] < floor:
+            problems.append(
+                f'{source} has only {by_source[source]} songs '
+                f'(expected ≥{floor})')
 
     baseline_songs = load_baseline()
     if baseline_songs is None:

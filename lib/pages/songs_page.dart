@@ -2161,9 +2161,7 @@ class _SongDetailSheet extends StatelessWidget {
 
                       const SizedBox(height: 14),
                       Text(
-                        uiStrings['songsAttribution']?[locale] ??
-                            'Published by our church. Audio, video and '
-                                'sheet music stream from the source site.',
+                        _attribution(song, locale),
                         style: TextStyle(
                           fontSize: 11,
                           height: 1.45,
@@ -2180,6 +2178,31 @@ class _SongDetailSheet extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The attribution paragraph at the foot of the detail sheet.
+///
+/// The general line promises three things — audio, video and sheet
+/// music, streaming from the source site. 22 rows have none of them:
+/// the 20 Cahaya video entries and the 2 Setapak songs are a YouTube
+/// link and nothing else, on a sheet whose only two chips are
+/// "YouTube" and "Original page". On those the sentence described
+/// media that is not there, which is worse than a sparse sheet, so
+/// they get the narrower line instead.
+///
+/// Keyed on what the row HAS rather than on its source: this is a
+/// property of the shape, and a future source with the same shape
+/// should inherit the fix without being named here.
+String _attribution(Song song, String locale) {
+  final key = (song.hasPlayableAudio || song.scoreUrl != null)
+      ? 'songsAttribution'
+      : 'songsAttributionLinkOnly';
+  return uiStrings[key]?[locale] ??
+      (key == 'songsAttribution'
+          ? 'Published by our church. Audio, video and sheet music '
+              'stream from the source site.'
+          : 'This entry is a video link only — the source site '
+              'publishes no audio file and no sheet music for it.');
 }
 
 /// The audio takes to offer for [song].

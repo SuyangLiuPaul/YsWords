@@ -13,7 +13,7 @@
 /// answer wherever it is available — a real cover beats a site logo,
 /// and this is the floor under the rest, not a substitute.
 ///
-/// **Bundled, not hot-linked.** Four more remote images behind every
+/// **Bundled, not hot-linked.** One more remote image behind every
 /// list row is the shape of the failure that produced the `errno = 60`
 /// crash report: a down host, no timeout, one socket per row. An asset
 /// cannot hang, cannot 404 and cannot be slow, so the fallback for a
@@ -34,6 +34,17 @@
 ///   cdc     48×48 frame of the shortcut icon, re-encoded as PNG
 ///           christiandiscipleschurch.org/sites/default/files/
 ///             pictures/flav.ico
+///   setapak apple-touch-icon 180×180 (added 2026-09-03 with the
+///           source itself)
+///           www.setapakcdc.com/wp-content/uploads/2024/10/
+///             cropped-White-font-180x180.png
+///
+/// The Setapak file is a wordmark, which the note below rejects for
+/// CDC — the difference is that this one is ALREADY SQUARE and is the
+/// site's own declared apple-touch-icon, not a 950×170 banner cropped
+/// into a square by us. It is fully opaque (black ground, white
+/// lettering, a red cross), so it does not depend on what is painted
+/// behind it, which the "White-font" filename might otherwise suggest.
 ///
 /// **CDC is the correction to the earlier note in the queue**, which
 /// said "every one of these WordPress sites publishes a 180×180
@@ -75,6 +86,7 @@ const Map<String, String> songSourceIcons = {
   'cahaya': 'assets/song_sources/cahaya.jpg',
   'cdc': 'assets/song_sources/cdc.png',
   'cgdc': 'assets/song_sources/cgdc.jpg',
+  'setapak': 'assets/song_sources/setapak.png',
 };
 
 /// The bundled mark for [source], or null when there is none.
