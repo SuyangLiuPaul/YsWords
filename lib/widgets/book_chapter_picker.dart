@@ -9,7 +9,7 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:yswords/constants/book_groups.dart'
-    show oldTestamentBooks, newTestamentBooks;
+    show oldTestamentBooks, newTestamentBooks, kBibleDivisions;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -309,13 +309,19 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                     builder: (context, barConstraints) {
                       final isNarrow = barConstraints.maxWidth < 300;
 
+                      // 2026-09-03: three views, not two. 'sections' is
+                      // the new default table of contents; 'list' and
+                      // 'grid' are exactly the views that shipped
+                      // before, kept reachable so a redesign of the
+                      // default never removes anyone's habit.
+                      const modes = <String>['sections', 'list', 'grid'];
+                      final mode = settings.booksViewMode;
                       final viewToggle = ToggleButtons(
                         isSelected: [
-                          settings.booksViewMode != 'grid',
-                          settings.booksViewMode == 'grid',
+                          for (final m in modes) mode == m,
                         ],
                         onPressed: (index) {
-                          final target = index == 1 ? 'grid' : 'list';
+                          final target = modes[index];
                           settings.setBooksViewMode(target);
                           setState(() {
                             _gridSelectedBook = null;
@@ -330,8 +336,15 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
                         },
                         borderRadius: BorderRadius.circular(14),
                         constraints: BoxConstraints(
-                            minWidth: 42 * settings.menuScale, minHeight: 36 * settings.menuScale),
+                            minWidth: 40 * settings.menuScale, minHeight: 36 * settings.menuScale),
                         children: [
+                          Tooltip(
+                            message: uiStrings['sectionsView']
+                                    ?[settings.locale] ??
+                                'Contents',
+                            child: Icon(Icons.toc_rounded,
+                                size: settings.fontSize * 1.05),
+                          ),
                           Tooltip(
                             message: uiStrings['listView']
                                     ?[settings.locale] ??
@@ -454,11 +467,14 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
               ),
             ),
             Expanded(
-              child: settings.booksViewMode == 'grid'
-                  ? _buildGridView(
-                      context, mainProvider, settings, filteredBooks)
-                  : _buildListView(
-                      context, mainProvider, settings, filteredBooks),
+              child: switch (settings.booksViewMode) {
+                'grid' => _buildGridView(
+                    context, mainProvider, settings, filteredBooks),
+                'list' => _buildListView(
+                    context, mainProvider, settings, filteredBooks),
+                _ => _buildSectionsView(
+                    context, mainProvider, settings, filteredBooks),
+              },
             ),
           ],
         );
@@ -777,6 +793,271 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
     );
   }
 
+  /// **The table of contents** — the default book view since 2026-09-03.
+  ///
+  /// User, 2026-08-16: 「我怎么看左边那个blocks其实看起来很奇怪设计能够更好
+  /// 些吗，好好思考」. The old default drew the testament as 39 (or 27)
+  /// identical rounded squares carrying a one-character abbreviation.
+  /// That is a keypad: every cell the same size, in an order you are
+  /// assumed to already know, with the name compressed to the point
+  /// where 约珥书/约拿书/约翰福音 are 珥/拿/约. The grid↔list toggle did not
+  /// help because both views answered the same question — "which of
+  /// these 39 squares" — and neither answered the one a reader actually
+  /// asks, which is "where in the Bible am I looking".
+  ///
+  /// So this view shows the three things a reader scans for and the old
+  /// one hid:
+  ///   1. **Which division** — books are grouped under 律法书 / 历史书 /
+  ///      诗歌智慧书 / 大先知书 / 小先知书 (and the NT five), each header
+  ///      carrying its book count. Testament stays where it was, on the
+  ///      existing toggle above.
+  ///   2. **The book's name** — in full. No abbreviation table, so no
+  ///      guessing which 约 this one is.
+  ///   3. **How long it is** — the chapter count, and a bar drawn to
+  ///      scale against the longest book in the visible testament.
+  ///
+  /// Tapping a row drills into the SAME chapter grid the grid view uses
+  /// (`_buildBookDrillDown`), so nothing about navigation changes.
+  Widget _buildSectionsView(BuildContext context, MainProvider mainProvider,
+      AppSettings settings, List<Book> filteredBooks) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = settings.locale;
+
+    if (_gridSelectedBook != null) {
+      final book =
+          filteredBooks.firstWhereOrNull((b) => b.title == _gridSelectedBook);
+      if (book != null) {
+        return _buildBookDrillDown(context, mainProvider, settings, book);
+      }
+    }
+
+    // AutoScrollTag indices are the book's index in `filteredBooks`,
+    // NOT its row position — the division headers sit between rows and
+    // carry no tag. That keeps the initial-scroll handshake in
+    // `initState` / `didUpdateWidget` correct without either of them
+    // having to know this view groups anything.
+    final tagIndexOf = <String, int>{
+      for (var i = 0; i < filteredBooks.length; i++) filteredBooks[i].title: i,
+    };
+
+    // The bar is drawn LINEARLY against the longest book on screen, so
+    // 诗篇 really is three times 创世纪. Do not "fix" the resulting
+    // small bars with a sqrt or log scale — the whole point of the bar
+    // is that the reader can trust its length.
+    var maxChapters = 1;
+    for (final b in filteredBooks) {
+      if (b.chapters.length > maxChapters) maxChapters = b.chapters.length;
+    }
+
+    // Group in canonical division order. Anything the division table
+    // does not recognise — a version with unusual titles, an
+    // apocryphal book, a future canon — lands in the catch-all at the
+    // end rather than vanishing. A picker that loses a book is worse
+    // than an ugly one.
+    final unplaced = <Book>[...filteredBooks];
+    final rows = <Widget>[];
+
+    void addBooks(String headerId, List<Book> members) {
+      if (members.isEmpty) return;
+      rows.add(_divisionHeader(
+        context: context,
+        settings: settings,
+        label: uiStrings[headerId]?[locale] ?? headerId,
+        count: members.length,
+        scheme: scheme,
+      ));
+      for (final b in members) {
+        rows.add(_bookRow(
+          context: context,
+          settings: settings,
+          mainProvider: mainProvider,
+          book: b,
+          isCurrent: widget.currentBook == b.title,
+          maxChapters: maxChapters,
+          tagIndex: tagIndexOf[b.title] ?? 0,
+          scheme: scheme,
+        ));
+      }
+    }
+
+    for (final division in kBibleDivisions) {
+      if (division.oldTestament != showOldTestament) continue;
+      final members = <Book>[];
+      for (final english in division.books) {
+        final match = unplaced.firstWhereOrNull(
+            (b) => (toEnglish(b.title) ?? b.title) == english);
+        if (match != null) {
+          members.add(match);
+          unplaced.remove(match);
+        }
+      }
+      addBooks(division.id, members);
+    }
+    addBooks('divOther', unplaced);
+
+    return ListView.builder(
+      controller: _autoScrollController,
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 16),
+      itemCount: rows.length,
+      itemBuilder: (context, index) => rows[index],
+    );
+  }
+
+  Widget _divisionHeader({
+    required BuildContext context,
+    required AppSettings settings,
+    required String label,
+    required int count,
+    required ColorScheme scheme,
+  }) {
+    final unit = uiStrings['booksUnit']?[settings.locale] ?? 'books';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: (settings.fontSize * 0.82).clamp(11.0, 16.0),
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.4,
+                color: scheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: scheme.outlineVariant.withValues(alpha: 0.45),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '$count $unit',
+            style: TextStyle(
+              fontSize: (settings.fontSize * 0.72).clamp(10.0, 14.0),
+              fontFamily: settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              color: scheme.onSurfaceVariant,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bookRow({
+    required BuildContext context,
+    required AppSettings settings,
+    required MainProvider mainProvider,
+    required Book book,
+    required bool isCurrent,
+    required int maxChapters,
+    required int tagIndex,
+    required ColorScheme scheme,
+  }) {
+    final chapters = book.chapters.length;
+    // Clamped at the bottom so a one-chapter book (俄巴底亚书, 犹大书,
+    // 腓利门书) still draws a visible mark instead of nothing at all.
+    final fraction = (chapters / maxChapters).clamp(0.03, 1.0).toDouble();
+    final barTrack = scheme.outlineVariant.withValues(alpha: 0.35);
+    final barFill = isCurrent
+        ? scheme.primary
+        : scheme.primary.withValues(alpha: 0.45);
+
+    return AutoScrollTag(
+      key: ValueKey('section-book-$tagIndex'),
+      controller: _autoScrollController,
+      index: tagIndex,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        child: Material(
+          color: isCurrent
+              ? scheme.primaryContainer.withValues(alpha: 0.85)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => setState(() => _gridSelectedBook = book.title),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 9, 12, 9),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          book.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: false,
+                          style: TextStyle(
+                            fontSize: settings.fontSize,
+                            fontFamily: settings.fontFamily,
+                            fontFamilyFallback: kCjkFontFallback,
+                            fontWeight:
+                                isCurrent ? FontWeight.w700 : FontWeight.w500,
+                            color: isCurrent
+                                ? scheme.onPrimaryContainer
+                                : scheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: SizedBox(
+                            height: 3,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                ColoredBox(color: barTrack),
+                                FractionallySizedBox(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: fraction,
+                                  child: ColoredBox(color: barFill),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '$chapters',
+                    style: TextStyle(
+                      fontSize: (settings.fontSize * 0.8).clamp(11.0, 15.0),
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontWeight: FontWeight.w600,
+                      color: isCurrent
+                          ? scheme.onPrimaryContainer
+                          : scheme.onSurfaceVariant,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildGridView(BuildContext context, MainProvider mainProvider,
       AppSettings settings, List<Book> filteredBooks) {
     final scheme = Theme.of(context).colorScheme;
@@ -785,85 +1066,7 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
       final book =
           filteredBooks.firstWhereOrNull((b) => b.title == _gridSelectedBook);
       if (book != null) {
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-              child: BooksGlassSurface(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(18),
-                  onTap: () => setState(() => _gridSelectedBook = null),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 12),
-                    child: Row(
-                      children: [
-                        Icon(Icons.arrow_back_rounded,
-                            size: settings.fontSize * 1.1,
-                            color: scheme.onSurface),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            book.title,
-                            style: TextStyle(
-                              fontSize: settings.fontSize * 1.1,
-                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                              fontWeight: FontWeight.w600,
-                              color: scheme.onSurface,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: scheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${book.chapters.length} '
-                            '${uiStrings['chapters']?[settings.locale] ?? 'ch'}',
-                            style: TextStyle(
-                              fontSize: settings.fontSize * 0.75,
-                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                              color: scheme.onPrimaryContainer,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: LayoutBuilder(builder: (context, constraints) {
-                final tileTarget = 56.0 * settings.menuScale;
-                final cols =
-                    (constraints.maxWidth / tileTarget).floor().clamp(4, 10);
-                return GridView.builder(
-                  padding: const EdgeInsets.all(12),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: cols,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 1.0,
-                  ),
-                  itemCount: book.chapters.length,
-                  itemBuilder: (context, index) {
-                    final chapter = book.chapters[index];
-                    final selected =
-                        chapter.title == widget.currentChapter &&
-                            widget.currentBook == book.title;
-                    return _gridChapterTile(context, mainProvider, settings,
-                        book, chapter, selected, scheme);
-                  },
-                );
-              }),
-            ),
-          ],
-        );
+        return _buildBookDrillDown(context, mainProvider, settings, book);
       }
     }
 
@@ -886,6 +1089,98 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
         },
       );
     });
+  }
+
+  /// The chapter grid for ONE book, with a back row naming it.
+  ///
+  /// 2026-09-03: lifted out of `_buildGridView` unchanged so the new
+  /// sections view drills in through exactly the same widget — and
+  /// therefore reaches `_selectChapter` → the verse step → the host's
+  /// `onChapterSelected` by exactly the same path. A redesign of how
+  /// books are LISTED must not become a second, subtly different way
+  /// of navigating.
+  Widget _buildBookDrillDown(BuildContext context, MainProvider mainProvider,
+      AppSettings settings, Book book) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+          child: BooksGlassSurface(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () => setState(() => _gridSelectedBook = null),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_back_rounded,
+                        size: settings.fontSize * 1.1,
+                        color: scheme.onSurface),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        book.title,
+                        style: TextStyle(
+                          fontSize: settings.fontSize * 1.1,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: scheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${book.chapters.length} '
+                        '${uiStrings['chapters']?[settings.locale] ?? 'ch'}',
+                        style: TextStyle(
+                          fontSize: settings.fontSize * 0.75,
+                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                          color: scheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: LayoutBuilder(builder: (context, constraints) {
+            final tileTarget = 56.0 * settings.menuScale;
+            final cols =
+                (constraints.maxWidth / tileTarget).floor().clamp(4, 10);
+            return GridView.builder(
+              padding: const EdgeInsets.all(12),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: cols,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 1.0,
+              ),
+              itemCount: book.chapters.length,
+              itemBuilder: (context, index) {
+                final chapter = book.chapters[index];
+                final selected =
+                    chapter.title == widget.currentChapter &&
+                        widget.currentBook == book.title;
+                return _gridChapterTile(context, mainProvider, settings,
+                    book, chapter, selected, scheme);
+              },
+            );
+          }),
+        ),
+      ],
+    );
   }
 
   Widget _bookTile(BuildContext context, AppSettings settings, Book book,

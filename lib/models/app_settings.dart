@@ -41,6 +41,21 @@ const _kCardMaterial = 'cardMaterial';
 // SharedPreferences for users that have it -- it's harmless dead
 // data and not worth a migration step.
 const _kBooksViewMode = 'booksViewMode';
+
+/// The three book-picker views, and the one unknown values fall back to.
+///
+/// 2026-09-03: 'sections' — a table of contents grouped by the canonical
+/// divisions — was added and made the DEFAULT, because the default was
+/// what the user was complaining about: 39 identical rounded squares of
+/// one character each ("我怎么看左边那个blocks其实看起来很奇怪", 2026-08-16).
+/// 'grid' and 'list' are untouched and still one tap away; a stored
+/// choice is always honoured, so only users who never opened the toggle
+/// move.
+const kBooksViewModes = <String>{'sections', 'list', 'grid'};
+
+String normalizeBooksViewMode(String? raw) =>
+    kBooksViewModes.contains(raw) ? raw! : 'sections';
+
 const _kBoldVerseText = 'boldVerseText';
 const _kShowStrongsInOriginals = 'showStrongsInOriginals';
 const _kAutoExpandFirstRef = 'autoExpandFirstRef';
@@ -137,8 +152,10 @@ class AppSettings extends ChangeNotifier {
   double _menuScale = 1.0;
   // 2026-05-08 (v1.1.1): card / tile material; classic by default.
   CardMaterial _cardMaterial = CardMaterial.classic;
-  /// 'list' or 'grid' — persisted choice for the books picker.
-  String _booksViewMode = 'grid';
+  /// 'sections', 'list' or 'grid' — persisted choice for the books
+  /// picker. 2026-09-03: 'sections' added and made the default (see
+  /// `normalizeBooksViewMode`).
+  String _booksViewMode = 'sections';
   /// Render verse text with FontWeight.w700 instead of normal weight.
   bool _boldVerseText = false;
   /// Show the Strong's # badge inside each word chip in the originals
@@ -541,7 +558,7 @@ class AppSettings extends ChangeNotifier {
   }
 
   Future<void> setBooksViewMode(String mode) async {
-    final normalized = (mode == 'grid') ? 'grid' : 'list';
+    final normalized = normalizeBooksViewMode(mode);
     if (_booksViewMode == normalized) return;
     _booksViewMode = normalized;
     notifyListeners();
@@ -757,7 +774,7 @@ class AppSettings extends ChangeNotifier {
     _readingPaperTheme = false;
     _menuScale = 1.0;
     _cardMaterial = CardMaterial.classic;
-    _booksViewMode = 'grid';
+    _booksViewMode = 'sections';
     _boldVerseText = false;
     _showStrongsInOriginals = true;
     _autoExpandFirstRef = false;
@@ -928,8 +945,11 @@ class AppSettings extends ChangeNotifier {
       (m) => m.name == rawCardMaterial,
       orElse: () => CardMaterial.classic,
     );
-    final rawBooksView = prefs.getString(_kBooksViewMode) ?? 'grid';
-    _booksViewMode = rawBooksView == 'grid' ? 'grid' : 'list';
+    // 2026-09-03: a STORED 'grid'/'list' is honoured exactly as before —
+    // only the absent case moved, from 'grid' to the new 'sections'
+    // table of contents. Nobody who ever touched the toggle sees their
+    // choice change under them.
+    _booksViewMode = normalizeBooksViewMode(prefs.getString(_kBooksViewMode));
     _boldVerseText = prefs.getBool(_kBoldVerseText) ?? false;
     _showStrongsInOriginals =
         prefs.getBool(_kShowStrongsInOriginals) ?? true;
@@ -1193,8 +1213,7 @@ class AppSettings extends ChangeNotifier {
         );
       }
       if (m['booksViewMode'] is String) {
-        final raw = m['booksViewMode'] as String;
-        _booksViewMode = raw == 'grid' ? 'grid' : 'list';
+        _booksViewMode = normalizeBooksViewMode(m['booksViewMode'] as String);
       }
       if (m['boldVerseText'] is bool) _boldVerseText = m['boldVerseText'] as bool;
       if (m['showStrongsInOriginals'] is bool) {

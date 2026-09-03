@@ -4982,6 +4982,76 @@ const uiStrings = {
     'zh-Hant': '網格',
     'en': 'Grid',
   },
+  // The book picker's third view — a table of contents grouped by the
+  // canonical divisions. See `kBibleDivisions` in book_groups.dart.
+  'sectionsView': {
+    'zh-Hans': '目录',
+    'zh-Hant': '目錄',
+    'en': 'Contents',
+  },
+  /// Unit for a book count in a division header: "律法书 · 5 卷".
+  'booksUnit': {
+    'zh-Hans': '卷',
+    'zh-Hant': '卷',
+    'en': 'books',
+  },
+  'divLaw': {
+    'zh-Hans': '律法书',
+    'zh-Hant': '律法書',
+    'en': 'Law',
+  },
+  'divHistory': {
+    'zh-Hans': '历史书',
+    'zh-Hant': '歷史書',
+    'en': 'History',
+  },
+  'divWisdom': {
+    'zh-Hans': '诗歌智慧书',
+    'zh-Hant': '詩歌智慧書',
+    'en': 'Poetry & Wisdom',
+  },
+  'divMajorProphets': {
+    'zh-Hans': '大先知书',
+    'zh-Hant': '大先知書',
+    'en': 'Major Prophets',
+  },
+  'divMinorProphets': {
+    'zh-Hans': '小先知书',
+    'zh-Hant': '小先知書',
+    'en': 'Minor Prophets',
+  },
+  'divGospels': {
+    'zh-Hans': '福音书',
+    'zh-Hant': '福音書',
+    'en': 'Gospels',
+  },
+  'divActs': {
+    'zh-Hans': '教会历史',
+    'zh-Hant': '教會歷史',
+    'en': 'Church History',
+  },
+  'divPauline': {
+    'zh-Hans': '保罗书信',
+    'zh-Hant': '保羅書信',
+    'en': 'Pauline Letters',
+  },
+  'divGeneralEpistles': {
+    'zh-Hans': '普通书信',
+    'zh-Hant': '普通書信',
+    'en': 'General Letters',
+  },
+  'divRevelation': {
+    'zh-Hans': '预言书',
+    'zh-Hant': '預言書',
+    'en': 'Prophecy',
+  },
+  // Catch-all header. A version whose book titles the division table
+  // does not recognise still gets its books listed — under this.
+  'divOther': {
+    'zh-Hans': '其他',
+    'zh-Hant': '其他',
+    'en': 'Other',
+  },
 
   // ====== Settings Page ======
   'themeMode': {

@@ -23,6 +23,12 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/navigate_to_chapter_verse.dart';
 import 'package:yswords/widgets/book_chapter_picker.dart';
 
+// 2026-09-03: these taps used to be `find.text('徒')` — the one-character
+// abbreviation the old default grid drew. The default book view is now
+// the sections table of contents, which spells the book out, so the tap
+// targets its full title instead. Nothing about what these tests assert
+// changed; only how a book is named on screen.
+
 List<Verse> _chapterVerses(String book, int chapter, int count) => [
       for (var v = 1; v <= count; v++)
         Verse(book: book, chapter: chapter, verse: v, text: '$book $chapter:$v'),
@@ -110,7 +116,7 @@ void main() {
     await _pump(tester, mp);
 
     // The reader is in 使徒行传 15; drill into that chapter's verse grid.
-    await tester.tap(find.text('徒'));
+    await tester.tap(find.text('使徒行传'));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('15').first);
     await tester.pump(const Duration(milliseconds: 300));
@@ -145,7 +151,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 300));
 
-    await tester.tap(find.text('徒'));
+    await tester.tap(find.text('使徒行传'));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.tap(find.text('15').first);
     await tester.pump(const Duration(milliseconds: 300));
@@ -171,7 +177,7 @@ void main() {
   // the queue: after ANY navigation, the grid offers the pane's chapter.
   group('the grid offers the pane chapter after any navigation', () {
     Future<void> drillIntoActs15(WidgetTester tester) async {
-      await tester.tap(find.text('徒'));
+      await tester.tap(find.text('使徒行传'));
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(find.text('15').first);
       await tester.pump(const Duration(milliseconds: 300));
