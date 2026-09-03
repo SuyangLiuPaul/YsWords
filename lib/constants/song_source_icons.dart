@@ -38,6 +38,26 @@
 ///           source itself)
 ///           www.setapakcdc.com/wp-content/uploads/2024/10/
 ///             cropped-White-font-180x180.png
+///   ydh     the site's only icon — favicon.ico, one 64×64 24-bit
+///           frame — re-encoded as PNG **onto white**
+///           yahwehdehua.net/favicon.ico
+///
+/// **The white ground on `ydh` is the one deliberate edit to any of
+/// these files, and it was made by rendering, not by taste.** That
+/// favicon is a black ichthys outline on a fully transparent ground.
+/// The mark is painted by `_sourceMark` as a bare `Image.asset` under
+/// a wash, with the row's own surface behind it — so on a dark surface
+/// a black-on-transparent line drawing is invisible, which is worse
+/// than the plain button it was meant to improve on. CDC's icon is
+/// also transparent and is left alone because it is *coloured*
+/// (red/blue/green rings) and survives both themes on its own; this
+/// one carries no colour at all. White is not an invention either: it
+/// is the ground the site itself composites this file onto, being a
+/// browser-tab favicon.
+///
+/// The site's masthead (`assets/img/yhwh-dehua.jpg`, 1920×481) was
+/// rejected for the same reason CDC's banner was — a wordmark cropped
+/// to a square is either unreadable or arbitrary.
 ///
 /// The Setapak file is a wordmark, which the note below rejects for
 /// CDC — the difference is that this one is ALREADY SQUARE and is the
@@ -87,6 +107,7 @@ const Map<String, String> songSourceIcons = {
   'cdc': 'assets/song_sources/cdc.png',
   'cgdc': 'assets/song_sources/cgdc.jpg',
   'setapak': 'assets/song_sources/setapak.png',
+  'ydh': 'assets/song_sources/ydh.png',
 };
 
 /// The bundled mark for [source], or null when there is none.

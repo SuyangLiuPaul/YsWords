@@ -61,12 +61,19 @@ DEFAULT_URL = 'https://yswords-data.netlify.app/data/songs.json'
 # rows, and two rows out of 623 is exactly the size of loss nobody
 # notices. `check_regression` catches the same thing, but that can be
 # waived with --allow-regression; this cannot.
+#
+# 2026-09-03, same day, same reason: `ydh` (yahwehdehua.net) with a
+# floor of 5. Five is the whole Songs tab of that ministry's Good
+# Friday / Easter page, so anything less is a broken parse rather than
+# a deletion — and, like setapak, this entry blocks the pull until
+# yswords-data grows the fetcher.
 REQUIRED_SOURCES = {
     'fydt': 10,
     'cdc': 10,
     'cgdc': 10,
     'cahaya': 10,
     'setapak': 2,
+    'ydh': 5,
 }
 MIN_SONGS = 400
 

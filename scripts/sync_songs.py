@@ -47,6 +47,18 @@ Sources
           reason will not be obvious. See [fetch_setapak] for why the
           lyrics on those two pages are deliberately not carried.
 
+  ydh     https://yahwehdehua.net                — 雅伟的话 (5)
+          Added 2026-09-03. Not a songbook site at all: it is the
+          ministry whose Bible text this app already ships, and it
+          publishes its own compositions inside the series pages under
+          `/assets/page/<series>/`. Hand-written Bootstrap, no CMS and
+          no API — so this is a parse, anchored on the page's own
+          "Songs / 诗歌" tab (`id="nav-hymn"`), which is the site
+          saying these five are songs rather than us deciding it.
+          Unlike setapak, the LYRICS ARE CARRIED: these are the
+          church's own works, printed by the church, on the church's
+          page. See [fetch_ydh].
+
   fuyindiantai.org is deliberately NOT fetched. It is fydt.org's old
   domain (it 301'd to fydt.org through 2025) and its DNS delegation is
   currently broken — both Google and Cloudflare return SERVFAIL because
@@ -124,6 +136,14 @@ SOURCES = {
         'home': 'https://www.setapakcdc.com',
         'language': 'en',
     },
+    'ydh': {
+        'label': '雅伟的话 Yahweh De Hua',
+        'home': 'https://yahwehdehua.net',
+        # The five songs are English compositions; one of them also
+        # publishes a Chinese translation. See [fetch_ydh] on why the
+        # default is 'en' even though the site itself is Chinese-first.
+        'language': 'en',
+    },
 }
 
 _FUYINDIANTAI_NOTE = (
@@ -196,6 +216,68 @@ SETAPAK_CREDIT_RES = {
 # "Song by Hillsong Worship and Jadwin Gillies" — the written-by credit
 # on an English cover, which maps to `composer`.
 SETAPAK_SONG_BY_RE = re.compile(r'(?:^|\n)\s*Song by\s+([^\n]+)')
+
+# ── yahwehdehua.net ───────────────────────────────────────────────
+# 2026-09-03. 雅伟的话 / Yahweh De Hua Ministry — already the source of
+# the CUVS-YHWH text this app bundles, and now of five songs.
+#
+# The songs live inside a SERIES page, not a songbook: hand-written
+# Bootstrap 5 with two tabs, "Videos / 视频" and "Songs / 诗歌". The
+# song tab is `<div class="tab-pane" id="nav-hymn">` and it holds one
+# `.video-card` per song. Anchoring on that tab is the whole reason
+# this parse is safe — the page's own structure says which embeds are
+# songs and which are the 22 teaching videos, so the fetcher never has
+# to guess, and [_ydh_song_cards] refuses rather than guessing if the
+# tab ever disappears.
+YDH_ROOT = 'https://yahwehdehua.net'
+
+# One entry per series page. A second series with a Songs tab is a
+# one-line change here, not new code.
+YDH_SONG_PAGES = (f'{YDH_ROOT}/assets/page/easter/',)
+
+# The song tab's pane. `id="nav-hymn"` (with the closing quote) matches
+# the pane and NOT the `id="nav-hymn-tab"` button above it, which is
+# the whole point of including the quote.
+YDH_TAB_MARKER = 'id="nav-hymn"'
+YDH_CARD_MARKER = '<div class="video-card">'
+YDH_SCRIPTURE_MARKER = 'class="scripture"'
+
+YDH_EMBED_RE = re.compile(
+    r'youtube(?:-nocookie)?\.com/embed/([A-Za-z0-9_-]{11})')
+YDH_TITLE_RE = re.compile(
+    r'<h5[^>]*class="card-title"[^>]*>(.*?)</h5>', re.IGNORECASE | re.DOTALL)
+YDH_P_RE = re.compile(r'<p[^>]*>(.*?)</p>', re.IGNORECASE | re.DOTALL)
+YDH_BR_SPLIT_RE = re.compile(r'<br\s*/?>', re.IGNORECASE)
+
+# The footer's own copyright line, in both languages:
+#   Standing on the Cross Series © 2026 Rosablanca Suen
+#   《在十字架下：人生十堂课》 系列 © 2026 Rosablanca Suen
+# Taken from the page rather than hard-coded so a different series page
+# credits whoever that page credits.
+YDH_COPYRIGHT_RE = re.compile(r'©\s*\d{4}\s+([^<\n]+)')
+
+# Scripture citation at the foot of a song card: "(Lk 9:22-23)",
+# "(Acts 5:30-31)".
+YDH_CITATION_RE = re.compile(
+    r'\(\s*([1-3]?\s?[A-Za-z]{2,}\.?)\s*(\d+)\s*:\s*(\d+(?:\s*[-–]\s*\d+)?)'
+    r'\s*\)')
+
+# Abbreviation → the English book name the app's book filter expects.
+#
+# Deliberately SMALL. It covers the books this ministry's pages
+# actually cite plus their full spellings; anything else yields no
+# `verse` at all and prints a warning, because a mis-resolved book is a
+# citation chip that opens the wrong passage — the exact P0 shape
+# `tools/add_cross_series_refs.py` was written to avoid. Growing this
+# map is a deliberate act with a page to check it against.
+YDH_BOOKS = {
+    'mt': 'Matthew', 'matt': 'Matthew', 'matthew': 'Matthew',
+    'mk': 'Mark', 'mark': 'Mark',
+    'lk': 'Luke', 'luke': 'Luke',
+    'jn': 'John', 'john': 'John',
+    'acts': 'Acts',
+    'ps': 'Psalms', 'psalm': 'Psalms', 'psalms': 'Psalms',
+}
 
 # Those pages render through the Sonaar player, which emits one <li>
 # per track carrying everything we need as data-attributes.
@@ -1272,6 +1354,193 @@ def fetch_setapak():
     return entries
 
 
+# ── yahwehdehua.net ───────────────────────────────────────────────
+
+def _ydh_song_cards(page_html):
+    """The `.video-card` blocks inside a page's "Songs / 诗歌" tab.
+
+    Returns [] — never a partial guess — when the tab is not found.
+    The alternative would be to sweep the whole page, and on the Easter
+    page that means 22 teaching videos filed as songs.
+
+    The intersection guard is the second half of the same idea: every
+    YouTube id in the slice must be absent from everything before it.
+    A redesign that merges the two tabs, or drops the pane while
+    keeping the id somewhere else, then produces zero songs and a
+    warning instead of 27.
+    """
+    marker = page_html.find(YDH_TAB_MARKER)
+    if marker < 0:
+        print(f'  warn: no {YDH_TAB_MARKER} pane — not parsing songs',
+              file=sys.stderr)
+        return []
+    end = page_html.find('</main>', marker)
+    tab = page_html[marker:end if end > 0 else len(page_html)]
+
+    before = set(YDH_EMBED_RE.findall(page_html[:marker]))
+    inside = set(YDH_EMBED_RE.findall(tab))
+    if before & inside:
+        print('  warn: the songs tab repeats videos from above it '
+              f'({sorted(before & inside)}) — refusing to parse',
+              file=sys.stderr)
+        return []
+
+    return [c for c in tab.split(YDH_CARD_MARKER)[1:]
+            if YDH_EMBED_RE.search(c)]
+
+
+def _ydh_lyrics(fragment):
+    """Lyrics from a card's `<p>` blocks: one line per printed line.
+
+    NOT the shared [strip_lyrics]. That one is built for fydt, where
+    the source newline IS the line break; here every printed line ends
+    in `<br/>` and the file's own newlines are only indentation, so
+    feeding it this markup doubles every break and makes a stanza gap
+    indistinguishable from an ordinary line ending. The source's
+    wrapping is therefore unwound FIRST, and `<br/>` alone decides
+    where a line ends — which also means a stanza's blank line
+    survives as a blank line, and `[Chorus]` keeps its own row.
+    """
+    out = []
+    for p in YDH_P_RE.findall(fragment):
+        t = re.sub(r'\s*\r?\n\s*', ' ', p)
+        t = re.sub(r'(?i)<br\s*/?>', '\n', t)
+        t = re.sub(r'<[^>]+>', '', t)
+        t = html.unescape(t)
+        # The NBSP is written as an escape rather than as the
+        # character: the page indents with `&nbsp;`, `html.unescape`
+        # turns those into U+00A0, and `.strip()` does not remove
+        # one — while a literal NBSP sitting invisibly in this file
+        # would be worse than the bug it fixes.
+        lines = [re.sub('[ \t\u00a0]+', ' ', ln).strip()
+                 for ln in t.split('\n')]
+        block = re.sub(r'\n{3,}', '\n\n', '\n'.join(lines)).strip()
+        if block:
+            out.append(block)
+    # The English block and, where the card prints one, the Chinese
+    # translation — joined by a blank line, in the order the page shows
+    # them. See [fetch_ydh] on why they share one field.
+    return '\n\n'.join(out) or None
+
+
+def _ydh_verse(scripture_html):
+    """'Luke 9:22-23' from a card's scripture block, or None.
+
+    Only the ENGLISH paragraph is read. The Chinese one repeats the
+    citation in Chinese book names (徒 5:30-31), and this page family
+    has already been caught printing a wrong verse in a Chinese block
+    while the English block had it right (see
+    `tools/add_cross_series_refs.py`, episode 9).
+    """
+    m = YDH_CITATION_RE.search(scripture_html)
+    if not m:
+        return None
+    key = re.sub(r'[\s.]', '', m.group(1)).lower()
+    book = YDH_BOOKS.get(key)
+    if not book:
+        print(f'  warn: ydh cites "{m.group(1)}", which YDH_BOOKS does not '
+              'know — leaving the verse empty rather than guessing',
+              file=sys.stderr)
+        return None
+    verses = re.sub(r'\s*[-–]\s*', '-', m.group(3))
+    return f'{book} {m.group(2)}:{verses}'
+
+
+def fetch_ydh():
+    """The five Good Friday / Easter songs on yahwehdehua.net.
+
+    Added 2026-09-03 at the user's direction — the queue asked whether
+    songs published beside a video series belong in the Songs section
+    and the answer was yes. The page itself agrees: it files them under
+    its own "Songs / 诗歌" tab, separately from the ten teachings.
+
+    **Lyrics ARE carried here, and that is not a reversal of
+    [fetch_setapak].** The rule both obey is the same one: carry the
+    words when the publisher owns them. Setapak's two posts are covers
+    of 許冠傑 and Hillsong, whom nobody in this catalogue can license.
+    These five are the church's own compositions — the page's footer
+    reads "Standing on the Cross Series © 2026 Rosablanca Suen. All
+    writing, scripts, images, songs, and media are the intellectual
+    property of the content creator" — published in full, by the
+    ministry whose Bible text this app already ships with permission.
+
+    **They are not all bilingual, whatever the queue entry says.** Only
+    song 1 prints a Chinese translation; songs 2-5 are English only.
+    That was read off the page, so nothing here fabricates a second
+    language: the lyrics field carries exactly the blocks the card
+    prints, in the order it prints them.
+
+    Empty on purpose: no audio file, no score, no catalogue code, no
+    album and no duration — this is a series page, not a songbook, and
+    the song IS the YouTube video. `artworkUrl` stays null for the same
+    reason [fetch_setapak] gives; the bundled ydh mark fills the slot.
+
+    The row id is `ydh:<youtube id>`. There is no post id to use — the
+    page is static HTML with no CMS behind it — and the video id is the
+    only identifier on it that cannot be edited. Position on the page
+    and the title both can.
+    """
+    entries = []
+    seen = set()
+    for page in YDH_SONG_PAGES:
+        page_html = http_get(page)
+        if not page_html:
+            continue
+
+        credit = YDH_COPYRIGHT_RE.search(page_html)
+        composer = credit.group(1).strip() if credit else None
+
+        for card in _ydh_song_cards(page_html):
+            yt = YDH_EMBED_RE.search(card)
+            if not yt or yt.group(1) in seen:
+                continue
+            video_id = yt.group(1)
+
+            body = card.split('<div class="card-body">', 1)
+            if len(body) < 2:
+                continue
+            body = body[1]
+
+            heading = YDH_TITLE_RE.search(body)
+            if not heading:
+                continue
+            # The card prints the English title first and, where it has
+            # one, the Chinese title on a second line. Both are kept —
+            # a reader searching in either language has to find the row
+            # — and the FIRST line is what decides `language`, so a
+            # translated title does not refile an English song as
+            # Chinese.
+            lines = [clean_title(x) for x in
+                     YDH_BR_SPLIT_RE.split(heading.group(1))]
+            lines = [x for x in lines if x]
+            if not lines:
+                continue
+            title = ' / '.join(lines)
+
+            # Lyrics are every <p> above the scripture box; the box's
+            # own paragraphs are a citation, not part of the song.
+            split_at = body.find(YDH_SCRIPTURE_MARKER)
+            lyric_html = body[:split_at] if split_at > 0 else body
+            lyric_html = YDH_TITLE_RE.sub('', lyric_html, count=1)
+            lyrics = _ydh_lyrics(lyric_html)
+
+            verse = _ydh_verse(body[split_at:]) if split_at > 0 else None
+
+            seen.add(video_id)
+            entries.append(make_entry(
+                'ydh', video_id, title, page,
+                language=detect_language(lines[0], default='en'),
+                youtubeId=video_id,
+                composer=composer,
+                lyrics=lyrics,
+                themes=infer_themes(title),
+                verse=verse,
+            ))
+
+    print(f'  ydh: {len(entries)} songs')
+    return entries
+
+
 # ── Merge ─────────────────────────────────────────────────────────
 
 # Fields refreshed from upstream, keeping the stored value when the
@@ -1531,7 +1800,8 @@ def main():
              + fetch_cahaya()
              + fetch_cdc(verify=not args.no_prune)
              + fetch_cgdc()
-             + fetch_setapak())
+             + fetch_setapak()
+             + fetch_ydh())
 
     if not fresh:
         print('ERROR: every source returned nothing — refusing to write an '
