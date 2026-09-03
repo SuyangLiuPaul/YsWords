@@ -70,12 +70,35 @@ SCOPE
   truth for the sense and this script refuses if it touches them. Every
   substitution is one character for one character, so no field changes length.
 
-STATUS: NEVER APPLIED. Committed unapplied, deliberately, like
-`tools/fix_traditional_conversion.py`. It was written on 2026-08-18 alongside
-the 崙 instalment and set aside so that one defect shipped at a time; the
-survey above is the value here. Read `docs/autonomous-queue.md` (the Strong's
-glosses item) before running it, and re-verify the counts first — the guards
-refuse if the data has moved, which is the point.
+STATUS: APPLIED 2026-09-03 — 89 substitutions across 84 fields.
+  It was written on 2026-08-18 alongside the 崙 instalment and committed
+  UNAPPLIED so that one defect shipped at a time. Before applying it, all 39
+  substitutions of that first survey were re-verified one at a time against
+  their Simplified twin — the twin is printed beside every reading, and all 39
+  agree. The queue item's second list ("found and NOT yet fixed") was verified
+  the same way and folded in as the 2026-09-03 block below, 50 more.
+  `test/strongs_traditional_ambiguous_test.dart` pins the result in both
+  directions, so a re-import cannot silently undo it.
+
+  Re-running is a no-op: with every rule at zero matches and every repaired
+  reading present, the script prints "already applied" and exits 0. A file that
+  is half-repaired is still refused, because that is a real problem.
+
+TWO OF THE QUEUE ITEM'S PROPOSALS WERE REFUTED HERE and are NOT applied:
+  * 複合 → 復合 as a blanket rule. 複合字 (a COMPOUND WORD) at H1767, H3050,
+    H8478, G4452 and G4863 is correct and stays; only G604's 和好, 複合
+    (reconciliation) moves, and its twin reads 和好, 复合 while theirs read
+    复合字. Five of the seven would have been corrupted.
+  * 回覆 → 回復 as a blanket rule. G611, G612 and G627 keep 回覆 because their
+    SIMPLIFIED fields also read 回覆 — the source itself wrote the Traditional
+    character, so opencc never chose it and there is nothing to repair. Only
+    the three whose twin reads 回复 move. Six of the ten would have been wrong.
+  Both traps have the same shape and it is the shape this whole item turns on:
+  **the twin is the witness, and a rule about the language is not.**
+
+ONE CANDIDATE IS DELIBERATELY LEFT ALONE: H6867 「傷愈的疤」. It belongs to the
+愈/癒 spin-off item, which is filed separately; repairing it here would close
+that item as a side effect of this one.
 
 ONE RULE IN THE FIRST DRAFT WAS WRONG AND IS NOW DISARMED, recorded because
 the reasoning was seductive: 裏海 → 里海 ×4, on the theory that 裏 is only the
@@ -91,6 +114,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -129,14 +153,77 @@ RULES = (
     # --- 困 is weariness; 睏 is drowsiness ---
     ("睏倦", "困倦", 4, "H3288, G2872"),
     ("疲睏", "疲困", 2, "G2577 — 來 12:3"),
+
+    # === SECOND INSTALMENT, 2026-09-03 =====================================
+    # The rules above were surveyed on 2026-08-18 and left unapplied. The queue
+    # item listed a further batch as "found and NOT yet fixed"; each was
+    # re-verified here against its Simplified twin, position by position, in
+    # the same way, and they are folded in so that the lexicon takes ONE pass
+    # rather than two. Nothing above changed.
+    #
+    # --- 辟 in a name; 闢 is to open up ---
+    ("闢拉", "辟拉", 7, "Bilhah — twin 辟拉; cuvs-yhwh-tr spells 辟拉 ×11, 闢拉 ×0"),
+    # --- 並 is "and / also"; 併 is to merge. The negative lookbehind is the
+    #     whole point: 合併爲 ×2 at G2957 (Crete merged into one province) is
+    #     a genuine 併 and must not move. Its twin reads 合并为.
+    (r"(?<!合)併爲", "並爲", 19, "and/also — twin reads 并为 in all 19"),
+    ("併成爲", "並成爲", 1, "H4353 — twin 并成为"),
+    # --- 復 is to return / restore; 覆 is to reply or to cover ---
+    #     Only where the TWIN reads 回复. G611, G612 and G627 keep 回覆 because
+    #     their Simplified fields ALSO read 回覆 — the source itself wrote the
+    #     Traditional character there, so opencc never chose it and there is
+    #     nothing to repair. Longer literals are used instead of a bare 回覆 so
+    #     the rule cannot reach them.
+    ("漸漸回覆", "漸漸回復", 1, "H5025 — twin 渐渐回复, land reverting"),
+    ("一年的回覆", "一年的回復", 1, "H8666 — twin 一年的回复, spring"),
+    ("回覆與先前", "回復與先前", 2, "G330 — twin 回复与先前"),
+    ("被複興", "被復興", 1, "H7725 — twin 被复兴"),
+    ("和好, 複合", "和好, 復合", 2, "G604 — twin 和好, 复合. KEEP 複合字 "
+                                  "(compound word) at H1767/H3050/H8478/"
+                                  "G4452/G4863, which is a different word"),
+    # --- 參 is to join; 蔘 is ginseng ---
+    ("蔘加", "參加", 1, "H4918 — twin 参加"),
+    # --- 麪 is flour. This file's house form is 麪 (55) and it holds ZERO 麵,
+    #     so 細麪 rather than the CUV's 細麵. Internal convention wins, as it
+    #     did for the 松開 leftover in biblexg-v2-tr.
+    ("細面", "細麪", 2, "H5560 fine flour — twin 细面"),
+    # --- 穀 is grain; 谷 is a valley ---
+    ("新谷", "新穀", 1, "H1061 — bread of firstfruits made from new grain"),
+    # --- 鬚 is a tendril or a beard; 須 is "must". opencc has a phrase rule
+    #     for 卷须→卷鬚 but not for these, so it wrote the default 須.
+    ("葡萄藤的須", "葡萄藤的鬚", 2, "H5189 — twin 葡萄藤的须, beside 卷鬚"),
+    ("帶須的兀鷹", "帶鬚的兀鷹", 1, "H6538 — the bearded vulture"),
+    # --- 裏 is the locative "inside"; 里 is a distance unit or a name.
+    #     These are the UNDER-conversions: opencc left the Simplified locative
+    #     里 alone. Every other 里 in the file is 底格里斯 / 克里特 / 西西里 /
+    #     暗妃波里 / 西里西亞 / 一里 / 二十五里 / 萬里晴空 and is correct.
+    ("谷里的", "谷裏的", 2, "H2574 — Orontes valley"),
+    ("文本里", "文本裏", 1, "G4270"),
+    ("公會里", "公會裏", 2, "G4245, G2491"),
+    ("聖經里", "聖經裏", 1, "G4245"),
+    ("抄本里", "抄本裏", 2, "G962"),
+    ("丟入海里", "丟入海裏", 1, "G4067 — into the sea, not a nautical mile"),
 )
 
 EXPECTED_TOTAL = sum(r[2] for r in RULES)
 
 # Readings where the character this script removes is CORRECT and must survive.
 # If any of these stops being present the survey behind the rules is stale.
+#
+# The second block is the keep list of the 2026-09-03 instalment, and it is the
+# dangerous half: every one of these is a near-miss for a rule directly above
+# it, so if a later widening of a pattern starts eating them this list is what
+# says so.
 MUST_SURVIVE = ("樹幹", "枝幹", "主幹", "幹活", "岳父", "岳母", "掙扎",
-                "打穀場", "頭髮", "船隻", "關係", "介係詞", "紮營", "佔領")
+                "打穀場", "頭髮", "船隻", "關係", "介係詞", "紮營", "佔領",
+                # 2026-09-03
+                "合併爲",      # G2957 — Crete merged into one province: 併
+                "複合字",      # compound WORD — a different word from 復合
+                "回覆, 答覆",  # G612 — its Simplified twin also reads 回覆
+                "底格里斯",    # a name, so 里 and never 裏
+                "克里特",      # likewise
+                "卷鬚",        # H5189 — opencc got this one right
+                "萬里晴空")    # a distance idiom, so 里
 
 
 def main() -> int:
@@ -160,10 +247,27 @@ def main() -> int:
                   f"longer matches the data — refusing")
             return 1
 
-    counts = {}
-    for wrong, right, expected, _ in RULES:
-        n = joined_before.count(wrong)
-        counts[wrong] = n
+    # `wrong` is a regular expression, so that 併爲 can exclude 合併爲 with a
+    # lookbehind. Every other rule is a plain literal, which is its own regex.
+    patterns = [(re.compile(w), w, r, n, why) for w, r, n, why in RULES]
+
+    # Idempotence. A second --apply must be a no-op rather than a refusal:
+    # zero matches left AND the repaired reading present at least as often as
+    # the rule expected means this ran already. Anything in between is a
+    # half-applied file and IS refused, because that is a real problem.
+    live = [(w, rx, r, n) for rx, w, r, n, _ in patterns
+            if len(rx.findall(joined_before)) != 0]
+    if not live:
+        settled = all(joined_before.count(r) >= n for _, _, r, n, _ in patterns)
+        if settled:
+            print("  already applied — nothing to do")
+            return 0
+        print("  ✗ every rule matches zero times but the repaired readings "
+              "are not all present — refusing")
+        return 1
+
+    for rx, wrong, right, expected, _ in patterns:
+        n = len(rx.findall(joined_before))
         if n != expected:
             print(f"  ✗ {wrong} appears {n} times, expected {expected} — the "
                   f"data has moved under this script — refusing")
@@ -178,17 +282,19 @@ def main() -> int:
                 if not text:
                     continue
                 original = text
-                for wrong, right, _, _ in RULES:
-                    if wrong in text:
-                        for _ in range(text.count(wrong)):
-                            i = text.index(wrong)
-                            report.append(
-                                f"{p.name}\t{sid}\t{field}\t{wrong}→{right}\t"
-                                f"…{text[max(0, i - 10):i + len(wrong) + 8]}…"
-                                .replace("\n", "/"))
-                            text = text.replace(wrong, right, 1)
-                        changed += text != original
+                for rx, wrong, right, _, _ in patterns:
+                    while True:
+                        m = rx.search(text)
+                        if not m:
+                            break
+                        i = m.start()
+                        report.append(
+                            f"{p.name}\t{sid}\t{field}\t{m.group(0)}→{right}\t"
+                            f"…{text[max(0, i - 10):m.end() + 8]}…"
+                            .replace("\n", "/"))
+                        text = text[:i] + right + text[m.end():]
                 if text != original:
+                    changed += 1
                     if len(text) != len(original):
                         print(f"  ✗ {sid} {field} changed length — refusing")
                         return 1
@@ -205,8 +311,8 @@ def main() -> int:
         print(f"  ✗ {len(report)} substitutions against {EXPECTED_TOTAL} "
               f"expected — refusing")
         return 1
-    for wrong, _, _, _ in RULES:
-        if wrong in joined_after:
+    for rx, wrong, _, _, _ in patterns:
+        if rx.search(joined_after):
             print(f"  ✗ {wrong} survives the repair — refusing")
             return 1
     for p, d in docs.items():
@@ -219,7 +325,7 @@ def main() -> int:
     print(f"  {len(report)} substitutions across {changed} fields "
           f"in {len(FILES)} files")
     for wrong, right, expected, why in RULES:
-        print(f"    {wrong} → {right}   ×{expected:<2}  {why}")
+        print(f"    {wrong} → {right}   \u00d7{expected:<2}  {why}")
 
     if args.apply:
         for p, d in docs.items():
