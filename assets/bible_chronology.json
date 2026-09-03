@@ -1,13 +1,20 @@
 {
   "_meta": {
-    "version": 1,
-    "generated": "2026-09-03",
+    "version": 2,
+    "generated": "2026-09-04",
     "generator": "tools/build_bible_chronology.py",
     "defaultScheme": "masoretic-ussher",
     "spanStartAm": 0,
-    "spanEndAm": 2187,
+    "spanEndAm": 4098,
+    "computedEndAm": 2187,
     "count": 20,
-    "description": "Lifeline layer for the interactive chronology chart. Iteration 1 covers Genesis 5 and 11 — Adam to Abraham — the span where Scripture states the ages the years are computed from. Names come from assets/family_tree.json; years are recomputed from the Masoretic begetting ages and cross-checked against it. No data is taken from the copyrighted reference sheet in docs/reference/.",
+    "eventCount": 93,
+    "description": "Two layers on one Anno Mundi axis. (1) LIFELINES — Genesis 5 and 11, Adam to Abraham, the only span where Scripture states a continuous chain of begetting ages; names from assets/family_tree.json, years recomputed from the Masoretic ages and cross-checked against it. (2) EVENTS — the same 98 events the event list on this page shows, from assets/bible_timeline.json, placed on the AM axis by their stated BC/AD year through the 4004 BC anchor, so both views of the page span Creation to Revelation. The two layers are drawn differently and labelled, because a placed year is not a computed one. No data is taken from the copyrighted reference sheet in docs/reference/.",
+    "computedNote": {
+      "en": "Left of this line every year is COMPUTED: it is the sum of the begetting ages Genesis 5 and 11 state, and each bar carries the arithmetic. Right of it Scripture stops giving a continuous chain of ages, so there are no lifelines to draw — only events, PLACED on the BC/AD years of assets/bible_timeline.json. The ground fades out there for the same reason a bar with no stated death year fades out: the chart is saying it does not know.",
+      "zh-Hans": "此线以左，每一个年份都是「推算」出来的：把创世记 5、11 章所记的生子年龄相加而得，每根横条都附着算式。此线以右，经文不再给出连续的年岁链条，因此没有生平横条可画——只有事件，按 assets/bible_timeline.json 的公元前后年份「定位」。那一段的底色会淡出，理由和没有记载卒年的横条淡出是同一个：本图在说它不知道。",
+      "zh-Hant": "此線以左，每一個年份都是「推算」出來的：把創世記 5、11 章所記的生子年齡相加而得，每根橫條都附著算式。此線以右，經文不再給出連續的年歲鏈條，因此沒有生平橫條可畫——只有事件，按 assets/bible_timeline.json 的公元前後年份「定位」。那一段的底色會淡出，理由和沒有記載卒年的橫條淡出是同一個：本圖在說它不知道。"
+    },
     "undrawnLines": {
       "en": "Cain's line (Genesis 4), Ham's and Japheth's (Genesis 10) are not drawn. Scripture names them but gives no ages, so there is nothing to plot without inventing it.",
       "zh-Hans": "该隐的家系（创世记 4）与含、雅弗的家系（创世记 10）未绘出。经文有名字却没有岁数，不杜撰就无从落笔。",
@@ -63,6 +70,80 @@
       "nameEn": "Shem's line (Genesis 11)",
       "nameZhHans": "闪的家系（创世记 11）",
       "nameZhHant": "閃的家系（創世記 11）"
+    }
+  ],
+  "eras": [
+    {
+      "id": "antediluvian",
+      "startAm": 0,
+      "endAm": 1918,
+      "colorHex": "#6B5E3F",
+      "nameEn": "Antediluvian (Creation → Flood)",
+      "nameZhHans": "洪水之前（创世 → 洪水）",
+      "nameZhHant": "洪水之前（創世 → 洪水）"
+    },
+    {
+      "id": "patriarchs",
+      "startAm": 1918,
+      "endAm": 2304,
+      "colorHex": "#8C5A2F",
+      "nameEn": "Patriarchs (Abraham → Joseph)",
+      "nameZhHans": "列祖时代（亚伯拉罕 → 约瑟）",
+      "nameZhHant": "列祖時代（亞伯拉罕 → 約瑟）"
+    },
+    {
+      "id": "mosaic",
+      "startAm": 2304,
+      "endAm": 2598,
+      "colorHex": "#B42E2E",
+      "nameEn": "Exodus & Wilderness",
+      "nameZhHans": "出埃及与旷野",
+      "nameZhHant": "出埃及與曠野"
+    },
+    {
+      "id": "conquest",
+      "startAm": 2598,
+      "endAm": 2954,
+      "colorHex": "#2F7C5C",
+      "nameEn": "Conquest & Judges",
+      "nameZhHans": "征服与士师",
+      "nameZhHant": "征服與士師"
+    },
+    {
+      "id": "monarchy",
+      "startAm": 2954,
+      "endAm": 3418,
+      "colorHex": "#2A4FB0",
+      "nameEn": "United & Divided Monarchy",
+      "nameZhHans": "联合与分裂王国",
+      "nameZhHant": "聯合與分裂王國"
+    },
+    {
+      "id": "exile",
+      "startAm": 3418,
+      "endAm": 3604,
+      "colorHex": "#5F3F86",
+      "nameEn": "Exile & Return",
+      "nameZhHans": "被掳与回归",
+      "nameZhHant": "被擄與回歸"
+    },
+    {
+      "id": "intertestamental",
+      "startAm": 3604,
+      "endAm": 3998,
+      "colorHex": "#505590",
+      "nameEn": "Inter-Testamental Period",
+      "nameZhHans": "两约之间",
+      "nameZhHant": "兩約之間"
+    },
+    {
+      "id": "nt",
+      "startAm": 3998,
+      "endAm": 4098,
+      "colorHex": "#B8860B",
+      "nameEn": "New Testament",
+      "nameZhHans": "新约",
+      "nameZhHant": "新約"
     }
   ],
   "lifelines": [
@@ -466,44 +547,65 @@
     {
       "id": "creation",
       "am": 0,
+      "era": "antediluvian",
       "refs": [
         "Genesis 1:1",
         "Genesis 1:31"
       ],
+      "amBasis": "computed",
+      "pin": true,
       "titleEn": "Creation",
       "titleZhHans": "创造",
-      "titleZhHant": "創造"
+      "titleZhHant": "創造",
+      "placedEventId": "creation",
+      "placedYear": -4000,
+      "placedDeltaYears": 4
     },
     {
       "id": "enoch_taken",
       "am": 987,
+      "era": "antediluvian",
       "refs": [
         "Genesis 5:24",
         "Hebrews 11:5"
       ],
+      "amBasis": "computed",
+      "pin": true,
       "titleEn": "Enoch is taken",
       "titleZhHans": "以诺被接去",
-      "titleZhHant": "以諾被接去"
+      "titleZhHant": "以諾被接去",
+      "placedEventId": "enoch_walks",
+      "placedYear": -3000,
+      "placedDeltaYears": 17
     },
     {
       "id": "flood",
       "am": 1656,
+      "era": "antediluvian",
       "refs": [
         "Genesis 7:6",
         "Genesis 7:11"
       ],
+      "amBasis": "computed",
+      "pin": true,
       "titleEn": "The Flood (Noah's 600th year)",
       "titleZhHans": "洪水（挪亚 600 岁）",
-      "titleZhHant": "洪水（挪亞 600 歲）"
+      "titleZhHant": "洪水（挪亞 600 歲）",
+      "placedEventId": "flood",
+      "placedYear": -2348,
+      "placedDeltaYears": 0
     },
     {
       "id": "abram_born",
       "am": 2008,
+      "era": "patriarchs",
       "refs": [
         "Genesis 11:26",
         "Genesis 11:32",
         "Acts 7:4"
       ],
+      "amBasis": "computed",
+      "pin": true,
       "titleEn": "Abram is born",
       "titleZhHans": "亚伯兰出生",
       "titleZhHant": "亞伯蘭出生"
@@ -511,33 +613,1380 @@
     {
       "id": "abram_call",
       "am": 2083,
+      "era": "patriarchs",
       "refs": [
         "Genesis 12:1-4"
       ],
+      "amBasis": "computed",
+      "pin": true,
       "titleEn": "Abram leaves Haran, aged 75",
       "titleZhHans": "亚伯兰 75 岁离开哈兰",
-      "titleZhHant": "亞伯蘭 75 歲離開哈蘭"
+      "titleZhHant": "亞伯蘭 75 歲離開哈蘭",
+      "placedEventId": "abram_called",
+      "placedYear": -2091,
+      "placedDeltaYears": -170
     },
     {
       "id": "isaac_born",
       "am": 2108,
+      "era": "patriarchs",
       "refs": [
         "Genesis 21:5"
       ],
+      "amBasis": "computed",
+      "pin": true,
       "titleEn": "Isaac is born, Abraham aged 100",
       "titleZhHans": "以撒出生，亚伯拉罕 100 岁",
-      "titleZhHant": "以撒出生，亞伯拉罕 100 歲"
+      "titleZhHant": "以撒出生，亞伯拉罕 100 歲",
+      "placedEventId": "isaac_born",
+      "placedYear": -2066,
+      "placedDeltaYears": -170
     },
     {
       "id": "abraham_dies",
       "am": 2183,
+      "era": "patriarchs",
       "refs": [
         "Genesis 25:7",
         "Genesis 25:8"
       ],
+      "amBasis": "computed",
+      "pin": true,
       "titleEn": "Abraham dies, aged 175",
       "titleZhHans": "亚伯拉罕去世，享年 175 岁",
       "titleZhHant": "亞伯拉罕去世，享年 175 歲"
     }
-  ]
+  ],
+  "events": [
+    {
+      "id": "eden",
+      "am": 4,
+      "year": -4000,
+      "era": "antediluvian",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 2:8-25"
+      ],
+      "titleEn": "Adam & Eve in Eden",
+      "titleZhHans": "亚当夏娃在伊甸园",
+      "titleZhHant": "亞當夏娃在伊甸園"
+    },
+    {
+      "id": "fall",
+      "am": 14,
+      "year": -3990,
+      "era": "antediluvian",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 3",
+        "Romans 5:12"
+      ],
+      "titleEn": "The Fall",
+      "titleZhHans": "人类堕落",
+      "titleZhHant": "人類墮落"
+    },
+    {
+      "id": "cain_abel",
+      "am": 54,
+      "year": -3950,
+      "era": "antediluvian",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 4:1-16"
+      ],
+      "titleEn": "Cain Murders Abel",
+      "titleZhHans": "该隐杀亚伯",
+      "titleZhHant": "該隱殺亞伯"
+    },
+    {
+      "id": "seth_born",
+      "am": 134,
+      "year": -3870,
+      "era": "antediluvian",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 4:25-26",
+        "Genesis 5:3"
+      ],
+      "titleEn": "Birth of Seth",
+      "titleZhHans": "塞特出生",
+      "titleZhHant": "塞特出生"
+    },
+    {
+      "id": "babel",
+      "am": 1804,
+      "year": -2200,
+      "era": "antediluvian",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 11:1-9"
+      ],
+      "titleEn": "Tower of Babel",
+      "titleZhHans": "巴别塔",
+      "titleZhHant": "巴別塔"
+    },
+    {
+      "id": "lot_separates",
+      "am": 1918,
+      "year": -2086,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 13"
+      ],
+      "titleEn": "Abram and Lot Separate",
+      "titleZhHans": "亚伯兰与罗得分开",
+      "titleZhHant": "亞伯蘭與羅得分開"
+    },
+    {
+      "id": "abrahamic_covenant",
+      "am": 1924,
+      "year": -2080,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 15",
+        "Genesis 17"
+      ],
+      "titleEn": "Abrahamic Covenant",
+      "titleZhHans": "与亚伯拉罕立约",
+      "titleZhHant": "與亞伯拉罕立約"
+    },
+    {
+      "id": "ishmael_born",
+      "am": 1924,
+      "year": -2080,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 16"
+      ],
+      "titleEn": "Birth of Ishmael",
+      "titleZhHans": "以实玛利出生",
+      "titleZhHant": "以實瑪利出生"
+    },
+    {
+      "id": "sodom_destroyed",
+      "am": 1937,
+      "year": -2067,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 19"
+      ],
+      "titleEn": "Destruction of Sodom & Gomorrah",
+      "titleZhHans": "所多玛蛾摩拉被毁",
+      "titleZhHant": "所多瑪蛾摩拉被毀"
+    },
+    {
+      "id": "isaac_offered",
+      "am": 1949,
+      "year": -2055,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 22"
+      ],
+      "titleEn": "Sacrifice of Isaac",
+      "titleZhHans": "献以撒",
+      "titleZhHant": "獻以撒"
+    },
+    {
+      "id": "rebekah_marries",
+      "am": 1978,
+      "year": -2026,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 24"
+      ],
+      "titleEn": "Rebekah Marries Isaac",
+      "titleZhHans": "利百加嫁以撒",
+      "titleZhHant": "利百加嫁以撒"
+    },
+    {
+      "id": "jacob_esau_born",
+      "am": 1998,
+      "year": -2006,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 25:21-26"
+      ],
+      "titleEn": "Jacob & Esau Born",
+      "titleZhHans": "雅各以扫出生",
+      "titleZhHant": "雅各以掃出生"
+    },
+    {
+      "id": "job_trial",
+      "am": 2004,
+      "year": -2000,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Job 1",
+        "Job 2",
+        "Job 38",
+        "Job 42",
+        "Ezekiel 14:14"
+      ],
+      "titleEn": "Job's Trial of Faith",
+      "titleZhHans": "约伯的信心受试炼",
+      "titleZhHant": "約伯的信心受試煉"
+    },
+    {
+      "id": "jacob_blessing",
+      "am": 2075,
+      "year": -1929,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 27"
+      ],
+      "titleEn": "Jacob Steals Esau's Blessing",
+      "titleZhHans": "雅各夺以扫祝福",
+      "titleZhHant": "雅各奪以掃祝福"
+    },
+    {
+      "id": "jacobs_ladder",
+      "am": 2075,
+      "year": -1929,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 28:10-22"
+      ],
+      "titleEn": "Jacob's Ladder",
+      "titleZhHans": "雅各天梯",
+      "titleZhHant": "雅各天梯"
+    },
+    {
+      "id": "jacob_marries",
+      "am": 2082,
+      "year": -1922,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 29"
+      ],
+      "titleEn": "Jacob Marries Leah & Rachel",
+      "titleZhHans": "雅各娶利亚拉结",
+      "titleZhHant": "雅各娶利亞拉結"
+    },
+    {
+      "id": "joseph_sold",
+      "am": 2106,
+      "year": -1898,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 37"
+      ],
+      "titleEn": "Joseph Sold to Egypt",
+      "titleZhHans": "约瑟被卖到埃及",
+      "titleZhHant": "約瑟被賣到埃及"
+    },
+    {
+      "id": "joseph_rises",
+      "am": 2119,
+      "year": -1885,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 41"
+      ],
+      "titleEn": "Joseph Rises in Egypt",
+      "titleZhHans": "约瑟升为宰相",
+      "titleZhHant": "約瑟升為宰相"
+    },
+    {
+      "id": "israel_egypt",
+      "am": 2128,
+      "year": -1876,
+      "era": "patriarchs",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Genesis 46-47",
+        "Exodus 1:1-7"
+      ],
+      "titleEn": "Jacob's Family Enters Egypt",
+      "titleZhHans": "雅各全家下埃及",
+      "titleZhHant": "雅各全家下埃及"
+    },
+    {
+      "id": "israel_oppressed",
+      "am": 2304,
+      "year": -1700,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 1",
+        "Genesis 15:13"
+      ],
+      "titleEn": "Israel Oppressed in Egypt",
+      "titleZhHans": "以色列在埃及受苦",
+      "titleZhHant": "以色列在埃及受苦"
+    },
+    {
+      "id": "moses_born",
+      "am": 2478,
+      "year": -1526,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 2:1-10"
+      ],
+      "titleEn": "Moses Born",
+      "titleZhHans": "摩西出生",
+      "titleZhHant": "摩西出生"
+    },
+    {
+      "id": "burning_bush",
+      "am": 2558,
+      "year": -1446,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 3-4"
+      ],
+      "titleEn": "Burning Bush",
+      "titleZhHans": "荆棘焚烧",
+      "titleZhHant": "荊棘焚燒"
+    },
+    {
+      "id": "exodus",
+      "am": 2558,
+      "year": -1446,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": true,
+      "refs": [
+        "Exodus 12-13"
+      ],
+      "titleEn": "The Exodus",
+      "titleZhHans": "出埃及",
+      "titleZhHant": "出埃及"
+    },
+    {
+      "id": "manna",
+      "am": 2558,
+      "year": -1446,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 16"
+      ],
+      "titleEn": "Manna from Heaven",
+      "titleZhHans": "天降吗哪",
+      "titleZhHant": "天降嗎哪"
+    },
+    {
+      "id": "plagues",
+      "am": 2558,
+      "year": -1446,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 7-12"
+      ],
+      "titleEn": "Ten Plagues of Egypt",
+      "titleZhHans": "埃及十灾",
+      "titleZhHant": "埃及十災"
+    },
+    {
+      "id": "red_sea",
+      "am": 2558,
+      "year": -1446,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 14"
+      ],
+      "titleEn": "Crossing the Red Sea",
+      "titleZhHans": "过红海",
+      "titleZhHant": "過紅海"
+    },
+    {
+      "id": "sinai",
+      "am": 2558,
+      "year": -1446,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 19-20",
+        "Exodus 24"
+      ],
+      "titleEn": "Ten Commandments at Sinai",
+      "titleZhHans": "西奈山十诫",
+      "titleZhHant": "西奈山十誡"
+    },
+    {
+      "id": "tabernacle",
+      "am": 2559,
+      "year": -1445,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 25-40",
+        "Leviticus"
+      ],
+      "titleEn": "Tabernacle Built",
+      "titleZhHans": "建造会幕",
+      "titleZhHant": "建造會幕"
+    },
+    {
+      "id": "jericho",
+      "am": 2598,
+      "year": -1406,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Joshua 6"
+      ],
+      "titleEn": "Fall of Jericho",
+      "titleZhHans": "耶利哥城陷",
+      "titleZhHant": "耶利哥城陷"
+    },
+    {
+      "id": "jordan_crossed",
+      "am": 2598,
+      "year": -1406,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Joshua 3-4"
+      ],
+      "titleEn": "Israel Crosses Jordan",
+      "titleZhHans": "过约旦河",
+      "titleZhHant": "過約旦河"
+    },
+    {
+      "id": "moses_dies",
+      "am": 2598,
+      "year": -1406,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Deuteronomy 34"
+      ],
+      "titleEn": "Death of Moses",
+      "titleZhHans": "摩西之死",
+      "titleZhHant": "摩西之死"
+    },
+    {
+      "id": "wilderness_40",
+      "am": 2598,
+      "year": -1406,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Numbers 13-14",
+        "Numbers 32:13"
+      ],
+      "titleEn": "40 Years in the Wilderness",
+      "titleZhHans": "旷野四十年",
+      "titleZhHant": "曠野四十年"
+    },
+    {
+      "id": "land_divided",
+      "am": 2605,
+      "year": -1399,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Joshua 13-22"
+      ],
+      "titleEn": "Land Divided to Tribes",
+      "titleZhHans": "分地给十二支派",
+      "titleZhHant": "分地給十二支派"
+    },
+    {
+      "id": "judges_period",
+      "am": 2624,
+      "year": -1380,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Judges 1-21"
+      ],
+      "titleEn": "Period of the Judges",
+      "titleZhHans": "士师时代",
+      "titleZhHant": "士師時代"
+    },
+    {
+      "id": "deborah",
+      "am": 2764,
+      "year": -1240,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Judges 4-5"
+      ],
+      "titleEn": "Deborah & Barak Defeat Sisera",
+      "titleZhHans": "底波拉与巴拉胜西西拉",
+      "titleZhHant": "底波拉與巴拉勝西西拉"
+    },
+    {
+      "id": "gideon",
+      "am": 2813,
+      "year": -1191,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Judges 6-8"
+      ],
+      "titleEn": "Gideon's 300",
+      "titleZhHans": "基甸三百勇士",
+      "titleZhHant": "基甸三百勇士"
+    },
+    {
+      "id": "ruth",
+      "am": 2904,
+      "year": -1100,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Ruth 1-4"
+      ],
+      "titleEn": "Story of Ruth",
+      "titleZhHans": "路得记",
+      "titleZhHant": "路得記"
+    },
+    {
+      "id": "samson",
+      "am": 2904,
+      "year": -1100,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Judges 13-16"
+      ],
+      "titleEn": "Samson vs Philistines",
+      "titleZhHans": "参孙战非利士",
+      "titleZhHant": "參孫戰非利士"
+    },
+    {
+      "id": "samuel_called",
+      "am": 2924,
+      "year": -1080,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "1 Samuel 3"
+      ],
+      "titleEn": "Samuel Called by God",
+      "titleZhHans": "撒母耳蒙召",
+      "titleZhHant": "撒母耳蒙召"
+    },
+    {
+      "id": "saul_anointed",
+      "am": 2954,
+      "year": -1050,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "1 Samuel 9-10"
+      ],
+      "titleEn": "Saul Anointed First King",
+      "titleZhHans": "扫罗膏立为王",
+      "titleZhHant": "掃羅膏立為王"
+    },
+    {
+      "id": "david_anointed",
+      "am": 2979,
+      "year": -1025,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "1 Samuel 16"
+      ],
+      "titleEn": "David Anointed",
+      "titleZhHans": "大卫被膏",
+      "titleZhHant": "大衛被膏"
+    },
+    {
+      "id": "david_goliath",
+      "am": 2980,
+      "year": -1024,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "1 Samuel 17"
+      ],
+      "titleEn": "David vs Goliath",
+      "titleZhHans": "大卫战歌利亚",
+      "titleZhHant": "大衛戰歌利亞"
+    },
+    {
+      "id": "david_king",
+      "am": 2994,
+      "year": -1010,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "2 Samuel 5"
+      ],
+      "titleEn": "David Becomes King",
+      "titleZhHans": "大卫登基",
+      "titleZhHant": "大衛登基"
+    },
+    {
+      "id": "jerusalem_captured",
+      "am": 3001,
+      "year": -1003,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "2 Samuel 5:6-9"
+      ],
+      "titleEn": "Jerusalem Captured",
+      "titleZhHans": "攻取耶路撒冷",
+      "titleZhHant": "攻取耶路撒冷"
+    },
+    {
+      "id": "davidic_covenant",
+      "am": 3004,
+      "year": -1000,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "2 Samuel 7"
+      ],
+      "titleEn": "Davidic Covenant",
+      "titleZhHans": "与大卫立约",
+      "titleZhHant": "與大衛立約"
+    },
+    {
+      "id": "solomon_king",
+      "am": 3034,
+      "year": -970,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "1 Kings 1-3"
+      ],
+      "titleEn": "Solomon Becomes King",
+      "titleZhHans": "所罗门登基",
+      "titleZhHant": "所羅門登基"
+    },
+    {
+      "id": "temple_built",
+      "am": 3038,
+      "year": -966,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": true,
+      "refs": [
+        "1 Kings 6",
+        "2 Chronicles 3-4"
+      ],
+      "titleEn": "Solomon's Temple Built",
+      "titleZhHans": "所罗门建圣殿",
+      "titleZhHant": "所羅門建聖殿"
+    },
+    {
+      "id": "kingdom_divided",
+      "am": 3073,
+      "year": -931,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "1 Kings 12"
+      ],
+      "titleEn": "Kingdom Divided",
+      "titleZhHans": "王国分裂",
+      "titleZhHant": "王國分裂"
+    },
+    {
+      "id": "elijah_carmel",
+      "am": 3144,
+      "year": -860,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "1 Kings 18"
+      ],
+      "titleEn": "Elijah on Mount Carmel",
+      "titleZhHans": "以利亚在迦密山",
+      "titleZhHant": "以利亞在迦密山"
+    },
+    {
+      "id": "elisha_succeeds",
+      "am": 3156,
+      "year": -848,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "2 Kings 2"
+      ],
+      "titleEn": "Elijah Taken Up; Elisha Succeeds",
+      "titleZhHans": "以利亚被接升天；以利沙继任",
+      "titleZhHant": "以利亞被接升天；以利沙繼任"
+    },
+    {
+      "id": "jonah",
+      "am": 3224,
+      "year": -780,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Jonah 1-4"
+      ],
+      "titleEn": "Jonah Preaches at Nineveh",
+      "titleZhHans": "约拿在尼尼微传道",
+      "titleZhHant": "約拿在尼尼微傳道"
+    },
+    {
+      "id": "israel_falls",
+      "am": 3282,
+      "year": -722,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "2 Kings 17"
+      ],
+      "titleEn": "Northern Kingdom Falls to Assyria",
+      "titleZhHans": "北国以色列亡于亚述",
+      "titleZhHant": "北國以色列亡於亞述"
+    },
+    {
+      "id": "hezekiah_reform",
+      "am": 3289,
+      "year": -715,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "2 Kings 18-20",
+        "2 Chronicles 29-32"
+      ],
+      "titleEn": "Hezekiah's Reform",
+      "titleZhHans": "希西家的改革",
+      "titleZhHant": "希西家的改革"
+    },
+    {
+      "id": "isaiah",
+      "am": 3304,
+      "year": -700,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Isaiah 1-66"
+      ],
+      "titleEn": "Isaiah Prophesies",
+      "titleZhHans": "以赛亚预言",
+      "titleZhHant": "以賽亞預言"
+    },
+    {
+      "id": "jeremiah",
+      "am": 3377,
+      "year": -627,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Jeremiah 1-52"
+      ],
+      "titleEn": "Jeremiah Prophesies",
+      "titleZhHans": "耶利米预言",
+      "titleZhHant": "耶利米預言"
+    },
+    {
+      "id": "josiah_reform",
+      "am": 3382,
+      "year": -622,
+      "era": "monarchy",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "2 Kings 22-23"
+      ],
+      "titleEn": "Josiah Finds the Law",
+      "titleZhHans": "约西亚发现律法书",
+      "titleZhHant": "約西亞發現律法書"
+    },
+    {
+      "id": "judah_falls",
+      "am": 3418,
+      "year": -586,
+      "era": "exile",
+      "amBasis": "placed",
+      "pin": true,
+      "refs": [
+        "2 Kings 25",
+        "2 Chronicles 36",
+        "Jeremiah 52"
+      ],
+      "titleEn": "Judah Falls; Temple Destroyed",
+      "titleZhHans": "犹大亡国；圣殿被毁",
+      "titleZhHant": "猶大亡國；聖殿被毀"
+    },
+    {
+      "id": "daniel_lions",
+      "am": 3464,
+      "year": -540,
+      "era": "exile",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Daniel 6"
+      ],
+      "titleEn": "Daniel in the Lions' Den",
+      "titleZhHans": "但以理与狮子",
+      "titleZhHant": "但以理與獅子"
+    },
+    {
+      "id": "return_zerubbabel",
+      "am": 3466,
+      "year": -538,
+      "era": "exile",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Ezra 1-2"
+      ],
+      "titleEn": "First Return under Zerubbabel",
+      "titleZhHans": "所罗巴伯第一次回归",
+      "titleZhHant": "所羅巴伯第一次回歸"
+    },
+    {
+      "id": "temple_rebuilt",
+      "am": 3488,
+      "year": -516,
+      "era": "exile",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Ezra 6"
+      ],
+      "titleEn": "Second Temple Rebuilt",
+      "titleZhHans": "重建第二圣殿",
+      "titleZhHant": "重建第二聖殿"
+    },
+    {
+      "id": "esther",
+      "am": 3526,
+      "year": -478,
+      "era": "exile",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Esther 1-10"
+      ],
+      "titleEn": "Esther Saves the Jews",
+      "titleZhHans": "以斯帖救犹太人",
+      "titleZhHant": "以斯帖救猶太人"
+    },
+    {
+      "id": "ezra_returns",
+      "am": 3546,
+      "year": -458,
+      "era": "exile",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Ezra 7-10"
+      ],
+      "titleEn": "Ezra's Return",
+      "titleZhHans": "以斯拉回归",
+      "titleZhHant": "以斯拉回歸"
+    },
+    {
+      "id": "nehemiah_walls",
+      "am": 3559,
+      "year": -445,
+      "era": "exile",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Nehemiah 1-6"
+      ],
+      "titleEn": "Nehemiah Rebuilds the Walls",
+      "titleZhHans": "尼希米重建城墙",
+      "titleZhHant": "尼希米重建城牆"
+    },
+    {
+      "id": "malachi",
+      "am": 3574,
+      "year": -430,
+      "era": "exile",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Malachi 1-4"
+      ],
+      "titleEn": "Malachi: Last OT Prophet",
+      "titleZhHans": "玛拉基：旧约最后先知",
+      "titleZhHant": "瑪拉基：舊約最後先知"
+    },
+    {
+      "id": "intertestamental",
+      "am": 3604,
+      "year": -400,
+      "era": "intertestamental",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [],
+      "titleEn": "400 Silent Years",
+      "titleZhHans": "四百年沉默期",
+      "titleZhHant": "四百年沉默期"
+    },
+    {
+      "id": "greek_period",
+      "am": 3671,
+      "year": -333,
+      "era": "intertestamental",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [],
+      "titleEn": "Alexander the Great Conquers Persia",
+      "titleZhHans": "亚历山大征服波斯",
+      "titleZhHant": "亞歷山大征服波斯"
+    },
+    {
+      "id": "septuagint",
+      "am": 3754,
+      "year": -250,
+      "era": "intertestamental",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [],
+      "titleEn": "Septuagint Translation Begins",
+      "titleZhHans": "七十士译本开始翻译",
+      "titleZhHant": "七十士譯本開始翻譯"
+    },
+    {
+      "id": "maccabees",
+      "am": 3837,
+      "year": -167,
+      "era": "intertestamental",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [],
+      "titleEn": "Maccabean Revolt",
+      "titleZhHans": "马加比起义",
+      "titleZhHant": "馬加比起義"
+    },
+    {
+      "id": "rome_judea",
+      "am": 3941,
+      "year": -63,
+      "era": "intertestamental",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [],
+      "titleEn": "Rome Conquers Judea",
+      "titleZhHans": "罗马征服犹太",
+      "titleZhHant": "羅馬征服猶太"
+    },
+    {
+      "id": "john_baptist_born",
+      "am": 3998,
+      "year": -6,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Luke 1:5-25, 57-80"
+      ],
+      "titleEn": "Birth of John the Baptist",
+      "titleZhHans": "施洗约翰出生",
+      "titleZhHant": "施洗約翰出生"
+    },
+    {
+      "id": "jesus_born",
+      "am": 3999,
+      "year": -5,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": true,
+      "refs": [
+        "Luke 2:1-20",
+        "Matthew 1:18-25"
+      ],
+      "titleEn": "Birth of Jesus Christ",
+      "titleZhHans": "耶稣基督降生",
+      "titleZhHant": "耶穌基督降生"
+    },
+    {
+      "id": "flight_egypt",
+      "am": 4000,
+      "year": -4,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 2:13-23"
+      ],
+      "titleEn": "Flight to Egypt",
+      "titleZhHans": "逃往埃及",
+      "titleZhHant": "逃往埃及"
+    },
+    {
+      "id": "magi",
+      "am": 4000,
+      "year": -4,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 2:1-12"
+      ],
+      "titleEn": "Magi Visit Jesus",
+      "titleZhHans": "博士来朝",
+      "titleZhHant": "博士來朝"
+    },
+    {
+      "id": "jesus_temple_12",
+      "am": 4011,
+      "year": 8,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Luke 2:41-52"
+      ],
+      "titleEn": "Jesus in the Temple at 12",
+      "titleZhHans": "耶稣十二岁在圣殿",
+      "titleZhHant": "耶穌十二歲在聖殿"
+    },
+    {
+      "id": "jesus_baptized",
+      "am": 4029,
+      "year": 26,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 3:13-17",
+        "Mark 1:9-11"
+      ],
+      "titleEn": "Baptism of Jesus",
+      "titleZhHans": "耶稣受洗",
+      "titleZhHant": "耶穌受洗"
+    },
+    {
+      "id": "temptation",
+      "am": 4029,
+      "year": 26,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 4:1-11",
+        "Luke 4:1-13"
+      ],
+      "titleEn": "Wilderness Temptation",
+      "titleZhHans": "旷野受试探",
+      "titleZhHant": "曠野受試探"
+    },
+    {
+      "id": "disciples_called",
+      "am": 4030,
+      "year": 27,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 4:18-22",
+        "Mark 3:13-19",
+        "Luke 6:12-16"
+      ],
+      "titleEn": "Calling of the Twelve",
+      "titleZhHans": "呼召十二门徒",
+      "titleZhHant": "呼召十二門徒"
+    },
+    {
+      "id": "sermon_mount",
+      "am": 4031,
+      "year": 28,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 5-7"
+      ],
+      "titleEn": "Sermon on the Mount",
+      "titleZhHans": "登山宝训",
+      "titleZhHant": "登山寶訓"
+    },
+    {
+      "id": "5000_fed",
+      "am": 4032,
+      "year": 29,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 14:13-21",
+        "John 6:1-14"
+      ],
+      "titleEn": "Feeding the 5000",
+      "titleZhHans": "五饼二鱼",
+      "titleZhHant": "五餅二魚"
+    },
+    {
+      "id": "transfiguration",
+      "am": 4033,
+      "year": 30,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 17:1-13"
+      ],
+      "titleEn": "Transfiguration",
+      "titleZhHans": "登山变像",
+      "titleZhHant": "登山變像"
+    },
+    {
+      "id": "ascension",
+      "am": 4036,
+      "year": 33,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Acts 1:9-11"
+      ],
+      "titleEn": "Ascension",
+      "titleZhHans": "耶稣升天",
+      "titleZhHant": "耶穌升天"
+    },
+    {
+      "id": "crucifixion",
+      "am": 4036,
+      "year": 33,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": true,
+      "refs": [
+        "Matthew 27",
+        "John 19"
+      ],
+      "titleEn": "Crucifixion of Jesus",
+      "titleZhHans": "耶稣被钉十字架",
+      "titleZhHant": "耶穌被釘十字架"
+    },
+    {
+      "id": "last_supper",
+      "am": 4036,
+      "year": 33,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 26:17-30",
+        "Luke 22:7-23",
+        "1 Corinthians 11:23-26"
+      ],
+      "titleEn": "Last Supper",
+      "titleZhHans": "最后的晚餐",
+      "titleZhHant": "最後的晚餐"
+    },
+    {
+      "id": "pentecost",
+      "am": 4036,
+      "year": 33,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Acts 2"
+      ],
+      "titleEn": "Pentecost: Holy Spirit Poured Out",
+      "titleZhHans": "五旬节圣灵降临",
+      "titleZhHant": "五旬節聖靈降臨"
+    },
+    {
+      "id": "resurrection",
+      "am": 4036,
+      "year": 33,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 28",
+        "John 20-21",
+        "1 Corinthians 15"
+      ],
+      "titleEn": "Resurrection",
+      "titleZhHans": "耶稣复活",
+      "titleZhHant": "耶穌復活"
+    },
+    {
+      "id": "triumphal_entry",
+      "am": 4036,
+      "year": 33,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 21:1-11"
+      ],
+      "titleEn": "Triumphal Entry",
+      "titleZhHans": "荣进圣城",
+      "titleZhHant": "榮進聖城"
+    },
+    {
+      "id": "paul_converted",
+      "am": 4038,
+      "year": 35,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Acts 9"
+      ],
+      "titleEn": "Paul's Conversion on Damascus Road",
+      "titleZhHans": "保罗大马色路上悔改",
+      "titleZhHant": "保羅大馬色路上悔改"
+    },
+    {
+      "id": "stephen_martyred",
+      "am": 4038,
+      "year": 35,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Acts 6-7"
+      ],
+      "titleEn": "Stephen Martyred",
+      "titleZhHans": "司提反殉道",
+      "titleZhHant": "司提反殉道"
+    },
+    {
+      "id": "paul_journeys",
+      "am": 4050,
+      "year": 47,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Acts 13-14"
+      ],
+      "titleEn": "Paul's First Missionary Journey",
+      "titleZhHans": "保罗第一次宣教旅行",
+      "titleZhHant": "保羅第一次宣教旅行"
+    },
+    {
+      "id": "jerusalem_council",
+      "am": 4052,
+      "year": 49,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Acts 15"
+      ],
+      "titleEn": "Jerusalem Council",
+      "titleZhHans": "耶路撒冷会议",
+      "titleZhHant": "耶路撒冷會議"
+    },
+    {
+      "id": "paul_rome",
+      "am": 4063,
+      "year": 60,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Acts 28"
+      ],
+      "titleEn": "Paul in Rome",
+      "titleZhHans": "保罗在罗马",
+      "titleZhHant": "保羅在羅馬"
+    },
+    {
+      "id": "temple_destroyed",
+      "am": 4073,
+      "year": 70,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 24:1-2",
+        "Mark 13:1-2"
+      ],
+      "titleEn": "Destruction of the Temple",
+      "titleZhHans": "圣殿被毁",
+      "titleZhHant": "聖殿被毀"
+    },
+    {
+      "id": "john_patmos",
+      "am": 4098,
+      "year": 95,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": true,
+      "refs": [
+        "Revelation 1:9"
+      ],
+      "titleEn": "John Exiled to Patmos; Revelation Written",
+      "titleZhHans": "约翰被流放拔摩；写启示录",
+      "titleZhHant": "約翰被流放拔摩；寫啟示錄"
+    }
+  ],
+  "contested": {
+    "startAm": 1918,
+    "endAm": 2187,
+    "eventCount": 8,
+    "note": {
+      "en": "Inside this band the two scales disagree by about 170 years. The lifelines put Abram's birth at AM 2008 (1996 BC on this anchor); assets/bible_timeline.json places his call at 2091 BC on the late-date scheme, which is earlier than the lifelines have him born. Both are shown where their own source puts them. Neither has been shifted to make the picture tidy.",
+      "zh-Hans": "在这一带，两套刻度相差约 170 年。生平横条把亚伯兰的出生定在创世纪元 2008 年（本锚点下为公元前 1996 年）；assets/bible_timeline.json 依晚期定年方案把他蒙召定在公元前 2091 年，比横条所记的出生还早。两者都按各自来源的位置照实画出，没有为了图面好看而挪动任何一方。",
+      "zh-Hant": "在這一帶，兩套刻度相差約 170 年。生平橫條把亞伯蘭的出生定在創世紀元 2008 年（本錨點下為公元前 1996 年）；assets/bible_timeline.json 依晚期定年方案把他蒙召定在公元前 2091 年，比橫條所記的出生還早。兩者都按各自來源的位置照實畫出，沒有為了圖面好看而挪動任何一方。"
+    }
+  }
 }

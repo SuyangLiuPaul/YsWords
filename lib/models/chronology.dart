@@ -94,12 +94,7 @@ class ChronologyLine {
   /// `#RRGGBB` → 0xFFRRGGBB. Falls back to a neutral grey rather than
   /// throwing, so a typo in the asset degrades to a dull bar instead of
   /// a blank page.
-  int get colorValue {
-    final hex = colorHex.replaceFirst('#', '');
-    final parsed = int.tryParse(hex, radix: 16);
-    if (parsed == null || hex.length != 6) return 0xFF555555;
-    return 0xFF000000 | parsed;
-  }
+  int get colorValue => _hexToArgb(colorHex);
 
   factory ChronologyLine.fromJson(Map<String, dynamic> j) => ChronologyLine(
         id: j['id'] as String,
@@ -202,10 +197,85 @@ class Lifeline {
       );
 }
 
-/// A dated event drawn as a tick on the chart's ruler.
+/// How a tick got its position on the AM axis. The distinction the
+/// chart is not allowed to blur: a [computed] year is the sum of ages
+/// Genesis 5 and 11 state, a [placed] one is a scholar's placement
+/// converted through the anchor.
+enum AmBasis { computed, placed }
+
+/// One era band — background orientation across 4,100 years, taken from
+/// the eras `assets/bible_timeline.json` already carries so the two
+/// views of the page band the same centuries the same colour.
+///
+/// A band runs from its era's first dated thing to the next era's, so
+/// the bands tile the axis. Two eras genuinely overlap in the sources
+/// (Moses dies and Jordan is crossed in the same year), which is why a
+/// band is an orientation device and the precise claim is the tick.
+class ChronologyEra {
+  final String id;
+  final int startAm;
+  final int endAm;
+  final String colorHex;
+  final String nameEn;
+  final String nameZhHans;
+  final String nameZhHant;
+
+  const ChronologyEra({
+    required this.id,
+    required this.startAm,
+    required this.endAm,
+    required this.colorHex,
+    required this.nameEn,
+    required this.nameZhHans,
+    required this.nameZhHant,
+  });
+
+  String localizedName(String locale) =>
+      _pick(locale, nameEn, nameZhHans, nameZhHant);
+
+  int get colorValue => _hexToArgb(colorHex);
+
+  factory ChronologyEra.fromJson(Map<String, dynamic> j) => ChronologyEra(
+        id: j['id'] as String,
+        startAm: (j['startAm'] as num).toInt(),
+        endAm: (j['endAm'] as num).toInt(),
+        colorHex: j['colorHex'] as String? ?? '#555555',
+        nameEn: j['nameEn'] as String? ?? '',
+        nameZhHans: j['nameZhHans'] as String? ?? '',
+        nameZhHant: j['nameZhHant'] as String? ?? '',
+      );
+}
+
+/// A dated event drawn as a tick on the chart. Used for BOTH layers —
+/// the computed markers and the placed events — because they differ in
+/// exactly one load-bearing way, [amBasis], and giving them one type
+/// makes it impossible to render one while forgetting the other.
 class ChronologyMarker {
   final String id;
   final int am;
+
+  /// Which era band this tick belongs to. Its own era, not the band it
+  /// happens to land in — the two can differ where eras overlap.
+  final String era;
+
+  /// [AmBasis.computed] for the seven Genesis 5/11 anchors,
+  /// [AmBasis.placed] for everything from `bible_timeline.json`.
+  final AmBasis amBasis;
+
+  /// Whether this tick gets a "Jump to" chip and a printed label.
+  final bool pin;
+
+  /// Signed BC/AD year as the source states it. Null on a computed
+  /// marker, whose statement is the AM figure — the BC year is derived
+  /// from the anchor, not asserted.
+  final int? year;
+
+  /// Where `bible_timeline.json` puts the same event, when it carries
+  /// it too, and by how many years the two differ. Shown in the detail
+  /// sheet so a deduped disagreement is never silent.
+  final int? placedYear;
+  final int? placedDeltaYears;
+
   final List<String> refs;
   final String titleEn;
   final String titleZhHans;
@@ -218,7 +288,15 @@ class ChronologyMarker {
     required this.titleEn,
     required this.titleZhHans,
     required this.titleZhHant,
+    this.era = '',
+    this.amBasis = AmBasis.computed,
+    this.pin = true,
+    this.year,
+    this.placedYear,
+    this.placedDeltaYears,
   });
+
+  bool get isComputed => amBasis == AmBasis.computed;
 
   String localizedTitle(String locale) =>
       _pick(locale, titleEn, titleZhHans, titleZhHant);
@@ -227,10 +305,48 @@ class ChronologyMarker {
       ChronologyMarker(
         id: j['id'] as String,
         am: (j['am'] as num).toInt(),
+        era: j['era'] as String? ?? '',
+        amBasis: (j['amBasis'] as String? ?? 'computed') == 'placed'
+            ? AmBasis.placed
+            : AmBasis.computed,
+        pin: j['pin'] as bool? ?? true,
+        year: (j['year'] as num?)?.toInt(),
+        placedYear: (j['placedYear'] as num?)?.toInt(),
+        placedDeltaYears: (j['placedDeltaYears'] as num?)?.toInt(),
         refs: (j['refs'] as List?)?.cast<String>() ?? const [],
         titleEn: j['titleEn'] as String? ?? '',
         titleZhHans: j['titleZhHans'] as String? ?? '',
         titleZhHant: j['titleZhHant'] as String? ?? '',
+      );
+}
+
+/// The stretch where the computed count and the placed events overlap
+/// and provably disagree — the ~170-year late-date clash across the
+/// patriarchs. Carried as data so the chart can draw it; see the
+/// generator for the ordering test that defines it.
+class ChronologyContested {
+  final int startAm;
+  final int endAm;
+  final int eventCount;
+  final Map<String, String> note;
+
+  const ChronologyContested({
+    required this.startAm,
+    required this.endAm,
+    required this.eventCount,
+    required this.note,
+  });
+
+  String localizedNote(String locale) => _localeMap(note, locale);
+
+  factory ChronologyContested.fromJson(Map<String, dynamic> j) =>
+      ChronologyContested(
+        startAm: (j['startAm'] as num).toInt(),
+        endAm: (j['endAm'] as num).toInt(),
+        eventCount: (j['eventCount'] as num?)?.toInt() ?? 0,
+        note: ((j['note'] as Map?) ?? const {}).map<String, String>(
+          (k, v) => MapEntry(k.toString(), v.toString()),
+        ),
       );
 }
 
@@ -239,25 +355,69 @@ class ChronologyData {
   final String defaultScheme;
   final int spanStartAm;
   final int spanEndAm;
+
+  /// Last year the Genesis 5/11 arithmetic reaches. Left of it the
+  /// chart has lifelines; right of it only placed events. Read off the
+  /// bars by the generator rather than assumed to be Abraham's death —
+  /// Eber outlives him on the Masoretic count.
+  final int computedEndAm;
+
   final List<ChronologyScheme> schemes;
   final List<ChronologyLine> lines;
+  final List<ChronologyEra> eras;
   final List<Lifeline> lifelines;
+
+  /// The computed layer: seven anchors whose year is the sum of stated
+  /// ages.
   final List<ChronologyMarker> markers;
+
+  /// The placed layer: `bible_timeline.json`'s events on the AM axis.
+  final List<ChronologyMarker> events;
+
+  final ChronologyContested? contested;
 
   /// Trilingual sentence naming the descent lines this chart does NOT
   /// draw, and why. Shown in the legend, not hidden in a tooltip.
   final Map<String, String> undrawnLines;
 
+  /// Trilingual explanation of the computed/placed boundary. Shown on
+  /// the chart, not in a tooltip.
+  final Map<String, String> computedNote;
+
   const ChronologyData({
     required this.defaultScheme,
     required this.spanStartAm,
     required this.spanEndAm,
+    required this.computedEndAm,
     required this.schemes,
     required this.lines,
+    required this.eras,
     required this.lifelines,
     required this.markers,
+    required this.events,
+    required this.contested,
     required this.undrawnLines,
+    required this.computedNote,
   });
+
+  /// Both layers in one axis-ordered list — what the tick lane draws.
+  List<ChronologyMarker> get allTicks {
+    final all = [...markers, ...events]..sort((a, b) {
+        final c = a.am.compareTo(b.am);
+        return c != 0 ? c : a.id.compareTo(b.id);
+      });
+    return all;
+  }
+
+  ChronologyEra? eraById(String id) {
+    for (final e in eras) {
+      if (e.id == id) return e;
+    }
+    return null;
+  }
+
+  String localizedComputedNote(String locale) =>
+      _localeMap(computedNote, locale);
 
   ChronologyScheme get activeScheme => schemes.firstWhere(
         (s) => s.id == defaultScheme,
@@ -271,15 +431,7 @@ class ChronologyData {
     return null;
   }
 
-  String localizedUndrawn(String locale) {
-    if (locale == 'zh-Hant') {
-      return undrawnLines['zh-Hant'] ?? undrawnLines['en'] ?? '';
-    }
-    if (locale.startsWith('zh')) {
-      return undrawnLines['zh-Hans'] ?? undrawnLines['en'] ?? '';
-    }
-    return undrawnLines['en'] ?? '';
-  }
+  String localizedUndrawn(String locale) => _localeMap(undrawnLines, locale);
 
   /// Everyone alive in [am], in chart order.
   List<Lifeline> aliveAt(int am) =>
@@ -297,10 +449,21 @@ class ChronologyData {
         .map(ChronologyMarker.fromJson)
         .toList()
       ..sort((a, b) => a.am.compareTo(b.am));
+    final events = ((j['events'] as List?) ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(ChronologyMarker.fromJson)
+        .toList()
+      ..sort((a, b) => a.am.compareTo(b.am));
+    final spanEnd = (meta['spanEndAm'] as num?)?.toInt() ?? 0;
+    final contested = (j['contested'] as Map?)?.cast<String, dynamic>();
     return ChronologyData(
       defaultScheme: meta['defaultScheme'] as String? ?? '',
       spanStartAm: (meta['spanStartAm'] as num?)?.toInt() ?? 0,
-      spanEndAm: (meta['spanEndAm'] as num?)?.toInt() ?? 0,
+      spanEndAm: spanEnd,
+      // Older builds of the asset had no computed/placed split: the
+      // whole span was computed, so falling back to the span end keeps
+      // them rendering honestly rather than marking everything placed.
+      computedEndAm: (meta['computedEndAm'] as num?)?.toInt() ?? spanEnd,
       schemes: ((j['schemes'] as List?) ?? const [])
           .whereType<Map<String, dynamic>>()
           .map(ChronologyScheme.fromJson)
@@ -309,14 +472,41 @@ class ChronologyData {
           .whereType<Map<String, dynamic>>()
           .map(ChronologyLine.fromJson)
           .toList(),
+      eras: ((j['eras'] as List?) ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(ChronologyEra.fromJson)
+          .toList()
+        ..sort((a, b) => a.startAm.compareTo(b.startAm)),
       lifelines: lifelines,
       markers: markers,
+      events: events,
+      contested:
+          contested == null ? null : ChronologyContested.fromJson(contested),
       undrawnLines:
           ((meta['undrawnLines'] as Map?) ?? const {}).map<String, String>(
         (k, v) => MapEntry(k.toString(), v.toString()),
       ),
+      computedNote:
+          ((meta['computedNote'] as Map?) ?? const {}).map<String, String>(
+        (k, v) => MapEntry(k.toString(), v.toString()),
+      ),
     );
   }
+}
+
+/// `#RRGGBB` → 0xFFRRGGBB, degrading to a neutral grey rather than
+/// throwing, so a typo in the asset costs a dull bar, not a blank page.
+int _hexToArgb(String colorHex) {
+  final hex = colorHex.replaceFirst('#', '');
+  final parsed = int.tryParse(hex, radix: 16);
+  if (parsed == null || hex.length != 6) return 0xFF555555;
+  return 0xFF000000 | parsed;
+}
+
+String _localeMap(Map<String, String> m, String locale) {
+  if (locale == 'zh-Hant') return m['zh-Hant'] ?? m['en'] ?? '';
+  if (locale.startsWith('zh')) return m['zh-Hans'] ?? m['en'] ?? '';
+  return m['en'] ?? '';
 }
 
 String _pick(String locale, String en, String hans, String hant) {

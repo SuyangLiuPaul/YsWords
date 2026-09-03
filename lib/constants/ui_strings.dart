@@ -6998,10 +6998,10 @@ const uiStrings = {
     'zh-Hant': '生平對照',
   },
   'chronologyFeaturedSubtitle': {
-    'en': 'Who was alive at the same time — Adam to Abraham, drag the '
-        'year and see',
-    'zh-Hans': '谁与谁同时在世——从亚当到亚伯拉罕，拖动年份即可查看',
-    'zh-Hant': '誰與誰同時在世——從亞當到亞伯拉罕，拖動年份即可查看',
+    'en': 'Creation to Revelation on one axis — who was alive at the '
+        'same time, and when everything else happened',
+    'zh-Hans': '从创造到启示录同在一条刻度上——谁与谁同时在世，其余大事又在何时',
+    'zh-Hant': '從創造到啟示錄同在一條刻度上——誰與誰同時在世，其餘大事又在何時',
   },
   // The scheme banner. Never buried: biblical dates are contested, and
   // a chart that prints "4004 BC" without saying whose figure it is
@@ -7083,13 +7083,101 @@ const uiStrings = {
     'zh-Hant': '此年份的推算依據',
   },
   'chronologyScopeNote': {
-    'en': 'First pass: Genesis 5 and 11 only — Adam to Abraham, the '
+    'en': 'The bars cover Genesis 5 and 11 only — Adam to Abraham, the '
         'span where Scripture states the ages these years are computed '
-        'from.',
-    'zh-Hans': '第一版仅涵盖创世记第 5、11 章——从亚当到亚伯拉罕，'
-        '即经文明载岁数、可据以推算年份的一段。',
-    'zh-Hant': '第一版僅涵蓋創世記第 5、11 章——從亞當到亞伯拉罕，'
-        '即經文明載歲數、可據以推算年份的一段。',
+        'from. The axis runs on to Revelation because the events do, '
+        'and the two are drawn differently on purpose.',
+    'zh-Hans': '横条仅涵盖创世记第 5、11 章——从亚当到亚伯拉罕，'
+        '即经文明载岁数、可据以推算年份的一段。刻度一直延伸到启示录，'
+        '因为事件延伸到那里；两者的画法刻意不同。',
+    'zh-Hant': '橫條僅涵蓋創世記第 5、11 章——從亞當到亞伯拉罕，'
+        '即經文明載歲數、可據以推算年份的一段。刻度一直延伸到啟示錄，'
+        '因為事件延伸到那裡；兩者的畫法刻意不同。',
+  },
+  // ── Second pass, 2026-09-04 ───────────────────────────────────
+  // The chart used to stop at Abraham (AM 2187) while the event list
+  // on the SAME page ran to Revelation, so scrolling right never
+  // arrived: 「chronology chart为什么不能一直往右边一直到今天」…
+  // 「直接做到跟event一致就行了」. The axis now spans AM 0-4098
+  // (Creation → AD 95), which forces the chart to say which stretch is
+  // computed and which is merely placed.
+  'chronologyOverview': {
+    'en': 'Whole span',
+    'zh-Hans': '全程概览',
+    'zh-Hant': '全程概覽',
+  },
+  'chronologyComputedKey': {
+    'en': 'Computed from ages Scripture states',
+    'zh-Hans': '由经文明载的岁数推算',
+    'zh-Hant': '由經文明載的歲數推算',
+  },
+  'chronologyPlacedKey': {
+    'en': 'Placed event — dated by scholarship, not counted',
+    'zh-Hans': '定位事件——出于学界定年，非由经文推算',
+    'zh-Hant': '定位事件——出於學界定年，非由經文推算',
+  },
+  'chronologyComputedEnds': {
+    'en': 'Genesis 5 & 11 ages end here',
+    'zh-Hans': '创世记 5、11 的岁数到此为止',
+    'zh-Hant': '創世記 5、11 的歲數到此為止',
+  },
+  'chronologyContestedLabel': {
+    'en': 'The two scales disagree here',
+    'zh-Hans': '两套刻度在此不合',
+    'zh-Hant': '兩套刻度在此不合',
+  },
+  'chronologyNoLifelines': {
+    'en': 'no lifelines here',
+    'zh-Hans': '此处无生平横条',
+    'zh-Hant': '此處無生平橫條',
+  },
+  'chronologyEras': {
+    'en': 'Eras',
+    'zh-Hans': '时代',
+    'zh-Hant': '時代',
+  },
+  'chronologyEvents': {
+    'en': 'Events',
+    'zh-Hans': '事件',
+    'zh-Hant': '事件',
+  },
+  'chronologyBasis': {
+    'en': 'Where this year comes from',
+    'zh-Hans': '此年份的来源',
+    'zh-Hant': '此年份的來源',
+  },
+  'chronologyBasisComputed': {
+    'en': 'Counted from the begetting ages Genesis 5 and 11 state. The '
+        'BC label is that count placed on the 4004 BC anchor.',
+    'zh-Hans': '由创世记 5、11 章所记的生子年龄累加而得。公元前标签是把这个'
+        '年数放在公元前 4004 年的锚点上。',
+    'zh-Hant': '由創世記 5、11 章所記的生子年齡累加而得。公元前標籤是把這個'
+        '年數放在公元前 4004 年的錨點上。',
+  },
+  'chronologyBasisPlaced': {
+    'en': 'Placed at {year} by assets/bible_timeline.json — the same '
+        'date the Events list on this page shows. Scripture gives no '
+        'continuous chain of ages here, so this is a placement, not a '
+        'count.',
+    'zh-Hans': '由 assets/bible_timeline.json 定在{year}——与本页「事件」'
+        '列表所示相同。此处经文没有连续的年岁链条，因此这是定位，不是推算。',
+    'zh-Hant': '由 assets/bible_timeline.json 定在{year}——與本頁「事件」'
+        '列表所示相同。此處經文沒有連續的年歲鏈條，因此這是定位，不是推算。',
+  },
+  'chronologyAlsoPlaced': {
+    'en': 'The Events list on this page dates the same thing {year} — '
+        '{delta} years from the counted figure. Both are shown where '
+        'their own source puts them.',
+    'zh-Hans': '本页「事件」列表把同一件事定在{year}——与推算值相差 {delta} '
+        '年。两者都按各自来源的位置照实呈现。',
+    'zh-Hant': '本頁「事件」列表把同一件事定在{year}——與推算值相差 {delta} '
+        '年。兩者都按各自來源的位置照實呈現。',
+  },
+  'chronologySpanNote': {
+    'en': 'Creation → Revelation, {years} years, the same span as the '
+        'Events list.',
+    'zh-Hans': '创造 → 启示录，共 {years} 年，与「事件」列表同一跨度。',
+    'zh-Hant': '創造 → 啟示錄，共 {years} 年，與「事件」列表同一跨度。',
   },
   // Share-link toasts (sermons + bible verses)
   'shareLink': {
