@@ -294,6 +294,20 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
   /// a YouTube request for someone who was only browsing the list.
   VideoTrack? _playing;
 
+  /// Where the next embed should start, in whole seconds.
+  ///
+  /// Only ever non-zero for one case: the reader switched language while
+  /// a video was playing, and the outgoing player told us where it was.
+  /// The self-hosted player this page replaced kept your place across
+  /// that switch and the YouTube embed did not — it re-armed the poster,
+  /// so switching language 40 minutes into a teaching meant finding
+  /// those 40 minutes again by hand.
+  ///
+  /// Reset to 0 by every other way of arriving at a video (the poster
+  /// tap, a change of episode), because those are all "start this from
+  /// the beginning" and a stale resume there would be worse than none.
+  int _resumeAt = 0;
+
   VideoTrack? get _selected =>
       _episode.trackFor(_lang) ?? _episode.defaultTrack;
 
@@ -305,7 +319,13 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
     // registering is exactly that asymmetry, made explicit.
     await MediaFocus.instance.claim(this);
     if (youtubeEmbed(track.youtubeId) != null) {
-      if (mounted) setState(() => _playing = track);
+      if (mounted) {
+        setState(() {
+          _playing = track;
+          // A tap on the poster is "play this", not "resume this".
+          _resumeAt = 0;
+        });
+      }
       return;
     }
     if (context.mounted) {
@@ -526,7 +546,7 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
     }
     final playing = _playing;
     if (playing != null && playing.youtubeId == track.youtubeId) {
-      final embed = youtubeEmbed(track.youtubeId);
+      final embed = youtubeEmbed(track.youtubeId, startSeconds: _resumeAt);
       if (embed != null) {
         return AspectRatio(aspectRatio: 16 / 9, child: embed);
       }
@@ -583,11 +603,30 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
             label: Text(uiStrings[t.labelKey]?[locale] ?? t.lang),
             onSelected: (_) {
               if (t.lang == _lang) return;
+              // Ask the outgoing player where it is BEFORE `setState`
+              // unmounts its iframe — this is the only moment the
+              // question can be asked, and the answer is already cached
+              // from the player's own reports, so it is a synchronous
+              // read of a window that is about to stop existing.
+              final was = _playing;
+              final resume = was == null
+                  ? 0
+                  : (youtubeEmbedPositionSeconds(was.youtubeId) ?? 0);
+              final next = _episode.trackFor(t.lang) ?? _episode.defaultTrack;
               setState(() {
                 _lang = t.lang;
-                // Switching language re-arms the poster rather than
-                // swapping the iframe under a playing video.
-                _playing = null;
+                // Playing → stay playing, at the same place in the other
+                // language's take of the same episode. Only browsing →
+                // leave the poster armed, which is what it was already
+                // doing and what the reader asked for by not pressing
+                // play.
+                //
+                // Nothing here can be done on a platform whose player
+                // cannot answer: `youtubeEmbedPositionSeconds` returns
+                // null there, `resume` falls to 0, and the switch behaves
+                // exactly as it did before.
+                _resumeAt = resume;
+                _playing = was == null ? null : next;
               });
             },
           ),
@@ -625,6 +664,9 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
       onTap: () => setState(() {
         _episode = e;
         _playing = null;
+        // A different episode is a different teaching; a position from
+        // the last one would be meaningless in it.
+        _resumeAt = 0;
         if (e.trackFor(_lang) == null) {
           // This episode has nothing in the current language. Fall back
           // the same way the page opened — by locale — rather than to
