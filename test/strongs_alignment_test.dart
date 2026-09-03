@@ -327,11 +327,24 @@ void main() {
         polysemous += total;
       }
     });
-    expect(totalRuns, 360642);
+    // 2026-09-03, at merge: 360,642 -> 360,640. The two runs are NOT lost
+    // taggings. `repair_tagged_supplied_words.py`, written in a parallel
+    // branch, deleted four words this edition does not print; two of them
+    // were whole runs, and each folded its Strong's number into the
+    // following run's `i` (列王紀上 19:18's convention), so no number left
+    // the corpus — two runs merged into their neighbours.
+    // Verified rather than assumed: this branch and the punctuation branch
+    // both census 367,574 raw runs, the supplied-word branch 367,572, and
+    // the merge 367,572 — the same -2, from the one change that removes
+    // runs at all. The -2 lands one in `polysemous` (140,159 -> 140,158)
+    // and one in `unanimous` (10,566 -> 10,565); the sum assertion below
+    // is what proves it is accounted for rather than absorbed somewhere
+    // unnoticed, and it is the reason to keep that assertion.
+    expect(totalRuns, 360640);
     expect(admitted, 24480);
     expect(belowBar, 185437);
-    expect(polysemous, 140159);
-    expect(unanimous, 10566);
+    expect(polysemous, 140158);
+    expect(unanimous, 10565);
     expect(admitted + belowBar + polysemous + unanimous, totalRuns);
     // The headline: one run in fifteen is judgeable at all.
     expect(admitted / totalRuns, closeTo(0.068, 0.001));

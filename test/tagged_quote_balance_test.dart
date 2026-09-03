@@ -123,7 +123,23 @@ void main() {
       }
     }
     expect(hits, isEmpty);
-    expect(openers, 5099);
+    // 5,096 before this file's own repair, 5,099 after it (撒上 23:7 and
+    // 摩 9:13's `：”` became `：“`, and 結 3:4 gained the opener 3:9 was
+    // already closing).
+    //
+    // 2026-09-03, at merge: 5,106. The extra 7 are NOT from this repair —
+    // they are `repair_tagged_ascii_punctuation.py`'s widening of running-
+    // text ASCII colons that happened to be followed by `“`. The two
+    // repairs were written in parallel branches and neither could see the
+    // other, so both pinned a number taken before the other existed.
+    // Verified additive rather than assumed: base 5,096, this branch alone
+    // 5,099 (+3), the punctuation branch alone 5,103 (+7), merged 5,106.
+    // 5,096 + 3 + 7 = 5,106 exactly, so neither repair undid the other.
+    //
+    // What this assertion is FOR is the `hits` check above — that no speech
+    // colon anywhere is followed by a closing mark. This total is the
+    // second opinion on it; if it moves, name the verses that moved.
+    expect(openers, 5106);
   });
 
   test('the repairs moved punctuation only', () {
