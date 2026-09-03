@@ -41,12 +41,29 @@ WHAT IT LOOKS FOR — and what a hit does and does NOT mean
   signature purely because both forms are live Traditional characters and two
   editions chose differently. **The signature is necessary, not sufficient.**
 
-FROZEN ASSETS
-  `assets/cuvs-yhwh.json` and `assets/cuvs-yhwh-tr.json` are audited and
-  REPORTED but marked FROZEN in the output and must never be repaired — the
+ASSETS THAT ARE NOT OURS TO REPAIR — read this before acting on any row
+  Two kinds, and the audit labels both in its output and skips both in
+  --suspects, because a suspect list is a work list and neither of these is
+  work:
+
+  FROZEN — `assets/cuvs-yhwh.json` and `assets/cuvs-yhwh-tr.json`. The
   publisher declined our corrections (user, 2026-09-02) and
-  `test/cuvs_yhwh_frozen_test.dart` pins both by SHA-256. Their rows exist so
-  a future reader does not mistake their absence for cleanliness.
+  `test/cuvs_yhwh_frozen_test.dart` pins both by SHA-256. Their rows are
+  printed so a future reader does not mistake their absence for cleanliness.
+
+  NOT OURS — `assets/biblexg-v2*.json`, which reproduce a publisher's own
+  printed edition. **A glyph there is evidence about the SOURCE, never about
+  our converter.** This label exists because the first version of this audit
+  led a pass straight into that: it reported 隻, 崙, 穀 and 癒 rows for
+  `biblexg-v2-tr.json`, ten positions were "repaired", and every one turned
+  out to be the printed 註釋本's own spelling. The commit was reverted whole.
+
+  The trap is worth naming because the evidence that felt strongest was the
+  one that was wrong: the asset's INTERNAL inconsistency. 馬太福音 10:29 sets
+  只 and 隻 nine characters apart and 路加福音 12:6 sets 隻 — and all of that
+  is true of the printed edition. An internal inconsistency is evidence about
+  the source. Before repairing ANY asset, find out whether an external
+  authority for it exists.
 
 This script only reads. It writes nothing and repairs nothing.
 """
@@ -98,6 +115,33 @@ PAIRS = [
 ]
 
 FROZEN = {"assets/cuvs-yhwh.json", "assets/cuvs-yhwh-tr.json"}
+
+# Assets that are NOT our conversion — a publisher's own text that this repo
+# reproduces. A glyph in one of these is evidence about the SOURCE, never about
+# our converter, and it is never ours to repair. Where it looks wrong it goes
+# in the enquiry document named here; it does not get edited.
+#
+# This list exists because the audit led a pass straight into that trap on
+# 2026-09-03. `biblexg-v2-tr.json` reported HOLE / mixed rows for 隻, 崙, 穀 and
+# 癒; all four were the printed 註釋本's own spellings, ten positions were
+# "repaired", and the commit was reverted in full. The repo already said so in
+# three places — the docstring of `test/traditional_conversion_test.dart`, the
+# enquiry document, and `tools/proofread_ljk_tr.py` — and the audit said
+# nothing, so the audit says it now.
+#
+# The trap has a specific shape worth naming: the strongest-looking evidence
+# was the asset's INTERNAL inconsistency (馬太福音 10:29 sets 只 and 隻 nine
+# characters apart; 路加福音 12:6 sets 隻). Both are true of the print. An
+# internal inconsistency is evidence about the source, not about our
+# conversion.
+EXTERNAL_AUTHORITY = {
+    "assets/biblexg-v2-tr.json":
+        "梁家鏗譯本 註釋本 2025 第二版 — verify with `pdftotext -enc UTF-8` "
+        "over the publisher's PDFs before believing any row here; report to "
+        "docs/梁家鏗譯本-請教出版方.md, never repair",
+    "assets/biblexg-v2.json":
+        "the publisher's own Simplified web edition — same rule",
+}
 
 # ---------------------------------------------------------------------------
 # The layer that makes the counts actionable.
@@ -337,8 +381,10 @@ def suspects(root: Path, only: str | None, lane_want: str):
         rel = path.relative_to(root).as_posix()
         if only and only not in rel:
             continue
-        if rel in FROZEN:
-            continue          # audited by count only; never a work item
+        if rel in FROZEN or rel in EXTERNAL_AUTHORITY:
+            # Audited by count only. A suspect list is a work list, and neither
+            # a frozen asset nor a publisher's own text is work.
+            continue
         for lane, s in read_lanes(path, rel):
             if lane_want != "all" and lane != lane_want:
                 continue
@@ -401,7 +447,12 @@ def main() -> int:
                     f"    {label:<12} {right} {r:>6}   {wrong} {w:>6}   {sig}")
             if not lines:
                 continue
-            tag = "  [FROZEN — report only, never repair]" if rel in FROZEN else ""
+            tags = []
+            if rel in FROZEN:
+                tags.append("FROZEN — report only, never repair")
+            if rel in EXTERNAL_AUTHORITY:
+                tags.append("NOT OURS — " + EXTERNAL_AUTHORITY[rel])
+            tag = ("  [" + "; ".join(tags) + "]") if tags else ""
             print(f"\n{rel}  ({lane}){tag}")
             print("\n".join(lines))
     return 0
