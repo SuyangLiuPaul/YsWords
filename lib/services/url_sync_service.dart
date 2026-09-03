@@ -78,15 +78,16 @@ class UrlSyncService {
   static void setKnownRoutes(Set<String> routeNames) =>
       impl.setKnownRoutes(routeNames);
 
-  /// 2026-09-01 (URL-routing Stage 2): fired when a browser Back/Forward
-  /// navigates AWAY from a registered named route. `popstate` alone only
-  /// updates `window.location`; the Flutter Navigator never hears about
-  /// it (docs/url-routing-plan.md §5, point 6 — "two stacks of the same
-  /// length but different content"). `main.dart` registers `Get.back()`
-  /// here so the two stacks collapse into one, the way §5 says adopting
-  /// `getPages` should make happen "by construction." Native no-op.
-  static void setPopRouteCallback(void Function() cb) =>
-      impl.setPopRouteCallback(cb);
+  // 2026-09-03: `setPopRouteCallback` is GONE, not deprecated. It was
+  // added 2026-09-01 on the reasoning that "`popstate` alone only
+  // updates `window.location`; the Flutter Navigator never hears about
+  // it" (docs/url-routing-plan.md §5 point 6). Measured in a real
+  // release web build, the Navigator hears about it fine: Flutter's own
+  // `SingleEntryBrowserHistory` turns the Back press into a `popRoute`
+  // platform message and `WidgetsApp.didPopRoute` pops one route,
+  // BEFORE this package's popstate listener even runs. Registering a
+  // second pop on top of that made one Back unwind two pages. See
+  // `url_sync_service_web.dart`'s popstate listener for the trace.
 
   /// 2026-09-01 (URL-routing Stage 2): fired once, at boot, if the URL
   /// the app was opened with names a registered route directly (e.g. a
