@@ -158,10 +158,16 @@ void main() {
       // test, so this builds the web candidate list by hand and runs
       // the real rule over it.
       final webList = bibleVersions
+          .where((v) => !disabledVersions.contains(v.value))
           .where((v) => !kWebRestrictedVersions.contains(v.value))
           .toList();
       expect(resolvableVersionFrom('nasb', webList), 'kjv');
-      expect(resolvableVersionFrom('leb', webList), 'kjv');
+      // 2026-09-04: the LEB is served on the web again, so a reader whose
+      // stored edition is the LEB now STAYS on it. This line asserted
+      // 'kjv' for the two days it was stripped; that it had to change is
+      // the point — the rule is "coerce only what this build cannot
+      // load", not "coerce English to the KJV".
+      expect(resolvableVersionFrom('leb', webList), 'leb');
       // Chinese editions are untouched and must not be redirected.
       expect(resolvableVersionFrom('cuvs-yhwh', webList), 'cuvs-yhwh');
       expect(resolvableVersionFrom('cuvs-yhwh-tr', webList), 'cuvs-yhwh-tr');
@@ -236,24 +242,47 @@ void main() {
     });
   });
 
-  test('off web, the picker still offers them', () {
-    // These tests run on the VM, where the const `dart.library.js_interop`
-    // is false — so this asserts the gate is genuinely web-only and has
-    // not accidentally hidden the editions everywhere.
-    final codes = availableVersions.map((v) => v.value).toSet();
+  // 2026-09-04: this used to be "off web, the picker still offers them",
+  // which pinned that the gate was web-ONLY. With the LEB restored to the
+  // web that same day, the NASB is all that is left in the set — and it
+  // is in `disabledVersions` too, hidden everywhere — so the old test had
+  // no subject any more: it could no longer tell a web-only gate from a
+  // global one. Replaced rather than deleted, because the property that
+  // actually matters was never "web-only"; it was this.
+  test('web never offers an edition whose asset it strips', () {
+    // The list a web build would show, spelled out rather than read from
+    // `availableVersions`: that getter narrows on a compile-time const
+    // which is false under `flutter test`, so the web branch cannot be
+    // reached from the VM at all.
+    final webAvailable = bibleVersions
+        .where((v) => !disabledVersions.contains(v.value))
+        .where((v) => !kWebRestrictedVersions.contains(v.value))
+        .toList();
+    final codes = webAvailable.map((v) => v.value).toSet();
+
     for (final v in kWebRestrictedVersions) {
-      // 2026-09-04: skip anything ALSO in `disabledVersions`. The NASB
-      // is now hidden on every platform by that separate mechanism, so
-      // it is no longer evidence either way about whether THIS gate is
-      // web-only — the property here is still worth pinning, but the
-      // LEB is what pins it now. If that set ever empties, this test
-      // stops testing anything and should be revisited rather than
-      // deleted quietly.
-      if (disabledVersions.contains(v)) continue;
-      expect(codes, contains(v));
+      expect(codes, isNot(contains(v)),
+          reason: '$v is stripped from build/web but still offered there — '
+              'that is the v1.4.193/194 boot crash, exactly');
     }
-    expect(kWebRestrictedVersions.difference(disabledVersions), isNotEmpty,
-        reason: 'every web-restricted edition is now disabled outright, '
-            'so this test no longer proves the web gate is web-only');
+    // And the other direction: stripping must never empty a language out
+    // of the selector. English is the one at risk — it is the only
+    // language any restricted edition has ever belonged to.
+    for (final lang in const ['en', 'zh-Hans', 'zh-Hant']) {
+      expect(webAvailable.where((v) => v.language == lang), isNotEmpty,
+          reason: '$lang has no edition left on web');
+    }
+    // A stored code for a stripped edition has to land somewhere real.
+    expect(resolvableVersionFrom('nasb', webAvailable), 'kjv');
+  });
+
+  test('the LEB is served on the web — a decision, not a default', () {
+    // Restored 2026-09-04 at the owner's instruction, after two days out.
+    // Pinned so that putting it back into the restricted set is a
+    // deliberate edit with this line in the diff, not a quiet re-sweep:
+    // the LEB was never named in any licensing note, and being swept in
+    // by caution once is how it left the site the first time.
+    expect(kWebRestrictedVersions, isNot(contains('leb')));
+    expect(bibleVersions.map((v) => v.value), contains('leb'));
   });
 }

@@ -306,7 +306,10 @@ rm -f "$PROJECT/build/web/_headers"
 #
 # Runs per build, like prerender(), because each `flutter build web`
 # rewrites build/web in place and puts the files back.
-WEB_RESTRICTED_ASSETS=(nasb leb)
+# 2026-09-04: `leb` removed at the owner's instruction — it is served on
+# the web again. See kWebRestrictedVersions for why it was here and why
+# it is not any more. Keep this list equal to that constant.
+WEB_RESTRICTED_ASSETS=(nasb)
 strip_restricted_assets() {
   echo "==> stripping unlicensed translations from build/web"
   for v in "${WEB_RESTRICTED_ASSETS[@]}"; do

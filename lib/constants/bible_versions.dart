@@ -202,7 +202,32 @@ const disabledVersions = <String>{'nasb'};
 ///   * `tools/release_web.sh`, which deletes the files out of `build/web`
 ///     after every `flutter build web`.
 /// `test/web_restricted_versions_test.dart` fails if either half goes away.
-const kWebRestrictedVersions = <String>{'nasb', 'leb'};
+/// 2026-09-04 — the LEB comes back out of this set, at the owner's
+/// instruction, and is served on the web again.
+///
+/// It went in two days earlier on the reasoning above, but note what that
+/// same paragraph already conceded: **the LEB had never been named in any
+/// licensing note.** Every write-up, and every earlier exclusion, said
+/// NASB alone. It was swept in by caution rather than by anything anyone
+/// had actually established about Logos/Faithlife's terms, and the owner
+/// has decided not to keep an edition off the site on that basis.
+///
+/// The concern the strip answers is real and unchanged, so it is worth
+/// stating plainly rather than quietly dropping: `flutter build web`
+/// writes every declared asset into `build/web/assets/assets/`, so
+/// serving the LEB on the web means the complete text is one GET away at
+/// a predictable URL (8,812,100 bytes, measured 2026-09-02). There is no
+/// middle setting — Flutter web either publishes the asset or does not —
+/// short of moving the text behind a server-side API, which is a
+/// different piece of work. That trade is the owner's to make and this
+/// records that they made it.
+///
+/// What is left here is the NASB, which is also in [disabledVersions] and
+/// so is offered on no platform at all. The set still has a job: it drives
+/// the asset strip in `tools/release_web.sh`, and hiding an edition from
+/// the picker while still shipping its file for anyone who knows the URL
+/// would be theatre.
+const kWebRestrictedVersions = <String>{'nasb'};
 
 /// `kIsWeb`, spelled out rather than imported.
 ///

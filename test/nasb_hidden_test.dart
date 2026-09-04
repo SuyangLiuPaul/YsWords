@@ -49,13 +49,12 @@ void main() {
         containsAll(<String>['kjv', 'leb']));
   });
 
-  test('the LEB is deliberately still offered on native', () {
-    // Pinned so this is a decision and not a drift: the same 2026-09-02
-    // note names the LEB in the same licensing position as the NASB, and
-    // it stays web-restricted. The owner asked for the NASB only, so the
-    // LEB is still here — if that changes, this expectation is the line
-    // that should be edited on purpose.
-    expect(kWebRestrictedVersions, containsAll(<String>['nasb', 'leb']));
+  test('the LEB is untouched by any of this, on every platform', () {
+    // The owner asked for the NASB and the NASB only. Later the same day
+    // the LEB also came out of `kWebRestrictedVersions`, so it is now
+    // offered everywhere — see web_restricted_versions_test.dart, which
+    // pins the web half. Both lines here are the native half.
+    expect(disabledVersions, isNot(contains('leb')));
     expect(availableVersions.map((v) => v.value), contains('leb'));
   });
 }
