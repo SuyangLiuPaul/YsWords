@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/entry_copy.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/chronology.dart';
@@ -566,6 +568,34 @@ class _EventTile extends StatelessWidget {
                               ),
                             ),
                           ),
+                          // Only while expanded: collapsed, this list
+                          // is a dense timeline rail and a copy icon on
+                          // every row would compete with the years for
+                          // the eye. Expanded is also the only state
+                          // where the description — the part worth
+                          // taking — is on screen.
+                          if (expanded)
+                            IconButton(
+                              icon: const Icon(Icons.copy_outlined),
+                              iconSize: 16,
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                  minWidth: 32, minHeight: 32),
+                              tooltip: uiStrings['copySelection']?[locale] ??
+                                  'Copy',
+                              onPressed: () =>
+                                  ClipboardHelper.copyWithFeedback(
+                                context,
+                                formatEntryForCopy(
+                                  heading: '${event.displayYear(locale)} — '
+                                      '${event.localizedTitle(locale)}',
+                                  body: event.localizedDesc(locale),
+                                  refs: event.refs.map(
+                                      (r) => localizedTimelineRef(r, locale)),
+                                ),
+                              ),
+                            ),
                           Icon(
                             expanded
                                 ? Icons.expand_less_rounded
@@ -631,6 +661,22 @@ class _EventTile extends StatelessWidget {
 /// resolves 123 of 123, so nothing on screen changes; what changes is
 /// what happens when an import does not, which
 /// `test/reference_chip_unresolvable_test.dart` pins.
+/// A raw canonical reference (`Genesis 12:1`) in the reader's language.
+///
+/// Top-level rather than a method on [_RefChip] because the copy button
+/// needs the identical string: what lands on the clipboard should be
+/// what was on the screen, not the English the data happens to store.
+/// Unparseable input is returned untouched — the event still cites it,
+/// and inventing a localisation for something we could not parse would
+/// be worse than showing the raw form.
+String localizedTimelineRef(String raw, String locale) {
+  final p = parseReference(raw);
+  if (p == null) return raw;
+  final book = localeAwareBookName(p.englishBook, locale);
+  final tail = p.toString().replaceFirst(p.englishBook, '');
+  return '$book$tail';
+}
+
 class _RefChip extends StatelessWidget {
   final String raw;
   final String locale;
@@ -643,13 +689,7 @@ class _RefChip extends StatelessWidget {
     required this.onTap,
   });
 
-  String _localized() {
-    final p = parseReference(raw);
-    if (p == null) return raw;
-    final book = localeAwareBookName(p.englishBook, locale);
-    final tail = p.toString().replaceFirst(p.englishBook, '');
-    return '$book$tail';
-  }
+  String _localized() => localizedTimelineRef(raw, locale);
 
   @override
   Widget build(BuildContext context) {
