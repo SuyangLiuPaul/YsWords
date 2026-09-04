@@ -69,7 +69,11 @@ void main() {
     await openMenu(tester, currentVersion: 'cuvs-yhwh');
     await tester.tap(find.text('English'));
     await tester.pumpAndSettle();
-    expect(find.text('New American Standard Bible'), findsOneWidget);
+    // Was the NASB until 2026-09-04, when it was hidden everywhere. The
+    // point of this test is that the pill SWAPS THE LIST, so any English
+    // edition proves it — the LEB is simply one that is still offered.
+    expect(find.text('Lexham English Bible'), findsOneWidget);
+    expect(find.text('New American Standard Bible'), findsNothing);
     await tester.tap(find.text('繁體中文'));
     await tester.pumpAndSettle();
     expect(find.text('和合本雅偉版(繁體)'), findsOneWidget);

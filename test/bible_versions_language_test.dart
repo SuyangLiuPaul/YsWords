@@ -91,8 +91,15 @@ void main() {
   });
 
   test('versionsForLanguage returns the expected editions', () {
+    // 2026-09-04: 'nasb' left this list because it is now in
+    // `disabledVersions` and offered on no platform. The catalogue entry
+    // still exists — see test/nasb_hidden_test.dart, which pins both
+    // halves of that (hidden from the picker, still resolvable so an old
+    // stored preference lands on the KJV rather than on nothing).
     expect(versionsForLanguage('en').map((v) => v.value),
-        containsAll(<String>['kjv', 'leb', 'nasb']));
+        containsAll(<String>['kjv', 'leb']));
+    expect(versionsForLanguage('en').map((v) => v.value),
+        isNot(contains('nasb')));
     expect(versionsForLanguage('zh-Hans').map((v) => v.value),
         containsAll(<String>['cuvs-yhwh', 'biblexg-v2']));
     expect(versionsForLanguage('zh-Hant').map((v) => v.value),

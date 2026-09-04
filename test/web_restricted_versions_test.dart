@@ -242,7 +242,18 @@ void main() {
     // not accidentally hidden the editions everywhere.
     final codes = availableVersions.map((v) => v.value).toSet();
     for (final v in kWebRestrictedVersions) {
+      // 2026-09-04: skip anything ALSO in `disabledVersions`. The NASB
+      // is now hidden on every platform by that separate mechanism, so
+      // it is no longer evidence either way about whether THIS gate is
+      // web-only — the property here is still worth pinning, but the
+      // LEB is what pins it now. If that set ever empties, this test
+      // stops testing anything and should be revisited rather than
+      // deleted quietly.
+      if (disabledVersions.contains(v)) continue;
       expect(codes, contains(v));
     }
+    expect(kWebRestrictedVersions.difference(disabledVersions), isNotEmpty,
+        reason: 'every web-restricted edition is now disabled outright, '
+            'so this test no longer proves the web gate is web-only');
   });
 }

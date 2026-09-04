@@ -141,12 +141,35 @@ const bibleVersions = <BibleVersionInfo>[
   ),
 ];
 
-/// Versions hidden from the picker (currently none — CUV, CNV, and
-/// LJK1 were removed outright in 2026-08 rather than hidden; see
-/// git history for the rationale). Kept as a mechanism in case a
-/// future edition needs to be superseded without breaking old
-/// shared links.
-const disabledVersions = <String>{};
+/// Versions hidden from the picker on EVERY platform (CUV, CNV, and
+/// LJK1 were removed outright in 2026-08 rather than hidden; see git
+/// history for the rationale).
+///
+/// 2026-09-04 — `nasb` joins it, at the owner's instruction. This is the
+/// escalation the note on [kWebRestrictedVersions] anticipated two days
+/// earlier: that change hid the NASB on web only, "pending the
+/// publisher's answer", on the reasoning that bundling inside a native
+/// app is a materially weaker act than serving a downloadable file. The
+/// owner has now decided not to wait on that answer, so the edition is
+/// offered nowhere.
+///
+/// **Hidden, not removed.** `assets/nasb.json` is still declared in
+/// `pubspec.yaml` and still ships inside the native binary; what changes
+/// is that nothing links to it. That is deliberate and reversible — the
+/// full NIV treatment (entry AND asset deleted) remains the next step if
+/// the answer comes back no, and it is the owner's call to take, not
+/// something to tidy up on the way past.
+///
+/// Nothing else needs touching, and that is by design rather than luck:
+///   * [resolvableVersion] already coerces a stored or defaulted `nasb`
+///     into the nearest available edition of the same language — English
+///     lands on the KJV, which is public domain and can never be
+///     restricted. Both `MainProvider` defaults already call it (they
+///     were changed to on 2026-09-02, for the web strip).
+///   * `version_preloader.dart` filters its warm-up queue through
+///     [availableVersions], so the NASB drops out of it too.
+/// `test/nasb_hidden_test.dart` pins the whole chain.
+const disabledVersions = <String>{'nasb'};
 
 /// 2026-09-02: editions we may not redistribute as a fetchable file, and
 /// therefore do not ship in the WEB bundle.
