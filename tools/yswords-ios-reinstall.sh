@@ -76,6 +76,51 @@
 # Note that `devicectl list devices` prints a CoreDevice IDENTIFIER,
 # which is NOT the UDID a profile lists — mistaking one for the other
 # is how the first diagnosis went wrong.
+#
+# ─── Android: TWO faults, and the first one hid the second ────────
+#
+# 2026-09-04. The Mi Pad was sitting on 1.4.163 from 2026-08-26 while
+# the app had reached 1.4.207 — nine days of nightlies that all
+# reported success on the other targets.
+#
+# FAULT 1 — Gradle's jniLib merge stuck up-to-date. The staleness gate
+# below fired every night, correctly. But the remediation this file
+# used to print — "delete build/app/intermediates/flutter" — does not
+# work, and it took a full sweep of every libapp.so under build/ to see
+# why. Measured:
+#
+#   intermediates/flutter/intlRelease/jniLibs/*/libapp.so   FRESH
+#   intermediates/merged_jni_libs/.../out/*/libapp.so       STALE
+#   intermediates/merged_native_libs/.../out/lib/*.so       STALE
+#   intermediates/stripped_native_libs/.../out/lib/*.so     STALE
+#
+# The AOT compile was fine and always had been; `.dart_tool/flutter_build`
+# held a snapshot carrying the current stamp. What was stuck was
+# `mergeIntlReleaseJniLibFolders`, re-emitting an Aug 25 copy whatever
+# its inputs did. intermediates/flutter is that task's INPUT, already
+# fresh — deleting it changes nothing. Clear the OUTPUTS instead:
+#
+#   build/app/intermediates/merged_jni_libs/<flavor>Release
+#   build/app/intermediates/merged_native_libs/<flavor>Release
+#   build/app/intermediates/stripped_native_libs/<flavor>Release
+#
+# (`flutter clean` also works and is the blunt version.)
+#
+# FAULT 2 — versionCode 1, revealed only once fault 1 was fixed and an
+# install was actually attempted:
+#
+#   INSTALL_FAILED_VERSION_DOWNGRADE: Update version code 1 is older
+#   than current 2001
+#
+# pubspec.yaml carries a bare `version: 1.4.207` with no `+N`, and
+# bump_version.sh does not add one, so `flutter.versionCode` fell back
+# to 1 on every build while the device held 2001 from an older one.
+# android/app/build.gradle.kts now DERIVES the code from the version
+# name (1.4.207 -> 1004207) so it cannot drift out of step again.
+#
+# The lesson for this file: a guard that stops the pipeline hides
+# everything downstream of it. Fault 2 had been there just as long and
+# could not be seen until fault 1 was cleared.
 
 # NOTE: NO `set -e` here — we want install failures on one device
 # to not abort the others.
@@ -1011,8 +1056,15 @@ else
   echo "✗ flutter build apk FAILED, or the APK it produced does not carry"
   echo "  the current code — skipping Android installs. If the content check"
   echo "  is the one that fired, the Dart AOT task was wrongly up-to-date:"
-  echo "  clear it with \`$FLUTTER clean\` (or delete"
-  echo "  build/app/intermediates/flutter) and re-run."
+  # 2026-09-04: this used to say "delete build/app/intermediates/flutter",
+  # which never works — that is the merge task's INPUT and it is already
+  # fresh. The stuck task is mergeJniLibFolders, so clear its OUTPUT.
+  echo "  The AOT snapshot itself is usually fine; what sticks is"
+  echo "  Gradle's mergeJniLibFolders. Clear its outputs and re-run:"
+  echo "    build/app/intermediates/merged_jni_libs/*Release"
+  echo "    build/app/intermediates/merged_native_libs/*Release"
+  echo "    build/app/intermediates/stripped_native_libs/*Release"
+  echo "  (\`$FLUTTER clean\` is the blunt version and also works.)"
   failures=$((failures + ${#ANDROID_DEVICES[@]}))
 fi
 

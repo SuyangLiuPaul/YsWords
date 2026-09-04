@@ -80,7 +80,38 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
+        // 2026-09-04: versionCode is DERIVED from the version name, not
+        // taken from `flutter.versionCode`.
+        //
+        // pubspec.yaml carries a bare `version: 1.4.207` with no `+N`
+        // build number, and tools/bump_version.sh does not add one — so
+        // `flutter.versionCode` fell back to 1 on every build. The Mi
+        // Pad already had versionCode 2001 from an older build, and
+        // Android refuses a lower code:
+        //
+        //   INSTALL_FAILED_VERSION_DOWNGRADE: Update version code 1 is
+        //   older than current 2001
+        //
+        // Which means the 04:00 nightly could never install on Android
+        // again, whatever it built. That is how the Mi Pad sat on
+        // 1.4.163 from 2026-08-26 while the app went to 1.4.207 — and
+        // it was invisible, because the APK staleness guard in
+        // tools/yswords-ios-reinstall.sh was failing first and the
+        // downgrade error never got a chance to be printed.
+        //
+        // Deriving the code keeps it monotonic with the version name
+        // for free, so no separate counter can drift out of step with
+        // it. Fixed field widths: minor and patch each get three
+        // digits, giving 1.4.207 -> 1004207. Bump the widths before
+        // either field can reach 1000.
+        versionCode = flutter.versionName
+            .split(".")
+            .map { it.toIntOrNull() ?: 0 }
+            .let { p ->
+                p.getOrElse(0) { 0 } * 1_000_000 +
+                    p.getOrElse(1) { 0 } * 1_000 +
+                    p.getOrElse(2) { 0 }
+            }
         versionName = flutter.versionName
         // 2026-05-24 (v1.3.38): default app_name. Each productFlavor
         // below overrides this with its own resValue("app_name", ...)
