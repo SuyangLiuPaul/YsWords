@@ -368,6 +368,23 @@ class RealtimeDbSyncService extends ChangeNotifier {
     if (user == null) return;
     final uid = user.uid;
     final payload = data ?? await _snapshotLocal();
+    // 2026-09-04: never let a device that has not yet pulled overwrite
+    // the cloud with nothing. The write below is a `set()` on the whole
+    // node and `_snapshotLocal()` omits keys this device never wrote,
+    // so a fresh install uploading before its first pull lands deletes
+    // every other device's data out of the cloud.
+    //
+    // The condition is "the first pull has not landed", NOT "the
+    // payload is empty": deleting your last highlight on a device that
+    // HAS pulled is a legitimate empty upload and must still go
+    // through. `_onRemoteSnapshot` clears the flag before its own
+    // seed-the-empty-cloud uploads, so seeding is unaffected.
+    if (_firstPullAfterSignIn && !_localHasUserData(payload)) {
+      // ignore: avoid_print
+      print('[RTDBSync] upload skipped — nothing local yet and the '
+          'first pull has not landed.');
+      return;
+    }
     final stampedAt = DateTime.now().toUtc().toIso8601String();
     // 2026-05-07 race fix: record the timestamp in our recent-uploads
     // ring BEFORE awaiting the network write. RTDB's listener can
@@ -421,9 +438,29 @@ class RealtimeDbSyncService extends ChangeNotifier {
     }
   }
 
-  /// User-initiated "Sync now". Pushes local snapshot + waits for
-  /// the round-trip so the caller (Settings page) can show a clean
-  /// "syncing → synced" transition. Returns true on success.
+  /// User-initiated "Sync now". **Bidirectional**: reads the cloud
+  /// copy first, merges it with local, applies the merge locally, and
+  /// only then pushes the merged result back. Returns true on success.
+  ///
+  /// 2026-09-04: this method used to be `await _uploadFromLocal()` and
+  /// nothing else. Two consequences, both reported from a real iPad:
+  ///
+  ///   • **The button could not pull.** The only code path that ever
+  ///     read the cloud was the `onValue` subscription opened at
+  ///     sign-in (`_onAuthChanged`). Pressing "Sync now" on a second
+  ///     device pushed that device's local state up and reported
+  ///     "Synced." — while the other device's highlights, notes and
+  ///     bookmarks stayed in the cloud, never coming down.
+  ///   • **The button could destroy data.** `_uploadFromLocal` does a
+  ///     `set()` on the whole `users/{uid}/sync` node, and
+  ///     `_snapshotLocal()` omits every key this device has never
+  ///     written. So pressing it on a device whose first pull had not
+  ///     landed replaced the cloud copy with that device's emptiness.
+  ///
+  /// Reading before writing fixes both at once: merging an empty local
+  /// against a populated remote yields the remote, which is then both
+  /// applied locally (the pull the user wanted) and written back
+  /// unchanged (so the round-trip cannot lose anything).
   Future<bool> syncNow() async {
     final auth = CloudAuthService.instance;
     if (!auth.isConfigured) {
@@ -436,8 +473,56 @@ class RealtimeDbSyncService extends ChangeNotifier {
       _setStatus(CloudSyncStatus.error);
       return false;
     }
+    final user = auth.currentUser;
+    if (user == null) {
+      _lastError = 'Not signed in.';
+      _setStatus(CloudSyncStatus.error);
+      return false;
+    }
     _debounce?.cancel();
-    await _uploadFromLocal();
+    _setStatus(CloudSyncStatus.syncing);
+
+    Map<String, dynamic>? remote;
+    try {
+      final snap = await FirebaseDatabase.instance
+          .ref('users/${user.uid}/sync')
+          .get()
+          .timeout(_kRtdbOpTimeout);
+      final raw = snap.value;
+      if (raw is Map) {
+        final dataNode = Map<String, dynamic>.from(raw)['data'];
+        if (dataNode is Map) remote = _coerceMap(dataNode);
+      }
+    } on FirebaseException catch (e) {
+      _lastError = '[${e.code}] ${e.message ?? "Sync failed."}';
+      _setStatus(CloudSyncStatus.error);
+      // ignore: avoid_print
+      print('[RTDBSync] syncNow read FirebaseException: ${e.code}');
+      return false;
+    } catch (e) {
+      _lastError = e.toString();
+      _setStatus(CloudSyncStatus.error);
+      // ignore: avoid_print
+      print('[RTDBSync] syncNow read failed: $e');
+      return false;
+    }
+
+    // We have now seen the cloud state with our own eyes, so the
+    // "haven't pulled yet" clobber guard in _uploadFromLocal no longer
+    // applies to this device.
+    _firstPullAfterSignIn = false;
+
+    if (remote == null) {
+      // Cloud is empty (or holds an unusable shape) — seed it from
+      // local, which is exactly what this button always did.
+      await _uploadFromLocal();
+      return _status == CloudSyncStatus.synced;
+    }
+
+    final local = await _snapshotLocal();
+    final merged = _mergeSnapshots(local: local, remote: remote);
+    await _applyRemoteSuppressed(merged);
+    await _uploadFromLocal(data: merged);
     return _status == CloudSyncStatus.synced;
   }
 
@@ -626,8 +711,48 @@ class RealtimeDbSyncService extends ChangeNotifier {
     // keys were silently breaking ALL RTDB sync writes for users
     // whose SharedPreferences still had legacy plan.* values
     // (RTDB rejects keys containing `.`).
+
+    // 2026-09-04: carry through every schema key that has no bespoke
+    // rule above, local first. Without this loop the merge silently
+    // DROPPED such keys — `notesSortMode` has been in `_stringKeys`
+    // since v1.2.94 but was never named in any block above, so every
+    // merged upload (a `set()`, i.e. a whole-node overwrite) deleted
+    // it from the cloud again. A generic loop rather than one more
+    // named case, so the next key added to the schema cannot repeat
+    // the same silent loss.
+    for (final k in const [
+      ..._stringKeys,
+      ..._stringListKeys,
+      ..._intKeys,
+      ..._boolKeys,
+    ]) {
+      if (_bespokeMergeKeys.contains(k) || out.containsKey(k)) continue;
+      if (local.containsKey(k)) {
+        out[k] = local[k];
+      } else if (remote.containsKey(k)) {
+        out[k] = remote[k];
+      }
+    }
     return out;
   }
+
+  /// Keys the merge above resolves with a bespoke rule (union,
+  /// per-key local-wins, newest-timestamp-wins, max-per-key). Every
+  /// other schema key is carried through generically at the end of
+  /// `_mergeSnapshots`; this set is what tells the two apart.
+  static const _bespokeMergeKeys = <String>{
+    'bookmarks',
+    'highlights',
+    'verseNotes',
+    'verseNoteTitles',
+    'verseNoteTimestamps',
+    'recentSearches',
+    'recentSearchTimestamps',
+    'lastRead',
+    'lastReadTimestamp',
+    'userPrefs',
+    'userPrefsTimestamp',
+  };
 
   Map<String, dynamic> _parseJsonMap(dynamic raw) {
     if (raw == null) return const {};
