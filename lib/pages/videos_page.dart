@@ -11,6 +11,8 @@ import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/entry_copy.dart';
 import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/media_focus.dart';
@@ -351,7 +353,29 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
       appBar: AppBar(
         leading: const LocalizedBackButton(),
         title: Text(s.titleFor(locale)),
-        actions: const [LanguageSwitcherButton(), HomeIconButton()],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.copy_outlined),
+            tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
+            onPressed: () => ClipboardHelper.copyWithFeedback(
+              context,
+              formatEntryForCopy(
+                heading: _episode.titleFor(locale),
+                body: uiStrings[s.creditKey]?[locale] ??
+                    'Christian Disciples Church',
+                refs: _episode.refs.map((r) => _refLabel(r, locale)),
+                // The track actually on screen, not the episode's
+                // default: the reader chose a language, and a link that
+                // opens a different one is a wrong answer that looks
+                // right.
+                url: (_episode.trackFor(_lang) ?? _episode.defaultTrack)
+                    ?.watchUrl,
+              ),
+            ),
+          ),
+          const LanguageSwitcherButton(),
+          const HomeIconButton(),
+        ],
       ),
       body: Center(
         child: ConstrainedBox(
@@ -495,14 +519,21 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
     );
   }
 
-  Widget _refChip(VideoRef r, String locale, ColorScheme scheme) {
-    // The reader's own version names the book where it can, so the chip
-    // agrees with the header they are about to land on.
+  /// `John 3:16` in the reader's language, as the chip prints it.
+  ///
+  /// Shared with the copy action so the clipboard says what the screen
+  /// says. The reader's own version names the book where it can, so the
+  /// chip agrees with the header they are about to land on.
+  String _refLabel(VideoRef r, String locale) {
     final version = context.read<MainProvider>().currentVersion;
-    final book = localeAwareBookName(r.book, locale, version);
+    return '${localeAwareBookName(r.book, locale, version)} '
+        '${r.chapter}:${r.verse}';
+  }
+
+  Widget _refChip(VideoRef r, String locale, ColorScheme scheme) {
     return ActionChip(
       label: Text(
-        '$book ${r.chapter}:${r.verse}',
+        _refLabel(r, locale),
         style: TextStyle(
           fontFamilyFallback: kCjkFontFallback,
           fontSize: 13,
