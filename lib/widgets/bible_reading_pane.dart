@@ -51,6 +51,7 @@ import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/synopsis_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/ref_list_copy.dart';
 import 'package:yswords/utils/haptics.dart';
 import 'package:yswords/utils/illustration_grouping.dart';
 // 2026-05-10 (v1.2.13): the `as jumper` import was only needed by
@@ -8123,12 +8124,26 @@ class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
   // Index of the current Bible version's verses by canonical book +
   // chapter + verse so the preview text loads instantly.
   late final Map<String, String> _verseIndex;
+  // The resolved list, mirrored out of [_future] for the header's
+  // copy-all button. Empty until the lookup lands, which is also
+  // exactly when that button should not be offered.
+  List<BibleReference> _refsForCopy = const <BibleReference>[];
 
   @override
   void initState() {
     super.initState();
+    // Kept in state as well as in the future: the header sits OUTSIDE
+    // the FutureBuilder, so a copy-all button up there cannot see the
+    // list any other way. Guarded on `mounted` — the sheet is
+    // dismissible while the lookup is still in flight.
     _future = CrossReferenceService.forVerseOrNearby(
         widget.englishBook, widget.chapter, widget.verse);
+    _future.then((refs) {
+      if (mounted) setState(() => _refsForCopy = refs);
+    }).catchError((Object _) {
+      // The FutureBuilder below already renders the failure; this
+      // mirror just stays empty, which hides the copy-all button.
+    });
     _verseIndex = {
       for (final v in widget.mainProvider.verses)
         '${toEnglish(v.book) ?? v.book}-${v.chapter}-${v.verse}': v.text,
@@ -8141,6 +8156,27 @@ class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
     if (raw == null) return null;
     return sanitizeForSearch(raw);
   }
+
+  /// One `[Book C:V] text` line per reference.
+  ///
+  /// The shape, the sanitiser choice and why `AppSettings.copyFormat`
+  /// is not consulted all live in [formatRefListForCopy], which is pure
+  /// and has the tests. Note that the RAW indexed text is handed over,
+  /// not [_previewFor]'s output — the preview is sanitised for SEARCH,
+  /// and the clipboard needs the copy sanitiser instead.
+  String _copyTextFor(Iterable<BibleReference> refs, String locale) =>
+      formatRefListForCopy([
+        for (final r in refs)
+          (
+            label: r.toString().replaceFirst(
+                  r.englishBook,
+                  localeAwareBookName(r.englishBook, locale,
+                      widget.mainProvider.currentVersion),
+                ),
+            rawText: _verseIndex[
+                '${r.englishBook}-${r.chapter}-${r.verseStart ?? 1}'],
+          ),
+      ]);
 
   @override
   Widget build(BuildContext context) {
@@ -8190,6 +8226,19 @@ class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
                   ],
                 ),
               ),
+              // Shown only once the lookup has landed with something:
+              // a copy-all that yields an empty clipboard is worse than
+              // no button, because the "Copied!" toast still fires.
+              if (_refsForCopy.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.copy_all_outlined),
+                  iconSize: 20,
+                  tooltip: uiStrings['copyAll']?[locale] ?? 'Copy all',
+                  onPressed: () => ClipboardHelper.copyWithFeedback(
+                    context,
+                    _copyTextFor(_refsForCopy, locale),
+                  ),
+                ),
               IconButton(
                 icon: const Icon(Icons.close),
                 iconSize: 20,
@@ -8250,7 +8299,11 @@ class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
                     onTap: () => widget.onNavigate(r),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Column(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -8274,6 +8327,23 @@ class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
                               ),
                             ),
                           ],
+                        ],
+                            ),
+                          ),
+                          // The row itself navigates, so the copy stays
+                          // an explicit target rather than a long-press
+                          // or a second tap gesture competing with it.
+                          IconButton(
+                            icon: const Icon(Icons.copy_outlined),
+                            iconSize: 18,
+                            visualDensity: VisualDensity.compact,
+                            tooltip:
+                                uiStrings['copySelection']?[locale] ?? 'Copy',
+                            onPressed: () => ClipboardHelper.copyWithFeedback(
+                              context,
+                              _copyTextFor(<BibleReference>[r], locale),
+                            ),
+                          ),
                         ],
                       ),
                     ),
