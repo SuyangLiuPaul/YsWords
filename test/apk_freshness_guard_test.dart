@@ -211,6 +211,34 @@ void main() {
       expect(script, contains('if [ "\$android_ok" -eq 1 ]; then'),
           reason: 'the install loop must be gated on android_ok');
 
+      // 2026-09-04: the merge outputs are cleared BEFORE the first
+      // build, not only after one fails.
+      //
+      // This is not a tidy-up — it halves the Android build. The fault
+      // was measured to be every build, not an occasional one: four
+      // releases in one day each produced an APK carrying the PREVIOUS
+      // build's stamp, and Gradle's own --info shows
+      // `copyJniLibsflutterBuildIntlRelease` executing and
+      // `mergeIntlReleaseJniLibFolders` being skipped as up-to-date in
+      // the SAME build. With no previous output the merge cannot be
+      // up-to-date, so the first build is the only build.
+      //
+      // Asserted by position, because a pre-clean that ends up after the
+      // build is exactly as useless as no pre-clean at all.
+      final clearCalls = RegExp(r'^(?!clear_stuck_jnilib_merge\(\)).*'
+              r'clear_stuck_jnilib_merge', multiLine: true)
+          .allMatches(script)
+          .toList();
+      expect(clearCalls.length, 2,
+          reason: 'expected two call sites — the pre-clean and the retry '
+              'recovery — found ${clearCalls.length}');
+      final firstBuildCall = RegExp(r'^(?!android_build_and_verify\(\)).*'
+              r'android_build_and_verify', multiLine: true)
+          .firstMatch(script)!;
+      expect(clearCalls.first.start, lessThan(firstBuildCall.start),
+          reason: 'the pre-clean runs after the first build, which means '
+              'the build still starts from a stuck merge output');
+
       // The recovery may rebuild, but only ONCE. A scheduled job that
       // can rebuild repeatedly is worse than one that gives up: it
       // burns the machine all night and still installs nothing.

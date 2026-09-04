@@ -902,6 +902,35 @@ clear_stuck_jnilib_merge() {
   [ "$cleared" -gt 0 ]
 }
 
+# 2026-09-04, measured rather than assumed: this fault is not
+# intermittent, it is EVERY build. Four releases in one day (1.4.208 →
+# 1.4.211) each shipped an APK carrying the PREVIOUS build's release
+# stamp — a stable off-by-one, never a random old value. Reproduced on
+# demand afterwards by changing nothing but `kAppReleaseTime`.
+#
+# What Gradle itself says, two adjacent lines of `--info` in ONE build:
+#
+#   Task ':app:copyJniLibsflutterBuildIntlRelease' is not up-to-date …
+#   Skipping task ':app:mergeIntlReleaseJniLibFolders' as it is up-to-date.
+#
+# The upstream task rewrites the jniLibs directory and the merge task,
+# in the same build, still believes it has nothing to do. Ordering is
+# fine — the Flutter plugin's `dependsOn` is present and Gradle schedules
+# copyJniLibs first — what fails is INPUT TRACKING. And it does not heal:
+# a second build takes 5s, reports everything up-to-date, and leaves the
+# same stale .so in place. Only removing the outputs breaks the wedge.
+#
+# So clear BEFORE the build instead of after it fails. With no previous
+# output the merge task cannot be up-to-date, and the run costs one
+# Android build instead of two. The post-build verification and the
+# retry below both stay: they cost nothing when this works, and they are
+# what would catch a DIFFERENT cause of a stale APK.
+echo ""
+echo "→ pre-clearing the Gradle jniLib merge outputs (see the header)"
+clear_stuck_jnilib_merge || \
+  echo "  nothing to clear — no previous merge output in this tree"
+
+echo ""
 echo "→ flutter build apk --release --flavor intl ${DEFINES[*]}"
 android_ok=0
 if android_build_and_verify; then
