@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_test/flutter_test.dart';
@@ -765,6 +766,97 @@ void main() {
       await tester.pumpAndSettle();
       expect(laneLabel(title)!.style!.color, plainColour,
           reason: 'a highlight that outlives its sheet is a stale selection');
+    });
+
+    testWidgets('the plot carries a visible horizontal scrollbar, on a '
+        'mouse platform and before anyone has scrolled', (tester) async {
+      // 2026-09-04: "对于在browser电脑使用的人来说，没有往左右scroll bar
+      // 来说他们不知道怎么scroll".
+      //
+      // This is not a styling nicety, it is a missing affordance, and
+      // the reason it was missing is a Flutter default that is easy to
+      // assume away: MaterialScrollBehavior.buildScrollbar returns the
+      // child UNTOUCHED for Axis.horizontal and only wraps vertical
+      // scrollables. So a chart whose whole point is a plot far wider
+      // than the screen shipped to desktop browsers with nothing saying
+      // it could be scrolled sideways. On a phone a reader swipes and
+      // finds out; with a mouse there is no equivalent guess.
+      //
+      // The assertion is on thumbVisibility rather than on pixels
+      // because a fade-on-scroll thumb would pass a "does a Scrollbar
+      // exist" test while still being invisible at the moment the
+      // reader needs it — which is before their first scroll.
+      // The bar is deliberately NOT conditioned on platform. Flutter's
+      // own rule — desktop gets a bar, touch does not — is about a
+      // scrollbar as feedback. As an affordance it is worth the 12 pt
+      // everywhere, and on touch it doubles as a position readout on a
+      // plot that is sixty screens wide at full zoom.
+      await pumpChart(tester, size: const Size(1280, 1700));
+
+      final onPlot = tester
+          .widgetList<Scrollbar>(find.byType(Scrollbar))
+          .where((b) => b.controller == plotScroll(tester).widget.controller);
+      expect(onPlot, isNotEmpty,
+          reason: 'no scrollbar on the plot — Flutter adds none of its own '
+              'for a horizontal axis');
+      expect(onPlot.first.thumbVisibility, isTrue,
+          reason: 'the thumb must be up before the first scroll, or it is '
+              'feedback rather than an affordance');
+    });
+
+    testWidgets('a MOUSE can drag the plot sideways, and dragging does not '
+        'move the cursor', (tester) async {
+      // "我以为鼠标在这里可以drag走的呢…鼠标变成手的姿势往左右拽不是吗".
+      // Flutter's default ScrollBehavior.dragDevices omits
+      // PointerDeviceKind.mouse, so with a mouse the only built-in way
+      // to move a horizontal scroll view is shift-wheel. Nobody
+      // guesses that, which is the same discoverability hole the
+      // scrollbar was.
+      //
+      // The second half asserts that panning leaves the cursor alone.
+      // Note what it does NOT show: local and global coordinates behave
+      // the same here, because Flutter routes a pointer's later events
+      // through the transform captured at down, so `localPosition`
+      // travels with the finger too. Swapping them keeps this green.
+      await pumpChart(tester, size: const Size(1280, 1700));
+      for (var i = 0; i < 16; i++) {
+        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+        await tester.pump(const Duration(milliseconds: 60));
+      }
+      await tester.tap(find.byKey(const ValueKey('chronoChip_flood')));
+      await tester.pumpAndSettle();
+
+      String cursorText() => tester
+          .widgetList<Text>(find.byType(Text))
+          .map((w) => w.data ?? '')
+          .firstWhere((s) => s.startsWith('AM '));
+
+      final before = cursorText();
+      final scrollBefore = plotScroll(tester).position.pixels;
+      final box = tester.getRect(find.byType(SingleChildScrollView).last);
+      // NOT the centre. A "Jump to" chip centres the cursor, so a drag
+      // starting at the middle begins on the cursor's own year and
+      // could not tell a stray cursor placement from a no-op — the
+      // first version of this test made exactly that mistake and passed
+      // with the bug reinstated.
+      final from =
+          Offset(box.left + box.width * 0.25, box.top + box.height * 0.5);
+
+      final mouse = await tester.startGesture(from, kind: PointerDeviceKind.mouse);
+      for (var i = 0; i < 10; i++) {
+        await mouse.moveBy(const Offset(-30, 0));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await mouse.up();
+      await tester.pumpAndSettle();
+
+      expect(plotScroll(tester).position.pixels,
+          greaterThan(scrollBefore + 100),
+          reason: 'a mouse drag must pan the plot — Flutter does not allow '
+              'this by default');
+      expect(cursorText(), before,
+          reason: 'panning must not carry the cursor along — the press only '
+              'commits when the pointer stayed within touch slop');
     });
 
     testWidgets('a scroll drag does not drag the cursor with it',

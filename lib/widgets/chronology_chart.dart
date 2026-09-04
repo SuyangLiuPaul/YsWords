@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart' show kTouchSlop;
+import 'package:flutter/gestures.dart' show kTouchSlop, PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -59,9 +59,50 @@ class ChronologyChart extends StatefulWidget {
   State<ChronologyChart> createState() => _ChronologyChartState();
 }
 
+/// Lets a MOUSE drag the plot, not just a finger.
+///
+/// Flutter's default `ScrollBehavior.dragDevices` deliberately omits
+/// [PointerDeviceKind.mouse]: on most scroll views a mouse is expected
+/// to use the wheel, and letting it drag would fight text selection.
+/// A wide horizontal plot is the case that rule gets wrong — the wheel
+/// scrolls the page vertically, shift-wheel is the only built-in way
+/// sideways, and nobody guesses it.
+///
+/// Trackpad is left out on purpose: Flutter routes trackpad panning
+/// through pointer pan/zoom events already, and adding it here would
+/// have it handled twice.
+class _PanByMouseScrollBehavior extends MaterialScrollBehavior {
+  const _PanByMouseScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.invertedStylus,
+        PointerDeviceKind.unknown,
+      };
+}
+
 class _ChronologyChartState extends State<ChronologyChart> {
   static const double _nameColumnMin = 64;
   static const double _gap = 8;
+
+  /// Height reserved below the plot for its horizontal scrollbar.
+  ///
+  /// **Flutter draws no horizontal scrollbar of its own.**
+  /// `MaterialScrollBehavior.buildScrollbar` returns the child
+  /// untouched for `Axis.horizontal` and only wraps vertical scrollables
+  /// on desktop — so this chart, whose entire point is a plot much wider
+  /// than the screen, shipped to desktop browsers with nothing on screen
+  /// saying it could be scrolled sideways. On a phone a reader tries a
+  /// swipe and finds out; with a mouse there is no equivalent guess.
+  ///
+  /// The bar is reserved space rather than an overlay because the last
+  /// thing above it is the bottom row of stacked event labels, and a
+  /// thumb floating over those would trade one unreadable thing for
+  /// another.
+  static const double _scrollbarGutter = 12;
 
   // **Nothing here may go below 10.** The chart was drawn at 8.5–9 pt on
   // the argument that a dense plot needs small type, and on a tablet the
@@ -1061,7 +1102,9 @@ class _ChronologyChartState extends State<ChronologyChart> {
     final height = lanesTop + rowsHeight + tickLane;
 
     return SizedBox(
-      height: height,
+      // The gutter is the scrollbar's. Reserved rather than overlaid,
+      // so the thumb never sits on the bottom row of event labels.
+      height: height + _scrollbarGutter,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1121,128 +1164,176 @@ class _ChronologyChartState extends State<ChronologyChart> {
           const SizedBox(width: _gap),
           Expanded(
             // The ONLY horizontally scrolling thing on the page.
-            child: SingleChildScrollView(
-              controller: _plot,
-              scrollDirection: Axis.horizontal,
-              physics: _atFit
-                  ? const NeverScrollableScrollPhysics()
-                  : const ClampingScrollPhysics(),
-              child: SizedBox(
-                width: plotWidth,
-                height: height,
-                // **Tap the chart to read the year off it.**
-                //
-                // Until now the cursor could only be moved by the
-                // slider or the overview strip, and both of those map
-                // the whole 4,098-year span onto the width of the
-                // screen. That is fine at whole span and useless at
-                // nineteen years in view, where one pixel of slider is
-                // five years and the cursor is usually not even on the
-                // part of the plot being looked at — the reader can
-                // scroll to AD 47 and the scrubber still says 100 BC.
-                //
-                // So the plot itself sets the cursor. Nested tap
-                // recognisers resolve innermost-first, so this only
-                // fires where nothing more specific claimed the touch:
-                // a lifeline bar still opens its person, an event label
-                // still opens its event, and everything else — the
-                // hatched ground, the era band, the ruler — answers
-                // with the year under the finger.
-                //
-                // It does not scroll (see [_placeCursor]). Moving the
-                // view out from under the thing just pointed at is the
-                // classic way a crosshair becomes unusable.
-                //
-                // **Why a raw Listener and not a GestureDetector.** The
-                // first version of this used `onTapDown`, and the
-                // reader reported that a quick tap did nothing while
-                // press-and-hold worked. That asymmetry is the gesture
-                // arena: a TapGestureRecognizer fires `onTapDown` when
-                // it wins the arena OR when 100 ms elapse, whichever
-                // comes first. Hold past 100 ms and this detector fires
-                // regardless of who eventually wins; tap quickly and
-                // the arena resolves first, an inner recogniser takes
-                // it, and this one is rejected without ever firing. A
-                // widget test cannot see the difference — `tapAt` sends
-                // down and up with nothing in between, and both paths
-                // pass — which is why it reached a device.
-                //
-                // Listener is not in the arena at all, so nothing can
-                // take the press away. Committing on UP within touch
-                // slop keeps a scroll drag from dragging the cursor
-                // along with it, and means this coexists with the inner
-                // handlers rather than competing: tapping an event
-                // label still opens its sheet AND lands the cursor on
-                // that year, which is what a reader means by pointing
-                // at something.
-                child: Listener(
-                  onPointerDown: (e) => _pressOrigin = e.localPosition,
-                  onPointerUp: (e) {
-                    final o = _pressOrigin;
-                    _pressOrigin = null;
-                    if (o == null) return;
-                    if ((e.localPosition - o).distance > kTouchSlop) return;
-                    _placeCursor(_amAtPlotX(e.localPosition.dx, plotWidth));
-                  },
-                  onPointerCancel: (_) => _pressOrigin = null,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: _GroundPainter(
-                            data: data,
-                            rulerHeight: _rulerHeight,
-                            eraStripHeight: _eraStripHeight,
-                            tickLaneHeight: tickLane,
-                            gridStep: step,
-                            brightness: Theme.of(context).brightness,
-                            scheme: scheme,
-                            boundaryLabel: _s('chronologyComputedEnds',
-                                'Genesis 5 & 11 ages end here'),
-                            contestedLabel: _s('chronologyContestedLabel',
-                                'The two scales disagree here'),
-                          ),
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          SizedBox(
-                            height: _rulerHeight,
-                            child: _ruler(active, scheme, plotWidth, step),
-                          ),
-                          SizedBox(
-                            height: _eraStripHeight,
-                            child: _eraStrip(scheme, plotWidth),
-                          ),
-                          for (final s in slots)
-                            SizedBox(
-                              height: slotHeight(s),
-                              child: s.folded
-                                  ? _foldLane(context, s, scheme)
-                                  : _lane(context, s.lines.first, scheme,
-                                      plotWidth),
+            //
+            // The thumb is always visible, not fade-on-scroll, because
+            // here it is an AFFORDANCE and not just feedback: it has to
+            // say "there is more of this to the right" before anyone
+            // has scrolled. It stays on at whole span too, where it
+            // fills the track and correctly reports that there is
+            // nothing more to see.
+            //
+            // **A mouse can drag the plot.** Flutter's default
+            // ScrollBehavior leaves PointerDeviceKind.mouse out of
+            // dragDevices, so with a mouse the only way to move a
+            // horizontal scroll view is shift-wheel — which nobody
+            // guesses. The reader's expectation was the ordinary one:
+            // "鼠标变成手的姿势往左右拽不是吗". So the plot takes mouse
+            // drags too, and says so with a grab cursor before anyone
+            // tries. Touch is unaffected; it could always be swiped.
+            child: MouseRegion(
+              cursor:
+                  _atFit ? SystemMouseCursors.basic : SystemMouseCursors.grab,
+              child: Scrollbar(
+                controller: _plot,
+                thumbVisibility: true,
+                child: ScrollConfiguration(
+                  behavior: const _PanByMouseScrollBehavior(),
+                  child: SingleChildScrollView(
+                    controller: _plot,
+                    scrollDirection: Axis.horizontal,
+                    physics: _atFit
+                        ? const NeverScrollableScrollPhysics()
+                        : const ClampingScrollPhysics(),
+                    child: SizedBox(
+                      width: plotWidth,
+                      height: height,
+                      // **Tap the chart to read the year off it.**
+                      //
+                      // Until now the cursor could only be moved by the
+                      // slider or the overview strip, and both of those map
+                      // the whole 4,098-year span onto the width of the
+                      // screen. That is fine at whole span and useless at
+                      // nineteen years in view, where one pixel of slider is
+                      // five years and the cursor is usually not even on the
+                      // part of the plot being looked at — the reader can
+                      // scroll to AD 47 and the scrubber still says 100 BC.
+                      //
+                      // So the plot itself sets the cursor. Nested tap
+                      // recognisers resolve innermost-first, so this only
+                      // fires where nothing more specific claimed the touch:
+                      // a lifeline bar still opens its person, an event label
+                      // still opens its event, and everything else — the
+                      // hatched ground, the era band, the ruler — answers
+                      // with the year under the finger.
+                      //
+                      // It does not scroll (see [_placeCursor]). Moving the
+                      // view out from under the thing just pointed at is the
+                      // classic way a crosshair becomes unusable.
+                      //
+                      // **Why a raw Listener and not a GestureDetector.** The
+                      // first version of this used `onTapDown`, and the
+                      // reader reported that a quick tap did nothing while
+                      // press-and-hold worked. That asymmetry is the gesture
+                      // arena: a TapGestureRecognizer fires `onTapDown` when
+                      // it wins the arena OR when 100 ms elapse, whichever
+                      // comes first. Hold past 100 ms and this detector fires
+                      // regardless of who eventually wins; tap quickly and
+                      // the arena resolves first, an inner recogniser takes
+                      // it, and this one is rejected without ever firing. A
+                      // widget test cannot see the difference — `tapAt` sends
+                      // down and up with nothing in between, and both paths
+                      // pass — which is why it reached a device.
+                      //
+                      // Listener is not in the arena at all, so nothing can
+                      // take the press away. Committing on UP within touch
+                      // slop keeps a scroll drag from dragging the cursor
+                      // along with it, and means this coexists with the inner
+                      // handlers rather than competing: tapping an event
+                      // label still opens its sheet AND lands the cursor on
+                      // that year, which is what a reader means by pointing
+                      // at something.
+                      //
+                      // The slop test uses GLOBAL positions. The reason
+                      // originally written here was wrong, and is worth
+                      // recording so nobody re-derives it: this Listener sits
+                      // inside the scrolling content, so it looked as though
+                      // a pan would carry the content along with the pointer
+                      // and leave `localPosition` unchanged — a 300 pt drag
+                      // measuring as a stationary press. It does not. Flutter
+                      // routes every event of a pointer through the hit-test
+                      // result captured at DOWN, transforms included, so the
+                      // up event's `localPosition` is taken against the
+                      // down-time transform and travels with the finger just
+                      // as the global position does. Measured, not reasoned:
+                      // swapping the two leaves the drag test green.
+                      //
+                      // Global stays because it is the frame the question is
+                      // actually about — did the finger travel — and holds
+                      // whatever a later layout does to the transform between
+                      // this box and the screen.
+                      child: Listener(
+                        onPointerDown: (e) => _pressOrigin = e.position,
+                        onPointerUp: (e) {
+                          final o = _pressOrigin;
+                          _pressOrigin = null;
+                          if (o == null) return;
+                          if ((e.position - o).distance > kTouchSlop) return;
+                          _placeCursor(
+                              _amAtPlotX(e.localPosition.dx, plotWidth));
+                        },
+                        onPointerCancel: (_) => _pressOrigin = null,
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: CustomPaint(
+                                painter: _GroundPainter(
+                                  data: data,
+                                  rulerHeight: _rulerHeight,
+                                  eraStripHeight: _eraStripHeight,
+                                  tickLaneHeight: tickLane,
+                                  gridStep: step,
+                                  brightness: Theme.of(context).brightness,
+                                  scheme: scheme,
+                                  boundaryLabel: _s('chronologyComputedEnds',
+                                      'Genesis 5 & 11 ages end here'),
+                                  contestedLabel: _s('chronologyContestedLabel',
+                                      'The two scales disagree here'),
+                                ),
+                              ),
                             ),
-                          SizedBox(
-                            height: tickLane,
-                            child:
-                                _tickLane(context, scheme, plotWidth, tickLane),
-                          ),
-                        ],
-                      ),
-                      // Scrub cursor, drawn over everything.
-                      Positioned(
-                        left: _x(_cursorAm, plotWidth) - 1,
-                        top: 0,
-                        bottom: 0,
-                        width: 2,
-                        child: IgnorePointer(
-                          child: ColoredBox(
-                            color: scheme.primary.withValues(alpha: 0.75),
-                          ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                SizedBox(
+                                  height: _rulerHeight,
+                                  child:
+                                      _ruler(active, scheme, plotWidth, step),
+                                ),
+                                SizedBox(
+                                  height: _eraStripHeight,
+                                  child: _eraStrip(scheme, plotWidth),
+                                ),
+                                for (final s in slots)
+                                  SizedBox(
+                                    height: slotHeight(s),
+                                    child: s.folded
+                                        ? _foldLane(context, s, scheme)
+                                        : _lane(context, s.lines.first, scheme,
+                                            plotWidth),
+                                  ),
+                                SizedBox(
+                                  height: tickLane,
+                                  child: _tickLane(
+                                      context, scheme, plotWidth, tickLane),
+                                ),
+                              ],
+                            ),
+                            // Scrub cursor, drawn over everything.
+                            Positioned(
+                              left: _x(_cursorAm, plotWidth) - 1,
+                              top: 0,
+                              bottom: 0,
+                              width: 2,
+                              child: IgnorePointer(
+                                child: ColoredBox(
+                                  color: scheme.primary.withValues(alpha: 0.75),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
