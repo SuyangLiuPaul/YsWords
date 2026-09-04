@@ -158,18 +158,84 @@ void main() {
     });
 
     test('no Android install can run without it passing', () {
-      // The build and the assertion are one `if` condition, so the
-      // install loop is unreachable when either fails.
-      expect(
-        script,
-        contains(
-          'if "\$FLUTTER" build apk --release --flavor intl "\${DEFINES[@]}" \\\n'
-          '   && apk_carries_release_stamp "\$ANDROID_APK" "\$expected_release_stamp" \\\n'
-          '   && aot_postdates_dart_source \\\n'
-          '   && asset_bundle_matches_source; then',
-        ),
-        reason: 'all three guards must gate the install loop, not merely warn',
-      );
+      // 2026-09-04: this used to assert the literal text of one `if`
+      // condition. The build and the three checks then moved into
+      // `android_build_and_verify` so that a failure could be RETRIED
+      // after clearing Gradle's stuck jniLib merge, instead of only
+      // printing advice at 04:00 that nobody reads.
+      //
+      // The property being defended has not changed — nothing installs
+      // unless all three checks passed on the APK that is about to be
+      // installed — so it is asserted against the new shape rather than
+      // relaxed. Doing it structurally also covers the thing the
+      // refactor genuinely put at risk, which the old literal could
+      // not: that the retry does not become a way to reach the install
+      // loop with a stale APK.
+      final body = RegExp(
+        r'android_build_and_verify\(\) \{(.*?)\n\}',
+        dotAll: true,
+      ).firstMatch(script);
+      expect(body, isNotNull,
+          reason: 'the build+verify step no longer exists under that name');
+      final conjuncts = body!.group(1)!;
+      for (final required in [
+        r'"$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}"',
+        r'apk_carries_release_stamp "$ANDROID_APK" "$expected_release_stamp"',
+        'aot_postdates_dart_source',
+        'asset_bundle_matches_source',
+      ]) {
+        expect(conjuncts, contains(required),
+            reason: '$required must stay part of the verified build');
+      }
+      expect('&&'.allMatches(conjuncts).length, 3,
+          reason: 'the four steps must be one && chain — an `;` or a `||` '
+              'anywhere in it turns a failed check into a warning');
+
+      // `android_ok` is the only thing standing between a bad APK and a
+      // device, so every assignment that sets it must be controlled by
+      // `android_build_and_verify`. Initialised to 0, set to 1 only
+      // inside an `if android_build_and_verify` branch.
+      final assignments = RegExp(r'android_ok=(\d)').allMatches(script);
+      expect(assignments.map((m) => m.group(1)).toList(), ['0', '1', '1'],
+          reason: 'android_ok must start at 0 and only ever be raised');
+      for (final m in RegExp(r'android_ok=1').allMatches(script)) {
+        final before = script.substring(0, m.start);
+        final guard = before.lastIndexOf('if android_build_and_verify; then');
+        final otherIf = before.lastIndexOf(RegExp(r'\n\s*if '));
+        expect(guard, greaterThan(-1),
+            reason: 'an android_ok=1 with no verify above it');
+        expect(guard, greaterThanOrEqualTo(otherIf),
+            reason: 'android_ok=1 is nested under some other condition than '
+                'the verify — the install gate can be reached unverified');
+      }
+      expect(script, contains('if [ "\$android_ok" -eq 1 ]; then'),
+          reason: 'the install loop must be gated on android_ok');
+
+      // The recovery may rebuild, but only ONCE. A scheduled job that
+      // can rebuild repeatedly is worse than one that gives up: it
+      // burns the machine all night and still installs nothing.
+      //
+      // Counting `if android_build_and_verify` is NOT enough, and this
+      // was verified by mutation rather than assumed — wrapping the
+      // retry in `while ! android_build_and_verify; do ...; done` left
+      // that count at 2 and slipped past the first version of this
+      // check. So count CALL SITES, whatever their syntax, and rule out
+      // loop keywords outright.
+      final calls = RegExp(r'^(?!android_build_and_verify\(\)).*'
+              r'android_build_and_verify', multiLine: true)
+          .allMatches(script);
+      expect(calls.length, 2,
+          reason: 'expected exactly two call sites — the first attempt and '
+              'one rebuild — found ${calls.length}');
+      for (final c in calls) {
+        final line = script.substring(
+            script.lastIndexOf('\n', c.start) + 1,
+            script.indexOf('\n', c.start));
+        expect(RegExp(r'\b(while|until|for)\b').hasMatch(line), isFalse,
+            reason: 'a loop around the verified build can rebuild all night: '
+                '${line.trim()}');
+      }
+
       // And there is exactly one place the APK is pushed to a device,
       // inside that branch.
       expect('install -r "\$ANDROID_APK"'.allMatches(script).length, 1);
