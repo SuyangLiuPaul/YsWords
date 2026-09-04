@@ -856,11 +856,79 @@ asset_bundle_matches_source() {
   return 0
 }
 
+# Build, then put the APK through all three freshness checks.
+android_build_and_verify() {
+  "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}" \
+    && apk_carries_release_stamp "$ANDROID_APK" "$expected_release_stamp" \
+    && aot_postdates_dart_source \
+    && asset_bundle_matches_source
+}
+
+# Clear the OUTPUTS of Gradle's jniLib merge, which is the thing that
+# actually gets stuck (see the Android note in the header). Returns 0
+# iff something was there to clear, so the caller does not waste a
+# second full build when this was not the problem.
+#
+# Deliberately narrow: only `*Release` directories directly inside the
+# three known intermediate folders, each re-checked to be under
+# $PROJECT/build/app/intermediates before it is touched. Nothing here
+# is derived from user input, and the guard is there so a future edit
+# to $PROJECT cannot turn this into an rm at the wrong root.
+#
+# This is the only `rm -rf` in the file and it runs unattended at 04:00,
+# so it has its own test — `zsh tools/test_reinstall_recovery.zsh`,
+# which extracts this function and exercises it on fixtures. Run it
+# after touching anything below.
+clear_stuck_jnilib_merge() {
+  local d out cleared=0
+  for d in merged_jni_libs merged_native_libs stripped_native_libs; do
+    for out in "$PROJECT/build/app/intermediates/$d"/*Release(N); do
+      [ -d "$out" ] || continue
+      case "$out" in
+        "$PROJECT/build/app/intermediates/"*) ;;
+        *)
+          echo "  refusing to clear '$out' — outside the project build dir"
+          continue
+          ;;
+      esac
+      if rm -rf "$out"; then
+        echo "  cleared $out"
+        cleared=$((cleared + 1))
+      else
+        echo "  could not clear $out"
+      fi
+    done
+  done
+  [ "$cleared" -gt 0 ]
+}
+
 echo "→ flutter build apk --release --flavor intl ${DEFINES[*]}"
-if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}" \
-   && apk_carries_release_stamp "$ANDROID_APK" "$expected_release_stamp" \
-   && aot_postdates_dart_source \
-   && asset_bundle_matches_source; then
+android_ok=0
+if android_build_and_verify; then
+  android_ok=1
+else
+  # 2026-09-04: this recovery is the whole reason the Mi Pad went nine
+  # days without an install. The gate was firing every night and was
+  # right to, but it only PRINTED advice, and a scheduled 04:00 job has
+  # nobody to read it. One stuck Gradle task therefore froze the device
+  # at 1.4.163 while the app reached 1.4.207, silently, because the
+  # other targets kept succeeding and the run still exited 0.
+  echo ""
+  echo "→ the APK did not carry the current code; clearing the Gradle"
+  echo "  jniLib merge outputs and rebuilding ONCE"
+  if clear_stuck_jnilib_merge; then
+    if android_build_and_verify; then
+      android_ok=1
+      echo "✓ recovered — the rebuilt APK carries the current code"
+    else
+      echo "✗ still stale after clearing the merge outputs"
+    fi
+  else
+    echo "  nothing to clear — the merge outputs were not the problem"
+  fi
+fi
+
+if [ "$android_ok" -eq 1 ]; then
   echo "✓ APK content verified — libapp.so carries $expected_release_stamp"
 
   # How much Dart landed AFTER the stamp the check just matched. Those
@@ -1054,17 +1122,11 @@ if "$FLUTTER" build apk --release --flavor intl "${DEFINES[@]}" \
   done
 else
   echo "✗ flutter build apk FAILED, or the APK it produced does not carry"
-  echo "  the current code — skipping Android installs. If the content check"
-  echo "  is the one that fired, the Dart AOT task was wrongly up-to-date:"
-  # 2026-09-04: this used to say "delete build/app/intermediates/flutter",
-  # which never works — that is the merge task's INPUT and it is already
-  # fresh. The stuck task is mergeJniLibFolders, so clear its OUTPUT.
-  echo "  The AOT snapshot itself is usually fine; what sticks is"
-  echo "  Gradle's mergeJniLibFolders. Clear its outputs and re-run:"
-  echo "    build/app/intermediates/merged_jni_libs/*Release"
-  echo "    build/app/intermediates/merged_native_libs/*Release"
-  echo "    build/app/intermediates/stripped_native_libs/*Release"
-  echo "  (\`$FLUTTER clean\` is the blunt version and also works.)"
+  echo "  the current code — skipping Android installs."
+  echo "  The automatic recovery above already cleared Gradle's jniLib"
+  echo "  merge outputs and rebuilt, so this is NOT the usual stuck"
+  echo "  merge. Next thing to try by hand is the blunt one:"
+  echo "    $FLUTTER clean && $FLUTTER build apk --release --flavor intl"
   failures=$((failures + ${#ANDROID_DEVICES[@]}))
 fi
 
