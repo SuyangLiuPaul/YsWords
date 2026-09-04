@@ -76,8 +76,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
   // the lane and row heights below are all derived from them rather than
   // hard-coded, so growing the type grows its container instead of
   // clipping it.
+  // The event labels are the smallest thing anyone actually READS on
+  // this chart — the ruler and era captions are glanced at, the lane is
+  // read — so it sits at Material's body floor rather than below it.
+  // Raised 8.5 → 10.5 → 12 across two rounds of the same complaint.
   static const double _nameFontSize = 11;
-  static const double _labelFontSize = 10.5;
+  static const double _labelFontSize = 12;
   static const double _foldFontSize = 10;
   static const double _rulerFontSize = 10;
   static const double _eraFontSize = 10;
@@ -188,6 +192,20 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// travels further than [kTouchSlop] before lifting was a scroll, not
   /// a point, and must not move the cursor.
   Offset? _pressOrigin;
+
+  /// The event whose sheet is open, so the lane can show WHICH label the
+  /// press landed on.
+  ///
+  /// Worth saying why this is a colour and not a bold: **weight is
+  /// already taken.** w800 means "computed from ages Scripture states"
+  /// and w500 means "placed by scholarship, not counted" — the
+  /// provenance distinction this whole chart exists to keep honest.
+  /// Bolding the selection would make a placed event look computed for
+  /// as long as its sheet is open, which is the one thing the drawing
+  /// must never say. So selection is a tint and a soft ground; the
+  /// weight underneath keeps telling the truth about where the year
+  /// came from.
+  String? _selectedTickId;
 
   /// Last plot width laid out, so the overview strip can convert the
   /// scroll offset into an AM range without re-deriving the layout.
@@ -1487,8 +1505,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
       for (final t in candidates)
         TextStyle(
           fontSize: _labelFontSize,
+          // Weight stays provenance, selected or not — see
+          // [_selectedTickId] for why the selection may not borrow it.
           fontWeight: t.isComputed ? FontWeight.w800 : FontWeight.w500,
-          color: scheme.onSurface.withValues(alpha: t.isComputed ? 0.85 : 0.62),
+          color: t.id == _selectedTickId
+              ? scheme.primary
+              : scheme.onSurface.withValues(alpha: t.isComputed ? 0.85 : 0.62),
         ),
     ];
     final texts = [
@@ -1537,16 +1559,28 @@ class _ChronologyChartState extends State<ChronologyChart> {
           ),
         ));
       }
+      final selected = candidates[c.index].id == _selectedTickId;
       labels.add(Positioned(
         left: lefts[c.index],
         top: 13 + c.row * pitch,
         width: c.width + 1,
-        child: Text(
-          texts[c.index],
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          softWrap: false,
-          style: styles[c.index],
+        child: DecoratedBox(
+          // A soft ground under the selected title. It is drawn at the
+          // label's own measured width, so turning it on cannot nudge
+          // anything the packer placed.
+          decoration: selected
+              ? BoxDecoration(
+                  color: scheme.primary.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(3),
+                )
+              : const BoxDecoration(),
+          child: Text(
+            texts[c.index],
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: styles[c.index],
+          ),
         ),
       ));
     }
@@ -1949,6 +1983,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
   /// cannot carry on its own and the one this chart is most at risk of
   /// being quoted for.
   void _showEventSheet(BuildContext context, ChronologyMarker m) {
+    // Mark the label the press landed on, so the reader can see which
+    // of a five-deep stack answered. Cleared when the sheet closes:
+    // the highlight means "this is what the open panel is about", so it
+    // must not outlive the panel and leave a stale selection behind.
+    setState(() => _selectedTickId = m.id);
+
     final scheme = Theme.of(context).colorScheme;
     final active = widget.data.activeScheme;
     final locale = widget.locale;
@@ -2089,7 +2129,9 @@ class _ChronologyChartState extends State<ChronologyChart> {
           ),
         ),
       ),
-    );
+    ).whenComplete(() {
+      if (mounted) setState(() => _selectedTickId = null);
+    });
   }
 
   // ── Legend + scope ──────────────────────────────────────────────

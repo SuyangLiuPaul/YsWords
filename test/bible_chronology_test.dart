@@ -572,7 +572,12 @@ void main() {
           .byWidgetPredicate((w) =>
               w is Text &&
               w.style?.fontSize != null &&
-              (w.style!.fontSize! - 10.5).abs() < 0.01)
+              (w.style!.fontSize! - 12).abs() < 0.01 &&
+              // Size alone stopped identifying the lane once the labels
+              // were raised to 12 — the page has other 12 pt text. The
+              // lane's are the single-line, non-wrapping ones.
+              w.maxLines == 1 &&
+              w.softWrap == false)
           .evaluate()
           .map((e) => (tester.getRect(find.byWidget(e.widget)), e.widget as Text))
           .where((r) => r.$1.left >= 0 && r.$1.right <= 900)
@@ -705,6 +710,61 @@ void main() {
           await tester.pumpAndSettle();
         }
       }
+    });
+
+    testWidgets('the label whose sheet is open is highlighted, and the '
+        'highlight dies with the sheet', (tester) async {
+      // Asked for 2026-09-04: show which label the press landed on.
+      // The highlight is a TINT, never a bold — weight on this lane
+      // already means provenance (w800 computed / w500 placed), and
+      // bolding a selected placed event would make it read as computed
+      // for as long as its sheet was open. That is the one claim the
+      // drawing must never make by accident.
+      await pumpChart(tester, size: const Size(900, 1700));
+      for (var i = 0; i < 16; i++) {
+        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+        await tester.pump(const Duration(milliseconds: 60));
+      }
+      await tester.tap(find.byKey(const ValueKey('chronoChip_john_patmos')));
+      await tester.pumpAndSettle();
+
+      Text? laneLabel(String title) => tester
+          .widgetList<Text>(find.byType(Text))
+          .where((w) =>
+              w.data == title &&
+              (w.style?.fontSize ?? 0) == 12 &&
+              w.maxLines == 1)
+          .firstOrNull;
+
+      final onGlass = find
+          .byWidgetPredicate((w) =>
+              w is Text && (w.style?.fontSize ?? 0) == 12 && w.maxLines == 1)
+          .evaluate()
+          .map((e) => (tester.getRect(find.byWidget(e.widget)), e.widget as Text))
+          .where((r) => r.$1.left >= 0 && r.$1.right <= 900)
+          .toList();
+      expect(onGlass, isNotEmpty);
+
+      final target = onGlass.first.$2;
+      final title = target.data!;
+      final plainWeight = target.style!.fontWeight;
+      final plainColour = target.style!.color;
+
+      await tester.tap(find.byWidget(target), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      final open = laneLabel(title)!;
+      expect(open.style!.color, isNot(plainColour),
+          reason: 'the selected label must be tinted while its sheet is up');
+      expect(open.style!.fontWeight, plainWeight,
+          reason: 'weight is provenance — selection may not borrow it, or a '
+              'placed event reads as computed while it is selected');
+
+      // Close the sheet; the highlight must go with it.
+      Navigator.of(tester.element(find.byType(BottomSheet))).pop();
+      await tester.pumpAndSettle();
+      expect(laneLabel(title)!.style!.color, plainColour,
+          reason: 'a highlight that outlives its sheet is a stale selection');
     });
 
     testWidgets('a scroll drag does not drag the cursor with it',
