@@ -7,6 +7,8 @@ import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/song_copy.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song_queue.dart';
 import 'package:yswords/services/song_player_service.dart';
@@ -48,6 +50,12 @@ class NowPlayingPage extends StatelessWidget {
         actions: [
           if (player.current != null) ...[
             SongFavouriteButton(song: player.current!, locale: locale),
+            IconButton(
+              icon: const Icon(Icons.copy_outlined, size: 20),
+              tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
+              onPressed: () => ClipboardHelper.copyWithFeedback(
+                  context, songCopyText(player.current!, locale)),
+            ),
             IconButton(
               icon: const Icon(Icons.playlist_add_rounded, size: 22),
               tooltip: uiStrings['songsAddToPlaylist']?[locale],

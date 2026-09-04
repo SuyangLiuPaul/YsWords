@@ -3,6 +3,8 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/song_copy.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
 import 'package:yswords/services/link_opener.dart';
@@ -95,6 +97,17 @@ class _SongScorePageState extends State<SongScorePage> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.copy_outlined),
+            tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
+            // The song's own details, not the score file's URL: the
+            // score is an image or a PDF behind a link that means
+            // nothing pasted on its own, while the title and source are
+            // what someone writing "which hymn was that" actually
+            // wants. [songCopyText] already carries the source page.
+            onPressed: () => ClipboardHelper.copyWithFeedback(
+                context, songCopyText(song, locale)),
+          ),
           if (url != null)
             IconButton(
               tooltip: uiStrings['songsOpenOriginal']?[locale] ??

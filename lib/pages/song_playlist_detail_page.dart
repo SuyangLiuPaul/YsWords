@@ -2,6 +2,8 @@ import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/entry_copy.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
 import 'package:yswords/models/song_playlist.dart';
@@ -40,12 +42,43 @@ class SongPlaylistDetailPage extends StatefulWidget {
 class _SongPlaylistDetailPageState extends State<SongPlaylistDetailPage> {
   final _service = SongPlaylistService.instance;
   Future<List<Song>>? _catalogue;
+  // Mirrored out of [_catalogue] so the AppBar can resolve the track
+  // list too. The body reaches it through a FutureBuilder, which the
+  // app bar sits outside of; null until it lands, which is also exactly
+  // when the copy button should not be offered.
+  List<Song>? _catalogueForCopy;
 
   @override
   void initState() {
     super.initState();
     _catalogue = SongService.load();
+    _catalogue!.then((songs) {
+      if (mounted) setState(() => _catalogueForCopy = songs);
+    }).catchError((Object _) {
+      // The body's FutureBuilder already renders the failure; this
+      // mirror stays null, which hides the copy button.
+    });
     _service.load();
+  }
+
+  /// The playlist as plain lines: its name, then one numbered track per
+  /// line as `n. Title · Source`.
+  ///
+  /// Titles and sources only — no lyrics. The song detail sheet draws
+  /// the same line for the same reason, and the catalogue is
+  /// deliberate about whose words it carries at all.
+  String _copyText(SongPlaylist playlist, String locale) {
+    final songs = playlist.resolve(_catalogueForCopy ?? const <Song>[]);
+    final lines = <String>[];
+    for (var i = 0; i < songs.length; i++) {
+      final song = songs[i];
+      final source = localizedSongSource(song.source, locale);
+      lines.add('${i + 1}. ${song.title} · $source');
+    }
+    return formatEntryForCopy(
+      heading: _titleOf(playlist, locale),
+      body: lines.join('\n'),
+    );
   }
 
   @override
@@ -77,7 +110,17 @@ class _SongPlaylistDetailPageState extends State<SongPlaylistDetailPage> {
           appBar: AppBar(
             leading: const LocalizedBackButton(),
             title: Text(title, overflow: TextOverflow.ellipsis),
-            actions: const [LanguageSwitcherButton(), HomeIconButton()],
+            actions: [
+              if (playlist != null && _catalogueForCopy != null)
+                IconButton(
+                  icon: const Icon(Icons.copy_outlined),
+                  tooltip: uiStrings['copyAll']?[locale] ?? 'Copy all',
+                  onPressed: () => ClipboardHelper.copyWithFeedback(
+                      context, _copyText(playlist, locale)),
+                ),
+              const LanguageSwitcherButton(),
+              const HomeIconButton(),
+            ],
           ),
           body: playlist == null
               // Deleted from another screen while this one was open.

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/entry_copy.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
@@ -909,6 +911,28 @@ class _TriviaTileState extends State<_TriviaTile> {
                       ),
                     ),
                   const Spacer(),
+                  // Expanded only: the body is the answer, and it is
+                  // the part worth taking. Collapsed, this is a wall of
+                  // one-line titles where an icon per row would read as
+                  // clutter — the same call the timeline makes.
+                  if (_expanded)
+                    IconButton(
+                      icon: const Icon(Icons.copy_outlined),
+                      iconSize: 16,
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 32, minHeight: 32),
+                      tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
+                      onPressed: () => ClipboardHelper.copyWithFeedback(
+                        context,
+                        formatEntryForCopy(
+                          heading: title,
+                          body: entry.body[locale] ?? entry.body['en'],
+                          refs: [if (entry.reference != null) entry.reference!],
+                        ),
+                      ),
+                    ),
                   AnimatedRotation(
                     turns: _expanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 220),

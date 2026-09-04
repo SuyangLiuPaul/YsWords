@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/entry_copy.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/services/map_service.dart';
@@ -264,6 +266,22 @@ class _MapViewerPageState extends State<MapViewerPage> {
                                 ],
                               ),
                             ),
+                          ),
+                          IconButton(
+                            onPressed: () => ClipboardHelper.copyWithFeedback(
+                              context,
+                              formatEntryForCopy(
+                                heading: _current.localizedTitle(locale),
+                                body: desc,
+                              ),
+                            ),
+                            icon: Icon(Icons.copy_outlined,
+                                size: 18 * settings.menuScale),
+                            padding: EdgeInsets.all(10 * settings.menuScale),
+                            constraints: const BoxConstraints(
+                                minWidth: 40, minHeight: 40),
+                            tooltip:
+                                uiStrings['copySelection']?[locale] ?? 'Copy',
                           ),
                         ],
                       ),

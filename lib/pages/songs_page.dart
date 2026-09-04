@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/song_source_icons.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/entry_copy.dart';
+import 'package:yswords/utils/song_copy.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/song.dart';
@@ -1921,38 +1921,12 @@ class _SongDetailSheet extends StatelessWidget {
   Future<void> _open(BuildContext context, String url) =>
       LinkOpener.openOrWarn(context, url, locale: locale);
 
-  /// The `source · code · credit · duration` line under the title.
-  ///
-  /// A method rather than an inline list so the clipboard copies the
-  /// same string the reader is looking at. Two builders for one line
-  /// drift, and the drift is invisible until someone compares a paste
-  /// against the screen.
-  String _metaLine() => [
-        localizedSongSource(song.source, locale),
-        if (song.code != null) song.code!,
-        if (song.creditLine != null) song.creditLine!,
-        if (song.durationLabel != null) song.durationLabel!,
-      ].join(' · ');
-
-  /// Copies what this sheet SHOWS: title, that metadata line, and the
-  /// source page.
-  ///
-  /// Not the lyrics — and that is a decision, not an omission. This
-  /// sheet does not display them either, so there is nothing here to
-  /// take; and the catalogue is deliberate about whose words it
-  /// carries at all (see `fetch_setapak` in yswords-data, which skips
-  /// lyrics because those two posts are covers of works this catalogue
-  /// cannot license, while `fetch_ydh` carries them because that
-  /// ministry publishes its own). Showing words under that arrangement
-  /// and handing out a one-tap extract of them are not the same act, so
-  /// widening this is the owner's call rather than a tidy-up.
+  /// Copies what this sheet SHOWS: title, the metadata line, and the
+  /// source page. The shape — and why it carries no lyrics — lives in
+  /// [songCopyText], shared with the now-playing screen.
   Future<void> _copy(BuildContext context) async {
     final scheme = Theme.of(context).colorScheme;
-    final ok = await ClipboardHelper.copyText(formatEntryForCopy(
-      heading: song.title,
-      body: _metaLine(),
-      url: song.url,
-    ));
+    final ok = await ClipboardHelper.copyText(songCopyText(song, locale));
     if (!context.mounted) return;
     // showFloatingToast, not copyWithFeedback: this sheet has no
     // Scaffold of its own, so a SnackBar would anchor to the root one
@@ -2004,7 +1978,7 @@ class _SongDetailSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          _metaLine(),
+                          songMetaLine(song, locale),
                           style: TextStyle(
                             fontSize: 12,
                             color: scheme.onSurfaceVariant,
