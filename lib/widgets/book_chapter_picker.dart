@@ -419,40 +419,57 @@ class _BookChapterPickerState extends State<BookChapterPicker> {
 
                       return Row(
                         children: [
+                          // 2026-09-04: `Flexible`, and NOT the
+                          // horizontal SingleChildScrollView that used to
+                          // be here. A scroll view hands its children
+                          // UNBOUNDED width, so the FittedBox(scaleDown)
+                          // in [_testamentButton] — the whole mechanism
+                          // that exists to shrink a label rather than cut
+                          // it — could never fire. The buttons took their
+                          // natural width, ran past the viewport, and the
+                          // scroll view quietly CLIPPED "Greek Bible" mid
+                          // word against the view-mode toggle. Reported
+                          // from a device on 2026-09-04.
+                          //
+                          // Silent is the operative word: a scroll view
+                          // does not throw the RenderFlex overflow error
+                          // an ordinary Row would, so nothing in the logs
+                          // or in a build ever said a thing. `isNarrow` is
+                          // `< 300`, so essentially every real device took
+                          // this branch and not the Column one below.
+                          //
+                          // Loose `Flexible` rather than `Expanded`: a
+                          // button keeps its natural width while there is
+                          // room (which is how this bar has always looked
+                          // on a wide screen) and is only squeezed — and
+                          // therefore only scaled down — when there is
+                          // not.
                           if (hasOldTestament && hasNewTestament)
                             Expanded(
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: [
-                                    if (hasOldTestament)
-                                      _testamentButton(
-                                        context: context,
-                                        settings: settings,
-                                        selected: showOldTestament,
-                                        label:
-                                            uiStrings['oldTestament']
-                                                    ?[settings.locale] ??
-                                                'Hebrew Bible',
-                                        onPressed: () =>
-                                            _setTestament(settings, true),
-                                      ),
-                                    if (hasOldTestament && hasNewTestament)
-                                      const SizedBox(width: 10),
-                                    if (hasNewTestament)
-                                      _testamentButton(
-                                        context: context,
-                                        settings: settings,
-                                        selected: !showOldTestament,
-                                        label:
-                                            uiStrings['newTestament']
-                                                    ?[settings.locale] ??
-                                                'Greek Bible',
-                                        onPressed: () =>
-                                            _setTestament(settings, false),
-                                      ),
-                                  ],
-                                ),
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                    child: _testamentButton(
+                                      context: context,
+                                      settings: settings,
+                                      selected: showOldTestament,
+                                      label: otLabel,
+                                      onPressed: () =>
+                                          _setTestament(settings, true),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Flexible(
+                                    child: _testamentButton(
+                                      context: context,
+                                      settings: settings,
+                                      selected: !showOldTestament,
+                                      label: ntLabel,
+                                      onPressed: () =>
+                                          _setTestament(settings, false),
+                                    ),
+                                  ),
+                                ],
                               ),
                             )
                           else
