@@ -1223,7 +1223,13 @@ def load_snapshot():
         return json.load(f)
 
 
-@unittest.skipIf(load_snapshot() is None, 'snapshot not generated yet')
+@unittest.skipIf(
+    load_snapshot() is None,
+    'assets/sermon_library/ is deliberately untracked (see .gitignore) — '
+    'run scripts/sync_sermon_library.py to regenerate it locally. On a '
+    'fresh clone this class SKIPS, which means CI green here does not '
+    'mean the snapshot was checked. Everything above this line runs '
+    'without it.')
 class TestSnapshot(unittest.TestCase):
 
     @classmethod

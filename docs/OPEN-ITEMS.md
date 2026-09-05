@@ -456,6 +456,24 @@ root reports it as `home` and the CMS emits it in every `link` and
 
 **NOT DONE, and each is a decision rather than a task:**
 
+0. **REMOVED FROM THE REPO 2026-09-06, and it should never have been in
+   it.** The 843 body files were committed and then pushed to this
+   **public** GitHub repo by a concurrent session, which is
+   redistribution of 5.4 million characters of 71 preachers' sermons —
+   the exact act `_meta.authorisedScopeNote` says needs the church's
+   confirmation first. Not a confidentiality problem: the bodies are
+   published on fuyindiantai.org and anyone can read them. A
+   redistribution one, and not ours to decide.
+
+   Untracked with `git rm --cached` and gitignored; the files stay on
+   disk and `scripts/sync_sermon_library.py` regenerates them. **The
+   history still carries them** — the owner chose to leave it rather than
+   rewrite a pushed history that several sessions share.
+
+   Note what this costs: on a fresh clone `TestSnapshot` SKIPS, so 130
+   tests still pass while the snapshot itself goes unchecked. The skip
+   reason says so rather than reading "not generated yet".
+
 1. **Not bundled.** `pubspec.yaml` does not list `assets/sermon_library/`.
    It would add 18 MB to every install on top of the 28 MB
    `assets/sermons/` already costs, for a feature with no UI yet. The

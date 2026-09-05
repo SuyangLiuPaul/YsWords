@@ -56,3 +56,18 @@ scripts/__pycache__/
 # grew a __pycache__ too. A stale one there already caused a mutation run to
 # report results that lagged an iteration by one.
 test/__pycache__/
+
+# The 940-record sermon library fetched from fuyindiantai.org.
+#
+# Deliberately NOT tracked. It was committed on 2026-09-06 and pushed to
+# this PUBLIC repo before the question it carries had been answered:
+# `_meta.authorisedBy` records a relayed permission that the owner gave
+# about the SONGS on those domains, not about redistributing 5.4 million
+# characters of 71 preachers' sermons. The bodies are public on
+# fuyindiantai.org, so this was never a confidentiality problem — it is a
+# REDISTRIBUTION one, and it is the church's call, not ours.
+#
+# Regenerate locally with `python3 scripts/sync_sermon_library.py`. The
+# fetcher and its 130 tests stay in the repo; only the fetched content
+# leaves. Untrack again if it is ever re-added by accident.
+assets/sermon_library/
