@@ -76,7 +76,22 @@ extension on _Location {
 class _History {}
 
 extension on _History {
-  external void pushState(JSAny? state, String unused, String url);
+  // 2026-09-05: `pushState` is deliberately NOT declared any more. The
+  // Bible reader's URL write is a REPLACE — see `_writeStateToUrl` for
+  // the measured reason — and leaving the binding here is an invitation
+  // to reintroduce the defect one autocomplete at a time.
+  external void replaceState(JSAny? state, String unused, String url);
+
+  /// The state object on the entry the browser is currently showing.
+  ///
+  /// Read only so it can be written straight back by
+  /// [_writeStateToUrl]. The Flutter web engine TAGS its own history
+  /// entries (`{'origin': true}` on the page's landing entry,
+  /// `{'flutter': true}` on the one it keeps on top) and decides what a
+  /// `popstate` means by reading that tag back. Passing the existing
+  /// state through means this file never has to know the engine's
+  /// private tag names and never destroys one.
+  external JSAny? get state;
 }
 
 // ── Module-level state ──────────────────────────────────────────
@@ -371,10 +386,65 @@ void _writeStateToUrl() {
   final newHash = '#$hashPath?v=${mp.currentVersion}';
   if (newHash == _lastWrittenUrl) return;
   try {
-    _window.history.pushState(null, '', newHash);
+    // 2026-09-05: REPLACE, not push, and pass the current state object
+    // straight back. This line used to be
+    // `pushState(null, '', newHash)`, and that one word was the whole
+    // of docs/autonomous-queue.md's "on the Bible reader, Back pushes a
+    // route instead of popping".
+    //
+    // MEASURED in headless Chrome against a real release bundle
+    // (v1.4.214), not reasoned from the source. Cold-open
+    // `/#/micah/2?v=kjv`, tap Next Chapter twice, press Back ONCE:
+    //
+    //     popstate     #/micah/3:1?v=kjv     state=null
+    //     popstate     #/micah/2?v=kjv       state=null
+    //     popstate     #/HomePage            state={"flutter":true}
+    //     replaceState /#/_unknown           state={"flutter":true}
+    //     pushState    #/micah/2?v=kjv       state=null
+    //
+    // Three popstate events and `currentIndex` down by three, for one
+    // Back. The mechanism is the engine's, and its source says so out
+    // loud: `SingleEntryBrowserHistory.onPopState`'s last branch is
+    // commented "The user has pushed a new entry on top of our flutter
+    // entry… when the user modifies the hash part of the url directly".
+    // A push with `state: null` is exactly that shape, so every chapter
+    // turn armed the engine's manual-URL-edit RECOVERY path: it walks
+    // `go(-1)` until it finds its own tagged entry, and then dispatches
+    // **`pushRoute`** — which `WidgetsApp.didPopRoute`'s sibling turns
+    // into `pushNamed`. `/micah/2?v=kjv` is not a registered name, so
+    // GetX answered with `unknownRoute`: the `replaceState /#/_unknown`
+    // on the fourth line is a PAGE BEING PUSHED by a press of Back.
+    // Then the 350 ms route-change correction pushed from a non-tip
+    // entry and discarded the three forward entries with it.
+    //
+    // Replacing fixes it at the root: the engine's `{'flutter': true}`
+    // tag survives (hence reading `state` back rather than writing a
+    // literal — the tag names are the engine's private business), the
+    // app never creates an entry the engine does not own, and Back on
+    // the reader becomes the ordinary one-pop `popRoute` every
+    // GetX-routed page in this app already gets.
+    //
+    // What this gives up, and why it is not a loss: browser Back can no
+    // longer walk chapter by chapter. It could not before either — the
+    // trace above is what "walking back a chapter" actually did. Real
+    // per-chapter browser entries need the Router API
+    // (`GetMaterialApp.router` + `MultiEntriesBrowserHistory`), which is
+    // its own queue item; and note the raw null-state push is wrong
+    // under THAT mode too (`MultiEntriesBrowserHistory.onPopState`
+    // serial-tags an unrecognised entry and dispatches
+    // `pushRouteInformation`), so this is a prerequisite for the
+    // migration rather than something it would absorb.
+    //
+    // The URL TEXT written is unchanged, character for character —
+    // share links, `/read/` and `/sermons/` prerendered paths and their
+    // sitemaps cannot be affected by a push/replace choice.
+    //
+    // End-to-end proof: `tools/web_verify_headless.mjs bible`, which
+    // fails on the old code and passes on this one.
+    _window.history.replaceState(_window.history.state, '', newHash);
     _lastWrittenUrl = newHash;
   } catch (e) {
-    logDiag('[UrlSync] pushState threw: $e');
+    logDiag('[UrlSync] replaceState threw: $e');
   }
 }
 

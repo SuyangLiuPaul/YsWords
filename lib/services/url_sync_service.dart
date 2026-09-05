@@ -6,11 +6,24 @@
 //     MainProvider / AppSettings (so deep links cold-open at the
 //     right passage).
 //   • Listens to MainProvider changes after boot, debounces them
-//     ~150 ms, and writes the new state back to the URL via
-//     `history.pushState` so each chapter is a separate browser-
-//     history entry (back / forward navigates between chapters).
+//     ~150 ms, and REPLACES the current URL with the new state, so
+//     the address bar always names the passage on screen and the
+//     link is always shareable.
 //   • Listens to `popstate` so the browser's back / forward
 //     buttons drive the reader.
+//
+// 2026-09-05: the two bullets above used to say the write was a
+// `history.pushState`, so that each chapter became its own browser-
+// history entry and the browser's Back and Forward buttons moved
+// between chapters. That was false in both halves and is corrected
+// here rather than softened. Measured in headless Chrome against a
+// real release build: the push DID create an
+// entry, but it was one the Flutter web engine did not recognise, so
+// one Back cascaded past every chapter at once and then PUSHED a page
+// (`unknownRoute`) instead of popping. Back never navigated between
+// chapters, and Forward has never been reachable at all in
+// single-entry history mode. See `_writeStateToUrl` in
+// `url_sync_service_web.dart` for the trace.
 //
 // Native targets get the stub (no-op) — Android / iOS / desktop
 // don't have a URL bar, so URL sync is meaningless there. The

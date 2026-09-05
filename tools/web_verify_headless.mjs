@@ -40,7 +40,11 @@
 //               then browser Back/Forward. Runs TWICE: once with a Bible
 //               position planted, once with nothing planted at all, so a
 //               Back result cannot be an artifact of the planting setup
-//   history     alias for `sermon` (same walk; Back/Forward is the point)
+//   history     `sermon` PLUS `bible` — every browser-history case there
+//               is, which is what the two web-history queue items ask for
+//   bible       the Bible reader's own history: does an in-app chapter
+//               change add a browser entry, and what does ONE Back do to
+//               the raw `pushState` entries `_writeStateToUrl` wrote
 //   youtube     the enablejsapi handshake and the language switch
 //   typography  sermon 004 at 402x874, captured, with the paragraph gap
 //               measured off the live layout
@@ -125,7 +129,7 @@ const positional = argv.filter((a, i) =>
   !a.startsWith('--') && !VALUE_FLAGS.has(argv[i - 1]));
 const CMD = positional[0] || 'all';
 const KNOWN = ['all', 'routes', 'sermon', 'history', 'youtube', 'typography',
-               'chronology'];
+               'chronology', 'bible'];
 if (!KNOWN.includes(CMD)) {
   console.error(`Unknown subcommand ${JSON.stringify(CMD)}. One of: ${KNOWN.join(', ')}`);
   process.exit(2);
@@ -354,16 +358,29 @@ const INSTRUMENT = `
   (function () {
     var ps = History.prototype.pushState;
     var rs = History.prototype.replaceState;
+    // The STATE argument is recorded, not just the url. It is the only
+    // thing that says which BrowserHistory the engine is running:
+    // {"origin":true} / {"flutter":true} is SingleEntryBrowserHistory
+    // tagging its two entries, {"serialCount":N,...} is
+    // MultiEntriesBrowserHistory, and a bare null is this app's own
+    // _writeStateToUrl writing an entry the engine does not know about.
+    // Reading history.state at the end of a walk cannot tell them
+    // apart -- whoever wrote last wins -- so it is captured per call.
+    // (No backticks anywhere in here: this whole block is itself a
+    // template literal, and one would end it.)
+    var enc = function (v) {
+      try { return JSON.stringify(v); } catch (e) { return '<unencodable>'; }
+    };
     History.prototype.pushState = function (s, t, u) {
-      try { window.__ysHistory.push({ op: 'pushState', url: String(u), t: Date.now() }); } catch (e) {}
+      try { window.__ysHistory.push({ op: 'pushState', url: String(u), state: enc(s), t: Date.now() }); } catch (e) {}
       return ps.apply(this, arguments);
     };
     History.prototype.replaceState = function (s, t, u) {
-      try { window.__ysHistory.push({ op: 'replaceState', url: String(u), t: Date.now() }); } catch (e) {}
+      try { window.__ysHistory.push({ op: 'replaceState', url: String(u), state: enc(s), t: Date.now() }); } catch (e) {}
       return rs.apply(this, arguments);
     };
-    window.addEventListener('popstate', function () {
-      try { window.__ysHistory.push({ op: 'popstate', url: location.hash, t: Date.now() }); } catch (e) {}
+    window.addEventListener('popstate', function (e) {
+      try { window.__ysHistory.push({ op: 'popstate', url: location.hash, state: enc(e.state), t: Date.now() }); } catch (e2) {}
     });
   })();
   // Poll the fragment. The bug this harness exists to check for is a
@@ -1059,7 +1076,8 @@ async function runSermon(origin, { withPlant = true } = {}) {
     const t0 = out.historyCalls[0]?.t ?? 0;
     console.log('   every History API call and popstate, in order:');
     for (const h of out.historyCalls) {
-      console.log(`     +${String(h.t - t0).padStart(6)}ms  ${h.op.padEnd(12)} ${h.url}`);
+      console.log(`     +${String(h.t - t0).padStart(6)}ms  ${h.op.padEnd(12)} ` +
+        `${(h.url || '').padEnd(24)} state=${h.state}`);
     }
   } catch (e) {
     out.error = String(e);
@@ -1317,6 +1335,442 @@ async function runTypography(origin) {
     b.close();
   }
   for (const s of out.shots || []) console.log(`   screenshot: ${s}`);
+  return out;
+}
+
+// ── case 6: the Bible reader's own browser history ───────────────────
+//
+// 2026-09-05. `history`/`sermon` above never touches the Bible reader,
+// and the reader is the ONE page whose URL is not written by GetX at
+// all: `url_sync_service_web.dart`'s `_writeStateToUrl` calls
+// `window.history.pushState` directly, on a 150 ms debounce, for a
+// history entry the Flutter engine believes it owns.
+//
+// docs/autonomous-queue.md's second web-history item says that a Back
+// onto one of those entries lands in `SingleEntryBrowserHistory.
+// onPopState`'s THIRD branch (the state is neither the `origin` nor the
+// `flutter` marker, because our raw pushState wrote `null`), which does
+// `go(-1)` and eventually dispatches **`pushRoute`** — i.e. Back grows
+// the Navigator stack instead of unwinding it. That claim had never
+// been watched happen. This case watches it.
+//
+// The instrument is the browser's own numbers, not a probe:
+//
+//   * `Page.getNavigationHistory` before and after an in-app chapter
+//     change answers "does reading the next chapter add a browser
+//     entry?" — the sermon case's `pushAddedEntry`, asked of the one
+//     code path that really does push.
+//   * ONE Back, sampled at 40/150/600/1500/3000/5000 ms. A `go(-1)`
+//     cascade shows up as `currentIndex` falling by more than one and
+//     `forward` rising by the same amount; a `pushRoute` that lands
+//     afterwards shows up as those forward entries being TRUNCATED
+//     again ~350 ms later, when the route-change correction fires its
+//     own pushState from a non-tip entry.
+//   * `window.__ysHistory` counts the popstate events one Back
+//     produced. One Back that produces one popstate is a pop; one Back
+//     that produces three is a cascade.
+async function runBible(origin) {
+  console.log('\n════ 6. The Bible reader\'s browser history ════');
+  console.log('Cold-load a Bible deep link, read two chapters forward with');
+  console.log('the in-app Next-chapter control, then press Back ONCE.');
+  console.log('`_writeStateToUrl` pushState()s a null-state entry per');
+  console.log('chapter; the engine owns the entry underneath them.\n');
+
+  const { b, cdp, booted } = await coldLoad(
+    'bible', origin, origin + '/#/micah/2?v=kjv');
+  const out = { booted };
+  try {
+    // The tour has to be GONE, not merely clicked at, before this case
+    // can do anything — measured 2026-09-05, the first run of it: one
+    // Skip click left the dialog up on this page, and the tour's own
+    // "Next" button then swallowed both of the Next-CHAPTER clicks
+    // below, so the walk silently measured nothing. `dismissOnboarding`
+    // reports `dismissed`; believe it and retry rather than assuming.
+    let tour = await dismissOnboarding(cdp);
+    for (let i = 0; i < 6 && tour.appeared && !tour.dismissed; i++) {
+      await sleep(1200);
+      await clickText(cdp, SKIP_RE, { timeoutMs: 6000 });
+      await sleep(1500);
+      const t = await pageText(cdp).catch(() => '');
+      tour = { ...tour, dismissed: !TOUR_RE.test(t), retries: i + 1 };
+    }
+    out.tour = tour;
+    if (tour.appeared && !tour.dismissed) {
+      throw new Error('the first-run tour would not dismiss — every click ' +
+        'below would land on the dialog, not the page');
+    }
+    await sleep(2500);
+    out.hashOnArrival = await evalJs(cdp, 'location.hash');
+    out.textOnArrival = (await pageText(cdp)).slice(0, 300);
+    console.log(`   arrived, hash: ${JSON.stringify(out.hashOnArrival)}`);
+    console.log(`   page: ${out.textOnArrival.slice(0, 200)}`);
+
+    const hb = await cdp.send('Page.getNavigationHistory');
+    out.historyBefore = {
+      count: hb.entries.length, index: hb.currentIndex,
+      urls: hb.entries.map((e) => e.url.replace(origin, '')),
+    };
+    console.log(`   history on arrival: ${hb.entries.length} entries, ` +
+      `index ${hb.currentIndex}`);
+    console.log(`     ${out.historyBefore.urls.map((u, i) =>
+      `${i}${i === hb.currentIndex ? '*' : ' '} ${u}`).join('\n     ')}`);
+
+    // Two in-app chapter advances. The control is the bottom bar's
+    // chevron, whose tooltip becomes its semantics label — see
+    // bible_reading_pane.dart's `_BottomBarBtn(icon: chevron_right)`.
+    out.chapterSteps = [];
+    let lastHash = out.hashOnArrival;
+    for (let i = 0; i < 2; i++) {
+      // The label is the button's TOOLTIP, and the tooltip reads
+      // "Next Chapter" (title case, one space) — not the `nextChapter`
+      // ui_strings value "Next" that bible_reading_pane.dart passes as
+      // the fallback. Read off the live semantics tree, not the source.
+      // `box` pins the click to the bottom bar as well: the onboarding
+      // dialog's own button is labelled "Next" and sits mid-screen, and
+      // a looser match picked that one on the first run of this case.
+      const hit = await clickText(cdp, /^(next chapter|下一章)$/i,
+        { timeoutMs: 15000, box: [0, 640, 1280, 900] });
+      if (!hit) {
+        // Print what IS on screen rather than leaving "NOT FOUND". A
+        // canvas app gives no other way to see why a selector missed.
+        const s = await semantics(cdp).catch(() => ({ nodes: [] }));
+        console.log('   Next-chapter control not found. Semantics nodes:');
+        for (const n of (s.nodes || []).slice(0, 60)) {
+          console.log(`     [${n.role || '-'}] y=${Math.round(n.y)} ` +
+            `x=${Math.round(n.x)} ${JSON.stringify(n.text.slice(0, 50))}`);
+        }
+      }
+      await sleep(2500);
+      const h = await evalJs(cdp, 'location.hash');
+      const nh = await cdp.send('Page.getNavigationHistory');
+      out.chapterSteps.push({
+        clicked: hit ? hit.text : null, hash: h, hashChanged: h !== lastHash,
+        entries: nh.entries.length, index: nh.currentIndex,
+      });
+      console.log(`   Next chapter #${i + 1}: clicked=${JSON.stringify(hit?.text ?? null)} ` +
+        `hash=${JSON.stringify(h)} changed=${h !== lastHash} ` +
+        `entries=${nh.entries.length} index=${nh.currentIndex}`);
+      lastHash = h;
+    }
+    // Every step must have found a control AND moved the address bar.
+    // "The click landed somewhere" is not the same claim as "the reader
+    // advanced a chapter", and only the second one makes the Back below
+    // mean anything.
+    out.chapterNavWorked = out.chapterSteps.every(
+      (s) => s.clicked !== null && s.hashChanged);
+
+    const h0 = await cdp.send('Page.getNavigationHistory');
+    out.historyAfterReading = {
+      count: h0.entries.length, index: h0.currentIndex,
+      urls: h0.entries.map((e) => e.url.replace(origin, '')),
+    };
+    out.entriesAddedByReading = h0.entries.length - out.historyBefore.count;
+    console.log(`   history after reading: ${h0.entries.length} entries, ` +
+      `index ${h0.currentIndex}  (+${out.entriesAddedByReading} vs arrival)`);
+    console.log(`     ${out.historyAfterReading.urls.map((u, i) =>
+      `${i}${i === h0.currentIndex ? '*' : ' '} ${u}`).join('\n     ')}`);
+
+    // Mark where the popstate counter stands so the Back below can be
+    // attributed exactly one Back's worth of events.
+    const callsBefore = await evalJs(cdp, '(window.__ysHistory || []).length');
+
+    console.log('\n   ── ONE browser Back ──');
+    const backTo = h0.entries[h0.currentIndex - 1];
+    if (!backTo) {
+      console.log('   no previous entry exists — nothing to press Back onto');
+      out.backImpossible = true;
+    } else {
+      out.backTargetUrl = backTo.url.replace(origin, '');
+      await cdp.send('Page.navigateToHistoryEntry', { entryId: backTo.id });
+      out.backTrace = [];
+      let prev = 0;
+      for (const at of [40, 150, 600, 1500, 3000, 5000]) {
+        await sleep(at - prev); prev = at;
+        const h = await cdp.send('Page.getNavigationHistory');
+        out.backTrace.push({
+          at,
+          entries: h.entries.length,
+          index: h.currentIndex,
+          forward: h.entries.length - 1 - h.currentIndex,
+          hash: await evalJs(cdp, 'location.hash').catch(() => null),
+          text: (await pageText(cdp).catch(() => '')).slice(0, 600),
+        });
+      }
+      for (const t of out.backTrace) {
+        console.log(`   BACK -> +${String(t.at).padStart(4)}ms  ` +
+          `entries=${t.entries} index=${t.index} forward=${t.forward}  ` +
+          `hash=${JSON.stringify(t.hash)}`);
+        console.log(`                   page="${t.text.replace(/\n/g, ' ').slice(0, 96)}"`);
+      }
+      const callsAfter = await evalJs(cdp, 'window.__ysHistory || []');
+      out.oneBackCalls = callsAfter.slice(callsBefore);
+      out.popstatesForOneBack =
+        out.oneBackCalls.filter((c) => c.op === 'popstate').length;
+      out.pushStatesForOneBack =
+        out.oneBackCalls.filter((c) => c.op === 'pushState').length;
+      console.log('   History API calls attributable to that ONE Back:');
+      for (const c of out.oneBackCalls) {
+        console.log(`     ${c.op.padEnd(12)} ${(c.url || '').padEnd(24)} state=${c.state}`);
+      }
+      console.log(`   popstate events for ONE Back: ${out.popstatesForOneBack}` +
+        (out.popstatesForOneBack > 1
+          ? '  <-- go(-1) CASCADE: the engine walked past entries it did not recognise'
+          : ''));
+      console.log(`   pushState calls for ONE Back: ${out.pushStatesForOneBack}`);
+
+      const settled = out.backTrace[out.backTrace.length - 1];
+      const first = out.backTrace[0];
+      out.indexDropForOneBack = out.historyAfterReading.index - first.index;
+      out.forwardImmediatelyAfterBack = first.forward;
+      out.forwardAfterSettling = settled.forward;
+      out.forwardTruncatedAfterBack =
+        first.forward > 0 && settled.forward < first.forward;
+      out.hashAfterBack = settled.hash;
+      out.textAfterBack = settled.text;
+      // Did Back actually LEAVE the reader? The numbers above say what
+      // the history stack did; this says what the reader saw. The
+      // reader's own chrome is the marker — the bottom bar's
+      // Previous/Next Chapter and the header's Change Version exist on
+      // no other page. Before the fix, Back landed back ON the reader
+      // (with an extra unknownRoute page pushed underneath the URL);
+      // after it, Back pops the reader and the Dashboard is underneath.
+      out.readerChromeAfterBack =
+        /Next Chapter|Previous Chapter|Change Version|下一章|上一章/i
+          .test(settled.text || '');
+      out.backLeftTheReader = !out.readerChromeAfterBack;
+      console.log(`   still on the reader after Back: ` +
+        `${out.readerChromeAfterBack}` +
+        (out.readerChromeAfterBack
+          ? '  <-- Back did not leave the reader'
+          : '  (Back popped the reader, as a pop should)'));
+      console.log(`   currentIndex dropped by ${out.indexDropForOneBack} ` +
+        'for one Back' +
+        (out.indexDropForOneBack > 1 ? '  <-- more than one entry' : ''));
+      console.log(`   forward entries: ${out.forwardImmediatelyAfterBack} at +40ms, ` +
+        `${out.forwardAfterSettling} at +5s` +
+        (out.forwardTruncatedAfterBack
+          ? '  <-- the app pushState()d from a non-tip entry and DISCARDED them'
+          : ''));
+      out.shotBack = await screenshot(cdp, 'bible-after-back');
+    }
+    out.hashLog = (await hashLog(cdp)).map((e) => e.hash);
+    out.historyCalls = await evalJs(cdp, 'window.__ysHistory || []')
+      .catch(() => []);
+    console.log(`   full hash trace: ${JSON.stringify(out.hashLog)}`);
+    const t0 = out.historyCalls[0]?.t ?? 0;
+    console.log('   every History API call and popstate, in order:');
+    for (const h of out.historyCalls) {
+      console.log(`     +${String(h.t - t0).padStart(6)}ms  ${h.op.padEnd(12)} ` +
+        `${(h.url || '').padEnd(24)} state=${h.state}`);
+    }
+  } catch (e) {
+    out.error = String(e);
+    console.log(`   HARNESS ERROR: ${e.stack || e}`);
+  } finally {
+    b.close();
+  }
+  return out;
+}
+
+// ── case 7: what browser-history MODE is the engine actually in? ──────
+//
+// 2026-09-05. Both web-history queue items rest on the same premise —
+// the engine runs `SingleEntryBrowserHistory` because the app sets
+// `home:` on `GetMaterialApp` rather than using the Router API. The
+// first item adds a warning, argued from reading Flutter 3.44.2's
+// `lib/web_ui/lib/src/engine/navigation/history.dart`: do NOT reach for
+// `SystemNavigator.selectMultiEntryHistory()`, because in multi-entry
+// mode Back arrives as `pushRouteInformation`, and a `WidgetsApp` with
+// no Router answers that with `pushNamed` — so Back would GROW the
+// stack instead of unwinding it.
+//
+// That warning can be TESTED rather than trusted, and this app hands us
+// the experiment for free. `createHistoryForExistingState` picks the
+// mode by looking at `history.state` on boot: the `origin` or `flutter`
+// marker means single-entry, and ANYTHING ELSE — including the `null`
+// that `_writeStateToUrl`'s raw `pushState(null, ...)` leaves behind —
+// falls through to `MultiEntriesBrowserHistory`. So: read a chapter,
+// then RELOAD. The reload boots on the app's own untagged entry and the
+// engine picks multi-entry all by itself, with no `SystemNavigator`
+// call and no source edit.
+//
+// The state each history write CARRIES is the decisive oracle, not an
+// inference:
+//   single-entry → {"origin": true} then {"flutter": true}
+//   multi-entry  → {"serialCount": 0, "state": ...}
+// Then one Back, and the question the warning asks: does the history
+// stack GROW?
+//
+// 2026-09-05, what this case actually found: the reload does NOT flip
+// the app into multi-entry mode, and `createHistoryForExistingState` is
+// not the last word. `NavigatorState.initState`
+// (packages/flutter/lib/src/widgets/navigator.dart:3819) calls
+// `SystemNavigator.selectSingleEntryHistory()` whenever
+// `reportsRouteUpdateToEngine` is true, which it is for the root
+// Navigator a `MaterialApp` builds — so whatever the engine inferred
+// from the boot state is overridden a frame later. Multi-entry mode is
+// therefore NOT reachable from a shipping build of this app by any
+// sequence of user actions; testing the warning needs a bundle that
+// calls `selectMultiEntryHistory()` after that, which is a throwaway
+// experiment build, never a shipped one.
+async function runMultiEntryProbe(origin) {
+  console.log('\n════ 7. Which BrowserHistory does the engine pick? ════');
+  console.log('Read a chapter (so the app leaves a null-state entry at the');
+  console.log('tip), then reload onto it. `createHistoryForExistingState`');
+  console.log('reads `history.state` and picks the mode. This is the');
+  console.log('`selectMultiEntryHistory()` warning, run as an experiment.\n');
+
+  const { b, cdp, booted } = await coldLoad(
+    'multientry', origin, origin + '/#/micah/2?v=kjv');
+  const out = { booted };
+  try {
+    let tour = await dismissOnboarding(cdp);
+    for (let i = 0; i < 6 && tour.appeared && !tour.dismissed; i++) {
+      await sleep(1200);
+      await clickText(cdp, SKIP_RE, { timeoutMs: 6000 });
+      await sleep(1500);
+      const t = await pageText(cdp).catch(() => '');
+      tour = { ...tour, dismissed: !TOUR_RE.test(t) };
+    }
+    if (tour.appeared && !tour.dismissed) {
+      throw new Error('the first-run tour would not dismiss');
+    }
+    await sleep(2000);
+
+    out.stateBeforeReload = await evalJs(cdp, 'JSON.stringify(history.state)');
+    out.hashBeforeReload = await evalJs(cdp, 'location.hash');
+    console.log(`   hash before reload:  ${JSON.stringify(out.hashBeforeReload)}`);
+    console.log(`   history.state before reload: ${out.stateBeforeReload}`);
+    out.tipIsUntagged = out.stateBeforeReload === 'null';
+    console.log(`   the tip entry is UNTAGGED (raw pushState(null)): ` +
+      `${out.tipIsUntagged}`);
+
+    // Reload onto that entry — the ordinary thing a reader does.
+    await cdp.send('Page.reload', { ignoreCache: false });
+    await waitForFlutter(cdp, 40000);
+    await enableSemantics(cdp);
+    await sleep(3000);
+    let t2 = await dismissOnboarding(cdp, 12000);
+    for (let i = 0; i < 4 && t2.appeared && !t2.dismissed; i++) {
+      await sleep(1200);
+      await clickText(cdp, SKIP_RE, { timeoutMs: 6000 });
+      await sleep(1500);
+      const t = await pageText(cdp).catch(() => '');
+      t2 = { ...t2, dismissed: !TOUR_RE.test(t) };
+    }
+    await sleep(2500);
+
+    out.stateAfterReload = await evalJs(cdp, 'JSON.stringify(history.state)');
+    out.hashAfterReload = await evalJs(cdp, 'location.hash');
+    // Do NOT read the mode off `history.state` at this point — measured
+    // 2026-09-05, the first run of this case: whichever code wrote LAST
+    // owns the state, and `_writeStateToUrl` fires ~3 s after boot and
+    // overwrites it with `null` again, so a late read reports `null` in
+    // BOTH modes. The engine's own tagging calls, captured at the moment
+    // they happened, are the oracle. `__ysHistory` is re-installed per
+    // document, so after a reload its first entries are exactly the new
+    // engine's boot writes.
+    out.bootCallsAfterReload =
+      (await evalJs(cdp, 'window.__ysHistory || []')).slice(0, 10);
+    // LAST tagging write wins, not the first. Measured 2026-09-05 on the
+    // unfixed build: `createHistoryForExistingState` picks multi-entry
+    // from the app's untagged tip entry and writes {"serialCount":0},
+    // and then `NavigatorState.initState`'s
+    // `selectSingleEntryHistory()` tears that down a frame later and
+    // writes {"origin":true}/{"flutter":true} over it. A detector that
+    // matched the first tag it saw called that boot multi-entry, which
+    // is the opposite of what the app ends up running.
+    const modeOf = (st) => /"serialCount"/.test(st || '')
+      ? 'MultiEntriesBrowserHistory'
+      : /"flutter"|"origin"/.test(st || '') ? 'SingleEntryBrowserHistory'
+      : null;
+    const modes = out.bootCallsAfterReload.map((c) => modeOf(c.state))
+      .filter(Boolean);
+    out.modeSequence = modes;
+    out.mode = modes.length ? modes[modes.length - 1] : 'UNKNOWN';
+    console.log(`   hash after reload:   ${JSON.stringify(out.hashAfterReload)}`);
+    console.log('   the engine\'s own boot writes on the reloaded document:');
+    for (const c of out.bootCallsAfterReload) {
+      console.log(`     ${c.op.padEnd(12)} ${(c.url || '').padEnd(24)} state=${c.state}`);
+    }
+    console.log(`   >>> engine browser-history mode: ${out.mode}` +
+      (out.modeSequence && new Set(out.modeSequence).size > 1
+        ? `  (inferred at boot as ${out.modeSequence[0]}, then overridden)`
+        : ''));
+
+    const hb = await cdp.send('Page.getNavigationHistory');
+    out.historyBeforeNav = {
+      count: hb.entries.length, index: hb.currentIndex,
+      urls: hb.entries.map((e) => e.url.replace(origin, '')),
+    };
+    console.log(`   history: ${hb.entries.length} entries, index ${hb.currentIndex}`);
+
+    // One in-app navigation, then one Back. In multi-entry mode the
+    // engine's `setRouteName(replace: false)` really does push, so this
+    // is the first configuration in which Back has somewhere to go.
+    const hit = await clickText(cdp, /^(next chapter|下一章)$/i,
+      { timeoutMs: 15000, box: [0, 640, 1280, 900] });
+    await sleep(3000);
+    out.navClicked = hit ? hit.text : null;
+    out.hashAfterNav = await evalJs(cdp, 'location.hash');
+    const h0 = await cdp.send('Page.getNavigationHistory');
+    out.historyAfterNav = {
+      count: h0.entries.length, index: h0.currentIndex,
+      urls: h0.entries.map((e) => e.url.replace(origin, '')),
+    };
+    console.log(`   after one chapter step: ${h0.entries.length} entries, ` +
+      `index ${h0.currentIndex}, hash ${JSON.stringify(out.hashAfterNav)}`);
+
+    const callsBefore = await evalJs(cdp, '(window.__ysHistory || []).length');
+    const backTo = h0.entries[h0.currentIndex - 1];
+    if (!backTo) {
+      out.backImpossible = true;
+      console.log('   no previous entry to press Back onto');
+    } else {
+      await cdp.send('Page.navigateToHistoryEntry', { entryId: backTo.id });
+      out.backTrace = [];
+      let prev = 0;
+      for (const at of [40, 600, 1500, 3000, 5000]) {
+        await sleep(at - prev); prev = at;
+        const h = await cdp.send('Page.getNavigationHistory');
+        out.backTrace.push({
+          at, entries: h.entries.length, index: h.currentIndex,
+          forward: h.entries.length - 1 - h.currentIndex,
+          hash: await evalJs(cdp, 'location.hash').catch(() => null),
+          text: (await pageText(cdp).catch(() => '')).slice(0, 120),
+        });
+      }
+      for (const t of out.backTrace) {
+        console.log(`   BACK -> +${String(t.at).padStart(4)}ms  ` +
+          `entries=${t.entries} index=${t.index} forward=${t.forward}  ` +
+          `hash=${JSON.stringify(t.hash)}`);
+      }
+      out.oneBackCalls = (await evalJs(cdp, 'window.__ysHistory || []'))
+        .slice(callsBefore);
+      console.log('   History API calls for that ONE Back:');
+      for (const c of out.oneBackCalls) {
+        console.log(`     ${c.op.padEnd(12)} ${(c.url || '').padEnd(24)} state=${c.state}`);
+      }
+      const settled = out.backTrace[out.backTrace.length - 1];
+      out.entriesGrewOnBack = settled.entries > out.historyAfterNav.count;
+      out.pushStatesOnBack =
+        out.oneBackCalls.filter((c) => c.op === 'pushState').length;
+      // This is the warning's claim, stated as a number: in multi-entry
+      // mode, does Back make the app PUSH?
+      console.log(`   entries after Back settled: ${settled.entries} ` +
+        `(was ${out.historyAfterNav.count} before Back) — ` +
+        `stack GREW on Back: ${out.entriesGrewOnBack}`);
+      console.log(`   pushState calls during that Back: ${out.pushStatesOnBack}`);
+      out.shot = await screenshot(cdp, 'multientry-after-back');
+    }
+    out.historyCalls = await evalJs(cdp, 'window.__ysHistory || []')
+      .catch(() => []);
+  } catch (e) {
+    out.error = String(e);
+    console.log(`   HARNESS ERROR: ${e.stack || e}`);
+  } finally {
+    b.close();
+  }
   return out;
 }
 
@@ -1621,6 +2075,10 @@ async function main() {
       out.sermon = await runSermon(origin, { withPlant: true });
       out.sermonControl = await runSermon(origin, { withPlant: false });
     }
+    if (CMD === 'all' || CMD === 'history' || CMD === 'bible') {
+      out.bible = await runBible(origin);
+      out.multiEntry = await runMultiEntryProbe(origin);
+    }
     if (CMD === 'all' || CMD === 'youtube') out.youtube = await runYoutube(origin);
     if (CMD === 'all' || CMD === 'typography') out.typography = await runTypography(origin);
     if (CMD === 'all' || CMD === 'chronology') {
@@ -1657,6 +2115,20 @@ async function main() {
       `push-added-history-entry=${out.sermonControl.pushAddedEntry} ` +
       `back-showed-list=${out.sermonControl.backShowsList} ` +
       `forward-available=${!out.sermonControl.forwardGone}`);
+  }
+  if (out.bible) {
+    console.log(`  bible reader history: chapter-nav-worked=${out.bible.chapterNavWorked} ` +
+      `entries-added-by-reading=${out.bible.entriesAddedByReading} ` +
+      `popstates-for-one-Back=${out.bible.popstatesForOneBack} ` +
+      `index-drop-for-one-Back=${out.bible.indexDropForOneBack} ` +
+      `forward-truncated=${out.bible.forwardTruncatedAfterBack} ` +
+      `back-left-the-reader=${out.bible.backLeftTheReader}`);
+  }
+  if (out.multiEntry) {
+    console.log(`  engine history mode after a reload onto the app's own ` +
+      `untagged entry: ${out.multiEntry.mode}` +
+      (out.multiEntry.backImpossible ? ' (no Back step)' :
+        `; one Back GREW the stack: ${out.multiEntry.entriesGrewOnBack}`));
   }
   if (out.youtube) {
     console.log(`  youtube: src-jsapi=${out.youtube.srcHasJsApi} ` +
@@ -1732,6 +2204,76 @@ async function main() {
     gate.push(['KNOWN-GAP', `Forward (${label})`,
       `forward entries after Back: ${s.forwardEntriesAfterSettling ?? 0} ` +
       '— single-entry browser history, see docs/url-routing-plan.md §5']);
+  }
+  if (out.bible) {
+    const bi = out.bible;
+    if (bi.error || !bi.chapterNavWorked || !bi.backTrace) {
+      gate.push(['INCONCLUSIVE', 'Back (Bible reader)',
+        'the reader walk did not reach the Back step — the Next-chapter ' +
+        'control was not found, or no history entry existed to go back to']);
+    } else if (bi.popstatesForOneBack > 1) {
+      // The measured signature of the queue item: our raw pushState wrote
+      // a null-state entry the engine does not recognise, so its
+      // onPopState `else` branch does go(-1) and keeps going until it
+      // reaches its own "flutter" entry, then dispatches pushRoute.
+      gate.push(['FAIL', 'Back (Bible reader)',
+        `one Back produced ${bi.popstatesForOneBack} popstate events and ` +
+        `dropped currentIndex by ${bi.indexDropForOneBack} — the engine ` +
+        'walked past history entries it did not recognise (raw pushState ' +
+        'with a null state) instead of popping once']);
+    } else if (bi.backTrace[bi.backTrace.length - 1].entries >
+               bi.historyAfterReading.count) {
+      // The popstate count ALONE is not a sufficient oracle, and finding
+      // that out is what this branch is. The multi-entry experiment
+      // build measured on 2026-09-05 produces exactly ONE popstate per
+      // Back — and then PUSHES three entries, because Back arrives as
+      // `pushRouteInformation`. A gate that only counted popstates
+      // called that a PASS. Back must also not GROW the stack.
+      gate.push(['FAIL', 'Back (Bible reader)',
+        `one Back left ${bi.backTrace[bi.backTrace.length - 1].entries} ` +
+        `history entries where there were ${bi.historyAfterReading.count} ` +
+        'before it — Back PUSHED instead of unwinding']);
+    } else if (bi.entriesAddedByReading !== 0) {
+      gate.push(['FAIL', 'Back (Bible reader)',
+        `reading two chapters added ${bi.entriesAddedByReading} browser ` +
+        'history entries — the reader is writing entries the engine does ' +
+        'not own again (a raw pushState in _writeStateToUrl)']);
+    } else if (bi.forwardTruncatedAfterBack) {
+      gate.push(['FAIL', 'Back (Bible reader)',
+        'the forward entries that existed right after Back were gone ' +
+        '~350 ms later — something pushState()d from a non-tip entry']);
+    } else if (!bi.backLeftTheReader) {
+      gate.push(['FAIL', 'Back (Bible reader)',
+        'Back did not leave the reader — the reader\'s own chrome ' +
+        '(Previous/Next Chapter, Change Version) is still on screen five ' +
+        'seconds later']);
+    } else {
+      gate.push(['PASS', 'Back (Bible reader)',
+        'reading chapters adds no browser entries, one Back produces ' +
+        'exactly one popstate, the stack does not grow, no forward ' +
+        'entries are discarded, and Back pops the reader']);
+    }
+    // NOT gated, and the reason is worth writing down: `currentIndex`
+    // does NOT fall when Back works correctly here. The engine's
+    // origin-entry branch re-pushes its own "flutter" entry the instant
+    // the popstate arrives, so the index is back where it started within
+    // the same tick. An earlier version of this gate asserted
+    // `indexDrop >= 1` and failed the FIXED build for it. The index is
+    // reported below as data, never as a verdict.
+    gate.push(['MEASURED', 'Back index delta (Bible reader)',
+      `currentIndex moved by ${bi.indexDropForOneBack} and popstate fired ` +
+      `${bi.popstatesForOneBack} time(s) for one Back; reading two ` +
+      `chapters added ${bi.entriesAddedByReading} browser entries`]);
+  }
+  if (out.multiEntry && !out.multiEntry.error) {
+    // Reported, never gated — this case is a MEASUREMENT of what the
+    // engine does in the other mode, not a behaviour the app promises.
+    gate.push(['MEASURED', 'multi-entry mode',
+      `a reload onto the app's own untagged history entry put the engine ` +
+      `in ${out.multiEntry.mode}` +
+      (out.multiEntry.backImpossible ? '' :
+        `; one Back then grew the history stack: ` +
+        `${out.multiEntry.entriesGrewOnBack}`)]);
   }
   if (gate.length) {
     console.log('\n════ regression gate ════');
