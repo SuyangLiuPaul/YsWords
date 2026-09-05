@@ -1,0 +1,26 @@
+{
+  "_readme": [
+    "Ids that tools/check_video_ids.js already knows are unavailable, so a",
+    "known outage does not shout every week while the owner chases it up.",
+    "",
+    "This file is an ACKNOWLEDGEMENT, never a deletion. The id itself stays",
+    "in assets/videos.json: a private video is almost always an accident,",
+    "and the id is the only thing that can restore it. Removing it there",
+    "would throw away the recovery key and quietly shrink a series that",
+    "the app's own copy says has a fixed number of episodes.",
+    "",
+    "Shape: \"unavailable\": { \"<youtubeId>\": { \"since\": \"YYYY-MM-DD\",",
+    "\"note\": \"what is being done about it\" } }.",
+    "",
+    "The check still reports an acknowledged id every run (as a note, not",
+    "a failure), and tells you when one starts answering 200 again so the",
+    "entry can be deleted and the id protected once more.",
+    "",
+    "DELIBERATELY EMPTY as of 2026-09-05. QmTEkPquvcQ — the English track",
+    "of the `onegod` episode — was found private that day, and it is NOT",
+    "listed here: the whole point of adding this check was to make that",
+    "one visible. Acknowledge it only once someone has actually asked the",
+    "church to un-private it and is waiting on them."
+  ],
+  "unavailable": {}
+}

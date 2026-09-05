@@ -96,6 +96,12 @@ void main() {
         '07': 'xmTw9MprLDc',
         '08': 'og1rthWUJ00',
         '09': 'E2Z8Y3EIbeI',
+        // The last one, filed 2026-09-05. Its title carried both the
+        // ordinal and 普通话版, and it was additionally checked against
+        // episode 10's own Cantonese track (CincIrfTfDs) because
+        // episode 08's near-miss was a Cantonese take wearing the right
+        // ordinal. The two titles differ exactly where they should.
+        '10': 'AiiyRGaRJBY',
       };
       for (final e in byId('cross').episodes) {
         final id = mandarin[e.id];

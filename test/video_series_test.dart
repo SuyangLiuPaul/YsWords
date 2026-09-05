@@ -55,6 +55,13 @@ const _crossYue = [
 /// mistake `_meta.pairingEvidence` exists to prevent.
 const _crossWithMandarin = {
   '01', '02', '03', '04', '05', '06', '07', '08', '09',
+  // Episode 10 (AiiyRGaRJBY) filed 2026-09-05 — the last one. The
+  // series is now COMPLETE at 10/10, so the `['en', 'yue']` branch
+  // below no longer fires for 在十字架下. It stays because the rule it
+  // encodes outlives this series: an episode with no Mandarin take
+  // offers no Mandarin button rather than playing the Cantonese one
+  // under that label.
+  '10',
 };
 
 /// Not episodes, and must never be listed as one: these are the whole

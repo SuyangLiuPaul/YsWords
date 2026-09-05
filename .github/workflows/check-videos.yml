@@ -1,0 +1,68 @@
+# YsWords — do the bundled videos still play?
+#
+# 2026-09-05. Nothing had ever checked. `assets/videos.json` carries 66
+# distinct YouTube ids and the app renders a play button for each; when
+# the English track of the `onegod` episode (QmTEkPquvcQ) was made
+# private, the app shipped a button that opens nothing, and the only way
+# anyone was going to find out was a user pressing it.
+#
+# WHY THIS IS NOT PART OF `Flutter CI`
+# -----------------------------------
+# Whether a third party's video is still public is not a property of a
+# commit, so gating pushes and pull requests on it would make merging
+# depend on YouTube's mood. This repo has paid for that shape of
+# mistake already: `flutter pub get` carries a three-attempt retry loop
+# because pub.dev's advisory endpoint intermittently 403s, and a run of
+# 66 unauthenticated oEmbed requests from a datacenter IP is a far
+# better rate-limit target than one pub.dev call. Flutter CI stays
+# offline and deterministic.
+#
+# So the check lives in two places, and this is the SECOND of them:
+#
+#   1. `node tools/check_video_ids.js` on the owner's own machine —
+#      residential IP, so a 403 there is unambiguous. It slots into the
+#      daily local launchd job that already builds iOS/Android.
+#   2. This workflow, weekly, as the backstop for a Mac that has been
+#      asleep or a launchd job that quietly stopped. Nothing else would
+#      notice either.
+#
+# Weekly, not daily: a private video is not an emergency, and 66
+# requests a week is a load nobody will notice. `workflow_dispatch` is
+# there for the moment someone actually wants to know now.
+#
+# The script decides what counts as a failure — a 404 always, a 403
+# only when the rest of the batch came back healthy — so a
+# rate-limited runner reports INCONCLUSIVE and exits 0 rather than
+# crying wolf. See the header of tools/check_video_ids.js.
+name: Check videos
+
+on:
+  schedule:
+    # Mondays 07:00 UTC. Off the daily-sync hours in both repos so a red
+    # run here is unambiguous about which pipeline it belongs to.
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  oembed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      # The verdict logic — "is this 403 the video's problem or ours?" —
+      # is pure and tested offline. It runs first so a broken checker is
+      # caught before it makes 66 requests and reports nonsense.
+      - name: Verdict logic tests
+        run: node --test tools/check_video_ids.test.js
+
+      - name: Probe every bundled video id
+        run: node tools/check_video_ids.js
