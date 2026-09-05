@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/bible_map.dart';
 import 'package:yswords/services/map_service.dart';
+import 'package:yswords/widgets/bible_reading_pane.dart';
 
 /// Regression tests for the illustration sheet's "For this chapter"
 /// tab.
@@ -284,23 +286,106 @@ void main() {
     }
   });
 
-  test('the sheet actually renders both revived strings', () {
-    // The strings were dead because `_buildTabs` dropped the chapter
-    // tab whenever the list was empty, and the list was never empty.
-    // Pin the two code paths that make them reachable: the chapter tab
-    // is added unconditionally, and the fallback note is gated on the
-    // chapter list being empty.
+  group('the sheet actually renders both revived strings', () {
+    // These used to be `expect(sourceFile, contains("..."))` assertions
+    // over `bible_reading_pane.dart`'s own text. That guard did not
+    // work: on 2026-09-06 the original dead-code bug was reintroduced —
+    // `if (widget.chapterMaps.isEmpty) { } else { tabs.add(chapter) }`,
+    // which drops the tab and makes `noMapsForChapter` unreachable
+    // again — and all 18 tests in this file stayed green. The negative
+    // assertion pinned one exact multi-line spelling of the old code
+    // (down to its six-space indent) and the buggy rewrite is not that
+    // spelling; the positive `contains("if (widget.chapterMaps.isEmpty)")`
+    // was satisfied by the bug itself, and would anyway have been
+    // satisfied by the fallback-note gate 100 lines further down.
+    //
+    // Rendering the widget is the assertion that cannot be fooled by a
+    // rewrite: pump the sheet with a list and read what the user sees.
+    const en = 'en';
+
+    BibleMap plate(String id) => BibleMap(
+          id: id,
+          title: const {'en': 'A plate'},
+          description: const {},
+          books: const {'Genesis': [[1, 1]]},
+          file: '$id.jpg',
+          kind: 'scene',
+          source: 'cdn',
+        );
+
+    Future<void> pump(
+      WidgetTester tester, {
+      required List<BibleMap> chapterMaps,
+      required List<BibleMap> bookMaps,
+    }) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: MapPickerSheet(
+            chapterMaps: chapterMaps,
+            bookMaps: bookMaps,
+            locale: en,
+            version: 'kjv',
+          ),
+        ),
+      ));
+      await tester.pump();
+    }
+
+    String s(String key) => uiStrings[key]![en]!;
+
+    testWidgets('the chapter tab is present, and says so, when empty',
+        (tester) async {
+      await pump(tester, chapterMaps: const [], bookMaps: [plate('a')]);
+
+      // The tab itself must not silently disappear — this is the
+      // assertion the reintroduced bug fails.
+      expect(find.text(s('mapsForThisChapter')), findsOneWidget,
+          reason: 'the "For this chapter" tab must be offered even when '
+              'the chapter has no artwork; dropping it is the bug that '
+              'made the empty state dead code');
+
+      // initState opens on the book tab when there is no chapter
+      // artwork, so the fallback note is what shows first.
+      expect(find.text(s('mapsNoneForChapterFallback')), findsOneWidget,
+          reason: 'the book tab must explain why it is being shown');
+
+      // Switch to the chapter tab and read the empty state.
+      await tester.tap(find.text(s('mapsForThisChapter')));
+      await tester.pumpAndSettle();
+      expect(find.text(s('noMapsForChapter')), findsOneWidget,
+          reason: 'the empty chapter tab must give the honest answer');
+    });
+
+    testWidgets('neither string renders when the chapter has artwork',
+        (tester) async {
+      await pump(tester,
+          chapterMaps: [plate('a')], bookMaps: [plate('b')]);
+
+      expect(find.text(s('mapsForThisChapter')), findsOneWidget);
+      expect(find.text(s('noMapsForChapter')), findsNothing,
+          reason: 'the chapter tab has a plate — do not claim it is empty');
+      expect(find.text(s('mapsNoneForChapterFallback')), findsNothing,
+          reason: 'the fallback note is gated on an EMPTY chapter list');
+    });
+
+    testWidgets('with no book artwork either, the chapter tab still stands',
+        (tester) async {
+      // The book tab is the one that is conditional. With both lists
+      // empty there is no book tab to fall back to, so the chapter tab
+      // is the only thing standing between the user and a sheet that
+      // says nothing at all.
+      await pump(tester, chapterMaps: const [], bookMaps: const []);
+      expect(find.text(s('mapsForThisChapter')), findsOneWidget);
+      expect(find.text(s('mapsForThisBook')), findsNothing);
+      expect(find.text(s('noMapsForChapter')), findsOneWidget);
+    });
+  });
+
+  test('the pane builds its two lists through the classifier', () {
+    // Not a behaviour of the sheet — the sheet is handed two lists. The
+    // split happens in the pane's state, and there is no seam to pump.
     final src =
         File('lib/widgets/bible_reading_pane.dart').readAsStringSync();
-    expect(src, contains("uiStrings['noMapsForChapter']"));
-    expect(src, contains("uiStrings['mapsNoneForChapterFallback']"));
-    expect(src, contains("if (widget.chapterMaps.isEmpty)"),
-        reason: 'the fallback note must still be gated on an empty '
-            'chapter list');
-    expect(src, isNot(contains("if (widget.chapterMaps.isNotEmpty) {\n"
-        "      tabs.add(_MapTab(_MapTabKind.chapter")),
-        reason: 'the chapter tab must no longer disappear when empty');
-    // And the pane must build its two lists through the classifier.
     expect(src, contains('MapService.partition('));
   });
 }

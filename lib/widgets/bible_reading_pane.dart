@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart'
-    show kIsWeb, defaultTargetPlatform, TargetPlatform;
+    show kIsWeb, defaultTargetPlatform, TargetPlatform, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -5669,7 +5669,7 @@ void _showMapPicker(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
     builder: (sheetCtx) {
-      return _MapPickerSheet(
+      return MapPickerSheet(
         chapterMaps: chapterMaps,
         bookMaps: bookMaps,
         locale: locale,
@@ -5679,12 +5679,24 @@ void _showMapPicker(
   );
 }
 
-class _MapPickerSheet extends StatefulWidget {
+/// The illustration picker's bottom sheet.
+///
+/// **Public only so a widget test can pump it.** Everything the sheet
+/// promises about the "For this chapter" tab — that the tab is present
+/// even when the list is empty, that it then says so, and that the book
+/// tab carries the fallback note — is a property of THIS widget given a
+/// list, and can only be asserted by rendering it. It was previously
+/// private, and the guard for those promises was reduced to matching
+/// substrings of this file's own source text; that guard passed with the
+/// bug reintroduced. See `test/chapter_illustrations_honesty_test.dart`.
+@visibleForTesting
+class MapPickerSheet extends StatefulWidget {
   final List<BibleMap> chapterMaps;
   final List<BibleMap> bookMaps;
   final String locale;
   final String version;
-  const _MapPickerSheet({
+  const MapPickerSheet({
+    super.key,
     required this.chapterMaps,
     required this.bookMaps,
     required this.locale,
@@ -5692,10 +5704,10 @@ class _MapPickerSheet extends StatefulWidget {
   });
 
   @override
-  State<_MapPickerSheet> createState() => _MapPickerSheetState();
+  State<MapPickerSheet> createState() => _MapPickerSheetState();
 }
 
-class _MapPickerSheetState extends State<_MapPickerSheet>
+class _MapPickerSheetState extends State<MapPickerSheet>
     with SingleTickerProviderStateMixin {
   late TabController _tab;
   List<BibleMap> _allMaps = const [];

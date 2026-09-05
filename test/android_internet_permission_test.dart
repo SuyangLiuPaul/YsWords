@@ -31,6 +31,34 @@ import 'package:flutter_test/flutter_test.dart';
 /// plain substring search over the raw file would pass even if the
 /// `<uses-permission>` element were deleted — a test that cannot fail
 /// is not a test.
+///
+/// **And presence of the element is not enough.** The first version of
+/// this file matched `<uses-permission[^>]*android:name…"[^>]*/?>`,
+/// which swallows any additional attribute — including the manifest
+/// merger's own delete directive. Adding `tools:node="remove"` to the
+/// INTERNET element left all four tests green while taking the
+/// permission away, and the manifest already binds `xmlns:tools`, so
+/// that edit is one attribute from where a maintainer is already
+/// working. It is also the idiom people reach for when stripping a
+/// permission a plugin injected, which is the very thing this manifest
+/// is about.
+///
+/// That the directive really does strip it was MEASURED, not assumed,
+/// on 2026-09-06 — `./gradlew :app:processIntlReleaseMainManifest`
+/// (JDK 17) run twice over
+/// `build/app/intermediates/merged_manifest/intlRelease/processIntlReleaseMainManifest/AndroidManifest.xml`:
+///
+/// | main manifest | INTERNET in the merged manifest |
+/// |---|---|
+/// | as shipped | present |
+/// | `+ tools:node="remove"` | **absent** |
+///
+/// The other six permissions were identical in both runs, and
+/// `google_sign_in_android` still contributed its own INTERNET in the
+/// second run — the directive out-ranks it. So the merger obeys the
+/// attribute, and a test that ignores it is testing the wrong thing.
+/// [_declares] therefore reads the attributes rather than the element's
+/// bare existence.
 void main() {
   final mainManifest = File('android/app/src/main/AndroidManifest.xml');
 
@@ -43,12 +71,60 @@ void main() {
         .replaceAll(RegExp(r'<!--.*?-->', dotAll: true), '');
   }
 
-  /// Matches a real `<uses-permission>` element naming [permission],
-  /// with attributes in either order and any whitespace.
-  bool declares(String xml, String permission) => RegExp(
-        '<uses-permission[^>]*android:name\\s*=\\s*'
-        '"android\\.permission\\.$permission"[^>]*/?>',
-      ).hasMatch(xml);
+  /// Every `<uses-permission>` element in [xml], as its attribute map.
+  /// Attribute order and whitespace are irrelevant; the element may be
+  /// self-closing or not.
+  List<Map<String, String>> usesPermissions(String xml) => [
+        for (final e in RegExp(r'<uses-permission\b([^>]*?)/?>').allMatches(xml))
+          {
+            for (final a
+                in RegExp(r'([\w:.-]+)\s*=\s*"([^"]*)"').allMatches(e.group(1)!))
+              a.group(1)!: a.group(2)!,
+          },
+      ];
+
+  /// `tools:node` values that leave the element standing in the merged
+  /// manifest. Anything else — `remove`, `removeAll`, or a value this
+  /// test has never heard of — is treated as fatal, because the whole
+  /// point here is that the merged manifest is what the device sees.
+  const survivingNodeOps = {'merge', 'mergeOnlyAttributes', 'replace', 'strict'};
+
+  /// True when the app really asks for [permission] — i.e. some
+  /// `<uses-permission>` element names it AND nothing instructs the
+  /// merger to drop it or to strip the attribute that names it.
+  ///
+  /// The `tools:` prefix is not hard-coded: the check is on the
+  /// attribute's LOCAL name, so rebinding the namespace to another
+  /// prefix does not slip past.
+  bool declares(String xml, String permission) {
+    /// An attribute's local name — `android:name` and a `name` bound to
+    /// some other prefix both read as `name`.
+    String local(String key) => key.split(':').last;
+
+    final wanted = 'android.permission.$permission';
+    var kept = false;
+    for (final attrs in usesPermissions(xml)) {
+      final named = attrs.entries
+          .where((e) => local(e.key) == 'name')
+          .map((e) => e.value);
+      if (named.isEmpty || named.first != wanted) continue;
+      for (final e in attrs.entries) {
+        // tools:node="remove" DELETES this element from the merged
+        // manifest — measured, see the note above.
+        if (local(e.key) == 'node' && !survivingNodeOps.contains(e.value)) {
+          return false;
+        }
+        // tools:remove="android:name" strips the attribute that names
+        // the permission, leaving an element that asks for nothing.
+        if (local(e.key) == 'remove' &&
+            e.value.split(RegExp(r'[,\s]+')).any((a) => local(a) == 'name')) {
+          return false;
+        }
+      }
+      kept = true;
+    }
+    return kept;
+  }
 
   test('the main manifest declares INTERNET itself', () {
     expect(
@@ -91,6 +167,58 @@ void main() {
     ]) {
       expect(declares(xml, p), isTrue,
           reason: '$p was dropped from the main manifest');
+    }
+  });
+
+  test('a merger directive that deletes the permission is caught', () {
+    // The regression guard for this guard. Each of these is a real
+    // edit somebody could make to the shipped manifest — it already
+    // binds xmlns:tools, and it already uses tools:ignore twice — and
+    // every one of them takes INTERNET off the device. `declares` must
+    // say so.
+    final shipped = declarations(mainManifest);
+    expect(declares(shipped, 'INTERNET'), isTrue,
+        reason: 'precondition: the real manifest passes');
+
+    /// The shipped manifest with [attr] added to its INTERNET element.
+    /// Found by pattern rather than by an exact string so that
+    /// reformatting the line does not quietly turn this guard into a
+    /// no-op — which is the class of failure the whole file is about.
+    String withAttr(String attr) {
+      final e = RegExp(
+        r'<uses-permission\b[^>]*android:name\s*=\s*'
+        r'"android\.permission\.INTERNET"[^>]*?(/?)>',
+      ).firstMatch(shipped);
+      expect(e, isNotNull,
+          reason: 'no INTERNET <uses-permission> element to patch — the '
+              'manifest was reshaped, re-read this test');
+      final patched = e!.group(0)!.replaceFirst(
+          RegExp(r'\s*/?>$'), '$attr ${e.group(1)!.isEmpty ? '>' : '/>'}');
+      final out = shipped.replaceRange(e.start, e.end, patched);
+      expect(out, isNot(shipped), reason: 'patch did not change anything');
+      return out;
+    }
+
+    // Each of these is a real edit somebody could make: the manifest
+    // already binds xmlns:tools and already uses tools:ignore twice.
+    const lethal = <String, String>{
+      'tools:node="remove"': ' tools:node="remove"',
+      'tools:node="removeAll"': ' tools:node="removeAll"',
+      'tools:remove on android:name': ' tools:remove="android:name"',
+      'a tools:node value we do not know': ' tools:node="somethingNew"',
+      'the namespace rebound to another prefix': ' t:node="remove"',
+    };
+    lethal.forEach((name, attr) {
+      expect(declares(withAttr(attr), 'INTERNET'), isFalse,
+          reason: '$name leaves INTERNET out of the MERGED manifest, and '
+              'this test must fail when it is present');
+    });
+
+    // And the directives that are harmless must NOT trip it, or the
+    // guard becomes a nuisance that gets deleted.
+    for (final attr in const [' tools:node="replace"', ' tools:node="merge"']) {
+      expect(declares(withAttr(attr), 'INTERNET'), isTrue,
+          reason: '$attr keeps the element — do not fail on it');
     }
   });
 
