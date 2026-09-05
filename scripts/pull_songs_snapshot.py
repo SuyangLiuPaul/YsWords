@@ -265,7 +265,40 @@ def main():
               file=sys.stderr)
         for p in problems:
             print(f'  • {p}', file=sys.stderr)
+        # 2026-09-05: this job went red for two days over
+        # `missing sources: ['setapak', 'ydh']` and nothing here told
+        # the reader that the fault was entirely upstream —
+        # yswords-data's "Refresh songs" had refused to publish for six
+        # days while reporting SUCCESS on every one of them, so the app
+        # repo was the only place the breakage was visible and the
+        # least useful place to start looking. The guard was right;
+        # what it lacked was a forwarding address.
+        print(f'\n  This job pulls a file it does not produce. A missing or '
+              f'thin source is almost always upstream:\n'
+              f'    • the published file: {args.url}\n'
+              f'      — check `_meta.generatedAt`; if it is days old, '
+              f'nothing has been published since\n'
+              f'      — check `_meta.sourceHealth`; if present, upstream '
+              f'is telling you which source it could not fetch\n'
+              f'    • the job that writes it: yswords-data → Actions → '
+              f'"Refresh songs"\n'
+              f'  Nothing in THIS repo can fix a source upstream is not '
+              f'publishing.', file=sys.stderr)
         return 1
+
+    # Upstream marks a source degraded when its fetch was observably
+    # incomplete and the stored rows were carried forward instead. That
+    # is still a publishable snapshot — every row in it is either fresh
+    # or the last thing that source is known to have said — so it is not
+    # a refusal here. It is worth saying out loud, because it means
+    # those rows are older than `generatedAt` implies.
+    health = meta.get('sourceHealth') or {}
+    for source, info in sorted(health.items()):
+        print(f'  ! upstream reports {source} as '
+              f'{info.get("status", "degraded")}: its rows may be carried '
+              f'forward rather than freshly fetched', file=sys.stderr)
+        for reason in info.get('reasons') or []:
+            print(f'      {reason}', file=sys.stderr)
 
     print(f'  {len(songs)} songs · {by_source}')
     print(f'  generated {meta.get("generatedAt")}')
@@ -287,12 +320,24 @@ def main():
     # have audio — `has_media` is satisfied by audio OR video OR score,
     # so losing only the score looks like no media loss at all.
     #
-    # The scores are local because upstream scrapes the church's
-    # `music/` directory, where songs are code-named, while the hymn PDFs
-    # live in `hymns/`, named by title, which the scraper has never read.
-    # Until that is fixed upstream, re-derive them here. The tool is
-    # idempotent and refuses rather than guesses if a title stops
-    # matching exactly one song.
+    # 2026-09-05, correcting the diagnosis that used to be written here.
+    # It said upstream "has never read" the `hymns/` directory. It does
+    # read it — `fetch_cdc_hymns` has fetched all fifteen hymn pages
+    # since 2026-08-10 and looks for a PDF on each. The real reason no
+    # score ever came back is narrower and was measured today: the hymn
+    # page prints its PDF link EXACTLY ONCE, root-relative
+    # (`/sites/default/files/hymns/pdf/…`), and upstream's
+    # `CDC_HYMN_PDF_RE` demanded an absolute `https://…`. So it matched
+    # nothing, from any IP, on every run since the fetcher was written —
+    # which is why data/songs.json upstream has 15 hymn rows and 0 hymn
+    # scoreUrls. That regex is now anchored on the path and urljoins,
+    # like the song-page extractor beside it has always done.
+    #
+    # This enrichment therefore becomes redundant AS SOON AS upstream
+    # publishes a run with the fix in it. Do not delete it before then,
+    # and when you do, confirm first that the published snapshot really
+    # carries 15 scoreUrls — otherwise the next pull silently strips the
+    # sheet music again, exactly as the 2026-09-02 loss above describes.
     enrich = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
         'tools', 'add_cdc_hymn_scores.py')

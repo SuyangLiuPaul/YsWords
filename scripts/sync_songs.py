@@ -59,12 +59,24 @@ Sources
           church's own works, printed by the church, on the church's
           page. See [fetch_ydh].
 
-  fuyindiantai.org is deliberately NOT fetched. It is fydt.org's old
-  domain (it 301'd to fydt.org through 2025) and its DNS delegation is
-  currently broken — both Google and Cloudflare return SERVFAIL because
-  it still points at ns1/ns2.fydt.org, which stopped serving the zone
-  when fydt.org moved to DigiCert DNS. Its songs ARE the fydt songs;
-  see `_FUYINDIANTAI_NOTE` and the `_meta.sources` block we emit.
+  fuyindiantai.org is deliberately NOT fetched, but NOT for the reason
+  this docstring used to give. It said the DNS delegation was broken
+  (SERVFAIL). **That is stale.** Measured 2026-09-05: fuyindiantai.org
+  resolves (162.159.137.54, 162.159.136.54) and answers HTTP 200, and its
+  REST API returns `x-wp-total` identical to fydt.org's on every post
+  type. The two are one WordPress install behind two names — the REST
+  root reports `home: https://fuyindiantai.org`, and that host is what
+  the CMS emits in every `link` and `source_url` even when you query
+  fydt.org.
+
+  So the reason to fetch only one of them is that fetching both would
+  duplicate every row, not that one of them is down. Its songs ARE the
+  fydt songs; see `_FUYINDIANTAI_NOTE` and the `_meta.sources` block we
+  emit. (`scripts/sync_sermon_library.py` reads the SAME install for its
+  own post type and picks fuyindiantai.org as canonical, on the evidence
+  above — the two scripts disagree about which name to use and that is
+  deliberate: songs were catalogued under "fydt" before this was known,
+  and renaming a source id would orphan every stored favourite.)
 
 Usage
 -----
@@ -147,11 +159,13 @@ SOURCES = {
 }
 
 _FUYINDIANTAI_NOTE = (
-    'fuyindiantai.org is fydt.org under its former domain (it 301-redirected '
-    'to fydt.org through 2025). Its DNS delegation is currently broken '
-    '(SERVFAIL — the NS records still point at ns1/ns2.fydt.org, which no '
-    'longer serve the zone), so it is not fetched. Every song it published '
-    'is already in this catalogue under source "fydt".'
+    'fuyindiantai.org and fydt.org are one WordPress install behind two '
+    'names (measured 2026-09-05: identical x-wp-total on every post type, '
+    'and the REST root reports home: https://fuyindiantai.org). Only one '
+    'is fetched, because fetching both would duplicate every row. An '
+    'earlier note here said its DNS was broken; that was true once and is '
+    'not true now. Every song it published is already in this catalogue '
+    'under source "fydt".'
 )
 
 FYDT_API = 'https://fydt.org/wp-json/fydt-api/v1'
