@@ -850,6 +850,18 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
    forward: **a green check on this workflow is not evidence the
    catalogue actually refreshed**; only a manual home-IP
    run + deploy, or reading the run's own log, tells you that.
+   **Update 2026-09-05: this specific guard's blast radius is now
+   fixed.** `fetch_cdc_hymns()` used to `raise RuntimeError` on the
+   all-pages-no-mp3 condition, which aborted `main()`'s combined
+   six-fetcher expression before ANY source wrote — not just CDC's
+   hymns, but fydt/cgdc/cahaya/setapak/ydh too. That held setapak and
+   ydh (both added 2026-09-03, never yet published) out of the shipped
+   app for six straight days (2026-08-30 onward). `sync_songs.py` now
+   carries the 15 stored `cdc:h*` rows forward unchanged on that
+   failure instead of raising, so the other five sources publish
+   regardless — the caveat above (a green run isn't proof CDC's hymns
+   themselves refreshed) still holds for that one collection, but no
+   longer for the other five sources sharing the run.
 9. **Data and its test ship together.** Stashing data without its test
    turned four tests red.
 10. **Flutter no longer ships an offline service worker.** `flutter

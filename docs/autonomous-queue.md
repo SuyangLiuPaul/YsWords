@@ -9118,6 +9118,33 @@ has never seen this repo.
       have failed forever on a 2-row source) and that interlock cannot be
       waived with `--allow-regression`.
 
+      **Update 2026-09-05 — the port itself was already done and NOT what was
+      blocking it.** `yswords-data` commit `f60255c1a` ("songs: add the
+      setapak and ydh fetchers, ported from yswords") landed the
+      `SOURCES['setapak']` entry, `fetch_setapak()`, the `main()` call and the
+      schema enum — verified via `git merge-base --is-ancestor f60255c1a
+      origin/main`. It just never PUBLISHED, because CDC's 15 classic-piano-
+      hymn pages have been answering with no mp3 link on the GitHub runner
+      since 2026-08-30, and `fetch_cdc_hymns()`'s `raise RuntimeError(...)` on
+      that condition aborted `main()`'s combined six-fetcher expression before
+      any of the six sources — setapak and ydh included — ever wrote. Fixed in
+      `sync_songs.py`: a hymn-fetch failure now carries the 15 previously-
+      stored `cdc:h*` rows forward unchanged instead of aborting the whole
+      sync; the other five sources, including this one, now publish
+      regardless. **Correction, same day:** the sentence above said
+      "landed and pushed" while the fix was in fact only written and
+      `git add`ed in the local `yswords-data` clone — never committed,
+      let alone pushed. `main` stayed at `d06fa0c99` with the newest
+      commit touching `sync_songs.py` still `f60255c1a` until a later
+      pass on 2026-09-05 caught the discrepancy, verified the staged
+      diff matched this description, confirmed the carry-forward path
+      with `http_get` stubbed to `''` (returns all 15 stored rows,
+      does not raise), and actually committed + pushed it as
+      `2668899e1`. The scheduled 18:00 UTC run is what actually
+      regenerates and publishes the data — not expected to be green
+      before then, and CI on `yswords` main will still show red at the
+      very next iteration; that is expected, not a new failure.
+
       **Two pre-existing bugs this turned up, both fixed:**
       * `merge()` compared `audioTracks` against `None` instead of `[]`, so a
         NO-OP re-sync restamped **48 of 621 rows** — every row with no audio
@@ -10919,6 +10946,30 @@ has never seen this repo.
       answers that runner first** — it has refused datacenter IPs before, and
       once ydh is published there a 403 trips the zero-rows collapse guard and
       aborts the WHOLE sync, all six sources, not just this one.
+
+      **Update 2026-09-05 — the fetcher landed (`f60255c1a`, same commit as
+      setapak's); the 403 fear did not materialise.** What actually blocked
+      publication was unrelated to ydh itself: `fetch_cdc_hymns()` has been
+      aborting the whole six-source `main()` sync since 2026-08-30 because
+      CDC's 15 hymn pages answer with no mp3 on the GitHub runner (confirmed
+      NOT reproducible from a residential IP on 2026-09-05 — same pages carry
+      their mp3 links fine from here, cause of the runner-specific difference
+      still unconfirmed). That single collection's `raise RuntimeError`
+      inside a `try/except` wrapping all six fetchers combined took setapak
+      and ydh down with it before either had ever published once. Fixed in
+      `sync_songs.py`: the hymn fetch now carries its 15 stored rows forward
+      on that failure instead of raising, so the other five sources —
+      including ydh — write and publish regardless. **Correction, same
+      day:** "landed and pushed" was written before either was true —
+      the fix sat `git add`ed but uncommitted in the local
+      `yswords-data` clone, `main` still at `d06fa0c99`. A later pass
+      on 2026-09-05 caught the gap, re-verified the staged diff against
+      this description, confirmed the carry-forward path with
+      `http_get` stubbed to `''` (returns all 15 stored rows, does not
+      raise), and committed + pushed it as `2668899e1`. Awaiting the
+      scheduled 18:00 UTC run to actually regenerate and publish; not
+      verified green yet, and `yswords` CI will still show red at the
+      very next iteration — expected, not a new failure.
 
 - [x] **DONE 2026-09-02 — the references are on screen and tappable.**
       Data landed `3ff907a7`; the UI half landed today. `VideoRef` +
