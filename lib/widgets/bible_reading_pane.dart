@@ -237,12 +237,19 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   /// shown over both panes in split view.
   final GlobalKey<ScaffoldMessengerState> _messengerKey =
       GlobalKey<ScaffoldMessengerState>();
-  /// Maps whose chapter range covers the current book + chapter exactly.
+  /// Genuine chapter illustrations for the current book + chapter —
+  /// scenes / parables / teaching plates whose range covers it.
+  /// Geographic survey maps are NOT here even when their whole-book
+  /// range covers this chapter; they live in [_bookMaps]. This list
+  /// is what the count badge counts, so it may legitimately be empty
+  /// (828 of the 1189 chapters have no artwork of their own).
   List<BibleMap> _chapterMaps = [];
 
-  /// Maps that mention the current book at all (any chapter range).
-  /// Used as the fallback when [_chapterMaps] is empty so the user
-  /// still gets a relevant suggestion (e.g. Acts 22 → Paul's journeys).
+  /// Everything else that mentions the current book — related
+  /// illustrations plus the survey maps demoted out of
+  /// [_chapterMaps]. Used as the fallback when [_chapterMaps] is
+  /// empty so the user still gets a relevant suggestion (e.g. Acts 22
+  /// → Paul's journeys).
   List<BibleMap> _bookMaps = [];
   String _lastBookChapter = '';
 
@@ -746,16 +753,22 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       // chapter's maps could overwrite the new chapter's maps and
       // briefly flicker the wrong fallback in the picker.
       if (_lastBookChapter != key) return;
-      final chapterMaps = results[0];
-      final bookMaps = results[1];
-      // Subtract chapter matches so the "book" section only shows the
-      // additional related maps and we don't render duplicates.
-      final extraBookMaps = bookMaps
-          .where((m) => !chapterMaps.any((c) => c.id == m.id))
-          .toList();
+      // 2026-09-05: "For this chapter" now means it. The raw chapter
+      // matches include the 55 bundled survey maps, which carry
+      // whole-book ranges and so matched every chapter of every book
+      // they touch — see MapService.isChapterIllustration for the
+      // measurements and for why `kind` is the signal rather than
+      // `source` or the range width. MapService.partition keeps only
+      // genuine chapter artwork here and DEMOTES the survey maps into
+      // the book list (it does the id subtraction that used to live
+      // inline, so nothing is dropped and nothing is listed twice).
+      final split = MapService.partition(
+        chapterMatches: results[0],
+        bookMatches: results[1],
+      );
       setState(() {
-        _chapterMaps = chapterMaps;
-        _bookMaps = extraBookMaps;
+        _chapterMaps = split.chapter;
+        _bookMaps = split.book;
       });
     }).catchError((Object e, StackTrace st) {
       // 2026-05-22 (v1.2.72): map asset reads occasionally fail on
@@ -5619,11 +5632,15 @@ void _navigateToConcordanceRef({
 
 /// Shows the map picker as a tabbed sheet.
 ///
-///   - "For this chapter" — exact chapter matches (highlighted; auto-
-///     selected as the default tab when at least one exists).
-///   - "For this book" — additional maps that mention this book.
-///     Auto-selected when no chapter match exists, with a small note
-///     explaining that nothing matches the exact chapter.
+///   - "For this chapter" — genuine chapter artwork only (scenes /
+///     parables / teaching plates). Always present, and honestly
+///     empty on the 828 chapters that have none; auto-selected as the
+///     default tab when at least one exists.
+///   - "For this book" — everything else that mentions this book,
+///     including the geographic survey maps demoted out of the
+///     chapter tab. Auto-selected when no chapter artwork exists,
+///     with a small note explaining that nothing matches the exact
+///     chapter.
 ///   - "All maps" — the full library, always available so users can
 ///     browse even on chapters with zero matches (Judges, Job, etc.).
 void _showMapPicker(
@@ -5727,11 +5744,18 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
 
   List<_MapTab> _buildTabs() {
     final tabs = <_MapTab>[];
-    if (widget.chapterMaps.isNotEmpty) {
-      tabs.add(_MapTab(_MapTabKind.chapter,
-          uiStrings['mapsForThisChapter']?[widget.locale] ??
-              'For this chapter'));
-    }
+    // The chapter tab is ALWAYS present. It used to be dropped when
+    // the list was empty, which never happened (every chapter matched
+    // at least one whole-book survey map), so the sheet could never
+    // say "nothing here". Now that survey maps are demoted the tab is
+    // empty on 828 chapters, and an honest empty tab beats a tab that
+    // silently disappears: the label is a promise about THIS chapter,
+    // and the answer "none" is a real answer. `initState` still
+    // opens the sheet on the book tab in that case, so the user lands
+    // on the useful list either way.
+    tabs.add(_MapTab(_MapTabKind.chapter,
+        uiStrings['mapsForThisChapter']?[widget.locale] ??
+            'For this chapter'));
     if (widget.bookMaps.isNotEmpty) {
       tabs.add(_MapTab(_MapTabKind.book,
           uiStrings['mapsForThisBook']?[widget.locale] ?? 'For this book'));
@@ -5833,7 +5857,8 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
               _FallbackNote(
                 text: uiStrings['mapsNoneForChapterFallback']
                         ?[widget.locale] ??
-                    'No map specifically for this chapter — here are related maps:',
+                    'No illustration specifically for this chapter — '
+                        'here are related ones:',
               ),
             Expanded(child: _mapList(widget.bookMaps)),
           ],
@@ -5862,7 +5887,7 @@ class _MapPickerSheetState extends State<_MapPickerSheet>
           padding: const EdgeInsets.all(24),
           child: Text(
             uiStrings['noMapsForChapter']?[widget.locale] ??
-                'No maps for this chapter',
+                'No illustrations for this chapter',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,

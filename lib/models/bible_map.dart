@@ -5,7 +5,17 @@ class BibleMap {
   final String id;
   final Map<String, String> title;
   final Map<String, String> description;
-  final Map<String, List<int>> books;
+  /// Chapter coverage per English book name, held as a LIST of
+  /// inclusive `[start, end]` ranges — `{'John': [[1, 1], [14, 14]]}`
+  /// means John 1 and John 14 and nothing in between.
+  ///
+  /// 2026-09-05: widened from a single `[start, end]` pair. The old
+  /// shape could only express one solid span, so
+  /// `tools/integrate_all_tissot.py` collapsed the DISCRETE chapter
+  /// lists in `tissot_catalog.json` (Saint Philip → John [1, 14]) with
+  /// min/max and the illustration then surfaced on all 12 chapters in
+  /// between. [fromJson] accepts both on-disk forms; see there.
+  final Map<String, List<List<int>>> books;
   final String file;
   /// Illustration category: 'map' (default, geographic), 'scene'
   /// (narrative painting / event), 'parable' (parable illustration),
@@ -39,12 +49,54 @@ class BibleMap {
     this.source = 'asset',
   });
 
+  /// Normalise one book's on-disk chapter value into a list of
+  /// inclusive `[start, end]` ranges.
+  ///
+  /// Two forms are accepted, told apart by whether the FIRST element is
+  /// itself a list — a flat list can never begin with a list, so the
+  /// two shapes are unambiguous and no version flag is needed:
+  ///
+  ///   * FLAT (legacy, 1934 of the 1940 values on disk) —
+  ///     `[4, 16]` → `[[4, 16]]`, the solid span 4…16, exactly what it
+  ///     has always meant. `[6]` → `[[6, 6]]`, preserving the
+  ///     single-element reading. A longer flat list keeps the historic
+  ///     first-two-elements behaviour rather than silently changing
+  ///     meaning (none exist on disk).
+  ///   * NESTED (new) — `[[1, 1], [14, 14]]` → itself: a set of
+  ///     disjoint spans, for discrete chapters with gaps.
+  static List<List<int>> _parseRanges(List<dynamic> raw) {
+    if (raw.isEmpty) return const <List<int>>[];
+    if (raw.first is List) {
+      final out = <List<int>>[];
+      for (final r in raw) {
+        if (r is! List) continue;
+        final ints = r.whereType<num>().map((n) => n.toInt()).toList();
+        if (ints.isEmpty) continue;
+        out.add(ints.length == 1
+            ? <int>[ints[0], ints[0]]
+            : <int>[ints[0], ints[1]]);
+      }
+      return out;
+    }
+    final ints = raw.whereType<num>().map((n) => n.toInt()).toList();
+    if (ints.isEmpty) return const <List<int>>[];
+    if (ints.length == 1) {
+      return <List<int>>[
+        <int>[ints[0], ints[0]]
+      ];
+    }
+    return <List<int>>[
+      <int>[ints[0], ints[1]]
+    ];
+  }
+
   factory BibleMap.fromJson(Map<String, dynamic> json) {
     final rawBooks = json['books'] as Map<String, dynamic>? ?? {};
-    final books = <String, List<int>>{};
+    final books = <String, List<List<int>>>{};
     for (final entry in rawBooks.entries) {
-      final list = (entry.value as List).cast<int>();
-      books[entry.key] = list;
+      final value = entry.value;
+      if (value is! List) continue;
+      books[entry.key] = _parseRanges(value);
     }
 
     // 2026-05-23 (v1.2.83): auto-detect legacy entries that haven't
@@ -90,11 +142,26 @@ class BibleMap {
   /// Bundled asset path. Only valid when source == 'asset'.
   String get assetPath => 'assets/maps/$file';
 
+  /// True when [chapter] of [englishBook] falls inside ANY of the
+  /// book's ranges. A single `[start, end]` range behaves exactly as it
+  /// did before the 2026-09-05 widening, so the 1934 flat entries match
+  /// identically; a multi-range value no longer matches the gaps.
   bool matchesBookChapter(String englishBook, int chapter) {
-    final range = books[englishBook];
-    if (range == null || range.isEmpty) return false;
-    if (range.length == 1) return chapter == range[0];
-    return chapter >= range[0] && chapter <= range[1];
+    final ranges = books[englishBook];
+    if (ranges == null || ranges.isEmpty) return false;
+    for (final range in ranges) {
+      if (range.isEmpty) continue;
+      // A 1-element range means that single chapter. [fromJson] never
+      // produces one, but BibleMap is const-constructible directly, so
+      // the old `range.length == 1` reading is kept rather than let
+      // `[6]` silently start matching nothing.
+      if (range.length == 1) {
+        if (chapter == range[0]) return true;
+        continue;
+      }
+      if (chapter >= range[0] && chapter <= range[1]) return true;
+    }
+    return false;
   }
 
   String localizedTitle(String locale) =>

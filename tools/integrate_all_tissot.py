@@ -61,6 +61,38 @@ def make_id(title):
     s = re.sub(r'_+', '_', s).strip('_')
     return f"illus_tissot_{s}"
 
+def normalize_chapters(books):
+    """{book: [chapters]} -> {book: sorted unique chapters}, empties dropped."""
+    out = {}
+    for book, chapters in books.items():
+        cs = sorted({int(c) for c in chapters})
+        if cs:
+            out[book] = cs
+    return out
+
+def to_ranges(chapters):
+    """Sorted unique chapters -> the on-disk `books` value.
+
+    Contiguous chapters collapse into runs. A SINGLE run is emitted in
+    the legacy flat form `[start, end]` (so the ~651 catalog entries
+    with contiguous chapters keep producing byte-identical output);
+    two or more runs are emitted as a list of ranges,
+    `[[13, 13], [19, 21]]`, which BibleMap.fromJson reads as a set of
+    disjoint spans. Before 2026-09-05 this was min/max, which turned
+    John [1, 14] into the solid span John 1-14.
+    """
+    runs = []
+    for c in chapters:
+        if runs and c == runs[-1][1] + 1:
+            runs[-1][1] = c
+        else:
+            runs.append([c, c])
+    return runs[0] if len(runs) == 1 else runs
+
+# NOTE: make_desc_* take the DISCRETE chapter lists, never the collapsed
+# ranges. Feeding them `books_ranges` was the old bug: `[4, 16]` printed
+# as two citations by luck, but `[1, 1]` printed "Mark 1, Mark 1" and a
+# collapsed span cited only its endpoints.
 def make_desc_en(title, books):
     book_list = ', '.join(f"{b} {c}" for b, chapters in books.items() for c in chapters)
     return f"James Tissot — {title} ({book_list})."
@@ -109,17 +141,16 @@ def main():
             counter += 1
         existing_ids.add(entry_id)
 
-        # Convert chapter arrays to [start, end] format
-        books_ranges = {}
-        for book, chapters in books.items():
-            if not chapters:
-                continue
-            mn, mx = min(chapters), max(chapters)
-            books_ranges[book] = [mn, mx]
+        # Convert chapter arrays to the on-disk range form, faithfully:
+        # discrete chapters stay discrete instead of being spanned.
+        chapters_by_book = normalize_chapters(books)
+        if not chapters_by_book:
+            continue
+        books_ranges = {b: to_ranges(cs) for b, cs in chapters_by_book.items()}
 
-        desc_en = make_desc_en(title, books_ranges)
-        desc_zh_hans = make_desc_zh(title, books_ranges, ZH_BOOK_MAP_HANS)
-        desc_zh_hant = make_desc_zh(title, books_ranges, ZH_BOOK_MAP_HANT)
+        desc_en = make_desc_en(title, chapters_by_book)
+        desc_zh_hans = make_desc_zh(title, chapters_by_book, ZH_BOOK_MAP_HANS)
+        desc_zh_hant = make_desc_zh(title, chapters_by_book, ZH_BOOK_MAP_HANT)
 
         new_entries.append({
             "id": entry_id,

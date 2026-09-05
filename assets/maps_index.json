@@ -12823,8 +12823,14 @@
     },
     "books": {
       "1 Samuel": [
-        27,
-        29
+        [
+          27,
+          27
+        ],
+        [
+          29,
+          29
+        ]
       ]
     },
     "file": "illus_tissot_david_returns_to_achish.jpg",
@@ -18665,8 +18671,14 @@
     },
     "books": {
       "Mark": [
-        2,
-        4
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          4
+        ]
       ]
     },
     "file": "illus_tissot_jesus_teaches_the_people_by_the_sea.jpg",
@@ -19991,14 +20003,20 @@
       "zh-Hant": "Saint John the Evangelist (蒂索)"
     },
     "description": {
-      "en": "James Tissot — Saint John the Evangelist (John 13, John 21).",
-      "zh-Hans": "詹姆斯·蒂索 — Saint John the Evangelist (约翰福音 13, 约翰福音 21)。",
-      "zh-Hant": "詹姆斯·蒂索 — Saint John the Evangelist (約翰福音 13, 約翰福音 21)。"
+      "en": "James Tissot — Saint John the Evangelist (John 13, John 19, John 20, John 21).",
+      "zh-Hans": "詹姆斯·蒂索 — Saint John the Evangelist (约翰福音 13, 约翰福音 19, 约翰福音 20, 约翰福音 21)。",
+      "zh-Hant": "詹姆斯·蒂索 — Saint John the Evangelist (約翰福音 13, 約翰福音 19, 約翰福音 20, 約翰福音 21)。"
     },
     "books": {
       "John": [
-        13,
-        21
+        [
+          13,
+          13
+        ],
+        [
+          19,
+          21
+        ]
       ]
     },
     "file": "illus_tissot_saint_john_the_evangelist.jpg",
@@ -20159,8 +20177,14 @@
     },
     "books": {
       "Matthew": [
-        4,
-        16
+        [
+          4,
+          4
+        ],
+        [
+          16,
+          16
+        ]
       ],
       "Mark": [
         1,
@@ -20273,8 +20297,14 @@
     },
     "books": {
       "John": [
-        1,
-        14
+        [
+          1,
+          1
+        ],
+        [
+          14,
+          14
+        ]
       ]
     },
     "file": "illus_tissot_saint_philip.jpg",
@@ -20321,8 +20351,14 @@
     },
     "books": {
       "John": [
-        11,
-        20
+        [
+          11,
+          11
+        ],
+        [
+          20,
+          20
+        ]
       ]
     },
     "file": "illus_tissot_saint_thomas.jpg",
