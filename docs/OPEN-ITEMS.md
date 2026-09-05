@@ -409,16 +409,48 @@ REST call already returns it.
 - **Body** = `acf.transcription_displayed`. Verified independently on
   record 231105: `content.rendered` 0 characters, `transcription_displayed`
   **7 816**. 841 of 940 carry ≥200 characters; 843 body files hold
-  5 441 495 characters across **837 distinct first lines**, which is what
+  5 441 495 characters across **840 distinct first lines**, which is what
   rules out navigation chrome.
 - **Audio** = `acf.audio_recording_mp3`, holding WordPress **attachment
   ids, not URLs** — which is exactly why no `.mp3` string appeared
   anywhere I looked. 673 of 940 have audio. Verified: id 189230 →
   `audio/mpeg`, `…/2026/05/2kg28.mp3`, HTTP 200, **25 854 873 bytes**.
 
-`scripts/sync_sermon_library.py` + `test/test_sermon_library.py` (54
-tests, OK) produce `assets/sermon_library/` — 940 records, 843 bodies,
-18 MB. Canonical host is **fuyindiantai.org**, not fydt.org: the REST
+`scripts/sync_sermon_library.py` + `test/test_sermon_library.py` (**130
+tests, OK** — 54 when written) produce `assets/sermon_library/` — 940
+records, 843 bodies, 18 MB.
+
+**The guards were one-sided and are now symmetric `[2026-09-06]`.** They
+refused SHRINKAGE and passed SUBSTITUTION: eight attacks wrote a degraded
+snapshot with exit 0, the worst of them replacing every body with the
+same navigation string — 5.4 M characters down to 770 K, 840 distinct
+first lines down to **1** — while `_meta` reported `withBody: 940`, a
+number *better* than the true 841. All eight are refused now, and the
+shrinkage floors are untouched.
+
+Three things behind that were structural rather than a missing rule:
+
+- **`run_guards()`'s composition was untested.** Any single guard could
+  be unwired from the pipeline and all 54 tests stayed green, because
+  `main()` calls only the aggregate. Each entry is now proven reachable
+  *through* the aggregate, and each isolating case must trip exactly one
+  guard — that second assertion caught three sloppy fixtures.
+- **Three floors compared a constant to itself.** `MIN_BODIED` could be
+  changed from 841 to 1 and the test still passed, because it asserted
+  `meta['withBody'] >= MIN_BODIED` — both sides moving together. They now
+  assert against measured literals, with a separate check that the
+  constants still match.
+- **The old fixture was degenerate**: every record shared one body and
+  one audio id. A degenerate corpus cannot exercise a distinctness guard,
+  because it fails one — which is part of why none of this was noticed.
+
+**And the crawl was unbounded.** If the server ignored `?page=`,
+`fetch_messages` never terminated — measured at 201 requests and still
+going against a paging-ignorant fake. That is an unbounded crawl against
+a church's server, in a script whose own docstring cites an outage caused
+by doubled traffic. It is now finite by construction: the `x-wp-total`
+headers are the authority, the loop is a bounded range, and the same fake
+server aborts after **two** requests. Canonical host is **fuyindiantai.org**, not fydt.org: the REST
 root reports it as `home` and the CMS emits it in every `link` and
 `source_url` even when queried through fydt.org. 71 distinct authors.
 
@@ -439,9 +471,16 @@ root reports it as `home` and the CMS emits it in every `link` and
    sermon library was directed separately (2026-09-05). Worth confirming
    with the church before anything that redistributes 940 bodies and 673
    audio files publicly.
-4. One record's `date` is `0214-07-02` — a corrupt year upstream, stored
-   verbatim. No guard rejects it. It will sort wrongly in any date-ordered
-   view.
+4. ~~One record's `date` is `0214-07-02`~~ **RESOLVED 2026-09-06.** Record
+   2967 keeps its date **byte for byte** — nothing infers 2014, because
+   guessing a year is worse than carrying a flagged one — and now also
+   carries `dateSuspect: true`, is listed in `_meta.suspectDates`, and a
+   guard refuses a crawl carrying more than three of them.
+
+   **This creates a contract for whoever wires the library into the app:**
+   a row with `dateSuspect: true` must sort as UNDATED in any date-ordered
+   view, not as the year 214. Nothing reads these assets yet, so this note
+   is the only place that requirement currently lives.
 
 ---
 
@@ -490,6 +529,15 @@ more useful finding: nothing in the app or CI probed these 66 ids until
 existed (added 2026-09-05/06). This entry stays as the record of what
 happened; the "no guard" gap it names is now closed.
 
+**Follow-up closed 2026-09-06**: a refuter reviewing this fix noticed the
+filtering only reached `VideoEpisode.playableTracks`, not
+`VideoSeries.compilations` (the "watch the whole series in one video"
+row). `VideoSeries.playableCompilations` now applies the same
+`isUnavailable` gate, via a `PlayableVideoTracks` extension shared by
+both. No live compilation carries `unavailableSince` today, so nothing
+visibly changes; the row will simply hide if one ever does, instead of
+offering a button that opens "This video is private."
+
 ## Build and toolchain
 
 ### Four test files fail to compile inside a third-party package `[carried forward, with the versions verified 2026-09-05]`
@@ -533,6 +581,25 @@ report quoted in the comment. `test/android_internet_permission_test.dart`
 strips XML comments before matching — deliberately, because the comment
 itself contains the word INTERNET and a plain substring search passed
 with the element deleted.
+
+**The guard had a SECOND hole, closed 2026-09-06.** Its regex —
+`<uses-permission[^>]*android:name…"[^>]*/?>` — accepted any extra
+attribute, so writing `tools:node="remove"` on the element passed all
+four tests while deleting the permission from the merged manifest. The
+file already declares `xmlns:tools`, and that directive is the idiom
+people actually reach for when stripping a plugin-injected permission.
+
+And the consequence is no longer inferred: `./gradlew
+:app:processIntlReleaseMainManifest` was run for the first time (JDK 17,
+since no JDK was on PATH). INTERNET is **present** in the merged manifest
+as shipped and **absent** with the directive, while the other six
+permissions are byte-identical and `google_sign_in_android` still
+contributes its own — the directive out-ranks it.
+
+The test now parses each element's attributes rather than matching a
+regex, checks the attribute's LOCAL name so rebinding `xmlns:tools` to
+another prefix cannot slip past, and treats `node="replace"` as benign
+because it is.
 
 
 `android/app/src/main/AndroidManifest.xml` declares
@@ -648,10 +715,40 @@ edited by hand — `zh_chapter_mark_ref_test.dart` and
 `canon_chapters_test.dart`, both pinning 啓示錄三十七章十七節 as a
 reference the parser must refuse. It still refuses; only the glyph moved.
 
-**Still unnormalised, and deliberately:** straight quotes. The corpus
-holds 25 833 `"` against 574 「. Pairing them correctly is not a
-substitution, and getting it wrong would put a closing bracket where an
-opening one belongs.
+**Still unnormalised, and now on measurement rather than caution:**
+straight quotes. The corpus holds 25 833 `"` against 574 「.
+
+That rule was a judgement when it was written. It has since been tested.
+Rebuilding sermons 100, 369 and 370 destroyed 103 correctly-paired
+brackets (corpus 「 574 → 471), and the discarded bodies in `9808dff6^`
+are an answer key for 188 of those positions. Scoring the obvious
+whole-file alternating rule against that key: **160 right, 28 wrong** —
+and sermon 100 slips parity mid-file and inverts every quote after it,
+which is exactly the failure the rule exists to prevent. The causes are
+single-word emphasis quotes (`這裏的"國"`), nested quotation, and split
+dialogue attribution.
+
+So any future pairing pass must clear those 188 positions before it is
+allowed near the other 25 833, and must handle all three failure modes.
+
+### 103 correctly-paired corner brackets were destroyed by the rebuild `[verified 2026-09-06]`
+
+Sermons 100, 369 and 370 held 36 / 24 / 43 pairs of `「」` before they
+were rebuilt from their Simplified bodies; `opencc -c s2t` replaced them
+with 443 straight quotes. A change that moves text from "correct" to the
+state this project says it cannot safely reach is a regression by the
+project's own definition, and "consistent with the other 286" is a
+defence of it rather than a reason it did not happen.
+
+**Ruled: record, do not recover.** The key covers only 32.9 / 41.2 / 71.1
+per cent of each new body, because the translation it comes from was
+itself truncated — so the best available outcome is 88 of ~221 pairs per
+file, which is not a correctly bracketed sermon but one that changes
+punctuation style partway through. The corpus is currently partitioned
+cleanly by style: 272 files straight-only, 14 bracket-only, 1 mixed.
+Between two imperfect states, the one shared with 286 siblings wins.
+
+The three files are unchanged. This entry is the record.
 
 ---
 
