@@ -1921,12 +1921,15 @@ class _SongDetailSheet extends StatelessWidget {
   Future<void> _open(BuildContext context, String url) =>
       LinkOpener.openOrWarn(context, url, locale: locale);
 
-  /// Copies what this sheet SHOWS: title, the metadata line, and the
-  /// source page. The shape — and why it carries no lyrics — lives in
-  /// [songCopyText], shared with the now-playing screen.
-  Future<void> _copy(BuildContext context) async {
+  /// Puts [text] on the clipboard and reports the outcome.
+  ///
+  /// Both of this sheet's copy buttons come through here — the header
+  /// one ([songCopyText]: title, metadata line, source page) and the
+  /// Lyrics one ([songLyricsCopyText]). One feedback path, so the two
+  /// cannot end up looking like different features.
+  Future<void> _copy(BuildContext context, String text) async {
     final scheme = Theme.of(context).colorScheme;
-    final ok = await ClipboardHelper.copyText(songCopyText(song, locale));
+    final ok = await ClipboardHelper.copyText(text);
     if (!context.mounted) return;
     // showFloatingToast, not copyWithFeedback: this sheet has no
     // Scaffold of its own, so a SnackBar would anchor to the root one
@@ -1991,7 +1994,7 @@ class _SongDetailSheet extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.copy_outlined, size: 20),
                     tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
-                    onPressed: () => _copy(context),
+                    onPressed: () => _copy(context, songCopyText(song, locale)),
                   ),
                   // Downloading was bulk-only: you could take the whole
                   // filter offline but not the one hymn you are looking
@@ -2134,10 +2137,43 @@ class _SongDetailSheet extends StatelessWidget {
                       // ── Lyrics ────────────────────────────────
                       if (song.lyrics != null) ...[
                         const SizedBox(height: 14),
-                        _SectionLabel(
-                            text: uiStrings['songsSectionLyrics']?[locale] ??
-                                'Lyrics',
-                            scheme: scheme),
+                        Row(
+                          children: [
+                            _SectionLabel(
+                                text:
+                                    uiStrings['songsSectionLyrics']?[locale] ??
+                                        'Lyrics',
+                                scheme: scheme),
+                            const Spacer(),
+                            // Beside the section heading rather than up
+                            // in the header row: it copies THIS block,
+                            // and the header's copy button copies the
+                            // song's details. Sitting them together
+                            // would make the pair look like one control
+                            // with two icons.
+                            //
+                            // Only drawn under `song.lyrics != null`,
+                            // which is also the only gate there is —
+                            // the catalogue carries no licence field,
+                            // it just declines to ship words it cannot
+                            // license (see [songLyricsCopyText]). So
+                            // this button exists exactly where the
+                            // words do.
+                            IconButton(
+                              icon: const Icon(Icons.copy_outlined),
+                              iconSize: 16,
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                  minWidth: 32, minHeight: 32),
+                              tooltip:
+                                  uiStrings['songsCopyLyrics']?[locale] ??
+                                      'Copy lyrics',
+                              onPressed: () => _copy(
+                                  context, songLyricsCopyText(song, locale)),
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 6),
                         Container(
                           width: double.infinity,
