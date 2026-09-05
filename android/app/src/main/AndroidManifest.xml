@@ -1,5 +1,32 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- 2026-09-05: INTERNET, declared here ON PURPOSE.
+
+         It was never declared by the app. The release APK had network
+         anyway, by manifest merge: `google_sign_in_android` declares
+         INTERNET in its own manifest and the merger folded it in.
+         `build/app/intermediates/manifest_merge_blame_file/intlRelease/
+         processIntlReleaseMainManifest/manifest-merger-blame-intl-release-report.txt`
+         blames line 42 on `[:google_sign_in_android]` and on nothing
+         else. It is the only Android plugin this app resolves that
+         declares INTERNET — the other two carrying it in the pub cache,
+         google_mobile_ads 5.1.0 and 8.0.0, are not dependencies here.
+
+         So every network feature — the songs catalogue, the sermon
+         MP3s, Firebase, the illustration CDN — hung off a permission
+         contributed by the sign-in plugin. Drop or replace that plugin
+         and the app loses ALL network on Android with a green build and
+         a green analyze: nothing fails at compile time, and
+         `flutter analyze` does not read manifests. It would not even
+         reproduce while developing, because `debug` and `profile`
+         declare INTERNET themselves (the stock Flutter template layout)
+         and only `main` did not.
+
+         This exact failure cost the sibling app Yahweh's World three
+         releases. Pinned by `test/android_internet_permission_test.dart`.
+         Do not delete it because "the merged manifest already has it" —
+         that is the bug, not the reason it is redundant. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- 2026-05-21 (v1.2.69): runtime notification permission for
          Android 13+ (TIRAMISU). Older Android grants by default. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />

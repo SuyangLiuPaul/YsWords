@@ -15,6 +15,7 @@ import 'package:yswords/models/sermon.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
+import 'package:yswords/services/sermon_audio_service.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
@@ -33,6 +34,61 @@ import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 ///   - 20 collapsible topic groups (`ExpansionTile`)
 ///   - tap a sermon row → opens [SermonDetailPage] in the user's
 ///     preferred language (with cross-language fallback)
+/// The clause that tells a reader this library is listenable, or null
+/// when there is nothing honest to say.
+///
+/// 2026-09-05: the sermon list contained the string "audio" exactly
+/// zero times. The player is docked on the detail page only
+/// (`sermon_detail_page.dart`, `bottomNavigationBar: SermonAudioBar`),
+/// so a reader browsing 289 sermons had no way to learn that any of
+/// them could be played without opening one and looking.
+///
+/// **It is one clause in the header, not a badge on every row**, and
+/// that is a deliberate reading of the same rule the AppBar byline
+/// above follows. Every sermon has audio — all 289 ids in
+/// `assets/sermons/index.json` have a non-empty entry in
+/// `audio_index.json` — so a per-row mark would distinguish nothing.
+/// A mark that is true of every row is decoration, and decoration is
+/// what teaches a reader to stop seeing marks. What the list owes the
+/// reader here is knowledge, and knowledge belongs in the header; the
+/// affordance they act on is the play bar, and it is already on the
+/// page where it can be acted on.
+///
+/// [total] and [playable] are both counted at runtime from the loaded
+/// indexes. **Nothing here knows the number 289**, so the sentence
+/// stays true if the corpus grows, shrinks, or stops being wholly
+/// playable:
+///
+///   * not [configured] — no clause. `SermonAudioService`'s own
+///     doc comment settles this: "A play button that 404s would be
+///     worse than no play button." A claim about playability when
+///     nothing can play is that same 404 in sentence form.
+///   * [playable] is 0 (or the corpus is empty) — no clause, for the
+///     same reason. This also covers the frame before the manifest
+///     has loaded.
+///   * [playable] >= [total] — the universal claim, "every one has a
+///     recording". Worth saying because it is a capability the reader
+///     can act on; "289 with recordings" is a statistic they cannot.
+///   * anything in between — the count, which is what keeps the
+///     universal claim from becoming a lie nobody can check.
+///
+/// Returned unjoined; the caller adds the ' · ' separator.
+@visibleForTesting
+String? sermonAudioClause({
+  required bool configured,
+  required int total,
+  required int playable,
+  required String locale,
+}) {
+  if (!configured) return null;
+  if (total <= 0 || playable <= 0) return null;
+  if (playable >= total) {
+    return uiStrings['sermonAudioAll']?[locale] ?? 'every one has a recording';
+  }
+  final tmpl = uiStrings['sermonAudioSome']?[locale] ?? '{audioCount} with recordings';
+  return tmpl.replaceAll('{audioCount}', playable.toString());
+}
+
 class SermonsPage extends StatefulWidget {
   const SermonsPage({super.key});
 
@@ -177,7 +233,25 @@ class _SermonsPageState extends State<SermonsPage> {
     // Parallel: refs.json is independent of index.json
     final groups = await svc.loadByTopic();
     final refs = await svc.loadRefs();
-    return _PageData(groups: groups, refs: refs);
+    // The audio manifest, so the summary line can say the library is
+    // listenable. `load()` is idempotent and cheap after the first
+    // call (it returns early once `_index` is set), and awaiting it
+    // here rather than listening to the service means the clause is
+    // there on the first frame instead of appearing a beat later.
+    final audio = SermonAudioService.instance;
+    await audio.load();
+    // Both counts DERIVED, never written down. `sermonCount` is the
+    // size of the corpus this page actually loaded, not the 289 in
+    // `sermon_credit.dart`; `playableCount` is the intersection of
+    // that corpus with the audio manifest, so a sermon in one index
+    // and not the other cannot inflate either side.
+    final all = groups.values.expand((l) => l).toList();
+    return _PageData(
+      groups: groups,
+      refs: refs,
+      sermonCount: all.length,
+      playableCount: all.where((s) => audio.hasAudio(s.id)).length,
+    );
   }
 
   @override
@@ -324,7 +398,7 @@ class _SermonsPageState extends State<SermonsPage> {
                 child: Row(
                   children: [
                     Text(
-                      _summaryLine(groups, locale),
+                      _summaryLine(groups, data, locale),
                       style: TextStyle(
                         fontSize: 12,
                         color: scheme.onSurface.withValues(alpha: 0.6),
@@ -407,16 +481,26 @@ class _SermonsPageState extends State<SermonsPage> {
     return false;
   }
 
-  String _summaryLine(Map<String, List<Sermon>> groups, String locale) {
+  String _summaryLine(
+      Map<String, List<Sermon>> groups, _PageData data, String locale) {
     final n = groups.values.fold<int>(0, (a, b) => a + b.length);
     final t = groups.length;
     final tmpl = uiStrings['sermonCountTemplate']?[locale];
-    if (tmpl != null) {
-      return tmpl
-          .replaceAll('{count}', n.toString())
-          .replaceAll('{topics}', t.toString());
-    }
-    return '$n sermons across $t topics';
+    final base = tmpl != null
+        ? tmpl
+            .replaceAll('{count}', n.toString())
+            .replaceAll('{topics}', t.toString())
+        : '$n sermons across $t topics';
+    // The count clause is filtered and live; the audio clause is a
+    // whole-library fact and stays put while the reader searches. See
+    // [sermonAudioClause].
+    final audio = sermonAudioClause(
+      configured: SermonAudioService.isConfigured,
+      total: data.sermonCount,
+      playable: data.playableCount,
+      locale: locale,
+    );
+    return audio == null ? base : '$base · $audio';
   }
 
   String _activeFilterLabel(String locale) {
@@ -500,7 +584,22 @@ class _SermonsPageState extends State<SermonsPage> {
 class _PageData {
   final Map<String, List<Sermon>> groups;
   final SermonRefs refs;
-  const _PageData({required this.groups, required this.refs});
+
+  /// Size of the whole corpus — the sum over [groups] before any
+  /// filtering. Counted from the loaded index, so the summary line
+  /// never has to be told how many sermons there are.
+  final int sermonCount;
+
+  /// How many of those [sermonCount] sermons resolve to at least one
+  /// playable recording.
+  final int playableCount;
+
+  const _PageData({
+    required this.groups,
+    required this.refs,
+    required this.sermonCount,
+    required this.playableCount,
+  });
 }
 
 class _PassageFilterSheet extends StatefulWidget {

@@ -86,8 +86,36 @@ abstract class RemoteDataService<T> {
   /// network regardless.
   Duration get minRefreshInterval => Duration.zero;
 
+  /// Whether [reconcileJson] does anything.
+  ///
+  /// Default **false**, and everything below is gated on it, so a
+  /// service that does not override it reads the bundled asset exactly
+  /// as often as it did before this hook existed. No extra I/O, no
+  /// behaviour change.
+  bool get reconcilesIncoming => false;
+
+  /// Repair a payload that arrived from the network or the prefs
+  /// cache, using the bundled snapshot as the reference. Identity by
+  /// default.
+  ///
+  /// This exists because a publisher can lose a field it never learned
+  /// to emit, and the client is the only place that still knows the
+  /// value. See `_SongServiceImpl.reconcileJson` for the one case:
+  /// 191 CDC cover images that live only in the bundled catalogue.
+  ///
+  /// **It runs on the decoded payload, before [parse], and it does NOT
+  /// change what gets cached.** The raw upstream body is still what is
+  /// written to SharedPreferences, so the cache stays a faithful copy
+  /// of what the server said and the repair is re-applied on every
+  /// load. That keeps the two artifacts honest: prefs = upstream
+  /// truth, in memory = upstream plus a named, logged shim.
+  Map<String, dynamic> reconcileJson(
+          Map<String, dynamic> incoming, Map<String, dynamic> bundled) =>
+      incoming;
+
   T? _cached;
   Future<T>? _inflight;
+  Map<String, dynamic>? _bundledJson;
 
   /// Returns the freshest available bundle (cached → bundled).
   /// Triggers a background refresh on every call.
@@ -115,9 +143,34 @@ abstract class RemoteDataService<T> {
     }
   }
 
-  Future<T> _loadBundled() async {
+  /// The bundled snapshot, decoded once and kept. Only ever read from
+  /// the app's own assets, so it cannot go stale within a run.
+  Future<Map<String, dynamic>> _loadBundledJson() async {
+    final have = _bundledJson;
+    if (have != null) return have;
     final raw = await rootBundle.loadString(bundledAssetPath);
-    return parse(jsonDecode(raw) as Map<String, dynamic>);
+    final decoded = jsonDecode(raw) as Map<String, dynamic>;
+    _bundledJson = decoded;
+    return decoded;
+  }
+
+  Future<T> _loadBundled() async => parse(await _loadBundledJson());
+
+  /// Parse a payload that came from the network or the prefs cache,
+  /// giving the subclass a chance to repair it first.
+  ///
+  /// The bundled asset is never itself reconciled — it IS the
+  /// reference — and a failure to read it leaves the incoming payload
+  /// untouched rather than taking the load down.
+  Future<T> _parseIncoming(Map<String, dynamic> incoming) async {
+    if (!reconcilesIncoming) return parse(incoming);
+    try {
+      return parse(reconcileJson(incoming, await _loadBundledJson()));
+    } catch (e) {
+      debugPrint('[$runtimeType] could not reconcile against '
+          '$bundledAssetPath: $e — using the payload as received.');
+      return parse(incoming);
+    }
   }
 
   /// Pick the newer of the SharedPreferences cache and the bundled
@@ -207,7 +260,7 @@ abstract class RemoteDataService<T> {
       }
 
       final j = jsonDecode(body) as Map<String, dynamic>;
-      final fresh = parse(j);
+      final fresh = await _parseIncoming(j);
 
       // 2026-06-12 (v1.3.64): stamp "last successful network check" NOW,
       // before the staleness guard below. cacheTimePrefsKey drives the
@@ -250,7 +303,9 @@ abstract class RemoteDataService<T> {
       final raw = prefs.getString(cachePrefsKey);
       if (raw == null || raw.isEmpty) return null;
       final j = jsonDecode(raw) as Map<String, dynamic>;
-      return parse(j);
+      // Reconciled: a cached body is upstream's, with upstream's gaps,
+      // and it outlives an app upgrade.
+      return await _parseIncoming(j);
     } catch (_) {
       // Corrupt cache — wipe and start over next launch.
       try {

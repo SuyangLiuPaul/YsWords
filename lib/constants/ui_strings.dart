@@ -5659,6 +5659,42 @@ const uiStrings = {
     'zh-Hant': '{count} 篇講道,共 {topics} 個主題',
     'en': '{count} sermons across {topics} topics',
   },
+  // 2026-09-05: the sermon list never said a sermon could be played.
+  // The player is docked on the DETAIL page only, so a reader browsing
+  // the library had to open one to discover the recordings exist at
+  // all — and every one of the sermons has audio, so there was nothing
+  // to distinguish between rows either.
+  //
+  // Said once, in the summary line, for the same reason the preacher's
+  // byline is said once in the AppBar: a mark repeated down every row
+  // of a list where it is universally true stops being information.
+  // See the comment on `sermonAudioClause` in `sermons_page.dart`.
+  //
+  // Joined onto `sermonCountTemplate` with ' · ' (the separator lives
+  // in Dart, matching `.join(' · ')` elsewhere). This is a WHOLE-LIBRARY
+  // fact and does not react to the search or the passage filter, unlike
+  // the {count} beside it.
+  //
+  // 录音 / 錄音 is the house noun for the recording itself — it is what
+  // `sermonListen` (收听录音) and `sermonAudioError` (录音暂时无法播放)
+  // already say, so this does not introduce 音频. 收听 is the verb the
+  // reader performs and belongs on the play button, not in a
+  // descriptive header clause. English says "recording" for the same
+  // reason. 篇 is the measure word `sermonCountTemplate` already uses.
+  'sermonAudioAll': {
+    'zh-Hans': '每篇都有录音',
+    'zh-Hant': '每篇都有錄音',
+    'en': 'every one has a recording',
+  },
+  // The honest fallback if the corpus ever stops being all-playable.
+  // Never rendered today, and deliberately not deleted for that
+  // reason: the universal claim above is only allowed to ship because
+  // this branch exists to replace it the moment it stops being true.
+  'sermonAudioSome': {
+    'zh-Hans': '{audioCount} 篇有录音',
+    'zh-Hant': '{audioCount} 篇有錄音',
+    'en': '{audioCount} with recordings',
+  },
   'sermonGroupCount': {
     'zh-Hans': '{count} 篇',
     'zh-Hant': '{count} 篇',
@@ -5822,6 +5858,16 @@ const uiStrings = {
     'zh-Hans': '歌词',
     'zh-Hant': '歌詞',
     'en': 'Lyrics',
+  },
+  // 2026-09-05. Its own key rather than the generic 'copySelection'
+  // ("Copy") that every other copy button in the app uses, because
+  // this is the one screen carrying TWO of them: the header copies the
+  // song's details, this one copies the words. Two buttons a thumb
+  // apart, both captioned "Copy", is a coin toss.
+  'songsCopyLyrics': {
+    'zh-Hans': '复制歌词',
+    'zh-Hant': '複製歌詞',
+    'en': 'Copy lyrics',
   },
   'songsTrackVocal': {
     'zh-Hans': '原唱',

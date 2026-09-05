@@ -1,5 +1,104 @@
+import 'package:flutter/foundation.dart';
+
 import 'package:yswords/models/song.dart';
 import 'package:yswords/services/remote_data_service.dart';
+
+/// The one source whose covers the publisher does not know about.
+const String _cdcSource = 'cdc';
+
+/// Put the CDC cover images back into a payload that lost them.
+///
+/// **The problem is upstream and this is a shim, named as one.**
+/// `tools/add_cdc_artwork.py` read 191 covers off the church's own
+/// song pages on 2026-09-03 and wrote them into the bundled
+/// `assets/songs.json` — 191 of 298 CDC rows; the other 107 (the 15
+/// hymns among them, which live under `hymns/` and not `music/`)
+/// genuinely have none. The publisher that generates the live dataset
+/// has no artwork logic in its CDC fetcher at all, so the published
+/// catalogue carries none of them.
+///
+/// Today nothing is broken, and only by luck of timestamps: the
+/// bundled snapshot is newer than the live one, so `_freshestLocal`
+/// and `refresh`'s staleness guard both keep the bundle. The next
+/// successful publish moves the live `generatedAt` ahead and all 191
+/// covers disappear — from every user, out of a SharedPreferences
+/// cache that survives an app upgrade. That is the failure the long
+/// comment on `_freshestLocal` already describes, one field down.
+///
+/// **The gate is what makes this safe to ship**, and it is the whole
+/// difference between a shim and a permanent override. The backfill
+/// applies only when the incoming payload has ZERO covers across ALL
+/// its CDC rows — the signature of a publisher that has never heard of
+/// the field. One non-null CDC cover anywhere and nothing is applied,
+/// even if the other 297 are missing, because partial presence means
+/// the publisher DOES know the field and every absence is then its
+/// decision rather than its ignorance. So on the day the publisher
+/// learns to emit covers this stops doing anything, permanently and by
+/// itself, and upstream regains the ability to delete a single cover.
+///
+/// **Only `artworkUrl`, and only for CDC.** Not `audioUrl`,
+/// `videoUrl` or `scoreUrl`: the publisher drops those deliberately
+/// when they stop resolving, so re-adding them would fight it and
+/// re-create the dead play button that got the Songs page deleted in
+/// v1.3.126. The line is drawn where a wrong value degrades instead of
+/// lying — a stale cover falls through `RemoteImage`'s `fallback:` to
+/// the source mark and costs one memoised 404, whereas a stale media
+/// URL is a control that promises something it cannot do.
+///
+/// The residual case, stated rather than hidden: if the church ever
+/// removed every cover at once AFTER the publisher had learned the
+/// field, the gate would re-engage and the app would show 191 covers
+/// that 404 until the next release refreshed the bundle.
+///
+/// Mutates [incoming] in place and returns it — it is a payload
+/// decoded moments earlier for this one call, and the string written
+/// to the cache is the untouched original body.
+@visibleForTesting
+Map<String, dynamic> backfillCdcArtwork(
+  Map<String, dynamic> incoming,
+  Map<String, dynamic> bundled,
+) {
+  bool hasArt(Object? row) {
+    final v = (row as Map?)?['artworkUrl'];
+    return v is String && v.trim().isNotEmpty;
+  }
+
+  final rows = incoming['songs'];
+  if (rows is! List) return incoming;
+  final cdcRows =
+      rows.whereType<Map>().where((r) => r['source'] == _cdcSource).toList();
+  if (cdcRows.isEmpty) return incoming;
+
+  // The gate. Any knowledge of the field upstream and we do nothing.
+  if (cdcRows.any(hasArt)) return incoming;
+
+  final bundledRows = bundled['songs'];
+  if (bundledRows is! List) return incoming;
+  final knownArt = <String, String>{};
+  for (final r in bundledRows.whereType<Map>()) {
+    if (r['source'] != _cdcSource || !hasArt(r)) continue;
+    final id = r['id'];
+    if (id is String) knownArt[id] = (r['artworkUrl'] as String).trim();
+  }
+  if (knownArt.isEmpty) return incoming;
+
+  var filled = 0;
+  for (final r in cdcRows) {
+    final id = r['id'];
+    if (id is! String) continue;
+    final art = knownArt[id];
+    if (art == null) continue;
+    r['artworkUrl'] = art;
+    filled++;
+  }
+  if (filled > 0) {
+    debugPrint('[SongService] the incoming catalogue carried no CDC cover '
+        'art at all, so $filled cover(s) were restored from the bundled '
+        'snapshot. The publishing script does not emit artworkUrl for CDC; '
+        'this shim stops the moment it does. See backfillCdcArtwork.');
+  }
+  return incoming;
+}
 
 /// Bundle wrapper so the catalogue fits [RemoteDataService]'s generic
 /// `T`. Callers still work with `List<Song>`; the unwrapping happens
@@ -61,6 +160,16 @@ class _SongServiceImpl extends RemoteDataService<_SongBundle> {
 
   @override
   DateTime? generatedAt(_SongBundle bundle) => bundle.generatedAt;
+
+  /// Songs is the one dataset with a field the publisher cannot
+  /// reproduce. See [backfillCdcArtwork].
+  @override
+  bool get reconcilesIncoming => true;
+
+  @override
+  Map<String, dynamic> reconcileJson(
+          Map<String, dynamic> incoming, Map<String, dynamic> bundled) =>
+      backfillCdcArtwork(incoming, bundled);
 }
 
 /// Loads the church-songs catalogue.
@@ -129,6 +238,14 @@ class SongService {
     await _impl.refresh(force: true);
     return load();
   }
+
+  /// Drop the in-memory catalogue and the SharedPreferences copy.
+  ///
+  /// The service is a process-wide singleton, so a test that seeds a
+  /// different cached body has no other way to make the next [load]
+  /// look at it.
+  @visibleForTesting
+  static Future<void> clearCache() => _impl.clearCache();
 
   /// Catalogue metadata (`generatedAt`, per-source counts, the
   /// attribution block). Null until [load] has run.
