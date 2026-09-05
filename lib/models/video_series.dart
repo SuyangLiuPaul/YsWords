@@ -65,6 +65,14 @@ class VideoTrack {
   String get thumbnailUrl => 'https://i.ytimg.com/vi/$youtubeId/hqdefault.jpg';
 }
 
+/// Shared by [VideoEpisode.playableTracks] and
+/// [VideoSeries.playableCompilations]: a track marked
+/// [VideoTrack.isUnavailable] must not be offered as a button anywhere,
+/// whichever list it lives on.
+extension PlayableVideoTracks on List<VideoTrack> {
+  List<VideoTrack> get playable => where((t) => !t.isUnavailable).toList();
+}
+
 /// Titles carry one Chinese entry, not two.
 ///
 /// The text is the church's own wording, copied verbatim. Producing a
@@ -166,8 +174,7 @@ class VideoEpisode {
   /// from, and what [defaultTrack]/[trackForLocale] choose among first —
   /// a language button that opens "This video is private" is the app
   /// stating something untrue.
-  List<VideoTrack> get playableTracks =>
-      tracks.where((t) => !t.isUnavailable).toList();
+  List<VideoTrack> get playableTracks => tracks.playable;
 
   /// The opening track shown before a reader picks a language.
   ///
@@ -264,6 +271,14 @@ class VideoSeries {
   /// characters, and script does not determine speech. Do not "fix"
   /// that to cmn without watching it.
   final List<VideoTrack> compilations;
+
+  /// Compilations that actually play. What `_wholeSeriesRow` builds its
+  /// buttons from — mirrors [VideoEpisode.playableTracks]. Unlike
+  /// [VideoEpisode.defaultTrack], there is no fall-back-to-first here: the
+  /// whole-series row is optional decoration, not a player that must show
+  /// something, so when every compilation is marked the row should simply
+  /// hide rather than offer a button that opens "This video is private."
+  List<VideoTrack> get playableCompilations => compilations.playable;
 
   const VideoSeries({
     required this.id,

@@ -290,4 +290,77 @@ void main() {
     expect(allDead.defaultTrack?.youtubeId, 'aaaaaaaaaaa');
     expect(allDead.playableTracks, isEmpty);
   });
+
+  test('a compilation marked unavailable is dropped from playableCompilations',
+      () {
+    // Synthetic — no real compilation carries unavailableSince today (see
+    // 'zero compilation ids carry unavailableSince', below). This pins the
+    // filter for the day one does.
+    final s = VideoSeries(
+      id: 'x',
+      titles: const {'en': 'x'},
+      taglines: const {'en': 'x'},
+      creditKey: 'oneGodCredit',
+      episodes: const [],
+      compilations: const [
+        VideoTrack(
+          lang: 'en',
+          labelKey: 'oneGodLangEn',
+          youtubeId: 'aaaaaaaaaaa',
+          unavailableSince: '2026-09-06',
+        ),
+        VideoTrack(
+          lang: 'cmn',
+          labelKey: 'oneGodLangCmn',
+          youtubeId: 'bbbbbbbbbbb',
+        ),
+      ],
+    );
+    expect(s.playableCompilations.map((t) => t.lang), ['cmn']);
+  });
+
+  test(
+      'VideoSeries.playableCompilations hides the row rather than falling '
+      'back, unlike VideoEpisode.defaultTrack', () {
+    // The whole-series row is optional decoration, not a player that must
+    // show something — so when every compilation is marked, the filtered
+    // list must be empty (which makes _wholeSeriesRow's isEmpty guard hide
+    // the row), not fall back to compilations.first the way
+    // VideoEpisode.defaultTrack falls back to tracks.first.
+    final allDead = VideoSeries(
+      id: 'x',
+      titles: const {'en': 'x'},
+      taglines: const {'en': 'x'},
+      creditKey: 'oneGodCredit',
+      episodes: const [],
+      compilations: const [
+        VideoTrack(
+          lang: 'en',
+          labelKey: 'oneGodLangEn',
+          youtubeId: 'aaaaaaaaaaa',
+          unavailableSince: '2026-09-06',
+        ),
+      ],
+    );
+    expect(allDead.playableCompilations, isEmpty);
+  });
+
+  test('zero compilation ids carry unavailableSince today', () {
+    // The gate this item adds has nothing live to filter yet — the only
+    // unavailableSince in assets/videos.json is on onegod/01's English
+    // track, not a compilation. This pins that fact so it is visible if
+    // it ever changes rather than assumed.
+    for (final s in series) {
+      for (final c in s.compilations) {
+        expect(c.isUnavailable, isFalse, reason: '${s.id}/${c.youtubeId}');
+      }
+    }
+  });
+
+  test('cross still offers both compilations today', () {
+    final cross = byId('cross');
+    expect(cross.compilations.length, 2);
+    expect(cross.playableCompilations.map((t) => t.youtubeId).toSet(),
+        cross.compilations.map((t) => t.youtubeId).toSet());
+  });
 }

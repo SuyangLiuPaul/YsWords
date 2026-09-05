@@ -444,7 +444,8 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
   /// in is worse than leaving the app.
   Widget _wholeSeriesRow(
       VideoSeries s, String locale, ColorScheme scheme) {
-    if (s.compilations.isEmpty) return const SizedBox.shrink();
+    final compilations = s.playableCompilations;
+    if (compilations.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 18),
       child: Column(
@@ -465,7 +466,7 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final c in s.compilations)
+              for (final c in compilations)
                 OutlinedButton.icon(
                   icon: const Icon(Icons.play_circle_outline, size: 18),
                   label: Text(

@@ -6859,7 +6859,7 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
-- [ ] **`VideoSeries.compilations` has no `isUnavailable` gate.** Found
+- [x] **`VideoSeries.compilations` has no `isUnavailable` gate.** Found
       2026-09-06 by a refuter while verifying the onegod/01 private-track
       fix (see BUGS tier, same date). The per-episode fix added
       `VideoTrack.unavailableSince`/`playableTracks`/`defaultTrack`
@@ -6872,6 +6872,11 @@ has never seen this repo.
       Low priority: extend the same field/filter to `VideoSeries`
       compilations, or fold both into one shared helper, whichever reads
       cleaner once there is a second call site.
+      **FIXED 2026-09-06**: added `PlayableVideoTracks` extension shared
+      by `VideoEpisode.playableTracks` and the new
+      `VideoSeries.playableCompilations`; `_wholeSeriesRow` now filters
+      through it. No live compilation is marked, so nothing visibly
+      changed today — deploy skipped.
 
 - [x] **Fix `UpdateService` — the update check has never worked once.**
       2026-08-30. Fixed both preconditions that were fixable without the
