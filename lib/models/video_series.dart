@@ -24,16 +24,40 @@ class VideoTrack {
 
   final String youtubeId;
 
+  /// Set once `tools/check_video_ids.js` or a human finds this specific
+  /// id returning something other than 200 — e.g. `QmTEkPquvcQ`, which
+  /// oEmbed answered 403 ("private") from 2026-09-05.
+  ///
+  /// This is the date the problem was FOUND, not the date YouTube made
+  /// it private — nothing here knows that. Null for every id that is
+  /// still playing.
+  final String? unavailableSince;
+
+  /// What is being done about it, for whoever reads the JSON next.
+  /// Null whenever [unavailableSince] is null.
+  final String? unavailableNote;
+
   const VideoTrack({
     required this.lang,
     required this.labelKey,
     required this.youtubeId,
+    this.unavailableSince,
+    this.unavailableNote,
   });
+
+  /// True once this id has been found not to play. A marked track keeps
+  /// its id — the id is the only thing that can restore it — but must
+  /// not be offered as a button (`_languageRow`) or auto-selected
+  /// (`VideoEpisode.defaultTrack`, `trackForLocale`): a button that
+  /// opens "This video is private" is the app stating something untrue.
+  bool get isUnavailable => unavailableSince != null;
 
   factory VideoTrack.fromJson(Map<String, dynamic> j) => VideoTrack(
         lang: j['lang'] as String,
         labelKey: j['labelKey'] as String? ?? 'oneGodLangEn',
         youtubeId: j['youtubeId'] as String,
+        unavailableSince: j['unavailableSince'] as String?,
+        unavailableNote: j['unavailableNote'] as String?,
       );
 
   String get watchUrl => 'https://www.youtube.com/watch?v=$youtubeId';
@@ -125,6 +149,12 @@ class VideoEpisode {
   /// The track in [lang], or null. Returning null rather than the first
   /// track is deliberate: a series that has no Mandarin must show no
   /// Mandarin, not quietly play the Cantonese take under that label.
+  ///
+  /// Deliberately does NOT filter [VideoTrack.isUnavailable]: this is a
+  /// raw lookup by language, used both by tests that pin a specific id
+  /// and by the language-switch handler in `_languageRow`, which only
+  /// ever calls it with a language the reader just tapped a chip for —
+  /// and marked tracks no longer have a chip (see [playableTracks]).
   VideoTrack? trackFor(String lang) {
     for (final t in tracks) {
       if (t.lang == lang) return t;
@@ -132,7 +162,26 @@ class VideoEpisode {
     return null;
   }
 
-  VideoTrack? get defaultTrack => tracks.isEmpty ? null : tracks.first;
+  /// Tracks that actually play. What `_languageRow` builds its chips
+  /// from, and what [defaultTrack]/[trackForLocale] choose among first —
+  /// a language button that opens "This video is private" is the app
+  /// stating something untrue.
+  List<VideoTrack> get playableTracks =>
+      tracks.where((t) => !t.isUnavailable).toList();
+
+  /// The opening track shown before a reader picks a language.
+  ///
+  /// Prefers a playable one. Falls back to `tracks.first` — which may
+  /// be marked unavailable — only when EVERY track on the episode is
+  /// marked: at that point there is no good option, and the guard here
+  /// is that this returns something the player can attempt rather than
+  /// null, which would render an empty player with no explanation. No
+  /// episode in `assets/videos.json` is in that state as of 2026-09-06.
+  VideoTrack? get defaultTrack {
+    if (tracks.isEmpty) return null;
+    final playable = playableTracks;
+    return playable.isNotEmpty ? playable.first : tracks.first;
+  }
 
   /// The recording to open for a reader whose app is set to [locale].
   ///
@@ -147,10 +196,19 @@ class VideoEpisode {
   /// still opens rather than showing an empty player. The language
   /// buttons are unchanged and still switch by hand — this only
   /// decides which one starts selected.
+  ///
+  /// Skips a marked track even when its language is the reader's first
+  /// preference: `onegod/01`'s English id (`QmTEkPquvcQ`) is private, so
+  /// an English-locale reader lands on Mandarin — `cmn` is
+  /// [preferredTrackLangs]' next entry for a non-`zh` locale, before
+  /// `yue` — rather than being auto-selected into a dead player before
+  /// touching anything, which is the bug this method existed to prevent
+  /// for OTHER languages and had not been checked against its own
+  /// tracks being unavailable.
   VideoTrack? trackForLocale(String locale) {
     for (final lang in preferredTrackLangs(locale)) {
       final t = trackFor(lang);
-      if (t != null) return t;
+      if (t != null && !t.isUnavailable) return t;
     }
     return defaultTrack;
   }

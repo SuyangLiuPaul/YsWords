@@ -216,4 +216,78 @@ void main() {
     expect(byId('onegod').isSingle, isTrue);
     expect(byId('cross').isSingle, isFalse);
   });
+
+  test('a track marked unavailable is dropped from playableTracks', () {
+    // 2026-09-05: onegod/01's English id (QmTEkPquvcQ) started returning
+    // 403 from oEmbed — "This video is private" in the shipped player.
+    // The id stays in the data (it is the only recovery key) but must
+    // not be offered as a chip: `_languageRow` builds its buttons from
+    // `playableTracks`, not `tracks`.
+    final ep = byId('onegod').episodes.single;
+    expect(ep.tracks.map((t) => t.youtubeId), contains('QmTEkPquvcQ'),
+        reason: 'the id must stay in videos.json — deleting it would '
+            'throw away the only way to restore the track');
+    expect(ep.trackFor('en')!.isUnavailable, isTrue);
+    expect(ep.playableTracks.map((t) => t.lang), isNot(contains('en')),
+        reason: 'a chip that opens "This video is private" is the app '
+            'stating something untrue');
+    expect(ep.playableTracks.map((t) => t.lang), containsAll(['yue', 'cmn']));
+  });
+
+  test('an English-locale reader is not auto-selected into the dead video',
+      () {
+    // The sharper half of the 2026-09-05 bug: QmTEkPquvcQ is tracks[0],
+    // so before this fix `defaultTrack` and `trackForLocale('en')` both
+    // returned it — an English-locale reader landed on a dead player
+    // before tapping anything, not just a dead button.
+    final ep = byId('onegod').episodes.single;
+    expect(ep.defaultTrack?.youtubeId, isNot('QmTEkPquvcQ'));
+    final forEn = ep.trackForLocale('en');
+    expect(forEn, isNotNull);
+    expect(forEn!.youtubeId, isNot('QmTEkPquvcQ'));
+    // preferredTrackLangs for a non-zh locale is ['en', 'cmn', 'yue'];
+    // 'en' is marked, so the next preference, Mandarin, is what should
+    // actually be selected — not merely "not English".
+    expect(forEn.lang, 'cmn');
+  });
+
+  test('every episode keeps at least one playable track', () {
+    // The guard for the case none of today's data is in: if every track
+    // on an episode were ever marked unavailable at once,
+    // VideoEpisode.defaultTrack falls back to tracks.first (see its own
+    // doc comment) rather than returning null, so the player always has
+    // something to attempt instead of rendering an empty screen with no
+    // explanation. This test pins that NO episode currently relies on
+    // that fallback — if it starts failing, a real episode has gone
+    // fully dark and someone needs to look, not silently degrade.
+    for (final s in series) {
+      for (final e in s.episodes) {
+        expect(e.playableTracks, isNotEmpty,
+            reason: '${s.id}/${e.id} has no playable track left');
+      }
+    }
+  });
+
+  test('VideoEpisode.defaultTrack degrades sanely if all tracks are marked',
+      () {
+    final allDead = VideoEpisode(
+      id: 'x',
+      number: 1,
+      titles: const {'en': 'x'},
+      tracks: const [
+        VideoTrack(
+          lang: 'en',
+          labelKey: 'oneGodLangEn',
+          youtubeId: 'aaaaaaaaaaa',
+          unavailableSince: '2026-09-05',
+        ),
+      ],
+    );
+    // No playable track exists at all; the guard returns the marked one
+    // rather than null, so the player has something to attempt instead
+    // of an unexplained blank screen. This is a fallback of last resort,
+    // not a claim that the video plays.
+    expect(allDead.defaultTrack?.youtubeId, 'aaaaaaaaaaa');
+    expect(allDead.playableTracks, isEmpty);
+  });
 }

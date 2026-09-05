@@ -58,9 +58,14 @@ void main() {
 
     test('and an English reader still gets English where it exists', () {
       final e = byId('onegod').episodes.single;
-      expect(e.trackForLocale('en')?.lang, 'en');
       expect(e.trackForLocale('zh-Hans')?.lang, 'cmn');
       expect(e.trackForLocale('zh-Hant')?.lang, 'yue');
+      // Was `'en'` until 2026-09-06: onegod/01's English id
+      // (QmTEkPquvcQ) was found private on 2026-09-05, so an
+      // English-locale reader must no longer be auto-selected into it.
+      // preferredTrackLangs' next entry for a non-zh locale is 'cmn' —
+      // see test/video_series_test.dart for the id-level assertion.
+      expect(e.trackForLocale('en')?.lang, isNot('en'));
     });
 
     test('an English-only series opens rather than showing nothing', () {

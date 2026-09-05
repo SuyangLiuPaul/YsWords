@@ -77,6 +77,28 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [x] **2026-09-06 FIXED — onegod/01's English track was made private on
+      YouTube; the app auto-selected an English-locale reader straight
+      into it.** Register-only until now — `docs/OPEN-ITEMS.md:448`.
+      `QmTEkPquvcQ` returns 403 from oEmbed (65/66 other
+      ids in `assets/videos.json` still 200, re-checked 2026-09-06). Kept
+      the id — the only recovery key — and added an optional
+      `unavailableSince` / `unavailableNote` pair on `VideoTrack` (null
+      for the other 65). `VideoEpisode.playableTracks` drops a marked
+      track for `_languageRow`'s chips; `defaultTrack` / `trackForLocale`
+      skip a marked track in favour of an unmarked one, closing the
+      sharper half of the bug — `QmTEkPquvcQ` was `tracks[0]` and
+      `preferredTrackLangs` puts `en` first for every non-`zh` locale, so
+      an English-locale reader landed on the dead video before touching
+      anything, not just a dead button. Falls back to the marked track
+      only if every track on an episode is marked (true of none today,
+      pinned by a test). `tools/known-unavailable-videos.json` left
+      empty on purpose — that alarm should keep shouting until the
+      church has actually been asked. New tests in
+      `test/video_series_test.dart`; updated one pre-existing assertion
+      in `test/video_locale_and_purpose_test.dart` that had pinned the
+      buggy behaviour (`trackForLocale('en').lang == 'en'` for onegod).
+
 - [x] **2026-08-31 FIXED — the exegesis notes announce a list and then don't
       print it — 34 candidate sites, several confirmed wrong.** Reported
       by the user with a photo of `yahwehword.com/#/2thessalonians/2:1`
@@ -6837,6 +6859,20 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **`VideoSeries.compilations` has no `isUnavailable` gate.** Found
+      2026-09-06 by a refuter while verifying the onegod/01 private-track
+      fix (see BUGS tier, same date). The per-episode fix added
+      `VideoTrack.unavailableSince`/`playableTracks`/`defaultTrack`
+      filtering to `VideoEpisode`, but `compilations` (the "watch the
+      whole series in one video" row, `_wholeSeriesRow` in
+      `videos_page.dart`) is a separate `List<VideoTrack>` on
+      `VideoSeries` and renders `c.watchUrl` with no such check at all.
+      Not a live bug — zero compilation ids carry `unavailableSince`
+      today — but if one ever goes private, nothing hides its button.
+      Low priority: extend the same field/filter to `VideoSeries`
+      compilations, or fold both into one shared helper, whichever reads
+      cleaner once there is a second call site.
+
 - [x] **Fix `UpdateService` — the update check has never worked once.**
       2026-08-30. Fixed both preconditions that were fixable without the
       user: `repo` in `update_service.dart:46` was
@@ -9801,14 +9837,17 @@ has never seen this repo.
       asserting it — turning that into a gated assertion is the definition
       of done.
 
-- [ ] **On the Bible reader, Back pushes a route instead of popping.**
-      Pre-existing, orthogonal to the two defects above, flagged rather
-      than touched 2026-09-03. `_writeStateToUrl` issues a raw
-      `history.pushState` for an entry the engine believes it owns; a Back
-      onto one of those lands in `onPopState`'s third branch, which does
-      `go(-1)` and then dispatches **`pushRoute`**. Measure it with
-      `tools/web_verify_headless.mjs history` before changing anything —
-      that is the instrument that caught the sermon case.
+- [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
+      route instead of popping.** Pre-existing, orthogonal to the two
+      defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
+      `history.pushState(null, …)` for an entry the engine believes it
+      owns, arming `onPopState`'s manual-URL-edit recovery path
+      (`go(-1)` then `pushRoute`) on every chapter turn. Measured in two
+      real browser builds served side by side: entries added by reading
+      2→0, popstate events for one Back 3→1, forward entries discarded
+      3→0. See `docs/OPEN-ITEMS.md:237`. Ticked here 2026-09-06 —
+      bookkeeping only, no further code change; see the BUGS-tier entry
+      above dated 2026-09-06 for why this was still open.
 
 - [x] **Songs stop instead of advancing to the next track.** v1.4.179.
       User, 2026-08-16: "为什么一首歌完了下首歌没有继续播放而是停住了是不是

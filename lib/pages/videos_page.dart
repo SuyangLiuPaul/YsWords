@@ -316,8 +316,15 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
   /// the beginning" and a stale resume there would be worse than none.
   int _resumeAt = 0;
 
-  VideoTrack? get _selected =>
-      _episode.trackFor(_lang) ?? _episode.defaultTrack;
+  /// Skips a marked track even if [_lang] names it: [_lang] is normally
+  /// kept in sync with a playable track by [initState] and the episode
+  /// switch below, but falling back here too means a stale `_lang` can
+  /// never land the reader on a dead video.
+  VideoTrack? get _selected {
+    final t = _episode.trackFor(_lang);
+    if (t != null && !t.isUnavailable) return t;
+    return _episode.defaultTrack;
+  }
 
   Future<void> _play(BuildContext context, VideoTrack track) async {
     // A video starting silences the hymn. The reverse cannot be
@@ -368,8 +375,7 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
                 // default: the reader chose a language, and a link that
                 // opens a different one is a wrong answer that looks
                 // right.
-                url: (_episode.trackFor(_lang) ?? _episode.defaultTrack)
-                    ?.watchUrl,
+                url: _selected?.watchUrl,
               ),
             ),
           ),
@@ -658,13 +664,18 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
   /// as they record them), so episodes 2-10 must show no Mandarin button
   /// — offering one that played the Cantonese take would be the app
   /// saying something untrue.
+  ///
+  /// [VideoEpisode.playableTracks], not `tracks`: a track can exist in
+  /// the data (its id is the only way to recover it later) while being
+  /// marked unavailable, and a chip that opens "This video is private"
+  /// is the same false claim as one that opens the wrong language.
   Widget _languageRow(String locale) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       alignment: WrapAlignment.center,
       children: [
-        for (final t in _episode.tracks)
+        for (final t in _episode.playableTracks)
           ChoiceChip(
             selected: t.lang == _lang,
             label: Text(uiStrings[t.labelKey]?[locale] ?? t.lang),
@@ -734,10 +745,13 @@ class _VideoSeriesPageState extends State<VideoSeriesPage> {
         // A different episode is a different teaching; a position from
         // the last one would be meaningless in it.
         _resumeAt = 0;
-        if (e.trackFor(_lang) == null) {
-          // This episode has nothing in the current language. Fall back
-          // the same way the page opened — by locale — rather than to
-          // whichever track happens to be first in the JSON.
+        final inLang = e.trackFor(_lang);
+        if (inLang == null || inLang.isUnavailable) {
+          // This episode has nothing PLAYABLE in the current language —
+          // either it never had this language, or (onegod/01's English)
+          // it did and was later marked unavailable. Fall back the same
+          // way the page opened — by locale — rather than to whichever
+          // track happens to be first in the JSON.
           _lang = e.trackForLocale(locale)?.lang ??
               e.defaultTrack?.lang ??
               _lang;

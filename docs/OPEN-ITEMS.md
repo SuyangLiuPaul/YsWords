@@ -445,7 +445,7 @@ root reports it as `home` and the CMS emits it in every `link` and
 
 ---
 
-### A video on the live site plays nothing: it was made private `[verified 2026-09-05]`
+### A video on the live site plays nothing: it was made private `[FIXED 2026-09-06]`
 
 `yahwehword.com/#/videos/onegod` offers English / Cantonese / Mandarin.
 The English track shows YouTube's "This video is private". Not an app
@@ -454,22 +454,41 @@ endpoint, while the same episode's Cantonese (`2L4LZ1BNu3Q`) and Mandarin
 (`xqau2AqNNno`) both return 200 with their real titles. Someone changed
 that video's visibility on YouTube after it was catalogued.
 
-**Swept all 66 ids in `assets/videos.json`: this is the only dead one.**
+**Swept all 66 ids in `assets/videos.json` again on 2026-09-06: still the
+only dead one** (65/66 returned 200 in the same run, batch healthy).
 
-Two ways out, and they are not equivalent. Either the church restores the
-video's visibility — it is their channel, and this needs a person, not a
-code change — or the English track is removed from the episode, which is
-the rule this file already follows for a missing Mandarin take: an
-episode with no usable track in a language **offers no button** rather
-than playing another language under that label. Removing it is one line
-and I have not done it, because a private video is usually an accident
-and deleting the entry throws away the id needed to restore it.
+This entry originally weighed two ways out, and rejected both: the
+church restoring the video needs a person, not a code change; deleting
+the English track throws away the id needed to restore it. **There was a
+third option**, now shipped: keep the id, stop offering the button.
+`VideoTrack` gained an optional `unavailableSince` / `unavailableNote`
+pair (null for the other 65 ids); `QmTEkPquvcQ`'s `en` track is marked,
+not removed. `VideoEpisode.playableTracks` filters marked tracks out for
+`_languageRow` (no more English chip on this episode), and
+`defaultTrack` / `trackForLocale` skip a marked track in favour of an
+unmarked one when one exists — falling back to the marked track only if
+literally every track on an episode is marked, which is true of no
+episode today (pinned by `test/video_series_test.dart`).
 
-**No guard would have caught this**, and that is the more useful finding:
-nothing in the app or CI ever probes these 66 ids. A scheduled
-availability check is cheap — one oEmbed request per id, 66 of them —
-and would have reported this the day it happened instead of the owner
-finding it on the live site.
+**The sharper half of the bug, also fixed**: `QmTEkPquvcQ` is `tracks[0]`
+and `preferredTrackLangs` puts `en` first for every non-`zh` locale, so
+`trackForLocale('en')` was returning the dead id — an English-locale
+reader was auto-selected into the private video before touching
+anything, not just offered a dead button. Confirmed by test: with the
+fix, an English-locale reader on this episode now lands on the Mandarin
+track (`preferredTrackLangs`' next entry after `en`), never on
+`QmTEkPquvcQ`.
+
+`tools/known-unavailable-videos.json` is untouched and still deliberately
+empty for this id — suppressing the UI button and silencing the weekly
+alarm are different things, and the alarm should keep shouting until the
+church has actually been asked.
+
+**No guard would have caught the original bug**, and that is still the
+more useful finding: nothing in the app or CI probed these 66 ids until
+`tools/check_video_ids.js` + the weekly `check-videos.yml` workflow
+existed (added 2026-09-05/06). This entry stays as the record of what
+happened; the "no guard" gap it names is now closed.
 
 ## Build and toolchain
 
