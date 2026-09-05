@@ -52,3 +52,7 @@ netlify/functions/package-lock.json
 build-wasm/
 tools/__pycache__/
 scripts/__pycache__/
+# test/ gained Python tests on 2026-09-05 (the sermon-library fetcher), so it
+# grew a __pycache__ too. A stale one there already caused a mutation run to
+# report results that lagged an iteration by one.
+test/__pycache__/
