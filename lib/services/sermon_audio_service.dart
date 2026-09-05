@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/services/error_reporter.dart';
 import 'package:yswords/services/media_focus.dart';
 import 'package:yswords/services/playback/song_playback_engine.dart';
 
@@ -60,7 +61,16 @@ class SermonAudioPart {
 /// which is the honest state. A play button that 404s would be worse
 /// than no play button.
 class SermonAudioService extends ChangeNotifier {
-  SermonAudioService._() {
+  SermonAudioService._() : this.withEngine(SongPlaybackEngine());
+
+  /// @visibleForTesting — builds an instance around a caller-supplied
+  /// engine instead of [instance]'s own, so a test can drive playback
+  /// with a fake (`test/support/fake_song_playback_engine.dart`)
+  /// without a real audio plugin or a WebKit to reproduce
+  /// `docs/autonomous-queue.md:11582`'s AbortError races against.
+  @visibleForTesting
+  SermonAudioService.withEngine(SongPlaybackEngine engine)
+      : _player = engine {
     // One sound at a time — a hymn or a video starting pauses the
     // sermon, and vice versa. See [MediaFocus].
     MediaFocus.instance.register(
@@ -98,7 +108,7 @@ class SermonAudioService extends ChangeNotifier {
 
   static const _positionKeyPrefix = 'sermon.audio.pos.';
 
-  final SongPlaybackEngine _player = SongPlaybackEngine();
+  final SongPlaybackEngine _player;
   Map<String, List<SermonAudioPart>>? _index;
 
   String? _sermonId;
@@ -109,6 +119,12 @@ class SermonAudioService extends ChangeNotifier {
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   bool _wired = false;
+
+  /// Set by `_playPart` right before it starts a load, cleared the
+  /// first time `onPlaying(true)` fires afterwards. Exists only so
+  /// that first event can be told apart from every later play/pause
+  /// toggle — see `docs/autonomous-queue.md:11582`'s breadcrumb trail.
+  bool _awaitingFirstPlaying = false;
 
   // ── State ───────────────────────────────────────────────────────
 
@@ -163,7 +179,19 @@ class SermonAudioService extends ChangeNotifier {
     _wired = true;
     _player.onPlaying.listen((v) {
       _playing = v;
-      if (v) _loading = false;
+      if (v) {
+        _loading = false;
+        // The FIRST playing event after a `_playPart` load — the event
+        // `docs/autonomous-queue.md:11582`'s seek-race mechanism needs
+        // ordered against `applyPendingSeek`'s crumb. Later play/pause
+        // toggles of the same part are not re-crumbed; they are not
+        // part of the race the item is watching for.
+        if (_awaitingFirstPlaying) {
+          _awaitingFirstPlaying = false;
+          ErrorReporter.breadcrumb('sermon.playing',
+              data: 'id=$_sermonId part=$_partIndex');
+        }
+      }
       notifyListeners();
     });
     _player.onPosition.listen((p) {
@@ -197,6 +225,15 @@ class SermonAudioService extends ChangeNotifier {
     final parts = _index?[sermonId];
     if (!isConfigured || parts == null || parts.isEmpty) return;
 
+    // `docs/autonomous-queue.md:11582`: a double tap on a sermon that
+    // is not current yet lands both calls in the window before
+    // `_loading` is set below, so both take the "load" branch. This
+    // crumb is what would show that as two `sermon.play` entries
+    // milliseconds apart, rather than proving it happened.
+    final branch = _sermonId == sermonId ? 'toggle' : 'load';
+    ErrorReporter.breadcrumb('sermon.play',
+        data: 'id=$sermonId branch=$branch loading=$_loading');
+
     if (_sermonId == sermonId) {
       if (_playing) {
         await _player.pause();
@@ -208,6 +245,8 @@ class SermonAudioService extends ChangeNotifier {
           // See the note on `_playPart` below — same exception, same
           // "say so and let one more tap recover it" handling.
           debugPrint('[SermonAudioService] playback blocked (resume): $e');
+          ErrorReporter.breadcrumb('sermon.blocked',
+              data: 'context=resume id=$sermonId');
           _error = 'blocked';
           notifyListeners();
         }
@@ -230,9 +269,12 @@ class SermonAudioService extends ChangeNotifier {
   Future<void> _playPart({Duration? resumeAt}) async {
     final parts = _index?[_sermonId];
     if (parts == null || _partIndex >= parts.length) return;
+    ErrorReporter.breadcrumb('sermon.playPart',
+        data: 'part=$_partIndex resumeAt=${resumeAt ?? "none"}');
     _position = Duration.zero;
     _duration = Duration.zero;
     _pendingSeek = resumeAt;
+    _awaitingFirstPlaying = true;
     try {
       await _player.play(urlFor(parts[_partIndex]));
     } on PlaybackBlockedException catch (e) {
@@ -249,6 +291,8 @@ class SermonAudioService extends ChangeNotifier {
       // /sermons/421, `PlaybackBlockedException(AbortError: The
       // operation was aborted.)`.
       debugPrint('[SermonAudioService] playback blocked: $e');
+      ErrorReporter.breadcrumb('sermon.blocked',
+          data: 'context=playPart part=$_partIndex');
       _error = 'blocked';
       _loading = false;
       notifyListeners();
@@ -376,6 +420,12 @@ class SermonAudioService extends ChangeNotifier {
     if (pending == null || _duration <= Duration.zero) return;
     if (pending > Duration.zero && pending < _duration) {
       _pendingSeek = null;
+      // The only crumb of the four the item asks for that fires from a
+      // widget rebuild rather than the service's own flow (see
+      // `SermonAudioBar._onServiceChanged`) — which is exactly why it
+      // can land ahead of the first `sermon.playing` crumb above.
+      ErrorReporter.breadcrumb('sermon.seek',
+          data: 'to=${pending.inSeconds}s duration=${_duration.inSeconds}s');
       unawaited(_player.seek(pending));
     } else {
       _pendingSeek = null;
@@ -413,6 +463,17 @@ class SermonAudioService extends ChangeNotifier {
   /// (see `sermon_audio_index_test.dart`'s header note, and this
   /// file's `load()`-does-not-throw test — both work around the same
   /// thing rather than depend on it).
+  /// @visibleForTesting — seeds [_index] with [parts] for [sermonId]
+  /// without touching `rootBundle`, for a test built on
+  /// [SermonAudioService.withEngine] rather than [instance] (see that
+  /// constructor's doc comment for why `load()`'s real asset read is
+  /// avoided there).
+  @visibleForTesting
+  void seedForTest(String sermonId, List<SermonAudioPart> parts) {
+    _index ??= {};
+    _index![sermonId] = parts;
+  }
+
   @visibleForTesting
   void setBlockedForTest(String sermonId) {
     _index ??= {};

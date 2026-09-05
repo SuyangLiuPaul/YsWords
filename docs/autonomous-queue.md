@@ -11579,7 +11579,7 @@ has never seen this repo.
       on `d/playback`: caught in `_playPart()` and in the resume branch of
       `play()`, with the copy songs already use.
 
-- [ ] **Which race actually produces that `AbortError` is NOT settled, and
+- [x] **Which race actually produces that `AbortError` is NOT settled, and
       nothing was changed on the strength of a guess.** Two mechanisms are
       both readable in the code and neither was reproduced: a second tap
       landing in the window before `_loading` disables the button (in
@@ -11598,6 +11598,16 @@ has never seen this repo.
       recurs, a breadcrumb per `play()`/`_playPart` call settles it: a
       double tap shows two calls close together, the seek race shows
       `applyPendingSeek` firing before the first `playing` event.
+
+      **2026-09-06: instrumented, still not settled.** Four breadcrumbs
+      now fire: `sermon.play` (id, branch — `toggle` vs `load` — and
+      `_loading`), `sermon.playPart` (part index, armed resume offset),
+      `sermon.seek` (only the branch that actually calls
+      `_player.seek`), `sermon.playing` (the first `playing==true` after
+      a load). Both `PlaybackBlockedException` catch sites crumb too.
+      `test/sermon_audio_breadcrumb_test.dart` pins the ordering a real
+      recurrence would need read, against a fake engine — it does not
+      reproduce the AbortError itself; nothing here does.
 
 - [x] **The AI exegesis panel cannot be scrolled — fixed by deleting the
       inner scroll view.** The transcript now flows into the sheet's own

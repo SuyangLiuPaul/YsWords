@@ -4,107 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:yswords/models/song.dart';
 import 'package:yswords/models/song_queue.dart';
-import 'package:yswords/services/playback/song_playback_engine.dart';
 import 'package:yswords/services/song_audio_handler.dart';
 
-/// A hand-written fake of the engine seam — no audio plugin, no
-/// network, so this runs headlessly where the real bug
-/// (`docs/autonomous-queue.md:7636`, "下首歌没有继续播放而是停住了")
-/// could not be reproduced before.
-///
-/// Modelled on what native's `_guard` actually does (see
-/// `song_playback_engine_native.dart:91`): EVERY guarded command
-/// failure — `play`, `resume`, `pause`, `stop`, `seek`, `setVolume` —
-/// is swallowed and re-reported on the single [onError] stream, and
-/// the command's own returned future completes normally regardless.
-/// So `play()` here never throws; failures are only ever visible on
-/// [onError], exactly like on a real device.
-class _FakeEngine implements SongPlaybackEngine {
-  final _position = StreamController<Duration>.broadcast();
-  final _duration = StreamController<Duration>.broadcast();
-  final _playing = StreamController<bool>.broadcast();
-  final _complete = StreamController<void>.broadcast();
-  final _error = StreamController<(int, String)>.broadcast();
-
-  @override
-  Stream<Duration> get onPosition => _position.stream;
-  @override
-  Stream<Duration> get onDuration => _duration.stream;
-  @override
-  Stream<bool> get onPlaying => _playing.stream;
-  @override
-  Stream<void> get onComplete => _complete.stream;
-  @override
-  Stream<(int, String)> get onError => _error.stream;
-
-  @override
-  bool get isAvailable => true;
-
-  final List<String> playCalls = [];
-
-  int _attempt = 0;
-  @override
-  int get attempt => _attempt;
-
-  /// When true, the FIRST play() call never completes on its own —
-  /// simulating a load whose future is still pending when a later
-  /// event arrives. [resolveHeldPlay] completes it on demand.
-  bool holdFirstPlay = false;
-  Completer<void>? _held;
-  int _playCount = 0;
-
-  /// How many of the NEXT play() calls should self-report an error a
-  /// microtask later, mimicking a dead track that native accepts and
-  /// then fails asynchronously. Decrements per call.
-  int autoErrorBudget = 0;
-
-  @override
-  Future<void> play(String url) {
-    final id = ++_attempt;
-    playCalls.add(url);
-    _playCount++;
-    if (holdFirstPlay && _playCount == 1) {
-      _held = Completer<void>();
-      return _held!.future;
-    }
-    if (autoErrorBudget > 0) {
-      autoErrorBudget--;
-      Future.microtask(() => _error.add((id, 'dead: $url')));
-    }
-    return Future.value();
-  }
-
-  void resolveHeldPlay() => _held?.complete();
-
-  /// [attempt] defaults to whatever the most recent play() issued —
-  /// the same thing native's `_guard` does for a control-command
-  /// error on the current track. Pass it explicitly to simulate a
-  /// STALE error for a superseded attempt.
-  void emitError(String message, {int? attempt}) =>
-      _error.add((attempt ?? _attempt, message));
-  void emitDuration(Duration d) => _duration.add(d);
-  void emitPosition(Duration p) => _position.add(p);
-
-  @override
-  Future<void> resume() => Future.value();
-  @override
-  Future<void> pause() => Future.value();
-  @override
-  Future<void> stop() => Future.value();
-  @override
-  Future<void> seek(Duration to) => Future.value();
-  @override
-  Future<void> setVolume(double volume) => Future.value();
-
-  @override
-  Future<void> dispose() async {
-    await _position.close();
-    await _duration.close();
-    await _playing.close();
-    await _complete.close();
-    await _error.close();
-  }
-}
+import 'support/fake_song_playback_engine.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -143,7 +45,7 @@ void main() {
       'advances; a queue where every track dies this way terminates '
       'instead of spinning forever under repeat-all',
       (tester) async {
-    final engine = _FakeEngine()..autoErrorBudget = 6;
+    final engine = FakeSongPlaybackEngine()..autoErrorBudget = 6;
     final handler = SongAudioHandler(engine: engine);
     await handler.setQueue(
       queueOf(['s0', 's1', 's2'], repeat: RepeatMode.all),
@@ -170,7 +72,7 @@ void main() {
   testWidgets(
       'a control-command error on an already-playing track does not '
       'skip to the next song', (tester) async {
-    final engine = _FakeEngine();
+    final engine = FakeSongPlaybackEngine();
     final handler = SongAudioHandler(engine: engine);
     await handler.setQueue(queueOf(['s0', 's1']), autoPlay: false);
 
@@ -201,7 +103,7 @@ void main() {
   testWidgets(
       'an onError that arrives while the original play() future is '
       'still pending still advances the queue', (tester) async {
-    final engine = _FakeEngine()..holdFirstPlay = true;
+    final engine = FakeSongPlaybackEngine()..holdFirstPlay = true;
     final handler = SongAudioHandler(engine: engine);
     await handler.setQueue(
       queueOf(['s0', 's1', 's2']),
@@ -252,7 +154,7 @@ void main() {
   testWidgets(
       'a stale onError for an attempt the handler has already moved past '
       'is not blamed on whatever track is current now', (tester) async {
-    final engine = _FakeEngine()..holdFirstPlay = true;
+    final engine = FakeSongPlaybackEngine()..holdFirstPlay = true;
     final handler = SongAudioHandler(engine: engine);
     await handler.setQueue(
       queueOf(['s0', 's1', 's2']),
