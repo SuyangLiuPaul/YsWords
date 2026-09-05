@@ -12351,10 +12351,35 @@ so the bundle-size answer stays on the record.
 
 ## P3 — known but blocked or deferred
 
-- [ ] EC018 / EC019 sermon transcripts are raw speech recognition —
-      EC019 has one period and no commas in an 18,205-character
-      paragraph. Look for better transcripts on the T7 drive before
-      anything else; never re-punctuate a preacher's words.
+- [x] **EC018 / EC019 sermon transcripts — T7 checked, DONE 2026-09-05,
+      open question moved to the user.** T7 (`/Volumes/T7/02 Church &
+      Faith/Sermons & Studies/P.Eric Sermon/Spiritual Vision/`) was
+      searched: `assets/sermons/en/EC019.txt` is byte-identical
+      (md5 `b212a791e6896358c1699d7dff6b1c73`) to T7's
+      `EC019_2004-0718_..._(2).formatted.txt`, and `en/EC018.txt` is
+      byte-identical (md5 `487b65c25b9fb4a8767ec74e759b0a53`) to T7's
+      `EC018_2004-0717_..._(1).formatted.txt`. **There is no better
+      transcript to swap in** — the shipped text already is the T7
+      pipeline's own output.
+
+      The defect: `en/EC019.txt` paragraph 49/130 is 18,205 chars with
+      1 period and 2 commas, ending mid-sentence; paragraph 50 is the
+      Part-2 heading and paragraph 51 restates the same sentence,
+      properly punctuated. `en/EC019.txt` paragraph 129/130 (10,426
+      chars) has the same shape. `en/EC018.txt` paragraph 71/243
+      (9,805 chars) has 0 periods, 4 question marks and 530 commas —
+      a comma-splice variant of the same tape-side ASR gap. zh-CN/
+      zh-TW inherit it at paragraphs 6,046 / 3,494 chars. It is
+      Phase-1 ASR, not an import artifact — a re-run over all 289
+      sermons × 3 locales found no third offending file (confirmed by
+      an adversarial refuter pass; `test/sermon_transcript_
+      punctuation_test.dart` pins the count).
+
+      **Open question for the user:** the only real fix is
+      re-transcribing EC018a/EC019a from the T7 MP3s
+      (`.../Spiritual Vision/EC018a_....mp3`, `EC019a_....mp3` etc.) —
+      re-derive the preacher's own sentence boundaries from audio, or
+      ship the transcript as-is. Not decided here; do not guess at it.
 - [x] **Sermon audio — DONE 2026-09-02, and it cost nothing.** The user:
       「录音你可以直接用我们教会的」. The church already publishes all of them
       at `/content/ehhc_sermons_public` — 589 MP3s in 20 category

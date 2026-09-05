@@ -1893,3 +1893,14 @@ leave the original checked-out; three such duplicates were found on
    shown side by side on the word-tap sheet. Same shape as 4 and 5: every
    character is legitimate, nothing false is printed, so it is a choice
    and not a repair. Pinned by test until answered.
+7. **EC018/EC019 sermon re-transcription.** T7 was checked 2026-09-05
+   (`docs/autonomous-queue.md`, P3): the shipped English text is
+   byte-identical to the T7 pipeline's own output, so there is no better
+   transcript sitting on the drive to swap in. Both files have a
+   tape-side paragraph where Phase-1 ASR stopped emitting punctuation
+   (EC019 para 49/130, 18,205 chars, 1 period; EC018 para 71/243, 9,805
+   chars, 0 periods, 530 commas). The only real fix is re-transcribing
+   EC018a/EC019a from the T7 MP3s, which means re-deriving the
+   preacher's own sentence boundaries from audio — that choice belongs
+   to the user, not to an unattended pass. `test/sermon_transcript_
+   punctuation_test.dart` pins that no third file has this defect.
