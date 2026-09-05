@@ -87,9 +87,15 @@ void main() {
     // `parseReference`'s result — that result is now null for both, so
     // a filter that reads it would find zero matches instead of one.
     const known232 = {'zh-CN': '阿摩司书第12章', 'zh-TW': '阿摩司書第12章'};
+    // 2026-09-05: the Traditional spelling moved 啓→啟 when
+    // `assets/sermons/zh-TW/` was normalised to the printed 和合本
+    // (啟 425, 啓 0 in `assets/cuvs-yhwh-tr.json`). Revelation still has
+    // 22 chapters, so this still refuses to parse — the glyph changed,
+    // the verdict did not. Pinned by exact text on purpose, which is why
+    // it had to be edited here rather than silently keeping up.
     const knownCp37 = {
       'zh-CN': '启示录三十七章十七节',
-      'zh-TW': '啓示錄三十七章十七節',
+      'zh-TW': '啟示錄三十七章十七節',
     };
     for (final locale in const ['zh-CN', 'zh-TW']) {
       final text232 =
@@ -170,14 +176,24 @@ void main() {
     // of a transcript that actually reads "1 Corinthians 5:21") — a
     // blanket null-check would flag all of those as "new" on every run
     // and prove nothing about this guard specifically.
-    expect(totalMatches, 12505,
+    expect(totalMatches, 12528,
         reason: 'total passageRefPattern matches across all 867 '
             'transcripts — pins the corpus this sweep covers. 12498 '
             'before queue-7296 (約拿記/约拿记 + 哥罗西书 added to the alias '
             'table and the pattern): 7 more matches, 6 for 約拿記/约拿记 in '
             'sermon 069 and 1 for 哥罗西书 in EC013, all previously '
-            'unmatched prose.');
-    expect(totalParsed, 12473,
+            'unmatched prose. +23 on 2026-09-05: sermons 100, 369 and '
+            '370 shipped a TRUNCATED Traditional translation (100: 6 331 '
+            'characters against a Simplified 18 304) and were rebuilt from '
+            'their Simplified bodies, so ~38 000 characters of transcript '
+            'this sweep had never seen came into scope, carrying 23 more '
+            'references with them.');
+    // 12 496 = 12 473 + 23 — the SAME delta as totalMatches above, which
+    // is the whole point of pinning both. Every one of the 23 references
+    // the rebuilt bodies brought in parses; the rebuild introduced no new
+    // out-of-canon site, and the gap between the two totals is still
+    // exactly the 32 that were already known.
+    expect(totalParsed, 12496,
         reason: '12464 before queue-7296: +7, matching the 7 new '
             'matches above — Jonah 2 and Colossians 1:19 are both '
             'in-canon, so every new match parses. +2 more on 2026-09-03: '

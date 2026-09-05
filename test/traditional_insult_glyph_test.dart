@@ -105,7 +105,14 @@ void main() {
       correct += s.split('凌').length - 1;
       variant += s.split('淩').length - 1;
     }
-    expect(correct, 23);
+    // 2026-09-05: sermons 100, 369 and 370 had shipped a separate,
+    // TRUNCATED Traditional translation (100: 6 331 characters against a
+    // Simplified 18 304) and were rebuilt the way the other 286 were —
+    // `opencc -c s2t` over the Simplified body. That is ~38 000 characters
+    // of corpus that did not exist when this number was last measured, so
+    // the total moved. Every new occurrence was read before the number was
+    // changed; the one new 凌 is 370’s 凌晨五點, and 淩 is still 0.
+    expect(correct, 24);
     expect(variant, 0);
   });
 

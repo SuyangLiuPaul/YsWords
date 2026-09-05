@@ -99,8 +99,20 @@ RULES = (
 
     # --- 麪 is flour; 面 is a face, a side, an aspect -------------------------
     (None, "面酵", "麪酵", 63, "leaven — checked for a word boundary at all 63"),
-    (None, r"(?<![裏裡外上下前後])面包", "麪包", 8,
-     "bread — the lookbehind protects 073.txt 「裏面包含了極大的真理」"),
+    # The lookbehind was one character too narrow and it cost a sermon.
+    # 2026-09-05: 093.txt read 「生活的物質層面包裹著」 — an ASPECT that
+    # WRAPS — and this rule turned it into 層麪包裹, which means nothing.
+    # 層 was simply not in the class. The lookahead is the belt to that
+    # brace: 包 heading its own word (包裹, 包含, 包圍, 包括) is the whole
+    # failure mode, and enumerating the LEFT side alone is a blacklist of
+    # an open set, which is what let this through.
+    #
+    # Verified against the Simplified body, which is the control that
+    # settles every one of these: 093 zh-CN reads 层面包裹.
+    (None, r"(?<![裏裡外上下前後層方局場表全兩各情顏見會])面包(?![裹含圍括])",
+     "麪包", 8,
+     "bread — the lookbehind protects 073.txt 「裏面包含了極大的真理」 and "
+     "the lookahead protects 093.txt 「物質層面包裹著」"),
     (None, "麥面", "麥麪", 3, "wheat flour — 079.txt"),
     (None, "團面", "團麪", 2, "a lump of dough — 401.txt"),
     # …and the fifteen positions in 079.txt where 面 stands alone for dough.
@@ -123,7 +135,7 @@ RULES = (
      "dough always, without exception"),
     ("079.txt", "一個要點。面是由什麼做的", "一個要點。麪是由什麼做的", 1,
      "what is dough made of? wheat"),
-    ("079.txt", "翻譯爲\"面\"或\"麪粉\"", "翻譯爲\"麪\"或\"麪粉\"", 1,
+    ("079.txt", "翻譯為\"面\"或\"麪粉\"", "翻譯為\"麪\"或\"麪粉\"", 1,
      "the Greek word translated 'dough' or 'flour' — the sentence sets both"),
     ("079.txt", "麪酵在面中做什麼", "麪酵在麪中做什麼", 1, "in the dough"),
     ("079.txt", "它對面有什麼貢獻", "它對麪有什麼貢獻", 1, "to the dough"),

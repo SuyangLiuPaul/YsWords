@@ -322,9 +322,17 @@ void main() {
       // (queue line 7042). They render as plain text, so nothing is
       // underlined that does nothing when tapped. Named rather than
       // counted so any NEW unresolvable shape still fails here.
+      //
+      // 2026-09-05: the Traditional spelling here moved 啓→啟 with the
+      // rest of the corpus when `assets/sermons/zh-TW/` was normalised
+      // to the printed 和合本 (which is unanimous: 啟 425, 啓 0). The
+      // reference is no more resolvable than it was — Revelation still
+      // has 22 chapters — only respelled. It is named, not counted, so
+      // the glyph change had to be made here by hand, which is the
+      // point of naming them.
       expect(unresolved, {
         '阿摩司书第12章', '阿摩司書第12章',
-        '启示录三十七章十七节', '啓示錄三十七章十七節',
+        '启示录三十七章十七节', '啟示錄三十七章十七節',
       }, reason: 'a match the parser cannot resolve underlines nothing');
     });
 

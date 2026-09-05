@@ -81,7 +81,7 @@ RULES = (
     ("393.txt", "美麗又幹淨", "美麗又乾淨",
      "beautiful and clean — 很乾燥 eleven characters later"),
     ("401.txt", "你是那麼幹枯", "你是那麼乾枯", "you are so dried up"),
-    ("410-1.txt", "因爲禱告被幹擾", "因爲禱告被干擾",
+    ("410-1.txt", "因為禱告被幹擾", "因為禱告被干擾",
      "prayer being interrupted — 干, not 乾"),
     ("410-1.txt", "然後它排幹了", "然後它排乾了", "then it drained dry"),
     ("751.txt", "這一罐幹蘿蔔", "這一罐乾蘿蔔", "a tin of dried radish"),

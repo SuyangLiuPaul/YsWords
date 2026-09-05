@@ -80,7 +80,14 @@ void main() {
     test('every other 鬥 is a fight and stays', () {
       // 231 鬥 before, 219 after. An inventory count could never have found
       // the twelve; only the collocation could.
-      expect(count('鬥'), 219);
+      //
+      // 220 from 2026-09-05: sermons 100, 369 and 370 had shipped a
+      // separate, TRUNCATED Traditional translation and were rebuilt from
+      // their Simplified bodies with `opencc -c s2t`, adding ~38 000
+      // characters this number had never seen. The four new 鬥 were read
+      // first — 369 has three 戰鬥 and 370 one — so the collocation rule
+      // still holds and only the total moved.
+      expect(count('鬥'), 220);
       for (final keep in const ['戰鬥', '爭鬥', '搏鬥', '打鬥', '奮鬥', '好鬥']) {
         expect(count(keep), greaterThan(0), reason: keep);
       }
@@ -94,7 +101,22 @@ void main() {
       // Both are standard Traditional and this repo uses BOTH — cuvs-yhwh-tr
       // and biblexg-v2-tr set 麵, this corpus and assets/strongs set 麪. An
       // audit that counts only 麵 calls all 289 files a flour hole.
-      expect(count('麪'), 164);
+      // 158, not 164. The refuter pass of 2026-09-05 found this number was
+      // pinning SIX WRONG CHARACTERS in place: 093 「物質層麪包裹」 (an
+      // aspect that WRAPS — created here, by a 面包 rule whose lookbehind
+      // lacked 層), plus 109 「愛裏麪包含」, 318 「明白麪前」, 194-1
+      // 「眼睛和麪容」 ×2 and 194-2 「摩西的麪皮發光」 — that last a
+      // quotation of Exodus 34:35. Four were inherited from T7 rather
+      // than made here, but this test asserted they were fine.
+      //
+      // Each was settled by its own Simplified body, which is the
+      // control: 093 zh-CN reads 层面包裹, 194-2 reads 摩西的面皮.
+      expect(count('麪'), 158);
+      for (final wrong in const [
+        '層麪包裹', '裏麪包含', '明白麪前', '和麪容', '麪皮發光',
+      ]) {
+        expect(count(wrong), 0, reason: '$wrong is 面, not flour');
+      }
       expect(count('麵'), 0,
           reason: 'a sweep imported the other asset family\'s spelling');
     });
@@ -105,7 +127,10 @@ void main() {
       }
       expect(count('麪酵'), 63);
       expect(count('麥麪'), 4);   // 3 repaired + 1 that was already right
-      expect(count('麪包'), 49);
+      // 47 from 2026-09-05: two of the 49 were not bread at all —
+      // 093's 層麪包裹 and 109's 愛裏麪包含, both 面 + 包-heading-its-
+      // own-word. Corrected, and the rule now carries a lookahead.
+      expect(count('麪包'), 47);
     });
 
     test('079.txt sets 麪 for the dough where it stands alone', () {
@@ -122,7 +147,13 @@ void main() {
     });
 
     test('面 survives as a face, a side and an aspect', () {
-      expect(count('面'), 5887);
+      // 5926 from the three rebuilt sermons, then 5932 later the same day
+      // when six over-converted 麪 were restored to 面 (093, 109, 318,
+      // 194-1 ×2, 194-2). Checked before either number was changed: none
+      // of the three rebuilt bodies contains 面包, 面粉, 面糰 or 面酵, so
+      // nothing that should be flour is hiding in the increase, and all
+      // six restorations were settled against their Simplified bodies.
+      expect(count('面'), 5932);
       for (final keep in const ['裏面', '面前', '方面', '面對', '前面', '畫面']) {
         expect(count(keep), greaterThan(0), reason: keep);
       }
