@@ -45,12 +45,17 @@ const _crossYue = [
 ///
 /// The user is producing them one at a time and hands over a link when
 /// each is done: `01` on 2026-08-25, `02` on 2026-09-01, `03` on
-/// 2026-09-02, `04` on 2026-09-03, and `05`, `06`, `07` all on
-/// 2026-09-04. Add an id here only after confirming by YouTube oEmbed
+/// 2026-09-02, `04` on 2026-09-03, `05`-`07` on 2026-09-04, and `08`
+/// and `09` on 2026-09-05. `08` was REFUSED once before it was filed:
+/// its title then carried no 普通话版 marker and matched the Cantonese
+/// track's exactly. The title was corrected upstream and it now passes
+/// on its own evidence — see `_meta.crossMandarin`. Add an id here only after confirming by YouTube oEmbed
 /// that its title carries BOTH the right ordinal and 普通话版 — the
 /// church's page layout is one row out for this series, which is the
 /// mistake `_meta.pairingEvidence` exists to prevent.
-const _crossWithMandarin = {'01', '02', '03', '04', '05', '06', '07'};
+const _crossWithMandarin = {
+  '01', '02', '03', '04', '05', '06', '07', '08', '09',
+};
 
 /// Not episodes, and must never be listed as one: these are the whole
 /// series in a single video. Putting either in the episode list makes a

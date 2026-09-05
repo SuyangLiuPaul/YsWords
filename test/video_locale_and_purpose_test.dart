@@ -75,8 +75,9 @@ void main() {
         'the rest fall to Cantonese', () {
       // The user is recording the 普通话版 one episode at a time and hands
       // over each link as it is done — episode 1 on 2026-08-25, episode 2
-      // on 2026-09-01, 3 on 2026-09-02, 4 on 2026-09-03, 5, 6 and 7 all
-      // on 2026-09-04, 8-10 still being made. Coverage therefore
+      // on 2026-09-01, 3 on 2026-09-02, 4 on 2026-09-03, 5-7 on
+      // 2026-09-04, and 8 and 9 on 2026-09-05. Only 10 is still absent.
+      // Coverage therefore
       // differs BETWEEN EPISODES OF ONE SERIES — the first case in this
       // file — so a Simplified reader gets Mandarin on the finished ones
       // and Cantonese on the rest, from the same series.
@@ -93,6 +94,8 @@ void main() {
         '05': 'kmFTrLtfISQ',
         '06': 'gUr2d_axXYY',
         '07': 'xmTw9MprLDc',
+        '08': 'og1rthWUJ00',
+        '09': 'E2Z8Y3EIbeI',
       };
       for (final e in byId('cross').episodes) {
         final id = mandarin[e.id];
