@@ -208,6 +208,7 @@ from transcribe_targets import (  # noqa: E402
     BODIES_DIR, INDEX_JSON, RAW_DIR, TRANSCRIPTS,
     audio_path, load_index, targets,
 )
+import proofread_transcripts as PROOFREAD  # noqa: E402
 
 WHISPER_CLI = shutil.which("whisper-cli") or "whisper-cli"
 FFMPEG = shutil.which("ffmpeg") or "ffmpeg"
@@ -451,6 +452,13 @@ def build(rec: dict, parts: list[dict], today: str) -> tuple[str, str, dict]:
         raise RuntimeError(f"{rec['refcode']}: blank paragraph line")
     body = "\n".join(lines) + "\n"
 
+    # Proofreading is applied HERE rather than to the file on disk, because
+    # a body on disk is untracked and this function is the only thing that
+    # writes one. Before 2026-09-06 the corrections lived only in those
+    # untracked files and a `--force` rebuild discarded them silently, in 12
+    # of 16 bodies. `apply` raises if a fix does not match its stated count.
+    body, n_fixed = PROOFREAD.apply(str(rec["id"]), body)
+
     all_segments, offset = [], 0.0
     for p in parts:
         for s in p["segments"]:
@@ -488,9 +496,16 @@ def build(rec: dict, parts: list[dict], today: str) -> tuple[str, str, dict]:
             "initialPrompt": None,
             "scriptConversion": f"opencc {OPENCC_CONFIG}",
             "transcribedAt": today,
-            "proofread": "none",
-            "proofreadBy": None,
-            "proofreadAt": None,
+            # NOT "human". The corrections in `proofread_transcripts.py`
+            # were made by an agent reading the text against the bundled
+            # 和合本 — machine output checked by a machine. The owner's
+            # ruling is that a human transcription beats a machine one, so
+            # nothing here may be able to pass for a human's work.
+            "proofread": "assisted" if n_fixed else "none",
+            "proofreadBy": ("agent (not a human), scripts/"
+                            "proofread_transcripts.py") if n_fixed else None,
+            "proofreadAt": today if n_fixed else None,
+            "proofreadFixes": n_fixed,
             "wallClockSec": round(wall, 1),
             "realtimeFactor": round(dur / max(wall, 1e-9), 1),
             "sourceAudio": [{"file": p["audioFile"],

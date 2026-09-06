@@ -337,8 +337,19 @@ class SeamTests(unittest.TestCase):
                 t = d['transcription']
                 self.assertEqual(t['kind'], 'machine')
                 self.assertIs(t['notHuman'], True)
-                self.assertEqual(t['proofread'], 'none')
                 self.assertEqual(t['model'], TS.MODEL_NAME)
+                # The point of this guard is that a machine transcript must
+                # never be able to pass for a human one. 'assisted' is
+                # honest — an agent read it against the bundled CUV — and
+                # 'human' would be the lie, so THAT is what is forbidden,
+                # rather than pinning the field to a single value that a
+                # later proofreading pass has to edit the test to change.
+                self.assertIn(t['proofread'], ('none', 'assisted'))
+                if t['proofread'] == 'none':
+                    self.assertIsNone(t['proofreadBy'])
+                else:
+                    self.assertIn('not a human', t['proofreadBy'])
+                    self.assertGreater(t['proofreadFixes'], 0)
 
 
 # ── the mutation harness ────────────────────────────────────────────

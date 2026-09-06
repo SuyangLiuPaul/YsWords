@@ -79,7 +79,7 @@ MEASURED = {
     'bodyFiles': 858,
     'bodied200': 856,
     'withAudio': 673,
-    # 5_541_718 after proofreading on 2026-09-06: 62 misheard book
+    # 5_541_718 after proofreading pass 1 on 2026-09-06: 62 misheard book
     # names corrected (格林多→哥林多, 加勒泰→加拉太, 菲利比→腓立比,
     # 西伯来→希伯来, 民俗记→民数记 and the rest), a 14-fold
     # hallucinated phone advert replaced by one note recording that
@@ -87,7 +87,17 @@ MEASURED = {
     # subtitle credits removed — those named real people who did no
     # such work, which is the worst kind of invention because it
     # reads exactly like a real credit.
-    'bodyChars': 5_541_718,
+    #
+    # 5_541_703 after pass 2, the same day: 687 more corrections over the
+    # same sixteen files, found by READING them rather than by any check.
+    # The number moved by FIFTEEN characters, which is the useful part of
+    # this line — a mishearing is overwhelmingly a same-length homophone
+    # (作亡 for 作王, 畫餅 for 話柄, 精力 for 經歷), so a volume snapshot is
+    # blind to almost all of them. Nothing that watches size can watch
+    # this class of defect, and nothing did: see
+    # `scripts/proofread_transcripts.py`, which is where they now live so
+    # that a `--force` rebuild reproduces them instead of discarding them.
+    'bodyChars': 5_541_703,
     'distinctBodies': 856,
     'maxSameBody': 2,
     'distinctTitles': 933,
