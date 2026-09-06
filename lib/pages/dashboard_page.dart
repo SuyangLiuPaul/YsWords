@@ -20,7 +20,6 @@ import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/bible_trivia_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
-import 'package:yswords/pages/sermon_library_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/liquid_glass.dart';
@@ -881,21 +880,23 @@ class _DashboardPageState extends State<DashboardPage> {
                   label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
                   onTap: () => pushPage(const BibleTriviaPage()),
                 ),
-                // The 福音电台 sermon library — a SECOND sermon corpus,
-                // 937 records by 71 credited speakers, browsable by
-                // speaker. Deliberately its own tile rather than a tab
-                // on the Sermons page: that page is one man's 289
-                // expository sermons with preaching dates and bodies in
-                // three languages, and these are radio messages with
-                // publication dates in one. Two provenances behind one
-                // door is how a reader ends up unable to tell which
-                // corpus a row came from.
-                _LinkTile(
-                  icon: Icons.record_voice_over_outlined,
-                  label: uiStrings['sermonLibrary']?[locale] ??
-                      'Sermon Library',
-                  onTap: () => pushPage(const SermonLibraryPage()),
-                ),
+                // The 福音电台 sermon library had a tile here and it is
+                // REMOVED, 2026-09-06. It was a second corpus of 940
+                // records by 71 speakers, and the reasoning for keeping
+                // it behind its own door was sound while there were two
+                // corpora. The owner then decided there is only one:
+                // Pastor Eric Chang's. His 125 messages from that source
+                // are merged into `assets/sermons/` and reached through
+                // the existing Sermons page; the other 742 ship nowhere
+                // and `assets/sermon_library/` is a gitignored staging
+                // area.
+                //
+                // Removing the tile is not tidying. `SermonLibraryService`
+                // THROWS when `index.json` is absent — deliberately, so a
+                // missing asset cannot masquerade as an empty library —
+                // and that asset is no longer bundled. Left in place this
+                // tile opened an error page for every reader, and it
+                // shipped that way to dev/qat in v1.5.0.
                 // Songs and 獨一真神 are the two Featured cards. They
                 // appear HERE only when Featured is switched off —
                 // otherwise the same two links sat on the page twice,

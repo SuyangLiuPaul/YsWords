@@ -9,6 +9,21 @@
 /// in published materials). Add a new entry here whenever a new
 /// topic appears in the corpus index.
 const Map<String, Map<String, String>> sermonTopicI18n = {
+  // 2026-09-06: the 19 messages merged from 福音电台 that no adjudicated
+  // pairing placed into an existing topic. The other 106 went into the
+  // topics they belong to on evidence — sm11–40 into Sermon on the Mount
+  // on ten confirmed pairings, the `_pb` records into The Parables of
+  // Jesus, and so on — rather than all 125 being swept into one bucket
+  // named after their source.
+  //
+  // The KEY has to be ASCII: `topicSlug()` throws on a name that slugs
+  // to nothing, which is how a first attempt at using the church's own
+  // Chinese taxonomy verbatim was caught.
+  'FYDT Chinese Messages': {
+    'zh-Hans': '福音电台信息',
+    'zh-Hant': '福音電台信息',
+    'en': 'FYDT Radio Messages',
+  },
   'Baptism': {
     'zh-Hans': '洗礼',
     'zh-Hant': '洗禮',

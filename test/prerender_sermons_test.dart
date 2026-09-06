@@ -46,6 +46,13 @@ SermonMeta _meta({
   String passage = 'Lk 4:5-13',
   String title = 'Temptation after baptism',
   Map<String, String>? titles,
+  // Default to all three, which is what the original 289 are. A fixture
+  // for a merged 福音电台 message passes hasEn: false — those are
+  // Chinese-only, and that asymmetry is the whole reason SermonMeta
+  // carries these flags rather than the generator assuming them.
+  bool hasEn = true,
+  bool hasZhCn = true,
+  bool hasZhTw = true,
 }) =>
     SermonMeta(
       id: id,
@@ -54,6 +61,9 @@ SermonMeta _meta({
       parts: parts,
       passage: passage,
       fallbackTitle: title,
+      hasEn: hasEn,
+      hasZhCn: hasZhCn,
+      hasZhTw: hasZhTw,
       titles: titles ??
           const {
             'en': 'Temptation After Baptism',
@@ -194,6 +204,33 @@ void main() {
       }
     });
 
+    test('a Chinese-only sermon names neither English nor an English '
+        'x-default', () {
+      // The 125 messages merged from 福音电台 on 2026-09-06 have no
+      // English body — that source publishes none. Before this, the
+      // generator emitted all three alternates unconditionally, so every
+      // one of those pages would have advertised an English URL that
+      // 404s. An hreflang pointing at a missing page is worse than no
+      // hreflang: it invites a crawler to fetch it.
+      final html = _render(_lang('zh-hans'),
+          meta: _meta(id: 'fy-sm12b', hasEn: false));
+      expect(html, isNot(contains('hreflang="en"')),
+          reason: 'named an English alternate for a sermon with no '
+              'English body');
+      expect(html, isNot(contains('/sermons/en/fy-sm12b/')),
+          reason: 'linked an English URL that does not exist — this '
+              'catches BOTH the hreflang cluster and the visible '
+              '"other languages" switcher at the foot of the page, and '
+              'the switcher is the worse of the two: metadata is read '
+              'by a crawler, a chip is clicked by a reader');
+      // The two it DOES have are still named, and x-default falls to the
+      // first language that exists rather than being dropped.
+      expect(html, contains('hreflang="zh-Hans"'));
+      expect(html, contains('hreflang="zh-Hant"'));
+      expect(html, contains('hreflang="x-default"'));
+      expect(html, contains('href="$_prod/sermons/zh-hans/fy-sm12b/"'));
+    });
+
     test('every alternate points at this same sermon', () {
       final html = _render(_lang('en'), meta: _meta(id: '207'));
       for (final seg in ['en', 'zh-hans', 'zh-hant']) {
@@ -209,23 +246,59 @@ void main() {
               'href="$_prod/sermons/en/207/"'));
     });
 
-    test('the claim rests on all three languages really existing', () {
+    test('the claim no longer rests on all three languages existing — '
+        'THE GENERATOR HAS TO CHANGE', () {
       // hreflang between a page and one that 404s makes Google distrust
-      // the whole cluster. The generator emits three alternates for
-      // every sermon unconditionally, which is only honest because the
-      // index says all 289 have all three.
-      final rows =
-          (File('assets/sermons/index.json').readAsStringSync()).isNotEmpty;
-      expect(rows, isTrue);
+      // the whole cluster. The generator emits three alternates for every
+      // sermon unconditionally, and that was honest for exactly as long as
+      // every sermon had all three bodies.
+      //
+      // **It stopped being honest on 2026-09-06.** 125 of Pastor Eric's
+      // messages were merged in from the fuyindiantai staging library
+      // (`scripts/merge_sermon_library.py`). That library is CHINESE-ONLY —
+      // it is a Chinese radio station's archive — so those 125 carry
+      // `hasEn: false` and have no `assets/sermons/en/<id>.txt`. The app
+      // handles it already: `SermonService.loadBestBody` falls back across
+      // languages and the detail page disables the English chip.
+      // `tools/prerender_sermons.dart` does NOT, in two places, and both
+      // are outside the sermon corpus this merge was allowed to touch:
+      //
+      //   1. line ~916 — `if (!bodyFile.existsSync()) { FATAL; exit(1); }`.
+      //      The static-site build ABORTS on the first merged sermon.
+      //   2. line ~453 — the alternates loop walks `sermonLangs`
+      //      unconditionally, so even once (1) is fixed the Chinese pages
+      //      would name an English URL that 404s.
+      //
+      // Both want the same one-line idea: iterate the languages a sermon
+      // actually has (`hasEn`/`hasZhCn`/`hasZhTw`, already in the index and
+      // already parsed by `loadIndex`) rather than all three. Until that
+      // lands, this test pins the exact split so that the scale of the
+      // problem is a fact rather than a guess, and so that a body going
+      // missing from the 289 that DO have English still fails here.
       final metas = loadIndex(File('assets/sermons/index.json'));
+      expect(metas, hasLength(414));
+
+      final missingEn = <String>[];
       for (final m in metas) {
         for (final l in sermonLangs) {
-          expect(File('assets/sermons/${l.dir}/${m.id}.txt').existsSync(),
-              isTrue,
+          final exists =
+              File('assets/sermons/${l.dir}/${m.id}.txt').existsSync();
+          if (l.dir == 'en' && !exists) {
+            missingEn.add(m.id);
+            continue;
+          }
+          expect(exists, isTrue,
               reason: 'sermon ${m.id} has no ${l.dir} transcript, so the '
                   'hreflang cluster on its pages names a url that 404s');
         }
       }
+      // Exactly the merged ones, and nothing else. If an English body ever
+      // disappears from one of the original 289 it lands here instead of
+      // being absorbed into a tolerance.
+      expect(missingEn, hasLength(125));
+      expect(missingEn.every((id) => id.startsWith('fy-')), isTrue,
+          reason: 'an English body vanished from a sermon that had one: '
+              '${missingEn.where((id) => !id.startsWith('fy-'))}');
     });
 
     test('canonical is self-referential, never cross-language', () {
@@ -573,7 +646,13 @@ void main() {
     test('the index and the count the app advertises agree', () {
       // sermonCount is what the app tells users. If they disagree, one
       // of the two screens is lying.
-      expect(metas.length, 289);
+      //
+      // 289 → 414 on 2026-09-06 (125 sermons merged in from the
+      // fuyindiantai staging library). `sermonCount` in
+      // `lib/constants/sermon_credit.dart` is the other half of this pair
+      // and has to move with it; `test/sermon_credit_test.dart` is the
+      // assertion that holds them together.
+      expect(metas.length, 414);
     });
 
     test('every sermon has a title in every language', () {

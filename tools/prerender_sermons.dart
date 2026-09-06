@@ -100,6 +100,21 @@ class SermonMeta {
   final String fallbackTitle;
   final Map<String, String> titles; // asset lang -> title
 
+  /// Which languages this sermon actually HAS a body in.
+  ///
+  /// 2026-09-06: this used to be assumed rather than carried. All 289
+  /// original sermons have all three, so the generator wrote a page and
+  /// an hreflang alternate per language unconditionally. The 125
+  /// messages merged in from the 福音电台 library are Chinese-only —
+  /// that source publishes no English — so the assumption became false
+  /// in two ways at once: the body loop hit `FATAL: missing transcript`
+  /// on the first merged sermon and aborted the whole static build, and
+  /// the hreflang cluster would have named an English URL that 404s on
+  /// every one of the 125.
+  final bool hasEn;
+  final bool hasZhCn;
+  final bool hasZhTw;
+
   SermonMeta({
     required this.id,
     required this.topic,
@@ -108,7 +123,18 @@ class SermonMeta {
     required this.passage,
     required this.fallbackTitle,
     required this.titles,
+    required this.hasEn,
+    required this.hasZhCn,
+    required this.hasZhTw,
   });
+
+  /// True when this sermon has a body in [lang].
+  bool has(SermonLang lang) => switch (lang.dir) {
+        'en' => hasEn,
+        'zh-CN' => hasZhCn,
+        'zh-TW' => hasZhTw,
+        _ => false,
+      };
 
   /// The title in [lang], falling back to the index's bare `title`.
   /// The `titles` map is keyed by ASSET language (`en`/`zh-CN`/`zh-TW`),
@@ -448,14 +474,21 @@ String _head({
 /// same work — which is what hreflang is for, and why the Bible pages
 /// only get it between 简/繁 pairs of one edition and never on
 /// `index.html`.
-List<String> _alternates(String Function(SermonLang) pathOf) {
+List<String> _alternates(String Function(SermonLang) pathOf,
+    {List<SermonLang>? only}) {
+  // `only` names the languages that actually have a page. Passing it is
+  // how a Chinese-only sermon stops advertising an English URL that
+  // 404s — an hreflang pointing at a missing page is worse than no
+  // hreflang, because it invites a crawler to fetch it.
+  final langs = only ?? sermonLangs;
+  if (langs.isEmpty) return const [];
   final out = <String>[];
-  for (final l in sermonLangs) {
+  for (final l in langs) {
     out.add('<link rel="alternate" hreflang="${l.tag}" '
         'href="$kBase${pathOf(l)}">');
   }
   out.add('<link rel="alternate" hreflang="x-default" '
-      'href="$kBase${pathOf(sermonLangs.first)}">');
+      'href="$kBase${pathOf(langs.first)}">');
   return out;
 }
 
@@ -532,7 +565,12 @@ String renderSermon(
     title: '$title · ${sermonPreacher(tag)} · ${siteName(tag)}',
     description: desc,
     path: path,
-    alternates: _alternates((l) => sermonPath(l, s.id)),
+    // Only the languages this sermon actually has. A topic page or a
+    // language index still names all three, because those pages do
+    // exist in all three — it is the per-SERMON cluster that has to
+    // narrow.
+    alternates: _alternates((l) => sermonPath(l, s.id),
+        only: sermonLangs.where(s.has).toList()),
     jsonLd: article,
   ));
 
@@ -600,6 +638,11 @@ String renderSermon(
     ..writeln('<ul class="chips">');
   for (final l in sermonLangs) {
     if (l.seg == lang.seg) continue;
+    // Same rule as the hreflang cluster, and this one is worse to get
+    // wrong: that is metadata a crawler reads, this is a link a READER
+    // clicks. A Chinese-only merged message listing "English" here would
+    // hand its reader a 404 by hand.
+    if (!s.has(l)) continue;
     buf.writeln('<li><a href="${sermonPath(l, s.id)}" hreflang="${l.tag}" '
         'lang="${l.tag}">${esc(s.titleFor(l))}</a></li>');
   }
@@ -810,6 +853,9 @@ List<SermonMeta> loadIndex(File f) {
       passage: (row['passage'] as String?) ?? '',
       fallbackTitle: (row['title'] as String?) ?? '',
       titles: titles,
+      hasEn: row['hasEn'] as bool? ?? false,
+      hasZhCn: row['hasZhCn'] as bool? ?? false,
+      hasZhTw: row['hasZhTw'] as bool? ?? false,
     ));
   }
   return out;
@@ -912,9 +958,20 @@ void main(List<String> args) {
 
       for (var i = 0; i < list.length; i++) {
         final s = list[i];
+        // A sermon the index says has no body in this language gets no
+        // page in it — that is the 125 Chinese-only merged messages, and
+        // skipping is correct rather than fatal.
+        //
+        // But a body the index CLAIMS and the disk lacks is still fatal,
+        // and that distinction is the whole point: the old check could
+        // not tell "this sermon is Chinese-only" from "this transcript
+        // went missing", so it treated the first as the second and
+        // aborted the entire static build on the first merged sermon.
+        if (!s.has(lang)) continue;
         final bodyFile = File('$assetsDir/sermons/${lang.dir}/${s.id}.txt');
         if (!bodyFile.existsSync()) {
-          stderr.writeln('FATAL: missing transcript ${bodyFile.path}');
+          stderr.writeln('FATAL: index says ${s.id} has a ${lang.dir} body '
+              'and ${bodyFile.path} does not exist');
           exit(1);
         }
         _write(
