@@ -71,6 +71,29 @@ and quoted.**
 > on their own phone sat behind it. `~/Library/Application Support/
 > yswords-loop/prompt.md` carries the same order; keep them in step.
 
+- [x] **2026-09-06 FIXED — Flutter CI went red on `main` twice in a row
+      right after the sermon-library merge's own 9 unpushed commits
+      finally reached `origin/main`.** Not a defect in the merge itself:
+      `assets/sermon_library/` was deliberately untracked in `d9e43b64`
+      (a redistribution question, not confidentiality — the fetcher and
+      its 130 Python tests stayed, only the fetched content left), and
+      that commit added a matching skip to `test_sermon_library.py`'s
+      `TestSnapshot` — but the three Dart suites reading the same real
+      corpus off disk never got the same treatment, so a fresh checkout
+      (exactly what the CI runner does) threw `PathNotFoundException` on
+      `assets/sermon_library/index.json` instead of skipping. Two
+      pushes failed identically (`ce2dc647`, `7537e4ce`) before the gap
+      was traced to this. Fixed in `12dc2557`: the same
+      hasCorpus/skip pattern, applied at whatever granularity each file
+      needed (whole `group()`s in the two files whose `setUp` installs
+      the disk loader for every test; individual `test()`s in the third,
+      which mixes fixture-backed and disk-backed cases). Verified both
+      states locally by moving the asset aside and back — 22 run / 35
+      skip without it, 57 pass / 0 skip with it — plus a clean
+      `flutter analyze` and the full 2315-test suite with the asset
+      present. CI confirmed green on `12dc2557` afterwards, not just
+      assumed.
+
 ## BUGS — reported by the user from their own devices
 
 Highest tier since 2026-08-24. Anything the user hit on the phone, the
