@@ -31,7 +31,8 @@ enum OfflinePackCategory {
 
   /// Family tree / timeline / evidence / cross-refs / section
   /// titles / book intros / daily verses / sermon refs / songs /
-  /// reading plans / gospel synopsis / loading + app icon (~11 MB).
+  /// reading plans / gospel synopsis / loading + app icon (~12 MB,
+  /// measured 2026-09-07).
   tools,
 
   /// Strong's lexicon (concordance, Hebrew, Greek, LXX cross-
@@ -43,7 +44,11 @@ enum OfflinePackCategory {
 
   /// 55 Bible-history map images (~29 MB). The maps_index JSON is
   /// in the `tools` category, so without this category the map
-  /// picker shows titles but tap → blank.
+  /// picker shows titles but tap → blank. `maps_index.json` also
+  /// carries 1137 CDN/Wikimedia illustration entries added 2026-09-06
+  /// for the rights work — those stream over the network via
+  /// `BibleMap.imageUrl` and are deliberately NOT enumerated here (see
+  /// `_mapUrls()`); only the 55 `source == 'asset'` entries are.
   maps,
 }
 
@@ -223,6 +228,17 @@ class OfflinePackService extends ChangeNotifier {
 
   // ── URL enumeration per category ─────────────────────────────
 
+  /// Test-only entry point onto the real enumeration logic below, so
+  /// `test/offline_pack_size_test.dart` can check what this service
+  /// actually fetches against the shipped asset tree, rather than
+  /// keeping its own second copy of the same logic that could drift
+  /// from it unnoticed — see that file's `_mapUrls()` case, where a
+  /// reimplemented copy would have stayed green after the real filter
+  /// was reverted.
+  @visibleForTesting
+  Future<List<String>> debugUrlsFor(OfflinePackCategory category) =>
+      _buildUrlList({category});
+
   Future<List<String>> _buildUrlList(
       Set<OfflinePackCategory> categories) async {
     final urls = <String>[];
@@ -338,6 +354,16 @@ class OfflinePackService extends ChangeNotifier {
       final out = <String>[];
       for (final m in list) {
         if (m is! Map) continue;
+        // 2026-09-07: only 'asset' entries are bundled under
+        // assets/maps/ — 'cdn' and 'legacy_url' entries (1137 of the
+        // 1192, the Doré/Tissot/etc. illustrations merged into this
+        // same index on 2026-09-06 for the rights work) stream from
+        // yswords-data/Wikimedia via BibleMap.imageUrl
+        // (lib/widgets/illustration_image.dart) and were never part
+        // of what this category bundles. Enumerating them here was a
+        // silent 404 on every one of them, on every "maps" download,
+        // found by test/offline_pack_size_test.dart.
+        if (m['source'] != 'asset') continue;
         final f = m['file'];
         if (f is String && f.isNotEmpty) {
           out.add('assets/maps/$f');
@@ -388,7 +414,11 @@ class OfflinePackService extends ChangeNotifier {
         // sermons (867 files -> 1147) and was never re-measured.
         return 35;
       case OfflinePackCategory.tools:
-        return 11; // includes songs/reading_plans/synopsis/icons
+        // Measured 2026-09-07 by summing the on-disk bytes of the 15
+        // files _toolsUrls enumerates: 12.34 MB real vs. the previous
+        // 11, a >10% understatement (same "approximate as of 2026-05,
+        // never re-measured" staleness as the sermons figure).
+        return 12;
       case OfflinePackCategory.originals:
         return 31; // 14 MB Strong's + 17 MB per-book interlinear
       case OfflinePackCategory.maps:

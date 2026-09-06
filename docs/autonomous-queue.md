@@ -132,6 +132,62 @@ reported. Work these top-down before P2.
       string to its pre-fix wording locally before committing (per this
       item's own acceptance criteria), then restored the fix.
 
+- [x] **2026-09-07 FIXED — offline-pack size/enumeration test added; found
+      `maps` was silently attempting 1137 dead fetches, `tools` understated
+      by ~11%.** Fallback assignment from the Opus planning pass (every
+      live queue checkbox was blocked on the two publisher letters or the
+      NASB/LEB licensing question — see "The one question for the user"
+      below). New `test/offline_pack_size_test.dart` derives each
+      category's real file list — from `offline_pack_service.dart`'s own
+      source text for the three static-list categories (`bibles`,
+      `tools`, `originals`), and via a new `@visibleForTesting
+      debugUrlsFor()` accessor onto the real `_buildUrlList()` for the two
+      JSON-driven ones (`maps`, `sermons`) — and asserts every enumerated
+      path exists on disk plus `approximateMbFor()` is within 10%
+      understate / 25% overstate of the measured bytes.
+      **`maps` bug, not just a stale number:** `_mapUrls()` enumerated all
+      1192 `assets/maps_index.json` entries as `assets/maps/<file>`, but
+      only 55 (`source == 'asset'`) are actually bundled — the other 1137
+      (`cdn`/`legacy_url`, the Doré/Tissot/etc. illustrations merged into
+      the same index file 2026-09-06 for the rights work) stream from
+      `yswords-data`/Wikimedia via `BibleMap.imageUrl`
+      (`illustration_image.dart`) and were never meant to be fetched as
+      local assets. Every "maps" offline-pack download was silently
+      attempting 1137 dead fetches — found because the test initially
+      reimplemented the `source == 'asset'` filter independently rather
+      than calling the real method, and stayed green after a deliberate
+      local revert of the real filter; rewritten to call
+      `debugUrlsFor()` so it tests the actual code path, which then
+      correctly went red. Fixed by adding the filter back with a comment
+      recording why. The MB figure itself (29) was already correct — real
+      bytes of the 55 asset files match; only the enumeration was wrong.
+      **`tools` MB correction:** re-measured 12.34 MB (15 files, summed
+      on-disk bytes) vs. the stated 11 — a ~10.9% understatement, just
+      over this test's 10% tolerance. Corrected to 12; doc comment
+      updated. `bibles` (39.90 vs 40) and `originals` (30.40 vs 31) were
+      both already within tolerance, no change. Verified the test fails
+      before each fix (reverted the map filter and the tools literal
+      locally, confirmed red, restored) per this task's own acceptance
+      criteria. `flutter analyze` clean; full `flutter test` green.
+      **Two cheap yes/no questions surfaced by an earlier pass, not this
+      iteration's to answer:** (1) delete the five unreachable 福音电台
+      sermon-library files (see "The 福音电台 sermon library UI is dead
+      code, still bundled" under P2 below)? (2) start the browser-Forward
+      `GetMaterialApp` → `.router` migration branch, or close it
+      won't-fix (see the browser Forward item under P2 below)? Neither
+      ticked here — not this iteration's work, per the brief.
+      **Amendment (07:39 iteration):** this whole item was finished by
+      the 06:19 execution stage but never committed — it ended the turn
+      waiting on a background test-suite monitor instead of committing
+      first, so the fix sat in the working tree, unpushed, for a full
+      hour of loop time. The 07:35 planning pass caught it and handed it
+      back as this iteration's assignment rather than letting a fresh
+      plan strand it a second time. Landed here with no code changes
+      from what was already in the tree — re-verified independently
+      (1192/55/1136/1 maps_index split, 12.34 MB tools bytes, the
+      `download()` call path has no downstream filter) before staging.
+      Lesson for future iterations: commit before waiting on anything.
+
 - [x] **2026-09-07 FIXED — second sweep of the 289→414→429 corpus-count
       drift, including one user-facing understatement.** Follow-up to
       the entry immediately above; two consecutive iterations had each
