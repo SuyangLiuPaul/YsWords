@@ -589,6 +589,75 @@ established — nobody has looked. It is recorded here because it was
 observed rather than reasoned about, and because the sibling's fix is a
 strong first place to look rather than a conclusion.
 
+### Password recovery may not reach mainland readers — test before building `[2026-09-06]`
+
+Email/password sign-in shipped today, and the half of it that matters
+most to the readers it was added for is the half nobody has verified.
+**Test first; three of the four possible outcomes need no work at all.**
+
+**What is already done.** Email/Password is enabled in the `ysword`
+project. Four missing authorised domains were added and verified in the
+console's own table — `yahwehword.com`, `yswords-cn.netlify.app`,
+`yswords-cn-dev.netlify.app`, `yswords-cn-qat.netlify.app` — leaving ten.
+"Link accounts that use the same email" is selected, which is the
+one-account-per-email setting the design depends on.
+
+**What FAILED.** Setting the password-reset **action URL** to
+`https://yahwehword.com/__/auth/action` was attempted and Firebase
+answered `An error occurred when updating action URL`. The field reverted
+to its default; nothing was left half-changed, and the template is
+intact. So the reset link still points at
+`https://ysword.firebaseapp.com/__/auth/action` — a Google-owned host a
+mainland reader may not reach.
+
+The mechanism was sound and is worth retrying: `netlify.toml:50-54`
+proxies `/__/auth/*` server-side with `status = 200`, so the browser
+would only ever touch `yahwehword.com` while Netlify fetches from
+Firebase from outside the GFW. **Hypothesis, untested: Firebase may
+accept only a domain it hosts, or the authorised-domain addition had not
+propagated — the change was attempted within a minute of adding it.**
+
+**THE TEST, and it decides everything below.** Once the build is on a
+site he can reach, register from a **QQ** address and a **163** address
+and use "forgot password" on each:
+
+| outcome | what to do |
+|---|---|
+| mail arrives, link opens | **nothing** |
+| mail arrives, link does not open | fix the action URL only |
+| mail does not arrive | a sending provider — and the link fix will not help |
+
+**If the action URL still refuses**, the documented route is a *custom
+email action handler*: point it at a page of our own — say
+`https://yahwehword.com/reset` — that reads `mode` and `oobCode` from the
+query string and calls `confirmPasswordReset()`. A small static page, no
+proxy, no SMTP, and it never touches a Google host.
+
+**If the mail does not arrive**, that is a different problem and the link
+fix does not touch it. The sender is `noreply@ysword.firebaseapp.com`,
+which QQ and 163 are the likeliest to drop.
+
+- **Cloudflare cannot send it.** The domain's MX is
+  `route1/2/3.mx.cloudflare.net` — Cloudflare Email Routing, which is
+  **inbound only**. There is no outbound SMTP and no transactional email
+  product; Email Workers' `send_email` binding reaches only verified
+  fixed addresses. So `noreply@yahwehword.com` can RECEIVE today and
+  cannot SEND.
+- DNS is on Cloudflare (`gigi`/`lamar.ns.cloudflare.com`), so adding SPF
+  and DKIM for any provider is quick. Firebase takes the credentials at
+  **Authentication → Templates → SMTP settings**.
+
+**Unrelated to sign-in and worth doing anyway: there is no DMARC record.**
+`_dmarc.yahwehword.com` is empty. That weakens deliverability for every
+mail this domain sends, and it means nothing stops someone forging
+`@yahwehword.com`.
+
+Not touched, deliberately: the DNS. A wrong SPF record affects every mail
+this domain sends, and that is the owner's call rather than a drive-by.
+
+**Also open:** the template language is English only, by the owner's
+choice — Firebase allows one, and the readers are zh-Hans / zh-Hant / en.
+
 ## Build and toolchain
 
 ### Four test files fail to compile inside a third-party package `[carried forward, with the versions verified 2026-09-05]`
