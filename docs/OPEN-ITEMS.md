@@ -908,3 +908,65 @@ Recorded so the next pass does not spend the time again.
   mDNS pair-suffix comment, two are `tools/loop/` describing its own
   queue file. There are no `UnimplementedError`s in `lib/`.
   `[verified 2026-09-05]`
+
+### The transcribed sermons still hold ~30 readings a machine cannot settle `[2026-09-06]`
+
+Pass 2 of the proofreading read all sixteen machine transcripts end to end
+— about 118 000 characters — and made **687 corrections in 16 files**,
+which now live in `scripts/proofread_transcripts.py` rather than only in
+the gitignored bodies. What follows is what was deliberately NOT changed,
+because changing it would have been guessing.
+
+**Three classes, and the reason each is left alone.**
+
+**1. Phrases that are certainly wrong but not uniquely resolvable.** The
+intended word is not fixed by the surrounding sentence, and a proofreader
+who guesses at these introduces errors instead of removing them.
+
+| file | reads | probably |
+|---|---|---|
+| 4258 | 救恩的功臣也就完成了 | 工程 / 工作 / 功效 |
+| 4258 | 才會受永生的果子 | 收 |
+| 4258 | 成了贖罪的 | 贖罪祭 / 贖罪的羔羊 |
+| 4258 | 所以我們就不用談死 | 等死 / 去死 |
+| 4263 | 你看其當時就會有不同的理解 | 看聖經時 |
+| 4263 | 所以詩人十四到二十五節 | 所以說 |
+| 4267 | 去守這些律法建立 | 誡命 / 規條 |
+| 4270 | 抵掉約翰和他的觀點 | 詆毀 |
+| 4274 | 以掃的被捕 | 被棄 / 被惡 |
+| 4274 | 因認識神比較晚 所以生老二 | 是老二 |
+| 4275 | 保羅為什麼突然用了呼造這個詞 | 「造」 / 創造 |
+| 4275 | 我們還發現一個課點 | 要點 / 特點 |
+| 4278 | 由於保羅的話 | 由此可見 |
+| 4279 | 所以逆此摔跤 | 與神摔跤 |
+| 4279 | 簡直說我們所傳的有誰信呢 | 主啊 |
+| 2728 | 他們是主持宏大 / 並且致命是熱衷的 | — |
+| 2728 | 還自以為誤盡情理 | 悟盡 / 摸清 |
+| 2728 | 35個人因此和信了耶穌 | 決信 / 歸信 |
+| 6015 | 四義祝福滿滿的造物主 | — |
+| 6015 | 師父，他們也是有一些弱點 | 事實上 |
+| 6015 | 雙方打到臉黑口魚 | 臉青口腫 |
+| 6012 | 從嚴謹的詩經來看 | 釋經 / 聖經 |
+
+**2. Chapter and verse numbers that are plausible and wrong.** 4271 calls
+Romans 9:6 「九節」 three times while quoting it; 4274 calls 9:8
+「九章十三節」. 六 and 九 are not homophones, so the likeliest explanation
+is that the preacher misspoke — and correcting that is rewriting him, not
+transcribing him. **Someone with the audio should settle these.**
+
+**3. Romans 9-11 run together as one numeral.** He says
+「羅馬書九、十、十一章」 — he treats those three chapters as a single unit
+through the whole series — and the decoder dropped the separators, so
+three sites read 九十十一(三)章 (fy-rms09-01, fy-rms09-03, fy-rms10-01, in
+both scripts). `parseReference` refuses them, so nothing resolves to
+Romans 90 and nothing is underlined that would do nothing when tapped;
+they are named in `zh_chapter_mark_ref_test.dart`. Inserting the 、 would
+be punctuating the preacher, which the corpus rule forbids.
+
+**Also noticed, and pre-existing rather than introduced here: 62 locative
+里 that should be 裏.** `assets/sermons/zh-TW` writes 裏 13 243 times, but
+carries 教會里 ×~120, 神里面 ×29 and the like, where `opencc -c s2t` read
+「會里」 as a unit and left it. The 15 new sermons added ONE to that class
+(fy-ws04's 「有些卡里面夾著金錢」). The genuine 里 — 公里, 英里, 克里特,
+糊里糊塗 — must survive any repair, so this needs the same
+reading-then-sweeping the other glyph classes got, not a blanket rule.
