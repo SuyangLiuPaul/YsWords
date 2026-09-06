@@ -11094,6 +11094,50 @@ has never seen this repo.
       verified green yet, and `yswords` CI will still show red at the
       very next iteration — expected, not a new failure.
 
+      **Update 2026-09-06 — the 2026-09-05 run failed on a SECOND, later
+      guard; that guard's own fix has not run yet either. Checked, not
+      pre-fixed.** `yswords-data` → `Refresh songs` run `33987959174`
+      (2026-09-05T19:43Z, `headSha a3d80f7ce`) got past the hymn abort
+      only to fail a different guard: `a source lost a tenth of its AUDIO
+      while keeping its songs … cdc: 298 → 262 with audio`. That guard
+      was already loosened in `1bcb54a2e` ("songs: the CDC fetch has a
+      request budget…") — a thinned source now carries forward + is
+      marked degraded (exit 2) instead of blocking the write (exit 1) —
+      but `1bcb54a2e` is on `origin/main` and is **not an ancestor of
+      `a3d80f7ce`** (`git merge-base --is-ancestor`, verified), so no run
+      has exercised it yet. Live published `songs.json` is unchanged at
+      `generatedAt 2026-08-30T11:03:57Z`, 621 rows, four sources
+      (`cahaya:47 cdc:298 cgdc:63 fydt:213`), `sourceHealth: null`.
+      `pull_songs_snapshot.py --dry-run` (read-only) reproduces exactly
+      the two bullets above, unchanged. Re-ran `check_regression` against
+      the bundled `assets/songs.json` (628 rows, all six sources —
+      recounted, not copied from a prior pass) and the live 621: the
+      **only** findings are these same 7 upstream-missing rows, no
+      audio-ratio regression. So the pull should succeed with no further
+      `yswords` change once upstream republishes six sources — provided
+      `cdc` comes back at ≥289 with audio (298 × 0.97 tolerance); at 262
+      it refuses again on the ratio.
+      **While auditing this, found the `1bcb54a2e` guard itself was
+      unfalsifiable** — all 19 `yswords-data` tests stayed green with its
+      `if args.no_carry_forward:` line deleted, because the overlapping
+      per-row `lost_media`/`dropped` guard covers almost every real case
+      (its `has_media()` counts video/score too, not just audio). The gap:
+      a source that loses ALL its audio while every row keeps a video
+      link looks like zero regression to that per-row guard. Added
+      `test_audio_only_thinning_is_caught_even_when_media_survives` to
+      `yswords-data` (`a2b5bcc2d`), confirmed both ways (fails with the
+      guard deleted, passes with it intact) before committing.
+      **Next checkpoints:** upstream `Refresh songs` cron
+      `0 18 * * *` → 2026-09-06 18:00 UTC (today is Sunday UTC, so this
+      run takes the `--verify` branch per
+      `.github/workflows/refresh-songs.yml:115` — confirmed by reading
+      the file and `date -u +%u` = 7, not assumed — and HEAD-checks
+      ~1400 media URLs; do not `workflow_dispatch` it, that only doubles
+      load for no new information). If it publishes six sources, this
+      repo's `Sync songs` cron `0 2 * * *` → 2026-09-07 02:00 UTC pulls
+      and should go green with no further change here. Still not ticked:
+      the live file has not actually changed yet.
+
 - [x] **DONE 2026-09-02 — the references are on screen and tappable.**
       Data landed `3ff907a7`; the UI half landed today. `VideoRef` +
       `VideoEpisode.refs` (the model did not parse the key at all, which
