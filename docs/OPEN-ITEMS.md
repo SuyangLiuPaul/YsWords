@@ -38,10 +38,45 @@ saying plainly that it was not re-derived.
 
 ## Data and pipeline
 
-### The songs pipeline has written nothing since 2026-08-30 `[verified 2026-09-05]`
+### The songs pipeline has published nothing since 2026-08-30 `[re-diagnosed 2026-09-07 — the cause below is FIXED, a different one replaced it]`
 
-The publisher runs, fetches, and then refuses to write, so the live
-catalogue is frozen while the bundled one has moved on.
+**The CDC hymn pages are no longer the problem, and this entry's
+original diagnosis should not be acted on.** Checked 2026-09-07 by
+fetching them directly rather than by running the pipeline, which is what
+`yswords-data/AGENTS.md` asks for:
+
+- `/content/h01`, `h02` and `h03` all answer HTTP 200 at ~23 KB and
+  carry the mp3 in all three forms the page prints it — absolute,
+  JSON-escaped and root-relative. `CDC_HYMN_MP3_RE` matches all three.
+- The script's own `YsWordsSongsSyncBot/2.0` User-Agent is served the
+  same page as a browser one. The site is not stripping by UA.
+- Production agrees. The 2026-09-06 run logged `cdc hymns: 15 fresh + 0
+  carried-forward = 15 classic piano hymns` and `cdc: 282/283 have
+  audio`. The `CDC_MIN_INTERVAL` pacing gate added 2026-09-05 fixed the
+  stripped-page failure this entry was opened for.
+
+**What blocks publication now is downstream of a healthy fetch.** That
+run BUILT the catalogue — 628 songs, 846,534 bytes written — and then
+threw it away. `verify_links` counted 60 rate-limit answers from
+fuyindiantai.org as dead links and returned non-zero, and
+`refresh-songs.yml` commits and deploys only on `rc == 0 || rc == 2`, so
+a good catalogue never left the runner. Live and repo are both still
+2026-08-30 at 621 songs, against the 628 that run assembled.
+
+`yswords-data@6ef7b1e6b` (2026-09-07) stops a 429 being counted as a
+dead link, so the next scheduled run should publish. **Not confirmed
+yet:** only 40 of those 60 URLs were printed and all 40 were 429; the
+other 20 were elided by the 40-row cap, so if one of them is a real 404
+the run stays blocked. Read the next run before believing this closed.
+
+**A decision this exposes, for the owner.** One dead media link
+currently blocks the whole catalogue. Eight days of staleness is
+arguably worse for a reader than one dead play button, and `rc == 2`
+(degraded — publish anyway, still go red) already exists for exactly
+this shape. Nobody has decided which it should be.
+
+The original 2026-09-05 diagnosis follows, kept because the guard it
+describes is still correct and must not be weakened:
 
 `~/Documents/CodingProject/yswords-data/.github/refresh-songs-state.json`:
 
