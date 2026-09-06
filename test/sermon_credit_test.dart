@@ -9,8 +9,8 @@ import 'package:yswords/constants/ui_strings.dart';
 /// Guards the two facts the sermon module states about itself.
 ///
 /// Both were wrong before this: the app claimed **587 sermons** when
-/// there are 289 (587 was the sum of every sermon's parts, relabelled),
-/// and the preacher's name appeared in three different spellings, none
+/// there were far fewer (587 was the sum of every sermon's parts,
+/// relabelled), and the preacher's name appeared in three different spellings, none
 /// of them on a screen a reader ever sees.
 ///
 /// The name is the kind of detail that drifts back the moment someone
@@ -37,6 +37,68 @@ void main() {
     expect(offenders, isEmpty,
         reason: '587 was the sum of sermon PARTS presented as a number '
             'of sermons. The count is $sermonCount: ${offenders.join(", ")}');
+  });
+
+  // 587 was one dead number; the guard above only ever banned that one
+  // literal, so when the corpus grew 289 -> 429 (the 福音電台 merge, see
+  // sermon_credit.dart) two uiStrings entries kept saying "289" and the
+  // test above stayed green. This checks every 2+ digit number in any
+  // string that mentions sermons at all against the counts the corpus
+  // can actually justify -- the whole library, the multilingual subset,
+  // and the Chinese-only subset -- so a future corpus change is caught
+  // even though the specific number that will be wrong isn't known yet.
+  //
+  // Checking membership in that set is not enough by itself: 289 and
+  // 140 are both real subset counts, so "sermons (289 x 3 langs)" with
+  // no 429 anywhere passes a membership check while still asserting a
+  // false total (there confirmed by reverting one fixed string back to
+  // its pre-fix wording and watching a membership-only version of this
+  // test stay green). So a lone subset count -- 289 or 140 without 429
+  // alongside it -- is flagged too: nothing in this corpus states one
+  // of the sermon splits without also stating the whole it splits.
+  test('no uiStrings entry states a sermon count the corpus cannot justify',
+      () {
+    final decoded =
+        json.decode(File('assets/sermons/index.json').readAsStringSync());
+    final items = decoded is List
+        ? decoded
+        : (decoded['sermons'] ?? decoded['items']) as List;
+    final hasEnCount = items.where((s) => s['hasEn'] == true).length;
+    final validCounts = <int>{
+      sermonCount,
+      hasEnCount,
+      sermonCount - hasEnCount,
+    };
+
+    final sermonMention = RegExp(r'sermon|讲道|講道', caseSensitive: false);
+    final twoPlusDigits = RegExp(r'\d{2,}');
+    final offenders = <String>[];
+    uiStrings.forEach((key, byLocale) {
+      byLocale.forEach((locale, value) {
+        if (!sermonMention.hasMatch(value)) return;
+        final nums = twoPlusDigits
+            .allMatches(value)
+            .map((m) => int.parse(m.group(0)!))
+            .toSet();
+        if (nums.isEmpty) return;
+        for (final n in nums) {
+          if (!validCounts.contains(n)) {
+            offenders.add('$key/$locale: $n is not a real corpus count '
+                '(in "$value")');
+          }
+        }
+        final subCounts = nums.intersection(validCounts)
+          ..remove(sermonCount);
+        if (subCounts.isNotEmpty && !nums.contains(sermonCount)) {
+          offenders.add('$key/$locale: states $subCounts without the '
+              'total $sermonCount (in "$value")');
+        }
+      });
+    });
+    expect(offenders, isEmpty,
+        reason: 'a sermon count must be one of the real corpus splits '
+            '($validCounts), and a subset count must not stand alone: '
+            '${offenders.join(", ")}');
   });
 
   test('the preacher is spelled one way per language', () {

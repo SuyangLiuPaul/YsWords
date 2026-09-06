@@ -1806,10 +1806,10 @@ const uiStrings = {
     'en': 'Sermons',
   },
   'onboardSermonsBody': {
-    'zh-Hans': '289 篇解经讲道（英／简／繁）。讲道中的经文引用可弹出小窗预览，无需离开。主页有「继续讲道」卡片显示上次进度。',
-    'zh-Hant': '289 篇解經講道（英／簡／繁）。講道中的經文引用可彈出小窗預覽，無需離開。主頁有「繼續講道」卡片顯示上次進度。',
+    'zh-Hans': '429 篇解经讲道，其中 289 篇有英／简／繁三语，另 140 篇为简／繁双语。讲道中的经文引用可弹出小窗预览，无需离开。主页有「继续讲道」卡片显示上次进度。',
+    'zh-Hant': '429 篇解經講道，其中 289 篇有英／簡／繁三語，另 140 篇為簡／繁雙語。講道中的經文引用可彈出小窗預覽，無需離開。主頁有「繼續講道」卡片顯示上次進度。',
     'en':
-        '289 expository sermons in EN / 简 / 繁. Verse refs in the body open a popup so you can peek at scripture without leaving. Home shows a "Resume sermon" card with your progress.',
+        '429 expository sermons — 289 in EN / 简 / 繁, plus 140 more in 简 / 繁 only. Verse refs in the body open a popup so you can peek at scripture without leaving. Home shows a "Resume sermon" card with your progress.',
   },
   'onboardDiscoverTitle': {
     'zh-Hans': '探索工具',
@@ -2001,11 +2001,13 @@ const uiStrings = {
   },
   // {name} is filled from sermon_credit.dart — the single source for
   // the preacher's name. The count was 587, which was the sum of every
-  // sermon's parts mislabelled as a number of sermons; it is 289.
+  // sermon's parts mislabelled as a number of sermons; it is 429, of
+  // which only 289 have all three languages (the other 140, merged in
+  // from 福音電台, are Chinese-only).
   'offlinePackSermons': {
-    'zh-Hans': '{name}讲道（289 篇 ×3 语）',
-    'zh-Hant': '{name}講道（289 篇 ×3 語）',
-    'en': "{name}'s sermons (289 × 3 langs)",
+    'zh-Hans': '{name}讲道（429 篇，289 篇 ×3 语）',
+    'zh-Hant': '{name}講道（429 篇，289 篇 ×3 語）',
+    'en': "{name}'s sermons (429, 289 × 3 langs)",
   },
   'offlinePackTools': {
     'zh-Hans': '研经工具（家谱 / 时间轴 / 证据 / 互参 / 读经计划等）',

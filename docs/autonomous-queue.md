@@ -100,6 +100,38 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [x] **2026-09-07 FIXED — two `uiStrings` entries still told readers the
+      sermon library was 289, and both are live surfaces (onboarding's
+      first-run screen and the offline-pack label).** 1.5.2 shipped the
+      福音電台 merge that bumped the corpus to 429 (140 more, Chinese-only)
+      and `sermon_credit.dart`'s `sermonCount` was correctly bumped, but
+      `onboardSermonsBody` (`ui_strings.dart:1809`) and
+      `offlinePackSermons` (`ui_strings.dart:2006`) were missed. Measured
+      (refuter-confirmed): `index.json` has 429 records, 289 with
+      `hasEn: true` (all 429 have `hasZhCn`/`hasZhTw`), and
+      `audio_index.json`'s 289 keys are exactly the `hasEn` set — the 140
+      Chinese-only sermons have no audio either. Reworded both strings,
+      in all three locales, to state 429 total with the 289×3-language /
+      140-Chinese-only split, rather than swapping in a bare 429 that
+      would have replaced one falsehood ("289 sermons") with another
+      ("429, all ×3 langs" — false for the 140). Also fixed two stale
+      doc comments that still said "289" (`sermon_credit.dart:3`,
+      `test/sermon_credit_test.dart:12`). `sermonAudioClause` in
+      `sermons_page.dart` was checked and already branches correctly on
+      `playable < total`; no change needed there.
+      **`test/sermon_credit_test.dart` widened**: the old guard only
+      banned the literal string `587` (the original defect), so it
+      stayed green straight through the 289→429 drift. New test checks
+      every 2+ digit number in any `uiStrings` value that mentions
+      sermons at all against the corpus's real splits (429/289/140), and
+      additionally flags a lone subset count (289 or 140) appearing
+      without the total 429 alongside it — needed because a
+      membership-only check would have missed the actual bug: "sermons
+      (289 × 3 langs)" uses only valid numbers, so pure membership
+      passes it. Confirmed the widened test fails by reverting one
+      string to its pre-fix wording locally before committing (per this
+      item's own acceptance criteria), then restored the fix.
+
 - [x] **2026-09-06 FIXED — onegod/01's English track was made private on
       YouTube; the app auto-selected an English-locale reader straight
       into it.** Register-only until now — `docs/OPEN-ITEMS.md:448`.

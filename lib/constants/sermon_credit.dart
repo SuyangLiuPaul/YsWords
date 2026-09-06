@@ -1,6 +1,6 @@
 /// Who preached the sermons.
 ///
-/// The library is 289 expository sermons by one man, and until now a
+/// The library is 429 expository sermons by one man, and until now a
 /// reader could open any of them and not find out whose they were: the
 /// name appeared in exactly three `uiStrings` entries, in three
 /// different spellings, none of them on a screen anyone reads.
@@ -27,7 +27,7 @@ String sermonPreacher(String locale) =>
 
 /// How many sermons there are.
 ///
-/// 289, counted from `assets/sermons/index.json`. The app used to claim
+/// Counted from `assets/sermons/index.json`. The app used to claim
 /// **587**, which came from summing each sermon's `parts` and then
 /// calling the total a number of sermons — it is not even the right sum
 /// (that is 889). A number a reader cannot check is exactly the kind of
