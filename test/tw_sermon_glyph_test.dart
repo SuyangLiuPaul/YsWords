@@ -8,8 +8,10 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// **This corpus does NOT have the CUV converter hole** and the tests below are
 /// written so that nobody can conclude otherwise from them. `assets/sermons/
-/// zh-TW/` was produced by a phrase-aware converter: it holds 淨 358, 牆 257,
-/// 餘 190, 髮 121, 鬆 133 and zero 凈 / 墻 / 余. None of the
+/// zh-TW/` was produced by a phrase-aware converter: it holds 淨 526, 牆 384,
+/// 餘 323, 髮 191, 鬆 178 (re-measured 2026-09-07 against the 429-file
+/// corpus; these five are illustrative and not pinned by an `expect` below)
+/// and zero 凈 / 墻 / 余. None of the
 /// `tools/repair_tr_*.py` scripts applies here. What it had was spot errors in
 /// four classes, and the counts on both sides are pinned so that a re-import
 /// cannot silently undo them and a later sweep cannot silently widen them.
@@ -25,11 +27,13 @@ import 'package:flutter_test/flutter_test.dart';
 /// positions and is NOT done here; it is named so that the next reader finds
 /// it instead of finding a sentence saying it is fine.
 ///
-/// **2026-09-06 — the corpus is 414 sermons, not 289.** 125 of Pastor Eric's
+/// **2026-09-06 — the corpus is 429 sermons, not 289.** 125 of Pastor Eric's
 /// messages were merged in from the fuyindiantai staging library and 51
 /// machine-translated Chinese bodies were replaced by that library's human
 /// text, both converted by the same `opencc -c s2t`
-/// (`scripts/merge_sermon_library.py`). Every count below moved, and every
+/// (`scripts/merge_sermon_library.py`), taking the corpus to 414 that day;
+/// 15 more, transcribed from audio-only sermons later the same day, took it
+/// to 429. Every count below moved, and every
 /// one was decomposed into new-file / lost-with-the-replaced /
 /// gained-with-the-replacement before it was rewritten. The repairs the
 /// merge needed are in `tools/repair_tw_sermon_merged_glyphs.py`, 87
@@ -181,7 +185,7 @@ void main() {
     test('the house form is 麪 and there is no 麵 anywhere', () {
       // Both are standard Traditional and this repo uses BOTH — cuvs-yhwh-tr
       // and biblexg-v2-tr set 麵, this corpus and assets/strongs set 麪. An
-      // audit that counts only 麵 calls all 289 files a flour hole.
+      // audit that counts only 麵 calls all 429 files a flour hole.
       // 158, not 164. The refuter pass of 2026-09-05 found this number was
       // pinning SIX WRONG CHARACTERS in place: 093 「物質層麪包裹」 (an
       // aspect that WRAPS — created here, by a 面包 rule whose lookbehind

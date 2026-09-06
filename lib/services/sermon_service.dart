@@ -82,8 +82,11 @@ class MatthewMessage {
 
 /// Loads and caches the Pastor Eric sermon corpus.
 ///
-/// The full corpus is 289 sermons × 3 languages = 867 body files
-/// (~27 MB). Bundling that as a single JSON would balloon the index
+/// The full corpus is `sermonCount` (`lib/constants/sermon_credit.dart`)
+/// sermons across up to 3 languages each = 1147 body files (~35 MB,
+/// measured 2026-09-07; not all sermons have an English body — see
+/// `sermon_credit.dart`'s own commentary). Bundling that as a single
+/// JSON would balloon the index
 /// load. Instead:
 ///   - `assets/sermons/index.json` — small (~200 KB) array of metadata
 ///   - `assets/sermons/<lang>/<id>.txt` — one body file per sermon,

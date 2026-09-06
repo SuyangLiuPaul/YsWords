@@ -9,7 +9,7 @@
 //
 // UPSIDE: this is the unique half. A KJV chapter sits on a thousand
 // other sites and a new domain is the last copy anyone has a reason to
-// rank; these 289 transcripts are published nowhere else in this form.
+// rank; these 429 transcripts are published nowhere else in this form.
 //
 // DOWNSIDE: they are one man's words. 张熙和牧师 preached them, the
 // project publishes them with permission, and everything that could go
@@ -361,7 +361,7 @@ void main() {
       final main = File('lib/main.dart').readAsStringSync();
       expect(main, contains("params['sermon']"),
           reason: 'main.dart no longer reads ?sermon= — the deep links on '
-              '867 pages just became dead');
+              '1147 pages just became dead');
       expect(appLink('004'), isNot(contains('#')));
     });
 
@@ -656,7 +656,8 @@ void main() {
       // of the two screens is lying.
       //
       // 289 → 414 on 2026-09-06 (125 sermons merged in from the
-      // fuyindiantai staging library). `sermonCount` in
+      // fuyindiantai staging library), then 414 → 429 later the same day
+      // (15 more transcribed from audio-only sermons). `sermonCount` in
       // `lib/constants/sermon_credit.dart` is the other half of this pair
       // and has to move with it; `test/sermon_credit_test.dart` is the
       // assertion that holds them together.

@@ -27,9 +27,11 @@ import 'package:yswords/services/sermon_service.dart';
 /// **That stopped being true on 2026-09-06 and the clause changed by
 /// itself, which is what it was built to do.** 125 of Pastor Eric's
 /// messages were merged in from the fuyindiantai staging library
-/// (`scripts/merge_sermon_library.py`), so the corpus is 414 sermons of
-/// which 289 have a recording. `sermonAudioClause` takes the partial
-/// branch and the line now reads 「429 篇讲道,共 21 个主题 · 289 篇有录音」.
+/// (`scripts/merge_sermon_library.py`), taking the corpus to 414 that
+/// day, then to 429 later the same day when 15 audio-only sermons were
+/// transcribed — of the 429, 289 have a recording. `sermonAudioClause`
+/// takes the partial branch and the line now reads 「429 篇讲道,共 21 个主题
+/// · 289 篇有录音」.
 /// Nothing in the feature was edited to make that happen — the clause is
 /// derived from two counted numbers and consults no constant, which is
 /// precisely the property tested below, and this is the day it paid.
@@ -46,7 +48,7 @@ import 'package:yswords/services/sermon_service.dart';
 /// the honest sentence is the partial one.
 ///
 /// The badge ruling is unchanged and now has a second reason behind it: a
-/// play glyph on 289 of 414 rows would be a real distinction, but the
+/// play glyph on 289 of 429 rows would be a real distinction, but the
 /// distinction it draws is between two source archives rather than between
 /// two kinds of sermon, and the header already says both numbers.
 ///
@@ -232,8 +234,8 @@ void main() {
 
     expect(sermons.length, 429);
     expect(playable, 289,
-        reason: 'the corpus grew to 414 on 2026-09-06 and the audio index '
-            'did not; if either moves, read why before editing this');
+        reason: 'the corpus grew to 414 then 429 on 2026-09-06 and the audio '
+            'index did not; if either moves, read why before editing this');
     // Both sides pinned, so this cannot pass on an empty corpus and cannot
     // pass on an audio index that grew without anyone noticing.
     expect(playable, lessThan(sermons.length),
@@ -313,7 +315,7 @@ void main() {
     expect(text.indexOf('篇讲道'), lessThan(text.indexOf(clause)),
         reason: 'the audio clause must follow the count, not lead it');
     // And it is the whole sentence, derived end to end from the assets:
-    // 414 sermons, 21 topics, 289 of them playable. Every one of those
+    // 429 sermons, 21 topics, 289 of them playable. Every one of those
     // three numbers is counted from `assets/sermons/`; none is written
     // down anywhere in the feature.
     expect(text, '429 篇讲道,共 21 个主题 · 289 篇有录音');
@@ -321,10 +323,11 @@ void main() {
 
   testWidgets('the page still shows no per-row audio badge', (tester) async {
     // The other half of the ruling, and the half a later
-    // "improvement" is most likely to undo. Every sermon has audio, so
-    // a play or headphone glyph on each of the 289 rows would
-    // distinguish nothing — it is decoration, and decoration is what
-    // trains a reader to stop reading marks. The header says it once.
+    // "improvement" is most likely to undo. 289 of 429 sermons have
+    // audio, which IS a real distinction since 2026-09-06 — but it is a
+    // distinction between two source archives, not between two kinds of
+    // sermon, so a per-row glyph would teach the wrong lesson. The
+    // header already says both numbers once.
     //
     // **The topic groups have to be EXPANDED first.** The first
     // version of this test did not do that, and survived its own
@@ -363,7 +366,7 @@ void main() {
     ]) {
       expect(find.byIcon(icon), findsNothing,
           reason: 'a playability glyph appeared in the sermon list; the '
-              'claim belongs in the header once, not on 414 rows. See '
+              'claim belongs in the header once, not on 429 rows. See '
               'sermonAudioClause.');
     }
   });

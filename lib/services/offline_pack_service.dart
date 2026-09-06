@@ -25,7 +25,8 @@ enum OfflinePackCategory {
   /// All 7 Bible translations (~40 MB after NIV/CUV/CNV/LJK1 removal).
   bibles,
 
-  /// 587 sermons × up to 3 languages = ~867 files (~26 MB).
+  /// `sermonCount` (`lib/constants/sermon_credit.dart`) sermons × up to
+  /// 3 languages = 1147 files (~35 MB, measured 2026-09-07).
   sermons,
 
   /// Family tree / timeline / evidence / cross-refs / section
@@ -378,7 +379,14 @@ class OfflinePackService extends ChangeNotifier {
       case OfflinePackCategory.bibles:
         return 40; // 7 versions after NIV/CUV/CNV/LJK1 removal
       case OfflinePackCategory.sermons:
-        return 26;
+        // Measured 2026-09-07 by summing the on-disk bytes of every
+        // .txt _sermonUrls() actually enumerates (1147 files: 289 en +
+        // 429 zh-CN + 429 zh-TW) — the same raw-asset-size convention
+        // the other four categories use (e.g. bibles' 40 is ~41.8 MB of
+        // real .json). 34.9 MB rounds to 35; the previous 26 predated
+        // the 2026-09-06 merge that took the corpus from 289 to 429
+        // sermons (867 files -> 1147) and was never re-measured.
+        return 35;
       case OfflinePackCategory.tools:
         return 11; // includes songs/reading_plans/synopsis/icons
       case OfflinePackCategory.originals:

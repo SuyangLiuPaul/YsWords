@@ -22,8 +22,9 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 /// halfway through a talk for no visible reason.
 ///
 /// Renders nothing at all when the sermon has no audio, rather than a
-/// disabled button. Every one of the 289 has audio as of 2026-09-02, but
-/// that is a fact about today's index, not an invariant.
+/// disabled button. 289 of the 429 sermons have audio as of 2026-09-06
+/// (the original corpus; the 140 later merged in from 福音电台 do not),
+/// but that is a fact about today's index, not an invariant.
 class SermonAudioBar extends StatefulWidget {
   const SermonAudioBar({super.key, required this.sermonId});
 

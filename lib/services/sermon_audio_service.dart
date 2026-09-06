@@ -51,8 +51,11 @@ class SermonAudioPart {
 
 /// Playback for Pastor Eric H.H. Chang's recorded sermons.
 ///
-/// Every one of the 289 sermons has audio — 661 files, 5.46 GB, 32 kbps
-/// mono. The inventory lives in `assets/sermons/audio_index.json` and
+/// 289 of the 429 sermons have audio — the original corpus; the 140
+/// later merged in from 福音电台 do not (see `SermonsPage`'s
+/// `sermonAudioClause` for how the UI states this). 589 files, 4.88 GB,
+/// 32 kbps mono. The inventory lives in `assets/sermons/audio_index.json`
+/// and
 /// carries filenames only, because **where the audio is hosted is not
 /// decided yet**. [baseUrl] is the single place that answers it: point
 /// it at a bucket and every sermon resolves.

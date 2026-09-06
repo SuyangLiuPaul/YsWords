@@ -7423,7 +7423,7 @@ const uiStrings = {
   },
 
   // ====== 福音电台 sermon library (browse by speaker) ======
-  // A SECOND sermon corpus, separate from the 289 above: 937 openable
+  // A SECOND sermon corpus, separate from the 429 above: 937 openable
   // records credited to 71 speakers, fetched from fuyindiantai.org.
   // Every body is Simplified Chinese and there is no English or
   // Traditional edition of any of them, which is what

@@ -17,7 +17,7 @@ import 'package:yswords/widgets/sermon_library_chrome.dart';
 
 /// The 福音电台 sermon library, browsable by speaker.
 ///
-/// A SEPARATE corpus from the 289 on `SermonsPage`, and deliberately a
+/// A SEPARATE corpus from the 429 on `SermonsPage`, and deliberately a
 /// separate surface: those are one man's expository series with
 /// preaching dates from 1979–80 and bodies in three languages, these
 /// are 937 radio messages by 71 credited speakers with publication
@@ -39,7 +39,7 @@ import 'package:yswords/widgets/sermon_library_chrome.dart';
 ///
 /// **The name is on the row, and that is doctrine 1, not a breach of
 /// it.** `sermons_page.dart` puts its preacher in the AppBar because
-/// with one preacher the name is constant down 289 rows and a constant
+/// with one preacher the name is constant down 429 rows and a constant
 /// repeated is an advert. Here the name is the varying fact — it is
 /// what the reader is choosing between — so it belongs on the row, and
 /// the byline above is the source that published them all.

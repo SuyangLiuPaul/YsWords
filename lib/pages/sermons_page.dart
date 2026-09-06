@@ -45,11 +45,13 @@ import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
 ///
 /// **It is one clause in the header, not a badge on every row**, and
 /// that is a deliberate reading of the same rule the AppBar byline
-/// above follows. Every sermon has audio — all 289 ids in
-/// `assets/sermons/index.json` have a non-empty entry in
-/// `audio_index.json` — so a per-row mark would distinguish nothing.
-/// A mark that is true of every row is decoration, and decoration is
-/// what teaches a reader to stop seeing marks. What the list owes the
+/// above follows. 289 of the 429 ids in `assets/sermons/index.json`
+/// have a non-empty entry in `audio_index.json` (since the 2026-09-06
+/// merge added 140 sermons from 福音电台 with no audio in this app's
+/// index) — but that split is between two source archives, not between
+/// two kinds of sermon, so a per-row mark would teach the wrong lesson.
+/// A mark like that is decoration, and decoration is what teaches a
+/// reader to stop seeing marks. What the list owes the
 /// reader here is knowledge, and knowledge belongs in the header; the
 /// affordance they act on is the play bar, and it is already on the
 /// page where it can be acted on.

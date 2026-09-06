@@ -1,6 +1,6 @@
 /// One sermon record from `assets/sermon_library/index.json`.
 ///
-/// A SEPARATE corpus from `assets/sermons/` (the 289 expository
+/// A SEPARATE corpus from `assets/sermons/` (the 429 expository
 /// sermons of one preacher that `lib/models/sermon.dart` describes).
 /// This one is 940 records fetched from fuyindiantai.org — 福音电台,
 /// a radio ministry — carrying 71 distinct `author` values. Where the

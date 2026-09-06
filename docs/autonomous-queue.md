@@ -132,6 +132,73 @@ reported. Work these top-down before P2.
       string to its pre-fix wording locally before committing (per this
       item's own acceptance criteria), then restored the fix.
 
+- [x] **2026-09-07 FIXED — second sweep of the 289→414→429 corpus-count
+      drift, including one user-facing understatement.** Follow-up to
+      the entry immediately above; two consecutive iterations had each
+      found a different surface still asserting a pre-merge number by
+      accident, so this pass swept `lib/` and `test/` on purpose.
+      Re-measured ground truth first (all numbers below are counted
+      from the assets, not carried from a prior report):
+      `assets/sermons/index.json` = **429** records; `.txt` files
+      **289 en / 429 zh-CN / 429 zh-TW = 1147**; transcript bytes
+      **34,911,814 ≈ 34.9 MB**; `audio_index.json` = **289 keys, 589
+      parts, 4,882,050,883 bytes ≈ 4.88 GB**.
+      **User-facing fix:** `OfflinePackCategory.sermons`'s
+      `approximateMbFor` (`offline_pack_service.dart`) returned a
+      hardcoded **26**, unchanged since before the merge (867 files),
+      while `_sermonUrls()` today enumerates 1147 files totalling 34.9
+      MB on disk — confirmed this file's convention is raw asset bytes,
+      not gzip, by cross-checking the `bibles` category's stated 40 MB
+      against its 7 files' real 41.8 MB. 26 MB understated the real
+      download by ~34%, on the one screen (Settings → offline pack)
+      where a reader decides whether to pull it over mobile data.
+      Corrected to **35** with the measurement method left in a comment
+      so it doesn't silently rot again; enum doc updated to point at
+      `sermonCount` instead of a fresh literal.
+      **Doc/comment fixes** (present-tense claims about today's corpus,
+      corrected; dated historical narrative — "the corpus went from 289
+      to 414 on 2026-09-06" — left alone as true history per this
+      iteration's brief): `sermon_service.dart` (867 files → 1147, now
+      points at `sermonCount`), `sermon_audio_service.dart` (661 files/
+      5.46 GB → 589 files/4.88 GB — 661 was already known wrong; 5.46 GB
+      was not previously flagged but was equally stale), `sermons_page.
+      dart` and `sermon_audio_bar.dart` ("every sermon has audio" → 289
+      of 429, with the actual current no-per-row-badge reasoning: the
+      split is between two source archives, not two kinds of sermon),
+      `test/sermon_list_audio_signal_test.dart` (six sites, including
+      one comment that self-contradicted its own file — narrated the
+      corpus as "414" one line before quoting the UI string as "429
+      篇讲道"), `test/tw_sermon_glyph_test.dart` (module header and one
+      inline count completed from 414 to 429; the five illustrative
+      glyph counts in the file's own opening argument — 淨/牆/餘/髮/鬆 —
+      were re-measured against the real 429-file corpus: 358/257/190/
+      121/133 had drifted to 526/384/323/191/178, not pinned by any
+      `expect` but stated as fact in the file's own credibility
+      argument), `test/prerender_sermons_test.dart` (three sites: 289→
+      429 transcripts, 867→1147 dead-link impact count, one comment
+      completed to the 429 the adjacent `expect` already asserted),
+      and the now-orphaned `sermon_library` surface (`ui_strings.dart`,
+      `library_sermon.dart`, `sermon_library_page.dart` — "289" → "429"
+      where they compare against the OTHER corpus; their own 940/937
+      internal counts left untouched, out of scope here).
+      **Left alone as genuine history** (checked, not skipped):
+      `canon_chapters_test.dart` (already narrates both 2026-09-06 steps
+      to 1147/429/429), `sermon_passage_filter_test.dart` and
+      `sermon_ref_extraction_test.dart` (each narrates a specific count
+      that stopped moving after the first merge — the assertions below
+      them still pass against today's 429-file corpus, so "grew from
+      289 to 414" is accurate history, not a stale ceiling),
+      `prerender_sermons_test.dart`'s "289 pages" (Pastor Eric's English
+      credit string — literally still 289, since only the original
+      corpus has an English body) and its "22 of the 289 ids" (a dated,
+      2026-09-01 bug-finding anecdote, not a present-tense total claim).
+      **New finding, not fixed here — filed above under P2:** the
+      福音电台 sermon library page (`sermon_library_page.dart` and four
+      other files) was deliberately made unreachable 2026-09-06 per
+      `dashboard_page.dart:876-894`, but the five files still ship in
+      every build. Deletion needs the user's sign-off, not a doc patch.
+      `flutter analyze` clean; full `flutter test` green.
+
 - [x] **2026-09-06 FIXED — onegod/01's English track was made private on
       YouTube; the app auto-selected an English-locale reader straight
       into it.** Register-only until now — `docs/OPEN-ITEMS.md:448`.
@@ -7022,6 +7089,30 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
+- [ ] **The 福音电台 sermon library UI is dead code, still bundled.**
+      Found 2026-09-07 while sweeping stale sermon-corpus counts.
+      `dashboard_page.dart:876-894` documents that its dashboard tile
+      was deliberately REMOVED 2026-09-06 (v1.5.0) — the owner decided
+      there is only one sermon corpus now, Pastor Eric's 125 (later 140)
+      messages from that source are merged into `assets/sermons/`, and
+      `SermonLibraryService` THROWS if `index.json` is missing, which it
+      now is (`assets/sermon_library/` is gitignored staging, no longer
+      bundled). But nothing else was removed: grepped every `lib/`
+      caller of `SermonLibraryPage` and found none — it is unreachable
+      from any route. `lib/pages/sermon_library_page.dart`,
+      `sermon_library_speaker_page.dart`,
+      `lib/widgets/sermon_library_chrome.dart`,
+      `lib/models/library_sermon.dart` and
+      `lib/services/sermon_library_service.dart` all ship in every build
+      for a screen no reader can open, and their doc comments (940/937
+      records, 71 speakers) keep asserting facts about a corpus that no
+      longer ships. Not fixed here — deleting a whole page + its route
+      history is bigger than a doc-drift sweep and the user should
+      confirm nothing else depends on these files first (e.g. a future
+      re-add). Recommend: confirm with the user, then delete the five
+      files above rather than keep patching numbers in code nothing can
+      reach.
+
 - [x] **`VideoSeries.compilations` has no `isUnavailable` gate.** Found
       2026-09-06 by a refuter while verifying the onegod/01 private-track
       fix (see BUGS tier, same date). The per-episode fix added
@@ -10042,6 +10133,13 @@ has never seen this repo.
       across several sessions — not an hourly item. Do you want that
       branch started, or should this be closed as "won't fix,
       `/#/sermons/004` stays shareable but not Forward-revisitable"?
+
+      **Deferred a seventh consecutive iteration, 2026-09-07** — this
+      hour's NEXT_TASK.md picked the sermon-corpus count-drift sweep
+      instead (fallback path, queue had nothing else actionable in
+      tiers 1–4). Still branch-scale, still unattended-unsafe, still
+      the only open P2 checkbox, and the question above to the user is
+      still unanswered.
 
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
