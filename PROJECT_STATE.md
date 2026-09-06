@@ -1761,6 +1761,41 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     conflation on `mainAxisExtent`'s non-negativity. Full write-up:
     `docs/autonomous-queue.md:110`, 2026-09-01 entry.
 
+## Trap: "local green" and "CI green" are different claims
+
+`assets/sermon_library/` is a gitignored local staging area — the app
+ships Pastor Eric Chang's sermons only, merged into `assets/sermons/`,
+and the 940-record library stays on disk. **So every test that reads it
+passes here and cannot pass on a fresh checkout.**
+
+This bit twice on 2026-09-06, in both directions:
+
+1. Two pushes went out with a fully green local suite and took Flutter CI
+   red. Worse, they were pushed and then left — another session had to
+   fix them.
+2. `test_cross_corpus_adjudication.py` read `refs.json` at MODULE level,
+   so it failed to IMPORT on a clean checkout. unittest reports that as
+   an error before any assertion runs, and the local suite reported 232
+   passing throughout.
+
+**The rule the owner set, and it is cheap:**
+
+```bash
+git clone --no-hardlinks ~/Documents/yswords /tmp/cc && cd /tmp/cc
+python3 -m unittest discover -s test -p 'test_*.py'
+~/flutter/bin/flutter test --concurrency=1
+```
+
+A clone respects `.gitignore`, so it sees what a runner sees. The second
+failure above was caught this way, before pushing.
+
+**And when a test cannot run because its input is absent, say so in the
+skip reason** — what is missing, how to regenerate it, and that a green
+run without it checked nothing in that file. A silent skip is how a suite
+comes to report coverage it does not have, which is the same family as
+the ten tests found this week that passed while the thing they claimed to
+test was deliberately broken.
+
 ## Standing rules from the user
 
 - **經文一定要准确，查经的一定要最高 priority 准确.** Anything where the
