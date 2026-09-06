@@ -1887,12 +1887,16 @@ leave the original checked-out; three such duplicates were found on
 5. **Should the 原文 apparatus set its quotes full-width?** 344 ASCII `"`
    per edition, reader-visible wherever notes render. An edition-wide
    typographic choice, not a defect; a sweep tried and was reverted.
-6. **Should the Strong's lexicon be re-set in this edition's Traditional
-   orthography?** It is `opencc -c s2t` output, so it writes 爲/着/羣/衆/
-   喫/牀 where the Bible text writes 為/著/群/眾/吃/床 — 2,816 positions,
-   shown side by side on the word-tap sheet. Same shape as 4 and 5: every
-   character is legitimate, nothing false is printed, so it is a choice
-   and not a repair. Pinned by test until answered.
+6. **Should `assets/sermons/zh-TW/` follow the lexicon into this
+   edition's Traditional orthography?** (Superseded 2026-09-06: the
+   lexicon question above it was answered — the user delegated it
+   「这个你决定吧」 — and applied; `assets/strongs/*.json` now writes
+   為/著/群/眾/吃/床 throughout, `test/lexicon_traditional_orthography_
+   test.dart` pins it.) 289 sermon files, 1,730 positions remaining
+   (羣/衆/喫/牀 — 爲 and 着 were already swept 2026-09-05). Unlike the
+   lexicon, this is transcribed preaching, where the standing rule is
+   not to rewrite the speaker — glyph normalisation may not count as
+   rewriting, but that judgement belongs to the user.
 7. **EC018/EC019 sermon re-transcription.** T7 was checked 2026-09-05
    (`docs/autonomous-queue.md`, P3): the shipped English text is
    byte-identical to the T7 pipeline's own output, so there is no better
