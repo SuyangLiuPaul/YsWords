@@ -124,6 +124,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DIR = ROOT / "assets/sermons/zh-TW"
 
+# Files whose repair is COMMITTED and which `merge_sermon_library.py` does
+# not rewrite, so their rules are expected to find nothing to do. Measured
+# 2026-09-06: all twelve are byte-identical to HEAD after `--apply`.
+# Anything else showing up as already-run means the corpus is in a state
+# nobody predicted, and that is still a refusal.
+EXPECTED_ALREADY = frozenset({"075.txt"})
+
 # ── corpus-wide sweeps ───────────────────────────────────────────────────
 # (pattern, replacement, expected hits, why). A pattern is swept only where
 # the collocation is decisive on its own; everything else is anchored below.
@@ -133,12 +140,21 @@ SWEEPS: tuple[tuple[str, str, int, str], ...] = (
     ("鬥底下", "斗底下", 12,
      "馬太福音 5:15 / 路加福音 8:16 / 11:33 — a lamp under a bowl, never "
      "under a fight; 018, 080 ×2, fy-sm12a ×2, fy-sm12b ×6, fy-sm28"),
-    ("覆活", "復活", 17,
-     "a resurrection; 12 in the merge and 5 already shipped "
-     "(234, 323, 834, CP60, c106)"),
-    ("複活", "復活", 12,
-     "the same word again; 2 in the merge (fy-nm18, fy-nm19 「將來複活」) "
-     "and 10 already shipped, every one of those 「被複活」"),
+    # 17 -> 12 and 12 -> 2 on 2026-09-06, and the reason is the same for
+    # both: THIS TOOL'S OWN OUTPUT IS NOW COMMITTED. The 5 and the 10
+    # "already shipped" hits lived in files the merge does not rewrite
+    # (234, 323, 834, CP60, c106; 169, 214, 234, 370, C115, C174, C178), so
+    # once their repair was committed, `git checkout` + `--apply` stopped
+    # resurrecting them and only the merge's own share comes back. Verified
+    # rather than assumed: all twelve of those files are byte-identical to
+    # HEAD after `--apply`, and each carries 復活 with zero 覆活/複活.
+    # This is the rail doing its job — it refused, and the difference was
+    # read before the number moved.
+    ("覆活", "復活", 12,
+     "a resurrection; the merge's own share, in 129, 136 and fy-mt61"),
+    ("複活", "復活", 2,
+     "the same word again; the merge's own share, "
+     "fy-nm18 and fy-nm19 「將來複活」"),
     ("永恒生命", "永恆生命", 6,
      "against 恆 ×276 and 恒 ×0 in the corpus this merges into; "
      "018, 065, 135, fy-mt85, fy-nm00, fy-nm16"),
@@ -147,6 +163,17 @@ SWEEPS: tuple[tuple[str, str, int, str], ...] = (
      "發起來」 (林前 5:6). The 289-file corpus already spells it 麪酵 ×63"),
     ("采取", "採取", 2,
      "against 採取 ×54 in the same corpus; fy-bp01 and fy-nm29"),
+    # Both added 2026-09-06 with the 15 transcribed sermons, and both were
+    # found by AUDITING the new bodies against the corpus's own conventions
+    # rather than by any test — every zero-side assertion in
+    # `tw_sermon_glyph_test.dart` passed while these two were in the tree.
+    ("采用", "採用", 1,
+     "fy-ws04 「原文采用的文法」; 採用 ×8 against 采用 ×1 in this corpus, "
+     "and the Simplified control reads 采用, which is right for Simplified"),
+    ("頭髮動", "頭發動", 2,
+     "羅馬書 7:8 「叫諸般的貪心在我裡頭發動」 — s2t read 里头发动 as "
+     "頭髮 + 動, so the verse said HAIR. fy-rms07-02 and fy-rms07-03; the "
+     "Simplified control reads 在我里头发动 in both"),
     ("麪對", "面對", 2,
      "to FACE the truth, not flour — fy-bp03 and fy-bp07; the Simplified "
      "body reads 面对 and is the control"),
@@ -183,6 +210,14 @@ RULES: tuple[tuple[str, str, str, str], ...] = (
      "the jar, UNLIKE the word 斗 — the second of the four things"),
 
     # ── and six bowls that were already in the shipped corpus ────────────
+    # THESE SIX ARE NOW EXPECTED TO BE ALREADY REPAIRED. 075.txt is one of
+    # the twelve files this tool touches and the merge does not rewrite, so
+    # once its repair was committed, `git checkout` + `merge --apply`
+    # leaves it fixed and these rules find nothing to do. See
+    # EXPECTED_ALREADY below: the refusal now compares WHICH rules had
+    # already run rather than how many, because "six had already run" is
+    # the correct state of a correctly-run pipeline and "some other six"
+    # is not.
     # 075.txt was half-repaired on 2026-09-03: its 「或鬥底下」 was fixed and
     # the six places where the same file names the bowl on its own were not,
     # so it has read 「鬥——裏面裝著穀物」 — a FIGHT that contains grain —
@@ -321,11 +356,13 @@ def main() -> int:
         print(f"  sweep  面包 → 麪包   ×{n:<3} bread, with the lookbehind and "
               f"lookahead 「裏面包含」 and 「層面包裹」 need")
 
+    already_files: set[str] = set()
     for name, wrong, right, why in RULES:
         n = texts[name].count(wrong)
         if n == 0:
             if right in texts[name]:
                 already += 1
+                already_files.add(name)
                 continue
             print(f"  ✗ {name}: neither 「{wrong}」 nor its repair "
                   f"is present — refusing")
@@ -343,10 +380,17 @@ def main() -> int:
     if already == rule_count:
         print("  already applied — nothing to do")
         return 0
-    if already:
-        print(f"  ✗ {already} of {rule_count} rules had already run — the "
-              f"corpus is half-repaired — refusing")
+    unexpected = already_files - EXPECTED_ALREADY
+    if unexpected:
+        print(f"  ✗ rules in {sorted(unexpected)} had already run and are "
+              f"not in EXPECTED_ALREADY — the corpus is in a state nobody "
+              f"predicted — refusing")
         return 1
+    if already:
+        print(f"  ({already} anchored rules in "
+              f"{sorted(already_files)} were already repaired, as expected "
+              f"— those files are committed and the merge does not "
+              f"rewrite them)")
 
     # The keeps are checked AFTER the substitutions, which is the only order
     # in which they mean anything: a widened rule has to have run first.
