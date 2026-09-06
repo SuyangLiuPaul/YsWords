@@ -65,6 +65,13 @@ String _refs(List<Map<String, dynamic>> pairs) => json.encode({
 
 void main() {
   final svc = SermonLibraryService.instance;
+  final hasCorpus =
+      File('${SermonLibraryService.libraryRoot}/index.json').existsSync();
+  const corpusSkipReason =
+      'assets/sermon_library/ is deliberately untracked (see .gitignore) — '
+      'run scripts/sync_sermon_library.py to regenerate it locally. On a '
+      'fresh clone this group SKIPS, mirroring test_sermon_library.py\'s '
+      'TestSnapshot.';
 
   tearDown(() {
     svc.resetForTest();
@@ -209,7 +216,7 @@ void main() {
 
   // ── 3. Against the real graded data ────────────────────────────
 
-  group('the real corpus', () {
+  group('the real corpus', skip: hasCorpus ? null : corpusSkipReason, () {
     setUp(() {
       svc.useLoader((p) async =>
           File('${SermonLibraryService.libraryRoot}/$p').readAsStringSync());
@@ -295,7 +302,7 @@ void main() {
 
   // ── 3. The scripture index the refs file also carries ──────────
 
-  group('per-chapter lookup', () {
+  group('per-chapter lookup', skip: hasCorpus ? null : corpusSkipReason, () {
     setUp(() {
       svc.useLoader((p) async =>
           File('${SermonLibraryService.libraryRoot}/$p').readAsStringSync());

@@ -76,6 +76,13 @@ String _index(List<Map<String, dynamic>> records) => json.encode({
 
 void main() {
   final svc = SermonLibraryService.instance;
+  final hasCorpus =
+      File('${SermonLibraryService.libraryRoot}/index.json').existsSync();
+  const corpusSkipReason =
+      'assets/sermon_library/ is deliberately untracked (see .gitignore) — '
+      'run scripts/sync_sermon_library.py to regenerate it locally. On a '
+      'fresh clone this test SKIPS, mirroring test_sermon_library.py\'s '
+      'TestSnapshot.';
 
   tearDown(() {
     // Back to `rootBundle`, caches dropped — otherwise one test's
@@ -130,7 +137,7 @@ void main() {
     });
 
     test('the real corpus has exactly one such record and it sorts last',
-        () async {
+        skip: hasCorpus ? null : corpusSkipReason, () async {
       svc.useLoader(_diskLoader);
       final lib = await svc.load();
       final suspect = [
@@ -163,7 +170,8 @@ void main() {
           reason: 'what was dropped is still countable, not vanished');
     });
 
-    test('the real corpus loses exactly three of its 940', () async {
+    test('the real corpus loses exactly three of its 940',
+        skip: hasCorpus ? null : corpusSkipReason, () async {
       svc.useLoader(_diskLoader);
       final lib = await svc.load();
       expect(lib.fetchedCount, 940);
@@ -206,7 +214,8 @@ void main() {
           ['丙:2', '乙:1', '甲:1']);
     });
 
-    test('小珊姊妹 and 小珊 stay two rows', () async {
+    test('小珊姊妹 and 小珊 stay two rows',
+        skip: hasCorpus ? null : corpusSkipReason, () async {
       // Very probably one person. Merging them would be this app
       // deciding who somebody is from a substring — a larger claim
       // than the counterpart link `MatthewMessage` already refuses to
@@ -218,7 +227,8 @@ void main() {
       expect(names, containsAll(<String>['小珊姊妹', '小珊']));
     });
 
-    test('the programme is marked as one and the people are not', () async {
+    test('the programme is marked as one and the people are not',
+        skip: hasCorpus ? null : corpusSkipReason, () async {
       svc.useLoader(_diskLoader);
       final lib = await svc.load();
       final programmes = [
@@ -231,7 +241,7 @@ void main() {
     });
 
     test('every sermon reaches exactly one speaker, and none is lost',
-        () async {
+        skip: hasCorpus ? null : corpusSkipReason, () async {
       svc.useLoader(_diskLoader);
       final lib = await svc.load();
       final bucketed =
@@ -339,7 +349,8 @@ void main() {
 
   // ── 6. The rights line comes from the corpus ───────────────────
 
-  test('the rights line is read, never composed', () async {
+  test('the rights line is read, never composed',
+      skip: hasCorpus ? null : corpusSkipReason, () async {
     svc.useLoader(_diskLoader);
     final lib = await svc.load();
     expect(lib.rightsFor('zh-Hans'), contains('福音电台'));

@@ -36,6 +36,13 @@ import 'package:yswords/services/sermon_library_service.dart';
 /// produce.
 void main() {
   final svc = SermonLibraryService.instance;
+  final hasCorpus =
+      File('${SermonLibraryService.libraryRoot}/index.json').existsSync();
+  const corpusSkipReason =
+      'assets/sermon_library/ is deliberately untracked (see .gitignore) — '
+      'run scripts/sync_sermon_library.py to regenerate it locally. On a '
+      'fresh clone this whole file SKIPS, mirroring '
+      "test_sermon_library.py's TestSnapshot.";
 
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
@@ -78,7 +85,7 @@ void main() {
 
   // ── The index ──────────────────────────────────────────────────
 
-  group('speaker index', () {
+  group('speaker index', skip: hasCorpus ? null : corpusSkipReason, () {
     testWidgets('rows are BUILT — no expansion, no spinner', (tester) async {
       await mount(tester, const SermonLibraryPage());
       expect(find.byType(CircularProgressIndicator), findsNothing,
@@ -179,7 +186,8 @@ void main() {
 
   // ── One speaker ────────────────────────────────────────────────
 
-  group('a speaker\'s sermons', () {
+  group('a speaker\'s sermons', skip: hasCorpus ? null : corpusSkipReason,
+      () {
     testWidgets('the name is in the AppBar and on none of the rows',
         (tester) async {
       await mount(tester, const SermonLibrarySpeakerPage(speakerKey: '辛岚'));
@@ -235,7 +243,7 @@ void main() {
 
   // ── One sermon ─────────────────────────────────────────────────
 
-  group('one sermon', () {
+  group('one sermon', skip: hasCorpus ? null : corpusSkipReason, () {
     testWidgets('the body keeps every paragraph break the corpus gave it',
         (tester) async {
       await mount(tester, const SermonLibrarySermonPage(sermonId: 2444));
