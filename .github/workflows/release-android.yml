@@ -62,6 +62,27 @@ jobs:
       - name: Pub get
         run: flutter pub get
 
+      # flutter/flutter#191801 - with product flavors, Gradle's jniLib
+      # merge stays "up-to-date" while its input is rewritten, so the APK
+      # ships a new version string over OLD Dart code. The rule lives in
+      # tools/clear_stuck_jnilib_merge.sh; this is the call site.
+      #
+      # HONESTY NOTE, measured 2026-09-06: this runner is structurally
+      # IMMUNE. `actions/checkout` gives a fresh tree and nothing here
+      # caches build/ or ~/.gradle (subosito/flutter-action's `cache:` is
+      # the SDK, not the project), so there is no previous merge output
+      # for the task to be up-to-date against. Both released APKs were
+      # verified fresh - every lib/*/libapp.so carried its own tag's
+      # kAppReleaseTime and not the previous release's.
+      #
+      # So do NOT read a green run of this workflow as evidence that the
+      # workaround works. It is insurance against someone adding a Gradle
+      # cache here later, and it keeps every APK-producing path uniform
+      # so the coverage guard test can enumerate them. It costs ~0 and
+      # prints "nothing to clear".
+      - name: Clear stale Gradle jniLib merge outputs (flutter/flutter#191801)
+        run: tools/clear_stuck_jnilib_merge.sh "$GITHUB_WORKSPACE"
+
       - name: Build APK (release, intl flavor)
         run: flutter build apk --release --flavor intl
 

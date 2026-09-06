@@ -115,6 +115,14 @@ cp "$INFO_BACKUP" "$INFO_PLIST"
 
 # ─── ANDROID BUILD + INSTALLS ────────────────────────────────────
 echo ""
+# flutter/flutter#191801: Gradle's jniLib merge goes stale in a
+# flavored build, so the APK ships a new version string over OLD
+# Dart code. Clear the merge OUTPUTS before building - the rule,
+# the evidence and the retirement conditions all live in
+# tools/clear_stuck_jnilib_merge.sh. Exits 0 on an already-clean
+# tree, so this is safe under `set -e`.
+FLUTTER="$FLUTTER" "$PROJECT/tools/clear_stuck_jnilib_merge.sh" "$PROJECT"
+
 echo "→ flutter build apk --release --flavor cn ${DEFINES[*]}"
 if "$FLUTTER" build apk --release --flavor cn "${DEFINES[@]}"; then
   for entry in "${ANDROID_DEVICES[@]}"; do

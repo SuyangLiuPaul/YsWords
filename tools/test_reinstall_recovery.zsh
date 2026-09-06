@@ -17,20 +17,31 @@
 # and the recovery path never fired. So the recovery was proven here, on
 # fixtures, rather than against the real fault.
 #
-# The function is EXTRACTED from the script rather than copied, so this
-# tests the shipped text and cannot drift away from it.
+# 2026-09-06: the deletion MOVED out of yswords-ios-reinstall.sh into
+# tools/clear_stuck_jnilib_merge.sh, so every APK-producing path could
+# share one copy. This test used to `awk` the function out of the
+# reinstall script and `source` it; it now EXECUTES the real script, as
+# every caller does. That is strictly better evidence — the extraction
+# could only ever prove the text parsed, and it silently tested nothing
+# if the function moved.
+#
+# $FLUTTER is pinned to the 3.44.2 the build paths use, NOT the PATH
+# default (3.47.2 on this machine). The script correctly refuses to
+# delete anything under >= 3.47.1, so leaving it unset would make every
+# assertion below pass for the wrong reason.
 set -u
 
 REPO="${0:A:h:h}"
-SCRIPT="$REPO/tools/yswords-ios-reinstall.sh"
-FN="$(mktemp)"
-awk '/^clear_stuck_jnilib_merge\(\) \{/,/^\}/' "$SCRIPT" > "$FN"
-if [ ! -s "$FN" ]; then
-  echo "FAIL: could not extract clear_stuck_jnilib_merge from $SCRIPT"
-  echo "      (was it renamed, or is it no longer at column 0?)"
+SCRIPT="$REPO/tools/clear_stuck_jnilib_merge.sh"
+if [ ! -x "$SCRIPT" ]; then
+  echo "FAIL: $SCRIPT is missing or not executable"
   exit 1
 fi
-source "$FN"
+export FLUTTER="${FLUTTER:-$HOME/flutter/bin/flutter}"
+
+# Same contract the reinstall script's wrapper asks for: exit 0 iff
+# something was cleared.
+clear_stuck_jnilib_merge() { "$SCRIPT" --require-cleared "$PROJECT"; }
 
 PROJECT="$(mktemp -d)"
 pass=0
@@ -92,5 +103,5 @@ chk "$([ -d "$PROJECT/build/app/outputs/Release" ] && echo yes)" "yes" \
 
 echo ""
 echo "passed=$pass failed=$fail"
-rm -rf "$PROJECT" "$FN"
+rm -rf "$PROJECT"
 [ "$fail" -eq 0 ]

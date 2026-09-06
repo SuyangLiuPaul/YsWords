@@ -225,17 +225,36 @@ void main() {
       //
       // Asserted by position, because a pre-clean that ends up after the
       // build is exactly as useless as no pre-clean at all.
-      final clearCalls = RegExp(r'^(?!clear_stuck_jnilib_merge\(\)).*'
-              r'clear_stuck_jnilib_merge', multiLine: true)
-          .allMatches(script)
-          .toList();
-      expect(clearCalls.length, 2,
+      // 2026-09-06: counted by an explicit line filter rather than one
+      // negative-lookahead regex. The rule moved into
+      // tools/clear_stuck_jnilib_merge.sh and this function became a
+      // delegation, which put the NAME on three more lines — a comment,
+      // the definition, and the delegating body — none of them call
+      // sites. The old regex counted 4 and failed. A line filter that
+      // names each exclusion is the version a reader can check.
+      final clearCallOffsets = <int>[];
+      var offset = 0;
+      for (final line in script.split('\n')) {
+        final trimmed = line.trimLeft();
+        final isComment = trimmed.startsWith('#');
+        final isDefinition = trimmed.startsWith('clear_stuck_jnilib_merge()');
+        // The delegating body names the SCRIPT, not the function.
+        final isDelegation = line.contains('clear_stuck_jnilib_merge.sh');
+        if (line.contains('clear_stuck_jnilib_merge') &&
+            !isComment &&
+            !isDefinition &&
+            !isDelegation) {
+          clearCallOffsets.add(offset + line.indexOf('clear_stuck_jnilib_merge'));
+        }
+        offset += line.length + 1;
+      }
+      expect(clearCallOffsets.length, 2,
           reason: 'expected two call sites — the pre-clean and the retry '
-              'recovery — found ${clearCalls.length}');
+              'recovery — found ${clearCallOffsets.length}');
       final firstBuildCall = RegExp(r'^(?!android_build_and_verify\(\)).*'
               r'android_build_and_verify', multiLine: true)
           .firstMatch(script)!;
-      expect(clearCalls.first.start, lessThan(firstBuildCall.start),
+      expect(clearCallOffsets.first, lessThan(firstBuildCall.start),
           reason: 'the pre-clean runs after the first build, which means '
               'the build still starts from a stuck merge output');
 

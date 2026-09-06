@@ -865,41 +865,27 @@ android_build_and_verify() {
 }
 
 # Clear the OUTPUTS of Gradle's jniLib merge, which is the thing that
-# actually gets stuck (see the Android note in the header). Returns 0
-# iff something was there to clear, so the caller does not waste a
-# second full build when this was not the problem.
+# actually gets stuck (see the Android note in the header).
 #
-# Deliberately narrow: only `*Release` directories directly inside the
-# three known intermediate folders, each re-checked to be under
-# $PROJECT/build/app/intermediates before it is touched. Nothing here
-# is derived from user input, and the guard is there so a future edit
-# to $PROJECT cannot turn this into an rm at the wrong root.
+# 2026-09-06: the rule itself MOVED to tools/clear_stuck_jnilib_merge.sh
+# and this is now a two-line delegation. It had to apply to every
+# APK-producing path - this script, tools/yswords-cn-install.sh, and
+# .github/workflows/release-android.yml - and five copies of an
+# unattended `rm -rf` would drift apart. That file carries the full
+# account of flutter/flutter#191801, the safety argument for its
+# deletions, and the two guards that retire it at Flutter 3.47.1.
 #
-# This is the only `rm -rf` in the file and it runs unattended at 04:00,
-# so it has its own test — `zsh tools/test_reinstall_recovery.zsh`,
-# which extracts this function and exercises it on fixtures. Run it
-# after touching anything below.
+# --require-cleared keeps THIS caller's contract: exit 0 iff something
+# was there to clear, so the retry below does not waste a second full
+# build when a stuck merge was not the problem. (The script's own
+# default is exit 0 either way, because the sibling repo's
+# release_native.sh runs under `set -euo pipefail`.)
+#
+# Still covered by `zsh tools/test_reinstall_recovery.zsh`, which now
+# drives the script directly instead of extracting this function.
 clear_stuck_jnilib_merge() {
-  local d out cleared=0
-  for d in merged_jni_libs merged_native_libs stripped_native_libs; do
-    for out in "$PROJECT/build/app/intermediates/$d"/*Release(N); do
-      [ -d "$out" ] || continue
-      case "$out" in
-        "$PROJECT/build/app/intermediates/"*) ;;
-        *)
-          echo "  refusing to clear '$out' — outside the project build dir"
-          continue
-          ;;
-      esac
-      if rm -rf "$out"; then
-        echo "  cleared $out"
-        cleared=$((cleared + 1))
-      else
-        echo "  could not clear $out"
-      fi
-    done
-  done
-  [ "$cleared" -gt 0 ]
+  FLUTTER="$FLUTTER" "$PROJECT/tools/clear_stuck_jnilib_merge.sh" \
+    --require-cleared "$PROJECT"
 }
 
 # 2026-09-04, measured rather than assumed: this fault is not
