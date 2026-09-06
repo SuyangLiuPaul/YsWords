@@ -62,13 +62,33 @@ _spec.loader.exec_module(sl)
 # the comparison: setting MIN_BODIED to 1 left the whole suite green.
 # A floor must be checked against a number measured from the data, not
 # against itself.
+# Re-measured 2026-09-06 after the 16 audio-only sermons by Pastor Eric
+# Chang were transcribed. Every number below was read off the data before
+# it was changed here, not adjusted until the suite went quiet.
+#
+# These count through the INDEX, not the directory, and the gap between
+# the two is a decision rather than an accident: `bodies/` holds 859
+# files while `hasBody` is set on 858. The odd one is library 6012
+# (ws01, 活着就是基督) — transcribed, and its flag deliberately NOT set,
+# because it is the same sermon as app CP37 and flipping it would ship
+# that sermon twice. `bodies/6012.txt` is an orphan on purpose.
+#
+# So every number here is +15, never +16.
 MEASURED = {
     'records': 940,
-    'bodyFiles': 843,
-    'bodied200': 841,
+    'bodyFiles': 858,
+    'bodied200': 856,
     'withAudio': 673,
-    'bodyChars': 5_440_652,
-    'distinctBodies': 841,
+    # 5_541_718 after proofreading on 2026-09-06: 62 misheard book
+    # names corrected (格林多→哥林多, 加勒泰→加拉太, 菲利比→腓立比,
+    # 西伯来→希伯来, 民俗记→民数记 and the rest), a 14-fold
+    # hallucinated phone advert replaced by one note recording that
+    # ~28 s of audio decoded to nothing, and four fabricated
+    # subtitle credits removed — those named real people who did no
+    # such work, which is the worst kind of invention because it
+    # reads exactly like a real credit.
+    'bodyChars': 5_541_718,
+    'distinctBodies': 856,
     'maxSameBody': 2,
     'distinctTitles': 933,
     'distinctUrls': 938,
@@ -1420,7 +1440,24 @@ class TestSnapshot(unittest.TestCase):
         on_disk = {f'bodies/{n}' for n in
                    os.listdir(os.path.join(base, 'bodies'))
                    if n.endswith('.txt')}
-        self.assertEqual(on_disk - claimed, set(),
+        # One orphan is deliberate and is named rather than tolerated.
+        # `bodies/6012.txt` is the transcript of library 6012 (ws01,
+        # 活着就是基督), which is the same sermon as app CP37: setting its
+        # `hasBody` would send it down the merge's new-sermon path and
+        # ship that sermon twice. The transcript is kept because it is
+        # what MADE the comparison possible — there was no body to
+        # compare against before it existed.
+        #
+        # Naming it means an accidental orphan still fails here, and it
+        # means anyone who later decides 6012 should ship has to delete
+        # this line and read why it was written.
+        DELIBERATE_ORPHANS = {'bodies/6012.txt'}
+        for rel in DELIBERATE_ORPHANS:
+            self.assertTrue(os.path.exists(os.path.join(base, rel)),
+                            f'{rel} is listed as a deliberate orphan but '
+                            'is not on disk — remove it from the set '
+                            'rather than leaving a dangling exception')
+        self.assertEqual(on_disk - claimed - DELIBERATE_ORPHANS, set(),
                          'orphan body files not referenced by the index')
 
     def test_bodyless_records_still_carry_metadata(self):

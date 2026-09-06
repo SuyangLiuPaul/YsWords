@@ -176,7 +176,13 @@ PROGRAMME_AUTHORS = frozenset({'奇妙恩典'})
 #
 # Measured 2026-09-05: 940 records, 841 bodied, 673 with audio.
 MIN_RECORDS = 940
-MIN_BODIED = 841
+# 856 from 2026-09-06: 841 fetched bodies plus 15 locally transcribed
+# from audio. A floor is a promise that a crawl which comes back
+# thinner than this is refused — so it has to move when the corpus
+# genuinely grows, and it must never be compared against itself.
+# `test_floor_constants_still_match_what_was_measured` is what makes
+# that impossible to forget.
+MIN_BODIED = 856
 MIN_WITH_AUDIO = 673
 
 # ── Why the floors alone were not enough ──────────────────────────

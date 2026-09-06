@@ -139,11 +139,27 @@ class BracketNormalization(unittest.TestCase):
         self.assertEqual(ix.normalize_body('《哥林多前书》15章'),
                          '《哥林多前书15章')
 
-    def test_normalizer_is_a_noop_on_the_app_corpus(self):
-        """The load-bearing claim of the whole design: this cannot move
-        `assets/sermons/refs.json`, because it changes no byte of any of
-        that corpus's 867 body files."""
+    def test_normalizer_only_touches_bodies_that_came_from_the_library(self):
+        """The load-bearing claim, restated after the 2026-09-06 merge.
+
+        It used to read: this changes no byte of any of the app corpus's
+        867 body files, so it cannot move `assets/sermons/refs.json`.
+        That was true while the two corpora were separate. The merge put
+        125 library messages INTO `assets/sermons/`, and they carry the
+        library's own 《書名》 style — so the rule now fires on them, and
+        it is supposed to: that is the whole reason it exists.
+
+        Measured today: exactly two files change, `fy-lq02` in both
+        scripts, on 「《使徒行传》第2章」. Both are merged records.
+
+        So the claim that still protects the original corpus is the
+        narrower one, and it is the one asserted here: NOTHING that
+        predates the merge changes. An `fy-` file changing is the rule
+        working; anything else changing is the rule reaching somewhere
+        it was never meant to.
+        """
         checked = 0
+        touched = []
         for lang in ('en', 'zh-CN', 'zh-TW'):
             d = os.path.join(APP_SERMONS, lang)
             if not os.path.isdir(d):
@@ -153,12 +169,28 @@ class BracketNormalization(unittest.TestCase):
                     continue
                 with open(os.path.join(d, name), encoding='utf-8') as f:
                     text = f.read()
-                self.assertEqual(ix.normalize_body(text), text,
-                                 f'{lang}/{name}')
+                if ix.normalize_body(text) != text:
+                    touched.append(f'{lang}/{name}')
                 checked += 1
         if not checked:
             self.skipTest('app sermon corpus not present')
         self.assertGreaterEqual(checked, 800)
+        # The original 289 are keyed on bare ids; every merged record is
+        # `fy-<refcode>`. A non-`fy-` file here means the bracket rule
+        # has started matching ordinary app prose, which is exactly what
+        # the anchor on the OPENING 《 was added to prevent.
+        strays = [t for t in touched
+                  if not os.path.basename(t).startswith('fy-')]
+        self.assertEqual(strays, [],
+                         'the bracket rule reached a body that did not '
+                         'come from the library')
+        # And it is not silently doing nothing either: if the merged
+        # bodies stopped carrying 《》, the rule would be dead weight and
+        # this number would fall to zero without anyone noticing.
+        self.assertGreater(len(touched), 0,
+                           'no merged body carries a 《書名》 any more — '
+                           'either the merge changed shape or the rule '
+                           'is now dead code')
 
 
 class TaxonomyResolution(unittest.TestCase):
