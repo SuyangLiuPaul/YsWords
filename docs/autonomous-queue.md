@@ -9944,6 +9944,12 @@ has never seen this repo.
       single hourly iteration. Recorded so it does not go on being
       silently skipped without anyone noticing the pattern.
 
+      **Deferred a fourth consecutive iteration, 2026-09-06** — this hour's
+      NEXT_TASK.md picked the CDC-artwork upstream port instead (uncontended
+      repo, time-boxed against today's 18:00 UTC publish run); this item is
+      still the only fully open P2 checkbox and still branch-scale. Pattern
+      still visible, still not started.
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -12381,6 +12387,17 @@ so the bundle-size answer stays on the record.
       that publishes lives in yswords-data and needs the same change** — until
       it lands, a snapshot pull blanks all 191. `test/cdc_artwork_test.dart`
       fails loudly if that happens.
+
+      **2026-09-06 — upstream side landed.** `yswords-data` commit `326230f3c`,
+      pushed to `origin/main` ahead of today's 18:00 UTC `Refresh songs` run:
+      `fetch_cdc()` now reads each song page's own `<img>` for `artworkUrl`
+      and HEAD-verifies it (only when new/changed vs. the stored value, so a
+      steady-state day pays ~0 extra requests) before publishing. `merge()`
+      already had `artworkUrl` in `_REFRESH_FIELDS`, unchanged. **Not ticked
+      here** — this only says the fix shipped, not that it is proven; proof is
+      tomorrow's 02:00 UTC `Sync songs` pull landing 191 (not 0) `artworkUrl`
+      rows in this repo's `assets/songs.json`. Check that pull's result before
+      ticking.
 
 - [x] **In-app score (PDF) and video.** `SongScorePage` (pdfrx) and
       `SongVideoPage` (video_player). The real count was **579** songs
