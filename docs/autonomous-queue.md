@@ -9950,6 +9950,20 @@ has never seen this repo.
       still the only fully open P2 checkbox and still branch-scale. Pattern
       still visible, still not started.
 
+      **Deferred a fifth consecutive iteration, 2026-09-06** — this hour's
+      NEXT_TASK.md picked the `clickText` ambiguity sweep instead
+      (Tier 5, hardens the same web-history harness this item's own
+      definition of done depends on), and deliberately deferred this one
+      again rather than start a `GetMaterialApp` → `.router` migration
+      unattended: `lib/main.dart:868-950` already carries two prod crash
+      scars (`v1.3.111`'s null `onUnknownRoute`; 2026-09-02's `getPages`
+      reopening it one layer up), plus the 640-line
+      `url_sync_service_web.dart`. **Five deferrals in a row is a
+      pattern, not a schedule.** Surfacing it plainly rather than quietly
+      deferring a sixth: this item needs either a dedicated multi-iteration
+      branch effort (someone watching across the whole migration, not one
+      hour at a time) or an explicit "leave it" from the user. Left open.
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -11661,6 +11675,47 @@ has never seen this repo.
       filter. **The other four cases in that file were not swept for the
       same pattern.**
 
+      **2026-09-06 — swept, against a real release build, not by reading
+      the regex and guessing.** `picker` was ALREADY swept (all three
+      `CHANGE_VERSION_RE` sites carry `box: [0,0,4000,220]`) — the four
+      left were `runSermon`'s topic-expand and row-click, and `runYoutube`'s
+      poster and language-chip. `clickText` now logs `candidates` (how
+      many semantics nodes matched) per call into `results.json`'s new
+      `out.clicks`, instead of resolving ambiguity by silent array order —
+      that IS the generalised fix, not four hand-patched regexes.
+      Findings, each checked against source + an actual run, not assumed:
+        - `runSermon` topic (`/^Baptism\b/i`) and row (`/Temptation/i`):
+          both matched exactly 1 node in real runs. Safe by construction —
+          `ExpansionTile` (`maintainState` defaults false) never builds a
+          collapsed group's rows, so the OTHER sermon whose title contains
+          "Temptation" (id 114, a different topic) has no semantics node
+          while its group sits collapsed. `runSermon.openedRow` was
+          decorative (recorded, never checked) and now gates: it asserts
+          the click did not land on the topic header and did name the
+          expected sermon.
+        - `runYoutube` poster (`/Standing at the Cross|Play|播放|第1集|Episode 1/i`):
+          matched exactly 1 node under English, the harness's actual
+          locale. **Not proven safe under every locale** — a refuter
+          agent found `_wholeSeriesRow`'s Chinese-track button carries the
+          label "中文", one of this regex's own alternatives, and
+          `Browser.launch` never pins `--lang`. If a cold profile ever
+          resolved Chinese, the AppBar title stops matching and "中文"
+          could become the sole (not ambiguous — `candidates` stays 1)
+          wrong match. Recorded as a comment at the call site and as a new
+          queue item below rather than fixed blind, since this harness has
+          no locale argument to reproduce it with.
+        - `runYoutube` language chip: matches exactly 2 nodes
+          ("Cantonese", "Mandarin") on `/#/videos/cross` — confirmed BY
+          DESIGN, not a bug: that route is the one episode with three
+          playable tracks (`videos_page.dart` `_languageRow`/`playableTracks`),
+          the selected track's own chip ("English") is excluded from the
+          regex, and the assertions that follow (`remounted`, `startParam`)
+          don't care which of the two fires. Left unboxed on purpose, with
+          a comment explaining why 2 candidates is the correct count here.
+      Net: 3 of 4 swept sites needed nothing (one gained an assertion that
+      was previously decorative); the 4th (poster) has a real but
+      currently-unreached gap, filed below rather than guessed at.
+
       **`d/chrono4` — devices.** The user tested on an iPhone: 「By
       default这个可以大点不单单8x 或者15 20x？而且很多都是… 在手机上看不爽
       iPad不知道如何但是不同devices都要考虑清楚」. Raising 8 to 20 would
@@ -12629,6 +12684,28 @@ so the bundle-size answer stays on the record.
       sermon page. Verified playing on dev: `0:08 / 27:25`, `Part 1 of 2`.
 - [ ] NASB divine-pronoun capitalisation (#173-176) — tied to the
       unresolved NASB licensing question. Ask before investing.
+- [ ] **Tooling, LOW priority: `tools/web_verify_headless.mjs runYoutube`'s
+      poster click is locale-fragile, found by a refuter during the
+      2026-09-06 `clickText` ambiguity sweep (see the chronology entry
+      above).** `/#/videos/cross`'s poster regex
+      (`/Standing at the Cross|Play|播放|第1集|Episode 1/i`) matches exactly
+      1 semantics node under English, which is the harness's actual
+      locale today, so this is NOT observed to fail. But
+      `_wholeSeriesRow`'s Chinese-track compilation button
+      (`videos_page.dart:445-487`) carries the label "中文" — one of this
+      regex's own alternatives — and `Browser.launch` never pins
+      `--lang`, so a cold Chrome profile that ever resolved to a Chinese
+      locale would lose the English AppBar title match and could match
+      "中文" alone instead: one confident click on the wrong node, and
+      `candidates` would stay at 1 because there is exactly one match, not
+      several — the ambiguity counter added this sweep cannot see a
+      single WRONG match, only multiple candidates for the same call.
+      Likely self-heals via the existing "no iframe → raw click at
+      640,260" fallback rather than silently misattributing, but that is
+      inference, not a run that reproduced it — this harness has no
+      `--lang` argument to force the case. Fix by anchoring the regex to
+      the AppBar title alone, or by pinning the profile's Accept-Language
+      the way `Browser.launch` already pins the viewport.
 
 ## Blocked on the user — do not attempt
 

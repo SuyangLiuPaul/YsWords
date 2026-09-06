@@ -149,6 +149,12 @@ if (!KNOWN.includes(CMD)) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Every clickText() call across every case, in order — see clickText's own
+// comment for why this exists. Written into results.json as `out.clicks` so
+// an ambiguous match is visible in the artifact instead of only in a
+// terminal that has already scrolled away.
+const CLICK_LOG = [];
+
 // ── static server ────────────────────────────────────────────────────
 //
 // Mirrors what Netlify does for this SPA closely enough for the cases
@@ -652,8 +658,21 @@ async function waitForText(cdp, re, timeoutMs = 20000) {
 /// off the right of the window, and one of those out-of-frame labels
 /// prints the same title as the chip below the chart. Without a box the
 /// first match is the invisible one, and the click goes nowhere at all.
+///
+/// 2026-09-06. `chronology`'s own case had exactly this failure with the
+/// box argument unset: an unanchored regex matched the merged event lane
+/// (which holds all 64 event titles in ONE semantics node, ahead of the
+/// intended chip in tree order) and the "click" landed on a tick instead.
+/// It shipped that way and was never caught, because a match was found and
+/// something was clicked — there was nothing distinguishing "the only
+/// candidate" from "the first of several". So every call is now logged to
+/// CLICK_LOG with how many nodes matched; a call site matching more than
+/// one is printed with a warning instead of resolved silently by array
+/// order. `site` is a free-text label for that log — pass one per call
+/// site so results.json reads as "which regex, where" rather than a list
+/// of anonymous entries.
 async function clickText(cdp, re, { index = 0, timeoutMs = 15000,
-    box = null } = {}) {
+    box = null, site = null } = {}) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     const s = await semantics(cdp);
@@ -669,10 +688,28 @@ async function clickText(cdp, re, { index = 0, timeoutMs = 15000,
         });
         await sleep(40);
       }
-      return n;
+      const entry = {
+        site: site || re.toString(), regex: re.toString(), box,
+        candidates: hits.length, clickedIndex: index,
+        matchedText: n.text.slice(0, 160),
+        otherTexts: hits.length > 1 ?
+          hits.filter((_, i) => i !== index).map((h) => h.text.slice(0, 80)) :
+          [],
+      };
+      CLICK_LOG.push(entry);
+      if (hits.length > 1) {
+        console.log(`   ⚠ clickText(${entry.site}) matched ${hits.length} ` +
+          `nodes, not 1 — clicked hits[${index}]=${JSON.stringify(entry.matchedText)}; ` +
+          `others: ${JSON.stringify(entry.otherTexts)}`);
+      }
+      return { ...n, candidates: hits.length };
     }
     await sleep(300);
   }
+  CLICK_LOG.push({
+    site: site || re.toString(), regex: re.toString(), box,
+    candidates: 0, clickedIndex: index, matchedText: null, notFound: true,
+  });
   return null;
 }
 
@@ -1000,12 +1037,44 @@ async function runSermon(origin, { withPlant = true } = {}) {
     // no sermon title is on screen yet — expand "Baptism" first, which
     // is where sermon 004 ("Temptation After Baptism…") lives per
     // assets/sermons/index.json.
-    const topic = await clickText(cdp, /^Baptism\b/i, { timeoutMs: 20000 });
+    const topic = await clickText(cdp, /^Baptism\b/i,
+      { timeoutMs: 20000, site: 'runSermon:expandTopic' });
     console.log(`   expanded topic: ${topic ? JSON.stringify(topic.text.slice(0, 60)) : 'NOT FOUND'}`);
     await sleep(2000);
-    const hit = await clickText(cdp, /Temptation/i, { timeoutMs: 20000 });
+    // Unanchored and unboxed on purpose, not by oversight — see the
+    // 2026-09-06 sweep this comment documents. `SermonLibraryPage`'s own
+    // comment (that file, :28-38) records the reason a collapsed
+    // ExpansionTile's rows are safe to leave unanchored: Flutter never
+    // BUILDS the children of a collapsed tile, so the OTHER sermon whose
+    // title also contains "Temptation" ("Woe to the Man by Whom
+    // Temptation Comes…", assets/sermons/index.json:929) has no semantics
+    // node to match while its own topic group sits collapsed. `candidates`
+    // is asserted below anyway rather than trusted from that reasoning
+    // alone — a future change that auto-expands more than one group would
+    // make the premise false without touching this file.
+    const hit = await clickText(cdp, /Temptation/i,
+      { timeoutMs: 20000, site: 'runSermon:sermonRow' });
     console.log(`   clicked a sermon row: ${hit ? JSON.stringify(hit.text.slice(0, 80)) : 'NOT FOUND'}`);
     out.openedRow = hit ? hit.text.slice(0, 120) : null;
+    out.openedRowCandidates = hit ? hit.candidates : 0;
+    // The failure mode this guards: the group's OWN header ("Baptism\n12
+    // sermon(s)") also matches nothing here, but if it ever did — or if a
+    // second group were open — clicking hits[0] could re-collapse the
+    // topic instead of opening a sermon, and `out.openedRow` would still
+    // hold text that LOOKS like a success. Comparing against the topic
+    // header's own text, and against the expected title, is what makes
+    // that distinguishable instead of decorative.
+    out.openedRowIsGroupHeader = !!(hit && topic && hit.text === topic.text);
+    out.openedRowIsExpectedSermon =
+      !!(hit && /Temptation After Baptism/i.test(hit.text));
+    if (out.openedRowCandidates > 1) {
+      console.log(`   sermon-row click was AMBIGUOUS: ${out.openedRowCandidates} candidates matched /Temptation/i`);
+    }
+    if (out.openedRowIsGroupHeader) {
+      console.log('   the click landed on the TOPIC HEADER, not a sermon row');
+    } else if (!out.openedRowIsExpectedSermon) {
+      console.log(`   the click landed on neither the expected sermon title nor the header: ${JSON.stringify(out.openedRow)}`);
+    }
     await sleep(3000);
     const hashAfterOpen = await evalJs(cdp, 'location.hash');
     const detailText = await pageText(cdp);
@@ -1173,9 +1242,29 @@ async function runYoutube(origin) {
 
     // The embed only mounts after a tap — videos_page.dart:592's poster
     // InkWell. Nothing autoplays on arrival, by design.
+    //
+    // 2026-09-06 sweep: matched exactly 1 node under the harness's actual
+    // (English) locale — confirmed against results.json, not assumed.
+    // NOT proven safe under every locale, and `candidates` staying at 1
+    // would not catch it: `_wholeSeriesRow`'s Chinese-track compilation
+    // button (videos_page.dart:445-487) carries the label "中文" — one of
+    // this regex's own alternatives — at zh-Hans/zh-Hant. If a cold
+    // Chrome profile ever resolved to a Chinese locale (`Browser.launch`
+    // does not pin `--lang`, so this rides whatever the OS gives it), the
+    // AppBar title "Standing at the Cross" stops matching and "中文" could
+    // become the sole, wrong, match — one confident hit on the wrong
+    // node, same shape as the chronology bug, just not the >1-candidate
+    // shape this sweep's `candidates` field detects. Left as a known gap
+    // rather than boxed here: the existing "no iframe → raw click"
+    // fallback below likely self-heals it, and this harness has no
+    // locale argument to reproduce the failure with. See the queue.
     const poster = await clickText(cdp, /Standing at the Cross|Play|播放|第1集|Episode 1/i,
-      { timeoutMs: 12000 });
+      { timeoutMs: 12000, site: 'runYoutube:poster' });
     console.log(`   tapped: ${poster ? JSON.stringify(poster.text.slice(0, 70)) : 'NOTHING MATCHED'}`);
+    if (poster && poster.candidates > 1) {
+      console.log(`   poster click was AMBIGUOUS: ${poster.candidates} nodes matched — this is a single-video page (/#/videos/cross), so a second match is worth reading in results.json before trusting the tap`);
+    }
+    out.posterCandidates = poster ? poster.candidates : 0;
     await sleep(3000);
     let frames = await evalJs(cdp, IFRAME_DUMP);
     if (!frames.length) {
@@ -1242,10 +1331,28 @@ async function runYoutube(origin) {
     out.shotBefore = await screenshot(cdp, 'youtube-before-switch');
 
     // (iv) the language switch.
+    //
+    // 2026-09-06 sweep: on THIS route (/#/videos/cross, episode 1 of
+    // 在十字架下) this regex matches 2 nodes, not 1, and that is correct —
+    // `videos_page.dart:673` (`_languageRow`) builds one ChoiceChip per
+    // `playableTracks` entry, this is the one episode with all three
+    // (en/yue/cmn per that file's own comment at :663-667), and the
+    // active language's chip ("English") is excluded from the regex on
+    // purpose, so both remaining chips are legitimate, visible, clickable
+    // matches — not an off-screen decoy outranking the real target the
+    // way the chronology bug's lane did. Every assertion below
+    // (`remounted`, `startParam`) only cares THAT a switch happened, not
+    // which language was picked, so this is left unboxed and unanchored;
+    // `candidates` is still recorded so an assertion that DOES care which
+    // language fired can see the ambiguity instead of assuming one.
     console.log('\n   ── language switch ──');
     const chip = await clickText(cdp, /粤语|廣東話|Cantonese|國語|普通话|Mandarin|中文/i,
-      { timeoutMs: 10000 });
+      { timeoutMs: 10000, site: 'runYoutube:languageChip' });
     console.log(`   tapped language chip: ${chip ? JSON.stringify(chip.text) : 'NOTHING MATCHED'}`);
+    if (chip && chip.candidates > 1) {
+      console.log(`   language-chip click matched ${chip.candidates} chips (expected — see comment above), clicked "${chip.text}"`);
+    }
+    out.languageChipCandidates = chip ? chip.candidates : 0;
     await sleep(4000);
     const after = await evalJs(cdp, IFRAME_DUMP);
     out.iframesAfter = after;
@@ -3178,6 +3285,15 @@ async function main() {
           `chip lied on ${sc.tapsWhereChipLied}`));
     }
   }
+  out.clicks = CLICK_LOG;
+  const ambiguousClicks = CLICK_LOG.filter((c) => c.candidates > 1);
+  if (ambiguousClicks.length) {
+    console.log(`\n  ⚠ ${ambiguousClicks.length} clickText() call(s) matched more than one node ` +
+      `this run — see out.clicks in results.json:`);
+    for (const c of ambiguousClicks) {
+      console.log(`    ${c.site}: ${c.candidates} candidates, clicked ${JSON.stringify(c.matchedText)}`);
+    }
+  }
   mkdirSync(OUT_DIR, { recursive: true });
   writeFileSync(join(OUT_DIR, 'results.json'), JSON.stringify(out, null, 2));
   console.log(`\n  machine-readable results: ${join(OUT_DIR, 'results.json')}`);
@@ -3258,6 +3374,35 @@ async function main() {
   for (const [label, s] of [['sermon', out.sermon],
                             ['sermon CONTROL', out.sermonControl]]) {
     if (!s) continue;
+    // 2026-09-06. `out.openedRow` used to be recorded and never checked —
+    // the exact "decorative assertion" shape this file's own header warns
+    // against. A click that lands on the topic's own header (collapsing
+    // it back up) still returns a truthy `hit`, so without this the walk
+    // below would carry on reading a Bible-reader page's worth of
+    // nothing and blame Back for it.
+    if (s.error || !s.openedRow || !s.backTrace) {
+      gate.push(['INCONCLUSIVE', `Opened sermon row (${label})`,
+        'the walk did not reach the row-click step']);
+    } else if (s.openedRowIsGroupHeader) {
+      gate.push(['FAIL', `Opened sermon row (${label})`,
+        `the click matched the topic header ("${s.openedRow}"), not a ` +
+        'sermon row — it likely re-collapsed the group instead of ' +
+        `opening one (candidates=${s.openedRowCandidates})`]);
+    } else if (!s.openedRowIsExpectedSermon) {
+      gate.push(['FAIL', `Opened sermon row (${label})`,
+        `the click landed on "${s.openedRow}", not the expected sermon ` +
+        `title (candidates=${s.openedRowCandidates})`]);
+    } else if (s.openedRowCandidates > 1) {
+      gate.push(['FAIL', `Opened sermon row (${label})`,
+        `/Temptation/i matched ${s.openedRowCandidates} semantics nodes — ` +
+        'it happened to click the right one this run, but an unanchored ' +
+        'multi-candidate match is exactly what made the chronology case ' +
+        'photograph the wrong thing for its whole life']);
+    } else {
+      gate.push(['PASS', `Opened sermon row (${label})`,
+        `exactly one node matched /Temptation/i and it was the expected ` +
+        'sermon title']);
+    }
     if (s.error || !s.openedRow || !s.backTrace) {
       gate.push(['INCONCLUSIVE', `Back (${label})`,
         'the walk did not reach the Back step']);
