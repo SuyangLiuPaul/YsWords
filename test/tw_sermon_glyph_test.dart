@@ -264,7 +264,13 @@ void main() {
       // 層面 ×4, 字面 ×4, 前面 ×3, 全面 ×3 and the like. The flour check
       // that carries this claim is unchanged: 面酵 0, 麥面 0, 團面 0,
       // 面粉 0, 面糰 0 across all 429 files.
-      expect(count('面'), 7594);
+            // 2026-09-07: CP37's Chinese body was replaced by library 6012's
+      // (the owner's call — a machine transcript of the Chinese radio
+      // delivery in place of a machine translation of the English), and
+      // it is 46,417 characters against the 33,299 it replaced. CP37's
+      // two bodies are the ONLY files under assets/sermons/ that
+      // changed, so this delta cannot have come from anywhere else.
+      expect(count('面'), 7607);
       for (final keep in const ['裏面', '面前', '方面', '面對', '前面', '畫面']) {
         expect(count(keep), greaterThan(0), reason: keep);
       }

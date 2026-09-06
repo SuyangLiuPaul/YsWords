@@ -152,34 +152,33 @@ Every edit is counted in the sidecar. There are four, and no others:
   put a splice inside a decode window — and a half-sentence at the seam
   is left as a half-sentence behind a visible note.
 
-6012 IS TRANSCRIBED BUT ITS `hasBody` IS NOT FLIPPED
------------------------------------------------------
-`--set-has-body` closes the seam on 15 of the 16 and holds 6012 (ws01,
-活着就是基督) back. The body is written; only the flip is withheld.
+6012 WAS HELD BACK, AND WAS RELEASED ON 2026-09-07
+---------------------------------------------------
+For one day `--set-has-body` closed the seam on 15 of the 16 and held
+6012 (ws01, 活着就是基督) back. It no longer does; `--hold` defaults to
+empty. The history is kept because the reasoning is the useful part.
 
-The reason is what the body made checkable. `refs.json` tiered 6012/CP37
-`confirmed` on an exact title alone and then refuted it "AS A PAIR OF
-TEXTS" because there was no library body to compare. There is one now,
-and the two texts run the SAME ARGUMENT IN THE SAME ORDER: 2 Corinthians
-12:11, 「无」 appearing twice in it, Galatians 6:3, 1 Corinthians 13:2,
-"only love makes you something", then back to Philippians 1:21. Measured
-by `transcribe_sample_check.py --compare 6012 CP37`, the pair scores a
-6-gram Jaccard of 0.0179 — ABOVE the 0.0142 of 6014/396, a pair refs.json
-grades `confirmed` — against 0.0014 for both controls. They are the same
-sermon: CP37 is the English camp recording, ws01 the Chinese radio
-broadcast of it, hymn and studio host included.
+`refs.json` tiered 6012/CP37 `confirmed` on an exact title alone, then
+`scripts/adjudicate_cross_corpus_duplicates.py` refuted it "AS A PAIR OF
+TEXTS" — not as an identity claim — because there was no library body to
+check the identity against. Transcribing 6012 produced one, which spent
+that refutation's only premise.
 
-`merge_sermon_library.py` reads `confirmed` out of refs.json, and 6012's
-row there says `refuted`. So flipping `hasBody` would send 6012 down the
-NEW-sermon path and ship 活着就是基督 twice, at 415. Changing that row is
-refs.json's owner's call and not this script's: the choice between CP37's
-Chinese (a machine translation of the English) and ws01's (a machine
-transcript of a different, Chinese delivery) is a judgement about which
-sermon the corpus should carry, not a mechanical one.
+With a body to measure, `transcribe_sample_check.py --compare 6012 CP37`
+puts the pair at a 6-gram Jaccard of 0.0179 — above the 0.0142 of
+6014/396, which that table grades `confirmed` — against 0.0014 and
+0.0016 for the two controls. They are the same sermon: CP37 is the
+English camp recording, ws01 the Chinese radio broadcast, studio hymn
+and host included.
 
-    python3 scripts/transcribe_sermons.py --set-has-body --hold ""
-
-flips all 16, and should only be run once that row says so.
+What remained was not mechanical and did not belong to this script: CP37's
+Chinese is a machine TRANSLATION of the English recording, ws01's is a
+machine TRANSCRIPT of the man preaching in Chinese, so neither is human
+and the owner's human-beats-machine rule could not choose between them.
+The owner chose the library's text on 2026-09-07, and the adjudication
+row now says `confirmed` / `library-fuller`, so the merge replaces
+CP37's Chinese body instead of shipping 活着就是基督 twice. CP37 keeps
+its English, its id and its slot; the corpus stays at 429.
 
 Usage
 -----
@@ -634,9 +633,10 @@ def main() -> int:
                     help="re-run whisper as well")
     ap.add_argument("--set-has-body", action="store_true",
                     help="write hasBody/bodyFile/bodyChars into index.json")
-    ap.add_argument("--hold", default="6012",
-                    help="ids to transcribe but NOT flip. Default 6012 — "
-                         "see the module header.")
+    ap.add_argument("--hold", default="",
+                    help="ids to transcribe but NOT flip. Empty since "
+                         "2026-09-07, when 6012 was released — see the "
+                         "module header.")
     args = ap.parse_args()
 
     if not MODEL.exists():

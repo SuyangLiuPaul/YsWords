@@ -51,6 +51,21 @@ _spec = importlib.util.spec_from_file_location('index_sermon_library_refs',
 ix = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ix)
 
+# The adjudication table, imported rather than guessed at. It is the one
+# tracked record of WHICH app sermons carry library text — see the stray
+# check below for why a filename prefix is not good enough.
+_adj_spec = importlib.util.spec_from_file_location(
+    'adjudicate_cross_corpus_duplicates',
+    os.path.join(REPO, 'scripts', 'adjudicate_cross_corpus_duplicates.py'))
+_adj = importlib.util.module_from_spec(_adj_spec)
+_adj_spec.loader.exec_module(_adj)
+# Mirrors merge_sermon_library.REPLACEABLE: only these two say the
+# library body covers the app text's whole scope, so only these two
+# actually caused a replacement.
+LIBRARY_SOURCED_APP_IDS = {
+    k.split('|')[1] for k, v in _adj.A.items()
+    if v[0] == 'confirmed' and v[1] in ('complete', 'library-fuller')}
+
 
 # ── Measured literals ─────────────────────────────────────────────
 # Measured against assets/sermon_library/ on 2026-09-06. Quoted as
@@ -175,12 +190,31 @@ class BracketNormalization(unittest.TestCase):
         if not checked:
             self.skipTest('app sermon corpus not present')
         self.assertGreaterEqual(checked, 800)
-        # The original 289 are keyed on bare ids; every merged record is
-        # `fy-<refcode>`. A non-`fy-` file here means the bracket rule
-        # has started matching ordinary app prose, which is exactly what
-        # the anchor on the OPENING 《 was added to prevent.
-        strays = [t for t in touched
-                  if not os.path.basename(t).startswith('fy-')]
+        # A body carries library text in one of TWO ways, and until
+        # 2026-09-07 this check knew only the first:
+        #
+        #   * it was merged in as a new record, keyed `fy-<refcode>`;
+        #   * or it is one of the app's own ids whose Chinese body was
+        #     REPLACED by the library's, keeping its id and its slot.
+        #
+        # The `fy-` prefix was a proxy for "came from the library" and
+        # the second case breaks it. CP37 broke it the day 6012 was
+        # promoted to `confirmed`/`library-fuller`: its Chinese is now
+        # the library's text under an app id, the bracket rule fired on
+        # it exactly as designed, and this test called it a stray.
+        #
+        # So the set is read from the adjudication table instead. English
+        # is deliberately NOT exempt for any id — the merge replaces the
+        # Chinese only, so an `en/` file changing is still a stray even
+        # for a replaced sermon.
+        def _from_library(path):
+            lang, name = os.path.split(path)
+            stem = name[:-4]
+            if stem.startswith('fy-'):
+                return True
+            return lang != 'en' and stem in LIBRARY_SOURCED_APP_IDS
+
+        strays = [t for t in touched if not _from_library(t)]
         self.assertEqual(strays, [],
                          'the bracket rule reached a body that did not '
                          'come from the library')

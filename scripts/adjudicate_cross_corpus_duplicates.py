@@ -84,15 +84,53 @@ CONF = {
 for k, c in CONF.items():
     A[k] = ('confirmed', c, 'SAME', 'pre-existing confirmed row; completeness assessed by this pass')
 
-# The one row that must not drive a text replacement: library 6012 has
-# no body at all (hasBody false, bodyFile null, bodyChars 0), so there
-# is nothing to promote and nothing to check the identity against. It
-# was tiered `confirmed` on `basis: exactTitle` alone.
+# 6012|CP37 -- refuted 2026-09-06 for want of a body, PROMOTED 2026-09-07
+# now that there is one.
+#
+# The refutation was never an identity claim. Its own words: "the sermons
+# may well be the same, but nothing can verify it". Its premise was that
+# library 6012 had no body. It has one now -- transcribed from the audio
+# on 2026-09-06 -- so the premise is spent and the pair is checkable for
+# the first time.
+#
+# Measured, `scripts/transcribe_sample_check.py --compare 6012 CP37`:
+#
+#   6012|CP37   (candidate)               6-gram Jaccard 0.0179
+#   6014|396    (graded confirmed here)                  0.0142
+#   6012|396    (control)                                0.0016
+#   6014|CP37   (control)                                0.0014
+#
+# The candidate scores ABOVE a pair this table already grades confirmed,
+# and an order of magnitude above both controls. The two run the same
+# argument in the same order -- 2 Cor 12:11, Gal 6:3, 1 Cor 13:2, "only
+# love makes you something", back to Phil 1:21.
+#
+# `library-fuller`, and this is the part that is measured rather than
+# preferred. Every reference CP37 carries that 6012 appears to lack is a
+# BARE CHAPTER whose specific verse 6012 actually has: Acts 16 -> Acts
+# 16:31, Matthew 7 -> Matthew 7:23, Revelation 3 -> Revelation 3:17.
+# CP37 has nothing outside 6012's scriptural scope. 6012 adds fifteen
+# references CP37 lacks (Psalms 73:25-26, Romans 9:3, Acts 20:20,
+# Philippians 1:28, Philippians 2, Luke 14:27 among them) and is ~50%
+# longer in significant characters, 14,648 against 9,748.
+#
+# What CP37 has and 6012 does not is the OCCASION: 营会 x7 and 策略 x3,
+# the framing of the talk as the last of three at a camp. 6012 is the
+# radio delivery and carries the studio framing instead (听主话语, and an
+# opening hymn). That is setting, not exposition, and it is the reason
+# the two share so little surface wording while sharing the argument.
+#
+# The choice between them was never mechanical -- CP37's Chinese is a
+# machine translation of the English recording, 6012's is a machine
+# transcript of the man preaching in Chinese -- so it went to the owner,
+# who took the library's on 2026-09-07.
 A['6012|CP37'] = (
-    'refuted', 'no-library-body', 'UNUSABLE',
-    "library 6012 has no body (hasBody false, bodyFile null); tiered confirmed on exact title alone with fingerprintAvailable false. "
-    "Refuted AS A PAIR OF TEXTS, not as an identity claim -- the sermons may well be the same, but nothing can verify it and there is "
-    "nothing to link or substitute. Must not be treated as DIFFERENT.")
+    'confirmed', 'library-fuller', 'SAME',
+    "6-gram Jaccard 0.0179 against 0.0142 for the confirmed 6014/396 calibration pair and 0.0014-0.0016 for both controls; same argument in the same order "
+    "(2 Cor 12:11 -> Gal 6:3 -> 1 Cor 13:2 -> Phil 1:21). library-fuller on coverage, not on length alone: every reference CP37 has is inside 6012's scope "
+    "(its three apparent exclusives are bare chapters whose verses 6012 carries -- Acts 16:31, Matthew 7:23, Revelation 3:17), while 6012 adds fifteen CP37 "
+    "lacks. CP37 keeps its English; only the Chinese is replaced. What is lost is the camp framing (营会/策略), which is occasion rather than exposition. "
+    "Owner's decision 2026-09-07: the corpus carries the library's text.")
 
 
 def main():

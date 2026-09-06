@@ -36,12 +36,24 @@ String sermonPreacher(String locale) =>
 // 429 from 2026-09-06: the 289 expository sermons this corpus began
 // as, plus 140 of Pastor Eric Chang's messages merged in from the
 // 福音电台 library. 141 of his records there were new. 16 of those had
-// audio and no transcript; 15 were transcribed and proofread the same
-// day and are included here. The 16th, library 6012 (ws01,
-// 活着就是基督), is transcribed and deliberately held back: it is the
-// same sermon as app CP37, so merging it would ship one sermon twice.
-// So the corpus is 429 — 141 minus that one — and not the 430 that
-// arithmetic suggests.
+// audio and no transcript, and all 16 were transcribed.
+//
+// The 16th, library 6012 (ws01, 活着就是基督), does not add a 430th
+// record, and the reason changed on 2026-09-07 without the number
+// moving. It was held back at first because it is the same sermon as
+// app CP37 and the adjudication row said `refuted`, so merging it would
+// have shipped that sermon twice. The row said `refuted` only for want
+// of a library body to check the identity against; transcribing 6012
+// supplied one, and the pair then measured ABOVE a pair already graded
+// `confirmed`. So it is a duplicate after all — and the owner chose
+// which text the corpus should carry, since CP37's Chinese is a machine
+// translation of the English camp recording and 6012's is a machine
+// transcript of the Chinese radio delivery, leaving no rule to decide.
+// 6012's text now IS CP37's Chinese body. CP37 keeps its id, its slot
+// and its English.
+//
+// So the corpus is 429 either way: 141 new minus the one that turned
+// out to be a sermon already here.
 const int sermonCount = 429;
 
 /// Substituted into any `uiStrings` entry containing `{name}`.

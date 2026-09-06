@@ -82,18 +82,23 @@ void main() {
     expect(chapterExistsInCanon('Not A Book', 1), isTrue);
   });
 
-  test('232 and CP37 refuse to parse in both Chinese locales', () {
+  test('232 still refuses to parse; CP37 no longer has anything to', () {
     // Identified by the exact matched text rather than by filtering on
     // `parseReference`'s result — that result is now null for both, so
     // a filter that reads it would find zero matches instead of one.
     const known232 = {'zh-CN': '阿摩司书第12章', 'zh-TW': '阿摩司書第12章'};
-    // 2026-09-05: the Traditional spelling moved 啓→啟 when
-    // `assets/sermons/zh-TW/` was normalised to the printed 和合本
-    // (啟 425, 啓 0 in `assets/cuvs-yhwh-tr.json`). Revelation still has
-    // 22 chapters, so this still refuses to parse — the glyph changed,
-    // the verdict did not. Pinned by exact text on purpose, which is why
-    // it had to be edited here rather than silently keeping up.
-    const knownCp37 = {
+    // 2026-09-07: CP37's half of this test is GONE, and that is the
+    // point of what replaced it.
+    //
+    // Its Chinese used to read 「让我给你读启示录第三章。启示录三十七章
+    // 十七节。」 — naming chapter 3 correctly and then citing chapter 37
+    // of a book with 22. That was an artefact of the body being a
+    // machine TRANSLATION of the English recording. The owner chose the
+    // library's text on 2026-09-07 (library 6012, the Chinese radio
+    // delivery of the same sermon), and it cites 「启示录三章十七节」
+    // correctly, twice. The fabricated chapter is not in the corpus any
+    // more, so the assertion is inverted: it now guards the absence.
+    const goneFromCp37 = {
       'zh-CN': '启示录三十七章十七节',
       'zh-TW': '啟示錄三十七章十七節',
     };
@@ -111,15 +116,10 @@ void main() {
 
       final textCp37 =
           File('assets/sermons/$locale/CP37.txt').readAsStringSync();
-      final matchesCp37 = passageRefPattern
-          .allMatches(textCp37)
-          .map((m) => m.group(0)!)
-          .where((s) => s == knownCp37[locale])
-          .toList();
-      expect(matchesCp37, hasLength(1), reason: 'CP37 $locale');
-      expect(parseReference(matchesCp37.single), isNull,
-          reason: 'CP37 $locale: ${matchesCp37.single} — Revelation has '
-              '22 chapters');
+      expect(textCp37.contains(goneFromCp37[locale]!), isFalse,
+          reason: 'CP37 $locale: ${goneFromCp37[locale]} is back — the '
+              'machine-translated body has returned, or the merge stopped '
+              'replacing this sermon from the library');
 
       // The nearby in-canon reference in the same sermon must NOT lose
       // its ability to parse — a check that this fix didn't widen.
@@ -191,7 +191,17 @@ void main() {
     // same 9 known sites, which is the half that carries the claim. The gap between the two totals is what carries the
     // argument and it moved by TWO, from 32 to 34, so both are asserted:
     // see the note on `totalParsed`.
-    expect(totalMatches, 16659,
+    // 2026-09-07: 16659 -> 16707 and 16619 -> 16669, and the arithmetic
+    // is the check. Only CP37's two Chinese bodies changed under
+    // assets/sermons/ (the owner took library 6012's text for it), so
+    // every part of this delta has to come from that one sermon:
+    // +50 new matches, all of which parse, MINUS the 2 that stopped
+    // matching — 启示录三十七章十七节 / 啟示錄三十七章十七節, the
+    // fabricated Revelation 37 the machine translation produced. Net +48
+    // matched, +50 parsed, and the out-of-canon gap falls 40 -> 38.
+    // A gap that had moved by anything but 2 would mean the replacement
+    // brought in an out-of-canon citation of its own.
+    expect(totalMatches, 16707,
         reason: 'total passageRefPattern matches across all 1147 '
             'transcripts — pins the corpus this sweep covers. 12498 '
             'before queue-7296 (約拿記/约拿记 + 哥罗西书 added to the alias '
@@ -228,7 +238,7 @@ void main() {
     // left unrepaired in the corpus, because inserting the 、 would be
     // punctuating the preacher. Every OTHER reference the 15 brought in
     // parses.
-    expect(totalParsed, 16619,
+    expect(totalParsed, 16669,
         reason: '12464 before queue-7296: +7, matching the 7 new '
             'matches above — Jonah 2 and Colossians 1:19 are both '
             'in-canon, so every new match parses. +2 more on 2026-09-03: '

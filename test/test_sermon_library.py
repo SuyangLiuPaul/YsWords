@@ -66,17 +66,26 @@ _spec.loader.exec_module(sl)
 # Chang were transcribed. Every number below was read off the data before
 # it was changed here, not adjusted until the suite went quiet.
 #
-# These count through the INDEX, not the directory, and the gap between
-# the two is a decision rather than an accident: `bodies/` holds 859
-# files while `hasBody` is set on 858. The odd one is library 6012
-# (ws01, 活着就是基督) — transcribed, and its flag deliberately NOT set,
-# because it is the same sermon as app CP37 and flipping it would ship
-# that sermon twice. `bodies/6012.txt` is an orphan on purpose.
+# 2026-09-07: the index and the directory agree again, at 859. They
+# disagreed for one day. `bodies/6012.txt` (ws01, 活着就是基督) was
+# written but its `hasBody` deliberately not set, because 6012 is the
+# same sermon as app CP37 and flipping it would have shipped that sermon
+# twice — the adjudication row said `refuted`, so the merge would have
+# taken 6012 down the NEW-record path.
 #
-# So every number here is +15, never +16.
+# That row said `refuted` only because there was no library body to
+# check the identity against, and transcribing 6012 produced one. The
+# owner then chose which text the corpus should carry — CP37's Chinese
+# is a machine translation of the English camp recording, 6012's a
+# machine transcript of the Chinese radio delivery, so no rule could
+# choose for them — and took the library's. The row is now
+# `confirmed`/`library-fuller`, the merge REPLACES CP37's Chinese
+# instead of adding a record, and the app corpus stays at 429.
+#
+# So every number here is +16 now, and 6012 is no longer an orphan.
 MEASURED = {
     'records': 940,
-    'bodyFiles': 858,
+    'bodyFiles': 859,
     'bodied200': 856,
     'withAudio': 673,
     # 5_541_718 after proofreading pass 1 on 2026-09-06: 62 misheard book
@@ -108,8 +117,8 @@ MEASURED = {
     # moved; verified separately by diffing all fifteen against the
     # shipped copies, which matched except for the deliberate
     # 耶和华 → 雅伟 the merge applies downstream.
-    'bodyChars': 5_542_483,
-    'distinctBodies': 856,
+    'bodyChars': 5_559_159,
+    'distinctBodies': 857,
     'maxSameBody': 2,
     'distinctTitles': 933,
     'distinctUrls': 938,

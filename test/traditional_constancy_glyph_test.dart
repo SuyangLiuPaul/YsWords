@@ -127,7 +127,13 @@ void main() {
     // 恆 were read — fy-cm03's 「光明與我永恆在」 in a sung line and
     // fy-ws04's 「所謂的永恆的盼望」 — and the zero side, which is the one
     // that carries the claim, did not move.
-    expect(traditional, 438);
+        // 2026-09-07: CP37's Chinese body was replaced by library 6012's
+    // (the owner's call — a machine transcript of the Chinese radio
+    // delivery in place of a machine translation of the English), and
+    // it is 46,417 characters against the 33,299 it replaced. CP37's
+    // two bodies are the ONLY files under assets/sermons/ that
+    // changed, so this delta cannot have come from anywhere else.
+    expect(traditional, 439);
     expect(mainland, 0);
   });
 

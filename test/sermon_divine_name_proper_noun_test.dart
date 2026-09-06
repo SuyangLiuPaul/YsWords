@@ -122,8 +122,14 @@ void main() {
     // is not the number: it is that the two scripts still agree EXACTLY,
     // which is what catches a Traditional body that was truncated or
     // converted by a different route from its Simplified twin.
-    expect(count(simplified, '雅伟'), 645);
-    expect(count(traditional, '雅偉'), 645);
+        // 2026-09-07: CP37's Chinese body was replaced by library 6012's
+    // (the owner's call — a machine transcript of the Chinese radio
+    // delivery in place of a machine translation of the English), and
+    // it is 46,417 characters against the 33,299 it replaced. CP37's
+    // two bodies are the ONLY files under assets/sermons/ that
+    // changed, so this delta cannot have come from anywhere else.
+    expect(count(simplified, '雅伟'), 646);
+    expect(count(traditional, '雅偉'), 646);
     // The two agree exactly, which is the check: sermon 100's Traditional
     // body used to be a truncated translation and lost the name three
     // times with the rest of the text. It was rebuilt on 2026-09-05, and

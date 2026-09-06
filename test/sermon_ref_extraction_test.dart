@@ -747,7 +747,13 @@ void main() {
       // and fy-rms07-03's 「很多基督徒讀羅馬書七章時」. Neither is a clock
       // time, so a 时/時 guard would now delete two more real citations
       // than it would have yesterday.
-      expect(c['whenAfterCitation'], 36,
+            // 2026-09-07: CP37's Chinese body was replaced by library 6012's
+      // (the owner's call — a machine transcript of the Chinese radio
+      // delivery in place of a machine translation of the English), and
+      // it is 46,417 characters against the 33,299 it replaced. CP37's
+      // two bodies are the ONLY files under assets/sermons/ that
+      // changed, so this delta cannot have come from anywhere else.
+      expect(c['whenAfterCitation'], 38,
           reason: 'a 时/時 guard would delete this many real citations');
     });
 
@@ -817,7 +823,13 @@ void main() {
       // fy-rms09-01's 「第六第七第八三章」 and fy-ws04's 「添上四五個
       // 傷口」. Not one is a citation, so the two-character floor still
       // holds and the long-run reading below is untouched.
-      expect(c['digitRuns2'], 314);
+            // 2026-09-07: CP37's Chinese body was replaced by library 6012's
+      // (the owner's call — a machine transcript of the Chinese radio
+      // delivery in place of a machine translation of the English), and
+      // it is 46,417 characters against the 33,299 it replaced. CP37's
+      // two bodies are the ONLY files under assets/sermons/ that
+      // changed, so this delta cannot have come from anywhere else.
+      expect(c['digitRuns2'], 310);
       // 5 → 7 on 2026-09-06: one site in the 15 transcribed sermons, in
       // both scripts. fy-ws04's 「就是在一九零零年 他就去世了」 — the year
       // Nietzsche died, in a stretch of ws04 that argues against his

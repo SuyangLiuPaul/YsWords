@@ -342,9 +342,17 @@ void main() {
       // Romans 90 — nothing is invented and nothing is underlined that
       // would do nothing when tapped. `docs/OPEN-ITEMS.md` carries it for
       // someone with the audio.
+      // 2026-09-07: CP37's pair is GONE, and this is the only place the
+      // improvement is visible as a shrinking set. Its Chinese body was a
+      // machine translation of the English recording and it read 「让我给
+      // 你读启示录第三章。启示录三十七章十七节。」 — naming chapter 3
+      // correctly and then citing chapter 37 of a book with 22. The owner
+      // took library 6012's text for CP37 (the Chinese radio delivery of
+      // the same sermon), which cites 「启示录三章十七节」 correctly, twice.
+      // Six remain, and every one of them is a decoder artifact rather
+      // than a citation anyone got wrong.
       expect(unresolved, {
         '阿摩司书第12章', '阿摩司書第12章',
-        '启示录三十七章十七节', '啟示錄三十七章十七節',
         '罗马书九十十一章', '羅馬書九十十一章',
         '罗马书九十十一三章', '羅馬書九十十一三章',
       }, reason: 'a match the parser cannot resolve underlines nothing');

@@ -313,8 +313,16 @@ void main() {
 
     testWidgets('an audio-only record says it has no transcript',
         (tester) async {
-      // 6012 活着就是基督 — two recordings, zero characters of body.
-      await mount(tester, const SermonLibrarySermonPage(sermonId: 6012));
+      // 2727 CM02 — one recording, zero characters of body.
+      //
+      // This was 6012 until 2026-09-07, when that record was transcribed
+      // and its text taken into the app corpus as CP37's Chinese. The
+      // state itself is still reachable: 80 of the library's 940 records
+      // are audio with no body, all of them by preachers outside this
+      // corpus's scope, so none of them will be transcribed the way 6012
+      // was. If this ever fails for the same reason again, check that
+      // count before assuming the branch is dead.
+      await mount(tester, const SermonLibrarySermonPage(sermonId: 2727));
       expect(find.text(uiStrings['sermonLibraryNoText']!['zh-Hans']!),
           findsOneWidget);
       expect(find.byType(SelectableText), findsNothing);

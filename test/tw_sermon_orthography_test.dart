@@ -97,11 +97,22 @@ void main() {
     // below is what carries the claim and it is still zero across 429
     // files, so the new bodies went through the same normalisation as
     // every other one rather than round the side of it.
-    expect(count(sermons, '為'), 35194);
-    expect(count(sermons, '裏'), 13243);
-    expect(count(sermons, '著'), 9667);
-    expect(count(sermons, '才'), 3739);
-    expect(count(sermons, '啟'), 756);
+    // 2026-09-07: CP37's Chinese body was replaced by library 6012's
+    // (the owner's call — a machine transcript of the Chinese radio
+    // delivery in place of a machine translation of the English), and
+    // it is 46,417 characters against the 33,299 it replaced. CP37's
+    // two bodies are the ONLY files under assets/sermons/ that
+    // changed, so this delta cannot have come from anywhere else.
+    // 為 +84, 裏 +22, 著 +13, 才 +28, 啟 -1 (the old body's
+    // 啟示錄 citations went with it). What was read BEFORE moving
+    // any of them is the zero side above: 爲/裡/着/纔/啓 are still
+    // absent from all 429 files, so the replaced body went through
+    // the same normalisation as every other one.
+    expect(count(sermons, '為'), 35278);
+    expect(count(sermons, '裏'), 13265);
+    expect(count(sermons, '著'), 9680);
+    expect(count(sermons, '才'), 3767);
+    expect(count(sermons, '啟'), 755);
   });
 
   test('every merged body is exactly as long as its Simplified source', () {
