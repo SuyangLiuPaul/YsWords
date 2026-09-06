@@ -29,6 +29,7 @@
 // repo's dependency graph.
 //
 //     node tools/web_verify_headless.mjs [--root build/web] [--out DIR]
+//                                        [--steps steps.json]
 //                                        [all|routes|sermon|history|youtube|typography]
 //
 // Defaults: `--root build/web`, `--out build/web-verify`, subcommand `all`.
@@ -48,6 +49,10 @@
 //   youtube     the enablejsapi handshake and the language switch
 //   typography  sermon 004 at 402x874, captured, with the paragraph gap
 //               measured off the live layout
+//   picker      the Bible-version picker driven the way assistive
+//               technology drives it — the same coordinates replayed with
+//               Flutter's accessibility tree ON and OFF, with the URL's
+//               `?v=` as the oracle in both
 //
 // 2026-09-03: this is now also a REGRESSION GATE, not only a report.
 // Two of the things it found have been fixed — `/settings/:section` not
@@ -107,7 +112,7 @@
 'use strict';
 
 import { spawn } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
@@ -117,7 +122,7 @@ const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 // ── argv ─────────────────────────────────────────────────────────────
 
-const VALUE_FLAGS = new Set(['--root', '--out']);
+const VALUE_FLAGS = new Set(['--root', '--out', '--steps']);
 const argv = process.argv.slice(2);
 function flag(name, dflt) {
   const i = argv.indexOf(name);
@@ -125,11 +130,18 @@ function flag(name, dflt) {
 }
 const WEB_ROOT = resolvePath(flag('--root', 'build/web'));
 const OUT_DIR = resolvePath(flag('--out', 'build/web-verify'));
+// `picker` only. Without it that case MEASURES the picker's coordinates
+// off the accessibility tree and writes `steps.json` into `--out`; with
+// it, the case REPLAYS exactly those pixels instead. That is how the
+// same coordinates can drive a fixed build and a broken one, so a
+// difference between them cannot be a difference in where the harness
+// aimed. See "case 9" below.
+const STEPS_IN = flag('--steps', null);
 const positional = argv.filter((a, i) =>
   !a.startsWith('--') && !VALUE_FLAGS.has(argv[i - 1]));
 const CMD = positional[0] || 'all';
 const KNOWN = ['all', 'routes', 'sermon', 'history', 'youtube', 'typography',
-               'chronology', 'bible', 'version'];
+               'chronology', 'bible', 'version', 'picker'];
 if (!KNOWN.includes(CMD)) {
   console.error(`Unknown subcommand ${JSON.stringify(CMD)}. One of: ${KNOWN.join(', ')}`);
   process.exit(2);
@@ -2576,6 +2588,427 @@ async function runVersionProbe(origin) {
   return rows;
 }
 
+// ── case 9: the version picker under assistive technology ────────────
+//
+// `showLanguageGroupedVersionMenu` hangs its whole body — three language
+// pills and every version row — inside ONE `PopupMenuItem`, and
+// `PopupMenuItemState.build` wraps every item in `MergeSemantics`. With
+// the accessibility tree on, that made the picker a single node:
+//
+//   [menuitem] y=51 x=442 w=280 h=125
+//     "English\n繁體中文\n简体中文\n和合本雅伟版(简体)\n梁家铿译本(简体)"
+//
+// One node, one rect, one tap action — so a click ANYWHERE inside the
+// picker, and every screen-reader activation, ran the first language
+// pill. That is a total block on changing the Bible version for anyone
+// using VoiceOver, Switch Control or Voice Control, and Flutter web turns
+// the semantics tree on by itself when it detects assistive technology.
+//
+// The oracle here is the URL, not the chip and not the verse text.
+// `url_sync_service_web.dart:386` writes `#<path>?v=<currentVersion>`
+// after every switch, so `location.hash` says WHICH ROW WAS ACTIVATED
+// even when the accessibility tree is off and there is nothing else to
+// read on a canvas. That is what makes the semantics-OFF control
+// possible at all.
+//
+// ── Method: ONE set of coordinates, four cells ───────────────────────
+//
+// The fix removes a `MergeSemantics`, which is a `RenderProxyBox` (see
+// `rendering/proxy_box.dart`: it overrides `describeSemanticsConfiguration`
+// and NOTHING else). So the picker occupies identical pixels before and
+// after it, and coordinates measured on one build are valid on the other.
+// That is what makes the comparison worth anything: if each build were
+// driven at its own coordinates, "the broken one selected the wrong row"
+// could always be "the harness aimed somewhere else".
+//
+// So the fixed build's semantics-ON pass MEASURES the coordinates off the
+// per-target nodes and writes them to `steps.json`; every other cell
+// REPLAYS that file. Run it as:
+//
+//   picker --root build/web-fixed  --out OUT/fixed
+//   picker --root build/web-broken --out OUT/broken --steps OUT/fixed/steps.json
+//
+// A run without `--steps` measures; a run with it replays. Both run the
+// tree ON and then OFF.
+//
+// (An earlier draft of this case had the broken build measure its own
+// coordinates from the merged node's rect by layout arithmetic. It does
+// not work: `pickerTargets` keyed a node by the FIRST line of its label,
+// and the merged node's first line is "English", so the broken build
+// reported the whole 320x143 body as the English pill's own node and
+// every other leg died with "not an addressable node" — leaving the
+// semantics-OFF control with nothing to replay. Measuring on the build
+// that has real nodes and replaying on the one that does not is both
+// simpler and a stronger control.)
+
+const PICKER_PILLS = ['English', '繁體中文', '简体中文'];
+const PICKER_ROW_IDS = {
+  'King James Version': 'kjv',
+  'Lexham English Bible': 'leb',
+  '和合本雅伟版(简体)': 'cuvs-yhwh',
+  '和合本雅偉版(繁體)': 'cuvs-yhwh-tr',
+  '梁家铿译本(简体)': 'biblexg-v2',
+  '梁家鏗譯本(繁體)': 'biblexg-v2-tr',
+};
+// One walk that never asks for the version already on screen, so every
+// step has a positive oracle (the hash MOVES) rather than the weaker
+// "nothing happened".
+const PICKER_WALK = [
+  { pill: '简体中文', row: '梁家铿译本(简体)' },
+  { pill: '繁體中文', row: '和合本雅偉版(繁體)' },
+  { pill: 'English', row: 'King James Version' },
+  { pill: 'English', row: 'Lexham English Bible' },
+  { pill: '简体中文', row: '和合本雅伟版(简体)' },
+  { pill: '繁體中文', row: '梁家鏗譯本(繁體)' },
+];
+// Where inside a target's own rect to aim. The defect fired identically
+// at every coordinate, so a fix that only works at the centre would be no
+// fix at all.
+const PICKER_AIMS = [
+  { name: 'centre', fx: 0.5, fy: 0.5 },
+  { name: 'top-left', fx: 0.12, fy: 0.25 },
+  { name: 'bottom-right', fx: 0.88, fy: 0.78 },
+];
+
+async function hashVersion(cdp) {
+  const h = await evalJs(cdp, 'location.hash').catch(() => '');
+  const m = /[?&]v=([^&]+)/.exec(String(h || ''));
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+/// Is this node the MERGED picker body rather than one target? Its label
+/// carries more than one pill name, joined by newlines. Checking that
+/// FIRST is load-bearing: the merged node's first line is "English", so
+/// a key-by-first-line lookup mistakes it for the English pill and hands
+/// back the whole 320x143 body as that pill's rect.
+function isMergedPickerNode(n) {
+  return /\n/.test(String(n.text)) &&
+    String(n.text).split('\n').map((x) => x.trim())
+      .filter((x) => PICKER_PILLS.includes(x)).length > 1;
+}
+
+/// Every addressable picker target the accessibility tree exposes, by
+/// label. One entry per pill and per version row is what the fix is FOR;
+/// before it there is a single node carrying all five labels and this
+/// returns nothing at all.
+async function pickerTargets(cdp) {
+  const d = await semantics(cdp).catch(() => ({ nodes: [] }));
+  const out = {};
+  for (const n of (d.nodes || [])) {
+    if (n.w <= 0 || n.h <= 0) continue;
+    if (isMergedPickerNode(n)) continue;
+    // A row's node carries its edition year on a second line where the
+    // edition has one — "King James Version\n1611 / 1769 revision" — so
+    // the key is the FIRST line, not the whole label. Matching the whole
+    // label found the three Chinese rows (no edition year) and silently
+    // lost both English ones.
+    const head = String(n.text).trim().split('\n')[0].trim();
+    if (!PICKER_PILLS.includes(head) && PICKER_ROW_IDS[head] === undefined) {
+      continue;
+    }
+    const prev = out[head];
+    // The biggest node with that head is the tappable one; a bare Text
+    // inside it can carry the same string on a smaller rect.
+    if (!prev || n.w * n.h > prev.w * prev.h) {
+      out[head] = { x: n.x, y: n.y, w: n.w, h: n.h };
+    }
+  }
+  return out;
+}
+
+/// The merged picker node, if the menu is open and still merged. Its
+/// existence IS the defect, so it is recorded either way.
+async function mergedPickerNode(cdp) {
+  const d = await semantics(cdp).catch(() => ({ nodes: [] }));
+  return (d.nodes || []).find(isMergedPickerNode) || null;
+}
+
+/// The popup's own frame, as the accessibility tree reports it. This is
+/// the geometry that must NOT move: the fix removes a `MergeSemantics`,
+/// which is a `RenderProxyBox`, so every pixel is supposed to stay where
+/// the owner signed it off across three design passes.
+async function menuFrame(cdp) {
+  const d = await semantics(cdp).catch(() => ({ nodes: [] }));
+  const n = (d.nodes || []).find((x) => /^Popup menu$/.test(String(x.text).trim()));
+  return n ? { w: Math.round(n.w), h: Math.round(n.h),
+               x: Math.round(n.x), y: Math.round(n.y) } : null;
+}
+
+function fmtRect(r) {
+  return `${Math.round(r.w)}x${Math.round(r.h)}@${Math.round(r.x)},${Math.round(r.y)}`;
+}
+
+function aimAt(rect, aim) {
+  return {
+    x: Math.round(rect.x + rect.w * aim.fx),
+    y: Math.round(rect.y + rect.h * aim.fy),
+  };
+}
+
+async function closeAnyMenu(cdp) {
+  for (let i = 0; i < 3; i++) {
+    await cdp.send('Input.dispatchKeyEvent',
+      { type: 'keyDown', key: 'Escape', windowsVirtualKeyCode: 27 });
+    await cdp.send('Input.dispatchKeyEvent',
+      { type: 'keyUp', key: 'Escape', windowsVirtualKeyCode: 27 });
+    await sleep(350);
+  }
+}
+
+async function settleHash(cdp, want, ms = 9000) {
+  const start = Date.now();
+  let v = await hashVersion(cdp);
+  while (Date.now() - start < ms) {
+    if (v === want) return v;
+    await sleep(300);
+    v = await hashVersion(cdp);
+  }
+  return v;
+}
+
+/// The measuring pass: drives the picker by the coordinates the
+/// accessibility tree itself reports, and records them.
+async function pickerMeasure(origin, label) {
+  console.log(`\n──── ${label}: accessibility tree ON, coordinates MEASURED ────`);
+  const { b, cdp, booted } = await coldLoad('picker-measure', origin,
+    origin + '/#/john/3?v=cuvs-yhwh',
+    { semantics: true, plant: { 'flutter.onboarding.seen.v3': 'true' } });
+  const steps = [];
+  let structure = null;
+  try {
+    await sleep(4000);
+    console.log(`   start v=${await hashVersion(cdp)} booted=${booted}`);
+    for (const aim of PICKER_AIMS) {
+      for (const leg of PICKER_WALK) {
+        const before = await hashVersion(cdp);
+        await closeAnyMenu(cdp);
+        const chip = await clickText(cdp, CHANGE_VERSION_RE,
+          { timeoutMs: 8000, box: [0, 0, 4000, 220] });
+        await sleep(900);
+        if (!chip) {
+          steps.push({ aim: aim.name, pillLabel: leg.pill, rowLabel: leg.row,
+            error: 'chip not found' });
+          continue;
+        }
+        if (structure === null) {
+          const merged = await mergedPickerNode(cdp);
+          const targets0 = await pickerTargets(cdp);
+          const frame = await menuFrame(cdp);
+          structure = {
+            frame,
+            merged: merged
+              ? { text: merged.text, rect: fmtRect(merged) } : null,
+            addressable: Object.fromEntries(
+              Object.entries(targets0).map(([k, r]) => [k, fmtRect(r)])),
+          };
+          console.log(`   menu frame: ${frame ? fmtRect(frame) : 'NOT FOUND'}`);
+          console.log('   merged picker node: ' + (merged
+            ? JSON.stringify(merged.text) + ' ' + fmtRect(merged)
+            : 'NONE'));
+          console.log('   per-target accessibility nodes: ' +
+            JSON.stringify(structure.addressable));
+        }
+        let targets = await pickerTargets(cdp);
+        const pillRect = targets[leg.pill];
+        if (!pillRect) {
+          steps.push({ aim: aim.name, pillLabel: leg.pill, rowLabel: leg.row,
+            before, chip: { x: chip.cx, y: chip.cy },
+            error: `pill "${leg.pill}" is not an addressable node` });
+          await closeAnyMenu(cdp);
+          continue;
+        }
+        const pillPt = aimAt(pillRect, aim);
+        await clickAt(cdp, pillPt.x, pillPt.y);
+        await sleep(800);
+        targets = await pickerTargets(cdp);
+        const rowsShown = Object.keys(targets)
+          .filter((k) => PICKER_ROW_IDS[k] !== undefined);
+        const rowRect = targets[leg.row];
+        if (!rowRect) {
+          steps.push({ aim: aim.name, pillLabel: leg.pill, rowLabel: leg.row,
+            before, chip: { x: chip.cx, y: chip.cy }, pill: pillPt, rowsShown,
+            error: `row "${leg.row}" not shown after the pill tap` });
+          await closeAnyMenu(cdp);
+          continue;
+        }
+        const rowPt = aimAt(rowRect, aim);
+        await clickAt(cdp, rowPt.x, rowPt.y);
+        const want = PICKER_ROW_IDS[leg.row];
+        const after = await settleHash(cdp, want);
+        const st = { aim: aim.name, pillLabel: leg.pill, rowLabel: leg.row,
+          before, want, after, ok: after === want, rowsShown,
+          chip: { x: chip.cx, y: chip.cy }, pill: pillPt, row: rowPt,
+          pillRect: fmtRect(pillRect), rowRect: fmtRect(rowRect) };
+        steps.push(st);
+        console.log(`   [${aim.name}] pill ${leg.pill}@${pillPt.x},${pillPt.y}` +
+          ` row ${leg.row}@${rowPt.x},${rowPt.y} -> v=${after} ` +
+          (st.ok ? 'OK' : `WRONG (wanted ${want})`));
+      }
+    }
+    await screenshot(cdp, 'picker-measure-final');
+  } catch (e) {
+    console.log(`   ERROR: ${e && e.message ? e.message : e}`);
+  } finally {
+    await b.close();
+  }
+  return { steps, structure };
+}
+
+/// A replay pass: the SAME pixels, with the accessibility tree in
+/// whichever state `withSemantics` says.
+async function pickerReplay(origin, steps, withSemantics, label) {
+  console.log(`\n──── ${label}: accessibility tree ` +
+    `${withSemantics ? 'ON' : 'OFF'}, coordinates REPLAYED ────`);
+  const { b, cdp, booted } = await coldLoad(
+    'picker-replay-' + (withSemantics ? 'on' : 'off'), origin,
+    origin + '/#/john/3?v=cuvs-yhwh',
+    { semantics: withSemantics, plant: { 'flutter.onboarding.seen.v3': 'true' } });
+  const out = [];
+  let structure = null;
+  try {
+    await sleep(6000);
+    console.log(`   start v=${await hashVersion(cdp)} booted=${booted}`);
+    for (const s of steps) {
+      if (!s.chip || !s.pill || !s.row) {
+        out.push({ ...s, skipped: 'the measuring pass never got this far' });
+        continue;
+      }
+      const before = await hashVersion(cdp);
+      await closeAnyMenu(cdp);
+      await clickAt(cdp, s.chip.x, s.chip.y);
+      await sleep(900);
+      if (structure === null && withSemantics) {
+        const merged = await mergedPickerNode(cdp);
+        const targets0 = await pickerTargets(cdp);
+        structure = {
+          frame: await menuFrame(cdp),
+          merged: merged ? { text: merged.text, rect: fmtRect(merged) } : null,
+          addressable: Object.fromEntries(
+            Object.entries(targets0).map(([k, r]) => [k, fmtRect(r)])),
+        };
+        console.log('   merged picker node: ' + (merged
+          ? JSON.stringify(merged.text) + ' ' + fmtRect(merged) : 'NONE'));
+        console.log('   per-target accessibility nodes: ' +
+          JSON.stringify(structure.addressable));
+      }
+      await clickAt(cdp, s.pill.x, s.pill.y);
+      await sleep(800);
+      await clickAt(cdp, s.row.x, s.row.y);
+      const after = await settleHash(cdp, s.want);
+      const r = { aim: s.aim, pill: s.pill, row: s.row, chip: s.chip,
+        pillLabel: s.pillLabel, rowLabel: s.rowLabel,
+        want: s.want, before, after, ok: after === s.want };
+      out.push(r);
+      console.log(`   [${s.aim}] pill ${s.pillLabel}@${s.pill.x},${s.pill.y} ` +
+        `row ${s.rowLabel}@${s.row.x},${s.row.y} -> v=${after} ` +
+        (r.ok ? 'OK' : `WRONG (wanted ${s.want})`));
+    }
+    await screenshot(cdp, 'picker-replay-' + (withSemantics ? 'on' : 'off'));
+  } catch (e) {
+    console.log(`   ERROR: ${e && e.message ? e.message : e}`);
+  } finally {
+    await b.close();
+  }
+  return { steps: out, structure };
+}
+
+/// Counts, and refuses to flatter the result.
+///
+/// A leg whose `want` is the version ALREADY loaded has no oracle: the
+/// hash does not have to move for it to read OK, so a build that ignores
+/// the tap entirely scores it as a pass. Those legs are counted
+/// separately and never folded into the headline number. On the unfixed
+/// build they are the only three that "passed" — the picker had done
+/// nothing at all.
+function pickerTally(name, rows) {
+  const driven = rows.filter((s) => !s.skipped && !s.error);
+  const moving = driven.filter((s) => s.before !== s.want);
+  const inert = driven.filter((s) => s.before === s.want);
+  const ok = moving.filter((s) => s.ok).length;
+  const inertOk = inert.filter((s) => s.ok).length;
+  console.log(`   ${name}: ${ok}/${moving.length} taps that had to CHANGE ` +
+    `the version selected what was tapped` +
+    (inert.length
+      ? `; ${inertOk}/${inert.length} more asked for the version already ` +
+        'loaded, where doing nothing also reads OK'
+      : '') +
+    (rows.length - driven.length
+      ? `; ${rows.length - driven.length} of ${rows.length} never reached ` +
+        'their row at all' : ''));
+  return { ok, moving: moving.length, inertOk, inert: inert.length,
+           driven: driven.length, total: rows.length };
+}
+
+/// One open picker, painted, with the accessibility tree OFF so the
+/// screenshot is the canvas and nothing else. The two builds' shots are
+/// then compared byte-for-byte: removing a `MergeSemantics` — a
+/// `RenderProxyBox` whose only override is
+/// `describeSemanticsConfiguration` — must not move a pixel, and the
+/// owner signed these metrics off across three design passes, so "no
+/// visual change" is a claim to be measured rather than reasoned.
+///
+/// It takes TWO shots and reports whether they differ, because a
+/// byte-identical pair of screenshots proves nothing at all if the menu
+/// failed to open in both: the first version of this took the chip
+/// coordinate from a pass run at the pane's own size and then set a
+/// 1200x900 viewport, so the click landed on empty chrome, both builds
+/// photographed the same closed page, and the comparison "passed"
+/// meaninglessly. `openedMenu` is the guard against exactly that. No
+/// viewport is set here, on purpose — the recorded coordinate is only
+/// valid at the size it was measured at.
+async function pickerShot(origin, chip, name) {
+  const { b, cdp } = await coldLoad('picker-shot', origin,
+    origin + '/#/john/3?v=cuvs-yhwh',
+    { semantics: false, plant: { 'flutter.onboarding.seen.v3': 'true' } });
+  const out = { closed: null, open: null, openedMenu: false };
+  try {
+    await sleep(6000);
+    out.closed = await screenshot(cdp, name + '-closed');
+    await clickAt(cdp, chip.x, chip.y);
+    await sleep(1800);
+    out.open = await screenshot(cdp, name + '-open');
+    out.openedMenu = !readFileSync(out.closed).equals(readFileSync(out.open));
+    console.log(`   picker screenshot (a11y off): ${out.open}` +
+      (out.openedMenu
+        ? ''
+        : '  ** THE MENU DID NOT OPEN — this pair proves nothing **'));
+  } catch (e) {
+    console.log(`   ERROR: ${e && e.message ? e.message : e}`);
+  } finally {
+    await b.close();
+  }
+  return out;
+}
+
+async function runPicker(origin) {
+  console.log('\n════ 9. The version picker under assistive technology ════');
+  let measured = null;
+  if (STEPS_IN) {
+    const raw = JSON.parse(readFileSync(STEPS_IN, 'utf8'));
+    measured = { steps: raw.steps || raw, structure: raw.structure || null };
+    console.log(`   replaying ${measured.steps.length} recorded coordinates ` +
+      `from ${STEPS_IN}`);
+  } else {
+    measured = await pickerMeasure(origin, 'measure');
+    mkdirSync(OUT_DIR, { recursive: true });
+    writeFileSync(join(OUT_DIR, 'steps.json'),
+      JSON.stringify(measured, null, 2));
+    console.log(`   wrote ${join(OUT_DIR, 'steps.json')}`);
+  }
+  const on = await pickerReplay(origin, measured.steps, true, 'replay');
+  const off = await pickerReplay(origin, measured.steps, false, 'replay');
+  const firstChip = (measured.steps.find((s) => s.chip) || {}).chip;
+  const shot = firstChip
+    ? await pickerShot(origin, firstChip, 'picker-open')
+    : null;
+  console.log('');
+  const tOn = pickerTally('semantics ON ', on.steps);
+  const tOff = pickerTally('semantics OFF', off.steps);
+  let tMeasured = null;
+  if (!STEPS_IN) tMeasured = pickerTally('measuring pass (ON)', measured.steps);
+  return { measured, on, off, shot,
+           tally: { on: tOn, off: tOff, measured: tMeasured } };
+}
 async function runVersion(origin) {
   if (process.env.YS_PROBE) return { probe: await runVersionProbe(origin) };
   console.log('\n════ 8. The version chip ════');
@@ -2676,6 +3109,7 @@ async function main() {
       out.chronology = await runChronology(origin);
     }
     if (CMD === 'all' || CMD === 'version') out.version = await runVersion(origin);
+    if (CMD === 'all' || CMD === 'picker') out.picker = await runPicker(origin);
   } finally {
     srv.close();
   }
@@ -2781,6 +3215,44 @@ async function main() {
       gate.push(['PASS', '/settings/:section',
         'the AI section is scrolled into view and the page differs from ' +
         'bare /settings']);
+    }
+  }
+  // 2026-09-06. Gated, not merely reported, for the same reason the two
+  // above are: `flutter test` cannot see it. The failure only exists once
+  // Flutter web's accessibility tree is on and its DOM overlay is taking
+  // the clicks, and the widget-level tap (`tester.tap`, a render-tree hit
+  // test) passed throughout. A reader using VoiceOver, Switch Control or
+  // Voice Control could not change the Bible version at all, so a
+  // regression here is a total block on a core feature and should stop a
+  // release rather than print a number.
+  //
+  // The semantics-OFF replay is the control and is NOT gated on its own:
+  // it is what tells "the picker is broken for assistive technology"
+  // apart from "the harness aimed at the wrong pixels", and it passed on
+  // the unfixed build.
+  if (out.picker) {
+    const t = out.picker.tally.on;
+    const merged = (out.picker.on.structure || {}).merged;
+    const offT = out.picker.tally.off;
+    if (!t || t.driven === 0 || !offT || offT.ok !== offT.moving) {
+      gate.push(['INCONCLUSIVE', 'version picker under assistive technology',
+        'the semantics-OFF control did not itself pass, so a semantics-ON ' +
+        'failure cannot be attributed to the accessibility tree']);
+    } else if (merged) {
+      gate.push(['FAIL', 'version picker under assistive technology',
+        'the whole picker is still ONE accessibility node ' +
+        JSON.stringify(merged.text) + ' — every pill and every row ' +
+        'collapsed into ' + merged.rect]);
+    } else if (t.ok !== t.moving) {
+      gate.push(['FAIL', 'version picker under assistive technology',
+        `${t.ok}/${t.moving} taps selected what was tapped with the ` +
+        `accessibility tree ON, against ${offT.ok}/${offT.moving} at the ` +
+        'identical coordinates with it OFF']);
+    } else {
+      gate.push(['PASS', 'version picker under assistive technology',
+        `${t.ok}/${t.moving} taps selected what was tapped with the tree ` +
+        `ON and ${offT.ok}/${offT.moving} with it OFF, at the same ` +
+        'coordinates; no merged picker node']);
     }
   }
   for (const [label, s] of [['sermon', out.sermon],
