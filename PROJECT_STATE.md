@@ -65,9 +65,19 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.4.198** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.4.198** | push freely once dev is verified |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.2** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.2** | push freely once dev is verified |
 | prod | `yswords`, `yswords-cn` | **1.4.198** | ⛔ never without explicit permission **in the current turn** |
+
+**dev and qat went to 1.5.2 on 2026-09-06**, carrying the 429-sermon
+corpus (414 before), the 687 proofreading corrections and the two
+Traditional glyph repairs. Verified against what the sites serve rather
+than the repo: all four report `version.json` 1.5.2, both
+`assets/assets/sermons/index.json` count 429, and the prerendered
+`/sermons/zh-hant/fy-ws04/` reads 原文**採**用 while its zh-hans twin
+correctly keeps 采用. **The row above is the first time this table has
+been true since 1.4.198** — dev and qat had been on 1.5.0/1.5.1 for days
+while it still claimed 1.4.198. prod has never been asked for 1.5.x.
 
 **All three tiers moved to 1.4.198 together, 2026-09-02 — not by this
 iteration.** While this iteration was landing Stage 4 batch 2's next
