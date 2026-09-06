@@ -187,6 +187,12 @@ reported. Work these top-down before P2.
       (1192/55/1136/1 maps_index split, 12.34 MB tools bytes, the
       `download()` call path has no downstream filter) before staging.
       Lesson for future iterations: commit before waiting on anything.
+      Pushed as `d320000b`, confirmed green on CI
+      (run 34061887721), then bumped 1.5.4 → 1.5.6 (tools/release_web.sh
+      bumps on its own call, so the manual 1.5.5 bump was superseded)
+      and deployed dev/qat only — all four sites (yswords-dev,
+      yswords-qat, yswords-cn-dev, yswords-cn-qat) confirmed serving
+      v1.5.6 via `/version.json`. Prod untouched.
 
 - [x] **2026-09-07 FIXED — second sweep of the 289→414→429 corpus-count
       drift, including one user-facing understatement.** Follow-up to
