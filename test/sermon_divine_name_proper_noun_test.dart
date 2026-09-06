@@ -118,8 +118,12 @@ void main() {
     // app's doing — the church's own published text already writes 雅伟,
     // 364 times across Pastor Eric's 182 bodied library records, so the
     // substitution below reached only NINE places in the whole merge.
-    expect(count(simplified, '雅伟'), 624);
-    expect(count(traditional, '雅偉'), 624);
+    // 624 → 645 on 2026-09-06 with the 15 transcribed sermons. The check
+    // is not the number: it is that the two scripts still agree EXACTLY,
+    // which is what catches a Traditional body that was truncated or
+    // converted by a different route from its Simplified twin.
+    expect(count(simplified, '雅伟'), 645);
+    expect(count(traditional, '雅偉'), 645);
     // The two agree exactly, which is the check: sermon 100's Traditional
     // body used to be a truncated translation and lost the name three
     // times with the rest of the text. It was rebuilt on 2026-09-05, and

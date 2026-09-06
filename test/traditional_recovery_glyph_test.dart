@@ -105,7 +105,11 @@ void main() {
     // ×3, 愈發 ×5, 愈是, 愈顯, 「我愈默想就愈躊躇」. None is healing —
     // 癒 rose to 30 alongside it and carries 痊癒 / 治癒 / 癒合 as before,
     // so the two senses are still distinguished rather than merged.
-    expect(comparative, 26);
+    // 26 → 27 on 2026-09-06 with the 15 transcribed sermons. The one new
+    // 愈 was read: fy-ws04's 「他們就是這樣的每況愈下」, the comparative
+    // again. 癒 gained none, so it stays 30 and the two senses are still
+    // distinguished rather than merged — which is the actual claim.
+    expect(comparative, 27);
     expect(healing, 30);
     expect(File('assets/sermons/zh-TW/CP18.txt').readAsStringSync(),
         contains('每況愈下'));

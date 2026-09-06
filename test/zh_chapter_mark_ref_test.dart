@@ -330,9 +330,23 @@ void main() {
       // has 22 chapters — only respelled. It is named, not counted, so
       // the glyph change had to be made here by hand, which is the
       // point of naming them.
+      // 2026-09-06: four more, from the 15 sermons that existed only as
+      // audio. The preacher says 「羅馬書九、十、十一章」 — chapters 9, 10
+      // and 11, which he treats as one unit through the whole Romans
+      // series — and the decoder ran the numerals together with no
+      // separator, so the text reads 九十十一(三)章. That is a
+      // TRANSCRIPTION artifact, not a citation the man got wrong, and it
+      // is left alone rather than repaired: inserting the 、 would be
+      // punctuating him, which the corpus rule forbids outright. What
+      // matters here is that it refuses to parse rather than resolving to
+      // Romans 90 — nothing is invented and nothing is underlined that
+      // would do nothing when tapped. `docs/OPEN-ITEMS.md` carries it for
+      // someone with the audio.
       expect(unresolved, {
         '阿摩司书第12章', '阿摩司書第12章',
         '启示录三十七章十七节', '啟示錄三十七章十七節',
+        '罗马书九十十一章', '羅馬書九十十一章',
+        '罗马书九十十一三章', '羅馬書九十十一三章',
       }, reason: 'a match the parser cannot resolve underlines nothing');
     });
 

@@ -137,7 +137,7 @@ void main() {
   });
 
   test(
-      'sweep every passageRefPattern match over all 1117 transcripts: '
+      'sweep every passageRefPattern match over all 1147 transcripts: '
       'exactly the 9 known out-of-canon sites stopped parsing',
       () {
     var totalMatches = 0;
@@ -181,11 +181,18 @@ void main() {
     // staging library and 51 machine-translated bodies were replaced by
     // that library's human text. 867 transcript files became 1117 — 414
     // zh-CN, 414 zh-TW and still 289 English, because the library is
-    // Chinese-only. The gap between the two totals is what carries the
+    // Chinese-only.
+    // +930 on 2026-09-06, later the same day: the 15 sermons that existed
+    // only as audio were transcribed and merged, so 1117 files became
+    // 1147 (429 zh-CN, 429 zh-TW, still 289 English). These are
+    // verse-by-verse expositions of Romans 6-10 and they cite constantly —
+    // ~31 references per file, which is why 15 sermons move this total by
+    // nearly a thousand. The out-of-canon side did NOT move: still the
+    // same 9 known sites, which is the half that carries the claim. The gap between the two totals is what carries the
     // argument and it moved by TWO, from 32 to 34, so both are asserted:
     // see the note on `totalParsed`.
-    expect(totalMatches, 15729,
-        reason: 'total passageRefPattern matches across all 1117 '
+    expect(totalMatches, 16659,
+        reason: 'total passageRefPattern matches across all 1147 '
             'transcripts — pins the corpus this sweep covers. 12498 '
             'before queue-7296 (約拿記/约拿记 + 哥罗西书 added to the alias '
             'table and the pattern): 7 more matches, 6 for 約拿記/约拿记 in '
@@ -209,7 +216,19 @@ void main() {
     // guard working rather than failing. It came in verbatim with the
     // library text and is not something this repo introduced. Every other
     // reference the 125 merged sermons brought in parses.
-    expect(totalParsed, 15695,
+    // 2026-09-06, the 15 transcribed sermons: the gap between the two
+    // totals moved from 34 to 40, and all SIX are one shape. The preacher
+    // treats Romans 9-11 as a single unit and says 「羅馬書九、十、十一章」;
+    // the decoder ran the numerals together, so three sites read
+    // 九十十一(三)章 — fy-rms09-01, fy-rms09-03 and fy-rms10-01, each in
+    // both scripts. `passageRefPattern` matches them and `parseReference`
+    // refuses them, which is the guard working: Romans has 16 chapters and
+    // resolving that string to Romans 90 is exactly what must not happen.
+    // They are named individually in `zh_chapter_mark_ref_test.dart` and
+    // left unrepaired in the corpus, because inserting the 、 would be
+    // punctuating the preacher. Every OTHER reference the 15 brought in
+    // parses.
+    expect(totalParsed, 16619,
         reason: '12464 before queue-7296: +7, matching the 7 new '
             'matches above — Jonah 2 and Colossians 1:19 are both '
             'in-canon, so every new match parses. +2 more on 2026-09-03: '

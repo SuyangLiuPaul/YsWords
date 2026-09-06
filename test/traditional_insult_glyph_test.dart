@@ -117,7 +117,11 @@ void main() {
     // occurrence was read — 凌辱 ×3 (「凌辱他們」, the wicked tenants),
     // 倍受凌辱, 恃強凌弱, 凌駕 ×2, 盛氣凌人, 凌晨 ×2 and the like — and
     // 淩 is still 0, which is the half that carries the claim.
-    expect(correct, 42);
+    // 42 → 44 on 2026-09-06 with the 15 transcribed sermons. Both new 凌
+    // were read and both are 凌辱 in fy-ws04, quoting and then discussing
+    // 哥林多後書 12:10 「就以軟弱、凌辱、急難、逼迫、困苦、為可喜樂的」.
+    // 淩 is still 0.
+    expect(correct, 44);
     expect(variant, 0);
   });
 

@@ -741,7 +741,13 @@ void main() {
       // fy-nm06 (each in both scripts), every one of them 時 meaning
       // "when" — 「上次我們查考使徒行傳2章38節時已看到」. A 时/時 guard
       // would still delete real citations, and now six more of them.
-      expect(c['whenAfterCitation'], 34,
+      // 34 → 36 on 2026-09-06 with the 15 transcribed sermons. Both new
+      // sites were read and both are 時 meaning "when", after a citation
+      // the parser resolves: fy-rms07-01's 「當馬丁路德看《羅馬書》七章時」
+      // and fy-rms07-03's 「很多基督徒讀羅馬書七章時」. Neither is a clock
+      // time, so a 时/時 guard would now delete two more real citations
+      // than it would have yesterday.
+      expect(c['whenAfterCitation'], 36,
           reason: 'a 时/時 guard would delete this many real citations');
     });
 
@@ -805,8 +811,20 @@ void main() {
       // nothing, and 331's 一一九 (×2) is Psalm 119. The claim the floor
       // rests on — that exactly one corpus spelling lands in 1..199 — is
       // therefore stronger after the merge, not weaker.
-      expect(c['digitRuns2'], 308);
-      expect(c['digitRuns3plus'], 5);
+      // 308 → 314 on 2026-09-06: three sites in the 15 transcribed
+      // sermons, each in both scripts. All three were read and all three
+      // are prose, which is the whole claim — fy-rms06-03's 亂七八糟,
+      // fy-rms09-01's 「第六第七第八三章」 and fy-ws04's 「添上四五個
+      // 傷口」. Not one is a citation, so the two-character floor still
+      // holds and the long-run reading below is untouched.
+      expect(c['digitRuns2'], 314);
+      // 5 → 7 on 2026-09-06: one site in the 15 transcribed sermons, in
+      // both scripts. fy-ws04's 「就是在一九零零年 他就去世了」 — the year
+      // Nietzsche died, in a stretch of ws04 that argues against his
+      // Übermensch. It is a YEAR, it reads as 1900, and 1900 is outside
+      // 1..199, so it is refused rather than resolved. `digitRunsResolved`
+      // below is unchanged at 2, which is the half that carries the claim.
+      expect(c['digitRuns3plus'], 7);
       expect(c['digitRunsResolved'], 2, reason: "331's two bodies");
       expect(_extractRefs('也在诗篇十九篇10节；诗篇一一九篇103节等等'),
           ['Psalms 19:10', 'Psalms 119:103']);

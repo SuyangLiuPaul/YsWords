@@ -5057,6 +5057,22 @@
     "hasZhTw": true
   },
   {
+    "id": "fy-cm03",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "耶稣-被人反对的指标",
+    "titles": {
+      "zh-CN": "耶稣-被人反对的指标",
+      "zh-TW": "耶穌-被人反對的指標"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
     "id": "fy-cm08",
     "topic": "FYDT Chinese Messages",
     "topicSlug": "FYDT Chinese Messages",
@@ -5777,6 +5793,214 @@
     "hasZhTw": true
   },
   {
+    "id": "fy-rms06-01",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览6章(1)",
+    "titles": {
+      "zh-CN": "罗马书纵览6章(1)",
+      "zh-TW": "羅馬書縱覽6章(1)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms06-02",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览6章(2)",
+    "titles": {
+      "zh-CN": "罗马书纵览6章(2)",
+      "zh-TW": "羅馬書縱覽6章(2)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms06-03",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览6章(3)",
+    "titles": {
+      "zh-CN": "罗马书纵览6章(3)",
+      "zh-TW": "羅馬書縱覽6章(3)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms07-01",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览7章(1)",
+    "titles": {
+      "zh-CN": "罗马书纵览7章(1)",
+      "zh-TW": "羅馬書縱覽7章(1)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms07-02",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览7章(2)",
+    "titles": {
+      "zh-CN": "罗马书纵览7章(2)",
+      "zh-TW": "羅馬書縱覽7章(2)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms07-03",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览7章(3)",
+    "titles": {
+      "zh-CN": "罗马书纵览7章(3)",
+      "zh-TW": "羅馬書縱覽7章(3)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms07-04",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览7章(4)",
+    "titles": {
+      "zh-CN": "罗马书纵览7章(4)",
+      "zh-TW": "羅馬書縱覽7章(4)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms09-01",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览9章(1)",
+    "titles": {
+      "zh-CN": "罗马书纵览9章(1)",
+      "zh-TW": "羅馬書縱覽9章(1)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms09-02",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览9章(2)",
+    "titles": {
+      "zh-CN": "罗马书纵览9章(2)",
+      "zh-TW": "羅馬書縱覽9章(2)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms09-03",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览9章(3)",
+    "titles": {
+      "zh-CN": "罗马书纵览9章(3)",
+      "zh-TW": "羅馬書縱覽9章(3)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms09-04",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览9章(4)",
+    "titles": {
+      "zh-CN": "罗马书纵览9章(4)",
+      "zh-TW": "羅馬書縱覽9章(4)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms10-01",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览10章(1)",
+    "titles": {
+      "zh-CN": "罗马书纵览10章(1)",
+      "zh-TW": "羅馬書縱覽10章(1)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-rms10-02",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "罗马书纵览10章(2)",
+    "titles": {
+      "zh-CN": "罗马书纵览10章(2)",
+      "zh-TW": "羅馬書縱覽10章(2)"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
     "id": "fy-mono_02",
     "topic": "FYDT Chinese Messages",
     "topicSlug": "FYDT Chinese Messages",
@@ -5995,6 +6219,22 @@
     "titles": {
       "zh-CN": "是羊还是狼",
       "zh-TW": "是羊還是狼"
+    },
+    "hasEn": false,
+    "hasZhCn": true,
+    "hasZhTw": true
+  },
+  {
+    "id": "fy-ws04",
+    "topic": "FYDT Chinese Messages",
+    "topicSlug": "FYDT Chinese Messages",
+    "date": "yyyy-mmdd",
+    "parts": "",
+    "passage": "",
+    "title": "无往不克的生命",
+    "titles": {
+      "zh-CN": "无往不克的生命",
+      "zh-TW": "無往不克的生命"
     },
     "hasEn": false,
     "hasZhCn": true,

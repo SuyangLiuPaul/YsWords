@@ -247,7 +247,7 @@ void main() {
     });
 
     test('the claim no longer rests on all three languages existing — '
-        'THE GENERATOR HAS TO CHANGE', () {
+        'and the generator now honours it', () {
       // hreflang between a page and one that 404s makes Google distrust
       // the whole cluster. The generator emits three alternates for every
       // sermon unconditionally, and that was honest for exactly as long as
@@ -260,8 +260,11 @@ void main() {
       // `hasEn: false` and have no `assets/sermons/en/<id>.txt`. The app
       // handles it already: `SermonService.loadBestBody` falls back across
       // languages and the detail page disables the English chip.
-      // `tools/prerender_sermons.dart` does NOT, in two places, and both
-      // are outside the sermon corpus this merge was allowed to touch:
+      // `tools/prerender_sermons.dart` did NOT, in two places — both are
+      // now FIXED (`if (!s.has(l)) continue;` at the alternates loop and
+      // again at the body loop, `tools/prerender_sermons.dart:645` and
+      // `:970`), and the second was found only because the test for the
+      // first still failed. What follows is the record of what was wrong:
       //
       //   1. line ~916 — `if (!bodyFile.existsSync()) { FATAL; exit(1); }`.
       //      The static-site build ABORTS on the first merged sermon.
@@ -276,7 +279,7 @@ void main() {
       // problem is a fact rather than a guess, and so that a body going
       // missing from the 289 that DO have English still fails here.
       final metas = loadIndex(File('assets/sermons/index.json'));
-      expect(metas, hasLength(414));
+      expect(metas, hasLength(429));
 
       final missingEn = <String>[];
       for (final m in metas) {
@@ -295,7 +298,12 @@ void main() {
       // Exactly the merged ones, and nothing else. If an English body ever
       // disappears from one of the original 289 it lands here instead of
       // being absorbed into a tolerance.
-      expect(missingEn, hasLength(125));
+      // 125 → 140 on 2026-09-06 with the 15 sermons that existed only as
+      // audio. They come from the same Chinese-only library, so they have
+      // no English body either, and this stays an exact list rather than a
+      // tolerance: if an English body ever vanishes from one of the
+      // original 289 it lands here instead of being absorbed.
+      expect(missingEn, hasLength(140));
       expect(missingEn.every((id) => id.startsWith('fy-')), isTrue,
           reason: 'an English body vanished from a sermon that had one: '
               '${missingEn.where((id) => !id.startsWith('fy-'))}');
@@ -652,7 +660,7 @@ void main() {
       // `lib/constants/sermon_credit.dart` is the other half of this pair
       // and has to move with it; `test/sermon_credit_test.dart` is the
       // assertion that holds them together.
-      expect(metas.length, 414);
+      expect(metas.length, 429);
     });
 
     test('every sermon has a title in every language', () {

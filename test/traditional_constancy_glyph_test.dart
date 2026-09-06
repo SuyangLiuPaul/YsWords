@@ -123,7 +123,11 @@ void main() {
     // `tools/repair_tw_sermon_merged_glyphs.py` against this very ratio,
     // one anchored sweep of 永恒生命 → 永恆生命 across 018, 065, 135,
     // fy-mt85, fy-nm00 and fy-nm16. The corpus is still not swept.
-    expect(traditional, 436);
+    // 436 → 438 on 2026-09-06 with the 15 transcribed sermons. Both new
+    // 恆 were read — fy-cm03's 「光明與我永恆在」 in a sung line and
+    // fy-ws04's 「所謂的永恆的盼望」 — and the zero side, which is the one
+    // that carries the claim, did not move.
+    expect(traditional, 438);
     expect(mainland, 0);
   });
 

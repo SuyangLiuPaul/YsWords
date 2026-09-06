@@ -29,7 +29,7 @@ import 'package:yswords/services/sermon_service.dart';
 /// messages were merged in from the fuyindiantai staging library
 /// (`scripts/merge_sermon_library.py`), so the corpus is 414 sermons of
 /// which 289 have a recording. `sermonAudioClause` takes the partial
-/// branch and the line now reads 「414 篇讲道,共 21 个主题 · 289 篇有录音」.
+/// branch and the line now reads 「429 篇讲道,共 21 个主题 · 289 篇有录音」.
 /// Nothing in the feature was edited to make that happen — the clause is
 /// derived from two counted numbers and consults no constant, which is
 /// precisely the property tested below, and this is the day it paid.
@@ -211,7 +211,7 @@ void main() {
 
   // ── 3. Which branch the real assets select ─────────────────────
 
-  test('the shipped corpus selects the PARTIAL branch — 289 of 414', () {
+  test('the shipped corpus selects the PARTIAL branch — 289 of 429', () {
     // Re-derived from the two assets, so this test tells the truth
     // about the corpus rather than repeating a number from a brief.
     final sermons =
@@ -230,7 +230,7 @@ void main() {
         .where((id) => (audio[id] as List?)?.isNotEmpty ?? false)
         .length;
 
-    expect(sermons.length, 414);
+    expect(sermons.length, 429);
     expect(playable, 289,
         reason: 'the corpus grew to 414 on 2026-09-06 and the audio index '
             'did not; if either moves, read why before editing this');
@@ -316,7 +316,7 @@ void main() {
     // 414 sermons, 21 topics, 289 of them playable. Every one of those
     // three numbers is counted from `assets/sermons/`; none is written
     // down anywhere in the feature.
-    expect(text, '414 篇讲道,共 21 个主题 · 289 篇有录音');
+    expect(text, '429 篇讲道,共 21 个主题 · 289 篇有录音');
   });
 
   testWidgets('the page still shows no per-row audio badge', (tester) async {

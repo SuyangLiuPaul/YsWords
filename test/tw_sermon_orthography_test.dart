@@ -91,11 +91,17 @@ void main() {
     // read before changing them is the zero side — 爲, 裡, 着, 纔 and 啓 are
     // still absent from 414 files, and a merge that had skipped the
     // normalisation would have put thousands of them back.
-    expect(count(sermons, '為'), 34241);
-    expect(count(sermons, '裏'), 12871);
-    expect(count(sermons, '著'), 9355);
-    expect(count(sermons, '才'), 3619);
-    expect(count(sermons, '啟'), 731);
+    // 2026-09-06, again: 414 → 429 with the 15 sermons that existed only
+    // as audio, transcribed and proofread the same day. Same five
+    // population counts, same reading before the change — the ZERO side
+    // below is what carries the claim and it is still zero across 429
+    // files, so the new bodies went through the same normalisation as
+    // every other one rather than round the side of it.
+    expect(count(sermons, '為'), 35194);
+    expect(count(sermons, '裏'), 13243);
+    expect(count(sermons, '著'), 9667);
+    expect(count(sermons, '才'), 3739);
+    expect(count(sermons, '啟'), 756);
   });
 
   test('every merged body is exactly as long as its Simplified source', () {
@@ -133,13 +139,16 @@ void main() {
       totalParas += cnParas;
       checked += 1;
     }
-    expect(checked, 125,
-        reason: 'the merge wrote 125 new sermons; if this number is not '
+    expect(checked, 140,
+        reason: 'the merge wrote 140 new sermons; if this number is not '
             'reached the loop above checked nothing');
     // The corpus-wide total, so a collapse or a split applied evenly to
     // both scripts still fails. 11 515 = 125 H1 lines plus 11 390 body
     // paragraphs, counted off the library's own line count at merge time.
-    expect(totalParas, 11515);
+    // 11 802 on 2026-09-06 with the 15 transcribed sermons: the delta of
+    // 287 was measured against those 15 files alone, so it is the new
+    // sermons' own paragraphs and not a re-paragraphing of the other 414.
+    expect(totalParas, 11802);
   });
 
   test('the three regenerated bodies are in the corpus and in this rule', () {

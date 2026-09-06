@@ -33,13 +33,16 @@ String sermonPreacher(String locale) =>
 /// (that is 889). A number a reader cannot check is exactly the kind of
 /// wrong that gets believed, so it is derived here in one place and
 /// asserted against the real asset in the test.
-// 414 from 2026-09-06: the 289 expository sermons this corpus began
-// as, plus 125 of Pastor Eric Chang's messages merged in from the
-// 福音电台 library. 141 of his records there were new, but 16 are
-// audio-only with no transcript yet — so the number that could be
-// merged is 125 and not 141, and the corpus is 414 rather than the
-// 430 that arithmetic suggested.
-const int sermonCount = 414;
+// 429 from 2026-09-06: the 289 expository sermons this corpus began
+// as, plus 140 of Pastor Eric Chang's messages merged in from the
+// 福音电台 library. 141 of his records there were new. 16 of those had
+// audio and no transcript; 15 were transcribed and proofread the same
+// day and are included here. The 16th, library 6012 (ws01,
+// 活着就是基督), is transcribed and deliberately held back: it is the
+// same sermon as app CP37, so merging it would ship one sermon twice.
+// So the corpus is 429 — 141 minus that one — and not the 430 that
+// arithmetic suggests.
+const int sermonCount = 429;
 
 /// Substituted into any `uiStrings` entry containing `{name}`.
 String withPreacher(String template, String locale) =>

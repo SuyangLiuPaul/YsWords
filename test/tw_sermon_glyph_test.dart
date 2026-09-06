@@ -68,7 +68,11 @@ void main() {
       // 裝乾穀物), four doings that s2t wrote 乾 (奴隸幹的活 ×2, 仇敵幹的,
       // 幹沒幹壞事), two offences it wrote 幹 (親自干預, 干犯主的身), and
       // 乾脆 spelt three different ways across five files.
-      expect(count('幹'), 216);
+      // 216 → 220 on 2026-09-06 with the 15 transcribed sermons. All four
+      // were read: 幹嘛 ×3 (fy-cm03 「你幹嘛還要相信他呢」 ×2, fy-rms07-03
+      // 「幹嘛還有一條不守呢」) and fy-rms07-03's 「什麼活都不能幹」 — a
+      // doing in every case, which is what 幹 is for.
+      expect(count('幹'), 220);
       for (final gone in const [
         '嘴幹', '幹沙子', '幹擾', '幹淨', '凍幹', '水庫幹了', '溪也幹了',
         '哭幹了', '幹枯', '排幹了', '幹蘿蔔', '就是不幹',
@@ -128,7 +132,11 @@ void main() {
       // 角鬥士, 鉤心鬥角, 單打獨鬥, 內鬥, 鬥智鬥勇, 纏鬥, 鬥下去 — and the
       // 257th is fy-sm43's 「以狼鬥狼」, a wolf fighting a wolf. That sweep
       // is what found the seven below.
-      expect(count('鬥'), 257);
+      // 257 → 260 on 2026-09-06 with the 15 transcribed sermons. All three
+      // are fights and all three are in fy-rms07-04: 爭鬥 ×2 (「還是充滿
+      // 爭鬥呢」, 「完全沒有任何的爭鬥」) and 鬥爭 (「除非我們放棄鬥爭」).
+      // Not one is a measuring bowl.
+      expect(count('鬥'), 260);
       for (final keep in const ['戰鬥', '爭鬥', '搏鬥', '打鬥', '奮鬥', '好鬥']) {
         expect(count(keep), greaterThan(0), reason: keep);
       }
@@ -245,7 +253,14 @@ void main() {
       // should be flour is hiding in the increase. 面酵 0, 面包 1, 麥面 0,
       // 團面 0, 面粉 0, 面糰 0 across all 414 files — the single 面包 is
       // fy-im21's 「裏面包含許多內容」, which is an INSIDE that CONTAINS.
-      expect(count('面'), 7480);
+      // 7480 → 7594 on 2026-09-06 with the 15 transcribed sermons. All 114
+      // new ones were censused by bigram rather than sampled, and every one
+      // is a face, a side, an aspect or the name 西面 (Simeon, Luke 2):
+      // 裏面 ×19, 面前 ×16, 面對 ×15, 方面 ×9, 表面 ×8, 西面 ×12, 外面 ×5,
+      // 層面 ×4, 字面 ×4, 前面 ×3, 全面 ×3 and the like. The flour check
+      // that carries this claim is unchanged: 面酵 0, 麥面 0, 團面 0,
+      // 面粉 0, 面糰 0 across all 429 files.
+      expect(count('面'), 7594);
       for (final keep in const ['裏面', '面前', '方面', '面對', '前面', '畫面']) {
         expect(count(keep), greaterThan(0), reason: keep);
       }
@@ -272,7 +287,13 @@ void main() {
       // fy-im03's biography of him (「尼采（Nietzsche）」, 「尼采的父親是位
       // 牧師」) and the rest in 398's exposition of the Übermensch. All
       // thirteen were read.
-      expect(count('尼采'), 13);
+      // 13 → 19 on 2026-09-06: fy-ws04 (ws04, 無往不克的生命) spends a
+      // long stretch on Nietzsche's Übermensch and names him six times.
+      // The trap is unchanged — a blanket 采→採 would rename the
+      // philosopher — and the audit of the new bodies found the one real
+      // 採 this corpus was missing, fy-ws04's 「原文采用的文法」, now swept
+      // by `repair_tw_sermon_merged_glyphs.py`.
+      expect(count('尼采'), 19);
       // 風采 is GONE, and that is not a regression: its one occurrence was
       // 018's 「特別的風采」, in the machine-translated body that the merge
       // replaced with the library's human text. Removing the assertion is
@@ -285,7 +306,7 @@ void main() {
       // exactly three words, so this side can be enumerated rather than
       // merely asserted non-empty — which is what makes a widened 采→採
       // impossible to hide.
-      expect(count('采'), 21, reason: '13 + 7 + 1, and nothing else');
+      expect(count('采'), 27, reason: '19 + 7 + 1, and nothing else');
       expect(count('尼採'), 0, reason: 'a blanket 采→採 ran');
       expect(files['763.txt'], contains('舉手可採'),
           reason: 'fruit within reach, to be PICKED');
