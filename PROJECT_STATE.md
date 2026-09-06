@@ -179,8 +179,16 @@ reader. `web/sitemap.xml` is now a sitemap INDEX naming one static child
 Console means the generator did not run.**
 
 **The prerendered sermons under `/sermons/`** (user, 2026-08-31:
-「第二个开做」). 931 pages — 289 sermons × 3 languages, plus 20 series
-indexes per language, three language indexes and an English hub.
+「第二个开做」). **1 215 pages** as of 2026-09-06 — and the arithmetic is no
+longer × 3. 289 sermons carry all three languages; the 140 merged in from
+the 福音电台 library are Chinese-only, because that library is a Chinese
+radio archive. So it is 289 × 3 + 140 × 2 sermon pages, plus 21 series
+indexes per language, three language indexes and an English hub. The
+English sitemap holds 311 urls against the Chinese 451, which is the
+check: the generator emits a page and an hreflang alternate only where
+the body exists (`if (!s.has(l)) continue;`, `prerender_sermons.dart:645`
+and `:970`). Before that fix it aborted on the first merged sermon, and
+after the first half of the fix it still named English urls that 404.
 `tools/prerender_sermons.dart`, same shape as the Bible generator and
 the same reason for being written in Dart: it imports `sermon_credit`,
 `sermon_topics`, `passage_localizer` and `version_mapper`, so the
