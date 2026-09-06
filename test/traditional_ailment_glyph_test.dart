@@ -102,8 +102,13 @@ void main() {
       illness += s.split('症').length - 1;
       mass += s.split('癥').length - 1;
     }
-    expect(mass, 1);
-    expect(illness, greaterThan(0));
+    // 1 → 7 with the merge of 2026-09-06. All six new 癥 were read and all
+    // six are 癥結 — the crux of a matter, which is what 癥 means. Not one
+    // is an illness, and 症 rose to 245 beside them carrying 癌症, 絕症,
+    // 症狀, 厭食症, 精神分裂症, so the distinction the converter draws
+    // here is still the right one.
+    expect(mass, 7);
+    expect(illness, 245);
   });
 
   test('the Simplified edition and the tagged corpus already agreed', () {

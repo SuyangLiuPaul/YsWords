@@ -33,15 +33,50 @@ void main() {
     'assets/sermons/zh-TW/029.txt',
   ];
 
+  /// The ONE reading in which 自已 is correct and must not be repaired.
+  ///
+  /// 2026-09-06, and it arrived by the merge rather than by a sweep: 125 of
+  /// Pastor Eric's messages came in from the fuyindiantai staging library
+  /// and fy-nm31 writes 「不能自已地追求不可能達到的目標」. 不能自已 is a
+  /// set phrase — "unable to restrain oneself" — in which 已 is the verb
+  /// 止, exactly as in 情不自禁. It is not the reflexive pronoun and a
+  /// blanket 自已 → 自己 would turn it into 「不能自己地追求」, which means
+  /// nothing.
+  ///
+  /// This is the class the docstring above already named — 「已 next to 自
+  /// is not on its own a defect」 — appearing in this repo's own assets for
+  /// the first time. It is spelled out as a reading rather than as a file
+  /// exemption, so a genuine 自已 anywhere in the same file still fails.
+  const permitted = <String, String>{
+    'assets/sermons/zh-CN/fy-nm31.txt': '不能自已地追求不可能达到的目标',
+    'assets/sermons/zh-TW/fy-nm31.txt': '不能自已地追求不可能達到的目標',
+  };
+
   test('no asset spells the reflexive pronoun 自已', () {
     final offenders = <String>[];
     for (final dir in ['assets/sermons', 'assets/strongs']) {
       for (final f in Directory(dir).listSync(recursive: true)) {
         if (f is! File) continue;
-        if (f.readAsStringSync().contains('自已')) offenders.add(f.path);
+        var text = f.readAsStringSync();
+        final ok = permitted[f.path];
+        if (ok != null && text.contains(ok)) {
+          // Remove only the licensed reading, then look again. A second
+          // 自已 in the same file still lands in `offenders`.
+          text = text.replaceAll(ok, '');
+        }
+        if (text.contains('自已')) offenders.add(f.path);
       }
     }
     expect(offenders, isEmpty);
+  });
+
+  test('the one correct 自已 is still there and is still the idiom', () {
+    // The other half: if a later sweep "finishes the job" over the sermon
+    // corpus, this is what fails.
+    permitted.forEach((path, reading) {
+      expect(File(path).readAsStringSync(), contains(reading),
+          reason: '$path lost 不能自已, which was correct Chinese');
+    });
   });
 
   test('the four repaired readings say what they mean', () {

@@ -69,12 +69,21 @@ void main() {
 
   test('the four one-chapter repairs landed, sermons intact', () {
     final bv = refs['byVerse'] as Map;
-    expect(bv['Jude 1:6'], ['115']);
+    // fy-mt89 joined 115 on 2026-09-06: 「猶大書6節也說了同樣的話：“又有
+    // 不守本位、離開…”」 — the same one-chapter rule, reached through the
+    // Chinese prose of a sermon merged in from the fuyindiantai library.
+    // Read in the body before this list was changed.
+    expect(bv['Jude 1:6'], ['115', 'fy-mt89']);
     expect(bv['Jude 1:11'], ['420']);
     // 238 joined 239 when the extractor learned 「約翰二書第7節」 —
     // the same one-chapter rule, reached through Chinese prose.
     expect(bv['2 John 1:7'], ['238', '239']);
-    expect(bv['2 John 1:10'], ['056']);
+    // fy-sm47 joined 056 on 2026-09-06: 「這一點在約翰二書10-11節講得一
+    // 清二楚」, twice in one merged sermon. Note that the range gives only
+    // 1:10 and not 1:11 — that is the extractor's existing behaviour for a
+    // range following a one-chapter book name, unchanged by this merge and
+    // visible here rather than hidden.
+    expect(bv['2 John 1:10'], ['056', 'fy-sm47']);
     for (final gone in [
       'Jude 6', 'Jude 11', '2 John 7', '2 John 10',
       'Daniel 20', 'Daniel 48', 'Deuteronomy 43',

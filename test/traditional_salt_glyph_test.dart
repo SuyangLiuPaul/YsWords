@@ -101,12 +101,41 @@ void main() {
   });
 
   test('the sermon that greps as 何鹹 is a false positive and stays put', () {
-    // assets/sermons/zh-TW/018.txt matches 何鹹 on a naive grep — it is
-    // 「不再有任何鹹味」, 任何 + 鹹味, in a sermon on Matthew 5:13. Pinned so a
-    // later sweep does not "finish the job" across the sermon assets.
+    // assets/sermons/zh-TW/018.txt used to match 何鹹 on a naive grep — it
+    // was 「不再有任何鹹味」, 任何 + 鹹味, in a sermon on Matthew 5:13.
+    //
+    // **That exact sentence is gone as of 2026-09-06 and the guard it stood
+    // for is not.** 018 is one of 51 machine-translated Chinese bodies the
+    // merge replaced with the fuyindiantai library's human text
+    // (`scripts/merge_sermon_library.py`), and the human text puts the same
+    // teaching in different words. So there is no 何鹹 anywhere in the
+    // corpus now — asserted, so that a reappearing one is noticed — and the
+    // real point, that nobody sweeps 鹹 → 咸 across a preacher's words, is
+    // pinned on the readings 018 actually has today.
     final sermon = File('assets/sermons/zh-TW/018.txt').readAsStringSync();
-    expect(sermon, contains('任何鹹味'));
+    for (final reading in const [
+      '怎能叫它再鹹呢', '門徒不可失掉鹹味', '鹽不鹹：有名無實',
+      '千萬別失掉鹹味',
+    ]) {
+      expect(sermon, contains(reading), reason: reading);
+    }
     expect(sermon.contains('咸'), isFalse);
+
+    var salted = 0;
+    var mainland = 0;
+    var falsePositives = 0;
+    for (final f in Directory('assets/sermons/zh-TW').listSync()) {
+      if (f is! File || !f.path.endsWith('.txt')) continue;
+      final s = f.readAsStringSync();
+      salted += s.split('鹹').length - 1;
+      mainland += s.split('咸').length - 1;
+      falsePositives += s.split('何鹹').length - 1;
+    }
+    expect(salted, 29);
+    expect(mainland, 0);
+    expect(falsePositives, 0,
+        reason: 'the 任何鹹味 false positive left with 018\'s old body; if '
+            'one comes back, read it before any sweep touches it');
   });
 
   test('the Simplified source merges the pair, so it cannot arbitrate', () {

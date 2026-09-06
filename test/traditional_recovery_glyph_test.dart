@@ -98,8 +98,15 @@ void main() {
       comparative += s.split('愈').length - 1;
       healing += s.split('癒').length - 1;
     }
-    expect(comparative, 1);
-    expect(healing, greaterThan(0));
+    // 1 → 26 with the merge of 2026-09-06 (125 sermons in from the
+    // fuyindiantai staging library, 51 bodies replaced). Every one of the
+    // 25 new 愈 was read and every one is the comparative: 每況愈下 ×11
+    // (and one deliberate inversion of it, 「每況愈上」), 愈來愈, 愈演愈烈
+    // ×3, 愈發 ×5, 愈是, 愈顯, 「我愈默想就愈躊躇」. None is healing —
+    // 癒 rose to 30 alongside it and carries 痊癒 / 治癒 / 癒合 as before,
+    // so the two senses are still distinguished rather than merged.
+    expect(comparative, 26);
+    expect(healing, 30);
     expect(File('assets/sermons/zh-TW/CP18.txt').readAsStringSync(),
         contains('每況愈下'));
   });

@@ -112,7 +112,12 @@ void main() {
     // of corpus that did not exist when this number was last measured, so
     // the total moved. Every new occurrence was read before the number was
     // changed; the one new 凌 is 370’s 凌晨五點, and 淩 is still 0.
-    expect(correct, 24);
+    // 2026-09-06: 24 → 42 when 125 sermons were merged in from the
+    // fuyindiantai staging library and 51 bodies were replaced. Every new
+    // occurrence was read — 凌辱 ×3 (「凌辱他們」, the wicked tenants),
+    // 倍受凌辱, 恃強凌弱, 凌駕 ×2, 盛氣凌人, 凌晨 ×2 and the like — and
+    // 淩 is still 0, which is the half that carries the claim.
+    expect(correct, 42);
     expect(variant, 0);
   });
 

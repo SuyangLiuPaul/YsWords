@@ -129,7 +129,18 @@ void main() {
       // that joy is fulfilled in them.
       expect(got,
           containsAll(['011', '345', '761', '765', '331']));
-      expect(got, hasLength(15));
+      // 2026-09-06: ten more, and every one of the fifteen above is still
+      // here — which is what the by-name assertion is for. The corpus grew
+      // from 289 to 414 when Pastor Eric's messages were merged in from
+      // the fuyindiantai staging library, and these ten cite John 17 in
+      // their own Chinese: fy-topm_04 is a whole message on 「約翰福音17章
+      // 3節」, fy-mt59 and fy-trc01 quote the 17:23 prayer, fy-nm11 quotes
+      // 17:4 and 17:18. Read before the length below was changed.
+      expect(got, containsAll([
+        'fy-mt59', 'fy-nm11', 'fy-nm14', 'fy-nm23', 'fy-nm29',
+        'fy-topm_04', 'fy-trc01', 'fy-trc02', 'fy-trc05r', 'fy-trc06',
+      ]));
+      expect(got, hasLength(25));
     });
 
     test('narrowing to a verse never widens the result', () {

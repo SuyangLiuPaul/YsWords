@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -45,6 +46,15 @@ void main() {
   int count(String haystack, String needle) =>
       haystack.split(needle).length - 1;
 
+  /// Paragraphs the way `sermon_detail_page.dart` counts them —
+  /// `body.split(RegExp(r'\n\s*\n'))`, blank-line separated, the H1
+  /// included because it is one of them until the page drops it.
+  int paragraphs(String body) => body
+      .trim()
+      .split(RegExp(r'\n\s*\n'))
+      .where((p) => p.trim().isNotEmpty)
+      .length;
+
   test('the reference itself is unanimous — this is what the rule rests on',
       () {
     for (final pair in const [
@@ -70,11 +80,66 @@ void main() {
   });
 
   test('and the 和合本 spellings carry the whole corpus', () {
-    expect(count(sermons, '為'), 24778);
-    expect(count(sermons, '裏'), 10772);
-    expect(count(sermons, '著'), 7426);
-    expect(count(sermons, '才'), 1779);
-    expect(count(sermons, '啟'), 512);
+    // 2026-09-06: the corpus went from 289 files to 414 when 125 of Pastor
+    // Eric's messages were merged in from the fuyindiantai staging library
+    // and 51 machine-translated bodies were replaced by that library's
+    // human text (`scripts/merge_sermon_library.py`). Both sides were put
+    // through the SAME `opencc -c s2t` plus the same five normalisations,
+    // which is why the zero side below did not move at all: the rule was
+    // applied at conversion time rather than swept afterwards. These five
+    // are population counts of a corpus half again as large, and what was
+    // read before changing them is the zero side — 爲, 裡, 着, 纔 and 啓 are
+    // still absent from 414 files, and a merge that had skipped the
+    // normalisation would have put thousands of them back.
+    expect(count(sermons, '為'), 34241);
+    expect(count(sermons, '裏'), 12871);
+    expect(count(sermons, '著'), 9355);
+    expect(count(sermons, '才'), 3619);
+    expect(count(sermons, '啟'), 731);
+  });
+
+  test('every merged body is exactly as long as its Simplified source', () {
+    // The 176 bodies this merge wrote are `opencc -c s2t` output over their
+    // own Simplified twin plus one-character-for-one-character rules, so
+    // the two must agree to the character. This is the assertion that would
+    // fail if a Traditional body were ever truncated, half-converted, or
+    // regenerated from a different source — the defect that cost sermons
+    // 100, 369 and 370 most of their Traditional text before 2026-09-05.
+    final index = json.decode(
+        File('assets/sermons/index.json').readAsStringSync()) as List;
+    var checked = 0;
+    var totalParas = 0;
+    for (final row in index.cast<Map<String, dynamic>>()) {
+      final id = row['id'] as String;
+      final cn = File('assets/sermons/zh-CN/$id.txt');
+      final tw = File('assets/sermons/zh-TW/$id.txt');
+      if (!id.startsWith('fy-')) continue;
+      expect(cn.existsSync() && tw.existsSync(), isTrue, reason: id);
+      expect(tw.readAsStringSync().length, cn.readAsStringSync().length,
+          reason: '$id: a Traditional body that is not the same length as '
+              'its Simplified source is not a conversion of it');
+      // And the paragraphing, which length parity alone cannot see: a
+      // collapse applied to BOTH scripts keeps them the same length. The
+      // library bodies are paragraph-per-LINE and the app renderer splits
+      // on BLANK lines, so the merge turned each single newline into a
+      // blank one; that mapping preserves every boundary and invents none,
+      // and this is what says so. Re-paragraphing a preacher is the one
+      // thing the corpus rule forbids outright, and regenerating three
+      // sermons destroyed 103 correctly-paired 「」 once.
+      final cnParas = paragraphs(cn.readAsStringSync());
+      final twParas = paragraphs(tw.readAsStringSync());
+      expect(twParas, cnParas, reason: '$id: the two scripts disagree on '
+          'how many paragraphs the sermon has');
+      totalParas += cnParas;
+      checked += 1;
+    }
+    expect(checked, 125,
+        reason: 'the merge wrote 125 new sermons; if this number is not '
+            'reached the loop above checked nothing');
+    // The corpus-wide total, so a collapse or a split applied evenly to
+    // both scripts still fails. 11 515 = 125 H1 lines plus 11 390 body
+    // paragraphs, counted off the library's own line count at merge time.
+    expect(totalParas, 11515);
   });
 
   test('the three regenerated bodies are in the corpus and in this rule', () {
@@ -101,7 +166,9 @@ void main() {
     // settled on 麪, and no rule above touches either.
     // 158 from 2026-09-05 — six over-converted 麪 were corrected back to
     // 面 after a refuter pass found them; see tw_sermon_glyph_test.dart.
-    expect(count(sermons, '麪'), 158);
+    // 158 → 162; every one of the thirteen that arrived and the nine that
+    // left is read in `test/tw_sermon_glyph_test.dart`.
+    expect(count(sermons, '麪'), 162);
     expect(count(sermons, '麵'), 0);
   });
 }

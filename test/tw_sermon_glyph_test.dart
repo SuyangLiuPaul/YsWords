@@ -8,11 +8,32 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// **This corpus does NOT have the CUV converter hole** and the tests below are
 /// written so that nobody can conclude otherwise from them. `assets/sermons/
-/// zh-TW/` was produced by a phrase-aware converter: it holds 隻 453, 淨 358,
-/// 牆 257, 餘 190, 髮 121, 鬆 133 and zero 凈 / 墻 / 余. None of the
+/// zh-TW/` was produced by a phrase-aware converter: it holds 淨 358, 牆 257,
+/// 餘 190, 髮 121, 鬆 133 and zero 凈 / 墻 / 余. None of the
 /// `tools/repair_tr_*.py` scripts applies here. What it had was spot errors in
 /// four classes, and the counts on both sides are pinned so that a re-import
 /// cannot silently undo them and a later sweep cannot silently widen them.
+///
+/// **One line of that paragraph was WRONG and has been removed: 隻.** It used
+/// to read "it holds 隻 453 …" as evidence that the converter is good, and
+/// the opposite is true — s2t writes the measure word 隻 where the sense is
+/// 只 (only), so the corpus reads 「這隻能治標不治本」, 「就是隻要擯棄」 and
+/// 「是不是隻有主耶穌在世的那個世代」. Measured 2026-09-06: roughly 81 such
+/// positions were already in the shipped 289 and roughly 63 came in with the
+/// merge, against 250-odd correct 隻 (一隻羊, 兩隻手, 隻字未提, 形單影隻,
+/// 船隻). Separating them is a per-occurrence adjudication over ~144
+/// positions and is NOT done here; it is named so that the next reader finds
+/// it instead of finding a sentence saying it is fine.
+///
+/// **2026-09-06 — the corpus is 414 sermons, not 289.** 125 of Pastor Eric's
+/// messages were merged in from the fuyindiantai staging library and 51
+/// machine-translated Chinese bodies were replaced by that library's human
+/// text, both converted by the same `opencc -c s2t`
+/// (`scripts/merge_sermon_library.py`). Every count below moved, and every
+/// one was decomposed into new-file / lost-with-the-replaced /
+/// gained-with-the-replacement before it was rewritten. The repairs the
+/// merge needed are in `tools/repair_tw_sermon_merged_glyphs.py`, 87
+/// substitutions across 48 files.
 ///
 /// There is no witness edition for sermon text. Every repair rested either on
 /// the corpus's own lopsided convention (恆 276:2, 採取 54:3, 麪包 41:8) or on
@@ -37,7 +58,17 @@ void main() {
   group('乾 / 干 / 幹 — the three-way split', () {
     test('142 幹 became 124, and every one that moved was dryness or offence',
         () {
-      expect(count('幹'), 124);
+      // 124 → 216 with the merge. Decomposed first: +59 in the 125 new
+      // files, −11 lost with the machine text of the 51 replaced bodies,
+      // +44 in their replacements. Every one of the 92 was read in context
+      // and they are 才幹 71, 樹幹 23, 幹什麼 21, 幹活 15, 能幹 10, 幹掉 8,
+      // 幹部 8, 幹革命 3, 幹嘛 3, 軀幹 3, 骨幹 2, 幹得好 2, 幹道/幹線 2 and
+      // the like. The seventeen that were NOT are repaired one anchored
+      // reading at a time: five drynesses (淚始乾 ×2, 乾河牀, 溼了又乾,
+      // 裝乾穀物), four doings that s2t wrote 乾 (奴隸幹的活 ×2, 仇敵幹的,
+      // 幹沒幹壞事), two offences it wrote 幹 (親自干預, 干犯主的身), and
+      // 乾脆 spelt three different ways across five files.
+      expect(count('幹'), 216);
       for (final gone in const [
         '嘴幹', '幹沙子', '幹擾', '幹淨', '凍幹', '水庫幹了', '溪也幹了',
         '哭幹了', '幹枯', '排幹了', '幹蘿蔔', '就是不幹',
@@ -69,7 +100,11 @@ void main() {
       // wrong glyph, ten times. 「放在鬥底下」 says the lamp is put under a
       // FIGHT.
       expect(count('鬥底下'), 0);
-      expect(count('斗底下'), 10);
+      // 10 → 19. Twelve new 「鬥底下」 arrived with the merge — 018, 080 ×2,
+      // fy-sm12a ×2, fy-sm12b ×6, fy-sm28, every one of them quoting
+      // 馬太福音 5:15 or its parallels — and three left with the machine
+      // bodies of 018, 080 and 075's twins. Read before the number moved.
+      expect(count('斗底下'), 19);
       // Nine quote 馬太福音 5:15; the tenth is 075.txt quoting 路加福音 8:16
       // as 「放在牀底下或鬥底下」, which the first draft of the repair missed
       // because its cue came from the Matthew wording alone.
@@ -87,12 +122,50 @@ void main() {
       // characters this number had never seen. The four new 鬥 were read
       // first — 369 has three 戰鬥 and 370 one — so the collocation rule
       // still holds and only the total moved.
-      expect(count('鬥'), 220);
+      // 220 → 257 with the merge, and the increase was not merely counted.
+      // EVERY 鬥 in all 414 files was classified: 256 sit in 戰鬥 105,
+      // 爭鬥 46, 搏鬥 32, 奮鬥 25, 好鬥 5, 打鬥 2, 格鬥, 決鬥, 鬥爭, 鬥拳,
+      // 角鬥士, 鉤心鬥角, 單打獨鬥, 內鬥, 鬥智鬥勇, 纏鬥, 鬥下去 — and the
+      // 257th is fy-sm43's 「以狼鬥狼」, a wolf fighting a wolf. That sweep
+      // is what found the seven below.
+      expect(count('鬥'), 257);
       for (final keep in const ['戰鬥', '爭鬥', '搏鬥', '打鬥', '奮鬥', '好鬥']) {
         expect(count(keep), greaterThan(0), reason: keep);
       }
+      expect(files['fy-sm43.txt'], contains('以狼鬥狼'),
+          reason: 'the one 鬥 outside a named fight collocation');
       expect(files['360.txt'], contains('斗篷'), reason: 'a cloak was already 斗');
       expect(files['371.txt'], contains('升斗'), reason: '路 6:38 was already 斗');
+    });
+
+    test('075 names the bowl outside the quotation, and now spells it 斗', () {
+      // 075 was HALF-repaired on 2026-09-03: the sweep fixed its
+      // 「或鬥底下」 because that is the collocation the rule carried, and
+      // left the six places where the same message names the bowl on its
+      // own. So for three days it read 「鬥——裏面裝著穀物。它是量穀物的
+      // 量器」 — a FIGHT with grain inside it — while the test above
+      // asserted that every 鬥 outside 鬥底下 was a fight. Its own
+      // Simplified body is the control and writes 斗 at all six.
+      final f = files['075.txt']!;
+      for (final reading in const [
+        '馬可提到了斗：', '不要用斗把它蓋上', '被斗蓋上',
+        '斗——裏面裝著穀物', '讓你用斗蓋上', '斗裝的是乾貨',
+      ]) {
+        expect(f, contains(reading), reason: reading);
+      }
+      expect(f.contains('鬥'), isFalse,
+          reason: '075 is a message about the measure and holds no fight');
+      // fy-sm12b is the same message in the merged corpus and names the
+      // bowl seven times outside the quotation.
+      final g = files['fy-sm12b.txt']!;
+      for (final reading in const [
+        '第一樣是“斗”，斗是裝穀子的器具', '斗是什麼呢', '1、斗（太5：15',
+        '就是斗、器皿', '斗用來裝乾穀物', '跟“斗”字不同',
+      ]) {
+        expect(g, contains(reading), reason: reading);
+      }
+      expect(g, contains('格鬥廝殺'),
+          reason: 'and the one real fight in that file survives');
     });
   });
 
@@ -111,9 +184,17 @@ void main() {
       //
       // Each was settled by its own Simplified body, which is the
       // control: 093 zh-CN reads 层面包裹, 194-2 reads 摩西的面皮.
-      expect(count('麪'), 158);
+      // 158 → 162. Six 麪 came in with the 125 merged files and seven with
+      // the 51 replacements, against nine that left with the machine text
+      // they replaced. All thirteen were read: 麪包 in 118 ×2, 407,
+      // fy-sm16, fy-sm51, 麪粉 in fy-mt67_pb03 and 長壽麪 in fy-mt59 —
+      // noodles, flour and bread. Two more that s2t got backwards, 麪對
+      // in fy-bp03 and fy-bp07, are repaired to 面對 rather than counted:
+      // the Simplified bodies read 面对 and are the control.
+      expect(count('麪'), 162);
       for (final wrong in const [
         '層麪包裹', '裏麪包含', '明白麪前', '和麪容', '麪皮發光',
+        '麪對真理',
       ]) {
         expect(count(wrong), 0, reason: '$wrong is 面, not flour');
       }
@@ -130,7 +211,13 @@ void main() {
       // 47 from 2026-09-05: two of the 49 were not bread at all —
       // 093's 層麪包裹 and 109's 愛裏麪包含, both 面 + 包-heading-its-
       // own-word. Corrected, and the rule now carries a lookahead.
-      expect(count('麪包'), 47);
+      // 47 → 49: 011's 「一片面包」 and 「你是有面包了」, a slice of BREAD,
+      // arrived with its replacement body. The rule that caught them is
+      // `repair_tw_sermon_spot_glyphs.py`'s regex reused character for
+      // character — it has to be, because fy-im21 「裏面包含許多內容」 came
+      // in on the same merge and is the exact trap the lookbehind and the
+      // lookahead exist for.
+      expect(count('麪包'), 49);
     });
 
     test('079.txt sets 麪 for the dough where it stands alone', () {
@@ -153,11 +240,20 @@ void main() {
       // of the three rebuilt bodies contains 面包, 面粉, 面糰 or 面酵, so
       // nothing that should be flour is hiding in the increase, and all
       // six restorations were settled against their Simplified bodies.
-      expect(count('面'), 5932);
+      // 5932 → 7480 with the merge. What was checked before the number
+      // moved is what has always been checked here: that nothing which
+      // should be flour is hiding in the increase. 面酵 0, 面包 1, 麥面 0,
+      // 團面 0, 面粉 0, 面糰 0 across all 414 files — the single 面包 is
+      // fy-im21's 「裏面包含許多內容」, which is an INSIDE that CONTAINS.
+      expect(count('面'), 7480);
       for (final keep in const ['裏面', '面前', '方面', '面對', '前面', '畫面']) {
         expect(count(keep), greaterThan(0), reason: keep);
       }
-      expect(files['073.txt'], contains('它裏面包含了極大的真理'),
+      // 073's 「它裏面包含了極大的真理」 was this anchor until 2026-09-06,
+      // when 073 became one of the 51 bodies replaced by the library's
+      // human text, which does not contain that sentence. fy-im21 carries
+      // the same trap and came in on the same merge.
+      expect(files['fy-im21.txt'], contains('裏面包含許多內容'),
           reason: '裏面 + 包含 — the 面包 rule needs its negative lookbehind');
     });
   });
@@ -166,17 +262,33 @@ void main() {
     test('采取 and 采納 are gone', () {
       expect(count('采取'), 0);
       expect(count('采納'), 0);
-      expect(count('採取'), 57);
-      expect(count('採納'), 4);
+      expect(count('採取'), 88);
+      expect(count('採納'), 7);
     });
 
-    test('采 survives in 風采, 興高采烈 and Nietzsche', () {
-      // 尼采 is the trap: five occurrences of a philosopher's name that a
-      // blanket 采→採 would have renamed.
-      expect(count('尼采'), 5);
-      expect(count('風采'), greaterThan(0));
-      expect(count('興高采烈'), greaterThan(0));
+    test('采 survives in 興高采烈, 無精打采 and Nietzsche — all 21 of them', () {
+      // 尼采 is the trap: a philosopher's name that a blanket 采→採 would
+      // have renamed, and the merge brought eight more of him — one in
+      // fy-im03's biography of him (「尼采（Nietzsche）」, 「尼采的父親是位
+      // 牧師」) and the rest in 398's exposition of the Übermensch. All
+      // thirteen were read.
+      expect(count('尼采'), 13);
+      // 風采 is GONE, and that is not a regression: its one occurrence was
+      // 018's 「特別的風采」, in the machine-translated body that the merge
+      // replaced with the library's human text. Removing the assertion is
+      // the honest move; replacing it with 無精打采 keeps the class covered
+      // by a reading that actually exists.
+      expect(count('風采'), 0);
+      expect(count('興高采烈'), 7);
+      expect(count('無精打采'), 1);
+      // With 763's 「舉手可採」 repaired, every 采 in the corpus is one of
+      // exactly three words, so this side can be enumerated rather than
+      // merely asserted non-empty — which is what makes a widened 采→採
+      // impossible to hide.
+      expect(count('采'), 21, reason: '13 + 7 + 1, and nothing else');
       expect(count('尼採'), 0, reason: 'a blanket 采→採 ran');
+      expect(files['763.txt'], contains('舉手可採'),
+          reason: 'fruit within reach, to be PICKED');
     });
   });
 

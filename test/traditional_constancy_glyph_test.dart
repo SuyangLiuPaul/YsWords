@@ -117,7 +117,13 @@ void main() {
       traditional += s.split('恆').length - 1;
       mainland += s.split('恒').length - 1;
     }
-    expect(traditional, 278);
+    // 278 → 436 with the merge of 2026-09-06. The zero side is the one
+    // that carries the claim and it did NOT move: the six 恒 the merge
+    // brought in were all 永恒生命 and were repaired by
+    // `tools/repair_tw_sermon_merged_glyphs.py` against this very ratio,
+    // one anchored sweep of 永恒生命 → 永恆生命 across 018, 065, 135,
+    // fy-mt85, fy-nm00 and fy-nm16. The corpus is still not swept.
+    expect(traditional, 436);
     expect(mainland, 0);
   });
 

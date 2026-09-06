@@ -106,7 +106,12 @@ void main() {
       if (f is! File) continue;
       radishes += f.readAsStringSync().split('蘿蔔').length - 1;
     }
-    expect(radishes, 7);
+    // 7 → 11 with the merge of 2026-09-06. All four new ones were read:
+    // 乾蘿蔔 ×3 more in a story about a jar of dried radish that never
+    // empties, and 胡蘿蔔 in 「胡蘿蔔加大棒」 and 「用胡蘿蔔引誘我」 — the
+    // carrot and the stick. Every 蔔 in the corpus is still a radish, and
+    // a blanket 蔔 → 卜 would still print 蘿卜.
+    expect(radishes, 11);
   });
 
   test('the independently translated NT agrees on 別西卜 and 占卜', () {

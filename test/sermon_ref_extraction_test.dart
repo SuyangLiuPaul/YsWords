@@ -729,9 +729,19 @@ void main() {
     // (「當你回頭看馬太福音第5章時」), 28 times, every one of them real.
     test('no clock time sits where a citation could carry it', () {
       expect(c['clockAfterCitation'], 0);
-      expect(c['clockTokens'], 1328);
+      // 1328 → 1544 when the corpus grew from 289 sermons to 414. The
+      // number that carries the ARGUMENT is the one below it, and it did
+      // NOT move: still exactly two of these tokens are clocks, so all 216
+      // that arrived are chapter:verse citations. Sampled to confirm the
+      // shape — 罗6:2, 林后5:17, 太13:6,21, 约11:11,13 — the merged bodies
+      // cite in Chinese abbreviations and never print a time of day.
+      expect(c['clockTokens'], 1544);
       expect(c['clockTokensMarked'], 2);
-      expect(c['whenAfterCitation'], 28,
+      // 28 → 34. All 34 were read: six new sites in fy-bp05, fy-sm12b and
+      // fy-nm06 (each in both scripts), every one of them 時 meaning
+      // "when" — 「上次我們查考使徒行傳2章38節時已看到」. A 时/時 guard
+      // would still delete real citations, and now six more of them.
+      expect(c['whenAfterCitation'], 34,
           reason: 'a 时/時 guard would delete this many real citations');
     });
 
@@ -786,8 +796,17 @@ void main() {
     // against 13 longer ones of which only 一一九 lands in 1..199.
     test('the digit-string reading admits exactly one corpus spelling',
         () {
-      expect(c['digitRuns2'], 242);
-      expect(c['digitRuns3plus'], 13);
+      // 242 → 308 with the merge, and 13 → FIVE. The long runs went DOWN
+      // because eight of the thirteen were in machine-translated bodies
+      // that the merge replaced — 042's 二一四 among them, which is why the
+      // range check below is now asserted on a constructed string rather
+      // than on a sermon. All five survivors were read: 411's 一九五三 and
+      // EC011's 一九五八 (×2, both scripts) are years and resolve to
+      // nothing, and 331's 一一九 (×2) is Psalm 119. The claim the floor
+      // rests on — that exactly one corpus spelling lands in 1..199 — is
+      // therefore stronger after the merge, not weaker.
+      expect(c['digitRuns2'], 308);
+      expect(c['digitRuns3plus'], 5);
       expect(c['digitRunsResolved'], 2, reason: "331's two bodies");
       expect(_extractRefs('也在诗篇十九篇10节；诗篇一一九篇103节等等'),
           ['Psalms 19:10', 'Psalms 119:103']);

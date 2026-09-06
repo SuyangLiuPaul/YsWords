@@ -137,7 +137,7 @@ void main() {
   });
 
   test(
-      'sweep every passageRefPattern match over all 867 transcripts: '
+      'sweep every passageRefPattern match over all 1117 transcripts: '
       'exactly the 9 known out-of-canon sites stopped parsing',
       () {
     var totalMatches = 0;
@@ -176,8 +176,16 @@ void main() {
     // of a transcript that actually reads "1 Corinthians 5:21") — a
     // blanket null-check would flag all of those as "new" on every run
     // and prove nothing about this guard specifically.
-    expect(totalMatches, 12528,
-        reason: 'total passageRefPattern matches across all 867 '
+    // +3201 on 2026-09-06: the corpus went from 289 sermons to 414 when
+    // 125 of Pastor Eric's messages were merged in from the fuyindiantai
+    // staging library and 51 machine-translated bodies were replaced by
+    // that library's human text. 867 transcript files became 1117 — 414
+    // zh-CN, 414 zh-TW and still 289 English, because the library is
+    // Chinese-only. The gap between the two totals is what carries the
+    // argument and it moved by TWO, from 32 to 34, so both are asserted:
+    // see the note on `totalParsed`.
+    expect(totalMatches, 15729,
+        reason: 'total passageRefPattern matches across all 1117 '
             'transcripts — pins the corpus this sweep covers. 12498 '
             'before queue-7296 (約拿記/约拿记 + 哥罗西书 added to the alias '
             'table and the pattern): 7 more matches, 6 for 約拿記/约拿记 in '
@@ -193,7 +201,15 @@ void main() {
     // the rebuilt bodies brought in parses; the rebuild introduced no new
     // out-of-canon site, and the gap between the two totals is still
     // exactly the 32 that were already known.
-    expect(totalParsed, 12496,
+    // 15 695 = 15 729 − 34. The gap grew from 32 to 34 and BOTH new
+    // members were read before this number was written: they are one
+    // reading, in both scripts, in fy-nm10 — 「“住”字（menō）在約翰福音
+    // 出現了40次，約翰一書24次」. That is a word COUNT, not a chapter, and
+    // 1 John has five chapters, so `parseReference` refusing it is the
+    // guard working rather than failing. It came in verbatim with the
+    // library text and is not something this repo introduced. Every other
+    // reference the 125 merged sermons brought in parses.
+    expect(totalParsed, 15695,
         reason: '12464 before queue-7296: +7, matching the 7 new '
             'matches above — Jonah 2 and Colossians 1:19 are both '
             'in-canon, so every new match parses. +2 more on 2026-09-03: '

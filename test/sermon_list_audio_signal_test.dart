@@ -20,15 +20,35 @@ import 'package:yswords/services/sermon_service.dart';
 /// reader browsing the library had no way to find out that any sermon
 /// was playable without opening one at random and looking.
 ///
-/// The shape of the gap is the interesting part. **Every sermon has
-/// audio**: 289 ids in `assets/sermons/index.json`, 289 non-empty
-/// entries in `assets/sermons/audio_index.json`, no id in one and not
-/// the other (re-derived below rather than trusted). So there is
-/// nothing to distinguish between rows, and a play badge on all 289
-/// would carry no information — the same reasoning the page's own
-/// AppBar comment gives for putting the preacher's byline in the header
-/// once instead of on every row ("repeating it down 289 rows would be
-/// an advert, not a credit").
+/// The shape of the gap USED to be the interesting part: every sermon had
+/// audio — 289 ids in `assets/sermons/index.json`, 289 non-empty entries in
+/// `assets/sermons/audio_index.json`, no id in one and not the other.
+///
+/// **That stopped being true on 2026-09-06 and the clause changed by
+/// itself, which is what it was built to do.** 125 of Pastor Eric's
+/// messages were merged in from the fuyindiantai staging library
+/// (`scripts/merge_sermon_library.py`), so the corpus is 414 sermons of
+/// which 289 have a recording. `sermonAudioClause` takes the partial
+/// branch and the line now reads 「414 篇讲道,共 21 个主题 · 289 篇有录音」.
+/// Nothing in the feature was edited to make that happen — the clause is
+/// derived from two counted numbers and consults no constant, which is
+/// precisely the property tested below, and this is the day it paid.
+///
+/// **Why the merged 125 have no audio, so that nobody adds it carelessly.**
+/// Their recordings exist and the library holds their URLs, but
+/// `SermonAudioService.baseUrl` is ONE host
+/// (`www.christiandiscipleschurch.org`) and every `audio_index.json` entry
+/// is a path under it. The library's audio lives on fuyindiantai.org, so an
+/// entry for a merged sermon would resolve to
+/// `christiandiscipleschurch.org/https://fuyindiantai.org/…` and 404.
+/// Carrying it needs a per-part absolute URL in `SermonAudioPart`, which is
+/// a `lib/` change; until then `audio_index.json` stays at 289 entries and
+/// the honest sentence is the partial one.
+///
+/// The badge ruling is unchanged and now has a second reason behind it: a
+/// play glyph on 289 of 414 rows would be a real distinction, but the
+/// distinction it draws is between two source archives rather than between
+/// two kinds of sermon, and the header already says both numbers.
 ///
 /// It is therefore one clause on the existing summary line. What these
 /// tests pin:
@@ -191,7 +211,7 @@ void main() {
 
   // ── 3. Which branch the real assets select ─────────────────────
 
-  test('the shipped corpus selects the universal branch', () {
+  test('the shipped corpus selects the PARTIAL branch — 289 of 414', () {
     // Re-derived from the two assets, so this test tells the truth
     // about the corpus rather than repeating a number from a brief.
     final sermons =
@@ -210,12 +230,22 @@ void main() {
         .where((id) => (audio[id] as List?)?.isNotEmpty ?? false)
         .length;
 
-    expect(sermons.length, greaterThan(0));
-    expect(playable, sermons.length,
-        reason: 'the list now claims every sermon has a recording. If that '
-            'stopped being true, the clause must fall back to the count '
-            'branch — it does so automatically, but this assertion is how '
-            'you find out it happened.');
+    expect(sermons.length, 414);
+    expect(playable, 289,
+        reason: 'the corpus grew to 414 on 2026-09-06 and the audio index '
+            'did not; if either moves, read why before editing this');
+    // Both sides pinned, so this cannot pass on an empty corpus and cannot
+    // pass on an audio index that grew without anyone noticing.
+    expect(playable, lessThan(sermons.length),
+        reason: 'the corpus is no longer wholly playable; if it becomes so '
+            'again the universal branch must come back and this assertion '
+            'is how you find out');
+
+    // Every audio entry belongs to a sermon that exists — the direction
+    // the old equality also covered, and which must not be lost with it.
+    final orphans =
+        audio.keys.where((k) => !ids.contains(k)).toList()..sort();
+    expect(orphans, isEmpty);
 
     expect(
       sermonAudioClause(
@@ -223,7 +253,7 @@ void main() {
           total: sermons.length,
           playable: playable,
           locale: 'en'),
-      uiStrings['sermonAudioAll']!['en'],
+      uiStrings['sermonAudioSome']!['en']!.replaceAll('{audioCount}', '289'),
     );
   });
 
@@ -270,7 +300,8 @@ void main() {
     await mountSermonsPage(tester);
 
     // Default locale is zh-Hans (`AppSettings._locale`).
-    final clause = uiStrings['sermonAudioAll']!['zh-Hans']!;
+    final clause = uiStrings['sermonAudioSome']!['zh-Hans']!
+        .replaceAll('{audioCount}', '289');
     final text = summaryLine(tester).data!;
 
     expect(text, contains(clause),
@@ -281,9 +312,11 @@ void main() {
     expect(text, contains(' · '));
     expect(text.indexOf('篇讲道'), lessThan(text.indexOf(clause)),
         reason: 'the audio clause must follow the count, not lead it');
-    // And it is the whole sentence, derived end to end from the
-    // assets: 289 sermons, 20 topics, all playable.
-    expect(text, '289 篇讲道,共 20 个主题 · 每篇都有录音');
+    // And it is the whole sentence, derived end to end from the assets:
+    // 414 sermons, 21 topics, 289 of them playable. Every one of those
+    // three numbers is counted from `assets/sermons/`; none is written
+    // down anywhere in the feature.
+    expect(text, '414 篇讲道,共 21 个主题 · 289 篇有录音');
   });
 
   testWidgets('the page still shows no per-row audio badge', (tester) async {
@@ -330,8 +363,8 @@ void main() {
     ]) {
       expect(find.byIcon(icon), findsNothing,
           reason: 'a playability glyph appeared in the sermon list; the '
-              'claim belongs in the header once, not on 289 identical '
-              'rows. See sermonAudioClause.');
+              'claim belongs in the header once, not on 414 rows. See '
+              'sermonAudioClause.');
     }
   });
 
@@ -342,7 +375,8 @@ void main() {
     // while carrying no decision value — they still have to open a
     // sermon to play it.
     await mountSermonsPage(tester);
-    final clause = uiStrings['sermonAudioAll']!['zh-Hans']!;
+    final clause = uiStrings['sermonAudioSome']!['zh-Hans']!
+        .replaceAll('{audioCount}', '289');
     final before = summaryLine(tester).data!;
     expect(before, contains(clause));
 
@@ -359,9 +393,10 @@ void main() {
     expect(after, contains(clause),
         reason: 'the audio clause changed or vanished when the reader '
             'searched. It is a fact about the library, not about the '
-            'search result — and "every one has a recording" must not '
-            'silently start meaning "every one of these three".');
-    // Even with nothing matching, the library is still listenable.
-    expect(after, '0 篇讲道,共 0 个主题 · 每篇都有录音');
+            'search result — and "289 have recordings" must not silently '
+            'start meaning "289 of these three".');
+    // Even with nothing matching, the library is still listenable, and the
+    // number in the clause is the library's, not the filter's.
+    expect(after, '0 篇讲道,共 0 个主题 · 289 篇有录音');
   });
 }
