@@ -567,6 +567,28 @@ both. No live compilation carries `unavailableSince` today, so nothing
 visibly changes; the row will simply hide if one ever does, instead of
 offering a button that opens "This video is private."
 
+### The book chip says Genesis 1 while the body renders John 3 `[observed 2026-09-06]`
+
+Seen in every browser screenshot taken while verifying the version
+picker: a cold load of `/#/john/3` renders John 3 correctly and the
+header's BOOK chip reads 「创世记 1」. Identical in two release bundles
+that differ only in the picker class, so it is pre-existing and was not
+introduced by that work.
+
+**This is the same shape as a defect fixed in the sibling app yesterday**
+— there, the reading pane's header pushed the CURSOR while a link that
+carries no `:verse` moved only the reference, so the header and the body
+disagreed and the verse picker opened on the wrong book. Two release
+builds served side by side showed John 3 in the body under a "Genesis 1"
+header while the status bar read "John 3 BSB Reader". The fix there was
+`_settleCursorInCurrentChapter`, applied only when the cursor falls
+outside the new chapter.
+
+Whether Words has the same cause or merely the same symptom is NOT
+established — nobody has looked. It is recorded here because it was
+observed rather than reasoned about, and because the sibling's fix is a
+strong first place to look rather than a conclusion.
+
 ## Build and toolchain
 
 ### Four test files fail to compile inside a third-party package `[carried forward, with the versions verified 2026-09-05]`
@@ -677,8 +699,20 @@ app Yahweh's World three versions; there it was fixed by declaring
   `[carried forward]`
 - **The Strong's lexicon's 着 / 著 in 51 places** —
   `docs/autonomous-queue.md:3800`. `[carried forward]`
-- **Attribution for the 40 Sweet Publishing illustrations** — see the
-  unverified section below for what is and is not known.
+- ~~**Attribution for the 40 Sweet Publishing illustrations.**~~
+  `[CLOSED 2026-09-06]` The Commons tags were checked over the network
+  in `e2fe38c1` (all 40 uniform CC BY-SA 3.0, Jim Padgett / Distant
+  Shores Media/Sweet Publishing, 1984), and the surface half — the
+  About page rendering none of it — is now fixed: `lib/pages/
+  about_page.dart`'s `_OtherAttributions` derives the credit row(s)
+  from `MapRights` at runtime (not hardcoded), so a future import
+  adding a new grouping cannot silently go uncredited. Frozen by
+  `test/illustration_rights_test.dart`, which pins the 40 ids and
+  asserts the rendered page carries the verbatim credit sentence and
+  the modification notice. The blanket "public domain / Creative
+  Commons archives" line was false for these 40 and is now the honest
+  mixed-collection wording, without flipping to a PD claim for the
+  other 1,152 in the other direction.
 
 ---
 
@@ -686,12 +720,6 @@ app Yahweh's World three versions; there it was fixed by declaring
 
 Everything in this section is a lead. None of it was proven today.
 
-- **The Sweet Publishing licence.** The 40 entries are believed to be
-  Sweet Publishing (1984) images under CC BY-SA on Wikimedia Commons,
-  which would create a standing attribution obligation. **The Commons
-  tags were not checked over the network.** What *is* verified is only
-  the absence of any licence field (above). Check the tags before acting
-  on the obligation, and before assuming there is one.
 - **The other unchecked items in the queue.** `grep -c "^- \[ \]"
   docs/autonomous-queue.md` returns **20**. This pass re-verified or
   transcribed six of them. The remaining fourteen — mostly under "P0 —

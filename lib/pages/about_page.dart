@@ -8,6 +8,8 @@ import 'package:yswords/widgets/update_check_tile.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/bible_map.dart';
+import 'package:yswords/services/map_service.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/responsive.dart';
@@ -412,6 +414,7 @@ class _AttribRow extends StatelessWidget {
   final Map<String, String>? linkPhrases;
 
   const _AttribRow({
+    super.key,
     required this.name,
     required this.licence,
     this.url,
@@ -680,19 +683,207 @@ class _LexiconsTable extends StatelessWidget {
   }
 }
 
-class _OtherAttributions extends StatelessWidget {
+class _OtherAttributions extends StatefulWidget {
   final ColorScheme scheme;
   final String locale;
   const _OtherAttributions(
       {required this.scheme, required this.locale});
+
+  @override
+  State<_OtherAttributions> createState() => _OtherAttributionsState();
+}
+
+/// One distinct attribution obligation, and every work that owes it.
+///
+/// [rights] is the first record in the group — every field the credit
+/// renders from ([MapRights.attributionKey]) is identical across the
+/// group by construction. [works] keeps them all because the licence
+/// asks for the TITLE of each work and a link to each source, which
+/// differ per illustration even when the credit does not.
+class _MapRightsGroup {
+  final MapRights rights;
+  final List<MapRights> works;
+  const _MapRightsGroup({required this.rights, required this.works});
+}
+
+class _OtherAttributionsState extends State<_OtherAttributions> {
+  /// Distinct rights groupings actually present in `maps_index.json`,
+  /// keyed by [MapRights.attributionKey] so two entries owing the same
+  /// credit collapse to one row. Null until the index has loaded —
+  /// the generic maps row above never claims blanket public domain in
+  /// the meantime, so there is nothing false to show while this is null.
+  List<_MapRightsGroup>? _rightsGroups;
+
+  /// How many entries carry NO rights block. Rendered as a count and an
+  /// explicit non-claim, never as a public-domain assertion: those file
+  /// pages were not checked, and "believed public domain, not verified"
+  /// is the only statement the evidence supports.
+  int _unasserted = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    MapService.loadMaps().then((maps) {
+      if (!mounted) return;
+      final order = <String>[];
+      final grouped = <String, List<MapRights>>{};
+      var unasserted = 0;
+      for (final m in maps) {
+        final rights = m.rights;
+        if (rights == null) {
+          unasserted++;
+          continue;
+        }
+        final key = rights.attributionKey;
+        if (!grouped.containsKey(key)) order.add(key);
+        (grouped[key] ??= <MapRights>[]).add(rights);
+      }
+      setState(() {
+        _rightsGroups = [
+          for (final key in order)
+            _MapRightsGroup(rights: grouped[key]!.first, works: grouped[key]!),
+        ];
+        _unasserted = unasserted;
+      });
+    });
+  }
+
+  /// One row per distinct rights grouping — today, the 40 Sweet
+  /// Publishing / Jim Padgett illustrations that carry a live
+  /// CC BY-SA 3.0 obligation. Every visible value comes off the asset
+  /// rather than a constant, so a future import that adds a second
+  /// grouping (a different artist, a different licence) is credited
+  /// without anyone remembering to edit this page.
+  ///
+  /// What CC BY-SA 3.0 §4(c) asks for, and where each part lands:
+  ///   * the AUTHOR and the attribution party → the row's name column,
+  ///     plus the holder's own credit sentence verbatim;
+  ///   * a COPYRIGHT notice → inside that credit sentence ("Copyright
+  ///     1984"), which is why it is reproduced rather than paraphrased;
+  ///   * a LICENCE notice AND a link to it → the short name, the deed's
+  ///     full title, the deed URL as readable text, and the row itself
+  ///     as a tap target;
+  ///   * an indication of whether CHANGES were made → the localised
+  ///     modification statement;
+  ///   * the TITLE of each work and a link to each source → not here;
+  ///     they differ per illustration and are listed by [_worksList].
+  ///
+  /// The one field deliberately NOT rendered is [MapRights.holderUrl]:
+  /// `dsmedia.org` returned an empty reply again on 2026-09-06 from a
+  /// machine whose egress to Wikimedia, creativecommons.org and the
+  /// app's own CDN all answered 200 in the same minute, so this is the
+  /// host and not the network. A dead link inside an attribution is
+  /// worse than no link; the working source and licence links stand.
+  List<_AttribRow> _rightsRows(String locale) {
+    final groups = _rightsGroups;
+    if (groups == null || groups.isEmpty) return const [];
+    final rows = <_AttribRow>[];
+    for (final g in groups) {
+      final r = g.rights;
+      final licenceUrl = r.licenseUrl;
+      final lines = <String>[
+        // The rights holder's own wording, verbatim — not localised,
+        // and not paraphrased: it carries the copyright notice.
+        r.credit,
+        '${r.license} · ${r.licenseFullName}',
+        if (r.shareAlike)
+          uiStrings['aboutMapsRightsShareAlike']?[locale] ??
+              'ShareAlike — adaptations must carry the same licence.',
+        r.localizedModification(locale),
+        licenceUrl,
+        (uiStrings['aboutMapsRightsVerified']?[locale] ??
+                'Licence checked: {verified}')
+            .replaceFirst('{verified}', r.verified),
+      ]..removeWhere((s) => s.trim().isEmpty);
+      rows.add(_AttribRow(
+        key: ValueKey('mapRightsCredit:$licenceUrl'),
+        name: '${r.author} · ${r.holder}\n'
+            '${(uiStrings['aboutMapsRightsCount']?[locale] ?? '{count} illustrations · {year}').replaceFirst('{count}', '${g.works.length}').replaceFirst('{year}', r.year)}',
+        licence: lines.join('\n'),
+        url: licenceUrl,
+      ));
+    }
+    return rows;
+  }
+
+  /// The title of every licensed work, each linking to the file page
+  /// that carries its licence statement. CC BY-SA 3.0 §4(c) asks for
+  /// the title "if supplied" and for the URI associated with the work;
+  /// all 40 supply both, so all 40 are listed. Collapsed by default so
+  /// the section stays scannable — an expander, not a hidden page.
+  Widget _worksList(ColorScheme scheme, String locale) {
+    final groups = _rightsGroups;
+    if (groups == null || groups.isEmpty) return const SizedBox.shrink();
+    final total = groups.fold<int>(0, (n, g) => n + g.works.length);
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: const ValueKey('mapRightsWorks'),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          title: Text(
+            (uiStrings['aboutMapsRightsWorks']?[locale] ??
+                    '{count} licensed illustrations — titles and sources')
+                .replaceFirst('{count}', '$total'),
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurface,
+            ),
+          ),
+          children: [
+            for (final g in groups)
+              for (final w in g.works)
+                InkWell(
+                  key: ValueKey('mapRightsWork:${w.sourceUrl}'),
+                  onTap: () {
+                    if (!LinkOpener.isAvailable) return;
+                    LinkOpener.openOrWarn(context, w.sourceUrl);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            w.title,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: scheme.onSurfaceVariant,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.open_in_new_rounded,
+                            size: 13,
+                            color: scheme.primary.withValues(alpha: 0.75)),
+                      ],
+                    ),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final scheme = widget.scheme;
+    final locale = widget.locale;
     final r = <_AttribRow>[
       _AttribRow(
         name: uiStrings['aboutMaps']?[locale] ?? 'Bible-history maps',
         licence: uiStrings['aboutLicenseMaps']?[locale] ??
-            'Public domain / Creative Commons archives.',
+            'Mixed sources; most are believed public domain by age '
+                'but uncatalogued. Illustrations with a verified '
+                'licence are credited individually below.',
       ),
+      ..._rightsRows(locale),
       _AttribRow(
         name: uiStrings['aboutSermons']?[locale] ??
             'Sermons (`assets/sermons/`)',
@@ -735,7 +926,39 @@ class _OtherAttributions extends StatelessWidget {
         last: true,
       ),
     ];
-    return _AttribTable(rows: r, scheme: scheme);
+    // Same shape as _ScripturesTable: the table, then what the table
+    // cannot say in a row — the per-work titles the licence asks for,
+    // and an explicit statement of what was NOT checked.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _AttribTable(rows: r, scheme: scheme),
+        if (_rightsGroups?.isNotEmpty ?? false) ...[
+          const SizedBox(height: 8),
+          _worksList(scheme, locale),
+        ],
+        if (_unasserted > 0) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              (uiStrings['aboutMapsUnasserted']?[locale] ??
+                      'The other {count} illustrations carry no licence '
+                          'record. They are believed public domain by age, '
+                          'but their source pages were not checked one by '
+                          'one, so this app makes no licence claim for them.')
+                  .replaceFirst('{count}', '$_unasserted'),
+              style: TextStyle(
+                fontSize: 11,
+                color: scheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
   }
 }
 

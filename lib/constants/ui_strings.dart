@@ -4453,10 +4453,25 @@ const uiStrings = {
     'zh-Hant': '聖經歷史地圖（assets/maps/）',
     'en': 'Bible-history maps (assets/maps/)',
   },
+  // 2026-09-06: this used to claim public domain / CC for the whole
+  // set. That was false for 40 entries carrying a live CC BY-SA 3.0
+  // obligation with a named artist — see MapRights in bible_map.dart.
+  // The honest line is that the collection is mixed, and the verified
+  // subset is credited on its own row below rather than folded into
+  // an unverified blanket claim in either direction.
   'aboutLicenseMaps': {
-    'zh-Hans': '来源于公有领域 / Creative Commons 资源库。',
-    'zh-Hant': '來源於公有領域 / Creative Commons 資源庫。',
-    'en': 'Public domain / Creative Commons archives.',
+    'zh-Hans': '来源不一；多数按年代推定为公有领域，但未逐一核实。'
+        '已核实授权的插图在下方单独列出。',
+    'zh-Hant': '來源不一；多數按年代推定為公有領域，但未逐一核實。'
+        '已核實授權的插圖在下方單獨列出。',
+    'en': 'Mixed sources; most are believed public domain by age '
+        'but uncatalogued. Illustrations with a verified licence are '
+        'credited individually below.',
+  },
+  'aboutMapsSweetPublishing': {
+    'zh-Hans': '圣经插图（Sweet Publishing）',
+    'zh-Hant': '聖經插圖（Sweet Publishing）',
+    'en': 'Bible illustrations (Sweet Publishing)',
   },
   'aboutSermons': {
     'zh-Hans': '讲道文本（assets/sermons/）',
@@ -7632,5 +7647,47 @@ const uiStrings = {
     'zh-Hans': '原文 · Strong\'s 中文释义',
     'zh-Hant': '原文 · Strong\'s 中文釋義',
     'en': 'Original · Strong\'s gloss',
+  },
+
+  // ====== About → illustration rights (appended 2026-09-06) ======
+  // The keys below render the CC BY-SA 3.0 attribution the 40 Sweet
+  // Publishing illustrations carry. None of them names the artist, the
+  // holder, the licence or the date: every one of those is read from
+  // the `rights` block in `assets/maps_index.json`, so a translation
+  // can never contradict the verified record. These strings are only
+  // the labels around it. `{count}`, `{year}` and `{verified}` are
+  // filled at the call site in `about_page.dart`.
+  'aboutMapsRightsCount': {
+    'zh-Hans': '{count} 幅插图 · {year} 年',
+    'zh-Hant': '{count} 幅插圖 · {year} 年',
+    'en': '{count} illustrations · {year}',
+  },
+  'aboutMapsRightsShareAlike': {
+    'zh-Hans': '相同方式共享——改编作品须沿用同一许可协议。',
+    'zh-Hant': '相同方式共享——改編作品須沿用同一授權條款。',
+    'en': 'ShareAlike — adaptations must carry the same licence.',
+  },
+  'aboutMapsRightsVerified': {
+    'zh-Hans': '许可核实：{verified}',
+    'zh-Hant': '授權核實：{verified}',
+    'en': 'Licence checked: {verified}',
+  },
+  'aboutMapsRightsWorks': {
+    'zh-Hans': '{count} 幅已授权插图——标题与来源页',
+    'zh-Hant': '{count} 幅已授權插圖——標題與來源頁',
+    'en': '{count} licensed illustrations — titles and sources',
+  },
+  // Deliberately NOT a public-domain claim. The other 1152 file pages
+  // were never checked one by one, and an unverified "public domain"
+  // is the same error as a missing licence, pointing the other way.
+  'aboutMapsUnasserted': {
+    'zh-Hans': '其余 {count} 幅插图没有许可记录。按年代推定属于公有领域，'
+        '但未逐一核对来源页，因此本应用不对它们作出任何许可声明。',
+    'zh-Hant': '其餘 {count} 幅插圖沒有授權記錄。按年代推定屬於公有領域，'
+        '但未逐一核對來源頁，因此本應用不對它們作出任何授權聲明。',
+    'en': 'The other {count} illustrations carry no licence record. They '
+        'are believed public domain by age, but their source pages were '
+        'not checked one by one, so this app makes no licence claim for '
+        'them.',
   },
 };
