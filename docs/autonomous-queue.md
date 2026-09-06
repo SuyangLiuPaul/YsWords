@@ -3050,6 +3050,17 @@ reported. Work these top-down before P2.
       originals. Fixing one would make the corpus LESS consistent, not more.
       Whether to sweep all 61 is a question for the publisher, filed below.
 
+      **No reusable tool exists for this count.** A 2026-09-06 attempt to
+      re-derive 57+12=69 from `assets/tagged/cuvs-yhwh/` vs
+      `assets/originals/` (keyed on book+chapter:verse) got 56 + 12 + 2
+      unresolved keys (Ezekiel 20:47, 20:49 — a Hebrew chapter-boundary
+      versification offset the reproduction didn't handle). `git log`
+      confirms neither asset has changed since the letter, so this is a
+      methodology gap in the reproduction, not drift — but it means the
+      69 figure can't be independently re-checked without writing a
+      proper script that does the Ezekiel/Psalms versification remap.
+      See `docs/p0-drift-2026-09-06.md`.
+
 - [x] **Two runs carry G2962 κύριος in `i` for a verse whose Greek has no
       κύριος — 使徒行傳 12:24, 20:32 and 馬太福音 21:29.** Measured 2026-08-24:
       13 runs corpus-wide have G2962 in `i` and ten of them are in verses that
@@ -6429,6 +6440,17 @@ has never seen this repo.
       unchanged; the letter now folds it under the same governing
       question as the 423 and the 27 of §四之三之二 — 貴方目前以哪一份為
       現行定本？
+
+      **DRIFTED — 2026-09-06 audit.** A fresh `tools/proofread_biblexg.py`
+      run now gives **7,786 identical / 88 wording** (not 7,788 / 86);
+      comparable (7,920) and punctuation-only (46) are unchanged. Cause:
+      commit `33304965` (2026-09-02, before the letter's number was
+      written) split 路加福音 23:33 into 23:33 + 23:34a, so our 23:33 is
+      now shorter than the publisher's combined verse and counts as a
+      wording difference instead of identical. That accounts for one of
+      the two newly-diverged verses. The letter should say 88/7,786
+      before it is sent. Full writeup: `docs/p0-drift-2026-09-06.md`.
+      Not corrected here — this was a measure-only pass.
 
 
 - [ ] **Then rebuild the Traditional from the corrected Simplified.**
