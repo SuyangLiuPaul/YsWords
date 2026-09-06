@@ -3870,6 +3870,42 @@ reported. Work these top-down before P2.
       lexicon's (now-converted) 0. Re-measured, not copied, because the
       queue's own rule is not to let two numbers stand once they disagree.
 
+      **Corrected 2026-09-07 — 1,730 was itself measured at a 289-file
+      corpus that grew twice the same day, and `--measure` at HEAD reports
+      nearly double.** The 1,730 figure above was taken at commit
+      `3c514a7b` (2026-09-06 10:51), when `assets/sermons/zh-TW/` still
+      held 289 files — confirmed by `git ls-tree 3c514a7b -- assets/sermons/zh-TW/`.
+      Re-run at HEAD: **3,290 remaining** (羣 712, 衆 1166, 喫 1262, 牀
+      150) — the "289 files, 2.88 MB" line just below is the same
+      staleness, now 429 files / ~11.8 MB (`assets/sermons/zh-TW/` .txt
+      bytes, measured directly, not `du`'s block-rounded 13 M).
+
+      **The refuter caught a wrong first draft of the cause: it is not
+      new files alone.** A first pass here said the two later merges
+      were adds-only against `3c514a7b` — false.
+      `git diff --name-status 3c514a7b HEAD -- assets/sermons/zh-TW/`
+      shows 140 `A` and **63 `M`**. Splitting the delta by hand (count
+      the four glyphs in the 289 pre-existing files at both commits,
+      separately from the 140 new ones): the 140 new files
+      (`f25ecd06`'s 15 plus the other 125 from the same-day 福音電台
+      merge) account for **+1,272**; the 63 modified pre-existing files
+      account for the other **+288** (1730+1272+288 = 3290, checks). The
+      63 are not silent regressions — they are `3a32c760` ("one corpus
+      of 414, Pastor Eric Chang only"), which replaced 51 of 57
+      duplicate sermon bodies with the 福音電台 library's human-edited
+      Chinese transcript in place of the app's machine-ASR one (its own
+      commit message: "verified to have done nothing at all" of the
+      machine "proofreading"), plus that same commit's own named glyph
+      repairs (麪, 幹, 鬥, 複活). A different transcript of the same
+      sermon naturally uses these four words at a different rate; this
+      is a known, already-documented content upgrade, not new drift to
+      chase.
+
+      The decision this item asks for is unaffected — still a user call
+      on the same six glyphs, just at 429 files' worth of them, not
+      289's. Docs-only; the asset itself is untouched, per this item's
+      own standing rule.
+
 - [x] **The Strong's lexicon spells 著名/著稱/著作/著述/顯著 with 着 in 51
       places — wrong in BOTH orthographies, so it is not blocked on the
       orthography decision.** H210 「以產金着名的地方」, H1316 「以土壤肥沃着
@@ -12657,6 +12693,16 @@ so the bundle-size answer stays on the record.
       sermons × 3 locales found no third offending file (confirmed by
       an adversarial refuter pass; `test/sermon_transcript_
       punctuation_test.dart` pins the count).
+
+      **Re-run 2026-09-07 at the now-429-record corpus (289 en / 429
+      zh-CN / 429 zh-TW, the 140-record gap being the zh-only 福音電台
+      merge) — still no third offending file.** The test does not read a
+      file count from anywhere; it scans whatever `assets/sermons/$locale`
+      holds at run time, so the "289 sermons" the prose above names was
+      already only accurate for `en` even before the two 2026-09-06
+      merges. `flutter test test/sermon_transcript_punctuation_test.dart`
+      passes all 4 cases unchanged. Not drift — the count in the prose was
+      imprecise, not the guard.
 
       **Open question for the user:** the only real fix is
       re-transcribing EC018a/EC019a from the T7 MP3s
