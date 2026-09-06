@@ -1,0 +1,13 @@
+/* The app's name, in the SYSTEM language. 2026-08-23, from the user:
+   "app应该显示雅伟之言还是Yahweh's Words…要根据客户手机语言" — a fixed
+   choice in either language reads as wrong to half the readers. iOS has
+   followed that ruling since; macOS did not, so a Chinese-language Mac
+   called it "Yahweh's Words" while the same person's Mi Pad called it
+   雅伟之言.
+
+   Two keys, because macOS reads two:
+     CFBundleDisplayName — Finder, the Dock, Spotlight
+     CFBundleName        — the bold menu-bar item next to
+   Localizing only the first leaves the menu bar in English. */
+"CFBundleDisplayName" = "Yahweh's Words";
+"CFBundleName" = "Yahweh's Words";

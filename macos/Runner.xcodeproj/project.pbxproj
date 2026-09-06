@@ -27,6 +27,7 @@
 		33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC10F02044A3C60003C045 /* AppDelegate.swift */; };
 		33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F22044A3C60003C045 /* Assets.xcassets */; };
 		33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F42044A3C60003C045 /* MainMenu.xib */; };
+		7A22BB0129AC00010000BB01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7A22BB0229AC00020000BB02 /* InfoPlist.strings */; };
 		33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC11122044BFA00003C045 /* MainFlutterWindow.swift */; };
 		47BF69F5536242138AED00E3 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4A9B7573119992685551AC3 /* Pods_Runner.framework */; };
 		E127C78AF4BCF8D9DF094677 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B16CE5D76AC4A3D548009F7A /* GoogleService-Info.plist */; };
@@ -73,6 +74,9 @@
 		33CC10F22044A3C60003C045 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Runner/Assets.xcassets; sourceTree = "<group>"; };
 		33CC10F52044A3C60003C045 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		33CC10F72044A3C60003C045 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Runner/Info.plist; sourceTree = "<group>"; };
+		7A22BB0329AC00030000BB03 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7A22BB0429AC00040000BB04 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		7A22BB0529AC00050000BB05 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		33CC11122044BFA00003C045 /* MainFlutterWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainFlutterWindow.swift; sourceTree = "<group>"; };
 		33CEB47222A05771004F2AC0 /* Flutter-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Flutter-Debug.xcconfig"; sourceTree = "<group>"; };
 		33CEB47422A05771004F2AC0 /* Flutter-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Flutter-Release.xcconfig"; sourceTree = "<group>"; };
@@ -157,6 +161,7 @@
 			children = (
 				33CC10F22044A3C60003C045 /* Assets.xcassets */,
 				33CC10F42044A3C60003C045 /* MainMenu.xib */,
+				7A22BB0229AC00020000BB02 /* InfoPlist.strings */,
 				33CC10F72044A3C60003C045 /* Info.plist */,
 			);
 			name = Resources;
@@ -294,6 +299,8 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
+				"zh-Hant",
 			);
 			mainGroup = 33CC10E42044A3C60003C045;
 			productRefGroup = 33CC10EE2044A3C60003C045 /* Products */;
@@ -321,6 +328,7 @@
 			files = (
 				33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */,
 				33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */,
+				7A22BB0129AC00010000BB01 /* InfoPlist.strings in Resources */,
 				E127C78AF4BCF8D9DF094677 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -481,6 +489,17 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		7A22BB0229AC00020000BB02 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7A22BB0329AC00030000BB03 /* en */,
+				7A22BB0429AC00040000BB04 /* zh-Hans */,
+				7A22BB0529AC00050000BB05 /* zh-Hant */,
+			);
+			name = InfoPlist.strings;
+			path = Runner;
+			sourceTree = "<group>";
+		};
 		33CC10F42044A3C60003C045 /* MainMenu.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
