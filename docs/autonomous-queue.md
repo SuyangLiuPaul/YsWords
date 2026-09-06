@@ -6416,18 +6416,19 @@ has never seen this repo.
       characters, not written by hand.
       `test/biblexg_verse_integrity_test.dart` fails on the old data.
 
-- [ ] **Decide the remaining 86 Simplified wording differences.**
+- [x] **Decide the remaining 88 Simplified wording differences —
+      the letter's §四 now quotes the true, re-derived count.**
       `python3 tools/proofread_biblexg.py --book <code>` — aliases mean
-      `--book mat` still finds Matthew. They read as a later publisher
-      revision rather than as damage (以弗所書 2:4 upstream "神富有愛憐，
-      出於他愛我們的大愛" against our "神滿有憐憫，因著他愛我們的大愛"),
-      which makes this the **same question as the 427 Traditional ones
-      and the 路加福音 23:34a call — all three are waiting on the
-      publisher.** Do not adopt any of them by guess.
+      `--book mat` still finds Matthew. Most of these read as a later
+      publisher revision rather than as damage (以弗所書 2:4 upstream
+      "神富有愛憐，出於他愛我們的大愛" against our "神滿有憐憫，因著他愛
+      我們的大愛"), which makes this the **same question as the 427
+      Traditional ones — waiting on the publisher.** Do not adopt any
+      of them by guess.
       Concentrated in 馬太福音 12, 啟示錄 12, 哥林多前書 11, 馬可福音 8,
-      以弗所書 8, 路加福音 6. Take one book per iteration once the
-      publisher answers, and copy their wording exactly — never
-      paraphrasing, never merging the two.
+      以弗所書 8, 路加福音 7, 約翰一書 5, 約翰福音 4. Take one book per
+      iteration once the publisher answers, and copy their wording
+      exactly — never paraphrasing, never merging the two.
       **The letter's §四 is now correct** (2026-08-11): re-measured at
       7,920 comparable / 7,788 identical / 46 punctuation / 86 wording /
       0 absent, with the old 95 figure explained rather than quietly
@@ -6441,16 +6442,40 @@ has never seen this repo.
       question as the 423 and the 27 of §四之三之二 — 貴方目前以哪一份為
       現行定本？
 
-      **DRIFTED — 2026-09-06 audit.** A fresh `tools/proofread_biblexg.py`
-      run now gives **7,786 identical / 88 wording** (not 7,788 / 86);
-      comparable (7,920) and punctuation-only (46) are unchanged. Cause:
-      commit `33304965` (2026-09-02, before the letter's number was
-      written) split 路加福音 23:33 into 23:33 + 23:34a, so our 23:33 is
-      now shorter than the publisher's combined verse and counts as a
-      wording difference instead of identical. That accounts for one of
-      the two newly-diverged verses. The letter should say 88/7,786
-      before it is sent. Full writeup: `docs/p0-drift-2026-09-06.md`.
-      Not corrected here — this was a measure-only pass.
+      **DRIFTED — 2026-09-06 audit (first pass, measure-only).** A fresh
+      `tools/proofread_biblexg.py` run gave **7,786 identical / 88
+      wording** (not 7,788 / 86); comparable (7,920) and punctuation-only
+      (46) unchanged. Cause identified as commit `33304965` splitting
+      路加福音 23:33 into 23:33 + 23:34a — but that pass found only one of
+      the two newly-diverged verses and stopped there. Full writeup:
+      `docs/p0-drift-2026-09-06.md`.
+
+      **APPLIED — 2026-09-06, later the same day.** Traced every commit
+      between the docstring's own baseline (`d99945a4`, verified to give
+      exactly 86) and HEAD that touches `assets/biblexg-v2.json`, running
+      the tool against each commit's tree and diffing the verse-key sets:
+      `8fb2dde4` removes only 羅馬書 16:24 (86→85, our own defect fixed,
+      now matches the publisher); `9a3c5cac` adds only 約翰福音 12:36 and
+      約翰一書 4:16 (85→87); `21bd0308` changes nothing (87→87);
+      `33304965` adds only 路加福音 23:33 (87→88). Net 86−1+2+0+1=88,
+      matching HEAD exactly with no unexplained residual — independently
+      re-derived and confirmed by a refuter subagent.
+      **None of the three new verses is a publisher revision.** For
+      12:36 and 4:16, the publisher's own cached `cn-joh.json` /
+      `cn-1jo.json` contain the "missing" sentence verbatim, but sitting
+      inside a `comment`-type node (a footnote for an adjacent verse) —
+      `official()` only reads `type == 'verse'` nodes, so it structurally
+      cannot see text the publisher's own file actually has. This is the
+      exact bug our importer used to have (fixed in the same commit,
+      documented in §三), now showing up as a false "difference" in the
+      proofreading tool rather than as a real wording change. For 23:33,
+      it's our own 23:34a split (§五) shortening our verse relative to
+      the publisher's still-combined one. `docs/梁家鏗譯本-請教出版方.md`
+      §四, §五 and the top status table now say 88/7,786 at all six
+      sites, explain the mechanism for each of the three new entries, and
+      §五's stale "尚未處理，另行處理" for 23:34a is corrected to say it
+      shipped. Per-book distribution line regenerated from a fresh run,
+      not hand-bumped. `assets/` untouched — docs only.
 
 
 - [ ] **Then rebuild the Traditional from the corrected Simplified.**
