@@ -14,15 +14,41 @@ no confirmed pair points at a library record with no body.
 import json, pathlib, unittest
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
-REFS = json.load(open(REPO / 'assets/sermon_library/refs.json'))
-INDEX = json.load(open(REPO / 'assets/sermon_library/index.json'))
-ROWS = REFS['duplicates']['crossCorpus']
-LIB = {str(s['id']): s for s in INDEX['sermons']}
+
+# `assets/sermon_library/` is a gitignored local staging area — the app
+# ships Pastor Eric Chang's sermons only, merged into assets/sermons/,
+# and the 940-record library stays on disk. So a fresh clone, and every
+# CI run, has no such directory.
+#
+# Loading it at MODULE level made this file fail to IMPORT there, which
+# is worse than a failing test: unittest reports it as an error before
+# any assertion runs, and it took CI red on 2026-09-06 while a local run
+# stayed green because the files were sitting on one machine's disk.
+# Guard the load, and skip with a reason that says what is missing
+# rather than pretending the suite covered something it could not see.
+_REFS_PATH = REPO / 'assets/sermon_library/refs.json'
+_INDEX_PATH = REPO / 'assets/sermon_library/index.json'
+_AVAILABLE = _REFS_PATH.exists() and _INDEX_PATH.exists()
+_WHY = ('assets/sermon_library/ is gitignored and absent — regenerate it '
+        'with scripts/sync_sermon_library.py to run these. A green run '
+        'without it has checked NOTHING in this file.')
+
+if _AVAILABLE:
+    REFS = json.load(open(_REFS_PATH))
+    INDEX = json.load(open(_INDEX_PATH))
+    ROWS = REFS['duplicates']['crossCorpus']
+    LIB = {str(s['id']): s for s in INDEX['sermons']}
+else:
+    REFS = INDEX = {}
+    ROWS = []
+    LIB = {}
 
 VOCAB = {'complete', 'library-partial', 'library-fuller', 'unknown',
          'no-library-body'}
 
 
+@unittest.skipUnless(_AVAILABLE, _WHY)
+@unittest.skipUnless(_AVAILABLE, _WHY)
 class Shape(unittest.TestCase):
     def test_the_row_count_is_unchanged(self):
         """Adjudication regrades rows. It never adds or drops one."""
@@ -35,6 +61,7 @@ class Shape(unittest.TestCase):
                 self.assertIn(k, r, f"{r['libId']}/{r['appId']} lost {k}")
 
 
+@unittest.skipUnless(_AVAILABLE, _WHY)
 class Completeness(unittest.TestCase):
     def test_every_confirmed_pair_states_its_completeness(self):
         """A confirmed pair with no completeness is the silent case.
@@ -78,6 +105,7 @@ class Completeness(unittest.TestCase):
                 self.assertFalse(LIB[r['libId']].get('hasBody'))
 
 
+@unittest.skipUnless(_AVAILABLE, _WHY)
 class Verdicts(unittest.TestCase):
     def test_the_probable_tier_was_fully_adjudicated(self):
         """No row is left saying `probable`: each got a verdict."""
