@@ -1,5 +1,143 @@
 import 'package:flutter/foundation.dart';
 
+/// Per-illustration rights record — who owns the picture, under what
+/// licence, where it came from, and whether this app altered it.
+///
+/// 2026-09-06. Why this is a field on the data and not a line on the
+/// About page: 40 of the 1192 entries in `assets/maps_index.json` are
+/// Sweet Publishing / Jim Padgett illustrations that carry a LIVE
+/// copyleft obligation, and the app was meeting none of it — the
+/// generator that fetched them recorded no licence at all, and About
+/// carried one generic sentence for all 1192. A sentence on a page can
+/// be true today and silently wrong after the next import; a required
+/// field on the entry cannot.
+///
+/// **Everything here was read off the Wikimedia Commons file pages on
+/// 2026-09-06** (API `extmetadata` plus the raw wikitext of the file
+/// pages) — not inferred, not remembered. All 40 are uniform:
+/// `{{Bible Illustrations (Sweet Publishing)-license}}`, which expands
+/// to `{{cc-by-sa-3.0|Distant Shores Media/Sweet Publishing}}`, with
+/// `Author={{Creator:Jim Padgett}}` and `Date=1984`.
+///
+/// Absence of a rights block is NOT a claim of public domain. The other
+/// 1152 entries (Doré, Schnorr, Tissot, Rembrandt) are believed public
+/// domain by age but their file pages were not individually checked, so
+/// they carry no rights block rather than an unverified assertion —
+/// `test/illustration_rights_test.dart` holds them on a frozen
+/// allowlist so a NEW entry cannot join them by accident.
+@immutable
+class MapRights {
+  /// Title of the work as the source names it. CC BY-SA 3.0 §4(c) asks
+  /// for the title, so it is stored even though the app shows its own.
+  final String title;
+
+  /// The human who made it. Distinct from [holder]: Commons splits
+  /// `Artist` (Jim Padgett) from `Attribution` (Distant Shores
+  /// Media/Sweet Publishing) and the licence wants both named.
+  final String author;
+
+  /// The party the licensor asks to be credited.
+  final String holder;
+
+  /// The URI the licensor specifies for the credit. Stored because
+  /// CC BY-SA 3.0 §4(c) names it; **not rendered as a link** — it did
+  /// not respond from this machine on 2026-09-06, and this machine has
+  /// known egress restrictions (PROJECT_STATE trap 7), so "dead" is not
+  /// established. A link that may be dead is worse in an attribution
+  /// than no link; [sourceUrl] and [licenseUrl] both answered 200.
+  final String holderUrl;
+
+  final String year;
+
+  /// The rights holder's own credit sentence, verbatim.
+  final String credit;
+
+  /// Short licence name, e.g. 'CC BY-SA 3.0'.
+  final String license;
+
+  /// The deed's own title, e.g. 'Attribution-ShareAlike 3.0 Unported'.
+  final String licenseFullName;
+
+  /// Link to the licence deed. Required by the licence itself.
+  final String licenseUrl;
+
+  /// True when the licence makes credit a condition, not a courtesy.
+  final bool attributionRequired;
+
+  /// True when derivatives must carry the same licence.
+  final bool shareAlike;
+
+  /// The source the work was taken from — the file page, not the image
+  /// bytes, so a reader can reach the licence statement itself.
+  final String sourceUrl;
+
+  /// Localised statement of whether this app changed the work.
+  /// CC BY-SA 3.0 requires indicating if changes were made, and the
+  /// honest answer here has two clauses rather than a yes or a no: the
+  /// bytes this app redistributes are SHA-256 identical to the Commons
+  /// originals (checked, 40 of 40, 2026-09-06), while the thumbnail
+  /// call sites draw them `BoxFit.cover` at 220 px and 88x88, which
+  /// visibly crops an 831x610 frame. Saying "not modified" is true of
+  /// the file and false to the eye; saying "modified" misdescribes what
+  /// is distributed. So both clauses are stated.
+  final Map<String, String> modification;
+
+  /// When and how these values were established.
+  final String verified;
+
+  const MapRights({
+    required this.title,
+    required this.author,
+    required this.holder,
+    required this.holderUrl,
+    required this.year,
+    required this.credit,
+    required this.license,
+    required this.licenseFullName,
+    required this.licenseUrl,
+    required this.attributionRequired,
+    required this.shareAlike,
+    required this.sourceUrl,
+    required this.modification,
+    required this.verified,
+  });
+
+  static MapRights? fromJson(Map<String, dynamic>? json) {
+    if (json == null) return null;
+    String s(String k) => json[k] as String? ?? '';
+    return MapRights(
+      title: s('title'),
+      author: s('author'),
+      holder: s('holder'),
+      holderUrl: s('holderUrl'),
+      year: s('year'),
+      credit: s('credit'),
+      license: s('license'),
+      licenseFullName: s('licenseFullName'),
+      licenseUrl: s('licenseUrl'),
+      attributionRequired: json['attributionRequired'] == true,
+      shareAlike: json['shareAlike'] == true,
+      sourceUrl: s('sourceUrl'),
+      modification: (json['modification'] as Map<String, dynamic>? ?? {})
+          .map((k, v) => MapEntry(k, v as String? ?? '')),
+      verified: s('verified'),
+    );
+  }
+
+  String localizedModification(String locale) =>
+      modification[locale] ?? modification['en'] ?? '';
+
+  /// The one-line credit this app owes: author, holder, licence.
+  /// Deliberately not localised — names and licence identifiers are
+  /// not translated.
+  String get creditLine => '$author / $holder · $license';
+
+  /// Two entries that owe the same credit collapse to one row on the
+  /// About page. Keyed on everything a reader would see.
+  String get attributionKey =>
+      '$author|$holder|$license|$licenseUrl|${modification['en']}';
+}
+
 @immutable
 class BibleMap {
   final String id;
@@ -39,6 +177,11 @@ class BibleMap {
   /// thumbnail strip's _MapThumb falls back to the broken-image icon.
   final String source;
 
+  /// Rights record for this illustration, or null when none has been
+  /// established. **Null is not a public-domain claim** — see
+  /// [MapRights].
+  final MapRights? rights;
+
   const BibleMap({
     required this.id,
     required this.title,
@@ -47,7 +190,12 @@ class BibleMap {
     required this.file,
     this.kind = 'map',
     this.source = 'asset',
+    this.rights,
   });
+
+  /// True when this entry carries a licence whose credit is a
+  /// condition of use rather than a courtesy.
+  bool get requiresAttribution => rights?.attributionRequired ?? false;
 
   /// Normalise one book's on-disk chapter value into a list of
   /// inclusive `[start, end]` ranges.
@@ -119,6 +267,7 @@ class BibleMap {
       file: file,
       kind: json['kind'] as String? ?? 'map',
       source: inferredSource,
+      rights: MapRights.fromJson(json['rights'] as Map<String, dynamic>?),
     );
   }
 

@@ -57,17 +57,11 @@ scripts/__pycache__/
 # report results that lagged an iteration by one.
 test/__pycache__/
 
-# The 940-record sermon library fetched from fuyindiantai.org.
-#
-# Deliberately NOT tracked. It was committed on 2026-09-06 and pushed to
-# this PUBLIC repo before the question it carries had been answered:
-# `_meta.authorisedBy` records a relayed permission that the owner gave
-# about the SONGS on those domains, not about redistributing 5.4 million
-# characters of 71 preachers' sermons. The bodies are public on
-# fuyindiantai.org, so this was never a confidentiality problem — it is a
-# REDISTRIBUTION one, and it is the church's call, not ours.
-#
-# Regenerate locally with `python3 scripts/sync_sermon_library.py`. The
-# fetcher and its 130 tests stay in the repo; only the fetched content
-# leaves. Untrack again if it is ever re-added by accident.
+# The 940-record sermon library from fuyindiantai.org is a LOCAL
+# STAGING AREA, not a shipped asset. Owner's decision 2026-09-06:
+# the app carries Pastor Eric Chang's sermons only, so his records
+# are merged into assets/sermons/ (tracked, shipped) and the other
+# 742 by 70 other preachers stay here on disk — the fetcher and its
+# 130 tests are kept so adding a preacher back is a filter change
+# rather than a re-crawl of a church's server.
 assets/sermon_library/

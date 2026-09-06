@@ -483,12 +483,23 @@ root reports it as `home` and the CMS emits it in every `link` and
    this 940-sermon library are separate corpora by separate speakers, and
    whether they merge into one browsing surface or stay apart is a
    product question.
-3. **Authorisation is a relayed statement, not a document.** Recorded in
-   `_meta.authorisedBy` with its date and its exact wording. The owner's
-   「有批准」 was said about the SONGS on these domains (2026-08-09); the
-   sermon library was directed separately (2026-09-05). Worth confirming
-   with the church before anything that redistributes 940 bodies and 673
-   audio files publicly.
+3. ~~**Authorisation is a relayed statement, not a document.**~~
+   **SETTLED 2026-09-06 by the owner: 「在那里无所谓，这些信息网上都可以
+   搜到」** — it does not matter that the bodies passed through the public
+   repo's history, because the material is public and searchable already.
+   That is consistent with what was measured rather than a waiver of it:
+   every one of these sermons is published on fuyindiantai.org and anyone
+   can read it, so this was a redistribution question and never a
+   confidentiality one.
+
+   The history keeps the 843 bodies. Rewriting a pushed history that
+   several concurrent sessions share was offered and declined.
+
+   `_meta.authorisedBy` still records who said what and when, which is
+   worth keeping: the owner's 「有批准」 was said about the SONGS on these
+   domains on 2026-08-09, and the sermon library was directed separately
+   on 2026-09-05. Nothing about that record is invalidated by this
+   decision — it just is not blocking anything now.
 4. ~~One record's `date` is `0214-07-02`~~ **RESOLVED 2026-09-06.** Record
    2967 keeps its date **byte for byte** — nothing infers 2014, because
    guessing a year is worse than carrying a flagged one — and now also
