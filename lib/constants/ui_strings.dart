@@ -7404,6 +7404,123 @@ const uiStrings = {
     'zh-Hant': '沒有講道符合當前篩選條件。',
     'en': 'No sermons match your filters.',
   },
+
+  // ====== 福音电台 sermon library (browse by speaker) ======
+  // A SECOND sermon corpus, separate from the 289 above: 937 openable
+  // records credited to 71 speakers, fetched from fuyindiantai.org.
+  // Every body is Simplified Chinese and there is no English or
+  // Traditional edition of any of them, which is what
+  // `sermonLibraryChineseOnly` exists to say out loud rather than let
+  // a reader discover by tapping.
+  'sermonLibrary': {
+    'zh-Hans': '讲道图书馆',
+    'zh-Hant': '講道圖書館',
+    'en': 'Sermon Library',
+  },
+  // The source, not a person. The index has 71 speakers, so its byline
+  // names the station that published them; the per-speaker page names
+  // the speaker.
+  'sermonLibrarySource': {
+    'zh-Hans': '福音电台',
+    'zh-Hant': '福音電台',
+    'en': 'FYDT 福音电台',
+  },
+  'sermonLibrarySpeakers': {
+    'zh-Hans': '{speakers} 位讲员 · {count} 篇讲道',
+    'zh-Hant': '{speakers} 位講員 · {count} 篇講道',
+    'en': '{speakers} speakers · {count} sermons',
+  },
+  'sermonLibrarySermonCount': {
+    'zh-Hans': '{count} 篇',
+    'zh-Hant': '{count} 篇',
+    'en': '{count} sermons',
+  },
+  // Said once per surface, never per row. The English form states the
+  // absence flatly and promises nothing; the Traditional form tells a
+  // 繁體 reader why the characters look the way they do, because this
+  // corpus has no Traditional edition and the app converts nothing at
+  // runtime.
+  'sermonLibraryChineseOnly': {
+    'zh-Hans': '本图书馆的讲道均为简体中文。',
+    'zh-Hant': '本圖書館的講道均為簡體中文，未轉換為繁體。',
+    'en': 'These sermons are in Chinese. No English text exists.',
+  },
+  'sermonLibrarySearchHint': {
+    'zh-Hans': '搜索讲员',
+    'zh-Hant': '搜尋講員',
+    'en': 'Search speakers',
+  },
+  'sermonLibrarySermonSearchHint': {
+    'zh-Hans': '搜索标题、书卷或系列',
+    'zh-Hant': '搜尋標題、書卷或系列',
+    'en': 'Search title, book or series',
+  },
+  'sermonLibraryNoSpeakers': {
+    'zh-Hans': '没有讲员符合搜索。',
+    'zh-Hant': '沒有講員符合搜尋。',
+    'en': 'No speakers match your search.',
+  },
+  // 奇妙恩典 is the name of a radio programme, not of a person. A list
+  // headed "speakers" that quietly includes a show is a small lie, so
+  // the one row that is one says so.
+  'sermonLibraryProgramme': {
+    'zh-Hans': '节目',
+    'zh-Hant': '節目',
+    'en': 'Programme',
+  },
+  // Shown on the 福音电台 speaker page only. 27 of its records reached
+  // it because the upstream CMS credited nobody, and the reader is
+  // owed that rather than being left to think the station preached
+  // them.
+  'sermonLibraryUnattributed': {
+    'zh-Hans': '其中 {count} 篇上游未署讲员，按版权说明归于本台。',
+    'zh-Hant': '其中 {count} 篇上游未署講員，按版權說明歸於本台。',
+    'en': '{count} of these name no speaker upstream and are credited '
+        'to the station, per its rights note.',
+  },
+  // The corpus dates are WordPress publication dates, NOT preaching
+  // dates. Labelled, because the app's other sermon corpus prints
+  // preaching dates and an unlabelled date beside it would be read as
+  // one.
+  'sermonLibraryPublished': {
+    'zh-Hans': '发布于 {date}',
+    'zh-Hant': '發佈於 {date}',
+    'en': 'Published {date}',
+  },
+  'sermonLibraryAudioOnly': {
+    'zh-Hans': '仅有录音',
+    'zh-Hant': '僅有錄音',
+    'en': 'Recording only',
+  },
+  'sermonLibraryNoText': {
+    'zh-Hans': '本篇没有文字稿。',
+    'zh-Hant': '本篇沒有文字稿。',
+    'en': 'This sermon has no transcript.',
+  },
+  'sermonLibraryOpenSource': {
+    'zh-Hans': '在福音电台打开',
+    'zh-Hant': '在福音電台打開',
+    'en': 'Open on fuyindiantai.org',
+  },
+  // Shown on a sermon whose cross-corpus pair is graded `confirmed`.
+  //
+  // "Another text of this sermon" — not "the same sermon", and not a
+  // verdict on which text is better. The two really are different
+  // renderings, and which one a reader should prefer is a question
+  // being settled elsewhere with evidence; a page that announced a
+  // winner would be printing a judgement it does not hold. What this
+  // line does is stop two near-identical entries meeting a reader
+  // with no explanation.
+  'sermonLibraryAlsoInApp': {
+    'zh-Hans': '《讲道》中另有此篇讲道的一份文本。',
+    'zh-Hant': '《講道》中另有此篇講道的一份文本。',
+    'en': 'The app also holds another text of this sermon.',
+  },
+  'sermonLibraryOpenCounterpart': {
+    'zh-Hans': '打开另一份文本',
+    'zh-Hant': '打開另一份文本',
+    'en': 'Open the other text',
+  },
   'clearFilter': {
     'zh-Hans': '清除',
     'zh-Hant': '清除',

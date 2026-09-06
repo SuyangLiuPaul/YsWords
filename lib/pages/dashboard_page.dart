@@ -20,6 +20,7 @@ import 'package:yswords/pages/bible_timeline_page.dart';
 import 'package:yswords/pages/bible_trivia_page.dart';
 import 'package:yswords/pages/family_tree_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
+import 'package:yswords/pages/sermon_library_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/liquid_glass.dart';
@@ -879,6 +880,21 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: Icons.auto_awesome_rounded,
                   label: uiStrings['bibleTrivia']?[locale] ?? 'Bible Trivia',
                   onTap: () => pushPage(const BibleTriviaPage()),
+                ),
+                // The 福音电台 sermon library — a SECOND sermon corpus,
+                // 937 records by 71 credited speakers, browsable by
+                // speaker. Deliberately its own tile rather than a tab
+                // on the Sermons page: that page is one man's 289
+                // expository sermons with preaching dates and bodies in
+                // three languages, and these are radio messages with
+                // publication dates in one. Two provenances behind one
+                // door is how a reader ends up unable to tell which
+                // corpus a row came from.
+                _LinkTile(
+                  icon: Icons.record_voice_over_outlined,
+                  label: uiStrings['sermonLibrary']?[locale] ??
+                      'Sermon Library',
+                  onTap: () => pushPage(const SermonLibraryPage()),
                 ),
                 // Songs and 獨一真神 are the two Featured cards. They
                 // appear HERE only when Featured is switched off —

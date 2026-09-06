@@ -153,6 +153,10 @@ accept the parameter that would make it so (documented per-row).
 | `SongPlaylistsPage` | `/songs/playlists` | none | — | yes |
 | `VideoSeriesPage` | `/videos/:id` | `series` (object) | `VideoSeries.id` | yes — series list is a bundled asset |
 | `ProfileEditPage` | — | none (edits "the current profile" from provider state) | — | **no** — there is no profile id param to put in a URL; opens only from `ProfilesPage`, recommend leaving it unrouted (Back returns to the parent list, which is already correct today since it's a same-stack push) |
+| `SermonLibraryPage` | — (not proposed yet) | none (search is local state) | — | would be, once a path is minted: the library index loads from one asset. Not proposed here because the corpus is not in `pubspec.yaml` yet and a registered path that cold-loads onto a missing asset is worse than no path |
+| `SermonLibrarySpeakerPage` | — (not proposed yet) | `speakerKey` (the credit string) | the credit verbatim, e.g. `张熙和牧师`, `福音电台` | the identifier is Chinese and would ride as a percent-encoded segment; a readable slug scheme has to be minted in the fetcher, not guessed in the app, so the path stays unproposed until it is |
+| `SermonLibrarySermonPage` | — (not proposed yet) | `sermonId` (int) | the WordPress post id, e.g. `2444` | yes on the page's own terms — it already resolves by id and shows an explicit not-found state — but it shares the library's asset precondition above |
+| `SermonByIdPage` | `/sermons/:id` | `id` (String) | same identifier as `SermonDetailPage` | yes — this IS the registered `/sermons/:id` page; it is listed because the sermon-library cross-corpus card pushes it by name with that routeName |
 | `SermonsPage` | `/sermons` | none (search/filter is local state) | — | yes for the base list; filter state has the same partial gap as `SearchPage` |
 | `FamilyTreePage` | `/family-tree` | none | — | yes |
 | `BibleTimelinePage` | `/timeline` | none | — | yes |
