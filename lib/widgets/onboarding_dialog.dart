@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -283,18 +282,23 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
         // default body would just confuse — the user goes looking
         // for a button v1.2.1 deliberately hid. Swap to the China-
         // specific copy that names the local-only reality.
+        //
+        // 2026-09-06: `onboardCustomizeBodyChina` said "in the China
+        // build, highlights, notes, and bookmarks all stay on this
+        // device". That became a lie the day the China build shipped
+        // email sign-in — false for exactly the readers who get it
+        // working. The tour no longer branches on the compile-time
+        // flag here at all: BOTH builds now get copy that names email
+        // sign-in, which is the one method available in both. (The
+        // Google button really is hidden in the China build, so the
+        // old default copy, which pitched Google, could not simply be
+        // used for both either.)
         _Slide(
           icon: Icons.tune_rounded,
-          title: kChinaMode
-              ? (uiStrings['onboardCustomizeTitleChina']?[locale] ??
-                  'Customize')
-              : (uiStrings['onboardCustomizeTitle']?[locale] ??
-                  'Customize & sync'),
-          body: kChinaMode
-              ? (uiStrings['onboardCustomizeBodyChina']?[locale] ??
-                  'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. In the China build, highlights, notes, and bookmarks all stay on this device.')
-              : (uiStrings['onboardCustomizeBody']?[locale] ??
-                  'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with Google to sync bookmarks, notes, and highlights across devices.'),
+          title: uiStrings['onboardCustomizeTitle']?[locale] ??
+              'Customize & sync',
+          body: uiStrings['onboardCustomizeBodyEmail']?[locale] ??
+              'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with an email address to sync bookmarks, notes and highlights across devices.',
         ),
       ];
 }

@@ -30,10 +30,13 @@ import 'package:yswords/utils/theme_color_helpers.dart';
 import 'package:yswords/pages/profiles_page.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/widgets/gemini_key_card.dart';
+import 'package:yswords/widgets/email_auth_sheet.dart';
+import 'package:yswords/widgets/sync_unreachable_notice.dart';
 import 'package:yswords/widgets/google_g_logo.dart';
 import 'dart:async' show Timer;
 
-import "package:yswords/services/cloud_sync_service.dart" show CloudSyncStatus;
+import "package:yswords/services/cloud_sync_service.dart"
+    show CloudSyncStatus, SyncErrorKind, classifySyncError;
 import "package:yswords/services/realtime_db_sync_service.dart";
 import 'package:yswords/models/notification_category.dart';
 import 'package:yswords/services/notification_service.dart';
@@ -1467,205 +1470,65 @@ class _AccountSectionState extends State<_AccountSection> {
             // available in the China build…"). The local-only
             // profile flow above this block still works exactly as
             // it does on the international build.
-            if (!kChinaMode && auth.isConfigured) ...[
+            //
+            // 2026-09-06: that is no longer the whole story, and the
+            // structure below reflects the narrower truth. The China
+            // build still cannot do Google sign-in — that flow needs
+            // `accounts.google.com` and the `/__/auth/*` handler, and
+            // the account chooser cannot be proxied — so the Google
+            // button, and ONLY the Google button, keeps its
+            // `!kChinaMode` gate. Email/password never touches that
+            // handler, so its button ships everywhere and lazily
+            // initialises Firebase when it is pressed. Boot is
+            // untouched: `main.dart:538` still skips Firebase in the
+            // China build, so a reader who never signs in pays
+            // nothing.
+            if (auth.isConfigured && auth.isSignedIn) ...[
               const Divider(height: 24),
-              if (!auth.isSignedIn)
-                OutlinedButton(
-                  onPressed: () async {
-                    final messenger = ScaffoldMessenger.of(context);
-                    final result = await CloudAuthService.instance
-                        .signInWithGoogleAndAdoptProfile();
-                    if (!context.mounted) return;
-                    if (!result.isOk) {
-                      // 2026-05-09 (v1.2.6 audit): localised fallback
-                      // via the `signInFailed` ui-string key added in
-                      // v1.2.2. Previously a non-English user on a
-                      // network blip would see English even though the
-                      // string is already translated.
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            result.errorMessage ??
-                                (uiStrings['signInFailed']?[locale] ??
-                                    'Sign-in failed.'),
-                          ),
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                    }
-                  },
+              _signedInRow(context, auth, settings, locale, scheme),
+              SizedBox(height: 6 * s),
+              _SyncStatusRow(settings: settings),
+            ] else ...[
+              if (auth.hasFirebaseCredentials) ...[
+                const Divider(height: 24),
+                if (!kChinaMode && auth.isConfigured) ...[
+                  _googleSignInButton(context, settings, locale),
+                  SizedBox(height: 8 * s),
+                ],
+                OutlinedButton.icon(
+                  key: const Key('settings.emailSignIn'),
+                  icon: const Icon(Icons.alternate_email, size: 18),
+                  label: Text(
+                    uiStrings['cloudSignInEmail']?[locale] ??
+                        'Sign in with email',
+                  ),
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF1F1F1F),
-                    side: const BorderSide(
-                        color: Color(0xFFDADCE0), width: 1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const GoogleGLogo(size: 18),
-                      const SizedBox(width: 12),
-                      Text(
-                        uiStrings['cloudSignInGoogle']?[locale] ??
-                            'Sign in with Google',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  onPressed: () => showEmailAuthSheet(
+                    context,
+                    locale: locale,
+                    fontFamily: settings.fontFamily,
+                    fontSize: settings.fontSize,
+                    // The lazy half of the sync ruling. RTDB is NOT
+                    // started at boot in the China build and is not
+                    // started by pressing the button either — only
+                    // once a real credential exists. `init()` is
+                    // idempotent, so calling it here is a no-op on
+                    // the international build where boot already did.
+                    onSignedIn: () => RealtimeDbSyncService.instance.init(),
                   ),
-                )
-              else
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        (uiStrings['cloudSignedInAs']?[locale] ??
-                                'Cloud-synced as {email}')
-                            .replaceAll(
-                                '{email}', auth.currentUser?.email ?? ''),
-                        style: TextStyle(
-                          fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                          fontSize: (settings.fontSize - 6)
-                              .clamp(12.0, 15.0).toDouble(),
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: () => CloudAuthService.instance.signOut(),
-                      icon: const Icon(Icons.logout, size: 16),
-                      label: Text(
-                        uiStrings['cloudSignOut']?[locale] ?? 'Sign out',
-                      ),
-                    ),
-                  ],
                 ),
-              if (auth.isSignedIn) ...[
-                SizedBox(height: 6 * s),
-                _SyncStatusRow(settings: settings),
               ],
-            ] else if (!kChinaMode && auth.hasFirebaseCredentials) ...[
-              // Init failed — show a disabled-looking sign-in button
-              // plus the error + a Retry button. Better than silently
-              // hiding everything cloud-related.
-              const Divider(height: 24),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: scheme.errorContainer.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: scheme.error.withValues(alpha: 0.4),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.cloud_off_outlined,
-                            size: 18, color: scheme.error),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            uiStrings['cloudInitFailedTitle']?[locale] ??
-                                'Cloud sign-in temporarily unavailable',
-                            style: TextStyle(
-                              fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
-                              fontSize: (settings.fontSize - 4)
-                                  .clamp(13.0, 16.0).toDouble(),
-                              fontWeight: FontWeight.w600,
-                              color: scheme.error,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (auth.initError != null) ...[
-                      const SizedBox(height: 6),
-                      // Selectable so the user can copy + paste the
-                      // exact error message back to the maintainer
-                      // when filing a bug. Monospace + boxed so it
-                      // looks like a code block.
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: scheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: SelectableText(
-                          auth.initError!,
-                          scrollPhysics: kSelectableTextPhysics,
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: (settings.fontSize - 6)
-                                .clamp(11.0, 14.0).toDouble(),
-                            color: scheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.refresh, size: 16),
-                          label: Text(
-                            uiStrings['retry']?[locale] ?? 'Retry',
-                          ),
-                          onPressed: () async {
-                            final messenger = ScaffoldMessenger.of(context);
-                            await CloudAuthService.instance.retryInit();
-                            if (!context.mounted) return;
-                            if (CloudAuthService.instance.isConfigured) {
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    uiStrings['cloudInitOk']?[locale] ??
-                                        'Cloud sign-in restored.',
-                                  ),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                        if (auth.initError != null) ...[
-                          const SizedBox(width: 8),
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.copy_outlined, size: 16),
-                            label: Text(
-                              uiStrings['copy']?[locale] ?? 'Copy error',
-                            ),
-                            onPressed: () async {
-                              final messenger = ScaffoldMessenger.of(context);
-                              final ok = await ClipboardHelper.copyText(
-                                auth.initError!,
-                              );
-                              if (!ok || !context.mounted) return;
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    uiStrings['copied']?[locale] ?? 'Copied',
-                                  ),
-                                  duration: const Duration(seconds: 1),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              if (!kChinaMode &&
+                  auth.hasFirebaseCredentials &&
+                  !auth.isConfigured) ...[
+                _initFailedPanel(context, auth, settings, locale, scheme),
+              ],
             ],
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -1677,17 +1540,28 @@ class _AccountSectionState extends State<_AccountSection> {
               // the user opted out of Google sign-in) becomes the
               // permanent state — and we should explain why
               // explicitly.
+              //
+              // 2026-09-06: `chinaCloudUnavailable` is gone from this
+              // call site. It asserted flatly that cloud sync is
+              // unavailable in the China build, which became false for
+              // exactly the readers who get email sign-in working —
+              // the China build now ships a sign-in control and a
+              // lazily-started sync. So the notice follows RUNTIME
+              // state (is this reader actually signed in?) and no
+              // longer branches on the compile-time flag at all.
+              // Neither remaining branch promises anything it cannot
+              // keep: signed in gets the privacy note; signed out gets
+              // an invitation that also says local-only still works.
               child: Text(
-                kChinaMode
-                    ? (uiStrings['chinaCloudUnavailable']?[locale] ??
-                        'Cloud sync isn\'t available in the China build. '
-                            'Highlights, notes, and bookmarks stay on '
-                            'this device.')
-                    : (auth.isConfigured
-                        ? (uiStrings['cloudPrivacyNotice']?[locale] ??
-                            'Cloud sync uses your own Firebase project. Each user can only read their own data.')
-                        : (uiStrings["welcomeLocalOnlyNotice"]?[locale] ??
-                            "Profiles are stored only on this device. No password, no server.")),
+                auth.isSignedIn
+                    ? (uiStrings['cloudPrivacyNotice']?[locale] ??
+                        'Cloud sync uses your own Firebase project. Each user can only read their own data.')
+                    : (uiStrings['authNoticeNotSignedIn']?[locale] ??
+                        'Sign in with an email address to sync '
+                            'highlights, notes and bookmarks across '
+                            'devices. Without signing in everything '
+                            'still works \u2014 it just stays on this '
+                            'device.'),
                 style: TextStyle(
                   fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                   fontSize: (settings.fontSize - 7)
@@ -1696,6 +1570,223 @@ class _AccountSectionState extends State<_AccountSection> {
                   color: scheme.onSurfaceVariant,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 2026-09-06: the three blocks below were lifted verbatim out of
+  // `build`'s children list when email sign-in was added. They are
+  // extracted, not rewritten — every widget, style value and string
+  // key is the one that was there before — because the branch
+  // structure above them changed and a 200-line inline ternary chain
+  // is where a fourth branch goes wrong quietly.
+
+  /// The "Cloud-synced as x@y" row plus Sign out.
+  Widget _signedInRow(
+    BuildContext context,
+    CloudAuthService auth,
+    AppSettings settings,
+    String locale,
+    ColorScheme scheme,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            (uiStrings['cloudSignedInAs']?[locale] ??
+                    'Cloud-synced as {email}')
+                .replaceAll('{email}', auth.currentUser?.email ?? ''),
+            style: TextStyle(
+              fontFamily: settings.fontFamily,
+              fontFamilyFallback: kCjkFontFallback,
+              fontSize:
+                  (settings.fontSize - 6).clamp(12.0, 15.0).toDouble(),
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        TextButton.icon(
+          key: const Key('settings.signOut'),
+          onPressed: () => CloudAuthService.instance.signOut(),
+          icon: const Icon(Icons.logout, size: 16),
+          label: Text(
+            uiStrings['cloudSignOut']?[locale] ?? 'Sign out',
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Google sign-in. Still gated on `!kChinaMode` at the call site,
+  /// and that gate is correct: this flow needs `accounts.google.com`
+  /// and the `/__/auth/*` handler, and the account chooser cannot be
+  /// proxied. Only the email button lost its China gate.
+  Widget _googleSignInButton(
+    BuildContext context,
+    AppSettings settings,
+    String locale,
+  ) {
+    return OutlinedButton(
+      key: const Key('settings.googleSignIn'),
+      onPressed: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        final result =
+            await CloudAuthService.instance.signInWithGoogleAndAdoptProfile();
+        if (!context.mounted) return;
+        if (!result.isOk) {
+          // 2026-05-09 (v1.2.6 audit): localised fallback via the
+          // `signInFailed` ui-string key added in v1.2.2. Previously
+          // a non-English user on a network blip would see English
+          // even though the string is already translated.
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                result.errorMessage ??
+                    (uiStrings['signInFailed']?[locale] ?? 'Sign-in failed.'),
+              ),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      },
+      style: OutlinedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1F1F1F),
+        side: const BorderSide(color: Color(0xFFDADCE0), width: 1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const GoogleGLogo(size: 18),
+          const SizedBox(width: 12),
+          Text(
+            uiStrings['cloudSignInGoogle']?[locale] ?? 'Sign in with Google',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Init failed but credentials are present — show the error and a
+  /// Retry rather than silently hiding everything cloud-related.
+  Widget _initFailedPanel(
+    BuildContext context,
+    CloudAuthService auth,
+    AppSettings settings,
+    String locale,
+    ColorScheme scheme,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: scheme.errorContainer.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: scheme.error.withValues(alpha: 0.4)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.cloud_off_outlined, size: 18, color: scheme.error),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    uiStrings['cloudInitFailedTitle']?[locale] ??
+                        'Cloud sign-in temporarily unavailable',
+                    style: TextStyle(
+                      fontFamily: settings.fontFamily,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize:
+                          (settings.fontSize - 4).clamp(13.0, 16.0).toDouble(),
+                      fontWeight: FontWeight.w600,
+                      color: scheme.error,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (auth.initError != null) ...[
+              const SizedBox(height: 6),
+              // Selectable so the user can copy + paste the exact
+              // error message back to the maintainer when filing a
+              // bug. Monospace + boxed so it looks like a code block.
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: SelectableText(
+                  auth.initError!,
+                  scrollPhysics: kSelectableTextPhysics,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize:
+                        (settings.fontSize - 6).clamp(11.0, 14.0).toDouble(),
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.refresh, size: 16),
+                  label: Text(uiStrings['retry']?[locale] ?? 'Retry'),
+                  onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    await CloudAuthService.instance.retryInit();
+                    if (!context.mounted) return;
+                    if (CloudAuthService.instance.isConfigured) {
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            uiStrings['cloudInitOk']?[locale] ??
+                                'Cloud sign-in restored.',
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                ),
+                if (auth.initError != null) ...[
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.copy_outlined, size: 16),
+                    label: Text(uiStrings['copy']?[locale] ?? 'Copy error'),
+                    onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final ok =
+                          await ClipboardHelper.copyText(auth.initError!);
+                      if (!ok || !context.mounted) return;
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            uiStrings['copied']?[locale] ?? 'Copied',
+                          ),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ],
             ),
           ],
         ),
@@ -2292,21 +2383,41 @@ class _SyncStatusRowState extends State<_SyncStatusRow> {
     // error text, no broken "Sync now" button. The full technical
     // error remains visible to the developer in
     // Settings → About → Run check.
+    //
+    // 2026-09-06: that one bag held two different failures, and
+    // hiding is the right answer for only one of them.
+    //
+    //   • **Misconfigured** (RTDB not enabled, wrong region, a rule
+    //     denying the write). The reader can do nothing about it and
+    //     the maintainer needs the detail elsewhere. Still hidden,
+    //     exactly as before.
+    //   • **Unreachable** (the network cannot get to
+    //     `firebaseio.com`). This is the expected everyday state for
+    //     a signed-in reader in mainland China, where Auth works and
+    //     RTDB may not. Hiding the row leaves them with an account,
+    //     no visible sync, and no sentence explaining it — which
+    //     reads as "sync is on" and is a lie. They get told plainly
+    //     that the server could not be reached, that their data is
+    //     safe on this device, that they are still signed in, and
+    //     they get a Retry.
+    //
+    // Nothing here ever claims sync is working. The only positive
+    // claim this row makes is a "Last synced …" stamp, which is only
+    // ever written after a real round trip completed.
     final actual = sync.lastError ?? '';
-    final lower = actual.toLowerCase();
-    final isSyncSetupError = status == CloudSyncStatus.error &&
-        (lower.contains('database') ||
-            lower.contains('permission') ||
-            lower.contains('set error') ||
-            lower.contains('-disabled') ||
-            lower.contains('unavailable') ||
-            lower.contains('timeout') ||
-            lower.contains('timed out') ||
-            lower.contains('channel'));
-    if (isSyncSetupError && !_busy) {
+    final errorKind = classifySyncError(status, actual);
+    if (errorKind == SyncErrorKind.misconfigured && !_busy) {
       // Render nothing — sync silently disabled, app keeps working
       // local-only.
       return const SizedBox.shrink();
+    }
+    if (errorKind == SyncErrorKind.unreachable && !_busy) {
+      return SyncUnreachableNotice(
+        locale: locale,
+        fontFamily: settings.fontFamily,
+        fontSize: settings.fontSize,
+        onRetry: _trigger,
+      );
     }
 
     String stamp;

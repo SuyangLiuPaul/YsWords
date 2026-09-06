@@ -6,10 +6,14 @@
 /// can ship a second Netlify site (`yswords-cn.netlify.app`) tuned
 /// for users behind the Great Firewall.  When `CHINA_MODE=true`:
 ///
-///   • Firebase Auth + RTDB cloud-sync init is **skipped** entirely.
+///   • Firebase Auth + RTDB cloud-sync init is **skipped at boot**.
 ///     Boot is instant instead of waiting 4 s for the watchdog to
 ///     give up on `*.googleapis.com` / `*.firebaseio.com` (both
 ///     blocked in mainland China).
+///
+///     ⚠️ Read "skipped at boot" literally — it is NOT "cloud sync
+///     is unavailable in this build". See the 2026-09-06 entry at
+///     the bottom of this comment.
 ///   • Google Fonts options are **hidden from the font picker**.
 ///     The bundled Roboto + the OS-native CSS font stack already
 ///     cover every realistic case; downloading from
@@ -35,6 +39,54 @@
 ///     infrastructure as the app, so reachability is identical.
 ///   • BYOK Gemini API key (Settings → YsWords AI) — saves to
 ///     localStorage exactly like the international build.
+///
+/// ## 2026-09-06 — email/password sign-in SHIPS in the China build
+///
+/// This reverses the earlier reading of this flag, and the reason is
+/// specific enough to be worth writing down at the point of use.
+///
+/// The owner verified that **email sign-in works from mainland
+/// China**. The two sign-in methods do not share a network surface:
+///
+///   • **Google sign-in** needs `accounts.google.com` plus the
+///     `/__/auth/*` handler that `netlify.toml` reverse-proxies. The
+///     account chooser is Google's own page and cannot be proxied,
+///     so this method stays gated off in China builds.
+///   • **Email/password** never touches that handler. It is one HTTPS
+///     call to `identitytoolkit.googleapis.com`, whose reachability
+///     from mainland China is *inconsistent* rather than reliably
+///     blocked — which is a question to ask the network at the moment
+///     the reader asks to sign in, not one to answer by fiat at
+///     compile time.
+///
+/// So `kChinaMode` no longer decides whether a reader may have an
+/// account. What it still decides:
+///
+///   • **Boot cost — unchanged.** `main.dart:538`'s `if (!kChinaMode)`
+///     is deliberately untouched. The China build still calls neither
+///     `CloudAuthService.init()` nor `RealtimeDbSyncService.init()` at
+///     boot, so a reader who never signs in pays zero Firebase
+///     latency, exactly as before. Firebase is initialised lazily by
+///     `CloudAuthService.ensureInitialized()`, called from the
+///     email sign-in form itself and bounded by
+///     [CloudAuthService.kLazyInitTimeout]. Boot was measured both
+///     ways when this landed; see the handover note for the numbers.
+///   • **Google sign-in stays hidden** (`settings_page.dart` gates the
+///     Google button, and only that button, on `!kChinaMode`).
+///   • **RTDB is still not assumed.** `firebaseio.com` is a different
+///     host family from `identitytoolkit.googleapis.com`, so the
+///     owner's observation is evidence about Auth and about nothing
+///     else. `RealtimeDbSyncService` is started lazily *after* a
+///     successful sign-in and the UI never claims sync is working
+///     before a round trip has actually completed — it reports a real
+///     "Last synced …" timestamp, or it says plainly that the sync
+///     server could not be reached and offers Retry. Local storage
+///     remains the source of truth either way.
+///
+/// Two strings that used to assert the opposite —
+/// `chinaCloudUnavailable` and `onboardCustomizeBodyChina` — became
+/// false for exactly the readers who get this working and no longer
+/// drive off this flag.
 ///
 /// Build commands:
 ///   • International: `flutter build web --release`

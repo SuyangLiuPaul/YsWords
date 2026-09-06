@@ -41,6 +41,81 @@ enum CloudSyncStatus {
   error,
 }
 
+/// What kind of thing a failed sync attempt actually was.
+///
+/// 2026-09-06. Added because "the sync row is hidden" and "the sync
+/// row says nothing is wrong" look identical to a reader, and one of
+/// those two states became a lie the day the China build learned to
+/// sign in. `settings_page.dart` used to fold every error into one
+/// `isSyncSetupError` bag and render `SizedBox.shrink()` for all of
+/// them — a deliberate 2026-05-07 decision, and still the right answer
+/// for a project that is genuinely misconfigured, where the reader can
+/// do nothing and the maintainer needs the detail. It is the wrong
+/// answer for a reader whose network simply cannot reach
+/// `firebaseio.com`: they are signed in, their writes are safe
+/// locally, and they are owed a sentence saying so plus a Retry —
+/// not silence.
+enum SyncErrorKind {
+  /// Not an error, or an error we have nothing specific to say about.
+  none,
+
+  /// A transient failure worth one friendly line and a Retry.
+  transient,
+
+  /// The sync host could not be reached from this network. The
+  /// honest, non-alarming case: nothing is broken, nothing is lost,
+  /// and the local copy is still the source of truth.
+  unreachable,
+
+  /// The Firebase project itself is not set up for this (RTDB not
+  /// enabled, wrong region, rules denying the write). The reader
+  /// cannot act on it; keep it out of their way and leave it to
+  /// Settings → About → Run check.
+  misconfigured,
+}
+
+/// Classify a sync failure from the status and the raw error text.
+///
+/// Pure, and public, so it can be tested without a Firebase backend —
+/// which is the only kind of test this file's I/O can be given.
+///
+/// Order is load-bearing. A permission/rule denial can never contain a
+/// networking word, so it is matched first and keeps the pre-existing
+/// hide-it behaviour. Anything mentioning a transport problem is next.
+/// A bare mention of "database" with no other tell is treated as
+/// configuration, which is what it meant in the original 2026-05-07
+/// list.
+SyncErrorKind classifySyncError(CloudSyncStatus status, String? rawError) {
+  if (status != CloudSyncStatus.error) return SyncErrorKind.none;
+  final lower = (rawError ?? '').toLowerCase();
+  if (lower.isEmpty) return SyncErrorKind.transient;
+  const misconfiguredTells = <String>[
+    'permission',
+    'denied',
+    'set error',
+    '-disabled',
+  ];
+  for (final t in misconfiguredTells) {
+    if (lower.contains(t)) return SyncErrorKind.misconfigured;
+  }
+  const unreachableTells = <String>[
+    'timeout',
+    'timed out',
+    'unavailable',
+    'unreachable',
+    'network',
+    'offline',
+    'channel',
+    'connect',
+    'socket',
+  ];
+  for (final t in unreachableTells) {
+    if (lower.contains(t)) return SyncErrorKind.unreachable;
+  }
+  if (lower.contains('database')) return SyncErrorKind.misconfigured;
+  return SyncErrorKind.transient;
+}
+
 /// Mirrors profile-scoped local data to Firestore whenever the user
 /// is authenticated. Bidirectional:
 ///   • on sign-in or remote change → pull cloud snapshot into local prefs

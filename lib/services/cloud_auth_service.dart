@@ -1,4 +1,4 @@
-import 'dart:async' show StreamSubscription;
+import 'dart:async' show StreamSubscription, TimeoutException;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,12 +22,44 @@ import 'package:yswords/services/web_plugin_registrants.dart'
 /// Result of a sign-in / sign-up attempt. Carries either the
 /// authenticated [User] or a friendly [errorMessage] suitable for
 /// displaying directly in a SnackBar / form field.
+///
+/// 2026-09-06 (email/password sign-in): gained [errorCode]. The
+/// pre-existing Google paths only ever needed one English sentence in
+/// a SnackBar, so a pre-formatted [errorMessage] was enough. The email
+/// form has to say six different things in three locales AND decide
+/// whether to surface the password-reset escape hatch, and neither of
+/// those decisions can be made by string-matching an English sentence.
+/// The raw FirebaseAuth code travels to the UI, which localises it via
+/// [messageKeyForCode]. [errorMessage] is kept and still populated so
+/// every existing call site compiles and behaves identically.
 class CloudAuthResult {
   final User? user;
   final String? errorMessage;
+
+  /// Raw FirebaseAuth error code (`wrong-password`, `invalid-email`,
+  /// …) or one of this class's own `yswords/*` sentinels. Null on
+  /// success and on the legacy paths that never set it.
+  final String? errorCode;
+
   bool get isOk => user != null;
-  const CloudAuthResult.ok(this.user) : errorMessage = null;
-  const CloudAuthResult.error(this.errorMessage) : user = null;
+  const CloudAuthResult.ok(this.user)
+      : errorMessage = null,
+        errorCode = null;
+  const CloudAuthResult.error(this.errorMessage, {this.errorCode})
+      : user = null;
+}
+
+/// Result of an auth action that produces no [User] — today that is
+/// only "send a password-reset email". [CloudAuthResult] cannot model
+/// it, because its `isOk` is defined as `user != null` and a
+/// successful reset has no user to return.
+class CloudAuthActionResult {
+  final bool isOk;
+  final String? errorCode;
+  const CloudAuthActionResult.ok()
+      : isOk = true,
+        errorCode = null;
+  const CloudAuthActionResult.error(this.errorCode) : isOk = false;
 }
 
 /// Wraps Firebase Auth with a clear `isConfigured` gate so the app
@@ -128,6 +160,73 @@ class CloudAuthService extends ChangeNotifier {
   Future<void> init() async {
     if (_ready && _configured) return;
     await _doInit();
+  }
+
+  // ===================================================================
+  // Lazy init — 2026-09-06, the mechanism that lets the China build
+  // ship sign-in without paying for it at boot.
+  // ===================================================================
+
+  /// Upper bound on [ensureInitialized]. `_doInit` makes several
+  /// awaited network calls to Google-owned hosts; on a network that
+  /// silently blackholes them the browser's own TCP/TLS timeout is far
+  /// longer than any reader will wait. A tap that produces a spinner
+  /// which never resolves is worse than no button at all, so this is
+  /// deliberately short enough to fail in front of the reader while
+  /// they still remember pressing it.
+  static const Duration kLazyInitTimeout = Duration(seconds: 12);
+
+  /// Upper bound on a single email/password operation once Firebase
+  /// is up. Same reasoning as [kLazyInitTimeout]; a little longer
+  /// because by this point we know the host answered at least once.
+  static const Duration kAuthOpTimeout = Duration(seconds: 20);
+
+  /// Sentinel codes this service raises itself. Namespaced so they can
+  /// never collide with a real FirebaseAuth code.
+  static const String codeUnavailable = 'yswords/auth-unavailable';
+  static const String codeTimeout = 'yswords/timeout';
+  static const String codeMissingEmail = 'yswords/missing-email';
+  static const String codeMissingPassword = 'yswords/missing-password';
+
+  Future<bool>? _initInFlight;
+
+  /// Initialise Firebase **on demand**, and report whether it worked.
+  ///
+  /// [init] is called from `main()` only when `!kChinaMode`, because
+  /// the China build must not pay Firebase latency at boot (see
+  /// `build_flags.dart`). That left China-build readers with no route
+  /// to an account at all. This is the other half: the sign-in form
+  /// calls it the moment the reader actually asks to sign in, so the
+  /// cost is paid by the person who asked for it and by nobody else.
+  ///
+  /// Idempotent, and safe against double-taps: concurrent callers
+  /// share one in-flight future rather than starting a second
+  /// `Firebase.initializeApp`.
+  ///
+  /// Returns true when [isConfigured] ended up true. On timeout the
+  /// underlying `_doInit` is left running (it may still land and flip
+  /// `isConfigured` later, which every UI picks up through
+  /// [ChangeNotifier]) but this future completes false so the caller
+  /// can say something honest instead of spinning.
+  Future<bool> ensureInitialized({Duration? timeout}) {
+    if (_ready && _configured) return Future<bool>.value(true);
+    final inFlight = _initInFlight;
+    if (inFlight != null) return inFlight;
+    final future = _doInit()
+        .timeout(timeout ?? kLazyInitTimeout)
+        .then((_) => _configured)
+        .catchError((Object e) {
+      // A TimeoutException here is not a bug and not something the
+      // reader can act on beyond "try again" — record it the same way
+      // a failed init is recorded so Settings' existing error surface
+      // stays truthful, and let the caller show the friendly sentence.
+      _initError ??= '[lazy-init] $e';
+      return false;
+    }).whenComplete(() {
+      _initInFlight = null;
+    });
+    _initInFlight = future;
+    return future;
   }
 
   /// Re-run init after a transient failure. Wired to a "Retry" button
@@ -670,6 +769,255 @@ class CloudAuthService extends ChangeNotifier {
     if (!result.isOk) return result;
     await _adoptProfileFor(result.user!);
     return result;
+  }
+
+  // ===================================================================
+  // Email + password — 2026-09-06.
+  //
+  // SECURITY, and it is short enough to have no excuse for getting
+  // wrong: the password reaches exactly one place, the FirebaseAuth
+  // SDK call it is an argument to. It is never printed, never
+  // persisted, never put in an error string, never sent anywhere else,
+  // and never trimmed (trimming would silently change the credential).
+  // `test/email_auth_service_test.dart` reads this file back and fails
+  // if a logging call in it ever mentions a password.
+  // ===================================================================
+
+  /// Create a new account, then run the same local-profile
+  /// reconciliation the Google path runs.
+  ///
+  /// On `email-already-in-use` the caller must NOT try to work out
+  /// which provider owns the address. See [isAccountCollision].
+  Future<CloudAuthResult> createAccountWithEmailAndAdoptProfile({
+    required String email,
+    required String password,
+    Duration? timeout,
+  }) {
+    return _emailCall(
+      email: email,
+      password: password,
+      timeout: timeout,
+      run: (auth, trimmedEmail) => auth.createUserWithEmailAndPassword(
+        email: trimmedEmail,
+        password: password,
+      ),
+    );
+  }
+
+  /// Sign in with an existing email/password account, then run the
+  /// same local-profile reconciliation the Google path runs — so an
+  /// email reader lands on the same local [Profile] rather than in a
+  /// second notion of identity.
+  Future<CloudAuthResult> signInWithEmailAndAdoptProfile({
+    required String email,
+    required String password,
+    Duration? timeout,
+  }) {
+    return _emailCall(
+      email: email,
+      password: password,
+      timeout: timeout,
+      run: (auth, trimmedEmail) => auth.signInWithEmailAndPassword(
+        email: trimmedEmail,
+        password: password,
+      ),
+    );
+  }
+
+  /// Shared body of the two calls above: validate locally, make sure
+  /// Firebase is up (lazily — this is the China build's only route),
+  /// run the SDK call under a bound, adopt the local profile.
+  /// Normalise a typed email address before it reaches Firebase.
+  ///
+  /// Trim only. Deliberately NOT lower-cased: the local part of an
+  /// address is case-sensitive by RFC and Firebase does its own
+  /// canonicalisation; folding it here would be this app inventing a
+  /// second, disagreeing rule.
+  ///
+  /// Pulled out as a named static because the corresponding
+  /// *non*-treatment of the password is the security-relevant half,
+  /// and a rule you can point at is easier to keep than one inlined
+  /// in three call sites.
+  static String normalizeEmail(String email) => email.trim();
+
+  Future<CloudAuthResult> _emailCall({
+    required String email,
+    required String password,
+    required Duration? timeout,
+    required Future<UserCredential> Function(FirebaseAuth, String) run,
+  }) async {
+    final trimmedEmail = normalizeEmail(email);
+    if (trimmedEmail.isEmpty) {
+      return const CloudAuthResult.error(
+        'Enter your email address.',
+        errorCode: codeMissingEmail,
+      );
+    }
+    // NOT trimmed. A leading or trailing space is a legitimate part of
+    // a password and silently stripping it would make an account
+    // unopenable by the credential that created it.
+    if (password.isEmpty) {
+      return const CloudAuthResult.error(
+        'Enter your password.',
+        errorCode: codeMissingPassword,
+      );
+    }
+    if (!await ensureInitialized()) {
+      return const CloudAuthResult.error(
+        'Sign-in is unavailable right now.',
+        errorCode: codeUnavailable,
+      );
+    }
+    try {
+      final cred = await run(FirebaseAuth.instance, trimmedEmail)
+          .timeout(timeout ?? kAuthOpTimeout);
+      final user = cred.user;
+      if (user == null) {
+        // Should not happen on these two APIs, but a null here would
+        // otherwise render as a silent no-op button.
+        return const CloudAuthResult.error(
+          'Sign-in did not complete.',
+          errorCode: codeUnavailable,
+        );
+      }
+      // Mirror into the notifier immediately rather than waiting for
+      // userChanges() — same reason as the Google popup path: the
+      // stream can be delayed or suppressed by browser storage
+      // partitioning, and the UI must not keep reading "signed out"
+      // after a successful sign-in.
+      _user = user;
+      notifyListeners();
+      await _adoptProfileFor(user);
+      return CloudAuthResult.ok(user);
+    } on FirebaseAuthException catch (e) {
+      return CloudAuthResult.error(_friendlyError(e), errorCode: e.code);
+    } on TimeoutException {
+      return const CloudAuthResult.error(
+        'Timed out.',
+        errorCode: codeTimeout,
+      );
+    } catch (e) {
+      return CloudAuthResult.error(e.toString(), errorCode: codeUnavailable);
+    }
+  }
+
+  /// Send a password-reset email to [email].
+  ///
+  /// This is the single escape hatch behind both rulings recorded in
+  /// `docs/HANDOVER-2026-09-06.md`:
+  ///
+  ///   • **Account collision.** A reset on a Google-only Firebase
+  ///     account ADDS a password credential to that same UID — same
+  ///     account, same data, both methods work afterwards. So the app
+  ///     never needs to know which provider already owns the address,
+  ///     the copy names no provider, and email-enumeration protection
+  ///     stays ON.
+  ///   • **Sign-in.** With enumeration protection on, a Google-only
+  ///     account that is handed a password gets a generic
+  ///     `invalid-credential`, indistinguishable from a typo. The
+  ///     reset offer therefore has to be visible on that error rather
+  ///     than buried.
+  ///
+  /// Deliberately reports success without asking whether the address
+  /// exists — telling the reader "no such user" is the enumeration
+  /// leak the protection exists to close. `user-not-found` is mapped
+  /// to success for the same reason.
+  Future<CloudAuthActionResult> sendPasswordResetEmail(
+    String email, {
+    Duration? timeout,
+  }) async {
+    final trimmedEmail = normalizeEmail(email);
+    if (trimmedEmail.isEmpty) {
+      return const CloudAuthActionResult.error(codeMissingEmail);
+    }
+    if (!await ensureInitialized()) {
+      return const CloudAuthActionResult.error(codeUnavailable);
+    }
+    try {
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: trimmedEmail)
+          .timeout(timeout ?? kAuthOpTimeout);
+      return const CloudAuthActionResult.ok();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        return const CloudAuthActionResult.ok();
+      }
+      return CloudAuthActionResult.error(e.code);
+    } on TimeoutException {
+      return const CloudAuthActionResult.error(codeTimeout);
+    } catch (_) {
+      return const CloudAuthActionResult.error(codeUnavailable);
+    }
+  }
+
+  /// True for the two codes that mean "this address already has an
+  /// account, by some method". Per the 2026-09-06 ruling the app does
+  /// **not** detect which method and does **not** build account
+  /// linking — the answer is identical either way.
+  static bool isAccountCollision(String? code) =>
+      code == 'email-already-in-use' ||
+      code == 'account-exists-with-different-credential';
+
+  /// True when the UI must surface the password-reset button on this
+  /// error. Covers the collision codes plus every "that didn't open
+  /// the account" code — including the generic `invalid-credential`
+  /// that enumeration protection collapses a Google-only account and
+  /// a plain typo into.
+  static bool shouldOfferPasswordReset(String? code) =>
+      isAccountCollision(code) ||
+      code == 'invalid-credential' ||
+      // Firebase's newer identity-platform backends return this
+      // spelling for the same collapsed case.
+      code == 'invalid-login-credentials' ||
+      code == 'wrong-password' ||
+      code == 'user-not-found';
+
+  /// Fallback `ui_strings` key for a code with no specific sentence.
+  static const String authErrorFallbackKey = 'authErrGeneric';
+
+  /// Map a FirebaseAuth code (or one of this class's own sentinels)
+  /// onto a `ui_strings` key, so the reader gets a sentence in their
+  /// own locale rather than a machine code.
+  ///
+  /// Lives here, next to the codes, rather than in the widget: the
+  /// widget is not the only surface that will ever need it, and a
+  /// pure function is the only part of this file a test without a
+  /// Firebase backend can genuinely exercise.
+  static String messageKeyForCode(String? code) {
+    switch (code) {
+      case 'wrong-password':
+        return 'authErrWrongPassword';
+      case 'user-not-found':
+        return 'authErrUserNotFound';
+      case 'invalid-credential':
+      case 'invalid-login-credentials':
+        return 'authErrInvalidCredential';
+      case 'weak-password':
+        return 'authErrWeakPassword';
+      case 'invalid-email':
+        return 'authErrInvalidEmail';
+      case 'network-request-failed':
+        return 'authErrNetwork';
+      case 'too-many-requests':
+        return 'authErrTooManyRequests';
+      case 'email-already-in-use':
+      case 'account-exists-with-different-credential':
+        return 'authErrEmailInUse';
+      case 'user-disabled':
+        return 'authErrUserDisabled';
+      case 'operation-not-allowed':
+        return 'authErrEmailNotEnabled';
+      case 'missing-password':
+      case codeMissingPassword:
+        return 'authErrMissingPassword';
+      case codeMissingEmail:
+        return 'authErrMissingEmail';
+      case codeTimeout:
+        return 'authErrTimeout';
+      case codeUnavailable:
+        return 'authErrInitUnavailable';
+    }
+    return authErrorFallbackKey;
   }
 
   /// Match-or-create a local [Profile] by the signed-in Google

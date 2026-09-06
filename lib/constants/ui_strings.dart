@@ -7690,4 +7690,229 @@ const uiStrings = {
         'not checked one by one, so this app makes no licence claim for '
         'them.',
   },
+  // ===================================================================
+  // 2026-09-06 — email + password sign-in.
+  //
+  // APPEND-ONLY block. Nothing above this line was reordered or
+  // reformatted.
+  //
+  // Why these exist at all: FirebaseAuth answers in machine codes
+  // (`wrong-password`, `too-many-requests`). A reader is owed a
+  // sentence, in their own language, for every one of them.
+  // `CloudAuthService.messageKeyForCode` is the only thing that
+  // chooses between them, and `test/email_auth_strings_test.dart`
+  // fails if any code it can return has no key here, or if a key
+  // here is missing any of the three locales.
+  // ===================================================================
+
+  // ---- The control itself --------------------------------------------
+  // Shown in EVERY build, China included. See build_flags.dart: email
+  // sign-in does not touch the `/__/auth/*` handler the Google flow
+  // needs, so the compile-time China flag is the wrong thing to gate
+  // it on.
+  'cloudSignInEmail': {
+    'zh-Hans': '用邮箱登录',
+    'zh-Hant': '用電郵登入',
+    'en': 'Sign in with email',
+  },
+  'authSheetTitleSignIn': {
+    'zh-Hans': '用邮箱登录',
+    'zh-Hant': '用電郵登入',
+    'en': 'Sign in with email',
+  },
+  'authSheetTitleCreate': {
+    'zh-Hans': '创建账户',
+    'zh-Hant': '建立帳戶',
+    'en': 'Create an account',
+  },
+  'authEmailLabel': {
+    'zh-Hans': '邮箱地址',
+    'zh-Hant': '電郵地址',
+    'en': 'Email address',
+  },
+  'authPasswordLabel': {
+    'zh-Hans': '密码',
+    'zh-Hant': '密碼',
+    'en': 'Password',
+  },
+  'authSignInAction': {
+    'zh-Hans': '登录',
+    'zh-Hant': '登入',
+    'en': 'Sign in',
+  },
+  'authCreateAction': {
+    'zh-Hans': '创建账户',
+    'zh-Hant': '建立帳戶',
+    'en': 'Create account',
+  },
+  'authSwitchToCreate': {
+    'zh-Hans': '还没有账户？创建一个',
+    'zh-Hant': '還沒有帳戶？建立一個',
+    'en': 'No account yet? Create one',
+  },
+  'authSwitchToSignIn': {
+    'zh-Hans': '已有账户？去登录',
+    'zh-Hant': '已有帳戶？去登入',
+    'en': 'Already have an account? Sign in',
+  },
+  'authForgotPassword': {
+    'zh-Hans': '忘记密码？',
+    'zh-Hant': '忘記密碼？',
+    'en': 'Forgot password?',
+  },
+  // The ONE button behind both halves of the 2026-09-06 collision
+  // ruling. It names no provider, because it does not need to: a
+  // reset on an account created by any method adds a password
+  // credential to that same UID.
+  'authResetSendButton': {
+    'zh-Hans': '发送重设密码邮件',
+    'zh-Hant': '傳送重設密碼郵件',
+    'en': 'Email me a reset link',
+  },
+  'authResetSent': {
+    'zh-Hans': '如果该地址能收信，重设密码的邮件已经发出。点开邮件里的链接设定密码，然后回来登录。',
+    'zh-Hant': '如果該地址能收信，重設密碼的郵件已經寄出。點開郵件裡的連結設定密碼，然後回來登入。',
+    'en':
+        'If that address can receive mail, a reset link is on its way. '
+            'Open it, set a password, then come back and sign in.',
+  },
+  'authWorking': {
+    'zh-Hans': '正在处理…',
+    'zh-Hant': '正在處理…',
+    'en': 'Working…',
+  },
+  // Replaces `chinaCloudUnavailable` at the Profiles-card footnote.
+  // That string asserted flatly that cloud sync is unavailable in the
+  // China build, which is false for exactly the readers who get email
+  // sign-in working. This one promises nothing it cannot keep.
+  'authNoticeNotSignedIn': {
+    'zh-Hans': '用邮箱登录后，高亮、笔记和书签可以在多台设备之间同步。不登录也完全可用——所有内容都保存在本设备。',
+    'zh-Hant': '用電郵登入後，高亮、筆記和書籤可以在多台裝置之間同步。不登入也完全可用——所有內容都保存在本裝置。',
+    'en':
+        'Sign in with an email address to sync highlights, notes and '
+            'bookmarks across devices. Without signing in everything '
+            'still works — it just stays on this device.',
+  },
+
+  // ---- Error sentences ------------------------------------------------
+  'authErrGeneric': {
+    'zh-Hans': '登录没有成功。请再试一次。',
+    'zh-Hant': '登入沒有成功。請再試一次。',
+    'en': "That didn't work. Please try again.",
+  },
+  // Enumeration protection collapses "wrong password" and "no such
+  // account" into one code on purpose, so this sentence must not
+  // claim to know which it was.
+  'authErrInvalidCredential': {
+    'zh-Hans': '这个邮箱和密码对不上。如果你以前用别的方式登录过，用下面的链接设定一个密码即可。',
+    'zh-Hant': '這個電郵和密碼對不上。如果你以前用別的方式登入過，用下面的連結設定一個密碼即可。',
+    'en':
+        "That email and password don't match. If you've signed in "
+            'another way before, use the reset link below to set a '
+            'password.',
+  },
+  'authErrWrongPassword': {
+    'zh-Hans': '密码不对。',
+    'zh-Hant': '密碼不對。',
+    'en': 'That password is not right.',
+  },
+  'authErrUserNotFound': {
+    'zh-Hans': '这个邮箱还没有账户。',
+    'zh-Hant': '這個電郵還沒有帳戶。',
+    'en': 'There is no account for that email address.',
+  },
+  'authErrWeakPassword': {
+    'zh-Hans': '密码太短了。请至少用 6 个字符。',
+    'zh-Hant': '密碼太短了。請至少用 6 個字元。',
+    'en': 'That password is too short — use at least 6 characters.',
+  },
+  'authErrInvalidEmail': {
+    'zh-Hans': '这个邮箱地址的格式不对。',
+    'zh-Hant': '這個電郵地址的格式不對。',
+    'en': "That doesn't look like an email address.",
+  },
+  'authErrMissingEmail': {
+    'zh-Hans': '请先填写邮箱地址。',
+    'zh-Hant': '請先填寫電郵地址。',
+    'en': 'Enter your email address.',
+  },
+  'authErrMissingPassword': {
+    'zh-Hans': '请先填写密码。',
+    'zh-Hant': '請先填寫密碼。',
+    'en': 'Enter your password.',
+  },
+  'authErrNetwork': {
+    'zh-Hans': '连不上登录服务器。什么都没有发送出去。请换个网络再试。',
+    'zh-Hant': '連不上登入伺服器。什麼都沒有傳送出去。請換個網路再試。',
+    'en':
+        "Couldn't reach the sign-in server. Nothing was sent. Try "
+            'again, or on another connection.',
+  },
+  'authErrTooManyRequests': {
+    'zh-Hans': '尝试次数太多。请等几分钟再试。',
+    'zh-Hant': '嘗試次數太多。請等幾分鐘再試。',
+    'en': 'Too many attempts. Wait a few minutes and try again.',
+  },
+  // Names no provider, deliberately. See the 2026-09-06 ruling.
+  'authErrEmailInUse': {
+    'zh-Hans': '这个邮箱已经有账户了。发一封重设密码的邮件给自己，设好密码就能用它登录同一个账户，数据都在。',
+    'zh-Hant': '這個電郵已經有帳戶了。寄一封重設密碼的郵件給自己，設好密碼就能用它登入同一個帳戶，資料都在。',
+    'en':
+        'There is already an account for that email. Send yourself a '
+            'reset link and set a password — it opens that same '
+            'account, with all of its data.',
+  },
+  'authErrUserDisabled': {
+    'zh-Hans': '这个账户已被停用。',
+    'zh-Hant': '這個帳戶已被停用。',
+    'en': 'That account has been disabled.',
+  },
+  'authErrEmailNotEnabled': {
+    'zh-Hans': '这个 Firebase 项目还没有启用「邮箱／密码」登录方式。',
+    'zh-Hant': '這個 Firebase 專案還沒有啟用「電郵／密碼」登入方式。',
+    'en':
+        'Email/password sign-in is not enabled on this Firebase '
+            'project yet.',
+  },
+  'authErrTimeout': {
+    'zh-Hans': '等太久了，已经停下来。什么都没有发送出去。请再试一次。',
+    'zh-Hant': '等太久了，已經停下來。什麼都沒有傳送出去。請再試一次。',
+    'en':
+        'That took too long, so we stopped waiting. Nothing was sent. '
+            'Try again.',
+  },
+  // Shown when the lazy Firebase init itself could not complete —
+  // the China build's most likely failure, and the one that must
+  // never present as an endless spinner.
+  'authErrInitUnavailable': {
+    'zh-Hans': '从你的网络连不上登录服务器。什么都没有发送出去，本机上的高亮、笔记和书签都还在。',
+    'zh-Hant': '從你的網路連不上登入伺服器。什麼都沒有傳送出去，本機上的高亮、筆記和書籤都還在。',
+    'en':
+        "Couldn't reach the sign-in server from your network. Nothing "
+            'was sent, and your highlights, notes and bookmarks are '
+            'safe on this device.',
+  },
+
+  // ---- Sync, told honestly --------------------------------------------
+  // Never say "sync is on" before a round trip has completed. Either a
+  // real "Last synced ..." timestamp, or this.
+  'syncUnreachable': {
+    'zh-Hans': '从你的网络连不上同步服务器。你的高亮、笔记和书签都安全地保存在本设备上。你仍然是登录状态。',
+    'zh-Hant': '從你的網路連不上同步伺服器。你的高亮、筆記和書籤都安全地保存在本裝置上。你仍然是登入狀態。',
+    'en':
+        "Couldn't reach the sync server from your network. Your "
+            'highlights, notes and bookmarks are safe on this device. '
+            "You're still signed in.",
+  },
+  // Replaces `onboardCustomizeBodyChina` at its one call site. Same
+  // reason as authNoticeNotSignedIn: the old copy told China-build
+  // readers cloud sync was not on the table, and it now is.
+  'onboardCustomizeBodyEmail': {
+    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块；选择读经计划；用邮箱登录即可在所有设备同步书签、笔记和高亮。',
+    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊；選擇讀經計劃；用電郵登入即可在所有裝置同步書籤、筆記和高亮。',
+    'en':
+        'Drag-reorder or hide any block under Settings → Dashboard '
+            'layout. Pick a reading plan. Sign in with an email address '
+            'to sync bookmarks, notes and highlights across devices.',
+  },
 };
