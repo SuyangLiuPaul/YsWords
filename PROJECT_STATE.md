@@ -65,19 +65,28 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.2** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.2** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.4.198** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.4** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.4** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn` | **1.4.214** | ⛔ never without explicit permission **in the current turn** |
 
-**dev and qat went to 1.5.2 on 2026-09-06**, carrying the 429-sermon
-corpus (414 before), the 687 proofreading corrections and the two
-Traditional glyph repairs. Verified against what the sites serve rather
-than the repo: all four report `version.json` 1.5.2, both
-`assets/assets/sermons/index.json` count 429, and the prerendered
-`/sermons/zh-hant/fy-ws04/` reads 原文**採**用 while its zh-hans twin
-correctly keeps 采用. **The row above is the first time this table has
-been true since 1.4.198** — dev and qat had been on 1.5.0/1.5.1 for days
-while it still claimed 1.4.198. prod has never been asked for 1.5.x.
+**Every number above was read off `version.json` on 2026-09-07, not off
+the repo.** That distinction is the whole reason this block keeps going
+stale: the table said 1.4.198 on all three tiers while dev and qat had
+been on 1.5.0, then 1.5.1, then 1.5.2 for days.
+
+**prod is 1.4.214 and serves 289 sermons.** It has never had 1.5.x, so a
+prod push is a 1.4.214 → 1.5.x jump carrying the whole 1.5 line, not
+just the newest fix. The 429-sermon corpus, the 687 proofreading
+corrections and the two Traditional glyph repairs (Romans 7:8's
+「在我裏頭髮動」 and 「原文采用」) are all on dev/qat only.
+
+**A correction, recorded because the mistake is instructive.** On
+2026-09-06 this block was rewritten to "say where the sites actually
+are" — and its author checked dev and qat against the live sites, then
+copied prod's number from the stale table without checking it. It said
+1.4.198; prod was 1.4.214 and had been since before the sermon library
+shipped. Verifying two of three rows and restating the third is not
+verifying the table.
 
 **All three tiers moved to 1.4.198 together, 2026-09-02 — not by this
 iteration.** While this iteration was landing Stage 4 batch 2's next
