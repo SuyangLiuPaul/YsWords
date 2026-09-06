@@ -129,7 +129,7 @@ const positional = argv.filter((a, i) =>
   !a.startsWith('--') && !VALUE_FLAGS.has(argv[i - 1]));
 const CMD = positional[0] || 'all';
 const KNOWN = ['all', 'routes', 'sermon', 'history', 'youtube', 'typography',
-               'chronology', 'bible'];
+               'chronology', 'bible', 'version'];
 if (!KNOWN.includes(CMD)) {
   console.error(`Unknown subcommand ${JSON.stringify(CMD)}. One of: ${KNOWN.join(', ')}`);
   process.exit(2);
@@ -186,12 +186,43 @@ async function loadSongMediaProxies(repoRoot) {
   return map;
 }
 
+// ── fault injection ──────────────────────────────────────────────────
+//
+// The version-switch case (case 8) has to reproduce a FAILING or SLOW
+// asset load on demand: "forever if the load throws" is the seam
+// `main_provider.dart`'s `renderedVersion` comment names, and waiting
+// for a flaky network to supply one is not a reproduction. Keys are
+// exact request paths (`/assets/assets/biblexg-v2.json`); the value says
+// what to do and, when `remaining` is a number, for how many more
+// requests. Empty for every other case, so nothing else changes.
+const FAULTS = new Map();
+
+function faultFor(path) {
+  const f = FAULTS.get(path);
+  if (!f) return null;
+  if (typeof f.remaining === 'number') {
+    if (f.remaining <= 0) return null;
+    f.remaining -= 1;
+  }
+  f.hits = (f.hits || 0) + 1;
+  return f;
+}
+
 function startServer(root, songMedia = new Map()) {
   return new Promise((resolve, reject) => {
     const srv = createServer(async (req, res) => {
       try {
         let p = decodeURIComponent(req.url.split('?')[0]);
         if (p.includes('..')) { res.writeHead(400); return res.end('no'); }
+        const fault = faultFor(p);
+        if (fault) {
+          if (fault.delayMs) await sleep(fault.delayMs);
+          if (fault.status) {
+            res.writeHead(fault.status, { 'cache-control': 'no-store' });
+            return res.end('injected fault');
+          }
+          if (fault.abort) { return req.socket.destroy(); }
+        }
         if (p.startsWith('/song-media/')) {
           const [, , source, ...rest] = p.split('/');
           const upstream = songMedia.get(source);
@@ -290,6 +321,18 @@ class Cdp {
 
 const INSTRUMENT = `
   window.__ysConsole = [];
+  (function () {
+    ['log', 'warn', 'error', 'info'].forEach(function (m) {
+      var orig = console[m] ? console[m].bind(console) : function () {};
+      console[m] = function () {
+        try {
+          window.__ysConsole.push(m + ': ' + Array.prototype.map
+            .call(arguments, String).join(' ').slice(0, 1200));
+        } catch (x) { /* ignore */ }
+        return orig.apply(null, arguments);
+      };
+    });
+  })();
   window.__ysErrors = [];
   window.__ysOut = [];   // postMessage() calls this page MADE into an iframe
   window.__ysIn = [];    // message events this page RECEIVED
@@ -682,7 +725,8 @@ async function pageErrors(cdp) {
 /// Boot one case: fresh profile, ONE document load of `url`, wait for the
 /// engine, turn on semantics, dismiss the tour. Nothing planted unless
 /// `plant` is given (only `sermon` does).
-async function coldLoad(label, origin, url, { plant = null, viewport = null } = {}) {
+async function coldLoad(label, origin, url,
+    { plant = null, viewport = null, semantics: withSemantics = true } = {}) {
   const b = await Browser.launch(label);
   const cdp = await b.openTab();
   if (viewport) await b.metrics(viewport);
@@ -704,7 +748,13 @@ async function coldLoad(label, origin, url, { plant = null, viewport = null } = 
   }
   await navigate(cdp, url);
   const booted = await waitForFlutter(cdp, 40000);
-  await enableSemantics(cdp);
+  // The accessibility tree is the harness's only oracle on a canvas app,
+  // so it is on by default. It is OPTIONAL because turning it on is not
+  // free: Flutter web puts a real DOM overlay over the canvas and every
+  // node in it that carries a tap action takes clicks BEFORE the render
+  // tree ever hit-tests. A case that needs to know what an ordinary
+  // pointer does has to run with it off — see runVersionProbe.
+  if (withSemantics) await enableSemantics(cdp);
   await sleep(2500);
   return { b, cdp, booted };
 }
@@ -2050,6 +2100,547 @@ async function runChronology(origin) {
   return { shots, ...notes };
 }
 
+// ── case 8: the version chip actually switching ──────────────────────
+//
+// Owner report, twice: "switching the Bible version from the header chip
+// often does not switch — I have to tap it several times before it
+// takes." `main_provider.dart`'s `renderedVersion` doc names the seam
+// (`currentVersion` moves on the tap, `renderedVersion` only when the
+// decode lands, "forever if the load throws"), so the two things this
+// case has to separate are (a) the chip lying about which translation is
+// on screen, and (b) the switch silently not happening.
+//
+// The oracle is the VERSE TEXT, not the chip. 约翰福音 3:1 reads
+// "…是犹太人的官。" in 和合本雅伟版 and "…是犹太人一位首领，" in 梁家铿译本;
+// the two strings share no substring, so a single semantics dump says
+// unambiguously which translation is being rendered. The chip is read
+// separately and compared against it — a disagreement is the 2026-08-16
+// bug returning.
+
+const VERSIONS_UNDER_TEST = {
+  'cuvs-yhwh': {
+    menu: /和合本雅伟版\(简体\)/,
+    chip: /^(和合本雅伟版|雅伟版)$/,
+    body: '犹太人的官',
+    langIndex: 2,
+  },
+  'biblexg-v2': {
+    menu: /梁家铿译本\(简体\)/,
+    chip: /^(梁家铿\(简\)|梁简)$/,
+    body: '犹太人一位首领',
+    langIndex: 2,
+  },
+};
+// The chip is ONE semantics node carrying its tooltip and its label
+// joined by a newline — measured off the live tree, e.g.
+//   [button] y=10 x=644 w=78 h=29 "Change Version\n雅伟版"
+// so neither an anchored match on the tooltip nor one on the label finds
+// it. Match the tooltip loosely and read the label off the same node.
+const CHANGE_VERSION_RE = /(Change Version|切换版本|切換版本)/;
+function chipLabelFrom(text) {
+  const parts = String(text).split('\n').map((x) => x.trim()).filter(Boolean);
+  return parts.length > 1 ? parts[parts.length - 1] : null;
+}
+// Measured off a real failed switch (2026-09-06), not guessed from
+// ui_strings: the snackbar reads "Could not load Bible verses. Please
+// check your connection and retry." The first version of this regex
+// said "Could not load verses" and matched nothing, which reported a
+// silent failure the app was in fact announcing — the exact shape of
+// decorative assertion this repo keeps finding.
+const SWITCH_FAILED_RE =
+    /Could not load Bible verses|无法加载|無法載入|请检查|請檢查|重试|重試/;
+
+/// What the reader can see right now: which label the chip carries, and
+/// which translation the verses under it actually came from.
+async function readerState(cdp) {
+  const s = await semantics(cdp).catch(() => ({ nodes: [] }));
+  const nodes = s.nodes || [];
+  const text = nodes.map((n) => n.text).join(' │ ');
+  const chipNode = nodes.find(
+    (n) => CHANGE_VERSION_RE.test(n.text) && n.cy < 220);
+  let body = null;
+  for (const [key, v] of Object.entries(VERSIONS_UNDER_TEST)) {
+    if (text.includes(v.body)) body = key;
+  }
+  return {
+    chip: chipNode ? chipLabelFrom(chipNode.text) : null,
+    body,
+    overlay: /正在切换译本|正在切換譯本|Loading version/.test(text),
+    failureShown: SWITCH_FAILED_RE.test(text),
+    text,
+  };
+}
+
+function chipNames(state) {
+  for (const [key, v] of Object.entries(VERSIONS_UNDER_TEST)) {
+    if (state.chip && v.chip.test(state.chip)) return key;
+  }
+  return null;
+}
+
+// **The picker is ONE semantics node.** `showLanguageGroupedVersionMenu`
+// hangs the whole body — three language pills and every version row —
+// inside a single `PopupMenuItem`, and Flutter's `PopupMenuItem` wraps
+// its child in `MergeSemantics`. Measured off the live tree:
+//
+//   [menuitem] y=51 x=442 w=280 h=125
+//     "English\n繁體中文\n简体中文\n和合本雅伟版(简体)\n梁家铿译本(简体)"
+//
+// One node, one rect, no per-row geometry — so `clickText` cannot aim at
+// a row, and neither can a screen reader: to VoiceOver this menu is a
+// single unlabelled item. That is a real accessibility defect and it is
+// recorded here as one, but it is NOT the switching bug: a finger, and
+// `Input.dispatchMouseEvent`, both hit-test against the render tree,
+// which does have the rows. So the rows are addressed below by the
+// layout arithmetic of `_LanguageGroupedVersionBody` instead:
+//   pill row  = Padding(8) + TextButton(minimumSize 36) + Padding(8) = 52
+//   divider   = 1
+//   the rest  = the version rows, evenly (rows in one language tab all
+//               carry an editionYear or all carry none)
+const MENU_LABELS = [
+  'King James Version', 'Lexham English Bible',
+  '和合本雅伟版(简体)', '和合本雅偉版(繁體)',
+  '梁家铿译本(简体)', '梁家鏗譯本(繁體)',
+];
+const MENU_PILL_BLOCK = 52;
+const MENU_DIVIDER = 1;
+
+/// The merged picker node, or null if the menu is not open.
+async function menuNode(cdp) {
+  const d = await semantics(cdp).catch(() => ({ nodes: [] }));
+  return (d.nodes || []).find(
+    (n) => n.role === 'menuitem' && /\n/.test(n.text)) || null;
+}
+
+/// The version rows the open menu is currently showing, in order.
+function menuRows(node) {
+  return String(node.text).split('\n').map((x) => x.trim())
+    .filter((x) => MENU_LABELS.includes(x));
+}
+
+/// A click that goes to Flutter's RENDER tree, not to the accessibility
+/// DOM sitting over it.
+///
+/// With semantics on, Flutter web overlays real DOM nodes on the canvas
+/// and any of them carrying a tap action swallows the click before the
+/// framework hit-tests anything. That is a finding in its own right (see
+/// runVersionProbe), but a case that wants to know what an ordinary
+/// finger does still needs to be able to deliver one while the
+/// accessibility tree is on — which is the only way to READ the screen.
+/// Dispatching the pointer events straight at the view root does that:
+/// they bubble to Flutter's own listener with the real client
+/// coordinates and it hit-tests the render tree from there.
+async function clickThroughCanvas(cdp, x, y) {
+  return evalJs(cdp, `(function () {
+    var host = document.querySelector('flt-glass-pane') ||
+               document.querySelector('flutter-view') ||
+               document.querySelector('flt-scene-host') || document.body;
+    function ev(t, buttons) {
+      return new PointerEvent(t, {
+        bubbles: true, cancelable: true, composed: true,
+        clientX: ${Math.round(x)}, clientY: ${Math.round(y)},
+        pointerId: 1, pointerType: 'mouse', isPrimary: true,
+        button: 0, buttons: buttons,
+      });
+    }
+    host.dispatchEvent(ev('pointerdown', 1));
+    host.dispatchEvent(ev('pointerup', 0));
+    return host.tagName + '#' + (host.id || '');
+  })()`);
+}
+
+async function clickAt(cdp, x, y) {
+  for (const type of ['mousePressed', 'mouseReleased']) {
+    await cdp.send('Input.dispatchMouseEvent', {
+      type, x: Math.round(x), y: Math.round(y), button: 'left', clickCount: 1,
+    });
+    await sleep(40);
+  }
+}
+
+/// Language pill `i` of three (en / zh-Hant / zh-Hans), by geometry.
+async function clickMenuPill(cdp, node, i) {
+  const inner = node.w - 20;
+  await clickAt(cdp, node.x + 10 + inner * (i + 0.5) / 3, node.y + 26);
+}
+
+/// Version row `i` of `n`, by geometry.
+async function clickMenuRow(cdp, node, i, n) {
+  const top = node.y + MENU_PILL_BLOCK + MENU_DIVIDER;
+  const rowH = (node.h - MENU_PILL_BLOCK - MENU_DIVIDER) / n;
+  await clickAt(cdp, node.x + node.w / 2, top + rowH * (i + 0.5));
+}
+
+/// ONE tap on the chip and ONE tap on `target`'s row, then watch for up
+/// to `settleMs` and report what the reader ends up with.
+async function oneSwitchTap(cdp, target,
+    { settleMs = 14000, via = 'canvas' } = {}) {
+  const t = VERSIONS_UNDER_TEST[target];
+  const before = await readerState(cdp);
+  const openedChip = await clickText(cdp, CHANGE_VERSION_RE,
+    { timeoutMs: 8000, box: [0, 0, 4000, 220] });
+  await sleep(800);
+  let node = await menuNode(cdp);
+  const menuOpened = !!node;
+  let rowClicked = null;
+  let menuNodes = node ? [{ text: node.text, x: node.x, y: node.y,
+                            w: node.w, h: node.h }] : null;
+  if (process.env.YS_DUMP_MENU && node) {
+    console.log(`   -- menu node -- y=${Math.round(node.y)} ` +
+      `x=${Math.round(node.x)} w=${Math.round(node.w)} ` +
+      `h=${Math.round(node.h)} rows=${JSON.stringify(menuRows(node))}`);
+  }
+  if (node) {
+    let rows = menuRows(node);
+    if (!rows.some((r) => t.menu.test(r))) {
+      // Wrong language tab open — switch to the target's, then re-read.
+      if (via === 'canvas') {
+        const inner = node.w - 20;
+        await clickThroughCanvas(cdp,
+          node.x + 10 + inner * (t.langIndex + 0.5) / 3, node.y + 26);
+      } else {
+        await clickMenuPill(cdp, node, t.langIndex);
+      }
+      await sleep(500);
+      node = await menuNode(cdp) || node;
+      rows = menuRows(node);
+    }
+    const idx = rows.findIndex((r) => t.menu.test(r));
+    if (process.env.YS_STEP_SHOTS) {
+      await screenshot(cdp, `step-${Date.now()}-menu-open`);
+    }
+    if (idx >= 0) {
+      const top = node.y + MENU_PILL_BLOCK + MENU_DIVIDER;
+      const rowH = (node.h - MENU_PILL_BLOCK - MENU_DIVIDER) / rows.length;
+      const px = node.x + node.w / 2;
+      const py = top + rowH * (idx + 0.5);
+      if (process.env.YS_DUMP_MENU) {
+        console.log(`   -- clicking row ${idx} of ${rows.length} ` +
+          `(${rows[idx]}) at ${Math.round(px)},${Math.round(py)}`);
+      }
+      if (via === 'canvas') {
+        await clickThroughCanvas(cdp, px, py);
+      } else {
+        await clickAt(cdp, px, py);
+      }
+      rowClicked = { row: rows[idx], index: idx, of: rows.length,
+                     x: Math.round(px), y: Math.round(py), via };
+      if (process.env.YS_STEP_SHOTS) {
+        let prev = 0;
+        for (const at of [80, 200, 400, 900, 2000, 4000]) {
+          await sleep(at - prev); prev = at;
+          const d = await semantics(cdp).catch(() => ({ nodes: [] }));
+          const open = (d.nodes || []).some((n) => /Dismiss menu/.test(n.text));
+          const mn = (d.nodes || []).find(
+            (n) => n.role === 'menuitem' && /\n/.test(n.text));
+          console.log(`      +${String(at).padStart(4)}ms menu-open=${open} ` +
+            `rows=${mn ? JSON.stringify(menuRows(mn)) : 'none'}`);
+          await screenshot(cdp, `step-click-plus${at}`);
+        }
+      }
+    }
+  }
+  const trace = [];
+  let settled = null;
+  let prev = 0;
+  for (const at of [300, 800, 1500, 3000, 5000, 8000, 11000, settleMs]) {
+    if (at > settleMs) break;
+    await sleep(at - prev); prev = at;
+    const st = await readerState(cdp);
+    trace.push({ at, chip: st.chip, body: st.body, overlay: st.overlay,
+                 failureShown: st.failureShown });
+    if (process.env.YS_TRACE_SHOTS) {
+      await screenshot(cdp, `trace-${target}-plus${at}`);
+    }
+    settled = st;
+    if (st.body === target && !st.overlay) break;
+  }
+  return {
+    target,
+    menuNodes,
+    chipBefore: before.chip, bodyBefore: before.body,
+    openedChip: !!openedChip, menuOpened, rowClicked: !!rowClicked,
+    chipAfter: settled ? settled.chip : null,
+    bodyAfter: settled ? settled.body : null,
+    chipNamesAfter: settled ? chipNames(settled) : null,
+    failureShown: settled ? settled.failureShown : false,
+    trace,
+    // The two verdicts this whole case exists to separate.
+    // `bodyBefore === target` means this tap asked for what was already
+    // on screen — it can only ever read as a pass, so it is excluded
+    // from the counts rather than allowed to inflate them.
+    noOpTarget: before.body === target,
+    switched: !!settled && settled.body === target,
+    chipLied: !!settled && settled.body !== null &&
+      chipNames(settled) !== null && chipNames(settled) !== settled.body,
+  };
+}
+
+/// One scenario: cold-load John 3 in 和合本雅伟版, then alternate to
+/// 梁家铿译本 and back `rounds` times, ONE tap per switch.
+async function runVersionScenario(origin, {
+  label, rounds = 4, faults = [], waitBeforeMs = 0, viewport = null,
+  via = 'canvas',
+}) {
+  console.log(`\n── scenario: ${label} ──`);
+  for (const f of faults) FAULTS.set(f.path, { ...f });
+  const out = { label, via, faults: faults.map((f) => ({ ...f })), taps: [] };
+  const { b, cdp, booted } = await coldLoad(
+    'version-' + label.replace(/[^a-z0-9]+/gi, '-'), origin,
+    origin + '/#/john/3?v=cuvs-yhwh', { viewport });
+  out.booted = booted;
+  try {
+    let tour = await dismissOnboarding(cdp);
+    for (let i = 0; i < 6 && tour.appeared && !tour.dismissed; i++) {
+      await sleep(1200);
+      await clickText(cdp, SKIP_RE, { timeoutMs: 6000 });
+      await sleep(1500);
+      const t = await pageText(cdp).catch(() => '');
+      tour = { ...tour, dismissed: !TOUR_RE.test(t), retries: i + 1 };
+    }
+    out.tour = tour;
+    if (tour.appeared && !tour.dismissed) {
+      throw new Error('the first-run tour would not dismiss');
+    }
+    if (waitBeforeMs) {
+      // Let `eagerPreloadAllVersions` finish, so the switch takes the
+      // warm-cache path instead of the decode path. biblexg-v2 is LAST
+      // in that queue (version_preloader.dart), so "did the reader wait"
+      // is exactly what decides which of the two code paths runs.
+      await sleep(waitBeforeMs);
+    }
+    if (process.env.YS_DUMP_SEMANTICS) {
+      const d = await semantics(cdp);
+      console.log('   ── semantics dump ──');
+      for (const n of (d.nodes || [])) {
+        console.log(`     [${n.role || '-'}] y=${Math.round(n.y)} ` +
+          `x=${Math.round(n.x)} w=${Math.round(n.w)} h=${Math.round(n.h)} ` +
+          JSON.stringify(n.text.slice(0, 60)));
+      }
+      if (process.env.YS_DUMP_SEMANTICS === 'only') {
+        out.dumpOnly = true;
+        return out;
+      }
+    }
+    const start = await readerState(cdp);
+    out.start = { chip: start.chip, body: start.body };
+    console.log(`   start: chip=${JSON.stringify(start.chip)} ` +
+      `body=${JSON.stringify(start.body)}`);
+    if (start.body !== 'cuvs-yhwh') {
+      throw new Error('did not start on 和合本雅伟版 John 3 — nothing below ' +
+        `would mean anything (body=${JSON.stringify(start.body)})`);
+    }
+    const order = [];
+    for (let i = 0; i < rounds; i++) {
+      order.push(i % 2 === 0 ? 'biblexg-v2' : 'cuvs-yhwh');
+    }
+    for (let i = 0; i < order.length; i++) {
+      const r = await oneSwitchTap(cdp, order[i], { via });
+      out.taps.push(r);
+      console.log(`   tap ${i + 1} -> ${order[i]}: menu=${r.menuOpened} ` +
+        `row=${r.rowClicked} switched=${r.switched} ` +
+        `chip=${JSON.stringify(r.chipAfter)} body=${JSON.stringify(r.bodyAfter)} ` +
+        `chip-lied=${r.chipLied} failure-shown=${r.failureShown}`);
+      await screenshot(cdp, `version-${label.replace(/[^a-z0-9]+/gi, '-')}-tap${i + 1}`);
+      await sleep(600);
+    }
+    // Repeat-tap probe: after the LAST tap, tap the same target again,
+    // twice. This is the owner's "tap it several times" verbatim, and it
+    // is the only thing that can tell "the first tap is a no-op" from
+    // "the first tap failed and the second one retried".
+    // Retry the target that a failing load would have refused, not
+    // whatever the alternating walk happened to end on: "tap it several
+    // times" is only a meaningful probe against the version that did
+    // not arrive.
+    const lastTarget = order[0];
+    out.repeatTaps = [];
+    for (let i = 0; i < 2; i++) {
+      const r = await oneSwitchTap(cdp, lastTarget, { settleMs: 8000, via });
+      out.repeatTaps.push(r);
+      console.log(`   repeat tap ${i + 1} -> ${lastTarget}: menu=${r.menuOpened} ` +
+        `row=${r.rowClicked} switched=${r.switched} body=${JSON.stringify(r.bodyAfter)}`);
+    }
+    out.errors = await pageErrors(cdp);
+    out.console = await evalJs(cdp, 'window.__ysConsole || []').catch(() => []);
+  } catch (e) {
+    out.error = String(e && e.message ? e.message : e);
+    console.log(`   ERROR: ${out.error}`);
+  } finally {
+    await b.close();
+    for (const f of faults) FAULTS.delete(f.path);
+  }
+  const done = out.taps.filter((t) => t.rowClicked && !t.noOpTarget);
+  out.tapsAttempted = done.length;
+  out.tapsThatSwitched = done.filter((t) => t.switched).length;
+  out.tapsWhereChipLied =
+      [...out.taps, ...(out.repeatTaps || [])].filter((t) => t.chipLied).length;
+  out.silentFailures = done.filter((t) => !t.switched && !t.failureShown).length;
+  return out;
+}
+
+/// A coordinate sweep over the open picker. The geometry-derived click on
+/// the 梁家铿译本(简体) row did not select it — it flipped the menu to the
+/// English tab — so before believing anything about the app this has to
+/// establish where each click actually lands.
+async function runVersionProbe(origin) {
+  console.log('\n════ version picker click probe ════');
+  const useSemantics = process.env.YS_NO_SEMANTICS ? false : true;
+  console.log(`   accessibility tree: ${useSemantics ? 'ON' : 'OFF'}`);
+  const { b, cdp } = await coldLoad('version-probe', origin,
+    origin + '/#/john/3?v=cuvs-yhwh', {
+      semantics: useSemantics,
+      // With the accessibility tree off there is no way to find the
+      // tour's Skip button, so the tour has to not appear at all.
+      plant: useSemantics ? null : { 'flutter.onboarding.seen.v3': 'true' },
+    });
+  const rows = [];
+  try {
+    if (useSemantics) {
+      let tour = await dismissOnboarding(cdp);
+      for (let i = 0; i < 6 && tour.appeared && !tour.dismissed; i++) {
+        await sleep(1200);
+        await clickText(cdp, SKIP_RE, { timeoutMs: 6000 });
+        await sleep(1500);
+        const t = await pageText(cdp).catch(() => '');
+        tour = { ...tour, dismissed: !TOUR_RE.test(t) };
+      }
+    } else {
+      await sleep(6000);
+      await screenshot(cdp, 'probe-nosem-before-any-click');
+    }
+    // "x:y" pairs; a bare number keeps the menu's own centre x.
+    const pts = (process.env.YS_PROBE_YS || '73,122,158').split(',')
+      .map((p) => p.trim())
+      .map((p) => p.includes(':')
+        ? { x: Number(p.split(':')[0]), y: Number(p.split(':')[1]) }
+        : { x: null, y: Number(p) });
+    for (const pt of pts) {
+      const y = pt.y;
+      // Make sure we start from a closed menu on 简体.
+      let node = await menuNode(cdp);
+      while (node) {
+        await cdp.send('Input.dispatchKeyEvent',
+          { type: 'keyDown', key: 'Escape', windowsVirtualKeyCode: 27 });
+        await cdp.send('Input.dispatchKeyEvent',
+          { type: 'keyUp', key: 'Escape', windowsVirtualKeyCode: 27 });
+        await sleep(600);
+        node = await menuNode(cdp);
+      }
+      if (useSemantics) {
+        await clickText(cdp, CHANGE_VERSION_RE,
+          { timeoutMs: 8000, box: [0, 0, 4000, 220] });
+      } else {
+        // No semantics tree to aim with — the chip's coordinates were
+        // measured in the semantics-on run and the layout is identical.
+        await clickAt(cdp, 683, 24);
+      }
+      await sleep(900);
+      node = useSemantics ? await menuNode(cdp) : { x: 442, y: 51, w: 280,
+        h: 125, text: 'assumed' };
+      if (!node) { rows.push({ y, opened: false }); continue; }
+      const before = useSemantics ? menuRows(node) : ['(semantics off)'];
+      const x = pt.x === null ? Math.round(node.x + node.w / 2) : pt.x;
+      await screenshot(cdp, `probe-${x}x${y}-before`);
+      if (process.env.YS_CANVAS_CLICK) {
+        const host = await clickThroughCanvas(cdp, x, y);
+        console.log(`        (canvas click dispatched on ${host})`);
+      } else {
+        await clickAt(cdp, x, y);
+      }
+      await sleep(700);
+      const after = useSemantics ? await menuNode(cdp) : null;
+      const st = useSemantics ? await readerState(cdp)
+        : { body: null, chip: null };
+      const con = await evalJs(cdp, 'window.__ysConsole || []').catch(() => []);
+      const probeLines = process.env.YS_ALL_CONSOLE ? con
+        : con.filter((l) => /YSPROBE/.test(l));
+      console.log(`        (console lines captured: ${con.length})`);
+      await evalJs(cdp, 'window.__ysConsole = []').catch(() => null);
+      for (const l of probeLines) console.log(`        ${l}`);
+      await screenshot(cdp, `probe-${x}x${y}-after`);
+      const r = {
+        y, x, nodeY: Math.round(node.y), nodeH: Math.round(node.h),
+        rowsBefore: before,
+        stillOpen: !!after,
+        rowsAfter: after ? menuRows(after) : null,
+        body: st.body, chip: st.chip,
+      };
+      rows.push(r);
+      console.log(`   click (${x},${y}) node y=${r.nodeY} h=${r.nodeH} ` +
+        `before=${JSON.stringify(before)} -> stillOpen=${r.stillOpen} ` +
+        `after=${JSON.stringify(r.rowsAfter)} body=${JSON.stringify(r.body)}`);
+    }
+  } finally {
+    await b.close();
+  }
+  return rows;
+}
+
+async function runVersion(origin) {
+  if (process.env.YS_PROBE) return { probe: await runVersionProbe(origin) };
+  console.log('\n════ 8. The version chip ════');
+  console.log('Owner: "switching the version often does not switch — I have');
+  console.log('to tap several times before it takes." Oracle is the verse');
+  console.log('text of 约翰福音 3:1, which differs between the two editions.\n');
+
+  const LJK = '/assets/assets/biblexg-v2.json';
+  const out = {};
+  // Scenario selection, for iterating on one case without paying for the
+  // whole set: YS_VER_SCENARIOS=healthyImmediate,assetFails
+  const only = (process.env.YS_VER_SCENARIOS || '').split(',')
+    .map((x) => x.trim()).filter(Boolean);
+  const want = (k) => !only.length || only.includes(k);
+  // A. Healthy build, no wait — the switch races the eager pre-loader.
+  if (want('healthyImmediate')) out.healthyImmediate = await runVersionScenario(origin, {
+    label: 'healthy, switch immediately', rounds: 4,
+  });
+  // B. Healthy build, pre-load finished — the warm-cache path.
+  if (want('healthyWarm')) out.healthyWarm = await runVersionScenario(origin, {
+    label: 'healthy, pre-load settled', rounds: 4, waitBeforeMs: 45000,
+  });
+  // C. The LJK asset fails outright. This is the "forever if the load
+  //    throws" branch, and the question is what the reader is told.
+  if (want('assetFails')) out.assetFails = await runVersionScenario(origin, {
+    label: 'LJK asset 500s', rounds: 2,
+    faults: [{ path: LJK, status: 500 }],
+  });
+  // D. The LJK asset fails for the first few requests and then works.
+  //    This is the owner's report reproduced literally: does the SECOND
+  //    tap recover, or is it a no-op that has to be worked around?
+  if (want('assetFailsThenRecovers')) out.assetFailsThenRecovers = await runVersionScenario(origin, {
+    label: 'LJK asset 500s 4x then serves', rounds: 2,
+    faults: [{ path: LJK, status: 500, remaining: 4 }],
+  });
+  // E. The LJK asset is merely slow.
+  if (want('assetSlow')) out.assetSlow = await runVersionScenario(origin, {
+    label: 'LJK asset delayed 6s', rounds: 2,
+    faults: [{ path: LJK, delayMs: 6000 }],
+  });
+  // The owner reports this from an iPad, so the reader's own layout at
+  // that size has to be exercised too — the chip falls back to its
+  // narrowLabel there and the menu is positioned from the chip's rect.
+  if (want('iPadPortrait')) out.iPadPortrait = await runVersionScenario(origin, {
+    label: 'iPad portrait 834x1194', rounds: 4,
+    viewport: { width: 834, height: 1194, dsr: 2, mobile: true },
+  });
+  if (want('iPadLandscape')) {
+    out.iPadLandscape = await runVersionScenario(origin, {
+      label: 'iPad landscape 1194x834', rounds: 4,
+      viewport: { width: 1194, height: 834, dsr: 2, mobile: true },
+    });
+  }
+  // F. The same healthy build, driven through the ACCESSIBILITY DOM
+  //    instead of the render tree — i.e. what a click does while
+  //    Flutter's semantics overlay is up. Everything above dispatches
+  //    the pointer at the view root on purpose so it reaches the render
+  //    tree; this one does not.
+  if (want('a11yOverlay')) out.a11yOverlay = await runVersionScenario(origin, {
+    label: 'healthy, clicks land on the accessibility overlay', rounds: 2,
+    via: 'dom',
+  });
+  return out;
+}
+
 async function main() {
   const s = await stat(join(WEB_ROOT, 'index.html')).catch(() => null);
   if (!s) {
@@ -2084,6 +2675,7 @@ async function main() {
     if (CMD === 'all' || CMD === 'chronology') {
       out.chronology = await runChronology(origin);
     }
+    if (CMD === 'all' || CMD === 'version') out.version = await runVersion(origin);
   } finally {
     srv.close();
   }
@@ -2142,6 +2734,15 @@ async function main() {
   if (out.typography) {
     console.log(`  typography: on-detail=${out.typography.onDetail} ` +
       `shots=${(out.typography.shots || []).length}`);
+  }
+  if (out.version) {
+    for (const sc of Object.values(out.version)) {
+      console.log(`  version [${sc.label}]: ` +
+        (sc.error ? `ERROR ${sc.error}` :
+          `${sc.tapsThatSwitched}/${sc.tapsAttempted} single taps switched, ` +
+          `${sc.silentFailures} failed with NOTHING told to the reader, ` +
+          `chip lied on ${sc.tapsWhereChipLied}`));
+    }
   }
   mkdirSync(OUT_DIR, { recursive: true });
   writeFileSync(join(OUT_DIR, 'results.json'), JSON.stringify(out, null, 2));
@@ -2274,6 +2875,74 @@ async function main() {
       (out.multiEntry.backImpossible ? '' :
         `; one Back then grew the history stack: ` +
         `${out.multiEntry.entriesGrewOnBack}`)]);
+  }
+  if (out.version) {
+    for (const sc of Object.values(out.version)) {
+      if (sc.error) {
+        gate.push(['INCONCLUSIVE', `version switch (${sc.label})`, sc.error]);
+        continue;
+      }
+      if (!sc.tapsAttempted) {
+        gate.push(['INCONCLUSIVE', `version switch (${sc.label})`,
+          'no tap ever reached a version row']);
+        continue;
+      }
+      if (sc.via === 'dom') {
+        // Not a gate. This scenario drives clicks at the accessibility
+        // DOM instead of the render tree, and it FAILS by design as of
+        // 2026-09-06: `PopupMenuItem` wraps its child in
+        // `MergeSemantics`, so the whole version picker is ONE merged
+        // node whose tap action is the first language pill's. Every tap
+        // anywhere in the picker selects English and no version can be
+        // chosen at all. Reproduced at 8+ coordinates, 100%; with the
+        // accessibility tree off the identical click selects correctly.
+        // Fixing it means restructuring a menu whose custom-entry
+        // ancestor crashed iPhone Safari once already, so it is reported
+        // for a decision rather than gated.
+        gate.push(['KNOWN-GAP', `version picker via the accessibility DOM`,
+          `${sc.tapsThatSwitched}/${sc.tapsAttempted} taps switched — the ` +
+          'picker is one merged semantics node and every tap in it fires ' +
+          'the first language pill']);
+        continue;
+      }
+      if (sc.tapsWhereChipLied) {
+        gate.push(['FAIL', `version chip honesty (${sc.label})`,
+          `the chip named a translation the verses did not come from on ` +
+          `${sc.tapsWhereChipLied} tap(s)`]);
+      } else {
+        gate.push(['PASS', `version chip honesty (${sc.label})`,
+          'the chip never named a translation the body was not showing']);
+      }
+      // Gated only where every tap is EXPECTED to succeed. The
+      // fault-injection scenarios deliberately break the asset, so a
+      // tap failing there is the scenario working, not a regression.
+      if (!sc.faults.length) {
+        if (sc.tapsThatSwitched < sc.tapsAttempted) {
+          gate.push(['FAIL', `version switch (${sc.label})`,
+            `${sc.tapsThatSwitched}/${sc.tapsAttempted} single taps ` +
+            'switched on a healthy build — one tap must switch']);
+        } else {
+          gate.push(['PASS', `version switch (${sc.label})`,
+            `${sc.tapsThatSwitched}/${sc.tapsAttempted} single taps ` +
+            'switched, and every repeat tap did too']);
+        }
+      }
+      // NEVER gated, and the reason matters: `silentFailures` counts
+      // taps that did not switch AND showed nothing IN THE ACCESSIBILITY
+      // TREE. Measured 2026-09-06, the app DOES show a snackbar reading
+      // "Could not load Bible verses. Please check your connection and
+      // retry." — it is in the +3000 ms screenshot of the 500s scenario
+      // — but that snackbar does not appear in the semantics dump this
+      // oracle reads, so the number below is a statement about the
+      // accessibility tree, not about what a sighted reader sees. An
+      // earlier version of this gate called it a silent failure and was
+      // wrong. That the message is missing from the accessibility tree
+      // is itself worth someone's attention, separately.
+      gate.push(['MEASURED', `version switch feedback (${sc.label})`,
+        `${sc.tapsThatSwitched}/${sc.tapsAttempted} taps switched; ` +
+        `${sc.silentFailures} failing tap(s) put no message in the ` +
+        'accessibility tree (the on-screen snackbar is not in it either)']);
+    }
   }
   if (gate.length) {
     console.log('\n════ regression gate ════');

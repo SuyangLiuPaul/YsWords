@@ -60,12 +60,14 @@ void main() {
       final e = byId('onegod').episodes.single;
       expect(e.trackForLocale('zh-Hans')?.lang, 'cmn');
       expect(e.trackForLocale('zh-Hant')?.lang, 'yue');
-      // Was `'en'` until 2026-09-06: onegod/01's English id
-      // (QmTEkPquvcQ) was found private on 2026-09-05, so an
-      // English-locale reader must no longer be auto-selected into it.
-      // preferredTrackLangs' next entry for a non-zh locale is 'cmn' —
-      // see test/video_series_test.dart for the id-level assertion.
-      expect(e.trackForLocale('en')?.lang, isNot('en'));
+      // Briefly `isNot('en')` on 2026-09-06, while onegod/01's English
+      // id was private — then back to 'en' the same day when the church
+      // published it. Both edits were made to fit the asset, which is
+      // the tell: whether a third party's video is public is not a rule
+      // this test can hold. It asserts the RULE — an English reader gets
+      // the English track where one is playable — and the fixture in
+      // test/video_series_test.dart covers what happens when it is not.
+      expect(e.trackForLocale('en')?.lang, 'en');
     });
 
     test('an English-only series opens rather than showing nothing', () {

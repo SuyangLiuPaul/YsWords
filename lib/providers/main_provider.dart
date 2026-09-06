@@ -421,13 +421,40 @@ class MainProvider extends ChangeNotifier {
   /// Cache key encodes every input that affects paragraph grouping
   /// output. Includes `currentVersion` (added v1.2.16) so two
   /// versions with the same per-chapter verse count don't collide.
+  /// 2026-09-06: keyed on [renderedVersion], NOT [currentVersion], and
+  /// that one word was the "switching the version doesn't switch" bug.
+  ///
+  /// What this cache holds is a grouping of [verses] — it is derived
+  /// data, and the version it belongs to is therefore the version
+  /// [verses] were parsed from, which is exactly what [renderedVersion]
+  /// means. [currentVersion] moves the instant a switch STARTS, so
+  /// while a switch is in flight every rebuild of a `_ChapterPage`
+  /// (and `setVersionSwitching`'s own `notifyListeners` guarantees at
+  /// least one) computed the OLD translation's paragraph groups and
+  /// filed them under the NEW version's key. When the new text finally
+  /// landed, the next build got a cache HIT on that poisoned entry and
+  /// rendered the old translation underneath a chip that correctly read
+  /// the new one — the exact state reported from an iPad, twice.
+  ///
+  /// The collision is not a corner case: `versesLength` is the only
+  /// other discriminator, and 229 of the 260 chapters that 和合本雅伟版
+  /// and 梁家铿译本 share have IDENTICAL verse counts (measured
+  /// 2026-09-06 over `assets/cuvs-yhwh.json` and `assets/biblexg-v2.json`)
+  /// — 约翰福音 3, where it was reported, is 36 verses in both. And it
+  /// is sticky: once poisoned, the entry answers every later build, so
+  /// the switch stays broken until something else evicts it.
+  ///
+  /// Reproduced in headless Chrome against a release web build before
+  /// this change and gone after it; `test/version_switch_paragraph_cache_test.dart`
+  /// pins the rule. The window widens with the load, which is why a slow
+  /// link makes it near-certain and a warm cache hides it.
   String _paragraphCacheKey({
     required String? book,
     required int? chapter,
     required bool paragraphMode,
     required int versesLength,
   }) =>
-      '$currentVersion|${book ?? ''}|${chapter ?? ''}|$paragraphMode|$versesLength';
+      '$renderedVersion|${book ?? ''}|${chapter ?? ''}|$paragraphMode|$versesLength';
 
   /// Look up cached paragraph grouping for the given inputs, or
   /// `null` on cache miss.

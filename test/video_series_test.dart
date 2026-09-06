@@ -218,20 +218,51 @@ void main() {
   });
 
   test('a track marked unavailable is dropped from playableTracks', () {
-    // 2026-09-05: onegod/01's English id (QmTEkPquvcQ) started returning
-    // 403 from oEmbed — "This video is private" in the shipped player.
-    // The id stays in the data (it is the only recovery key) but must
-    // not be offered as a chip: `_languageRow` builds its buttons from
-    // `playableTracks`, not `tracks`.
-    final ep = byId('onegod').episodes.single;
-    expect(ep.tracks.map((t) => t.youtubeId), contains('QmTEkPquvcQ'),
-        reason: 'the id must stay in videos.json — deleting it would '
-            'throw away the only way to restore the track');
+    // 2026-09-05: onegod/01's English id started returning 403 from
+    // oEmbed — "This video is private" in the shipped player. The rule
+    // that came out of it: a chip that opens a dead player is the app
+    // stating something untrue, so `_languageRow` builds its buttons
+    // from `playableTracks`, not `tracks`.
+    //
+    // 2026-09-06: this test used to assert that state against the LIVE
+    // asset — that onegod/01's English track IS unavailable. The church
+    // made the video public again the next day and the test failed,
+    // which is the right outcome for a bad test and the wrong one for a
+    // good one: whether a third party's video is private today is not a
+    // property this repo can pin. The RULE is. It is tested on a fixture
+    // now, and `node tools/check_video_ids.js` is what watches the live
+    // ids — it reports 66/66 playable as of today.
+    final ep = VideoEpisode.fromJson({
+      'id': '01',
+      'number': 1,
+      'titles': {'en': 'fixture'},
+      'tracks': [
+        {
+          'lang': 'en',
+          'labelKey': 'oneGodLangEn',
+          'youtubeId': 'DEADVIDEO01',
+          'unavailableSince': '2026-09-05',
+        },
+        {'lang': 'yue', 'labelKey': 'oneGodLangYue', 'youtubeId': 'LIVEYUE001'},
+        {'lang': 'cmn', 'labelKey': 'oneGodLangCmn', 'youtubeId': 'LIVECMN001'},
+      ],
+    });
+    expect(ep.tracks.map((t) => t.youtubeId), contains('DEADVIDEO01'),
+        reason: 'the id must stay in the data — deleting it would throw '
+            'away the only way to restore the track');
     expect(ep.trackFor('en')!.isUnavailable, isTrue);
-    expect(ep.playableTracks.map((t) => t.lang), isNot(contains('en')),
-        reason: 'a chip that opens "This video is private" is the app '
-            'stating something untrue');
+    expect(ep.playableTracks.map((t) => t.lang), isNot(contains('en')));
     expect(ep.playableTracks.map((t) => t.lang), containsAll(['yue', 'cmn']));
+  });
+
+  test('the live onegod episode carries no unavailable track today', () {
+    // The live half, stated as what it is: a snapshot, not a rule. If
+    // this fails, a video went private — run `node tools/check_video_ids.js`
+    // and mark it, rather than editing the fixture above.
+    final ep = byId('onegod').episodes.single;
+    expect(ep.tracks.map((t) => t.youtubeId), contains('QmTEkPquvcQ'));
+    expect(ep.playableTracks.length, ep.tracks.length,
+        reason: 'every onegod track was playable when this was measured');
   });
 
   test('an English-locale reader is not auto-selected into the dead video',
@@ -240,15 +271,47 @@ void main() {
     // so before this fix `defaultTrack` and `trackForLocale('en')` both
     // returned it — an English-locale reader landed on a dead player
     // before tapping anything, not just a dead button.
+    // 2026-09-06: the English id is public again, so it is once more the
+    // correct answer here. What this test now pins is the MECHANISM —
+    // an unavailable tracks[0] must not be auto-selected — on a fixture,
+    // just above. Kept as a live check that the episode still resolves.
     final ep = byId('onegod').episodes.single;
-    expect(ep.defaultTrack?.youtubeId, isNot('QmTEkPquvcQ'));
+    expect(ep.defaultTrack?.youtubeId, isNotNull);
     final forEn = ep.trackForLocale('en');
     expect(forEn, isNotNull);
-    expect(forEn!.youtubeId, isNot('QmTEkPquvcQ'));
-    // preferredTrackLangs for a non-zh locale is ['en', 'cmn', 'yue'];
-    // 'en' is marked, so the next preference, Mandarin, is what should
-    // actually be selected — not merely "not English".
-    expect(forEn.lang, 'cmn');
+    // With the English track playable again, the first preference IS the
+    // answer. The interesting half — that a MARKED tracks[0] is skipped
+    // for the next preference rather than merely "not returned" — is
+    // asserted on the fixture below, where it cannot be undone by the
+    // church changing a video's visibility.
+    expect(forEn!.lang, 'en');
+  });
+
+  test('a marked tracks[0] is skipped for the NEXT preference, not dropped',
+      () {
+    // The sharper half of the 2026-09-05 bug, on a fixture: QmTEkPquvcQ
+    // was tracks[0], so `defaultTrack` and `trackForLocale('en')` both
+    // returned it and an English reader landed on a dead player before
+    // tapping anything. preferredTrackLangs for a non-zh locale is
+    // ['en', 'cmn', 'yue'], so with 'en' marked the answer must be
+    // Mandarin — not null, and not Cantonese.
+    final ep = VideoEpisode.fromJson({
+      'id': '01',
+      'number': 1,
+      'titles': {'en': 'fixture'},
+      'tracks': [
+        {
+          'lang': 'en',
+          'labelKey': 'oneGodLangEn',
+          'youtubeId': 'DEADVIDEO01',
+          'unavailableSince': '2026-09-05',
+        },
+        {'lang': 'yue', 'labelKey': 'oneGodLangYue', 'youtubeId': 'LIVEYUE001'},
+        {'lang': 'cmn', 'labelKey': 'oneGodLangCmn', 'youtubeId': 'LIVECMN001'},
+      ],
+    });
+    expect(ep.defaultTrack?.youtubeId, isNot('DEADVIDEO01'));
+    expect(ep.trackForLocale('en')?.lang, 'cmn');
   });
 
   test('every episode keeps at least one playable track', () {
