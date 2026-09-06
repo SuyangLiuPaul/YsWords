@@ -97,7 +97,18 @@ MEASURED = {
     # this class of defect, and nothing did: see
     # `scripts/proofread_transcripts.py`, which is where they now live so
     # that a `--force` rebuild reproduces them instead of discarding them.
-    'bodyChars': 5_541_703,
+    #
+    # 5_542_483 on 2026-09-07, and the arithmetic is the whole reason
+    # this line is allowed to move: the head-of-body note was rewritten
+    # to state the proofreading it had been denying, which lengthens
+    # EVERY machine-transcribed body by exactly 52 characters. Fifteen
+    # such bodies are counted here — the sixteenth, 6012/ws01, is held
+    # back and carries no `bodyChars` — so 15 x 52 = 780, and
+    # 5_541_703 + 780 = 5_542_483. Not one character of sermon text
+    # moved; verified separately by diffing all fifteen against the
+    # shipped copies, which matched except for the deliberate
+    # 耶和华 → 雅伟 the merge applies downstream.
+    'bodyChars': 5_542_483,
     'distinctBodies': 856,
     'maxSameBody': 2,
     'distinctTitles': 933,

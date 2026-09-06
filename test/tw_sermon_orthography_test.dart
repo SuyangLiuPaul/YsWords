@@ -148,7 +148,18 @@ void main() {
     // 11 802 on 2026-09-06 with the 15 transcribed sermons: the delta of
     // 287 was measured against those 15 files alone, so it is the new
     // sermons' own paragraphs and not a re-paragraphing of the other 414.
-    expect(totalParas, 11802);
+    // 11 803 on 2026-09-07, and the one extra paragraph is a defect being
+    // REMOVED rather than content arriving. The pass-2 rule that stripped
+    // a fabricated subtitle credit out of fy-cm03 was written to match a
+    // leading newline, so it deleted the paragraph break along with the
+    // credit and welded the opening hymn onto the end of the 「[注：…]」
+    // line — a 1 450-character opening paragraph that was the provenance
+    // note running straight into a carol. Nothing caught it, because the
+    // note still STARTED that paragraph and every assertion about the
+    // note held. The rule now takes the credit's own trailing space, the
+    // break survives, and the hymn stands as its own paragraph: fy-cm03
+    // goes 25 → 26 and is the ONLY file whose paragraph count moves.
+    expect(totalParas, 11803);
   });
 
   test('the three regenerated bodies are in the corpus and in this rule', () {

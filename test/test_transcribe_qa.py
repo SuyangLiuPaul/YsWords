@@ -267,11 +267,37 @@ class TranscriberEditTests(unittest.TestCase):
         self.assertTrue(all(line.strip() for line in p), p)
 
     def test_the_machine_note_names_the_model_and_the_date(self):
-        note = TS.NOTE_MACHINE.format(model=TS.MODEL_NAME, date='2026-09-06')
+        note = TS.NOTE_MACHINE.format(
+            model=TS.MODEL_NAME, date='2026-09-06',
+            proofread=TS.NOTE_PROOFREAD_NONE)
         self.assertIn('机器转录', note)
         self.assertIn('ggml-large-v3', note)
         self.assertIn('2026-09-06', note)
         self.assertTrue(note.startswith('[注：'))
+
+    def test_the_note_states_the_proofreading_that_actually_happened(self):
+        # Until 2026-09-07 this sentence read 「未经人工校对」 for every
+        # body, including ones carrying 95 corrections. It erred in the
+        # safe direction — it UNDER-claimed, so nothing could pass for a
+        # person's work — but it was not true, and it contradicted the
+        # sidecar written by the same function.
+        corrected = TS.NOTE_MACHINE.format(
+            model=TS.MODEL_NAME, date='2026-09-06',
+            proofread=TS.NOTE_PROOFREAD_ASSISTED.format(n=49,
+                                                        date='2026-09-06'))
+        self.assertIn('改正 49 处', corrected)
+        self.assertNotIn('未经人工校对', corrected)
+
+        # Whichever branch it takes, the note must say the work was not a
+        # person's. That is the owner's ruling, and this sentence is the
+        # only thing standing between a machine transcript and a reader
+        # who assumes otherwise — assets/sermons/index.json carries no
+        # provenance field at all.
+        none = TS.NOTE_MACHINE.format(model=TS.MODEL_NAME, date='2026-09-06',
+                                      proofread=TS.NOTE_PROOFREAD_NONE)
+        for note in (corrected, none):
+            self.assertIn('非人工', note)
+        self.assertIn('校对者非人工', corrected)
 
 
 # ── seam tests ──────────────────────────────────────────────────────

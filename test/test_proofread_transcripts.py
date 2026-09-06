@@ -127,12 +127,24 @@ class AgainstTheCorpus(unittest.TestCase):
         # It matches what is on disk …
         self.assertEqual(body, self._body(sid))
         # … it is NOT the raw text …
+        #
+        # 2026-09-07: the fixes are counted against the text WITHOUT the
+        # note. `build` composes the note after `apply` has run, because
+        # the note now states how many places were corrected — so a fix
+        # can no longer match inside it and quietly spend one of its
+        # expected occurrences there. Reproduce that shape here.
         raw_join = '\n'.join(
-            [rec['title'],
-             TS.NOTE_MACHINE.format(model=TS.MODEL_NAME, date=day)]
+            [rec['title']]
             + [t for p in parts for _, t in TS.timed_paragraphs(p['segments'])]
         ) + '\n'
-        self.assertNotEqual(body, raw_join)
+        # Strip every `[注：…]` back out of the built body — the machine
+        # note and any seam notes — and what is left differs from the raw
+        # decode by the corrections and nothing else. Comparing the
+        # note-bearing body instead would differ whether or not a single
+        # correction had been made, which is not a check.
+        body_no_notes = '\n'.join(
+            ln for ln in body.splitlines() if not ln.startswith('[注：')) + '\n'
+        self.assertNotEqual(body_no_notes, raw_join)
         # … and every single fix for this file is accounted for.
         for f in PR.FIXES[sid]:
             with self.subTest(old=f.old):

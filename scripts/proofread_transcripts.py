@@ -77,7 +77,17 @@ _CREDIT = ("A fabricated subtitle credit. The decoder emitted a real "
 
 FIXES: dict[str, list[Fix]] = {
     "2728": [
-        Fix("\n中文字幕志愿者 李宗盛", "", 1, REMOVED, _CREDIT),
+        # The trailing SPACE, not the leading newline. Written with the
+        # newline in pass 2, which deleted the paragraph break as well as
+        # the credit and welded the following paragraph onto whatever came
+        # before it. In the shipped corpus that was the 「[注：…]」 line, so
+        # `assets/sermons/zh-CN/fy-cm03.txt` has a 1,450-character opening
+        # paragraph: the provenance note running straight on into the
+        # opening hymn with no break. Nothing caught it — the note still
+        # STARTED that paragraph, so every assertion about it held.
+        # Removing the credit and its own trailing space instead leaves
+        # the break alone and the hymn standing as its own paragraph.
+        Fix("中文字幕志愿者 李宗盛 ", "", 1, REMOVED, _CREDIT),
     ],
     "4259": [
         Fix("明述记", "民数记", 1, BOOK),
@@ -780,6 +790,17 @@ def apply(sid: str, body: str) -> tuple[str, int]:
         body = body.replace(f.old, f.new)
         applied += 1
     return body, applied
+
+
+def occurrence_count(sid: str) -> int:
+    """How many PLACES in the text change, not how many rules run.
+
+    `apply` counts rules, which is the right number for a changelog and
+    the wrong one for a reader: one rule with `n=7` corrects seven spots.
+    The note at the head of each body quotes this instead, because
+    「改正 N 处」 is a claim about the text in front of them.
+    """
+    return sum(f.n for f in FIXES.get(str(sid), []))
 
 
 def check(sid: str, body: str) -> list[str]:

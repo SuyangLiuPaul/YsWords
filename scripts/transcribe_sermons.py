@@ -263,11 +263,35 @@ HALLUCINATION_PATTERNS = [
 ]
 _HALL_RE = re.compile(r"^(?:" + "|".join(HALLUCINATION_PATTERNS) + r")$")
 
+# The head-of-body note. It is the ONLY provenance mark a reader ever
+# sees: `assets/sermons/index.json` carries no transcription field, and
+# the sidecar that does carry one stays behind in the gitignored staging
+# area. So this sentence is the whole of what the app tells anyone about
+# where the text came from — which is why it has to be exactly true.
+#
+# 2026-09-07: it used to read 「未经人工校对」 unconditionally, and by
+# then that was stale. The sentence predates the proofreading pass and
+# was never revisited, so it went on claiming raw machine output for
+# bodies carrying dozens of corrections. The direction of the error was
+# the safe one — it UNDER-claimed, so nothing could pass for a person's
+# work — but it still told the reader something untrue, and it
+# contradicted the sidecar this same function writes
+# (`proofread: "assisted"`).
+#
+# The wording keeps the distinction the owner's ruling turns on: an
+# AGENT read this, not a person. 「非人工听写」 for the transcript and
+# 「校对者非人工」 for the corrections both say so without hedging.
 NOTE_MACHINE = (
-    "[注：本篇为机器转录，未经人工校对。转录工具 whisper.cpp {model}，"
-    "转录日期 {date}。段落切分与句读为机器所加，非讲员本人的分段；"
+    "[注：本篇为机器转录，非人工听写。转录工具 whisper.cpp {model}，"
+    "转录日期 {date}。{proofread}"
+    "段落切分与句读为机器所加，非讲员本人的分段；"
     "句读未定之处以空格标示，并非讲员的停顿。"
     "经文引用、人名与地名可能有误，一律以录音为准。]"
+)
+NOTE_PROOFREAD_NONE = "尚未校对。"
+NOTE_PROOFREAD_ASSISTED = (
+    "其后经 AI 通读全文、对照和合本核校，改正 {n} 处（{date}）；"
+    "校对者非人工，仍可能有误。"
 )
 NOTE_SEAM = (
     "[注：录音分为 {n} 段，此处为第 {i} 段与第 {j} 段的接合点。"
@@ -431,10 +455,22 @@ def hhmmss(sec: float) -> str:
     return f"{sec // 3600:d}:{sec % 3600 // 60:02d}:{sec % 60:02d}"
 
 
-def build(rec: dict, parts: list[dict], today: str) -> tuple[str, str, dict]:
-    """Returns (seam body for bodies/<id>.txt, reading copy, sidecar)."""
-    note = NOTE_MACHINE.format(model=MODEL_NAME, date=today)
-    lines = [rec["title"], note]
+def build(rec: dict, parts: list[dict], today: str,
+          prior: dict | None = None) -> tuple[str, str, dict]:
+    """Returns (seam body for bodies/<id>.txt, reading copy, sidecar).
+
+    `prior` is this sermon's existing sidecar, when one is on disk. It
+    supplies the dates of work that already happened, so a rebuild
+    re-renders the note without relabelling WHEN the audio was decoded
+    or when it was corrected.
+    """
+    _prior_t = (prior or {}).get("transcription", {})
+    # The note is composed AFTER proofreading (below), because it now
+    # states how many places were corrected and that number does not
+    # exist yet. Keeping it out of `lines` also keeps it out of the text
+    # `PROOFREAD.apply` counts against, so a fix can never match inside
+    # the note and quietly spend one of its expected occurrences there.
+    lines = [rec["title"]]
     read_lines, offset = [], 0.0
     for i, p in enumerate(parts):
         if i:
@@ -458,6 +494,25 @@ def build(rec: dict, parts: list[dict], today: str) -> tuple[str, str, dict]:
     # untracked files and a `--force` rebuild discarded them silently, in 12
     # of 16 bodies. `apply` raises if a fix does not match its stated count.
     body, n_fixed = PROOFREAD.apply(str(rec["id"]), body)
+
+    # Now the note can tell the truth, and it goes back where it was:
+    # line two, under the title.
+    #
+    # The dates describe EVENTS, so they come from the prior sidecar when
+    # there is one. The proofread date moves only when the corrections
+    # themselves changed — a rebuild that applies the same fix table did
+    # not proofread anything today.
+    n_places = PROOFREAD.occurrence_count(str(rec["id"]))
+    transcribed_at = _prior_t.get("transcribedAt") or today
+    proofread_at = (_prior_t.get("proofreadAt") or today
+                    if _prior_t.get("proofreadFixes") == n_fixed else today)
+    note = NOTE_MACHINE.format(
+        model=MODEL_NAME, date=transcribed_at,
+        proofread=(NOTE_PROOFREAD_ASSISTED.format(n=n_places,
+                                                  date=proofread_at)
+                   if n_fixed else NOTE_PROOFREAD_NONE))
+    _title_line, _, _rest = body.partition("\n")
+    body = f"{_title_line}\n{note}\n{_rest}"
 
     all_segments, offset = [], 0.0
     for p in parts:
@@ -495,7 +550,7 @@ def build(rec: dict, parts: list[dict], today: str) -> tuple[str, str, dict]:
             "vad": False,
             "initialPrompt": None,
             "scriptConversion": f"opencc {OPENCC_CONFIG}",
-            "transcribedAt": today,
+            "transcribedAt": transcribed_at,
             # NOT "human". The corrections in `proofread_transcripts.py`
             # were made by an agent reading the text against the bundled
             # 和合本 — machine output checked by a machine. The owner's
@@ -504,8 +559,13 @@ def build(rec: dict, parts: list[dict], today: str) -> tuple[str, str, dict]:
             "proofread": "assisted" if n_fixed else "none",
             "proofreadBy": ("agent (not a human), scripts/"
                             "proofread_transcripts.py") if n_fixed else None,
-            "proofreadAt": today if n_fixed else None,
+            "proofreadAt": proofread_at if n_fixed else None,
             "proofreadFixes": n_fixed,
+            # Rules vs places. `proofreadFixes` counts rules, which is
+            # what a changelog wants; the note in the body quotes this
+            # one, because 「改正 N 处」 is a claim about the text the
+            # reader is looking at and one rule can correct seven spots.
+            "proofreadOccurrences": n_places,
             "wallClockSec": round(wall, 1),
             "realtimeFactor": round(dur / max(wall, 1e-9), 1),
             "sourceAudio": [{"file": p["audioFile"],
@@ -619,7 +679,15 @@ def main() -> int:
             segs, edits = postprocess(d["segments"])
             parts.append({**d, "segments": segs, "edits": edits})
 
-        body, reading, side = build(rec, parts, today)
+        # A `--force` rebuild re-runs postprocessing over a CACHED decode.
+        # Passing `today` for the transcription date would then restamp
+        # work that happened on an earlier day — the note would tell the
+        # reader this audio was decoded today when whisper last touched it
+        # on 2026-09-06. The prior sidecar is the record of when it
+        # actually happened, so it is carried forward.
+        prior = (json.loads(side_path.read_text(encoding="utf-8"))
+                 if side_path.exists() else None)
+        body, reading, side = build(rec, parts, today, prior=prior)
         (BODIES_DIR / f"{sid}.txt").write_text(body, encoding="utf-8")
         (TRANSCRIPTS / f"{sid}.txt").write_text(reading, encoding="utf-8")
         side_path.write_text(json.dumps(side, ensure_ascii=False, indent=1),
