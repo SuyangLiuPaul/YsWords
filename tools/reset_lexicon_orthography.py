@@ -3,54 +3,55 @@
 (爲/着/羣/衆/喫/牀) into the one this app's Bible edition uses (為/著/群/眾/
 吃/床) — 2,816 positions.
 
-  ⚠  DRAFT — NEVER APPLIED, AND --apply IS GATED. This script exists so the
-     decision can be executed in one command the moment the user makes it,
-     and so the verification behind it does not have to be redone. It is NOT
-     evidence that the decision has been made.
+  APPLIED 2026-09-06 (`--apply --user-ruled`). This script now records what
+  was decided and why, so a future reader does not have to reconstruct it
+  from the queue and the commit alone.
 
-WHY IT IS NOT APPLIED
+WHY IT WAS APPLIED
   The queue item ("The lexicon and the Bible are set in two different
-  Traditional orthographies") says in both its original and its 2026-09-03
-  re-measurement that this **needs one answer from the user**, and
-  `test/lexicon_traditional_orthography_test.dart` was written specifically to
-  stop it happening as a side effect of some other pass — "which is exactly
-  how this repo has lost decisions before". Nothing false is printed either
-  way: every character on both sides is legitimate Traditional Chinese.
+  Traditional orthographies") records that the user delegated the decision
+  (「这个你决定吧」) and that the loop chose to follow the edition, on the same
+  reasoning as the 2026-09-02 ruling for `cuvs-yhwh-tr`
+  (「参考和合本最新版本的繁体版…用他们的」): `originals_sheet.dart` renders the
+  CBOL gloss and the tapped scripture word in ONE panel, and what settled it
+  was adjacency, not volume — mixed script inside that panel is already the
+  thing that file's own comment calls a defect.
 
-  The argument for going ahead is the user's glyph ruling of 2026-09-02 —
-  「关于繁体字 你可以参考和合本最新版本的繁体版看那边怎么写的然后用他们的」 —
-  whose own examples include 著 over 着. **That ruling does not reach here**,
-  and the queue says so itself: it was given for `cuvs-yhwh-tr`, and when that
-  file was frozen the queue recorded that it "now applies **there**", meaning
-  the `biblexg-v2*` rebuild. It is a rule for converting SCRIPTURE against a
-  printed edition. The lexicon is glosses, has no printed Traditional edition
-  to consult, and was left as its own open question in the same file on the
-  same day.
+  `test/lexicon_traditional_orthography_test.dart` no longer pins the opencc
+  forms as the expected state; it was rewritten in the same commit as the
+  work order for the state after this apply, so a stray opencc-form hit
+  there means a regression, not a decision being second-guessed.
 
-WHAT THE MEASUREMENT ACTUALLY SHOWS — and it is not what the item says
-  The item frames this as two files meeting on one screen, 2,816 positions.
-  Measured across every Traditional-bearing asset (`--measure`), it is not:
+WHAT THE MEASUREMENT SHOWED BEFORE THIS APPLIED — the lexicon was never the
+whole story, and the rest is still open
+  Measured across every Traditional-bearing asset (`--measure`), converting
+  the lexicon moved only part of the divergence:
 
       asset                       爲/為      着/著      喫/吃
-      assets/strongs/*.json     1883/0     419/0      77/5
+      assets/strongs/*.json     1883/0     419/0      77/5   (now 0/1883 etc.)
       assets/cuvs-yhwh-tr.json     0/7952     0/2651     0/1043
       assets/biblexg-v2-tr.json    1/2377    10/1166     0/237
       assets/sermons/zh-TW/    23701/860   6915/454   728/15
 
   **`assets/sermons/zh-TW/` — 289 files, 2.88 MB of reader-facing Traditional
-  text — is in the LEXICON's orthography, not the Bible's, and by an
-  overwhelming margin: 32,330 positions against the lexicon's 2,816.** The
-  same split is already recorded elsewhere for a different character:
+  text — was in the LEXICON's old orthography, not the Bible's, and by an
+  overwhelming margin: 32,330 positions against the lexicon's 2,816.** A
+  2026-09-05 pass (`test/tw_sermon_orthography_test.dart`) normalised 爲→為
+  and 着→著 there, moving 30,600 of them; 1,730 remain (羣 471, 衆 414, 喫
+  736, 牀 109) and are their own open queue item — this script's `--measure`
+  still prints them, and they are NOT this script's to sweep: that item
+  weighs whether normalising transcribed preaching counts as rewriting the
+  speaker, which is a question for the user, not an inference from this one.
+  The same split is recorded elsewhere for a different character:
   `tools/audit_traditional_glyph_holes.py` notes that the two Bible assets set
   麵 while `assets/strongs/*` and `assets/sermons/zh-TW/` set 麪.
 
-  So converting the lexicon alone does not harmonise the app — it moves 8% of
-  the divergence and leaves the sermon corpus as the only asset in the old
-  orthography. That is a real argument for a wider sweep, or for leaving both,
-  but it is not this script's to make. It is reported so the user answers the
-  question that is actually in front of them.
-
-THE PREMISE CHECKS, WHICH DO PASS (`--verify`)
+THE PREMISE CHECKS THIS RAN BEFORE APPLYING (`--verify`)
+  `--verify` is a PRE-apply gate: it pins the OLD (opencc) counts as the
+  expected state, on purpose, so a second run after the apply now correctly
+  reports FAILED — that means the sweep took, not that something broke.
+  `test/lexicon_traditional_orthography_test.dart` is the one pinning the
+  post-apply state; it is the file to consult going forward.
   1. The Bible side is uniform: `cuvs-yhwh-tr.json` has ZERO of all six
      OpenCC forms. (`biblexg-v2-tr.json` has 1 爲 and 10 着, already known to
      the queue as strays for its own rebuild to clear, and NOT ours to touch —
@@ -73,15 +74,17 @@ THE PREMISE CHECKS, WHICH DO PASS (`--verify`)
   3. NOT IN SCOPE, and the script refuses if asked: 幹/乾/干, 發/髮, 後/后,
      里/裡, 復/覆. Those are one-to-many and are a different kind of decision.
 
-ALSO FOUND, NOT FIXED HERE — 51 positions wrong in BOTH orthographies
-  The lexicon spells 著名/著稱/著作/著述/顯著 with 着 in 51 places (H210
+ALSO FOUND, FIXED IN THE SAME PASS — 51 positions wrong in BOTH orthographies
+  The lexicon spelt 著名/著稱/著作/著述/顯著 with 着 in 51 places (H210
   「一個以產金着名的地方」, H1316 「以土壤肥沃着稱」, H1862 「以智慧着稱」,
-  H3792 「寫作着述」…). That is wrong whichever convention wins, because 着 is
-  never the zhù. It is inherited: all 419 Simplified twins write 着 too, so
-  the upstream CBOL source carries it and `opencc s2t` passed it through
-  unchanged. Fixing it would put 51 著 into the lexicon and trip the pinning
-  test, so it is filed for the user as its own item rather than smuggled in
-  under this one.
+  H3792 「寫作着述」…). That was wrong whichever convention won, because 着 is
+  never the zhù. It was inherited: all 419 Simplified twins wrote 着 too, so
+  the upstream CBOL source carried it and `opencc s2t` passed it through
+  unchanged. The Traditional side of these 51 was fixed for free by this
+  script's own 着→著 sweep; the Simplified side needed a separate, narrower
+  tool — `tools/repair_lexicon_zhu_glyph.py` — because a blanket 着→著 in
+  `glossZh`/`defZh` would have corrupted the other 368 (correct) aspect-
+  particle uses. Run in the same commit as this script's `--apply`.
 
 --measure   the full cross-asset table (read-only, the default)
 --verify    re-run the premise and variant-safety checks (read-only)
@@ -243,20 +246,17 @@ def verify() -> int:
 def apply(user_ruled: bool) -> int:
     if not user_ruled:
         print(
-            "REFUSING. This is an edition-wide typographic choice that the "
-            "queue records as needing one answer from the user, and\n"
-            "test/lexicon_traditional_orthography_test.dart exists to stop it "
-            "being made as a side effect of another pass.\n\n"
-            "Before re-running with --user-ruled, note that --measure shows "
-            "the question is wider than the queue item states:\n"
-            "assets/sermons/zh-TW/ holds 32,330 positions in the lexicon's "
-            "orthography against the lexicon's 2,816, so converting\n"
-            "the lexicon alone leaves the sermon corpus as the odd one out. "
-            "The user should be answering that question, not this one.\n\n"
-            "When they do rule: re-run with --user-ruled, then update the "
-            "counts in test/lexicon_traditional_orthography_test.dart in\n"
-            "the same commit — its docstring says those numbers are the work "
-            "order.", file=sys.stderr)
+            "REFUSING without --user-ruled. This was applied 2026-09-06 on "
+            "the user's delegated ruling — see the module docstring.\n\n"
+            "If you are re-running this, --verify will now fail: it is "
+            "pinned to the PRE-apply counts (爲 1883 etc.), and the lexicon\n"
+            "no longer holds them. That is expected, not a regression — "
+            "check test/lexicon_traditional_orthography_test.dart instead,\n"
+            "which pins the POST-apply state.\n\n"
+            "assets/sermons/zh-TW/ still holds 1,730 positions in the old "
+            "orthography (羣 471, 衆 414, 喫 736, 牀 109) — a separate,\n"
+            "unanswered question about transcribed preaching, not this "
+            "script's to sweep.", file=sys.stderr)
         return 2
     if verify():
         return 1

@@ -95,7 +95,7 @@ void main() {
         '睏倦': '困倦',          // 睏 is drowsiness
         '疲睏': '疲困',
         '闢拉': '辟拉',          // Bilhah
-        '併成爲': '並成爲',
+        '併成為': '並成為',
         '被複興': '被復興',
         '蔘加': '參加',          // 蔘 is ginseng
         '細面': '細麪',
@@ -109,10 +109,10 @@ void main() {
       });
     });
 
-    test('併爲 became 並爲 everywhere except the one real merger', () {
-      expect(inTw('併爲'), 2, reason: 'only 合併爲 at G2957 may remain');
-      expect(inTw('合併爲'), 2);
-      expect(inTw('並爲'), greaterThanOrEqualTo(19));
+    test('併為 became 並為 everywhere except the one real merger', () {
+      expect(inTw('併為'), 2, reason: 'only 合併為 at G2957 may remain');
+      expect(inTw('合併為'), 2);
+      expect(inTw('並為'), greaterThanOrEqualTo(19));
     });
 
     test('the locative 里 became 裏; names and distances did not', () {

@@ -3732,7 +3732,7 @@ reported. Work these top-down before P2.
       whether that something was opencc; the measurement described above is
       still the way to find out.
 
-- [ ] **The lexicon and the Bible are set in two different Traditional
+- [x] **The lexicon and the Bible are set in two different Traditional
       orthographies, and the word-tap sheet shows them side by side — 2,816
       positions. Nothing is false; it is an edition-wide typographic choice and
       it needs the user.** Found 2026-08-23 as a direct consequence of the
@@ -3807,10 +3807,18 @@ reported. Work these top-down before P2.
       different word from 喫, and a sweep must exclude them; and **51 of
       the 419 着 are wrong in both orthographies**, filed below.
 
+      **Applied 2026-09-06.** `tools/reset_lexicon_orthography.py --apply
+      --user-ruled` re-set all 2,816 positions in `glossZhTw`/`defZhTw`
+      across both lexicon files; a refuter independently re-derived the
+      count from the raw JSON against `git show HEAD:...` and confirmed no
+      Strong's entry or field was added or removed, and that every changed
+      character was one of the six merges. `test/lexicon_traditional_orthography_test.dart`
+      now pins the post-apply state instead of the opencc forms.
+
 - [ ] **Decide whether `assets/sermons/zh-TW/` follows the lexicon into
-      the edition's orthography — 32,330 positions, and the user has not
-      been asked.** 289 files, 2.88 MB. It is the last asset in the old
-      convention once the lexicon converts. Two things make it unlike the
+      the edition's orthography, and the user has not been asked.** 289
+      files, 2.88 MB. It is the last asset in the old convention now that
+      the lexicon has converted (see above). Two things make it unlike the
       lexicon and neither has been weighed by a person: it is a separate
       surface (a sermon page, not the word-tap panel, so nothing sits
       beside it in the other orthography), and it is **transcribed
@@ -3819,7 +3827,16 @@ reported. Work these top-down before P2.
       exactly the judgement to put to the user rather than assume.
       `tools/reset_lexicon_orthography.py --measure` prints the table.
 
-- [ ] **The Strong's lexicon spells 著名/著稱/著作/著述/顯著 with 着 in 51
+      **Corrected 2026-09-06 — the 32,330 this item used to cite is stale.**
+      A 2026-09-05 pass (`test/tw_sermon_orthography_test.dart`) already
+      normalised 爲→為 and 着→著 here, moving 30,600 of them without asking
+      — that pass is not this item's to relitigate, but the number this
+      item still quoted was from before it ran. `--measure` now reports
+      **1,730 remaining** (羣 471, 衆 414, 喫 736, 牀 109) against the
+      lexicon's (now-converted) 0. Re-measured, not copied, because the
+      queue's own rule is not to let two numbers stand once they disagree.
+
+- [x] **The Strong's lexicon spells 著名/著稱/著作/著述/顯著 with 着 in 51
       places — wrong in BOTH orthographies, so it is not blocked on the
       orthography decision.** H210 「以產金着名的地方」, H1316 「以土壤肥沃着
       稱」, H1862 「以智慧着稱」, H3792 「寫作着述」. 着 is never the zhù.
@@ -3831,6 +3848,14 @@ reported. Work these top-down before P2.
       著-count assertion cannot tell a correction from the start of a
       sweep. Do it in the same pass as the orthography apply, or teach
       that test the difference.
+
+      **Applied 2026-09-06.** The Traditional side (glossZhTw/defZhTw) was
+      fixed for free by the 着→著 sweep above; the Simplified side needed
+      `tools/repair_lexicon_zhu_glyph.py --apply`, a narrower tool that
+      matches only the five zhù bigrams so the other 368 correct
+      aspect-particle 着 in glossZh/defZh were not touched. A refuter
+      independently re-derived the count (51, in glossZh/defZh only) from
+      the raw JSON and confirmed nothing else in those two fields changed.
 
 
 
@@ -9841,6 +9866,13 @@ has never seen this repo.
       already prints `forward-available` as a KNOWN-GAP line rather than
       asserting it — turning that into a gated assertion is the definition
       of done.
+
+      **Deferred a third consecutive iteration, 2026-09-06** — still
+      correctly judged branch-scale (a `GetMaterialApp` → `.router`
+      migration touching `lib/main.dart:868-950` and the 640-line
+      `url_sync_service_web.dart`), not something to start inside a
+      single hourly iteration. Recorded so it does not go on being
+      silently skipped without anyone noticing the pattern.
 
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
