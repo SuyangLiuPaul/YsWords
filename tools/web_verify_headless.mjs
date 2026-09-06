@@ -122,7 +122,7 @@ const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 // ── argv ─────────────────────────────────────────────────────────────
 
-const VALUE_FLAGS = new Set(['--root', '--out', '--steps']);
+const VALUE_FLAGS = new Set(['--root', '--out', '--steps', '--lang']);
 const argv = process.argv.slice(2);
 function flag(name, dflt) {
   const i = argv.indexOf(name);
@@ -130,6 +130,15 @@ function flag(name, dflt) {
 }
 const WEB_ROOT = resolvePath(flag('--root', 'build/web'));
 const OUT_DIR = resolvePath(flag('--out', 'build/web-verify'));
+// Every profile is throwaway (`mkdtemp`, see (b) below) and previously
+// rode whatever locale the OS gave it — `Browser.launch` pinned the
+// window size but not this. 2026-09-06: that gap is what let the
+// `runYoutube` `languageChip` regex collide with `_wholeSeriesRow`'s
+// "中文" button undetected — nobody could reproduce a Chinese profile to
+// find out. Default stays the English the harness has always run in;
+// pass `--lang zh-Hans` (or any BCP-47 tag Chrome accepts) to force a
+// script for one run.
+const LANG = flag('--lang', 'en-US');
 // `picker` only. Without it that case MEASURES the picker's coordinates
 // off the accessibility tree and writes `steps.json` into `--out`; with
 // it, the case REPLAYS exactly those pixels instead. That is how the
@@ -466,7 +475,7 @@ const INSTRUMENT = `
 let nextPort = 9500;
 
 class Browser {
-  static async launch(label) {
+  static async launch(label, lang = LANG) {
     const dir = mkdtempSync(join(tmpdir(), 'ys-web-verify-'));
     const port = nextPort++;
     const args = [
@@ -479,6 +488,17 @@ class Browser {
       // Deterministic capture size; per-case overrides go through
       // Emulation.setDeviceMetricsOverride.
       '--window-size=1280,900',
+      // `--lang` sets Chrome's own UI/Accept-Language locale; `navigator.
+      // language` on a fresh profile (no override in chrome://settings,
+      // which a throwaway `--user-data-dir` never has) is derived from
+      // it, and that is what `AppSettings._detectSystemLocale()`
+      // (lib/models/app_settings.dart:1297) reads via
+      // `platformDispatcher.locale` on the FIRST boot of a profile with
+      // no persisted `locale` pref — exactly this harness's profiles,
+      // every run. `--accept-lang` pins the HTTP header the same way so
+      // the two can't disagree.
+      `--lang=${lang}`,
+      `--accept-lang=${lang}`,
     ];
     const proc = spawn(CHROME, args, { stdio: 'ignore' });
     const b = new Browser(proc, dir, port, label);
@@ -775,8 +795,9 @@ async function pageErrors(cdp) {
 /// engine, turn on semantics, dismiss the tour. Nothing planted unless
 /// `plant` is given (only `sermon` does).
 async function coldLoad(label, origin, url,
-    { plant = null, viewport = null, semantics: withSemantics = true } = {}) {
-  const b = await Browser.launch(label);
+    { plant = null, viewport = null, semantics: withSemantics = true,
+      lang = LANG } = {}) {
+  const b = await Browser.launch(label, lang);
   const cdp = await b.openTab();
   if (viewport) await b.metrics(viewport);
   if (plant) {
@@ -1221,8 +1242,9 @@ async function runSermon(origin, { withPlant = true } = {}) {
 
 // ── case 3: the YouTube handshake ────────────────────────────────────
 
-async function runYoutube(origin) {
+async function runYoutube(origin, { lang = LANG } = {}) {
   console.log('\n════ 2. YouTube language-switch handshake ════');
+  console.log(`profile locale: --lang=${lang}`);
   console.log('Claim under test (youtube_embed_web.dart + _src.dart):');
   console.log('  (i)   the iframe src carries enablejsapi=1 and origin');
   console.log('  (ii)  the page posts `listening` on load and 10x at 500ms');
@@ -1233,33 +1255,36 @@ async function runYoutube(origin) {
   console.log('this machine — reported separately, never merged with (i).\n');
 
   const { b, cdp, booted } = await coldLoad(
-    'youtube', origin, origin + '/#/videos/cross');
-  const out = { booted };
+    'youtube', origin, origin + '/#/videos/cross', { lang });
+  const out = { booted, lang };
   try {
     await dismissOnboarding(cdp);
     await sleep(2000);
     console.log(`   /#/videos/cross text: ${(await pageText(cdp)).slice(0, 260)}`);
 
     // The embed only mounts after a tap — videos_page.dart:592's poster
-    // InkWell. Nothing autoplays on arrival, by design.
-    //
-    // 2026-09-06 sweep: matched exactly 1 node under the harness's actual
-    // (English) locale — confirmed against results.json, not assumed.
-    // NOT proven safe under every locale, and `candidates` staying at 1
-    // would not catch it: `_wholeSeriesRow`'s Chinese-track compilation
-    // button (videos_page.dart:445-487) carries the label "中文" — one of
-    // this regex's own alternatives — at zh-Hans/zh-Hant. If a cold
-    // Chrome profile ever resolved to a Chinese locale (`Browser.launch`
-    // does not pin `--lang`, so this rides whatever the OS gives it), the
-    // AppBar title "Standing at the Cross" stops matching and "中文" could
-    // become the sole, wrong, match — one confident hit on the wrong
-    // node, same shape as the chronology bug, just not the >1-candidate
-    // shape this sweep's `candidates` field detects. Left as a known gap
-    // rather than boxed here: the existing "no iframe → raw click"
-    // fallback below likely self-heals it, and this harness has no
-    // locale argument to reproduce the failure with. See the queue.
-    const poster = await clickText(cdp, /Standing at the Cross|Play|播放|第1集|Episode 1/i,
-      { timeoutMs: 12000, site: 'runYoutube:poster' });
+    // InkWell, which is bare (an Icon + a conditional caption, no
+    // semantics text of its own — checked at videos_page.dart:636-656).
+    // So this was never really "clicking the poster": under English it
+    // matched the AppBar TITLE above the poster (`s.titleFor(locale)`,
+    // videos_page.dart:362), a harmless no-op tap, and the actual mount
+    // has always come from the raw-coordinate fallback below. 2026-09-06
+    // sweep originally attributed the "中文" collision risk to THIS regex;
+    // that was wrong — "中文" belongs to `videoLangChinese`
+    // (ui_strings.dart:6119), the whole-series compilation button
+    // (`_wholeSeriesRow`, videos_page.dart:466-481), which this regex
+    // never touches, and it is the OTHER click below (`languageChip`)
+    // that collided with it. What IS true of this regex, confirmed by a
+    // real zh-Hans run (see queue :12687 and results.json), is that
+    // `播放` / `第1集` / `Episode 1` are not this app's strings anywhere,
+    // so at zh-Hans/zh-Hant the only candidate — the AppBar title
+    // "Standing at the Cross" — stops matching and NOTHING MATCHED,
+    // relying entirely on the fallback to actually start the video.
+    // Anchored here to the title in all three scripts instead, boxed to
+    // the AppBar's height so a coincidental match lower on the page
+    // (there is none today) could never win by tree order.
+    const poster = await clickText(cdp, /Standing at the Cross|在十字架下/i,
+      { timeoutMs: 12000, box: [0, 0, 1280, 72], site: 'runYoutube:poster' });
     console.log(`   tapped: ${poster ? JSON.stringify(poster.text.slice(0, 70)) : 'NOTHING MATCHED'}`);
     if (poster && poster.candidates > 1) {
       console.log(`   poster click was AMBIGUOUS: ${poster.candidates} nodes matched — this is a single-video page (/#/videos/cross), so a second match is worth reading in results.json before trusting the tap`);
@@ -1345,8 +1370,30 @@ async function runYoutube(origin) {
     // which language was picked, so this is left unboxed and unanchored;
     // `candidates` is still recorded so an assertion that DOES care which
     // language fired can see the ambiguity instead of assuming one.
+    //
+    // This regex used to also carry `中文` and `國語`. `中文` is
+    // `videoLangChinese` (ui_strings.dart:6119) — the label on
+    // `_wholeSeriesRow`'s whole-series compilation button
+    // (videos_page.dart:466-481), a DIFFERENT widget on this same page
+    // whose `onPressed` is `LinkOpener.openOrWarn`, i.e. leaves the app
+    // for youtube.com — not a wrong-track click but an exit from the
+    // page. `_languageRow` builds before `_wholeSeriesRow`
+    // (videos_page.dart:394 vs :424), so `hits[0]` order likely favoured
+    // the real chip when both matched, but that is inference, not
+    // something this file had a run to back up, and it was moot at
+    // zh-Hans regardless: the OLD regex carried Traditional `廣東話` but
+    // no Simplified `广东话`, so at zh-Hans (chips 英语/广东话/普通话) the
+    // Cantonese chip never matched at all and the two remaining
+    // candidates were {普通话 chip, 中文 button} — order-dependent, not
+    // safe. `國語` was never a string this app uses anywhere (checked);
+    // dropped as dead weight, not as part of the fix. Rebuilt from the
+    // six real chip strings (oneGodLangYue/Cmn at both scripts) plus
+    // their English text, and nothing else, so `中文` is no longer a
+    // candidate in any script and tree order stops mattering. See the
+    // 2026-09-06 en / zh-Hans run results recorded at queue :12687 for
+    // what this actually clicked, in both scripts.
     console.log('\n   ── language switch ──');
-    const chip = await clickText(cdp, /粤语|廣東話|Cantonese|國語|普通话|Mandarin|中文/i,
+    const chip = await clickText(cdp, /Cantonese|Mandarin|广东话|廣東話|普通话|普通話/i,
       { timeoutMs: 10000, site: 'runYoutube:languageChip' });
     console.log(`   tapped language chip: ${chip ? JSON.stringify(chip.text) : 'NOTHING MATCHED'}`);
     if (chip && chip.candidates > 1) {

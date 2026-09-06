@@ -12684,28 +12684,78 @@ so the bundle-size answer stays on the record.
       sermon page. Verified playing on dev: `0:08 / 27:25`, `Part 1 of 2`.
 - [ ] NASB divine-pronoun capitalisation (#173-176) — tied to the
       unresolved NASB licensing question. Ask before investing.
-- [ ] **Tooling, LOW priority: `tools/web_verify_headless.mjs runYoutube`'s
-      poster click is locale-fragile, found by a refuter during the
-      2026-09-06 `clickText` ambiguity sweep (see the chronology entry
-      above).** `/#/videos/cross`'s poster regex
-      (`/Standing at the Cross|Play|播放|第1集|Episode 1/i`) matches exactly
-      1 semantics node under English, which is the harness's actual
-      locale today, so this is NOT observed to fail. But
-      `_wholeSeriesRow`'s Chinese-track compilation button
-      (`videos_page.dart:445-487`) carries the label "中文" — one of this
-      regex's own alternatives — and `Browser.launch` never pins
-      `--lang`, so a cold Chrome profile that ever resolved to a Chinese
-      locale would lose the English AppBar title match and could match
-      "中文" alone instead: one confident click on the wrong node, and
-      `candidates` would stay at 1 because there is exactly one match, not
-      several — the ambiguity counter added this sweep cannot see a
-      single WRONG match, only multiple candidates for the same call.
-      Likely self-heals via the existing "no iframe → raw click at
-      640,260" fallback rather than silently misattributing, but that is
-      inference, not a run that reproduced it — this harness has no
-      `--lang` argument to force the case. Fix by anchoring the regex to
-      the AppBar title alone, or by pinning the profile's Accept-Language
-      the way `Browser.launch` already pins the viewport.
+- [x] **Tooling, LOW priority: `tools/web_verify_headless.mjs runYoutube`'s
+      poster/chip clicks were locale-fragile, found by a refuter during
+      the 2026-09-06 `clickText` ambiguity sweep — fixed and confirmed by
+      real en / zh-Hans / zh-Hant runs, not inferred.** This entry's own
+      original text **misattributed the collision**: it said the "中文"
+      button matched the *poster* regex. Checked against source: "中文"
+      is not in the poster regex at all — it was in the *languageChip*
+      regex (the language-switch click at (iv), a separate call a few
+      lines later), and the real consequence is worse than "wrong track
+      chosen": `_wholeSeriesRow`'s 中文 button's `onPressed` is
+      `LinkOpener.openOrWarn`, so a wrong hit there leaves the app for
+      youtube.com entirely.
+
+      `Browser.launch` now pins `--lang`/`--accept-lang` (default
+      `en-US`, override with `--lang zh-Hans` etc.), threaded through
+      `coldLoad`/`runYoutube`. A real zh-Hans run proved the pin reaches
+      `AppSettings._detectSystemLocale()` — the harness's own page text
+      came back fully in Simplified Chinese (返回／在十字架下／广东话／…),
+      which was previously only argued from source, not observed.
+
+      **poster** (`videos_page.dart:592`'s InkWell) carries no semantics
+      text of its own — it was always the AppBar title (`s.titleFor`)
+      that matched, a harmless no-op tap; the actual mount has always
+      come from the "no iframe → raw click" fallback. Anchored to
+      `/Standing at the Cross|在十字架下/i` (both scripts share one
+      string) boxed to the AppBar height, replacing `Play|播放|第1集|
+      Episode 1`, none of which are strings this app has ever shown.
+
+      **languageChip** dropped `中文` and the never-used `國語`, and
+      gained the missing Simplified `广东话` / Traditional `普通話` the
+      old regex lacked (confirmed by the zh-Hans/zh-Hant runs: the old
+      regex's only candidates there would have been {one real chip, the
+      wrong 中文 button} — not the single-wrong-match shape this entry
+      originally guessed, but still order-dependent and still wrong
+      whenever it lost). Rebuilt from the six real chip strings
+      (`oneGodLangYue`/`Cmn` × both scripts) plus English; "中文" is no
+      longer a candidate in any script, confirmed by all three runs
+      (`{Cantonese, Mandarin}` / `{广东话, 普通话}` / `{廣東話, 普通話}` —
+      exactly 2 each, matching `_languageRow`'s 3 chips minus whichever
+      is pre-selected).
+
+      **New finding from the zh-Hant run, queued below rather than fixed
+      here (out of this item's scope):** the pre-selected chip is not
+      always English. `VideoEpisode.trackForLocale` (`video_series.dart:
+      215-221`, `preferredTrackLangs`) deliberately defaults zh-Hant to
+      Cantonese and zh-Hans to Mandarin. The zh-Hant run's `remounted:
+      false` is not a regression — it clicked "廣東話" while Cantonese was
+      already playing, and `_languageRow`'s own `onSelected` is a no-op
+      when `t.lang == _lang` — but it shows the regex still assumes
+      "exclude English, whatever's left is a real switch," which is false
+      at zh-Hant/zh-Hans. See the new item below.
+
+      Full CLICK_LOG for all three runs (candidates/matchedText/
+      otherTexts) is in `build/web-verify-{en,zh,zh-hant}/results.json`
+      (gitignored, not committed — reproduce with
+      `node tools/web_verify_headless.mjs --lang <tag> youtube`).
+- [ ] **Tooling, LOW priority: `runYoutube`'s languageChip click can hit
+      the ALREADY-ACTIVE chip at zh-Hant/zh-Hans, reporting a false
+      `remounted: false`.** Found while verifying the item above (2026-
+      09-06). `trackForLocale` (`video_series.dart:241-246`) defaults
+      zh-Hant to Cantonese and zh-Hans to Mandarin, not English, so
+      "regex excludes English, click whichever chip that leaves" — the
+      assumption baked into both the old and the fixed regex — clicks a
+      chip that is already selected at those two locales, which
+      `_languageRow`'s `onSelected` correctly no-ops. The harness would
+      read that as case (iv) failing when nothing failed. Needs either a
+      way to read the ChoiceChip's selected state off the semantics DOM
+      (`aria-selected`/`aria-checked` — not yet checked what Flutter web
+      actually emits there) so the click can target a chip that is both
+      matched AND not already active, or per-locale-aware target
+      selection in the harness itself. Confirmed by a real zh-Hant run,
+      not inferred; see the item above for how to reproduce.
 
 ## Blocked on the user — do not attempt
 
