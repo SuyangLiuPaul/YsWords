@@ -13,6 +13,43 @@
 # manually-bumped (intentional — those mark architectural eras
 # like the v1.2 → v1.3 PageView refactor). Patch is auto.
 #
+# 2026-09-06 — THE LADDER, from the owner. The mechanism above already
+# allowed a minor bump; what was missing was the criterion, so in
+# practice every release since v1.3.9 has moved only the patch digit
+# regardless of what shipped. That is the thing to stop.
+#
+#   1.x.0   A WHOLE CAPABILITY becomes genuinely usable.
+#           Not "code for it landed" — a reader can now do something
+#           they could not do before. Shipping the sermon library, or
+#           making videos streamable, or making a corpus searchable.
+#           Use `--set`; the automatic path never produces this.
+#
+#   1.x.y   A fix or a repair ON an existing capability. Defect work,
+#           corpus corrections, guard hardening. This is the default
+#           and what a bare call gives you.
+#
+#   2.0.0   A BREAK THAT COULD NOT BE MIGRATED. Deliberately hard to
+#           reach — the owner's rule (2026-09-06) is that the LAST digit
+#           climbing is fine and the FIRST one should not move easily.
+#
+#           So a break is not automatically a major. Renaming a saved
+#           preference key is NOT one: read the old key, write the new,
+#           and the reader never knows — this app has done exactly that
+#           before. Changing a route a prerendered sitemap points at is
+#           not one either: keep the old path answering.
+#
+#           A major is what is left when migration is genuinely
+#           impossible and an installed copy would lose the reader's
+#           highlights, notes or progress. If you can write the
+#           migration, write it and ship a minor.
+#
+# Deciding is a judgement, and the honest test is the reader's side of
+# it: if you cannot name a thing a reader can now DO, it is not a minor.
+# Bundling one capability with twenty fixes is still a minor — the
+# capability is what the number is announcing. And twenty fixes with no
+# new capability is a patch, however many there are; a big last digit is
+# not a problem to be solved by moving a bigger one.
+#
 # Usage:
 #   tools/bump_version.sh           # bump patch by 1 (1.3.8 → 1.3.9)
 #   tools/bump_version.sh --print   # just print current version
