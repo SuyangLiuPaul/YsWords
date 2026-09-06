@@ -640,6 +640,8 @@ const SEMANTICS_DUMP = `(function () {
       tag: e.tagName, role: e.getAttribute('role'), text: t,
       x: r.x, y: r.y, w: r.width, h: r.height,
       cx: Math.round(r.x + r.width / 2), cy: Math.round(r.y + r.height / 2),
+      ariaChecked: e.getAttribute('aria-checked'),
+      ariaSelected: e.getAttribute('aria-selected'),
     });
   }
   return { ok: true, hash: location.hash, nodes: out };
@@ -692,14 +694,25 @@ async function waitForText(cdp, re, timeoutMs = 20000) {
 /// site so results.json reads as "which regex, where" rather than a list
 /// of anonymous entries.
 async function clickText(cdp, re, { index = 0, timeoutMs = 15000,
-    box = null, site = null } = {}) {
+    box = null, site = null, requireNotChecked = false } = {}) {
   const start = Date.now();
+  let lastExcludedActive = [];
   while (Date.now() - start < timeoutMs) {
     const s = await semantics(cdp);
-    const hits = (s.nodes || []).filter(
+    const matched = (s.nodes || []).filter(
       (n) => re.test(n.text) && n.w > 0 && n.h > 0 && n.cy > 0 &&
         (!box || (n.cx >= box[0] && n.cy >= box[1] &&
                   n.cx <= box[2] && n.cy <= box[3])));
+    // `requireNotChecked` drops matches whose accessibility node reports
+    // itself already selected (Flutter web's ChoiceChip writes
+    // aria-checked, not aria-selected — see chip.dart's Semantics(checked:)
+    // and the engine's checkable.dart), so a click aimed at "the language
+    // NOT currently active" can't land back on the one already showing.
+    const excludedActive = requireNotChecked ?
+      matched.filter((n) => n.ariaChecked === 'true') : [];
+    lastExcludedActive = excludedActive;
+    const hits = requireNotChecked ?
+      matched.filter((n) => n.ariaChecked !== 'true') : matched;
     if (hits[index]) {
       const n = hits[index];
       for (const type of ['mousePressed', 'mouseReleased']) {
@@ -712,6 +725,9 @@ async function clickText(cdp, re, { index = 0, timeoutMs = 15000,
         site: site || re.toString(), regex: re.toString(), box,
         candidates: hits.length, clickedIndex: index,
         matchedText: n.text.slice(0, 160),
+        ariaChecked: n.ariaChecked, ariaSelected: n.ariaSelected,
+        excludedActive: excludedActive.map((h) =>
+          ({ text: h.text.slice(0, 80), ariaChecked: h.ariaChecked })),
         otherTexts: hits.length > 1 ?
           hits.filter((_, i) => i !== index).map((h) => h.text.slice(0, 80)) :
           [],
@@ -729,6 +745,8 @@ async function clickText(cdp, re, { index = 0, timeoutMs = 15000,
   CLICK_LOG.push({
     site: site || re.toString(), regex: re.toString(), box,
     candidates: 0, clickedIndex: index, matchedText: null, notFound: true,
+    excludedActive: lastExcludedActive.map((h) =>
+      ({ text: h.text.slice(0, 80), ariaChecked: h.ariaChecked })),
   });
   return null;
 }
@@ -1392,14 +1410,28 @@ async function runYoutube(origin, { lang = LANG } = {}) {
     // candidate in any script and tree order stops mattering. See the
     // 2026-09-06 en / zh-Hans run results recorded at queue :12687 for
     // what this actually clicked, in both scripts.
+    //
+    // 2026-09-07 (queue :12743): the two remaining candidates are only
+    // "legitimate" when NEITHER is the chip already active — at zh-Hant
+    // `preferredTrackLangs` preselects 廣東話 (videos_page.dart pipes
+    // `trackForLocale` through `_lang`), so the regex's own "Cantonese"
+    // match is the ACTIVE chip and `_languageRow`'s `onSelected` returns
+    // early on a click that lands there (`t.lang == _lang`), reporting a
+    // false `remounted: false` — the harness's fault, not the app's.
+    // `requireNotChecked` drops any candidate whose semantics node already
+    // carries `aria-checked="true"`, so the click always targets a chip
+    // that is matched AND inactive, regardless of which locale preselected
+    // which chip.
     console.log('\n   ── language switch ──');
     const chip = await clickText(cdp, /Cantonese|Mandarin|广东话|廣東話|普通话|普通話/i,
-      { timeoutMs: 10000, site: 'runYoutube:languageChip' });
+      { timeoutMs: 10000, site: 'runYoutube:languageChip', requireNotChecked: true });
     console.log(`   tapped language chip: ${chip ? JSON.stringify(chip.text) : 'NOTHING MATCHED'}`);
     if (chip && chip.candidates > 1) {
       console.log(`   language-chip click matched ${chip.candidates} chips (expected — see comment above), clicked "${chip.text}"`);
     }
+    console.log(`   clicked chip aria-checked: ${chip ? chip.ariaChecked : '(n/a)'}`);
     out.languageChipCandidates = chip ? chip.candidates : 0;
+    out.languageChipAriaChecked = chip ? chip.ariaChecked : null;
     await sleep(4000);
     const after = await evalJs(cdp, IFRAME_DUMP);
     out.iframesAfter = after;

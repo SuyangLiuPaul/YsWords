@@ -9964,6 +9964,17 @@ has never seen this repo.
       branch effort (someone watching across the whole migration, not one
       hour at a time) or an explicit "leave it" from the user. Left open.
 
+      **Deferred a sixth consecutive iteration, 2026-09-07** — this hour's
+      NEXT_TASK.md picked the `languageChip` already-active-chip false
+      negative instead (P3, unblocked and hour-sized; see the tick below);
+      this item is still branch-scale and still unattended-unsafe.
+      **For the user:** the web app's browser Forward button can never
+      work while `GetMaterialApp` sets `home:`. Fixing it is a
+      `GetMaterialApp` → `.router` migration on its own branch, watched
+      across several sessions — not an hourly item. Do you want that
+      branch started, or should this be closed as "won't fix,
+      `/#/sermons/004` stays shareable but not Forward-revisitable"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -12740,22 +12751,34 @@ so the bundle-size answer stays on the record.
       otherTexts) is in `build/web-verify-{en,zh,zh-hant}/results.json`
       (gitignored, not committed — reproduce with
       `node tools/web_verify_headless.mjs --lang <tag> youtube`).
-- [ ] **Tooling, LOW priority: `runYoutube`'s languageChip click can hit
-      the ALREADY-ACTIVE chip at zh-Hant/zh-Hans, reporting a false
-      `remounted: false`.** Found while verifying the item above (2026-
-      09-06). `trackForLocale` (`video_series.dart:241-246`) defaults
-      zh-Hant to Cantonese and zh-Hans to Mandarin, not English, so
-      "regex excludes English, click whichever chip that leaves" — the
-      assumption baked into both the old and the fixed regex — clicks a
-      chip that is already selected at those two locales, which
-      `_languageRow`'s `onSelected` correctly no-ops. The harness would
-      read that as case (iv) failing when nothing failed. Needs either a
-      way to read the ChoiceChip's selected state off the semantics DOM
-      (`aria-selected`/`aria-checked` — not yet checked what Flutter web
-      actually emits there) so the click can target a chip that is both
-      matched AND not already active, or per-locale-aware target
-      selection in the harness itself. Confirmed by a real zh-Hant run,
-      not inferred; see the item above for how to reproduce.
+- [x] **FIXED 2026-09-07 — `runYoutube`'s languageChip click hit the
+      ALREADY-ACTIVE chip at zh-Hant/zh-Hans, reporting a false
+      `remounted: false`.** Confirmed by source AND observation, not just
+      inferred: `flutter/packages/flutter/lib/src/material/chip.dart`'s
+      `RawChip` builds `Semantics(selected: kIsWeb ? null : widget.selected,
+      checked: kIsWeb ? widget.selected : null, …)` — web gets
+      `aria-checked`, not `aria-selected` — and a live run's `results.json`
+      shows exactly that on the same DOM node (`ariaChecked: "false"`,
+      `ariaSelected: null`). `SEMANTICS_DUMP`
+      (`tools/web_verify_headless.mjs`) now captures both attributes on
+      every node; `clickText()` gained `requireNotChecked`, which drops
+      any matched candidate whose node reports `aria-checked="true"` before
+      picking which one to click, and logs the exclusion (`excludedActive`)
+      so the choice is auditable. The `languageChip` call site now passes
+      `requireNotChecked: true`. Proven by three real runs against the
+      2026-09-06 23:26 release build (confirmed not stale — no `lib/`/
+      `web/`/`pubspec.yaml` commit since): `--lang en-US`, `--lang
+      zh-Hans`, `--lang zh-Hant` (the regression case) all now print
+      `(iv) embed re-mounted: true`. The zh-Hant run's log shows the
+      mechanism directly: 廣東話 (`ariaChecked: "true"`, pre-selected by
+      `preferredTrackLangs`) was excluded, 普通話 (`ariaChecked: "false"`)
+      was clicked, and the iframe src actually changed
+      (`?start=4`→`?start=9`). A pre-fix run made 22:55 the same day
+      (`build/web-verify-zh-hant/results.json`, no `ariaChecked` field —
+      predates the fix) shows the old failure: `remounted: false` with the
+      already-active chip clicked. Harness-only change (`tools/
+      web_verify_headless.mjs`); no `lib/`/`web/` touched, nothing
+      user-facing, no deploy.
 
 ## Blocked on the user — do not attempt
 
