@@ -56,6 +56,11 @@ class NowPlayingPage extends StatelessWidget {
               onPressed: () => ClipboardHelper.copyWithFeedback(
                   context, songCopyText(player.current!, locale)),
             ),
+            // Share. This is the screen the user was on when they
+            // said "还是不能share" — the link had shipped a day earlier
+            // and lived only on the songs list's detail sheet, which is
+            // not where anyone is when they decide to pass a song on.
+            SongShareButton(song: player.current!, locale: locale),
             IconButton(
               icon: const Icon(Icons.playlist_add_rounded, size: 22),
               tooltip: uiStrings['songsAddToPlaylist']?[locale],

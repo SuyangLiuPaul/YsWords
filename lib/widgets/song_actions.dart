@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/song.dart';
 import 'package:yswords/services/song_playlist_service.dart';
+import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/route_paths.dart' show songShareUrl;
 
 /// Saving a song, wherever you happen to be.
 ///
@@ -39,6 +41,50 @@ class SongFavouriteButton extends StatelessWidget {
           onPressed: () => service.toggleFavourite(song),
         );
       },
+    );
+  }
+}
+
+/// Share this song as a link that OPENS this song.
+///
+/// Added to `song_actions.dart` on 2026-09-07 for the same reason
+/// [SongFavouriteButton] moved here a month earlier, and reported the
+/// same way: the button existed only on the songs list's detail sheet,
+/// so the screen you are actually on when you decide to pass a song
+/// on — Now Playing — could not do it. The user's words were "还是不能
+/// share", from the player, with the share already shipped.
+///
+/// **The payload is title + link and deliberately nothing else.** The
+/// detail sheet's Lyrics section has its own copy button for anyone who
+/// wants the words on purpose; a share that quietly carried them would
+/// push a publisher's text into a group chat every time someone meant
+/// to pass on a song. `test/song_share_link_test.dart` pins that.
+///
+/// [size] exists because the app bars this sits in are not all the same
+/// density — the sheet header runs 20px icons, the player's transport
+/// side runs 22px — and a share icon that is the odd one out in its own
+/// row reads as a different KIND of button.
+class SongShareButton extends StatelessWidget {
+  final Song song;
+  final String locale;
+  final double size;
+  const SongShareButton({
+    super.key,
+    required this.song,
+    required this.locale,
+    this.size = 20,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.share_outlined, size: size),
+      tooltip: uiStrings['share']?[locale] ?? 'Share',
+      onPressed: () => ClipboardHelper.shareOrCopy(
+        context,
+        '${song.title}\n${songShareUrl(song.id)}',
+        title: song.title,
+      ),
     );
   }
 }

@@ -14,6 +14,7 @@ import 'package:yswords/services/song_service.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/route_paths.dart' show songSubPagePath;
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/song_actions.dart';
 
 /// Sheet music, shown inside the app.
 ///
@@ -108,6 +109,9 @@ class _SongScorePageState extends State<SongScorePage> {
             onPressed: () => ClipboardHelper.copyWithFeedback(
                 context, songCopyText(song, locale)),
           ),
+          // The song's link, not the score's. A shared PDF URL opens a
+          // file; a shared song opens the song, score button and all.
+          SongShareButton(song: song, locale: locale),
           if (url != null)
             IconButton(
               tooltip: uiStrings['songsOpenOriginal']?[locale] ??

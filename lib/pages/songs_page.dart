@@ -7,8 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/song_source_icons.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/route_paths.dart'
-    show songShareUrl;
 import 'package:yswords/utils/song_copy.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/models/app_settings.dart';
@@ -2047,23 +2045,12 @@ class _SongDetailSheet extends StatelessWidget {
                     onPressed: () => _copy(context, songCopyText(song, locale)),
                   ),
                   // Share: a LINK back to this sheet, and deliberately
-                  // nothing else.
-                  //
-                  // Not the lyrics. The Lyrics section below already has
-                  // its own copy button for anyone who wants the text on
-                  // purpose; a share that quietly carried it would push
-                  // a publisher's words out to a group chat every time
-                  // someone meant to pass on a song. Title and link is
-                  // what "share this song" means.
-                  IconButton(
-                    icon: const Icon(Icons.share_outlined, size: 20),
-                    tooltip: uiStrings['share']?[locale] ?? 'Share',
-                    onPressed: () => ClipboardHelper.shareOrCopy(
-                      context,
-                      '${song.title}\n${songShareUrl(song.id)}',
-                      title: song.title,
-                    ),
-                  ),
+                  // nothing else — see [SongShareButton], which is also
+                  // what the Now Playing screen and the score page draw.
+                  // This was an inline IconButton until 2026-09-07, and
+                  // being inline here is exactly why the player had no
+                  // share at all.
+                  SongShareButton(song: song, locale: locale),
                   // Downloading was bulk-only: you could take the whole
                   // filter offline but not the one hymn you are looking
                   // at, which is the commonest case before a flight or

@@ -16,6 +16,7 @@ import 'package:yswords/services/song_service.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/route_paths.dart' show songSubPagePath;
 import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yswords/widgets/song_actions.dart';
 
 /// The music video, played inside the app.
 ///
@@ -140,6 +141,10 @@ class _SongVideoPageState extends State<SongVideoPage> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          // Sharing the song rather than the mp4: the video URL is a
+          // file on the church's CDN, while the song link opens the
+          // song with its video button still on it.
+          SongShareButton(song: widget.song, locale: widget.locale),
           if (url != null)
             IconButton(
               tooltip:
