@@ -56,14 +56,28 @@ void main() {
   });
 
   group('songShareUrl', () {
-    test('is absolute and hash-routed', () {
+    test('puts the song in a REAL query, not one inside the hash', () {
+      // The bug this pins, found by opening a deployed build rather
+      // than by reasoning: the first version returned
+      // `https://host/#/songs?song=<id>`. `_handleDeepLink` reads
+      // `Uri.base.queryParameters`, and in a hash URL the `?song=` is
+      // inside the FRAGMENT, where that is empty — so the link opened
+      // the songs list with no sheet and looked like it had done
+      // nothing. `?sermon=` and `?verse=`, the app's existing share
+      // links, were already the real-query shape.
       final url = songShareUrl('cdc:d0180');
-      expect(url, contains('#/songs?song=cdc%3Ad0180'));
-      // Resolved against Uri.base rather than a hard-coded origin, so it
-      // is right on all four Netlify sites, both prod domains and
+      final parsed = Uri.parse(url);
+      expect(parsed.queryParameters['song'], 'cdc:d0180');
+      expect(parsed.fragment, isEmpty,
+          reason: 'a query inside the fragment is unreadable on cold load');
+      expect(url, isNot(contains('#')));
+    });
+
+    test('is absolute, against Uri.base rather than a hard-coded origin', () {
+      // So it is right on all four Netlify sites, both prod domains and
       // yahwehword.com. Under the test harness Uri.base is a file URL —
       // what matters is that an origin was applied at all, not which.
-      expect(Uri.parse(url).hasScheme, isTrue);
+      expect(Uri.parse(songShareUrl('cdc:d0180')).hasScheme, isTrue);
     });
 
     test('names the song and nothing else', () {
@@ -72,8 +86,8 @@ void main() {
       // separate Lyrics copy button for anyone who wants the text on
       // purpose; a share that carried it would push a publisher's words
       // into a group chat every time someone passed on a song.
-      final url = songShareUrl('cdc:d0180');
-      expect(url.split('?').last, 'song=cdc%3Ad0180');
+      expect(Uri.parse(songShareUrl('cdc:d0180')).queryParameters.keys,
+          ['song']);
     });
   });
 }

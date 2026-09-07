@@ -41,6 +41,7 @@ import 'package:yswords/services/web_update_checker.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+import 'package:yswords/utils/route_paths.dart' show songSharePath;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/daily_verse_service.dart';
@@ -1398,6 +1399,24 @@ class _RootRouterState extends State<_RootRouter> {
         if (s != null && mounted) {
           pushPage(SermonDetailPage(sermon: s), routeName: '/sermons/${s.id}');
         }
+      });
+      return;
+    }
+    // `?song=<id>` — the songs share link. Handed straight to the route
+    // so a cold load and an in-app push go through the SAME mechanism:
+    // `/songs?song=<id>` populates `Get.parameters`, and `SongsPage`
+    // opens its own detail sheet. Two separate paths to the same sheet
+    // would be two things to keep in step.
+    //
+    // The share URL is a real query rather than one inside the hash
+    // because THIS line is what reads it: `Uri.base.queryParameters` is
+    // empty for `#/songs?song=…`, which is how the first version of
+    // this feature shipped to dev opening the list and no sheet.
+    final sharedSong = params['song'];
+    if (sharedSong != null && sharedSong.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Get.toNamed(songSharePath(sharedSong));
       });
       return;
     }

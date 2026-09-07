@@ -154,12 +154,30 @@ String songSharePath(String songId) =>
 
 /// The same, absolute, for putting on a clipboard or into a share sheet.
 ///
-/// Resolved against `Uri.base` rather than a hard-coded origin, the way
+/// A REAL query string, before the hash — `https://host/?song=<id>` and
+/// NOT `https://host/#/songs?song=<id>`. The difference is the whole
+/// feature, and the first version of this got it wrong: `_handleDeepLink`
+/// reads `Uri.base.queryParameters`, and in a hash URL the `?song=` sits
+/// inside the FRAGMENT, where that is empty. The link opened the songs
+/// list with no sheet — confirmed in a browser against a deployed build,
+/// not reasoned about.
+///
+/// This is the shape the app's existing share links already use
+/// (`?sermon=`, `?verse=`), and `_handleDeepLink` turns it back into
+/// [songSharePath] so a cold load and an in-app push end up on the same
+/// route with the same parameter.
+///
+/// Built off `Uri.base` rather than a hard-coded origin, the way
 /// `song_score_page.dart` resolves media, so it is correct on every
 /// deploy target — the four Netlify sites, both prod domains and
-/// `yahwehword.com` alike. The `#/` is the app's hash routing.
-String songShareUrl(String songId) =>
-    Uri.base.resolve('#${songSharePath(songId)}').toString();
+/// `yahwehword.com` alike.
+/// `removeFragment()`, not `replace(fragment: '')` — the latter still
+/// emits the `#`, so every shared link ended in a bare hash. A test
+/// caught that before anyone had to look at one.
+String songShareUrl(String songId) => Uri.base
+    .replace(queryParameters: {'song': songId})
+    .removeFragment()
+    .toString();
 
 /// Strips a raw `window.location.hash` down to the route path it names,
 /// keeping any query string, or returns null for an empty/root hash.
