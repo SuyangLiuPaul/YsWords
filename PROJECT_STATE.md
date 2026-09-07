@@ -65,20 +65,28 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.4** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.4** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.4.214** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.11** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.11** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn` | **1.5.7** | ⛔ never without explicit permission **in the current turn** |
 
 **Every number above was read off `version.json` on 2026-09-07, not off
-the repo.** That distinction is the whole reason this block keeps going
+the repo** — all five sites, in one loop, including both cn sites and
+both prod sites, because the failure this block keeps having is a row
+restated rather than read. That distinction is the whole reason it goes
 stale: the table said 1.4.198 on all three tiers while dev and qat had
-been on 1.5.0, then 1.5.1, then 1.5.2 for days.
+been on 1.5.0, then 1.5.1, then 1.5.2 for days, and it said 1.5.4 / 1.4.214
+here while the sites served 1.5.11 / 1.5.7.
 
-**prod is 1.4.214 and serves 289 sermons.** It has never had 1.5.x, so a
-prod push is a 1.4.214 → 1.5.x jump carrying the whole 1.5 line, not
-just the newest fix. The 429-sermon corpus, the 687 proofreading
-corrections and the two Traditional glyph repairs (Romans 7:8's
-「在我裏頭髮動」 and 「原文采用」) are all on dev/qat only.
+Note the trap in `index.html`: every tier's HTML still contains the
+literal string `v1.3.62`, so grepping the page for a version number
+returns that on all four sites and looks like a confident answer.
+`version.json` is the file `release_web.sh` itself verifies against.
+
+**prod is 1.5.7.** The 1.5 line reached it on 2026-09-06, so the
+429-sermon corpus and the proofreading corrections are live. What is
+NOT on prod is everything from 1.5.8 up: the song share link, the share
+button on the player / score / video screens, and the onboarding count
+fixes.
 
 **A correction, recorded because the mistake is instructive.** On
 2026-09-06 this block was rewritten to "say where the sites actually
