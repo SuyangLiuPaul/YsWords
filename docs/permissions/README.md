@@ -62,11 +62,17 @@ Recorded here as reported by the owner, who was in that group.
 Raymond personally for one named work; the person it runs to has now
 said it reaches this site. That is his to say, and he has said it.
 
-**What it does not settle, and is not an objection to him.** The
-territory line — Hong Kong / Mainland China — is *Holman's* term, not
-Raymond's, so extending his own permission does not move it. Worth one
-question back to him before the text ships, because it is the kind of
-thing a publisher asks about later rather than earlier.
+**Territory — asked, and answered by the owner.** The written grant
+says Hong Kong / Mainland China, which is *Holman's* term rather than
+Raymond's, so this note raised it twice as a question to put back to
+him. The owner's answer, 2026-09-07: **worldwide distribution is fine**
+— the CSB is freely readable online, and the apps are free.
+
+Recorded as what it is: the owner's decision, not a variation of the
+written grant, which still reads Hong Kong / Mainland China on its face.
+Anyone reading this later should know which of the two they are looking
+at. The decision is his to make; this file's job is to say plainly what
+the paper says and what was decided.
 
 **One naming point, because it changes the required credit line.**
 Raymond calls it HCSB. The document says **CSB**, and the 雅伟的话
