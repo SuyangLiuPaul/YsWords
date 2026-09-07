@@ -136,3 +136,71 @@ class Verdicts(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+
+
+class TheTrackedDecisionActuallyReachesTheMerge(unittest.TestCase):
+    """The gap this closes, found 2026-09-07.
+
+    `scripts/adjudicate_cross_corpus_duplicates.py` is TRACKED and holds
+    every verdict. `assets/sermon_library/refs.json` is GITIGNORED and is
+    what `merge_sermon_library.py` actually reads. Nothing compared them.
+
+    So a regeneration of refs.json that skipped the adjudication script
+    would silently drop every verdict, and the one that costs something
+    is 6012/CP37: back at `refuted`, the merge sends 6012 down the
+    NEW-record path and ships 活着就是基督 twice, at 430. The corpus would
+    be wrong and every count in the suite would still be green, because
+    every count is pinned to a number that the same regeneration moves.
+
+    This is the same shape as the day's other three: a decision living
+    where nothing checks it. `docs/` remembers it, git does not.
+    """
+
+    @unittest.skipUnless(_AVAILABLE, _WHY)
+    def test_every_tracked_verdict_is_present_in_refs_json(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            'adj', REPO / 'scripts' / 'adjudicate_cross_corpus_duplicates.py')
+        adj = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(adj)
+
+        by_key = {f"{r.get('libId')}|{r.get('appId')}": r for r in ROWS}
+        missing, disagreed = [], []
+        for key, (tier, comp, verdict, _ev) in adj.A.items():
+            row = by_key.get(key)
+            if row is None:
+                missing.append(key)
+                continue
+            if (row.get('tier'), row.get('completeness'),
+                    row.get('verdict')) != (tier, comp, verdict):
+                disagreed.append(
+                    f"{key}: refs.json says "
+                    f"{row.get('tier')}/{row.get('completeness')}/"
+                    f"{row.get('verdict')}, the tracked table says "
+                    f"{tier}/{comp}/{verdict}")
+        self.assertEqual(missing, [], 'adjudicated pairs absent from refs.json')
+        self.assertEqual(
+            disagreed, [],
+            'refs.json disagrees with the tracked adjudication — it was '
+            'regenerated without `python3 scripts/'
+            'adjudicate_cross_corpus_duplicates.py`. Run it.')
+
+    def test_the_corpus_ships_that_sermon_exactly_once(self):
+        """The outcome, asserted instead of the mechanism.
+
+        This reads `assets/sermons/index.json`, which is TRACKED, so
+        unlike everything above it also runs on a machine that has never
+        seen the staging library — including CI.
+        """
+        shipped = REPO / 'assets' / 'sermons' / 'index.json'
+        if not shipped.exists():
+            self.skipTest('assets/sermons/index.json absent')
+        rows = json.load(open(shipped, encoding='utf-8'))
+        titled = [r['id'] for r in rows
+                  if (r.get('titles') or {}).get('zh-CN') == '活着就是基督']
+        self.assertEqual(
+            titled, ['CP37'],
+            '活着就是基督 must appear once, as CP37. Two ids means library '
+            '6012 was merged as a NEW record instead of replacing CP37\'s '
+            'Chinese body — check the 6012|CP37 row is still '
+            'confirmed/library-fuller.')

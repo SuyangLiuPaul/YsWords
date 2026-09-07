@@ -1470,23 +1470,34 @@ class TestSnapshot(unittest.TestCase):
         on_disk = {f'bodies/{n}' for n in
                    os.listdir(os.path.join(base, 'bodies'))
                    if n.endswith('.txt')}
-        # One orphan is deliberate and is named rather than tolerated.
-        # `bodies/6012.txt` is the transcript of library 6012 (ws01,
-        # 活着就是基督), which is the same sermon as app CP37: setting its
-        # `hasBody` would send it down the merge's new-sermon path and
-        # ship that sermon twice. The transcript is kept because it is
-        # what MADE the comparison possible — there was no body to
-        # compare against before it existed.
+        # Empty since 2026-09-07, and empty is the correct state.
         #
-        # Naming it means an accidental orphan still fails here, and it
-        # means anyone who later decides 6012 should ship has to delete
-        # this line and read why it was written.
-        DELIBERATE_ORPHANS = {'bodies/6012.txt'}
+        # It held `bodies/6012.txt` for one day: the transcript of library
+        # 6012 (ws01, 活着就是基督), written but with `hasBody` withheld,
+        # because 6012 is the same sermon as app CP37 and the adjudication
+        # row said `refuted`, so flipping it would have sent 6012 down the
+        # merge's new-record path and shipped that sermon twice. The note
+        # said whoever later decided 6012 should ship had to come here and
+        # read why the line existed. That happened: the owner took the
+        # library's text for CP37, the row is `confirmed`/`library-fuller`,
+        # and 6012 is claimed by the index like every other body.
+        #
+        # The exception below is now SELF-INVALIDATING, which the previous
+        # version was not. It only checked that a listed orphan exists on
+        # disk — true of 6012 either way — so once 6012 stopped being an
+        # orphan the entry went on excusing something that no longer
+        # needed excusing, silently, forever. A listed file that is not
+        # actually orphaned now fails.
+        DELIBERATE_ORPHANS = set()
         for rel in DELIBERATE_ORPHANS:
             self.assertTrue(os.path.exists(os.path.join(base, rel)),
                             f'{rel} is listed as a deliberate orphan but '
                             'is not on disk — remove it from the set '
                             'rather than leaving a dangling exception')
+            self.assertIn(rel, on_disk - claimed,
+                          f'{rel} is listed as a deliberate orphan but the '
+                          'index claims it — the exception is stale and is '
+                          'now excusing nothing. Remove it.')
         self.assertEqual(on_disk - claimed - DELIBERATE_ORPHANS, set(),
                          'orphan body files not referenced by the index')
 
