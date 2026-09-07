@@ -2784,13 +2784,13 @@ const List<BibleTriviaEntry> bibleTriviaEntries = [
     },
     body: {
       'en':
-          'Luke 1:1–4 is a single 36-word Greek sentence — a periodic, classical-style prologue rivaling the openings of Greek historians like Thucydides. Luke (a doctor traveling with Paul) was the most literarily-trained NT author. He wrote both Luke and Acts; together they make up about 27% of the entire NT — the largest single contribution.',
+          'Luke 1:1–4 is a single 42-word Greek sentence — a periodic, classical-style prologue rivaling the openings of Greek historians like Thucydides. Luke (a doctor traveling with Paul) was the most literarily-trained NT author. He wrote both Luke and Acts; together they make up about 27% of the entire NT — the largest single contribution.',
       'zh-Hans':
-          '路加福音 1:1–4 是一句长达 **36 词的希腊文长句**——典雅的古典风格开篇，'
+          '路加福音 1:1–4 是一句长达 **42 词的希腊文长句**——典雅的古典风格开篇，'
               '可与修昔底德等希腊历史学家的开篇相提并论。路加（与保罗同行的医生）是新约中文学造诣最高的作者。'
               '他写了路加福音 + 使徒行传，合起来占整本新约约 **27%**——单一作者贡献最大。',
       'zh-Hant':
-          '路加福音 1:1–4 是一句長達 **36 詞的希臘文長句**——典雅的古典風格開篇，'
+          '路加福音 1:1–4 是一句長達 **42 詞的希臘文長句**——典雅的古典風格開篇，'
               '可與修昔底德等希臘歷史學家的開篇相提並論。路加（與保羅同行的醫生）是新約中文學造詣最高的作者。'
               '他寫了路加福音 + 使徒行傳，合起來佔整本新約約 **27%**——單一作者貢獻最大。',
     },

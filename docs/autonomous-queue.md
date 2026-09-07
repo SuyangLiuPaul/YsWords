@@ -100,6 +100,79 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [x] **2026-09-07 FIXED — Bible-trivia page had zero test coverage across
+      3,315 lines and ~80 factual scripture claims; audit found and fixed
+      one real error (Luke's prologue mis-cited as 36 Greek words, is
+      42), and pinned the mechanically-checkable subset.** Fallback
+      assignment (tiers 1–4 all blocked or empty; see NEXT_TASK.md's own
+      tier walk). New `tools/audit_trivia_claims.py` parses every
+      verse-count / chapter-count claim in `bible_trivia_page.dart` tied
+      to a specific reference and checks it against `assets/kjv.json` —
+      the same reading asset the app shows, not a translation-neutral
+      guess. **36 of 36 mechanically-checkable claims were already
+      correct**, including several superlatives that reduce to a real
+      min/max scan of the corpus: Psalm 119 genuinely is the longest
+      chapter (176, no other chapter ties or beats it), Obadiah genuinely
+      is the shortest OT book by verse count (21), 3 John genuinely is
+      the shortest book in the Bible by English word count across all 66
+      books (294), Mark genuinely is the shortest gospel, Malachi's last
+      verse genuinely ends "curse", and 2 Samuel 1:19-27's "how are the
+      mighty fallen" refrain genuinely repeats exactly 3 times.
+      **One real error, found and fixed:** Luke's claim "Luke 1:1–4 is a
+      single 36-word Greek sentence" has no source anywhere — a targeted
+      web search found no scholarly or lay citation of 36 for this
+      passage — and this session's own tokenization of
+      `assets/originals/luke.json` counts 42 word-tokens across the four
+      verses. **Refuter-verified**: asked a separate agent to try to
+      defend "36" (partial-verse spans, content-word-only conventions,
+      textual variants) and independently retype-and-count the same
+      Greek text from Blue Letter Bible's Morphological GNT; it landed on
+      42 too and could construct no defensible path to 36. Fixed to 42 in
+      all three locales (`lib/pages/bible_trivia_page.dart`).
+      **Two claims measured and NOT changed, on purpose** — see
+      PROJECT_STATE.md trap 63 for the reasoning: 3 John's "219 Greek
+      words" is 218 in our own originals asset, and Mark's "euthus 41
+      times" is 43 by our asset's combined-εὐθύς+εὐθέως count. Both are
+      explicable as TR/Byzantine-vs-NA28 text-tradition differences (219
+      and 41 are the figures widely cited from the critical text our
+      asset doesn't follow), unlike the Luke case where no source
+      supports the shipped number at all. Also confirmed, separately from
+      the KJV.json checks: 3 John's stated "14 verses" matches the READING
+      asset (`kjv.json`) even though `assets/originals/3_john.json` has 15
+      keys (NA28 splits v14) — correctly not "fixed" to match the
+      original-language asset, per the standing rule against picking a
+      versification side.
+      **New pinning test** `test/bible_trivia_counts_test.dart` (23
+      cases) asserts the mechanically-checkable subset — verse counts,
+      chapter counts, the two original-language word counts (Genesis
+      1:1's 7 words, Luke 1:1-4's corrected 42) — directly against
+      `assets/kjv.json`/`assets/originals/*.json` in every one of the
+      three locales, importing `bibleTriviaEntries` from the page itself
+      rather than regexing the source file, so a future edit to any of
+      these entries' numbers re-triggers the same check it would have
+      needed to pass originally.
+      **Folded in per the assignment**: `offlinePackSermons` (429/289)
+      and `offlinePackBibles`'s Chinese "共 7 个" had no test coverage —
+      `seo_meta_test.dart`'s `anyCount` regex requires the number BEFORE
+      `版本`/`译本` and so silently matches nothing against `版本（共 7
+      个）`, number-after-noun order. New `test/offline_pack_counts_test.
+      dart` extracts every digit run instead of relying on word order, so
+      it can't miss a count regardless of phrasing; both strings were
+      already correct (429/289/7), no copy change needed there.
+      30 superlative/qualitative claims were triaged but not exhaustively
+      re-verified (subjective/theological judgments — "most theologically
+      influential half-verse", "most elaborate vision" — are not the kind
+      of claim a corpus scan can falsify); the mechanically-verifiable
+      superlatives among them (listed above) were checked and hold.
+      `flutter analyze` clean; full `flutter test` green (this iteration
+      added 23+2=25 new passing tests, 0 regressions). No deploy — only
+      `lib/pages/bible_trivia_page.dart`'s copy changed (Luke fix), which
+      IS user-visible, but this iteration was working alongside a second
+      concurrent session mid-release-cycle (v1.5.11→1.5.12); per that
+      session's own NEXT_TASK.md warning, no version bump or deploy this
+      turn to avoid racing its release. Next iteration more than 6 turns
+      out should fold this in if nobody else has deployed it by then.
+
 - [x] **2026-09-07 FIXED — two `uiStrings` entries still told readers the
       sermon library was 289, and both are live surfaces (onboarding's
       first-run screen and the offline-pack label).** 1.5.2 shipped the

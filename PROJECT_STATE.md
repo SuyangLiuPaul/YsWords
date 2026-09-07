@@ -1803,6 +1803,27 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     algorithmic invariant upstream, and a refuter caught this
     conflation on `mainAxisExtent`'s non-negativity. Full write-up:
     `docs/autonomous-queue.md:110`, 2026-09-01 entry.
+63. **A widely-cited "occurs N times" / "M Greek words" trivia figure can
+    disagree with `assets/originals/*.json` by a small amount for a
+    completely innocent reason: our originals asset follows the
+    Textus-Receptus/Byzantine tradition behind the KJV, while many such
+    figures are conventionally quoted from the modern critical text
+    (NA27/28).** Found 2026-09-07 auditing `bible_trivia_page.dart`: 3
+    John's "219 Greek words" is 218 in our asset (one Byzantine word
+    split differently), and Mark's "euthus 41 times" is 43 by our
+    asset's combined G2117+G2112 count (NA28 uses only G2117). Neither
+    was changed — swapping in our own count would trade one brittle
+    number for another, and the instruction not to pick a versification
+    side extends to not picking a Greek-text-tradition side either. The
+    same audit DID find and fix a real error this reasoning does not
+    excuse: Luke 1:1-4 was claimed as "36 Greek words" with no
+    corroborating source anywhere and two independent tokenizations
+    (this session's + a refuter's, from a different Greek source)
+    agreeing on 42 — fixed to 42, all three locales, pinned by
+    `test/bible_trivia_counts_test.dart`. The distinguishing test: does
+    an independent count corroborate the shipped figure closely (small
+    gap, explicable by tradition), or does no source anywhere support it
+    (large gap, likely a fabricated/miscited number)?
 
 ## Trap: "local green" and "CI green" are different claims
 
