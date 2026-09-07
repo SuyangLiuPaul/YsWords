@@ -85,4 +85,58 @@ void main() {
     expect(body, contains('bootQueryParameters()'),
         reason: 'reading a live Uri.base here is what lost the link');
   });
+
+  test('bootHasShareLink sees each kind, and stays false without one', () {
+    for (final k in kShareLinkQueryKeys) {
+      setBootUriForTest(Uri.parse('https://host/?$k=x'));
+      expect(bootHasShareLink(), isTrue, reason: k);
+    }
+    setBootUriForTest(Uri.parse('https://host/'));
+    expect(bootHasShareLink(), isFalse);
+    setBootUriForTest(Uri.parse('https://host/?song='));
+    expect(bootHasShareLink(), isFalse,
+        reason: 'an empty value is not a link; `_handleDeepLink` ignores '
+            'it too, and a tour stood down for it would be stood down '
+            'for nothing');
+    setBootUriForTest(Uri.parse('https://host/?utm_source=wechat'));
+    expect(bootHasShareLink(), isFalse,
+        reason: 'an ordinary tracking query is not a shared link');
+  });
+
+  test('the key set is exactly what _handleDeepLink branches on', () {
+    // The two live far apart — one acts on these queries, the other
+    // stands aside for them — so a fourth share link added to the
+    // handler and forgotten here would silently put the onboarding
+    // dialog back on top of it.
+    final src = File('lib/main.dart').readAsStringSync();
+    final start = src.indexOf('Future<void> _handleDeepLink()');
+    final end = src.indexOf('@override', start);
+    expect(start, greaterThan(-1));
+    expect(end, greaterThan(start));
+    final body = src.substring(start, end);
+    final branched = RegExp(r"params\['(\w+)'\]")
+        .allMatches(body)
+        .map((m) => m.group(1)!)
+        .toSet();
+    expect(branched, kShareLinkQueryKeys);
+  });
+
+  test('the onboarding tour stands down before it checks "seen"', () {
+    // Order matters and is the whole fix: asking `hasSeen()` first and
+    // standing down second would still be correct, but standing down
+    // AFTER the dialog is shown would not — and the seen-flag is
+    // deliberately left unset either way, so the tour returns on the
+    // next ordinary visit.
+    final src = File('lib/pages/dashboard_page.dart').readAsStringSync();
+    final start = src.indexOf('Future<void> _maybeShowOnboarding()');
+    expect(start, greaterThan(-1));
+    final body = src.substring(start, src.indexOf('\n  }', start));
+    final gate = body.indexOf('bootHasShareLink()');
+    final show = body.indexOf('showDialog');
+    expect(gate, greaterThan(-1),
+        reason: 'a shared link must not be met with the first-run tour');
+    expect(gate, lessThan(show));
+    expect(body, isNot(contains('markSeen')),
+        reason: 'standing the tour down is not the same as consuming it');
+  });
 }

@@ -49,6 +49,7 @@ import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, localizedReferenceLabel;
 import 'package:yswords/widgets/left_accent_card.dart';
+import 'package:yswords/utils/boot_uri.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
 import 'package:yswords/widgets/press_scale.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
@@ -228,6 +229,21 @@ class _DashboardPageState extends State<DashboardPage> {
   /// mounts on a given device. Flagged in SharedPreferences so the
   /// dialog never re-appears (until we bump the version key).
   Future<void> _maybeShowOnboarding() async {
+    // A shared link stands the tour down. 2026-09-07, seen while
+    // verifying the song share on prod: a first-time visitor opening
+    // `/?song=cgdc:2026-04` got the four-slide "Welcome to Yahweh's
+    // Words" dialog stacked ON TOP of the song sheet the link had just
+    // opened. Whoever follows a shared link is a first-time visitor by
+    // definition, so that is not an edge — it is every recipient, every
+    // time, and it turns a link someone sent a friend into a modal
+    // about Bible versions.
+    //
+    // Stood down, not marked seen: they get the tour on their next
+    // ordinary visit, which is when it is actually about what they came
+    // for. The alternative — show the tour first, then the sheet — was
+    // not taken, because a toll gate in front of a link is still a toll
+    // gate whether it is stacked or sequential.
+    if (bootHasShareLink()) return;
     final seen = await OnboardingDialog.hasSeen();
     if (seen || !mounted) return;
     // Wait one frame so the dashboard scaffold is fully built before

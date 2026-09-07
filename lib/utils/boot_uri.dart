@@ -59,3 +59,20 @@ void resetBootUriForTest() => _bootUri = null;
 
 /// Test-only: pretend the app was launched at [uri].
 void setBootUriForTest(Uri uri) => _bootUri = uri;
+
+/// The query keys `_handleDeepLink` treats as "someone sent me here for
+/// this specific thing".
+///
+/// Kept as one named set because two places need the same answer and
+/// they are far apart: `_handleDeepLink`, which acts on them, and
+/// `DashboardPage._maybeShowOnboarding`, which must stand aside for
+/// them. `test/boot_uri_test.dart` checks this set against the branches
+/// in `_handleDeepLink`, so a fourth share link cannot be added to one
+/// and forgotten in the other.
+const Set<String> kShareLinkQueryKeys = {'song', 'sermon', 'verse'};
+
+/// Whether this launch came from a shared link.
+bool bootHasShareLink() {
+  final params = bootQueryParameters();
+  return kShareLinkQueryKeys.any((k) => (params[k] ?? '').isNotEmpty);
+}
