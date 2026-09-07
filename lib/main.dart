@@ -41,6 +41,7 @@ import 'package:yswords/services/web_update_checker.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart';
 import 'package:yswords/utils/jump_to_reference.dart' as jumper;
+import 'package:yswords/utils/boot_uri.dart';
 import 'package:yswords/utils/route_paths.dart' show songSharePath;
 import 'package:yswords/utils/reference_parser.dart' show BibleReference;
 import 'package:yswords/services/cloud_auth_service.dart';
@@ -85,6 +86,12 @@ void main() {
   // (`#/revelation/17:1?v=biblexg-v2`) before UrlSyncService.init
   // gets to read it. Native targets no-op.
   UrlSyncService.captureBootHash();
+  // 2026-09-07: the same snapshot for the QUERY, which never had one.
+  // The hash has been captured here since v1.3.61 because the engine
+  // overwrites the URL by first frame; `?song=` / `?sermon=` / `?verse=`
+  // were still being read live from `_handleDeepLink`, seconds later,
+  // once the splash was dismissed. See lib/utils/boot_uri.dart.
+  captureBootUri();
   // URL-routing Stage 2: must run before UrlSyncService.init's boot
   // check (below, inside the async bootstrap) so a boot hash like
   // `/#/about` is recognised as a registered route rather than
@@ -1382,7 +1389,14 @@ class _RootRouterState extends State<_RootRouter> {
     } catch (_) {
       return;
     }
-    final params = uri.queryParameters;
+    // The BOOT query, not the live one. `uri` is still read (and still
+    // the fallback inside `bootQueryParameters`) so nothing regresses
+    // where the capture never ran, but by the time this runs the splash
+    // has been dismissed and several seconds of boot have gone by with
+    // the URL under other hands.
+    final params = bootQueryParameters().isNotEmpty
+        ? bootQueryParameters()
+        : uri.queryParameters;
     final sermonId = params['sermon'];
     if (sermonId != null && sermonId.isNotEmpty) {
       // Deferred so the dashboard finishes building first.
