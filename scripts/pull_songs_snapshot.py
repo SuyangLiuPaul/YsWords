@@ -207,6 +207,70 @@ def check_regression(baseline_songs, incoming_songs):
     return problems
 
 
+def evaluate(songs, meta, by_source, baseline_songs, allow_regression=False):
+    """Splits problems with the incoming payload into two severities.
+
+    HARD problems mean the incoming payload itself cannot be trusted —
+    fewer rows than any real publish should ever have, or `_meta.count`
+    disagreeing with the rows actually present. These hold regardless
+    of what is currently bundled, so they always block the job.
+
+    SOFT problems are relative: a required source is missing or thin,
+    or the incoming file is a regression against the snapshot already
+    bundled. When a valid bundle exists to fall back on, refusing to
+    write it is enough — the reader keeps what they had, so an
+    upstream outage should not also turn this job red every day
+    (2026-09-04 through -07: four straight red runs over
+    `missing sources: ['setapak', 'ydh']`, which is yswords-data not
+    having built those fetchers yet, not a bug here). Only when there
+    is NO valid bundle to fall back on — first run, or a corrupted
+    checkout — do soft problems get promoted to hard: writing nothing
+    then would leave readers with nothing valid at all.
+
+    Returns (hard_problems, soft_problems); `soft_problems` is always
+    empty when `baseline_songs` is None, because everything is
+    promoted into `hard_problems` in that case.
+    """
+    hard = []
+    soft = []
+
+    if len(songs) < MIN_SONGS:
+        hard.append(f'only {len(songs)} songs (expected ≥{MIN_SONGS})')
+    if meta.get('count') != len(songs):
+        hard.append(f"_meta.count {meta.get('count')} != {len(songs)} rows")
+
+    missing = set(REQUIRED_SOURCES) - set(by_source)
+    if missing:
+        soft.append(f'missing sources: {sorted(missing)}')
+    for source, floor in REQUIRED_SOURCES.items():
+        if source in by_source and by_source[source] < floor:
+            soft.append(
+                f'{source} has only {by_source[source]} songs '
+                f'(expected ≥{floor})')
+
+    if baseline_songs is not None and not allow_regression:
+        soft.extend(check_regression(baseline_songs, songs))
+
+    if baseline_songs is None:
+        hard.extend(soft)
+        soft = []
+
+    return hard, soft
+
+
+def write_step_summary(text):
+    """Appends to the GitHub Actions step summary, if running in one.
+
+    A no-op locally (`GITHUB_STEP_SUMMARY` unset) — this is a visibility
+    aid for the CI run, not part of the pass/fail contract.
+    """
+    path = os.environ.get('GITHUB_STEP_SUMMARY')
+    if not path:
+        return
+    with open(path, 'a', encoding='utf-8') as f:
+        f.write(text)
+
+
 def main():
     ap = argparse.ArgumentParser(
         description=__doc__,
@@ -232,21 +296,6 @@ def main():
     meta = doc.get('_meta') or {}
     by_source = meta.get('bySource') or {}
 
-    problems = []
-    if len(songs) < MIN_SONGS:
-        problems.append(f'only {len(songs)} songs (expected ≥{MIN_SONGS})')
-    if meta.get('count') != len(songs):
-        problems.append(
-            f"_meta.count {meta.get('count')} != {len(songs)} rows")
-    missing = set(REQUIRED_SOURCES) - set(by_source)
-    if missing:
-        problems.append(f'missing sources: {sorted(missing)}')
-    for source, floor in REQUIRED_SOURCES.items():
-        if source in by_source and by_source[source] < floor:
-            problems.append(
-                f'{source} has only {by_source[source]} songs '
-                f'(expected ≥{floor})')
-
     baseline_songs = load_baseline()
     if baseline_songs is None:
         print('  (no bundled assets/songs.json to compare against — '
@@ -257,13 +306,28 @@ def main():
             print('  --allow-regression set; overriding these findings:')
             for p in regressions:
                 print(f'  • {p}')
-    else:
-        problems.extend(check_regression(baseline_songs, songs))
 
-    if problems:
+    hard_problems, soft_problems = evaluate(
+        songs, meta, by_source, baseline_songs,
+        allow_regression=args.allow_regression)
+
+    forwarding_note = (
+        f'This job pulls a file it does not produce. A missing or thin '
+        f'source is almost always upstream:\n'
+        f'    • the published file: {args.url}\n'
+        f'      — check `_meta.generatedAt`; if it is days old, nothing '
+        f'has been published since\n'
+        f'      — check `_meta.sourceHealth`; if present, upstream is '
+        f'telling you which source it could not fetch\n'
+        f'    • the job that writes it: yswords-data → Actions → '
+        f'"Refresh songs"\n'
+        f'  Nothing in THIS repo can fix a source upstream is not '
+        f'publishing.')
+
+    if hard_problems:
         print('ERROR: refusing to write a suspect snapshot:',
               file=sys.stderr)
-        for p in problems:
+        for p in hard_problems:
             print(f'  • {p}', file=sys.stderr)
         # 2026-09-05: this job went red for two days over
         # `missing sources: ['setapak', 'ydh']` and nothing here told
@@ -273,18 +337,31 @@ def main():
         # repo was the only place the breakage was visible and the
         # least useful place to start looking. The guard was right;
         # what it lacked was a forwarding address.
-        print(f'\n  This job pulls a file it does not produce. A missing or '
-              f'thin source is almost always upstream:\n'
-              f'    • the published file: {args.url}\n'
-              f'      — check `_meta.generatedAt`; if it is days old, '
-              f'nothing has been published since\n'
-              f'      — check `_meta.sourceHealth`; if present, upstream '
-              f'is telling you which source it could not fetch\n'
-              f'    • the job that writes it: yswords-data → Actions → '
-              f'"Refresh songs"\n'
-              f'  Nothing in THIS repo can fix a source upstream is not '
-              f'publishing.', file=sys.stderr)
+        print(f'\n  {forwarding_note}', file=sys.stderr)
         return 1
+
+    if soft_problems:
+        # 2026-09-07: distinct from the hard case above — the incoming
+        # payload is thin/stale but the CURRENTLY BUNDLED file is still
+        # valid and is not being touched, so this is not a broken
+        # offline experience, just an upstream outage. Warn loudly
+        # (::warning:: + step summary) and exit 0 rather than hijacking
+        # this loop's "is CI green" check every single day for an
+        # alarm yswords-data's own workflow already raises.
+        for p in soft_problems:
+            print(f'::warning::{p}', file=sys.stderr)
+        print('Upstream publish is thin or stale; keeping the currently '
+              'bundled assets/songs.json unchanged:', file=sys.stderr)
+        for p in soft_problems:
+            print(f'  • {p}', file=sys.stderr)
+        print(f'\n  {forwarding_note}', file=sys.stderr)
+        write_step_summary(
+            '### Sync songs: upstream publish is thin or stale\n\n'
+            'Kept the currently bundled `assets/songs.json` unchanged '
+            'rather than overwrite it with a worse one.\n\n'
+            + ''.join(f'- {p}\n' for p in soft_problems)
+            + f'\n{forwarding_note}\n')
+        return 0
 
     # Upstream marks a source degraded when its fetch was observably
     # incomplete and the stored rows were carried forward instead. That

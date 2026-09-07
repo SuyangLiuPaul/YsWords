@@ -1824,6 +1824,25 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     an independent count corroborate the shipped figure closely (small
     gap, explicable by tradition), or does no source anywhere support it
     (large gap, likely a fabricated/miscited number)?
+64. **This repo's `Sync songs` workflow used to conflate "upstream
+    hasn't published a source" with "the incoming file is bad," and
+    both failed the job the same way.** `scripts/pull_songs_snapshot.py`
+    correctly refuses to overwrite `assets/songs.json` with a worse
+    snapshot, but through 2026-09-07 it also exited 1 whenever
+    `yswords-data`'s published catalogue was thin — four straight red
+    runs (09-04 through 09-07) over `missing sources: ['setapak',
+    'ydh']`, which is `yswords-data` not having built those fetchers
+    yet (see traps 7/8 above, which are about a DIFFERENT script,
+    `sync_songs.py`, in the `yswords-data` repo — do not conflate the
+    two). Fixed 2026-09-07: the guard now splits `hard_problems`
+    (incoming payload itself is bad — always exit 1) from
+    `soft_problems` (a required source missing/thin, or a regression,
+    while the currently-bundled snapshot is still valid — warns via
+    `::warning::` + a step summary and exits 0, bundle untouched
+    either way). See `test/test_pull_songs_snapshot.py`. **A red run on
+    this workflow now means something is genuinely wrong**, not
+    routine upstream lag — restore that meaning by not reverting the
+    hard/soft split.
 
 ## Trap: "local green" and "CI green" are different claims
 

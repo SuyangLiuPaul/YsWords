@@ -13167,6 +13167,54 @@ so the bundle-size answer stays on the record.
       pattern is registered, the hooks are executable, and a deliberate
       test commit containing a fake token is refused.
 
+- [x] **`Sync songs` went red four days running over an upstream outage,
+      not a bug in this repo — fixed by splitting the guard's exit code
+      from its refusal to write.** `scripts/pull_songs_snapshot.py`
+      refuses to overwrite `assets/songs.json` with a worse snapshot,
+      which is correct — but it also exited 1 (failing THIS repo's CI)
+      whenever upstream's published catalogue was thin, even though the
+      bundled asset was untouched and still valid. Runs 33846559729
+      (09-04), 33950538874 (09-05), 34017644643 (09-06), 34093495119
+      (09-07) all failed on `missing sources: ['setapak', 'ydh']`.
+      Root cause is entirely upstream, in `yswords-data`: its own
+      `Refresh songs` workflow (cron `0 18 * * *`) last succeeded at
+      run 33914208775 (09-04 20:02 UTC), then failed at 33987959174
+      (09-05) and 34055926024 (09-06 19:46, "Nothing was published this
+      run") — its own refuse-to-write guard, working as designed, on a
+      dataset missing the `setapak`/`ydh` fetchers. Confirmed live
+      2026-09-07 ~08:40 UTC: published file still 621 songs / four
+      sources, `generatedAt` 2026-08-30T11:03:57Z (upstream cron hasn't
+      run since); locally bundled `assets/songs.json` still 628 songs
+      across all six sources, `generatedAt` 2026-09-03 — the guard did
+      exactly its job. Two upstream fixes ("a 429 means slow down, not
+      gone"; "a dead link degrades the run, it no longer withholds the
+      catalogue") landed after the last failed run, so as of this
+      writing neither has been exercised by an actual refresh yet.
+
+      Fix, in this repo only: `scripts/pull_songs_snapshot.py` now
+      splits `problems` into `hard_problems` (the incoming payload
+      itself is bad — too few rows overall, `_meta.count` mismatch;
+      always blocks, baseline or not) and `soft_problems` (a specific
+      required source missing/thin, or a regression vs. the currently
+      bundled snapshot — refused-but-harmless when a valid bundle
+      already covers it). Soft-only runs now print `::warning::` lines,
+      write a GitHub step-summary block naming the missing sources, and
+      **exit 0**; hard problems still exit 1. `assets/songs.json` is
+      never touched either way — only the exit code changed. New
+      `test/test_pull_songs_snapshot.py` (stdlib `unittest`, no pytest
+      dependency) pins the split with 7 cases, all confirmed to fail
+      against the pre-fix script (`AttributeError: no attribute
+      'evaluate'` — the function didn't exist yet). Manually replayed
+      both the real thin-upstream payload (628→621, setapak+ydh
+      dropped) and a deliberately corrupt one (`_meta.count` mismatch)
+      through the CLI via `file://` URLs: exit 0 / unchanged bundle for
+      the former, exit 1 / unchanged bundle for the latter.
+
+      Not fixed here, and not this repo's to fix: upstream's fetchers
+      for `setapak`/`ydh` not existing yet, or its `Refresh songs`
+      workflow's own red streak — those are `yswords-data` issues,
+      tracked there.
+
 ## P3 — known but blocked or deferred
 
 - [x] **EC018 / EC019 sermon transcripts — T7 checked, DONE 2026-09-05,
