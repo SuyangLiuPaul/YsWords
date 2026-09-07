@@ -248,8 +248,10 @@ def check() -> int:
         book = os.path.basename(path)[:-5]
         for vref, runs in load(path).items():
             for r in runs:
-                s = r.get('s', '')
-                if s and not re.fullmatch(r'[GH]\d+', s):
+                if 's' not in r or r['s'] == '':
+                    continue  # absent or empty: no annotation, not a defect
+                s = r['s']
+                if not isinstance(s, str) or not re.fullmatch(r'[GH]\d+', s):
                     bad_strongs.append(f'{book} {vref} s={s!r}')
     if bad_strongs:
         problems.append(

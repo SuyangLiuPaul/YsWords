@@ -13549,19 +13549,42 @@ so the bundle-size answer stays on the record.
       `tools/release_web.sh`'s pre-flight (6.3s with a warm cache, adds a
       real gate before every deploy but not before every push)?
 
-- [ ] **2026-09-08 FILED, not fixed — `tools/audit_p0.py`'s new `check()`
-      would silently pass a tagged run whose Strong's field is explicit
-      JSON `null` instead of absent or a string.** Found by the refuter
-      run before committing the CI-wiring item above (`:13516`).
-      `s = r.get('s', '')` at `tools/audit_p0.py:242` only applies the
-      `''` default when the `s` key is *missing*; a record holding
-      `"s": null` yields `s = None`, and `if s and not re.fullmatch(...)`
-      short-circuits false on `None` without ever running the regex — so
-      a malformed-by-null record would be reported as fine. No such
-      record exists in `assets/tagged/cuvs-yhwh/*.json` today (checked:
-      zero `None`/non-string `s` values across the whole corpus), so this
-      is not live drift, just a check that doesn't actually cover the
-      case it claims to. One-line fix: `s = r.get('s') or ''`.
+- [x] **2026-09-08 FILED, 2026-09-08 FIXED — `tools/audit_p0.py`'s
+      `check()` would silently pass a tagged run whose Strong's field is
+      explicit JSON `null` instead of absent or a string.** Root cause as
+      filed: `s = r.get('s', '')` at (then) `:242`, now `:251`, only
+      applies the `''` default when the `s` key is *missing*; a record
+      holding `"s": null` yields `s = None`, and
+      `if s and not re.fullmatch(...)` short-circuits false on `None`
+      without ever running the regex. Confirmed zero `None`/non-string `s`
+      values exist in `assets/tagged/cuvs-yhwh/*.json` today (re-scanned
+      before fixing, not just inherited from the filing) — not live
+      drift, a coverage gap.
+      **The one-line fix this entry proposed, `s = r.get('s') or ''`, is
+      wrong and does not fix anything** — caught before committing, both
+      by direct simulation and by a refuter subagent asked to break the
+      claim, and confirmed a third way by literally re-running the new
+      test against the pre-fix line via `git stash`. `None or ''` is
+      still `''`, and `''` is exactly as falsy as `None`, so
+      `if s and ...` still short-circuits — the "fix" changes the value's
+      type but not its truthiness, so it is a no-op for this exact bug.
+      No expression of the form `r.get('s', ...)` or `r.get('s') or ...`
+      can distinguish "key absent" from "key present holding a falsy
+      value" — `.get`'s default only substitutes when the key is missing.
+      Actual fix: check `'s' not in r or r['s'] == ''` (skip — absent or
+      empty is fine) before reading `r['s']`, then flag when it is
+      `not isinstance(s, str) or not re.fullmatch(r'[GH]\d+', s)` — this
+      is the only formulation that treats explicit `null` differently
+      from "no annotation". `python3 tools/audit_p0.py --check` still
+      exits 0 against the real corpus. Added
+      `test/test_audit_p0_check.py` (6 cases: null-caught, the old line
+      replayed to prove it misses the same fixture, clean-passes,
+      malformed-string-still-caught, locale-parity-both-directions) and
+      wired it into `flutter-ci.yml` as its own step beside the audit —
+      hermetic (tempdirs only), so unlike the rest of `test/*.py` it's
+      safe to run unconditionally rather than needing the
+      gitignored-corpus skip guard. Full `flutter test` suite (2496
+      cases) still green; no assets touched.
 
 ## Blocked on the user — do not attempt
 

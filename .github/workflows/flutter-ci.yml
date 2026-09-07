@@ -152,6 +152,15 @@ jobs:
       - name: P0 sermon/tagged-corpus invariants
         run: python3 tools/audit_p0.py --check
 
+      # Unit tests for the gate above (test/test_audit_p0_check.py), added
+      # 2026-09-08. Deliberately NOT `python3 -m unittest discover test`:
+      # most files under test/ load gitignored, locally-staged corpora and
+      # were the cause of a prior CI-red/local-green split (see that
+      # file's own comment). This one file is pure tempdirs, no assets, so
+      # it is safe to run unconditionally.
+      - name: P0 audit gate unit tests
+        run: python3 test/test_audit_p0_check.py
+
       - name: Test
         run: flutter test --reporter expanded
 
