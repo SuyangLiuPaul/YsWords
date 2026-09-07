@@ -134,6 +134,33 @@ String evidencePath({String? book, int? chapter}) {
 String songSubPagePath(String songId, String leaf) =>
     '/songs/${Uri.encodeComponent(songId)}/$leaf';
 
+/// The shareable path for one song: `/songs?song=<id>`.
+///
+/// A QUERY on the already-registered `/songs`, deliberately, not a new
+/// `/songs/:songId` route. Two registered siblings are literal and two
+/// segments long — `/songs/downloads` and `/songs/playlists` — so a
+/// two-segment TEMPLATE beside them is a collision, and `main.dart`
+/// already carries a warning that routes nested under `/songs` have
+/// fallen through to `SongsPage` before. `/settings` + `/settings/:section`
+/// is not a precedent for it: those differ in segment COUNT, which is
+/// what `matchesRegisteredRoute` keys on.
+///
+/// `/evidence?book=John&chapter=3` is the precedent that fits — an
+/// optional parameter riding in the query of an already-registered
+/// route, populated into `Get.parameters` by a named push, with the
+/// query stripped before route matching.
+String songSharePath(String songId) =>
+    '/songs?song=${Uri.encodeComponent(songId)}';
+
+/// The same, absolute, for putting on a clipboard or into a share sheet.
+///
+/// Resolved against `Uri.base` rather than a hard-coded origin, the way
+/// `song_score_page.dart` resolves media, so it is correct on every
+/// deploy target — the four Netlify sites, both prod domains and
+/// `yahwehword.com` alike. The `#/` is the app's hash routing.
+String songShareUrl(String songId) =>
+    Uri.base.resolve('#${songSharePath(songId)}').toString();
+
 /// Strips a raw `window.location.hash` down to the route path it names,
 /// keeping any query string, or returns null for an empty/root hash.
 ///

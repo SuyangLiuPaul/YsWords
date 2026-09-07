@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:yswords/constants/song_source_icons.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yswords/utils/route_paths.dart'
+    show songShareUrl;
 import 'package:yswords/utils/song_copy.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/models/app_settings.dart';
@@ -58,7 +60,14 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 /// rehosted. All catalogues are published by our own church's
 /// pastors, who approved in-app playback.
 class SongsPage extends StatefulWidget {
-  const SongsPage({super.key});
+  /// The song a shared `/songs?song=<id>` link named, if any.
+  ///
+  /// Opens this page's own detail sheet for that song once the list has
+  /// loaded. A link cannot open a sheet the way it opens a page, so the
+  /// page opens it — which is also why this is a query on `/songs`
+  /// rather than a `/songs/:songId` route: see `songSharePath`.
+  final String? openSongId;
+  const SongsPage({super.key, this.openSongId});
 
   @override
   State<SongsPage> createState() => _SongsPageState();
@@ -128,6 +137,33 @@ class _SongsPageState extends State<SongsPage> {
     super.initState();
     _future = SongService.load();
     SongPlayerService.instance.addListener(_onPlayerChanged);
+    _openSharedSong();
+  }
+
+  /// Opens the detail sheet for a shared link's song, once.
+  ///
+  /// Awaits the SAME future the list is built from rather than loading
+  /// again — `SongService.load()` is cached, but calling it twice here
+  /// would still be two code paths that could disagree about which song
+  /// an id names. A link naming an id that is not in the catalogue does
+  /// nothing at all: the reader lands on the songs list, which is where
+  /// they were going anyway, rather than on an error about an id they
+  /// never typed.
+  Future<void> _openSharedSong() async {
+    final wanted = widget.openSongId;
+    if (wanted == null || wanted.isEmpty) return;
+    final songs = await _future;
+    if (!mounted || songs == null) return;
+    Song? found;
+    for (final s in songs) {
+      if (s.id == wanted) {
+        found = s;
+        break;
+      }
+    }
+    if (found == null || !mounted) return;
+    final settings = Provider.of<AppSettings>(context, listen: false);
+    await showSongDetailSheet(context, found, settings, settings.locale);
   }
 
   @override
@@ -1462,26 +1498,8 @@ class _SongTile extends StatelessWidget {
     required this.onPlay,
   });
 
-  void _openDetail(BuildContext context) {
-    showModalBottomSheet<void>(
-      // useSafeArea: without it Flutter wraps the sheet in
-      // MediaQuery.removePadding(removeTop: true), so any SafeArea
-      // INSIDE the sheet sees padding.top == 0 and does nothing —
-      // the header then draws under the clock and the notch.
-      useSafeArea: true,
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => _SongDetailSheet(
-        song: song,
-        settings: settings,
-        locale: locale,
-      ),
-    );
-  }
+  void _openDetail(BuildContext context) =>
+      showSongDetailSheet(context, song, settings, locale);
 
   @override
   Widget build(BuildContext context) {
@@ -1900,6 +1918,38 @@ class _PlayButton extends StatelessWidget {
 /// Detail sheet: everything the catalogue holds for one song —
 /// alternate mixes, video, score, lyrics, and the link back to the
 /// church's own page.
+/// Opens the song detail sheet — the one a shared link lands on.
+///
+/// Extracted from `_SongTile` on 2026-09-07 so that a tapped row and a
+/// `/songs?song=<id>` link open the SAME sheet. A second copy of this
+/// call would have been a second sheet to keep in step, and the two
+/// would have drifted the first time either grew an argument.
+Future<void> showSongDetailSheet(
+  BuildContext context,
+  Song song,
+  AppSettings settings,
+  String locale,
+) {
+  return showModalBottomSheet<void>(
+    // useSafeArea: without it Flutter wraps the sheet in
+    // MediaQuery.removePadding(removeTop: true), so any SafeArea
+    // INSIDE the sheet sees padding.top == 0 and does nothing —
+    // the header then draws under the clock and the notch.
+    useSafeArea: true,
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).colorScheme.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) => _SongDetailSheet(
+      song: song,
+      settings: settings,
+      locale: locale,
+    ),
+  );
+}
+
 class _SongDetailSheet extends StatelessWidget {
   final Song song;
   final AppSettings settings;
@@ -1995,6 +2045,24 @@ class _SongDetailSheet extends StatelessWidget {
                     icon: const Icon(Icons.copy_outlined, size: 20),
                     tooltip: uiStrings['copySelection']?[locale] ?? 'Copy',
                     onPressed: () => _copy(context, songCopyText(song, locale)),
+                  ),
+                  // Share: a LINK back to this sheet, and deliberately
+                  // nothing else.
+                  //
+                  // Not the lyrics. The Lyrics section below already has
+                  // its own copy button for anyone who wants the text on
+                  // purpose; a share that quietly carried it would push
+                  // a publisher's words out to a group chat every time
+                  // someone meant to pass on a song. Title and link is
+                  // what "share this song" means.
+                  IconButton(
+                    icon: const Icon(Icons.share_outlined, size: 20),
+                    tooltip: uiStrings['share']?[locale] ?? 'Share',
+                    onPressed: () => ClipboardHelper.shareOrCopy(
+                      context,
+                      '${song.title}\n${songShareUrl(song.id)}',
+                      title: song.title,
+                    ),
                   ),
                   // Downloading was bulk-only: you could take the whole
                   // filter offline but not the one hymn you are looking

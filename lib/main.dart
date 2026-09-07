@@ -181,9 +181,17 @@ final List<GetPage> _registeredGetPages = [
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,
   ),
+  // `?song=<id>` opens this page's own detail sheet for that song: the
+  // shareable link the player never had. A QUERY on this registered
+  // route, not a new `/songs/:songId` one — `/songs/downloads` and
+  // `/songs/playlists` below are LITERAL and two segments long, so a
+  // two-segment template beside them collides, and the note on them
+  // already records that routes nested under `/songs` have fallen
+  // through to SongsPage before. Same shape as `/evidence?book=…`.
+  // See `songSharePath` for the whole argument.
   GetPage(
     name: '/songs',
-    page: () => const SongsPage(),
+    page: () => SongsPage(openSongId: Get.parameters['song']),
     transition: Transition.rightToLeft,
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,
