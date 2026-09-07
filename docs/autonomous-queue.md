@@ -172,6 +172,21 @@ reported. Work these top-down before P2.
       session's own NEXT_TASK.md warning, no version bump or deploy this
       turn to avoid racing its release. Next iteration more than 6 turns
       out should fold this in if nobody else has deployed it by then.
+      **Update, same day, later hour**: the edit above was never actually
+      committed — it sat as an unstaged working-tree diff while a second
+      session ran a full release cycle around it (v1.5.13 shipped without
+      it). Verified by `git log` (no commit touches
+      `bible_trivia_page.dart`) and by curling both
+      `yswords-dev.netlify.app/main.dart.js` and
+      `yswords-qat.netlify.app/main.dart.js` at v1.5.13: both still
+      contain `36-word Greek`, zero `4x-word Greek`. Committed now in
+      `d19d8032` together with the two pinning suites. **Still not
+      deployed** — dev/qat serve v1.5.13 with the old 36-word copy as of
+      this commit. Next iteration: after the next dev/qat release, confirm
+      `42-word Greek` (not `36-word Greek`) actually shows up in
+      `main.dart.js` on both sites before ticking this off as delivered —
+      do not assume a release that happens to come after this commit
+      picked it up.
 
 - [x] **2026-09-07 FIXED — two `uiStrings` entries still told readers the
       sermon library was 289, and both are live surfaces (onboarding's
