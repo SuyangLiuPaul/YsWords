@@ -134,6 +134,24 @@ jobs:
       - name: Boot splash auto-recovery logic
         run: node tools/check_boot_autorecover.js
 
+      # P0 scripture-accuracy census (tools/audit_p0.py), read-only,
+      # committed assets only, no network. Filed 2026-09-07: the script
+      # existed but nothing ran it, so a regression in sermon-locale file
+      # parity or in the tagged word-tap corpus's Strong's-code format
+      # would only be found by someone remembering to run it by hand.
+      # `--check` asserts invariants (zh-TW/zh-CN file-count parity;
+      # every tagged Strong's code matches [GH]\d+), not frozen counts —
+      # a hardcoded total would turn CI red the next time a sermon is
+      # legitimately added. `tools/audit_originals_compounds.py`'s own
+      # `--check` is NOT here: it never fetches — it SKIPS (exit 0) if
+      # `.cache/originals/` isn't already warm, which on a bare runner is
+      # always. Wiring it in would be a step that always passes vacuously,
+      # and warming the cache would reintroduce the cold network fetch
+      # commit 04cbdcdd deliberately removed from this CI. It stays a
+      # local pre-release check.
+      - name: P0 sermon/tagged-corpus invariants
+        run: python3 tools/audit_p0.py --check
+
       - name: Test
         run: flutter test --reporter expanded
 

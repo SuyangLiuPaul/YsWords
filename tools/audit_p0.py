@@ -7,8 +7,9 @@
 
 Why this exists
 ---------------
-The P0 backlog is 56 items over two 6.4 MB scripture JSONs, 66 tagged-corpus
-files and 289 Traditional sermon files. The expensive way to work it is to
+The P0 tier in docs/autonomous-queue.md holds 107 items (12 still open as
+of 2026-09-08), spanning two 6.4 MB scripture JSONs, 66 tagged-corpus
+files and 429 Traditional sermon files. The expensive way to work it is to
 read those assets into a model's context — twice as expensive if two agents
 each read their own copy. This script emits COUNTS AND VERSE IDS instead, so
 the reading is done once by grep-speed code and the judgement is done on a
@@ -56,6 +57,7 @@ TR = os.path.join(ROOT, 'assets/cuvs-yhwh-tr.json')
 HANS = os.path.join(ROOT, 'assets/cuvs-yhwh.json')
 TAGGED = os.path.join(ROOT, 'assets/tagged/cuvs-yhwh')
 SERMONS_TW = os.path.join(ROOT, 'assets/sermons/zh-TW')
+SERMONS_CN = os.path.join(ROOT, 'assets/sermons/zh-CN')
 
 
 def load(path):
@@ -189,7 +191,7 @@ def section_tagged():
 
 
 # ── 4. Traditional sermons ────────────────────────────────────────────
-# 289 files, also disjoint from everything above.
+# 429 files, also disjoint from everything above.
 def section_sermons():
     print('\n=== 4. TRADITIONAL SERMON ASSETS ===')
     files = sorted(glob.glob(os.path.join(SERMONS_TW, '*')))
@@ -218,8 +220,56 @@ SECTIONS = {
     'sermons': section_sermons,
 }
 
+
+# ── --check: CI gate, exits non-zero on real drift ──────────────────────
+# Deliberately narrow. This asserts INVARIANTS that stay true as the
+# corpus legitimately grows, not the counts printed above — a hardcoded
+# "== 429" would turn CI red the next time a sermon is added, which is
+# the same class of self-inflicted failure commit 04cbdcdd just removed
+# from this repo's CI. What IS checked:
+#   1. sermon locale parity — zh-TW and zh-CN should hold one file each
+#      per sermon, so their file counts should always match.
+#   2. every tagged run's Strong's code is well-formed ([GH]\d+) or
+#      empty — 'other non-conforming s' in section 3 should be empty.
+# Both hold today by construction; this exists so a future regression in
+# either is caught before it ships, not discovered by the next audit.
+def check() -> int:
+    problems = []
+
+    tw = [f for f in glob.glob(os.path.join(SERMONS_TW, '*')) if os.path.isfile(f)]
+    cn = [f for f in glob.glob(os.path.join(SERMONS_CN, '*')) if os.path.isfile(f)]
+    if len(tw) != len(cn):
+        problems.append(
+            f'sermon locale parity: zh-TW has {len(tw)} files, '
+            f'zh-CN has {len(cn)}')
+
+    bad_strongs = []
+    for path in sorted(glob.glob(os.path.join(TAGGED, '*.json'))):
+        book = os.path.basename(path)[:-5]
+        for vref, runs in load(path).items():
+            for r in runs:
+                s = r.get('s', '')
+                if s and not re.fullmatch(r'[GH]\d+', s):
+                    bad_strongs.append(f'{book} {vref} s={s!r}')
+    if bad_strongs:
+        problems.append(
+            f'{len(bad_strongs)} tagged run(s) with a malformed Strong\'s '
+            f'code, e.g. {bad_strongs[0]}')
+
+    if problems:
+        print('FAIL:')
+        for p in problems:
+            print(f'  {p}')
+        return 1
+    print('OK: sermon locale parity holds; every tagged Strong\'s code is '
+          'well-formed.')
+    return 0
+
+
 if __name__ == '__main__':
     args = sys.argv[1:]
+    if '--check' in args:
+        sys.exit(check())
     if '--refs' in args:
         i = args.index('--refs')
         section_glyphs(show_refs=args[i + 1])

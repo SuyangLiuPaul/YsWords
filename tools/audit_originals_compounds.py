@@ -36,9 +36,14 @@ against Strong's, rather than OSHB's `lemma="…+"`.
     python3 tools/audit_originals_compounds.py            # Hebrew counts
     python3 tools/audit_originals_compounds.py --greek    # Greek counts
     python3 tools/audit_originals_compounds.py --samples  # + examples
+    python3 tools/audit_originals_compounds.py --check    # exit 1 on drift
 
 Reads the sources build_originals.py caches under `.cache/originals/`,
-fetching any that are missing.
+fetching any that are missing — except `--check`, which never fetches:
+it skips (exit 0) if the cache isn't already warm. That makes `--check`
+a local pre-release gate, by design NOT wired into GitHub CI, which has
+no cache and would otherwise pay a large cold download plus a hard
+dependency on raw.githubusercontent.com being up.
 """
 
 from __future__ import annotations
@@ -134,13 +139,83 @@ def audit_greek(samples: bool) -> None:
             print(f'      {s}')
 
 
+def cache_ready() -> bool:
+    """True if every source file this audit needs is already sitting in
+    `.cache/originals/` — i.e. running it will not trigger a network fetch."""
+    needed = [f'morphhb-{osis}.xml' for osis, _ in B.OSIS_HEBREW]
+    needed.append('opengnt.zip')
+    return all(os.path.exists(os.path.join(B.CACHE_DIR, name))
+               for name in needed)
+
+
+def hebrew_drift() -> list[str]:
+    """Shipped Hebrew OT (chapter:verse) refs `build_originals.py` no
+    longer reproduces from a warm cache. The honest invariant this
+    script's docstring claims to guard — nothing else it prints matters
+    if this isn't checked."""
+    drift: list[str] = []
+    for osis, english in B.OSIS_HEBREW:
+        slug = english.lower().replace(' ', '_')
+        with open(os.path.join(ORIGINALS_DIR, f'{slug}.json'),
+                  encoding='utf-8') as f:
+            shipped = json.load(f)
+        rebuilt = B.parse_morphhb_book(osis)
+        for cv, words in shipped.items():
+            if rebuilt.get(cv) != words:
+                drift.append(f'{english} {cv}')
+    return drift
+
+
+def greek_drift() -> list[str]:
+    """Same question, Greek NT side."""
+    by_book = B.parse_opengnt()
+    drift: list[str] = []
+    for english, rebuilt in by_book.items():
+        slug = english.lower().replace(' ', '_')
+        with open(os.path.join(ORIGINALS_DIR, f'{slug}.json'),
+                  encoding='utf-8') as f:
+            shipped = json.load(f)
+        for cv, words in shipped.items():
+            if rebuilt.get(cv) != words:
+                drift.append(f'{english} {cv}')
+    return drift
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--samples', action='store_true',
                     help='print example references for each class')
     ap.add_argument('--greek', action='store_true',
                     help='audit the Greek NT instead of the Hebrew OT')
+    ap.add_argument('--check', action='store_true',
+                    help='exit 1 if build_originals.py no longer '
+                         'reproduces a shipped verse (Hebrew + Greek); '
+                         'skip cleanly, exit 0, if .cache/originals/ is '
+                         'not already warm — this NEVER fetches over the '
+                         'network. A local pre-release check, not a CI '
+                         'gate: keep it out of GitHub Actions.')
     args = ap.parse_args()
+
+    if args.check:
+        if not cache_ready():
+            print('SKIP: .cache/originals/ is not warm (some source '
+                  'files are missing) — not fetching over the network. '
+                  'Run `python3 tools/audit_originals_compounds.py` '
+                  '(and `--greek`) once locally to warm the cache, then '
+                  're-run --check.')
+            return 0
+        drift = hebrew_drift() + greek_drift()
+        if drift:
+            print(f'FAIL: {len(drift)} shipped verse(s) '
+                  f'build_originals.py no longer reproduces:')
+            for ref in drift[:20]:
+                print(f'  {ref}')
+            if len(drift) > 20:
+                print(f'  … {len(drift) - 20} more')
+            return 1
+        print('OK: build_originals.py reproduces every shipped Hebrew OT '
+              'and Greek NT verse (0 drift).')
+        return 0
 
     if args.greek:
         audit_greek(args.samples)

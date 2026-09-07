@@ -10634,6 +10634,13 @@ has never seen this repo.
       the only open P2 checkbox, and the question above to the user is
       still unanswered.
 
+      **Deferred an eighth consecutive iteration, 2026-09-08** — this
+      hour's NEXT_TASK.md picked landing the two audit-scripts' `--check`
+      modes (P3, items above) instead. Still branch-scale, still
+      unattended-unsafe, still the only open P2 checkbox, and the question
+      above to the user is still unanswered: start the `GetMaterialApp` →
+      `.router` migration branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -13497,27 +13504,39 @@ so the bundle-size answer stays on the record.
       web_verify_headless.mjs`); no `lib/`/`web/` touched, nothing
       user-facing, no deploy.
 
-- [ ] **2026-09-07 FILED, not fixed — `tools/audit_p0.py`'s docstring says
-      "289 Traditional sermon files" against a real 429-file corpus.**
-      Found while doing the 隻/只 sermon-glyph fallback item above; the
-      script's own section 4 output disagrees with its own docstring. A
-      one-line docstring fix, but this iteration's brief was that specific
-      item, not a docstring sweep — leaving it named rather than doing it
-      inline and forgetting it, per this loop's own standing instruction.
+- [x] **2026-09-07 FILED, 2026-09-08 FIXED — `tools/audit_p0.py`'s docstring
+      said "289 Traditional sermon files" against a real 429-file corpus.**
+      Fixed the stale count and, while in there, also fixed a second stale
+      number in the same sentence: "The P0 backlog is 56 items" no longer
+      matched `docs/autonomous-queue.md` (counted directly: the P0 section
+      holds 107 checkboxes, 12 still `[ ]`). Docstring now says "107 items
+      (12 still open as of 2026-09-08)" rather than swapping one bare
+      number for another.
 
-- [ ] **2026-09-07 FILED, not fixed — neither `tools/audit_p0.py` nor
-      `tools/audit_originals_compounds.py` is invoked by any test or CI.**
-      Checked: no test file imports or shells out to either, and neither
-      appears in `.github/workflows/`. Both are read-only census scripts,
-      so this is not silent data corruption, but it means
-      `audit_originals_compounds.py`'s stated purpose — "make sure the
-      repair stayed applied" as a guard against a `build_originals.py`
-      regression — cannot actually catch one; nothing runs it. The fix is
-      presumably a CI step or a wrapper test that shells out and checks the
-      exit code, not a rewrite of either script — worth a look next time
-      tier 5 (systemic tooling defects) comes up for real, per this loop's
-      "only when they have actually caused a shipped failure" rule; this
-      hasn't yet, since both still run clean by hand.
+- [ ] **2026-09-07 FILED, 2026-09-08 HALF-FIXED — neither `tools/audit_p0.py`
+      nor `tools/audit_originals_compounds.py` was invoked by any test or
+      CI.** `audit_p0.py` now has a `--check` mode (invariant-based: zh-TW/
+      zh-CN sermon file-count parity, every tagged Strong's code well-formed
+      `[GH]\d+`) wired into `.github/workflows/flutter-ci.yml`'s
+      `analyze-and-test` job, before `flutter test`. Verified clean locally:
+      `OK: sermon locale parity holds; every tagged Strong's code is
+      well-formed.` (0.75s). This has never run on a GitHub runner yet —
+      watch the first CI run after this push.
+      `audit_originals_compounds.py` also gained `--check` (drift-detection:
+      re-parses the cached MorphHB/OpenGNT sources and diffs against every
+      shipped Hebrew OT + Greek NT verse; verified clean locally in 6.3s —
+      "0 drift" — with a warm `.cache/originals/`), but it is **deliberately
+      NOT in CI**: it needs `.cache/originals/` warm (~40 files) and skips
+      vacuously (exit 0) rather than fetching when it's cold, which on a
+      bare GitHub runner is always. Wiring it in as-is would be a step that
+      always passes without checking anything; warming the cache in CI means
+      reintroducing the cold network fetch commit `04cbdcdd` deliberately
+      removed. So half of this item is done (`audit_p0.py` is CI-gated) and
+      half is still open by necessity, not oversight. **Open question for
+      the user:** accept `audit_originals_compounds.py --check` as a
+      local-only pre-release habit, or wire it into
+      `tools/release_web.sh`'s pre-flight (6.3s with a warm cache, adds a
+      real gate before every deploy but not before every push)?
 
 ## Blocked on the user — do not attempt
 
