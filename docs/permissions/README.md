@@ -47,6 +47,36 @@ as the app it would govern, if it ever does.
 Both belong to Raymond / Paul, not to this repo. The 雅伟的话 note
 raises the same two against *that* project, which does ship the text.
 
+### 2026-09-07 — the licensee extends it to yahwehword.com
+
+In the Yahwehdehua Work Group (Aunty Rosa, Pastor Raymond HK, Peter and
+the owner), **Pastor Raymond** — who is the Raymond Suen named as
+licensee on the grant above — sent this PDF at 1:14 pm with "we have
+permission to use HCSB, can add that", and at 1:28 pm added:
+
+> we can stretch this permission to cover your Yahwehword.com
+
+Recorded here as reported by the owner, who was in that group.
+
+**What it settles.** Gate 2. The objection was that the grant runs to
+Raymond personally for one named work; the person it runs to has now
+said it reaches this site. That is his to say, and he has said it.
+
+**What it does not settle, and is not an objection to him.** The
+territory line — Hong Kong / Mainland China — is *Holman's* term, not
+Raymond's, so extending his own permission does not move it. Worth one
+question back to him before the text ships, because it is the kind of
+thing a publisher asks about later rather than earlier.
+
+**One naming point, because it changes the required credit line.**
+Raymond calls it HCSB. The document says **CSB**, and the 雅伟的话
+verse-by-verse check found the text actually shipped there is CSB 2017,
+not HCSB (its `bsapp_bible_hcsbs` table name is a legacy key). The
+credit line below is the CSB one, which is the one the grant requires.
+
+**Scope.** The message names `Yahwehword.com`. It does not mention
+SeekSparks / Yahweh's Swords, which has its own copy of this file.
+
 ### The credit line, verbatim
 
 If the CSB is ever added, the grant requires this on the copyright or
