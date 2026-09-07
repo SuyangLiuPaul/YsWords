@@ -7224,8 +7224,65 @@ has never seen this repo.
       it. Check with a verse late in a long chapter so a failure is
       unmistakable.
 
-- [ ] **梁家鏗譯本 (biblexg-v2/-tr) had no stray-ASCII / bracket-balance
-      guard — now pinned, not repaired.** Every other shipping edition
+- [x] **梁家鏗譯本 (biblexg-v2/-tr) stray-ASCII / bracket-balance guard —
+      pinned AND now censused end to end. Nothing left to repair.**
+
+      **Half A (body text, 2 offenders) — settled 2026-09-08: the
+      publisher's own text, not ours.** Checked directly against
+      `cn-act.json` / `cn-rev.json`: both 使徒行传 7:32 (`‘…'` mixed
+      quote marks) and 启示录 1:5 (stray ASCII `,`) are character-for-
+      character identical to the publisher's own Simplified file. The
+      earlier "import artefact, not a deliberate edit" framing only ruled
+      out a *local* edit via `git log -S`; it never asked whether the
+      import was faithful. It was. `test/biblexg_punctuation_test.dart`'s
+      doc comment corrected to say so. Pin and assets unchanged — there
+      is nothing to fix.
+
+      **Half B (note-internal punctuation, the open question below) —
+      settled 2026-09-08, and the premise behind it was wrong.** A NEXT_TASK
+      brief read four v2-vs-TR note divergences (flagship: 使徒行傳 20:3,
+      our TR `參15.21、41` vs our v2 `参15.23、41`) as our Traditional
+      having drifted from a faithful 繁→简 conversion, and proposed editing
+      the TR asset to `15.23`. Before making that edit, `git log -S` plus
+      a direct check of the publisher's own **Traditional** source
+      (`tw-act.json`, not just `cn-act.json`) showed the publisher's own
+      tw file *already reads* `參15.21、41` — identical to ours — while
+      their own cn file reads `参15.23、41` — identical to our v2. The
+      publisher's two editions disagree with each other; each of ours
+      faithfully follows its own source. Editing our TR to `15.23` would
+      not have been a repair, it would have been picking the Simplified
+      publisher file's number over the Traditional one's on no better
+      basis than that a planning pass had only looked at the Simplified
+      side. Caught by the refuter before the asset was touched.
+
+      That refutation prompted a full census rather than stopping at one
+      counter-example: new tool `tools/audit_biblexg_v2_vs_tr.py` diffs
+      every `<note:…>` in `biblexg-v2-tr.json` against `biblexg-v2.json`
+      (Traditional folded to Simplified via the system `opencc -c t2s`,
+      not a hand map), then for every disagreement looks up **both** the
+      publisher's own `tw-*.json` and `cn-*.json` for that verse. Result:
+      **106 verses where the note text disagrees; all 106 are accounted
+      for** — 102 are the publisher's own tw/cn disagreeing with each
+      other (same shape as 徒20:3), and 4 (路加福音9:5, 加拉太書3:7,
+      加拉太書3:9, plus 提摩太前書3:16/啟示錄7:17 already known) are
+      settled by the printed 2025 second-edition 註釋本 per
+      `docs/梁家鏗譯本-請教出版方.md` §四之三 — our TR deliberately keeps
+      its own original wording inside the note rather than adopting v2's.
+      **Zero are a genuine TR-conversion defect. No asset edit was made.**
+      Known gaps in the census, left as follow-up rather than blocking
+      this finding: 4 TR verses have no v2 counterpart key at all
+      (structural verse-split difference between the two editions, not
+      investigated further) and an under/over-conversion in `opencc`'s
+      t2s could in principle mask a real divergence as a false equality
+      — none found, but not ruled out. The tool skips cleanly (exit 0)
+      when neither source cache is present, so it is safe to leave
+      un-invoked on CI.
+
+      Superseded text follows, kept for the census numbers it recorded.
+
+- [x] SUPERSEDED BY THE ABOVE — **梁家鏗譯本 (biblexg-v2/-tr) had no
+      stray-ASCII / bracket-balance guard — now pinned, not repaired.**
+      Every other shipping edition
       has one: `kjv`/`nasb`/`leb`/`cuvs-yhwh(-tr)` via
       `bible_version_integrity_test.dart`'s `forbidden` map,
       `cuvs-yhwh(-tr)` again via `ascii_punctuation_test.dart` +

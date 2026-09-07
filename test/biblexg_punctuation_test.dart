@@ -15,29 +15,27 @@ import 'package:flutter_test/flutter_test.dart';
 /// markup and script purity, but no character-class check at all.
 ///
 /// A census of body text (with `<note:…>` spans stripped) found exactly
-/// two stray-ASCII characters, both in the Simplified file, both traced
-/// with `git log -S` to the original import commit `f1f82de4` and never
-/// touched since — an import artefact, not a deliberate edit:
+/// two stray-ASCII characters, both in the Simplified file. `git log -S`
+/// traces both to the original import commit `f1f82de4` and never touched
+/// since, which only rules out a LOCAL edit — it does not by itself say
+/// whether the import was faithful. Checked directly against the
+/// publisher's own `cn-act.json` / `cn-rev.json` (cached at
+/// `~/.cache/yswords/ljk-source/`), both verses read character-for-
+/// character identical to what we ship. **Both are the publisher's own
+/// text, not an import artefact:**
 ///
 ///   使徒行传 7:32   opens the quotation with `‘` (U+2018) and closes it
 ///                  with ASCII `'` (U+0027), right before `<note:参出
-///                  3.6。>`. The Traditional twin (使徒行傳 7:32) opens
-///                  and closes with the matching curly pair (`‘…’`) —
-///                  but per docs/梁家鏗譯本-請教出版方.md the Traditional
-///                  is a conversion of the Simplified, not an independent
-///                  witness, so the defensible evidence is the internal
-///                  one: this verse opens curly and closes ASCII in the
-///                  same sentence.
+///                  3.6。>` — and so does the publisher's own cn-act.json.
 ///   启示录 1:5      an ASCII `,` where the surrounding text is otherwise
-///                  full-width `，`. Weaker evidence — no internal
-///                  contradiction to point to, just the surrounding
-///                  punctuation style.
+///                  full-width `，` — and so does the publisher's own
+///                  cn-rev.json.
 ///
-/// This is a PIN, not a repair: repairing scripture needs a `git log -S`
-/// check (done above) plus a refuter, and is out of scope for a
-/// characterization test. See docs/autonomous-queue.md (P0) for the
-/// filed item. If either offender disappears, or a third one appears,
-/// this test must fail — it guards both directions, not just a floor.
+/// This is a PIN, not a repair, and now there is nothing to repair: the
+/// publisher's own file is the thing being pinned. See
+/// docs/autonomous-queue.md (P0) for the filed item. If either offender
+/// disappears, or a third one appears, this test must fail — it guards
+/// both directions, not just a floor.
 void main() {
   final pinnedBodyOffenders = <String, Map<String, String>>{
     'assets/biblexg-v2.json': {
