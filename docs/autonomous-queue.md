@@ -7269,14 +7269,60 @@ has never seen this repo.
       `docs/梁家鏗譯本-請教出版方.md` §四之三 — our TR deliberately keeps
       its own original wording inside the note rather than adopting v2's.
       **Zero are a genuine TR-conversion defect. No asset edit was made.**
-      Known gaps in the census, left as follow-up rather than blocking
-      this finding: 4 TR verses have no v2 counterpart key at all
-      (structural verse-split difference between the two editions, not
-      investigated further) and an under/over-conversion in `opencc`'s
-      t2s could in principle mask a real divergence as a false equality
-      — none found, but not ruled out. The tool skips cleanly (exit 0)
-      when neither source cache is present, so it is safe to leave
-      un-invoked on CI.
+      Three follow-up gaps closed 2026-09-08, all measured directly, none
+      needing an asset edit:
+
+      **Gap 1 — the 4 TR-only ids, resolved, not just "not investigated
+      further."** They are `41006008`-`41006011` = 馬可福音 6:8-11 — not a
+      structural verse-split, the already-filed upstream Simplified hole
+      (§一.1 of `docs/梁家鏗譯本-請教出版方.md`, our `cn-mk.json` truly has
+      nothing there). Same gap, now named instead of left as "unknown."
+
+      **Gap 2 — could `opencc`'s t2s be folding a real divergence into a
+      false equality? Measured: 9 candidates, all 9 clean.** Restricting
+      to verses where TR and v2 carry the same note *count* (998 raw note
+      pairs), 918 fold equal under t2s and 80 still differ (the 80 inside
+      the 106 above). Of the 488 distinct TR characters in those 998
+      pairs, exactly 3 collapse many-to-one under t2s — `復`/`複`→`复`,
+      `發`/`髮`→`发`, `裡`/`里`→`里` — scoped to this corpus; a collapse
+      character absent here could still exist elsewhere in t2s's table.
+      9 of the 918 fold-equal pairs touch one of those 3 at a differing
+      position (none differed in raw length alone). Checked against the
+      publisher's own `tw-*`/`cn-*` at the SAME note position (a first
+      pass wrongly flagged 馬可福音 12:36 by comparing against the verse's
+      whole cite list instead of the matching index — that verse carries
+      two `<cite>`s): **all 9 are clean** — TR matches publisher tw, v2
+      matches publisher cn, at that position. No masking found.
+
+      **Gap 3 — the "32 note-count-mismatch verses the pairwise diff
+      silently skips": the premise doesn't hold for this tool.** Measured
+      directly: there are 32 such verses, but every one of them already
+      falls inside the 106-verse census above (a note-count mismatch
+      makes the whole-list comparison unequal, so it's already counted,
+      not skipped) and every one is already classified
+      PUBLISHER-INTERNAL — the publisher's own tw and cn carry a
+      different number of notes for that verse, and each of ours
+      faithfully follows its own source. The planning brief's "silently
+      skipped, none entered the 106" description does not match this
+      script's actual behaviour; recorded here rather than silently
+      copied forward. `tools/audit_biblexg_v2_vs_tr.py` now labels each
+      divergence `[NOTE COUNT DIFFERS]` explicitly instead of leaving it
+      implicit, and prints a dedicated collapse-masking section (gap 2)
+      on every run.
+
+      **Bonus, filed not fixed — 使徒行傳 8's numbering.** Both `cn-act.json`
+      and `tw-act.json` list chapter 8's `verseIndex` as `…, 36, 38, 39,
+      40, 41` — 8:37 omitted (the ordinary critical-text omission) but the
+      count continuing to 41 rather than stopping at 40, in BOTH editions
+      identically. Not our defect — a reader looking up 徒8:40 in this
+      edition gets the verse other editions call 8:39. Same shape as the
+      questions already in `docs/梁家鏗譯本-請教出版方.md`; not added to
+      that letter (it is marked 定稿/ready-to-send since 2026-09-03,
+      unsent — reopening it is the user's call, not this loop's), filed
+      here so it isn't lost.
+
+      The tool skips cleanly (exit 0) when neither source cache is
+      present, so it is safe to leave un-invoked on CI.
 
       Superseded text follows, kept for the census numbers it recorded.
 

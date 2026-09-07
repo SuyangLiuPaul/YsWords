@@ -142,9 +142,9 @@ def main() -> int:
         divergences.append((book_cn, book_tr, chapter, verse, tr_notes, v2_notes))
 
     print(f'{len(tr)} TR verse rows, {len(v2)} v2 verse rows.')
-    print(f'{unmatched} TR verses have no v2 counterpart key at all '
-          '(structural verse-split difference — not compared, not counted '
-          'below).')
+    print(f'{unmatched} TR verses have no v2 counterpart key at all — this '
+          'is 馬可福音 6:8-11 (id 41006008-41006011), the already-filed '
+          'upstream Simplified hole, not a structural verse-split.')
     print(f'{len(divergences)} verses where the note text disagrees after '
           't2s normalisation.')
     print('Caveat: t2s is a real converter, not a hand map, but a variant-'
@@ -154,9 +154,16 @@ def main() -> int:
 
     publisher_only_count = 0
     genuine_count = 0
+    count_mismatch_count = 0
     for book_cn, book_tr, chapter, verse, tr_notes, v2_notes in divergences:
         abbr = abbr_of[book_cn]
-        print(f'-- {book_tr} {chapter}:{verse}  ({book_cn})')
+        note_count_differs = len(tr_notes) != len(v2_notes)
+        if note_count_differs:
+            count_mismatch_count += 1
+        print(f'-- {book_tr} {chapter}:{verse}  ({book_cn})'
+              + ('  [NOTE COUNT DIFFERS: '
+                 f'TR={len(tr_notes)} v2={len(v2_notes)}]'
+                 if note_count_differs else ''))
         print(f'   TR (as-is)      : {tr_notes}')
         print(f'   TR (t2s)        : {[t2s(n) for n in tr_notes]}')
         print(f'   v2              : {v2_notes}')
@@ -205,10 +212,127 @@ def main() -> int:
                   'confirm with git log -S before touching the asset.')
         print()
 
-    print(f'Summary: {len(divergences)} divergences, '
+    print(f'Summary: {len(divergences)} divergences '
+          f'({count_mismatch_count} of them a note-COUNT mismatch, not just '
+          'wording), '
           f'{publisher_only_count} explained as publisher tw/cn disagreeing '
           f'with itself, {genuine_count} unexplained.')
+
+    print()
+    print('== Collapse-char masking check: could t2s be hiding a genuine '
+          'divergence behind a false equality?')
+    census_collapse_masking(v2, tr, tr2cn, abbr_of)
     return 0
+
+
+def census_collapse_masking(v2: dict, tr: dict, tr2cn: dict,
+                             abbr_of: dict) -> None:
+    """Among note PAIRS (not whole verses) that fold equal under t2s, flag
+    any that touch one of t2s's many-to-one collapse characters (computed
+    from this corpus, not hard-coded) or differ in raw character length —
+    either is a way a genuine divergence could hide behind a false
+    t2s equality. Scoped to verses where TR and v2 carry the same note
+    COUNT, since a count mismatch already prints as its own divergence
+    above and pairing notes index-by-index across a count mismatch would
+    not mean anything.
+    """
+    raw_diff_pairs = []
+    for (book_tr, chapter, verse), tr_notes in tr.items():
+        book_cn = tr2cn.get(book_tr)
+        if book_cn is None:
+            continue
+        v2_notes = v2.get((book_cn, chapter, verse))
+        if v2_notes is None or len(tr_notes) != len(v2_notes):
+            continue
+        for idx, (a, b) in enumerate(zip(tr_notes, v2_notes)):
+            if a != b:
+                raw_diff_pairs.append(
+                    (book_cn, book_tr, chapter, verse, idx, a, b))
+
+    fold_equal = [(bc, bt, c, v, i, a, b)
+                  for bc, bt, c, v, i, a, b in raw_diff_pairs
+                  if t2s(a) == b]
+    fold_still_differ = len(raw_diff_pairs) - len(fold_equal)
+    print(f'{len(raw_diff_pairs)} note pairs differ raw (equal-note-count '
+          f'verses only); {len(fold_equal)} fold equal under t2s, '
+          f'{fold_still_differ} still differ (those are inside the '
+          'divergence list above).')
+
+    distinct_chars = set()
+    for _, _, _, _, _, a, _ in raw_diff_pairs:
+        distinct_chars.update(a)
+    target_map: dict = {}
+    for c in distinct_chars:
+        target_map.setdefault(t2s(c), set()).add(c)
+    collapse_chars = {c for srcs in target_map.values() if len(srcs) > 1
+                       for c in srcs}
+    collapse_groups = {t: srcs for t, srcs in target_map.items()
+                        if len(srcs) > 1}
+    print(f'{len(distinct_chars)} distinct TR characters appear in those '
+          f'raw-differing notes; {len(collapse_groups)} of them collapse '
+          "many-to-one under t2s (scoped to this corpus — a collapse char "
+          "absent here could still exist in t2s's full table): "
+          + ', '.join(f'{"".join(sorted(srcs))}→{t}'
+                       for t, srcs in sorted(collapse_groups.items())))
+
+    candidates = []
+    for bc, bt, c, v, i, a, b in fold_equal:
+        length_differs = len(a) != len(b)
+        touches_collapse = any(
+            a[j] != b[j] and a[j] in collapse_chars
+            for j in range(min(len(a), len(b))))
+        if length_differs or touches_collapse:
+            candidates.append((bc, bt, c, v, i, a, b, length_differs))
+
+    print(f'{len(candidates)} fold-equal pairs touch a collapse char at a '
+          'differing position or differ in raw length — candidates a false '
+          'equality could be hiding a real divergence:\n')
+
+    unexplained = 0
+    for book_cn, book_tr, chapter, verse, idx, a, b, length_differs \
+            in candidates:
+        abbr = abbr_of[book_cn]
+        print(f'-- {book_tr} {chapter}:{verse}  ({book_cn})'
+              + ('  [also differs in raw length]' if length_differs else ''))
+        print(f'   TR : {a!r}')
+        print(f'   v2 : {b!r}')
+        src_dir = find_source_dir()
+        try:
+            tw_cites = publisher_cites(
+                json.load(open(os.path.join(src_dir, f'tw-{abbr}.json'),
+                                encoding='utf-8')))
+            cn_cites = publisher_cites(
+                json.load(open(os.path.join(src_dir, f'cn-{abbr}.json'),
+                                encoding='utf-8')))
+            pub_tw = [TAG.sub('', c).strip()
+                      for c in tw_cites.get((chapter, verse), [])]
+            pub_cn = [TAG.sub('', c).strip()
+                      for c in cn_cites.get((chapter, verse), [])]
+        except FileNotFoundError:
+            pub_tw = pub_cn = None
+        print(f'   publisher tw : {pub_tw}')
+        print(f'   publisher cn : {pub_cn}')
+        # Compare at the SAME position within the verse's note list, not
+        # the whole list — a verse can carry more than one <cite>/<note:…>
+        # (马可福音 12:36 has two), and comparing the whole list against a
+        # single note wrongly flagged that verse as unexplained.
+        tw_match = pub_tw is not None and idx < len(pub_tw) \
+            and pub_tw[idx] == a
+        cn_match = pub_cn is not None and idx < len(pub_cn) \
+            and pub_cn[idx] == b
+        if tw_match and cn_match:
+            print('   => CLEAN: TR matches publisher tw, v2 matches '
+                  'publisher cn. t2s masked nothing here.')
+        else:
+            unexplained += 1
+            print('   => NEEDS A LOOK: does not cleanly match both '
+                  'publisher sources. Candidate for repair, but confirm '
+                  'with git log -S before touching the asset.')
+        print()
+
+    print(f'Collapse-masking summary: {len(candidates)} candidates, '
+          f'{len(candidates) - unexplained} clean against the publisher, '
+          f'{unexplained} unexplained.')
 
 
 if __name__ == '__main__':
