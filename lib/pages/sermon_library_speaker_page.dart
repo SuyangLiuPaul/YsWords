@@ -215,12 +215,12 @@ class _SermonLibrarySpeakerPageState extends State<SermonLibrarySpeakerPage> {
 /// One sermon in a speaker's list.
 ///
 /// The date is labelled "published", never bare. These are WordPress
-/// publication dates from 2014–24; the app's other sermon list prints
+/// publication dates from 2014–26; the app's other sermon list prints
 /// PREACHING dates from 1979–80 in the same visual slot, and an
 /// unlabelled date here would be read as the same kind of thing. The
 /// undated record shows no date line at all rather than a "—".
 ///
-/// "Recording only" appears on the 96 rows that have audio and no
+/// "Recording only" appears on the 80 rows that have audio and no
 /// transcript, and on no others. It is not a badge saying there is
 /// audio — 673 of 937 have that, and a mark on the majority tells the
 /// reader nothing — it is a warning that tapping this row will not

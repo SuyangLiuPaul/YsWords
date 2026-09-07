@@ -21,7 +21,7 @@ import 'package:yswords/widgets/sermon_library_chrome.dart';
 /// separate surface: those are one man's expository series with
 /// preaching dates from 1979–80 and bodies in three languages, these
 /// are 937 radio messages by 71 credited speakers with publication
-/// dates from 2014–24 and one language. Merging the two lists would
+/// dates from 2014–26 and one language. Merging the two lists would
 /// merge two date semantics and two provenances into rows a reader
 /// could not tell apart.
 ///

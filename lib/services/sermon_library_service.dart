@@ -268,7 +268,7 @@ class SermonLibrary {
 /// and nothing else.
 ///
 /// **Caching is real and it matters.** [load] parses two JSON files
-/// totalling 1.5 MB and buckets 900-odd records into 71 speakers;
+/// totalling 1.8 MB and buckets 900-odd records into 71 speakers;
 /// doing that per rebuild would make every `FutureBuilder` on this
 /// feature flash a spinner. The `Future` itself is memoised, not
 /// merely its result, so two widgets that call in the same frame

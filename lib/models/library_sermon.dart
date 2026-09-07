@@ -20,7 +20,7 @@ import 'package:yswords/constants/sermon_credit.dart' show sermonPreacher;
 /// Minimum body length, in characters, at which a body is worth
 /// opening.
 ///
-/// 843 of the 940 records ship a body file; 841 of those are >= 200
+/// 859 of the 940 records ship a body file; 857 of those are >= 200
 /// characters. The two below the line are stubs (one of them is
 /// zero-length). A row that opens onto an empty page is worse than a
 /// row that says up front it has no text, so [LibrarySermon.hasText]
@@ -163,7 +163,7 @@ class LibrarySermon {
       );
 
   /// There is a body long enough to be worth opening. See
-  /// [kLibraryMinBodyChars] — 841 of 940.
+  /// [kLibraryMinBodyChars] — 857 of 940.
   bool get hasText =>
       hasBody && bodyFile.isNotEmpty && bodyChars >= kLibraryMinBodyChars;
 

@@ -233,7 +233,7 @@ class _SermonBody extends StatelessWidget {
 /// The sermon body, exactly as the corpus stores it.
 ///
 /// **Paragraphs are split on a SINGLE newline, and that is the whole
-/// point.** All 843 body files in this corpus are paragraph-per-line —
+/// point.** All 859 body files in this corpus are paragraph-per-line —
 /// measured, not assumed: zero of them contain a blank-line gap. The
 /// other corpus's renderer in `sermon_detail_page.dart` splits on
 /// `\n\s*\n`, and reusing it here would collapse every file into one

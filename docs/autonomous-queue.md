@@ -7403,29 +7403,84 @@ has never seen this repo.
 
 ## P2 — features the user asked for
 
-- [ ] **The 福音电台 sermon library UI is dead code, still bundled.**
+- [x] **The 福音电台 sermon library UI is dead code, still bundled.**
       Found 2026-09-07 while sweeping stale sermon-corpus counts.
-      `dashboard_page.dart:876-894` documents that its dashboard tile
-      was deliberately REMOVED 2026-09-06 (v1.5.0) — the owner decided
-      there is only one sermon corpus now, Pastor Eric's 125 (later 140)
-      messages from that source are merged into `assets/sermons/`, and
-      `SermonLibraryService` THROWS if `index.json` is missing, which it
-      now is (`assets/sermon_library/` is gitignored staging, no longer
-      bundled). But nothing else was removed: grepped every `lib/`
-      caller of `SermonLibraryPage` and found none — it is unreachable
-      from any route. `lib/pages/sermon_library_page.dart`,
-      `sermon_library_speaker_page.dart`,
+      2026-09-07 pass: quarantined and corrected rather than deleted
+      (deletion is the user's call — see the question below). Corrected
+      six-file inventory (the original list of five missed one):
+      `lib/pages/sermon_library_page.dart`,
+      `lib/pages/sermon_library_speaker_page.dart`,
+      `lib/pages/sermon_library_sermon_page.dart` (the file the original
+      entry missed — imports both the service and the chrome widget),
       `lib/widgets/sermon_library_chrome.dart`,
-      `lib/models/library_sermon.dart` and
-      `lib/services/sermon_library_service.dart` all ship in every build
-      for a screen no reader can open, and their doc comments (940/937
-      records, 71 speakers) keep asserting facts about a corpus that no
-      longer ships. Not fixed here — deleting a whole page + its route
-      history is bigger than a doc-drift sweep and the user should
-      confirm nothing else depends on these files first (e.g. a future
-      re-add). Recommend: confirm with the user, then delete the five
-      files above rather than keep patching numbers in code nothing can
-      reach.
+      `lib/models/library_sermon.dart`,
+      `lib/services/sermon_library_service.dart` — plus their three test
+      suites (`test/sermon_library_service_test.dart`,
+      `sermon_library_page_test.dart`, `sermon_library_links_test.dart`,
+      all gated on `hasCorpus` so they SKIP on CI, which has no corpus)
+      and the ~10 `sermonLibrary*` keys in
+      `lib/constants/ui_strings.dart:7455-7510`, which sit in a
+      reachable const map and do ship bytes even though the pages
+      themselves tree-shake. Zero `lib/` callers confirmed (route-grep,
+      re-run this pass). "Still bundled" in the original title is
+      doubtful — dead classes tree-shake; only the `ui_strings` keys
+      provably ship.
+
+      Counts re-verified against `assets/sermon_library/index.json`
+      (local-only, gitignored, `generatedAt 2026-09-05`, 940 records) and
+      fixed where wrong: 940 raw / **937 shown** (940 minus the 3
+      records with neither usable text nor audio) was correct as a
+      raw/filtered pair, not drift — left alone. Actually wrong and
+      fixed: publication-date range "2014–24" → **2014–26** (18 records
+      each in 2025 and 2026, not outliers) in
+      `sermon_library_page.dart` and `sermon_library_speaker_page.dart`;
+      "96 rows" recording-only count → **80** (`hasAudio && !hasText`
+      among the 937 shown) in `sermon_library_speaker_page.dart`; "843
+      body files" → **859** (actual file count on disk, up from before
+      the 2026-09-06 local Whisper transcription batch added 15) in
+      `sermon_library_sermon_page.dart` and `library_sermon.dart` (two
+      spots: total body-file count and the >=200-char subset, 841→857);
+      "1.5 MB" two-file total → **1.8 MB** (748 KB + 1.1 MB, on disk
+      today) in `sermon_library_service.dart`. Everything else checked
+      out exactly (71 speakers, 张成牧师 202 raw/201 shown, 52
+      one-sermon speakers, max 202 paragraphs in one body file, 479
+      null `book`, 673 `hasAudio`, the 3-record isOpenable-false
+      breakdown, 890/23/27 authorKind, 889/24/27 authorSource) — not
+      touched.
+
+      New test `test/sermon_library_orphaned_test.dart`, ungated (runs
+      on every CI runner, corpus or not): (1) source-grep, no `lib/`
+      file outside the cluster constructs any of the three page
+      classes; (2) `SermonLibraryService.load()` still throws rather
+      than degrading to empty when `index.json` is absent. Both
+      independently verified to fail before the fix — a stray caller
+      added and removed, a degrade-to-empty added and removed — per
+      this loop's falsifiability rule.
+
+      **Left for the user:** the 福音电台 library UI is unreachable and
+      now guarded against silent re-entry — delete the six files, their
+      three test suites and the `ui_strings` keys, or keep them pending
+      the redistribution question already open on the untracked
+      `assets/sermon_library/` corpus?
+
+      **New, out of this item's scope — flagged, not fixed:**
+      `dashboard_page.dart:899` says "His 125 messages... are merged...
+      the other 742 ship nowhere", but `refs.json`'s
+      `duplicates.crossCorpus` (105 pairs total) has only **58**
+      `confirmed` — the tier the app actually trusts
+      (`SermonLibraryRefs.confirmedPairFor`). 940 − 198 (张熙和牧师's
+      raw total) = 742 checks out, but the "125" figure doesn't match
+      any tier count found in the current `refs.json`, and the removal
+      rationale's math silently drops his own 73 non-merged records.
+      Separately, `sermon_library_service.dart:19` says "a separate pass
+      is adjudicating the other 83" `probable` pairs, but `refs.json`
+      currently has **zero** records at the `probable` tier — only
+      `confirmed` (58), `weak` (43) and `possible` (4) — meaning either
+      the adjudication pass already finished and the comment is stale,
+      or `probable` was never a value this dataset used. Needs someone
+      who knows the adjudication pipeline's history, not a blind
+      recount — did not touch `dashboard_page.dart` or the L15-30
+      comment in `sermon_library_service.dart` this pass.
 
 - [x] **`VideoSeries.compilations` has no `isUnavailable` gate.** Found
       2026-09-06 by a refuter while verifying the onegod/01 private-track
