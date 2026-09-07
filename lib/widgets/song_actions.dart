@@ -54,11 +54,30 @@ class SongFavouriteButton extends StatelessWidget {
 /// on — Now Playing — could not do it. The user's words were "还是不能
 /// share", from the player, with the share already shipped.
 ///
-/// **The payload is title + link and deliberately nothing else.** The
-/// detail sheet's Lyrics section has its own copy button for anyone who
-/// wants the words on purpose; a share that quietly carried them would
-/// push a publisher's text into a group chat every time someone meant
-/// to pass on a song. `test/song_share_link_test.dart` pins that.
+/// **The payload is the bare link and nothing else** — no title line,
+/// no lyrics.
+///
+/// It carried a `title\nlink` pair for one day. The user asked for the
+/// change in the same breath as reporting that a shared link had landed
+/// them back in the Bible reader: "我们只要一个link按完那个share后".
+/// Those two are probably the same fault. A message whose first line is
+/// text and whose second is a URL is a blob that the receiving app has
+/// to guess at, and the common guesses — linkify the whole thing,
+/// linkify up to the first delimiter, build a preview card from a
+/// truncated href — all end at an origin with the `?song=` query gone,
+/// which boots the app to whatever it was last showing. One bare URL
+/// has nothing to guess at.
+///
+/// Lyrics were never in it and still are not: the detail sheet's Lyrics
+/// section has its own copy button for anyone who wants the words on
+/// purpose, and a share that quietly carried them would push a
+/// publisher's text into a group chat every time someone meant to pass
+/// on a song.
+///
+/// `title:` is still handed to the platform share sheet — that is the
+/// dialog's own heading, not part of what gets pasted. The `url:` field
+/// is deliberately NOT set alongside it: a target that renders both
+/// would show the link twice, which is the thing being fixed.
 ///
 /// [size] exists because the app bars this sits in are not all the same
 /// density — the sheet header runs 20px icons, the player's transport
@@ -82,7 +101,7 @@ class SongShareButton extends StatelessWidget {
       tooltip: uiStrings['share']?[locale] ?? 'Share',
       onPressed: () => ClipboardHelper.shareOrCopy(
         context,
-        '${song.title}\n${songShareUrl(song.id)}',
+        songShareUrl(song.id),
         title: song.title,
       ),
     );

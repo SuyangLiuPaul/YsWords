@@ -11,6 +11,7 @@ import 'package:yswords/pages/now_playing_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/song_service.dart';
+import 'package:yswords/utils/route_paths.dart' show songShareUrl;
 import 'package:yswords/widgets/song_actions.dart';
 
 /// Share has to be on the screen you are ON when you decide to share.
@@ -105,12 +106,23 @@ void main() {
     // the payload readable here at all.
     expect(clipped, isNotNull,
         reason: 'tapping share must produce something to paste');
-    expect(clipped, contains(playing.title));
+
+    // ONE link, and nothing on either side of it. Asked for directly —
+    // "我们只要一个link按完那个share后" — after a shared `title\nlink`
+    // pair arrived somewhere as a plain origin and booted the app to
+    // the Bible reader instead of the song. Equality rather than
+    // `contains`, because `contains` is what would still pass if a
+    // title line, a hashtag or an app-store plug were prepended later,
+    // and prepending text is exactly the defect.
+    expect(clipped, songShareUrl(playing.id));
+    expect(clipped!.trim().split(RegExp(r'\s')), hasLength(1),
+        reason: 'whitespace splits the payload into things a chat app '
+            'has to guess between; one URL leaves nothing to guess');
     expect(clipped, contains('song=${Uri.encodeComponent(playing.id)}'),
         reason: 'the shareable thing is a link that opens the song');
     expect(clipped, isNot(contains(lyrics)),
-        reason: 'share is title + link; the lyrics have their own '
-            'button on the one screen that draws them');
+        reason: 'the lyrics have their own button on the one screen '
+            'that draws them');
   });
 
   test('every screen that shows one song offers to share it', () {
