@@ -16,16 +16,28 @@ import 'package:flutter_test/flutter_test.dart';
 /// four classes, and the counts on both sides are pinned so that a re-import
 /// cannot silently undo them and a later sweep cannot silently widen them.
 ///
-/// **One line of that paragraph was WRONG and has been removed: 隻.** It used
-/// to read "it holds 隻 453 …" as evidence that the converter is good, and
-/// the opposite is true — s2t writes the measure word 隻 where the sense is
-/// 只 (only), so the corpus reads 「這隻能治標不治本」, 「就是隻要擯棄」 and
-/// 「是不是隻有主耶穌在世的那個世代」. Measured 2026-09-06: roughly 81 such
-/// positions were already in the shipped 289 and roughly 63 came in with the
-/// merge, against 250-odd correct 隻 (一隻羊, 兩隻手, 隻字未提, 形單影隻,
-/// 船隻). Separating them is a per-occurrence adjudication over ~144
-/// positions and is NOT done here; it is named so that the next reader finds
-/// it instead of finding a sentence saying it is fine.
+/// **隻, closed 2026-09-07.** s2t writes the measure word 隻 where the sense
+/// is 只 (only) whenever its phrase table doesn't carry the surrounding
+/// phrase, so the corpus read 「這隻能治標不治本」, 「就是隻要擯棄」 and
+/// 「是不是隻有主耶穌在世的那個世代」ーnot a variant, a different word.
+/// `tools/repair_tw_sermon_classifier_glyph.py` enumerated every one of the
+/// 671 occurrences (not sampled) and repaired the 144 that were the adverb,
+/// each anchored to its own sentence; the other 527 — 一隻眼/一隻手/一隻羊/
+/// 隻字不提/船隻/形單影隻 and the like — are the classifier and are
+/// untouched. See that script's docstring for the discriminator and why a
+/// blanket rule keyed on the trailing character would have corrupted
+/// legitimate readings like 「兩隻有乳的母牛」-shaped classifier+verb text.
+/// **The first version of this fix, at 111, was wrong — not by being
+/// applied incorrectly, but by being incomplete.** A refuter caught it
+/// before commit: 那/這 (this/that) had been treated as a safe classifier
+/// cue the same as a numeral, but unlike a numeral, 那/這 can also be the
+/// sentence's own subject, and 「這只能…」/「那只不過是…」 read that way in
+/// this corpus 31 times — including 014.txt's 「這隻能治標不治本」, the
+/// corpus's OWN clearest example of the defect, left unrepaired by the
+/// first draft precisely because 這 preceded it. A second refuter pass
+/// after the expansion to 144 found a stale count in the repair script's
+/// own docstring (it said 143 in prose while the rule table held 144) and
+/// nothing wrong with the data.
 ///
 /// **2026-09-06 — the corpus is 429 sermons, not 289.** 125 of Pastor Eric's
 /// messages were merged in from the fuyindiantai staging library and 51
@@ -320,6 +332,110 @@ void main() {
       expect(count('尼採'), 0, reason: 'a blanket 采→採 ran');
       expect(files['763.txt'], contains('舉手可採'),
           reason: 'fruit within reach, to be PICKED');
+    });
+  });
+
+  group('隻 — a measure word, not the adverb 只', () {
+    test('671 → 527: every adverb reading repaired, nothing else touched',
+        () {
+      // tools/repair_tw_sermon_classifier_glyph.py, 2026-09-07: all 671
+      // occurrences were enumerated (not sampled) and 144 were the adverb
+      // 只 (only), each anchored to its own sentence. This is the ONLY
+      // assertion in this file that pins a raw inventory count for 隻/只,
+      // and it is safe only because the enumeration was exhaustive — see
+      // the repair script's docstring for why a rule keyed on the trailing
+      // character alone would have corrupted classifier+verb readings like
+      // 「兩隻有乳的母牛」 elsewhere in the same corpus, or why 那/這 is not
+      // a safe cue the way a numeral is.
+      expect(count('隻'), 527);
+    });
+
+    test('repaired: every position the sermon meant "only"', () {
+      for (final fixed in const [
+        '而是隻是真理', '而豬隻關心食物', '而是隻有一件', '是不是隻有主耶穌',
+        '記號是隻給那些', '是不是隻買了一', '它隻影響你',
+        // The 那/這-as-subject class the first draft of this fix missed —
+        // 014.txt is the corpus's own illustrative example of the defect,
+        // quoted in this file's own header, and was STILL unrepaired after
+        // the first pass because 這 preceded it.
+        '這隻能治標不治本', '那隻不過是', '那隻證明', '那隻意味著',
+        '這隻意味著', '這隻會縱容', '這隻會榮耀人',
+        // The word-boundary trap: 汽船 ends in 船, which is not the noun
+        // 船隻 (vessels) that licenses keeping the classifier.
+        '汽船隻需',
+        // The numeral-cue trap: 十分之一 ends in the numeral 一, which is
+        // not a classifier's count.
+        '十分之一隻不過',
+      ]) {
+        expect(count(fixed), 0, reason: '$fixed — re-run '
+            'tools/repair_tw_sermon_classifier_glyph.py');
+      }
+      expect(files['082.txt'], contains('而豬只關心食物'),
+          reason: 'confirmed against zh-CN/082.txt「而猪只关心食物」');
+      expect(files['102.txt'], contains('汽船只需二十分鐘'),
+          reason: 'confirmed against zh-CN/102.txt「汽船只需二十分钟」');
+      expect(files['fy-sm16.txt'], contains('十分之一只不過是在表示'),
+          reason: 'confirmed against zh-CN/fy-sm16.txt「十分之一只不过」');
+      expect(files['014.txt'], contains('這只能治標不治本'),
+          reason: 'the corpus\'s own illustrative example of the defect');
+      expect(files['fy-mt61.txt'], contains('是不是只有主耶穌在世的那個世代'),
+          reason: 'the same rhetorical question, repeated verbatim twice');
+      expect(count('是不是只有主耶穌在世的那個世代'), 2);
+    });
+
+    test('the classifier survives everywhere it counts a noun', () {
+      for (final keep in const [
+        '一隻眼', '一隻手', '一隻羊', '一隻腳', '兩隻手', '那隻', '每隻',
+        '幾隻', '隻字不提', '隻字未提', '船隻', '形單影隻', '隻身',
+      ]) {
+        expect(count(keep), greaterThan(0), reason: keep);
+      }
+      // The two shapes that look like the defect but are the classifier
+      // with a dropped 一 — English does the same thing ("a bird", not
+      // "a one bird"). Confirmed against zh-CN, which carries the same
+      // ambiguity and was settled here by the sentence, not the character.
+      expect(files['232.txt'], contains('有隻鳥叫了一聲'),
+          reason: '有 + 隻 + noun — zh-CN/232.txt reads 有只鸟叫了一声 too');
+      expect(files['410-1.txt'], contains('被某隻蚊子煩擾著'),
+          reason: '某 + 隻 + noun');
+      // fy-ws02.txt's running metaphor — 是 + 隻 + noun, "is a wolf" — all
+      // five in one sermon, and a blanket sweep on "是隻" would have wrecked
+      // every one of them.
+      for (final wolf in const [
+        '我是隻狼', '我仍然會是隻狼', '其實是隻披著羊皮的狼', '內裏仍然是隻狼',
+        '你內裏卻仍然是隻狼', '要從我這隻狼的身上',
+      ]) {
+        expect(files['fy-ws02.txt'], contains(wolf), reason: wolf);
+      }
+      // 那/這 + 隻 + NOUN is the classifier ("this/that CL"), and survives
+      // right beside the 那/這 + 只 + VERB adverb reading this fix removed
+      // from the same files — proof the rule landed on the right one of
+      // the two in every case, not just on average.
+      expect(files['015.txt'], contains('這隻蠟燭卻是至始至終穩定地燃燒'),
+          reason: 'this candle, a genuine classifier — contrast 014.txt\'s '
+              '這隻能, the adverb, in the file right next to it');
+      expect(files['fy-nm21.txt'], contains('還有很多比關心這隻小鳥更重要'),
+          reason: 'this little bird, a genuine classifier');
+      // 隻 as a classifier-turned-pronoun ("this one" / "the other one"),
+      // the noun elided because it was just named — common enough that a
+      // rule keyed on the FOLLOWING word alone could not tell it from the
+      // adverb without reading the sentence.
+      expect(files['364.txt'], contains('一隻是深色的另一隻是淺色的'),
+          reason: '"one is dark, the other is light" — not "只是"');
+      expect(files['092.txt'], contains('偶爾也會有一兩隻出沒'),
+          reason: 'one or two wolves (的 elided) show up — not "只出"');
+      expect(files['244.txt'], contains('這隻在空中飛的小甲蟲'),
+          reason: 'classifier + relative clause + noun, not "這隻在"');
+      // 船隻 (vessels) survives at every one of its other positions — only
+      // 102.txt's 汽船隻需 (a STEAMBOAT that only needs, not a vessel) was
+      // the word-boundary trap.
+      expect(files['148.txt'], contains('船隻可能會延誤'), reason: '船隻, kept');
+      expect(files['341.txt'], contains('保持船隻不沉'), reason: '船隻, kept');
+      // The numeral-cued classifier survives right next to a repaired
+      // adverb in the same sentence — proof the rule landed on the right
+      // one of the two.
+      expect(files['fy-sm14.txt'], contains('是不是只買了一隻胳膊'),
+          reason: 'the adverb before, the classifier after, one word apart');
     });
   });
 

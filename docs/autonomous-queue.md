@@ -5058,6 +5058,89 @@ reported. Work these top-down before P2.
       `tools/repair_tw_sermon_dry_glyph.py`. No preacher's words changed: the
       changed lines are identical in length, single-character swaps only.
 
+- [x] **2026-09-07 FIXED — 144 of 671 隻 in `assets/sermons/zh-TW/` were the
+      adverb 只 (only), printed as the measure word by an s2t phrase-table
+      gap.** Flagged but explicitly left undone by
+      `test/tw_sermon_glyph_test.dart`'s own header ("roughly 81 … and
+      roughly 63 … NOT done here"). Picked up by the autonomous loop's
+      2026-09-07 planning pass as fallback work (nothing else in the queue
+      was actionable — see that day's `NEXT_TASK.md`).
+      **All 671 occurrences were enumerated, not sampled — twice, because
+      the first pass's enumeration was itself incomplete and a refuter
+      caught it before commit.** Worth recording exactly how, since the
+      queue's own rule is to refute before shipping a claim, not just to
+      have run one: the first pass excluded 隻 preceded by a numeral OR by
+      那/這 as a single blanket "classifier cue," on the reasoning that
+      「這隻鳥」("this bird") and 「五隻羊」("five sheep") are both
+      classifier+noun. That reasoning holds for a numeral, which cannot also
+      stand alone as a sentence subject — but 那/這 CAN, and 「這只有…才…」
+      ("this can only… by…") is exactly as common in this register as
+      「這隻鳥」. A refuter given the first 111-rule version, asked to try to
+      break it, found the corpus's OWN clearest example of the defect —
+      014.txt's 「這隻能治標不治本」——sitting unrepaired, because 這 preceded
+      it and the first pass never read the sentence. Reading all 106
+      那隻/這隻 occurrences individually (not sampled) found 31 more, plus a
+      second-order trap the same read turned up: 102.txt's 「汽船隻需二十
+      分鐘」——a STEAMBOAT (汽船) that only NEEDS twenty minutes, where 船隻
+      is not the word at all, the 船 belongs to 汽船, and a plain substring
+      match for the lexical keep 船隻 (vessels) had swallowed it — and one
+      more the same reasoning found by extension: 「十分之一隻不過是…」
+      (fy-sm16.txt) reads a FRACTION, "one tenth," where the numeral 一
+      triggered the cue check without being a classifier's count at all.
+      144 = 111 + 31 (那/這, individually read) + 1 (汽船) + 1 (十分之一).
+      Both drafts, and the reasoning for each, cross-checked against
+      `assets/sermons/zh-CN/` where useful: e.g. 082.txt「而豬只關心食物」,
+      102.txt「汽船只需二十分钟」, fy-sm16.txt「十分之一只不过」.
+      **A second refuter pass, given the 144-rule version and asked to break
+      it again rather than assume the fix was now correct, found nothing
+      wrong with the data** — sampled a fresh ~30 rules, exhaustively
+      grouped the 527 remaining 隻 by following character and read every
+      non-obvious group, re-derived the 那/這 count (75 remaining = 106 − 31,
+      exact), checked for other fraction/ordinal traps (none) and other
+      lexical-compound boundary collisions besides 船隻 (none that change an
+      outcome). It found one prose bug — the script's docstring said "143"
+      in one paragraph while the rule table held 144 — fixed in the same
+      commit.
+      **7 positions are NOT the defect** despite matching the trailing-
+      character shape, and are why a rule keyed on the trailing character
+      alone was rejected even after the expansion: 「有隻鳥叫了一聲」
+      (232.txt) and 「被某隻蚊子煩擾著」(410-1.txt) are the classifier with
+      a dropped 一 (English does the same — "a bird", not "a one bird"), and
+      fy-ws02.txt's six-times-repeated 「我是隻狼」/「其實是隻披著羊皮的
+      狼」/「這隻狼」metaphor is the same shape after 是 and 這. A rule keyed
+      only on "隻 followed by X" would ALSO have corrupted classifier+verb
+      readings elsewhere in the corpus that were never candidates —
+      「兩隻有乳的母牛」-shaped text (隻有 is 30 in this corpus, only 18 are
+      the adverb; 隻能 is 9, only 3 are) — so `tools/
+      repair_tw_sermon_classifier_glyph.py` anchors every one of the 144 to
+      its own unique sentence rather than using a corpus-wide regex, unlike
+      `repair_tw_sermon_spot_glyphs.py`'s 面酵/面包 rules. Applied: 144
+      substitutions across 108 files, all single-character (隻→只), verified
+      idempotent (`--apply` a second time reports "already applied"), and
+      re-verified for real: a single substitution was reverted and restored
+      by hand mid-testing (not via `git checkout`, which had wrongly wiped
+      an already-applied file's fixes during the FIRST pass's own testing —
+      recorded here so the next iteration doesn't repeat it: reverting one
+      change in a partially-committed working tree needs a targeted edit,
+      not a path-level checkout), and the widened test caught the reverted
+      state immediately (`Expected: <527> Actual: <528>`).
+      `test/tw_sermon_glyph_test.dart` now pins both directions — all 144
+      repaired positions read 只 (including the 那/這, 汽船 and 十分之一
+      traps by name), and 一隻眼/一隻手/一隻羊/一隻腳/隻字不提/隻字未提/
+      船隻/形單影隻/隻身 plus classifier-as-pronoun and classifier+relative-
+      clause readings (「一隻是深色的另一隻是淺色的」, 「這隻在空中飛的小
+      甲蟲」) plus all 6 fy-ws02.txt keeps still read 隻 — and the file's own
+      "NOT done here" paragraph is rewritten to say what was actually done,
+      including the first-pass gap, so the next reader doesn't re-find the
+      same gap OR conclude the first commit had already closed it.
+      **Two findings filed, not fixed this hour** (see the P3/tooling
+      entries below): `tools/audit_p0.py`'s docstring still says "289
+      Traditional sermon files" against the real 429-file corpus, and
+      neither `audit_p0.py` nor `tools/audit_originals_compounds.py` is
+      invoked by any test or CI, so `audit_originals_compounds.py`'s
+      "make sure the repair stayed applied" guard cannot actually catch a
+      `build_originals.py` regression.
+
 - [x] **`丶` stood in for the enumeration comma 、 in 53 places, in BOTH
       editions. DONE 2026-08-19 — 150 substitutions across 30 verses per
       edition plus 44 in the tagged corpus.** 出埃及記 15:4 read 「法老的車輛丶
@@ -13413,6 +13496,28 @@ so the bundle-size answer stays on the record.
       already-active chip clicked. Harness-only change (`tools/
       web_verify_headless.mjs`); no `lib/`/`web/` touched, nothing
       user-facing, no deploy.
+
+- [ ] **2026-09-07 FILED, not fixed — `tools/audit_p0.py`'s docstring says
+      "289 Traditional sermon files" against a real 429-file corpus.**
+      Found while doing the 隻/只 sermon-glyph fallback item above; the
+      script's own section 4 output disagrees with its own docstring. A
+      one-line docstring fix, but this iteration's brief was that specific
+      item, not a docstring sweep — leaving it named rather than doing it
+      inline and forgetting it, per this loop's own standing instruction.
+
+- [ ] **2026-09-07 FILED, not fixed — neither `tools/audit_p0.py` nor
+      `tools/audit_originals_compounds.py` is invoked by any test or CI.**
+      Checked: no test file imports or shells out to either, and neither
+      appears in `.github/workflows/`. Both are read-only census scripts,
+      so this is not silent data corruption, but it means
+      `audit_originals_compounds.py`'s stated purpose — "make sure the
+      repair stayed applied" as a guard against a `build_originals.py`
+      regression — cannot actually catch one; nothing runs it. The fix is
+      presumably a CI step or a wrapper test that shells out and checks the
+      exit code, not a rewrite of either script — worth a look next time
+      tier 5 (systemic tooling defects) comes up for real, per this loop's
+      "only when they have actually caused a shipped failure" rule; this
+      hasn't yet, since both still run clean by hand.
 
 ## Blocked on the user — do not attempt
 
