@@ -65,9 +65,16 @@ name. On Android the apostrophe must reach values.xml escaped (\').
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.11** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.11** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn` | **1.5.7** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.12** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.12** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn`, **`yahwehword.com`** | **1.5.12** | ⛔ never without explicit permission **in the current turn** |
+
+`yahwehword.com` is not a fourth tier — it is a custom domain on the
+prod site, so it moves when prod moves and serves the same `version.json`.
+Worth naming here because "push prod" and "update yahwehword.com" are
+the same action, and because `songShareUrl` builds its link from
+`Uri.base`: a song shared from yahwehword.com is a yahwehword.com link,
+one shared from dev is a dev link.
 
 **Every number above was read off `version.json` on 2026-09-07, not off
 the repo** — all five sites, in one loop, including both cn sites and
@@ -82,11 +89,12 @@ literal string `v1.3.62`, so grepping the page for a version number
 returns that on all four sites and looks like a confident answer.
 `version.json` is the file `release_web.sh` itself verifies against.
 
-**prod is 1.5.7.** The 1.5 line reached it on 2026-09-06, so the
-429-sermon corpus and the proofreading corrections are live. What is
-NOT on prod is everything from 1.5.8 up: the song share link, the share
-button on the player / score / video screens, and the onboarding count
-fixes.
+**All six sites and yahwehword.com are on 1.5.12**, read off
+`version.json` after the 2026-09-07 prod push — which the owner asked
+for in that turn ("可以push prod 然后应该是yahwehword的网站"), with
+`--no-bump --include-prod` so prod got the same build dev and qat had
+been verified on. The song share link and its button on the player,
+score and video screens are live everywhere.
 
 **A correction, recorded because the mistake is instructive.** On
 2026-09-06 this block was rewritten to "say where the sites actually
