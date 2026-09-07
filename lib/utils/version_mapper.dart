@@ -11,10 +11,10 @@ String translateBookName(String? book, String version) {
 /// panels (Top books chips, "Used N times" refs, highlight browser,
 /// Strong's search results). Driven by the reading [currentVersion]
 /// so book names match the verse text the user is reading — KJV /
-/// NASB / NIV / LEB → "Genesis"; CUVS / CNV / CUV → "创世记"; the
+/// NASB / LEB / CSB → "Genesis"; CUVS / CNV / CUV → "创世记"; the
 /// `-tr` variants → "創世記".
 ///
-/// The English-version detection (kjv/leb/nasb/niv) lives in
+/// The English-version detection (kjv/leb/nasb/csb) lives in
 /// `book_name_mapping.dart`'s `toLocale`; English versions not on
 /// that list will be misclassified as Chinese — add new ones there.
 ///

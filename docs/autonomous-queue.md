@@ -180,13 +180,10 @@ reported. Work these top-down before P2.
       `yswords-dev.netlify.app/main.dart.js` and
       `yswords-qat.netlify.app/main.dart.js` at v1.5.13: both still
       contain `36-word Greek`, zero `4x-word Greek`. Committed now in
-      `d19d8032` together with the two pinning suites. **Still not
-      deployed** — dev/qat serve v1.5.13 with the old 36-word copy as of
-      this commit. Next iteration: after the next dev/qat release, confirm
-      `42-word Greek` (not `36-word Greek`) actually shows up in
-      `main.dart.js` on both sites before ticking this off as delivered —
-      do not assume a release that happens to come after this commit
-      picked it up.
+      `d19d8032` together with the two pinning suites. **Deployed,
+      confirmed 2026-09-07 (later iteration):** `main.dart.js` on both
+      `yswords-dev` and `yswords-qat` is v1.5.15 and contains `42-word`
+      once, `36-word` zero times.
 
 - [x] **2026-09-07 FIXED — two `uiStrings` entries still told readers the
       sermon library was 289, and both are live surfaces (onboarding's
@@ -2378,6 +2375,115 @@ reported. Work these top-down before P2.
 > **Resume trigger:** the user says so, or the queue has nothing else
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
+
+- [x] **2026-09-07 FIXED — CSB (added the same hour, `e41d5209`) was
+      listed as a version but wired into almost nothing else: missing
+      from `_englishVersionCodes`, `sectionTitleSetByVersion`, and the
+      offline pack's `_bibleUrls`.** Filed by the Opus planning pass with
+      the omitted/blank-verse carve-out invoked provisionally; this
+      iteration's own empirical check (see below) found the actual
+      severity is narrower than that, and records it precisely rather
+      than leaving the carve-out framing unchallenged.
+      **The empirical question, answered — and refuter-corrected.** My
+      first pass claimed only navigation (concordance/highlights jumps)
+      broke and that ordinary chapter reading was untouched. A refuter
+      agent broke that: reading IS affected. `FetchBooks`/
+      `fetch_verses.dart` do group/match verses by the raw `book` field
+      (via `bookNameToEnglish`, independent of `_englishVersionCodes`),
+      so opening Genesis fresh on CSB was always fine — but
+      `bible_reading_pane.dart`'s version-SWITCH handlers (~line 2102,
+      instant-cache path, and ~2178, cold-load path) compute
+      `translateBookName(prevEn, version)` to find and re-open the verse
+      the reader was already on, then `p.verses.firstWhere((v) =>
+      v.book == targetBook && ..., orElse: () => p.verses.first)`. Pre-
+      fix, switching TO `csb` while reading e.g. John 3 on any other
+      version: `translateBookName('John', 'csb')` fell through to
+      Chinese (`约翰福音`), matched no CSB verse, hit `orElse`, and
+      silently landed the reader on Genesis 1:1 — no error, no warning,
+      just the wrong book with no indication anything went wrong. That
+      is closer to the carve-out than my first framing gave it credit
+      for: not a blank chapter, but the verse the reader was actually
+      reading vanishing in favor of an unrelated one. The two navigate-
+      to-verse paths I originally cited — `_navigateToConcordanceRef`
+      and the Highlights-sheet `onNavigate`, both `v.book == localBook`
+      with a bare `if (match.isEmpty) return`, no rescue path — are
+      real too, just less severe (a tap that does nothing, not a wrong
+      verse shown). All three share the same root cause and the same
+      fix.
+      **Fixed:** added `csb` to `_englishVersionCodes`
+      (`book_name_mapping.dart:241`), `sectionTitleSetByVersion` →
+      `'english-classic'` (`section_title_map.dart`), and `_bibleUrls`
+      (`offline_pack_service.dart:266`, so the offline pack now bundles
+      CSB too — moved that category's `approximateMbFor` from 40 to 46
+      MB, re-measured on disk). `version_preloader.dart`'s `candidates`
+      also got `csb` (performance only, was already guarded by
+      `availableVersions` so could not 404). Corrected four stale
+      enumeration comments that undercounted the English versions
+      (`bible_reading_pane.dart`, `version_mapper.dart`,
+      `canon_chapters.dart` — CSB's own per-book last-chapter numbers
+      verified to agree with the existing 66-book table exactly, no data
+      change — and `text_patterns.dart`, which got a new measured bullet,
+      also refuter-corrected: my first count (54 same-verse `[...]`
+      spans, all balanced) was real but incomplete — 57 `[` vs 58 `]`,
+      not balanced. 35 are Song of Solomon speaker labels and 19 more are
+      single-verse textual notes, both balanced within a verse as
+      `squarePattern` expects; the remaining 3 are disputed-PASSAGE
+      brackets that open in one verse and close several verses later
+      (Mark 16:8→16:20, John 7:52→8:11, Acts 24:7→24:8) and so are
+      invisible to any per-verse regex. The extra unmatched `]` is
+      `John 5:4`, closing with no `[` anywhere before it — likely a
+      dropped opening bracket in the CSB source, not a new bracket kind.
+      Not fixed here (the asset is the other concurrent session's CSB
+      work to touch); filed as a new P0 item below instead. None of this
+      was added to the bracket-preserving allowlist — that remains an
+      editorial call this iteration does not make.
+      **New test** `test/english_version_membership_parity_test.dart`:
+      asserts every `BibleVersionInfo` with `language == 'en'` appears in
+      all three lists, parsing the two private ones from source text (the
+      same technique `book_name_table_parity_test.dart` and
+      `offline_pack_counts_test.dart` already use for other private
+      tables in this codebase). Verified red without the fix (all three
+      assertions fail, confirmed the reason lines print for `csb`
+      specifically) and green with it. Covers the shared root cause
+      behind all three broken call sites (version-switch, concordance
+      jump, highlights jump) — a ninth English version missing from
+      `_englishVersionCodes` would fail this test before it could repeat
+      any of them.
+      `flutter analyze` clean. Scoped `flutter test` run (89 tests: the
+      new file, its two named neighbours, `canon_chapters_test.dart`,
+      `citation_target_in_canon_test.dart`, `offline_pack_size_test.dart`
+      — which needed the 40→46 MB correction above once CSB's ~6 MB
+      joined the bundle — plus every other test file referencing
+      `toLocale`/`translateBookName`/`sectionTitleSetByVersion`/
+      `localeAwareBookName`/the version preloader) all green, 0
+      regressions. No prior queue entry superseded — this is the first
+      time CSB's wiring was checked. Second concurrent session's tree
+      was clean at start and stayed clean throughout (checked
+      `git status`/`ps aux | grep dart` before and after). Committed and
+      pushed; no deploy this iteration (per the handoff note: dev/qat
+      already at v1.5.15 from the other session's release, and
+      `tools/release_web.sh` was off-limits this hour to avoid re-bumping
+      `pubspec.yaml` out from under it).
+
+- [ ] **`assets/csb.json` John 5:4 has an orphaned `]` with no matching
+      `[` anywhere in that verse or the two before it** — found while
+      correcting a bracket-count doc comment in `text_patterns.dart` (see
+      the CSB-wiring item immediately above). Verse text: "...the water
+      was stirred up recovered from whatever ailment he had]." Every
+      other CSB textual-note/disputed-passage bracket in the corpus is
+      either balanced within a verse or spans a clearly-marked multi-
+      verse range (Mark 16:8→20, John 7:52→8:11, Acts 24:7→8) — this is
+      the only stray one. Likely a dropped opening `[` in the source
+      (John 5:4 — "waiting for the moving of the water" — is itself a
+      commonly-disputed verse in many modern translations, so a whole-
+      verse `[...]` wrapper here would fit the pattern of the other
+      three). Not fixed this iteration — `assets/csb.json` is the other
+      concurrent session's active work (`tools/import_csb.py`, the
+      962-verse divine-name restoration), and this needs their call:
+      restore the opening bracket, or confirm the closing one is itself
+      the artifact and strip it. Whoever picks this up: verify against
+      the actual CSB source/module before changing the asset, per the
+      standing rule against reconstructing scripture from inference.
 
 - [x] **The word-tap corpus printed 14 verses with a stray ASCII bracket in
       them, and 2 verses were missing a character of scripture. Fixed

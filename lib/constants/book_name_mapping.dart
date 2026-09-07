@@ -242,6 +242,7 @@ const _englishVersionCodes = <String>{
   'kjv',
   'leb',
   'nasb',
+  'csb',
   // 'niv' removed 2026-05 (see bible_versions.dart for licence rationale).
 };
 

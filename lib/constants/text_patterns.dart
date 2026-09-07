@@ -28,6 +28,24 @@ final squarePattern = RegExp(r'\[([^\]]+)\]');
 ///     these brackets would bracket a third of the New Testament.
 ///   * `nasb` — 6 spans, each a whole disputed sentence.
 ///   * `kjv`, `biblexg-v2`, `biblexg-v2-tr` — none at all.
+///   * `csb` (added 2026-09-07) — 57 `[` vs 58 `]` (not balanced; see
+///     below), three different kinds. 35 are Song of Solomon speaker
+///     labels (`[Woman]`, `[Man]`, `[Young Women]`, `[Narrator]`,
+///     `[Brothers]`), all opened and closed within the same verse, like
+///     [squarePattern] expects. 19 more are single-verse textual notes,
+///     also balanced (e.g. `[Some of the earliest mss conclude with
+///     16:8.]`). The rest are 3 disputed-PASSAGE brackets that open in
+///     one verse and close several verses later — Mark 16:8→16:20 (the
+///     longer ending), John 7:52→8:11 (the pericope adulterae), Acts
+///     24:7→24:8 — which [squarePattern]'s per-verse regex cannot see
+///     as a pair at all, since it only matches within a single verse's
+///     text. The extra unmatched `]` is `John 5:4`, which closes with no
+///     `[` anywhere before it in that verse or the two before it —
+///     likely a dropped opening bracket in the source, not a 3-bracket
+///     kind; not fixed here, filed as a P0 queue item since the asset is
+///     the other concurrent session's to touch. None of this is added to
+///     the allowlist below — whether any of it should print is an
+///     editorial call this comment does not make.
 ///
 /// So this is a deliberate allowlist, not a default. Adding an edition
 /// here means asserting its brackets carry meaning for the READER, not

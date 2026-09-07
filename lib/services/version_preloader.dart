@@ -39,6 +39,7 @@ Future<void> eagerPreloadAllVersions(
     'kjv',
     'nasb',
     'leb',
+    'csb',
     // Traditional Chinese variant.
     'cuvs-yhwh-tr',
     // LJK2 — NT-only specialty translation.

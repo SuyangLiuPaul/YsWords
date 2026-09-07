@@ -7,14 +7,15 @@
 ///   • CUV-derived translations (CUVS-YHWH, LJK2) reuse the master
 ///     CUV title set — the verse layout matches CUV closely so
 ///     reusing its headings is editorially correct.
-///   • All three English versions share a neutral 'english-classic'
-///     set — NIV/NASB/ESV headings are copyright protected and not
+///   • All English versions share a neutral 'english-classic' set —
+///     NIV/NASB/ESV headings are copyright protected and not
 ///     redistributable.
 const sectionTitleSetByVersion = <String, String>{
   // English family — neutral classic-style headings.
   'kjv': 'english-classic',
   'leb': 'english-classic',
   'nasb': 'english-classic',
+  'csb': 'english-classic',
   // 'niv' entry removed in 2026-05 along with the NIV version itself
   // (see lib/constants/bible_versions.dart for the licence rationale).
 

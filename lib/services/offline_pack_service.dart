@@ -267,6 +267,7 @@ class OfflinePackService extends ChangeNotifier {
     'assets/kjv.json',
     'assets/leb.json',
     'assets/nasb.json',
+    'assets/csb.json',
     // 'assets/niv.json' removed 2026-05 — NIV asset bundle removed
     // along with its picker entry (see bible_versions.dart).
     // 'assets/cuv.json', 'assets/cuv-tr.json', 'assets/cnv.json',
@@ -403,7 +404,9 @@ class OfflinePackService extends ChangeNotifier {
   int approximateMbFor(OfflinePackCategory c) {
     switch (c) {
       case OfflinePackCategory.bibles:
-        return 40; // 7 versions after NIV/CUV/CNV/LJK1 removal
+        // 46 MB for 8 versions (was 40/7 before CSB, added 2026-09-07:
+        // ~45.78 MB on disk across the 8 files _bibleUrls enumerates).
+        return 46;
       case OfflinePackCategory.sermons:
         // Measured 2026-09-07 by summing the on-disk bytes of every
         // .txt _sermonUrls() actually enumerates (1147 files: 289 en +

@@ -5,6 +5,8 @@
 /// bounds. All three carry the same 66 books and the same 1,189
 /// chapters (re-derived and pinned in `test/canon_chapters_test.dart`,
 /// which fails if a bundled asset ever disagrees with this table).
+/// `assets/csb.json` (added 2026-09-07) agrees with the table exactly
+/// too, checked by hand; the test above does not derive from it yet.
 ///
 /// GENERATED from the assets, not hand-typed — see the test above for
 /// how to re-derive it if a Bible asset changes.

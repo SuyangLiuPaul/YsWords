@@ -5653,7 +5653,7 @@ void _showMapPicker(
   // VERSION (NASB → "Genesis", CUVS → "创世记", `-tr` → "創世記"), not the
   // UI locale. Previously the group passed `locale` ('en') into
   // translateBookName's VERSION slot; `toLocale('Genesis','en')` doesn't
-  // recognise 'en' as an English version (only kjv/nasb/niv/leb) and fell
+  // recognise 'en' as an English version (only kjv/nasb/leb/csb) and fell
   // through to Chinese — so an English reader saw 创世纪/出埃及记. Thread the
   // real version in (mirrors HighlightsSheet). See [[feedback_book_name_localization]].
   final version = context.read<MainProvider>().currentVersion;
