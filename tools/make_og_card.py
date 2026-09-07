@@ -159,7 +159,7 @@ def main():
     # software (the V in KJV; 中文界面叫版本).
     # test/seo_meta_test.dart derives the 7 from
     # lib/constants/bible_versions.dart and fails if this line drifts.
-    tag_en = 'Bilingual Bible · 7 versions · original languages'
+    tag_en = 'Bilingual Bible · 8 versions · original languages'
     tag_zh = '双语圣经 · 和合本雅伟版 · 原文对照与释经注'
     domain = 'yahwehword.com'
 

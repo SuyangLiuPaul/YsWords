@@ -588,6 +588,13 @@ class _ScripturesTable extends StatelessWidget {
         url: 'https://www.lockman.org/',
       ),
       _AttribRow(
+        name: uiStrings['aboutVerCsb']?[locale] ?? 'CSB 2017',
+        // The grant requires this sentence, word for word, on the
+        // copyright or title page. This page is that page.
+        licence: uiStrings['aboutLicenseCsb']?[locale] ?? '',
+        url: 'https://csbible.com/',
+      ),
+      _AttribRow(
         name: uiStrings['aboutVerCuvsYhwh']?[locale] ??
             'CUVS-YHWH (和合本雅伟版, 简/繁)',
         licence: uiStrings['aboutLicenseCuvsYhwh']?[locale] ??

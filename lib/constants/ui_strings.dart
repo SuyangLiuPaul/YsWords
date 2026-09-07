@@ -1768,10 +1768,10 @@ const uiStrings = {
   // now checks this file too — it previously covered only the share
   // card and index.html, which is how this survived.
   'onboardWelcomeBody': {
-    'zh-Hans': '双语圣经阅读应用，7 个版本（英文／简体／繁体）。主页的「读经」卡片会带你回到上次离开的位置。',
-    'zh-Hant': '雙語聖經閱讀應用，7 個版本（英文／簡體／繁體）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
+    'zh-Hans': '双语圣经阅读应用，8 个版本（英文／简体／繁体）。主页的「读经」卡片会带你回到上次离开的位置。',
+    'zh-Hant': '雙語聖經閱讀應用，8 個版本（英文／簡體／繁體）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
     'en':
-        'A bilingual Bible reader with 7 versions across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
+        'A bilingual Bible reader with 8 versions across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
   },
   'onboardReadTitle': {
     'zh-Hans': '阅读、高亮、研经',
@@ -1995,9 +1995,9 @@ const uiStrings = {
   // 「共 7 部」 without the same implication, but 版本 matches the word
   // the version picker itself uses.
   'offlinePackBibles': {
-    'zh-Hans': '圣经版本（共 7 个）',
-    'zh-Hant': '聖經版本（共 7 個）',
-    'en': 'Bibles (7 versions)',
+    'zh-Hans': '圣经版本（共 8 个）',
+    'zh-Hant': '聖經版本（共 8 個）',
+    'en': 'Bibles (8 versions)',
   },
   // {name} is filled from sermon_credit.dart — the single source for
   // the preacher's name. The count was 587, which was the sum of every
@@ -4333,6 +4333,31 @@ const uiStrings = {
     'zh-Hant': '© Lockman 基金會 · 在出版方引用規定下使用。',
     'en':
         '© The Lockman Foundation · used under quotation provisions.',
+  },
+  'aboutVerCsb': {
+    'zh-Hans': 'CSB 2017 基督教标准译本',
+    'zh-Hant': 'CSB 2017 基督教標準譯本',
+    'en': 'CSB 2017',
+  },
+  // Verbatim, and it has to stay verbatim: the 2017 Holman grant names
+  // this exact sentence as the one that must appear on the copyright or
+  // title page. See docs/permissions/.
+  'aboutLicenseCsb': {
+    'zh-Hans': 'Scripture quotations marked CSB®, are taken from the '
+        'Christian Standard Bible®, Copyright © 2017 by Holman Bible '
+        'Publishers. Used by permission. Christian Standard Bible®, and '
+        'CSB® are federally registered trademarks of Holman Bible '
+        'Publishers.',
+    'zh-Hant': 'Scripture quotations marked CSB®, are taken from the '
+        'Christian Standard Bible®, Copyright © 2017 by Holman Bible '
+        'Publishers. Used by permission. Christian Standard Bible®, and '
+        'CSB® are federally registered trademarks of Holman Bible '
+        'Publishers.',
+    'en': 'Scripture quotations marked CSB®, are taken from the '
+        'Christian Standard Bible®, Copyright © 2017 by Holman Bible '
+        'Publishers. Used by permission. Christian Standard Bible®, and '
+        'CSB® are federally registered trademarks of Holman Bible '
+        'Publishers.',
   },
   'aboutVerCuvsYhwh': {
     'zh-Hans': 'CUVS-YHWH 和合本雅伟版（简 / 繁）',

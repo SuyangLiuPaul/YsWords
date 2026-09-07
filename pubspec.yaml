@@ -151,6 +151,7 @@ flutter:
     - assets/biblexg-v2.json
     - assets/biblexg-v2-tr.json
     - assets/nasb.json
+    - assets/csb.json
     # CUV, CUV-tr, CNV, CNV-tr, biblexg (LJK1), biblexg-tr removed
     # 2026-08 — deleted outright, superseded by cuvs-yhwh /
     # biblexg-v2 (see lib/constants/bible_versions.dart).

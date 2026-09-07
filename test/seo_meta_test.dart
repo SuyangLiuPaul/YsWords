@@ -247,7 +247,10 @@ void main() {
     };
 
     test('matches what the picker actually offers', () {
-      expect(entries.length, 7,
+      // 7 -> 8 on 2026-09-07 with the CSB. Both places this pins are
+      // hand-written marketing copy, which is exactly why it is pinned:
+      // the count is not derived at build time anywhere.
+      expect(entries.length, 8,
           reason: 'the version list changed — the share card and the '
               'JSON-LD featureList both advertise a count and neither '
               'is derived at build time');

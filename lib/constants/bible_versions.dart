@@ -56,6 +56,22 @@ const bibleVersions = <BibleVersionInfo>[
     language: 'en',
     editionYear: '2020 update',
   ),
+  // CSB, added 2026-09-07. Licence, and the two questions that had to
+  // be answered before it could ship, are in `docs/permissions/` — the
+  // 2017 Holman grant, Pastor Raymond's extension of it to this app,
+  // and the owner's decision on worldwide distribution.
+  //
+  // The text is NOT the module as received. `tools/import_csb.py`
+  // restores the divine name in 962 verses where the source had lost
+  // CSB's own small-caps LORD and left "Lord" behind — Deuteronomy 6:4
+  // among them. `docs/csb-divine-name-restorations.md` lists every one.
+  BibleVersionInfo(
+    value: 'csb',
+    shortLabel: 'CSB',
+    menuLabel: 'Christian Standard Bible',
+    language: 'en',
+    editionYear: '2017',
+  ),
   // NIV (New International Version) was previously listed here.
   // Removed in 2026-05 — Biblica / Zondervan retain commercial
   // copyright on the full text and we cannot redistribute the bundled
