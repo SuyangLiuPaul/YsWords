@@ -7224,6 +7224,59 @@ has never seen this repo.
       it. Check with a verse late in a long chapter so a failure is
       unmistakable.
 
+- [ ] **梁家鏗譯本 (biblexg-v2/-tr) had no stray-ASCII / bracket-balance
+      guard — now pinned, not repaired.** Every other shipping edition
+      has one: `kjv`/`nasb`/`leb`/`cuvs-yhwh(-tr)` via
+      `bible_version_integrity_test.dart`'s `forbidden` map,
+      `cuvs-yhwh(-tr)` again via `ascii_punctuation_test.dart` +
+      `stray_punctuation_test.dart` + `orphan_close_bracket_test.dart`,
+      `csb` via `csb_asset_test.dart`. `biblexg_verse_integrity_test.dart`
+      (433 lines) checks references, empties, swallowed numbers, chapter
+      gaps, `<note:…>` markup and script purity — no character-class
+      check. Confirmed against the full registered roster in
+      `lib/constants/bible_versions.dart` (8 versions total): biblexg-v2
+      and -tr are genuinely the only two with none.
+
+      **Census, body text only (`<note:…>` stripped), independently
+      re-derived:**
+      * `assets/biblexg-v2.json` (7,924 verses) — **2** stray ASCII:
+        * 使徒行传 7:32 — opens `‘` (U+2018), closes ASCII `'` (U+0027),
+          right before `<note:参出3.6。>`. The Traditional twin (使徒行傳
+          7:32, 7,928 verses) opens and closes with the matching curly
+          pair — but per `docs/梁家鏗譯本-請教出版方.md` the Traditional
+          is a *conversion of* the Simplified, not an independent
+          witness, so the defensible evidence is internal: the same
+          verse opens curly and closes ASCII.
+        * 启示录 1:5 — an ASCII `,` amid otherwise full-width `，`.
+          Weaker: no internal contradiction, just surrounding style.
+      * `assets/biblexg-v2-tr.json` — **0** body offenders.
+      * `<`/`>` balance per verse: **0** offenders, both files — note
+        markers are structurally sound.
+      * **`git log -S` on both offending substrings** (the
+        `scripture_edit_vs_corruption` rule) traces both to the original
+        import commit `f1f82de4`, never touched since — import artefact,
+        not a deliberate user edit. Does not by itself authorize a fix.
+
+      **Inside `<note:…>` spans (separate, lower-stakes, NOT covered by
+      the new test — notes legitimately use ASCII `.` as a chapter.verse
+      separator, e.g. `<note:參4.6，>`, so only `,` and `(`/`)` were
+      counted as anomalous):** Simplified has 8 ASCII commas (路19:13,
+      帖前5:19, 启1:4, 启1:5 ×2, 启2:14, 启8:8, 启11:5) and one `(`/`)`
+      pair (徒2:21, `即七十士本珥3.1-5`); Traditional has 3 ASCII commas
+      (路19:13, 徒20:3, 启22:19) and one `(`/`)` pair (太2:6). Whether
+      these are in scope at all is an open question — unlike the body
+      text, ASCII commas mixed into a citation aside may just be the
+      publisher's own typing habit, not damage.
+
+      **Pinned by `test/biblexg_punctuation_test.dart`** (both directions:
+      fails if either pinned offender is repaired, or if a third appears
+      — proved by mutating an in-memory copy, not the asset). **Assets
+      untouched.** Repairing needs a refuter on top of the `git log -S`
+      result above, plus a decision on whether the note-internal commas
+      are worth touching at all — take one narrow question at a time,
+      starting with 使徒行传 7:32 since it has the strongest internal
+      evidence.
+
 ## P1 — Bible study correctness
 
 - [x] **A stale cache outlived every upgrade — fixed in v1.4.39.**
