@@ -13584,7 +13584,11 @@ so the bundle-size answer stays on the record.
       hermetic (tempdirs only), so unlike the rest of `test/*.py` it's
       safe to run unconditionally rather than needing the
       gitignored-corpus skip guard. Full `flutter test` suite (2496
-      cases) still green; no assets touched.
+      cases) still green; no assets touched. Pushed as `e6978dcf`,
+      watched to completion: run `34145878820` concluded `success`
+      (took just past the usual ~6-minute watch budget). No deploy: this
+      touched only `tools/`, `test/`, `docs/` and `.github/workflows/` —
+      nothing user-facing.
 
 ## Blocked on the user — do not attempt
 
