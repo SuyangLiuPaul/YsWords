@@ -74,8 +74,14 @@ verse-by-verse check found the text actually shipped there is CSB 2017,
 not HCSB (its `bsapp_bible_hcsbs` table name is a legacy key). The
 credit line below is the CSB one, which is the one the grant requires.
 
-**Scope.** The message names `Yahwehword.com`. It does not mention
-SeekSparks / Yahweh's Swords, which has its own copy of this file.
+**Scope.** The message names `Yahwehword.com`. This note first read
+that narrowly, as covering this app only; the owner corrected it —
+**SeekSparks is one of the Yahweh's Words products, so the extension
+reaches it too.** He publishes both, and the sibling repo carries the
+same claim independently: its `pubspec.yaml` describes it as "forked
+from YsWords", its iOS display name is *Yahweh's Sword*, and its bundle
+id is `com.example.yahwehswords`. Its copy of this file records the
+correction.
 
 ### The credit line, verbatim
 
