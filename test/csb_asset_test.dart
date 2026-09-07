@@ -188,6 +188,32 @@ void main() {
     });
   });
 
+  test('bracket balance is pinned to the known disputed-passage spans', () {
+    // The module carries CSB's editorial brackets around three disputed
+    // spans (Mark 16:9-20, John 7:53-8:11, Acts 24:6b-8), each an opener
+    // paired with a closer. `043005004` (John 5:4) is a fourth, unpaired:
+    // it ends in a lone `]` with no `[` anywhere in it or the verse
+    // before — a loss in the upstream module, not in this importer (see
+    // docs/autonomous-queue.md and tools/import_csb.py's docstring). This
+    // pins the count so a re-import that drops a bracket, or introduces a
+    // new stray one, is caught rather than silently shipped.
+    final unbalanced = <String, int>{};
+    for (final r in csb) {
+      final t = r['text'] as String;
+      final n = '['.allMatches(t).length - ']'.allMatches(t).length;
+      if (n != 0) unbalanced[r['id'] as String] = n;
+    }
+    expect(unbalanced, {
+      '041016008': 1, // Mark 16:8 opens the longer-ending note
+      '041016020': -1, // Mark 16:20 closes it
+      '043005004': -1, // John 5:4 — unpaired, known upstream loss
+      '043007052': 1, // John 7:52 opens the pericope adulterae note
+      '043008011': -1, // John 8:11 closes it
+      '044024007': 1, // Acts 24:7 opens the note
+      '044024008': -1, // Acts 24:8 closes it
+    });
+  });
+
   test('the text is CSB 2017, not HCSB', () {
     // The source table is named `bsapp_bible_hcsbs`. It is a legacy key;
     // these are the readings that tell the two editions apart, and they

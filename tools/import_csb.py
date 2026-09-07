@@ -96,18 +96,35 @@ TABLE = 'bsapp_bible_hcsbs'
 EXPECTED_VERSES = 31102
 EXPECTED_BOOKS = 66
 
-# Credentials live in the 雅伟的话 repo's own importer, which is where
-# they already are; they are read, never printed, and never copied here.
+# Credentials live in the 雅伟的话 site's own .env, which is where the
+# site itself reads them from; they are read, never printed, and never
+# copied here. `fix-hcsb.py::_db_credentials()` reads the same file the
+# same way — this mirrors that, not the old literal-in-script layout.
 CREDS_FROM = os.path.join(YDH, 'tools', 'fix-hcsb.py')
+ENV_FILE = os.path.join(YDH, 'bsapp', '.env')
 
 
 def _creds():
+    if not os.path.isfile(CREDS_FROM):
+        sys.exit(f'{CREDS_FROM}: not found (need MARIADB path)')
     src = io.open(CREDS_FROM, encoding='utf-8').read()
-    mariadb = re.search(r"^MARIADB\s*=\s*'([^']*)'", src, re.M).group(1)
-    db, user, pw = re.search(
-        r"^DB,\s*USER,\s*PW\s*=\s*'([^']*)',\s*'([^']*)',\s*'([^']*)'",
-        src, re.M).groups()
-    return mariadb, db, user, pw
+    m = re.search(r"^MARIADB\s*=\s*'([^']*)'", src, re.M)
+    if not m:
+        sys.exit(f'{CREDS_FROM}: no MARIADB = \'...\' literal found')
+    mariadb = m.group(1)
+
+    if not os.path.isfile(ENV_FILE):
+        sys.exit(f'{ENV_FILE}: not found (need DB_DATABASE/DB_USERNAME/DB_PASSWORD)')
+    want = {'DB_DATABASE': '', 'DB_USERNAME': '', 'DB_PASSWORD': ''}
+    with io.open(ENV_FILE, encoding='utf-8') as fh:
+        for line in fh:
+            key, _, value = line.partition('=')
+            if key.strip() in want:
+                want[key.strip()] = value.strip().strip('"').strip("'")
+    missing = [k for k, v in want.items() if not v]
+    if missing:
+        sys.exit(f'{ENV_FILE}: no {", ".join(missing)}')
+    return mariadb, want['DB_DATABASE'], want['DB_USERNAME'], want['DB_PASSWORD']
 
 
 def fetch_rows():

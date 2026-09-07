@@ -2466,24 +2466,65 @@ reported. Work these top-down before P2.
       `pubspec.yaml` out from under it).
 
 - [ ] **`assets/csb.json` John 5:4 has an orphaned `]` with no matching
-      `[` anywhere in that verse or the two before it** — found while
-      correcting a bracket-count doc comment in `text_patterns.dart` (see
-      the CSB-wiring item immediately above). Verse text: "...the water
-      was stirred up recovered from whatever ailment he had]." Every
-      other CSB textual-note/disputed-passage bracket in the corpus is
-      either balanced within a verse or spans a clearly-marked multi-
-      verse range (Mark 16:8→20, John 7:52→8:11, Acts 24:7→8) — this is
-      the only stray one. Likely a dropped opening `[` in the source
-      (John 5:4 — "waiting for the moving of the water" — is itself a
-      commonly-disputed verse in many modern translations, so a whole-
-      verse `[...]` wrapper here would fit the pattern of the other
-      three). Not fixed this iteration — `assets/csb.json` is the other
-      concurrent session's active work (`tools/import_csb.py`, the
-      962-verse divine-name restoration), and this needs their call:
-      restore the opening bracket, or confirm the closing one is itself
-      the artifact and strip it. Whoever picks this up: verify against
-      the actual CSB source/module before changing the asset, per the
-      standing rule against reconstructing scripture from inference.
+      `[` anywhere in that verse or the two before it** — STILL OPEN, asset
+      unchanged; this iteration measured the upstream module and got a
+      refuter verdict against editing (recorded below), not just a guess.
+
+      **Part A fixed, verified working:** `tools/import_csb.py::_creds()`
+      was regexing a `DB, USER, PW = '...', '...', '...'` literal out of
+      `~/Documents/CodingProject/Yahwehdehua/tools/fix-hcsb.py` that no
+      longer exists there — that repo moved credentials into
+      `bsapp/.env` and now reads them via `_db_credentials()` (confirmed
+      by reading that function, not inferred). `_creds()` now reads the
+      same `.env` the same way, and exits with a named file+field on a
+      missing value instead of an `AttributeError` on `None.groups()`.
+      Verified: `_creds()` runs clean, and a live read-only query against
+      `bsapp_bible_hcsbs` for John 5:3-4 now works from this repo.
+
+      **Part B — measured, not guessed, this time.** Queried the module
+      directly: John 5:3 is `...blind, lame, and paralyzed.<CM>` (no `[`
+      anywhere); John 5:4 ends `...recovered from whatever ailment he
+      had].` — confirms the asset is a faithful copy of the module, the
+      loss is upstream of `import_csb.py`. A full scan of all 31,102 rows
+      for `[`/`]` imbalance (not a spot check) found exactly 7, matching
+      what `assets/csb.json` already has: Mark 16:8/16:20 and John
+      7:52/8:11 (both matched pairs, the well-known disputed-passage
+      brackets), Acts 24:7/24:8 (matched pair, opens at the verse's own
+      start with no preceding text in-verse — same shape now proposed for
+      John 5:4), and John 5:4 alone, unpaired.
+
+      **Sent to a refuter before touching the asset** (per this loop's
+      rule: a bracket→"this edition brackets this passage" claim is
+      exactly the kind of factual assertion that must be attacked before
+      it ships). **Verdict: BROKEN, do not edit.** Its strongest point:
+      the three confirmed spans are matched *pairs* — that is what a real
+      editorial-bracket convention looks like — while John 5:4 is
+      unpaired across the entire 31,102-verse corpus, which is the
+      signature of a transcription/import loss in the module, not
+      evidence of the same convention. It also notes the source table is
+      literally named `bsapp_bible_hcsbs` (HCSB, not CSB — a legacy key
+      per `import_csb.py`'s own docstring, but not independently
+      re-verified for the bracketing convention specifically) and that
+      every data point offered comes from the one table being edited,
+      with no outside CSB print/module as witness — which is exactly the
+      standing rule this file already states: corruption vs. deliberate
+      text can't be told apart from internal self-consistency alone.
+      Per the hard stop this task carried: asset left unchanged.
+
+      **Guard added anyway**, independent of whether the asset gets
+      touched: `test/csb_asset_test.dart` now pins the exact 7
+      unbalanced-bracket verses (ids + direction) across the whole corpus,
+      so a re-import that drops or adds a bracket anywhere is caught
+      rather than shipped silently. Verified it reflects current data
+      (all 7 present, matches the module).
+
+      **What would unblock this**: an actual CSB 2017 print or PDF page
+      for John 5:3-4 — not another derivation from this same DB table.
+      Whoever picks this up next: don't re-run the same corpus-internal
+      argument expecting a different refuter answer; bring an outside
+      witness or close this as "upstream loss, unrecoverable, publisher
+      question" the way the `[ ]` below already does for John 5:3's
+      missing clause.
 
 - [x] **The word-tap corpus printed 14 verses with a stray ASCII bracket in
       them, and 2 verses were missing a character of scripture. Fixed
