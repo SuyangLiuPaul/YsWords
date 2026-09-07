@@ -1817,10 +1817,10 @@ const uiStrings = {
     'en': 'Discover',
   },
   'onboardDiscoverBody': {
-    'zh-Hans': '圣经时间轴（97 个事件）、家谱（277 位人物）、圣经证据（225 项考古／抄本／科学发现），都可在主页打开。',
-    'zh-Hant': '聖經時間軸（97 個事件）、家譜（277 位人物）、聖經證據（225 項考古／抄本／科學發現），都可在主頁打開。',
+    'zh-Hans': '圣经时间轴（98 个事件）、家谱（277 位人物）、圣经证据（225 项考古／抄本／科学发现），都可在主页打开。',
+    'zh-Hant': '聖經時間軸（98 個事件）、家譜（277 位人物）、聖經證據（225 項考古／抄本／科學發現），都可在主頁打開。',
     'en':
-        'Bible Timeline (97 events), Family Tree (277 people), and Bible Evidence (225 archaeology / manuscript / science finds) — all reachable from Home.',
+        'Bible Timeline (98 events), Family Tree (277 people), and Bible Evidence (225 archaeology / manuscript / science finds) — all reachable from Home.',
   },
   'onboardCustomizeTitle': {
     'zh-Hans': '自定义与同步',

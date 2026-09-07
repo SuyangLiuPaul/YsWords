@@ -131,6 +131,13 @@ reported. Work these top-down before P2.
       passes it. Confirmed the widened test fails by reverting one
       string to its pre-fix wording locally before committing (per this
       item's own acceptance criteria), then restored the fix.
+      **Amendment (2026-09-07, later iteration):** this fix reworded
+      `onboardSermonsBody` in `ui_strings.dart` but missed the hardcoded
+      `?? '587 expository sermons…'` fallback one widget away in
+      `onboarding_dialog.dart` — the fallback only renders when a locale
+      is missing from the map, which is why it stayed invisible. Fixed
+      in the BUGS entry further down this section (same date), which
+      also added the test that would have caught it.
 
 - [x] **2026-09-07 FIXED — offline-pack size/enumeration test added; found
       `maps` was silently attempting 1137 dead fetches, `tools` understated
@@ -2201,6 +2208,57 @@ reported. Work these top-down before P2.
       `bump_version.sh` rewrites it on every release, so the cheap
       version of that check would refuse the nightly rather than catch
       anything — it needs a different idea, not a wider filter.
+
+- [x] **2026-09-07 FIXED — the first-run onboarding screen stated two
+      false counts: "587 expository sermons" and "Bible Timeline (97
+      events)".** Direct continuation of the 289→429 sermon-count entry
+      above: that fix corrected `onboardSermonsBody` in `ui_strings.dart`
+      but missed the hardcoded English fallback one widget away in
+      `onboarding_dialog.dart` (the `?? '...'` beside it), and never
+      looked at the sibling Discover slide, which had been wrong since
+      2026-05-04 for an unrelated reason — `fb977915` added a 98th
+      timeline event ("add Book of Job") without bumping the copy, and
+      `358fca60` (2026-09-04) later fixed `_meta.count` 97→98 but not the
+      four copy sites naming the number.
+      **Measured (refuter-confirmed)**: `bible_timeline.json` has 98
+      events (`_meta.count` also 98), `family_tree.json` has 277 people,
+      `bible_evidence.json` has 225 evidences, `sermons/index.json` has
+      429 records (289 `hasEn: true`, 140 without). 家谱 277 and 圣经证据
+      225 were already correct — untouched.
+      Fixed both numbers at all four sites: `onboardDiscoverBody` in
+      `ui_strings.dart` (97→98, all 3 locales) and both fallbacks in
+      `onboarding_dialog.dart` (Discover 97→98; Sermons reworded to
+      match `onboardSermonsBody`'s wording — 429 total / 289 ×3-language
+      / 140 Chinese-only — rather than swapping in a bare "429 in EN /
+      简 / 繁", which would have repeated the exact trap the 289→429 fix
+      called out).
+      **Swept every other `?? '...'` fallback in `onboarding_dialog.dart`
+      against its `uiStrings` entry** (refuter re-verified independently):
+      all 12 title/body fallbacks — Welcome, Read, AI, Sermons, Discover,
+      Customize — are otherwise byte-identical to their `en` map entries.
+      Nothing else was stale.
+      **New `test/onboarding_counts_test.dart`**: parses the three counts
+      out of `onboardDiscoverBody` and `onboardSermonsBody` in all three
+      locales, and out of both widget fallback strings via regex against
+      the live `onboarding_dialog.dart` source, asserting each against
+      the real asset lengths (and `_meta.count == events.length`).
+      Verified red on the pre-fix strings (via `git stash` of just the
+      two changed files, confirmed `97≠98` and `587≠429` failures, then
+      restored) before green.
+      `flutter analyze` clean; full suite green except two isolated
+      pre-existing flakes unrelated to this change
+      (`illustration_attribution_new_grouping_test.dart`'s
+      `shaders/ink_sparkle.frag not found`, `testament_toggle_fits_test
+      .dart`'s tap test) — both pass individually in isolation, confirmed
+      before committing.
+      **Note on the working tree this iteration ran in:** a second
+      Claude session was live in the same checkout mid-run (the
+      song-share-link feature, committed as `48627bd6` partway through
+      this iteration, plus an in-flight 1.5.7→1.5.8 version bump left
+      unstaged in `app_version.dart`/`pubspec.yaml`). Neither was staged,
+      committed, or reverted here — only this iteration's three files
+      (`ui_strings.dart`, `onboarding_dialog.dart`, the new test) went
+      into this commit.
 
 ## P0 — scripture accuracy
 

@@ -269,13 +269,13 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
           icon: Icons.headset_mic_rounded,
           title: uiStrings['onboardSermonsTitle']?[locale] ?? 'Sermons',
           body: uiStrings['onboardSermonsBody']?[locale] ??
-              '587 expository sermons in EN / 简 / 繁. Verse refs in the body open a popup so you can peek at scripture without leaving. Home shows a "Resume sermon" card with your progress.',
+              '429 expository sermons — 289 in EN / 简 / 繁, plus 140 more in 简 / 繁 only. Verse refs in the body open a popup so you can peek at scripture without leaving. Home shows a "Resume sermon" card with your progress.',
         ),
         _Slide(
           icon: Icons.explore_outlined,
           title: uiStrings['onboardDiscoverTitle']?[locale] ?? 'Discover',
           body: uiStrings['onboardDiscoverBody']?[locale] ??
-              'Bible Timeline (97 events), Family Tree (277 people), and Bible Evidence (225 archaeology / manuscript / science finds) — all reachable from Home.',
+              'Bible Timeline (98 events), Family Tree (277 people), and Bible Evidence (225 archaeology / manuscript / science finds) — all reachable from Home.',
         ),
         // 2026-05-10 (v1.2.11): China build (`kChinaMode`) skips
         // Firebase init at boot, so the Google-sign-in line in the
