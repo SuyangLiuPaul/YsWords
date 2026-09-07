@@ -13513,15 +13513,26 @@ so the bundle-size answer stays on the record.
       (12 still open as of 2026-09-08)" rather than swapping one bare
       number for another.
 
-- [ ] **2026-09-07 FILED, 2026-09-08 HALF-FIXED — neither `tools/audit_p0.py`
+- [x] **2026-09-07 FILED, 2026-09-08 FIXED (for `audit_p0.py`; the other
+      half stays local by design, see below) — neither `tools/audit_p0.py`
       nor `tools/audit_originals_compounds.py` was invoked by any test or
       CI.** `audit_p0.py` now has a `--check` mode (invariant-based: zh-TW/
       zh-CN sermon file-count parity, every tagged Strong's code well-formed
       `[GH]\d+`) wired into `.github/workflows/flutter-ci.yml`'s
       `analyze-and-test` job, before `flutter test`. Verified clean locally:
       `OK: sermon locale parity holds; every tagged Strong's code is
-      well-formed.` (0.75s). This has never run on a GitHub runner yet —
-      watch the first CI run after this push.
+      well-formed.` (0.75s). **Landed in `12c43c8c`, watched to completion
+      on a real GitHub runner: run `34139485555`, job `analyze-and-test`,
+      concluded `success`.** The step's own log line confirms it actually
+      ran (not skipped, not a YAML no-op):
+      `2026-09-07T15:41:27.85Z OK: sermon locale parity holds; every
+      tagged Strong's code is well-formed.` (0.35s on the runner), placed
+      correctly before the `Test` step. Refuter pass before commit found
+      one latent (currently inert) gap worth a follow-up: `check()`'s
+      `r.get('s', '')` doesn't catch a Strong's field explicitly set to
+      JSON `null` (only an *absent* key hits the `''` default) — no such
+      record exists today, but `s = r.get('s') or ''` would be honest
+      against a future one. Filed below.
       `audit_originals_compounds.py` also gained `--check` (drift-detection:
       re-parses the cached MorphHB/OpenGNT sources and diffs against every
       shipped Hebrew OT + Greek NT verse; verified clean locally in 6.3s —
@@ -13537,6 +13548,20 @@ so the bundle-size answer stays on the record.
       local-only pre-release habit, or wire it into
       `tools/release_web.sh`'s pre-flight (6.3s with a warm cache, adds a
       real gate before every deploy but not before every push)?
+
+- [ ] **2026-09-08 FILED, not fixed — `tools/audit_p0.py`'s new `check()`
+      would silently pass a tagged run whose Strong's field is explicit
+      JSON `null` instead of absent or a string.** Found by the refuter
+      run before committing the CI-wiring item above (`:13516`).
+      `s = r.get('s', '')` at `tools/audit_p0.py:242` only applies the
+      `''` default when the `s` key is *missing*; a record holding
+      `"s": null` yields `s = None`, and `if s and not re.fullmatch(...)`
+      short-circuits false on `None` without ever running the regex — so
+      a malformed-by-null record would be reported as fine. No such
+      record exists in `assets/tagged/cuvs-yhwh/*.json` today (checked:
+      zero `None`/non-string `s` values across the whole corpus), so this
+      is not live drift, just a check that doesn't actually cover the
+      case it claims to. One-line fix: `s = r.get('s') or ''`.
 
 ## Blocked on the user — do not attempt
 
