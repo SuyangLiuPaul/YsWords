@@ -26,15 +26,13 @@ index below says, for each one, whether this app ships the text.
 | Fee | GRATIS **provided the work is distributed free**; if it becomes a salable product the permission terminates |
 | Termination | When the Work is no longer available |
 
-### This app does not ship the CSB
+### This app ships the CSB — since 2026-09-07
 
-Filed on 2026-09-07 at the owner's request. Recording it changes
-nothing that a reader sees, and nothing on the About page moved: the
-bundled texts are KJV, LEB, NASB, CUVS-YHWH (简/繁) and LJK1/LJK2, and
-none of them is the CSB. It is here so the paperwork is in the same repo
-as the app it would govern, if it ever does.
+It is the eighth bundled text, alongside KJV, LEB, NASB, CUVS-YHWH
+(简/繁) and LJK1/LJK2. Both gates below were answered first — read them,
+then the two 2026-09-07 sections that close them.
 
-**Two things gate ever using it here, and neither is ours to decide:**
+**The two gates, as they stood:**
 
 1. **Territory.** The grant is Hong Kong / Mainland China.
    `yahwehword.com`, `yswords.netlify.app` and `yswords-cn.netlify.app`
@@ -44,8 +42,24 @@ as the app it would govern, if it ever does.
    is a different work by a different publisher of record, so the grant
    does not reach it on its face.
 
-Both belong to Raymond / Paul, not to this repo. The 雅伟的话 note
-raises the same two against *that* project, which does ship the text.
+Neither belonged to this repo, and neither was decided here.
+
+**What shipping it involved.** `tools/import_csb.py` builds
+`assets/csb.json` from the module in the 雅伟的话 database. Strong's
+numbers are dropped — this app ships no tagged text — which is the one
+place it differs from the SeekSparks importer, where the numbers are
+kept because the grant is for the CSB *with* them. The credit line
+below is rendered on the About page verbatim in all three locales, and
+`test/csb_asset_test.dart` quotes it in full so a paraphrase fails the
+build.
+
+**One thing the reader should be told plainly:** the text is not the
+module as received. 967 verses had lost CSB's own small-caps LORD and
+read a bare "Lord" — Deuteronomy 6:4, the Shema, among them. The
+importer restores the divine name in those, on the module's own
+typographic evidence, checked against the KJV and the Chinese
+和合本雅伟版. The 雅伟的话 note records the same kind of edit — its 5,041
+verses — as an editorial change the grant does not mention either way.
 
 ### 2026-09-07 — the licensee extends it to yahwehword.com
 
@@ -91,8 +105,8 @@ correction.
 
 ### The credit line, verbatim
 
-If the CSB is ever added, the grant requires this on the copyright or
-title page — which in this app is the About page — word for word:
+The grant requires this on the copyright or title page — which in this
+app is the About page — word for word:
 
 > Scripture quotations marked CSB®, are taken from the Christian
 > Standard Bible®, Copyright © 2017 by Holman Bible Publishers. Used by

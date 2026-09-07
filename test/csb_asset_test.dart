@@ -14,7 +14,7 @@ import 'package:yswords/constants/ui_strings.dart';
 ///
 /// **This text is not the module as received**, and that is the reason
 /// this file exists. `tools/import_csb.py` restores the divine name in
-/// 962 verses where the source had lost CSB's own small-caps LORD and
+/// 967 verses where the source had lost CSB's own small-caps LORD and
 /// left a bare "Lord" behind — Deuteronomy 6:4, the Shema, among them.
 /// Loading it untouched would have put a Bible that spells the divine
 /// name two ways into an app named for that name.
@@ -135,13 +135,56 @@ void main() {
       expect(verse('002028036'), contains('Holy to Yahweh'));
     });
 
+    test('the five stragglers the tagged port found', () {
+      // The rule was written against a flat string. Porting it to
+      // SeekSparks, where `assets/tagged/kjvs/` gives every candidate a
+      // Strong's number, made the leftovers enumerable — twelve OT
+      // verses keep a "Lord" nothing identifies, and each is adjudicated
+      // by name in that repo's importer. Five were not leftovers at all:
+      //
+      //   Ps 15:4    a `<CL>` sat where the lookahead wanted a space
+      //   Jer 5:13   `the<WH9998> Lord ’s` — a tag between article and
+      //              name, the same trap as the stray-article rule
+      //   1Kgs 3:15, Isa 59:20, Mal 1:12
+      //              possessives that lost the residue space as well as
+      //              the small caps, so nothing marked them
+      //
+      // Ps 15:4 is the one to keep an eye on: it spelled the name BOTH
+      // ways inside a single verse.
+      expect(verse('019015004'),
+          contains('rejected by Yahweh but honors those who fear Yahweh'));
+      expect(verse('024005013'), contains('Yahweh’s word is not in them'));
+      expect(verse('011003015'), contains('the ark of Yahweh’s covenant'));
+      expect(verse('023059020'), contains('This is Yahweh’s declaration'));
+      expect(verse('039001012'), contains('Yahweh’s table is defiled'));
+    });
+
+    test('and the ones next to them that are NOT the name', () {
+      // The same sweep that found the five. Each of these looks like a
+      // lost LORD and is not, and one of them would have been renamed by
+      // any rule keyed on "does this verse contain YHWH":
+      //
+      //   Lam 2:20   opens "Yahweh, look and consider" and closes "in
+      //              the Lord’s sanctuary" — H3068 and H136, one verse
+      //   2Sam 5:20  "the Lord Bursts Out" glosses Baal-perazim, and the
+      //              module tags that run H1188 — בַּעַל, master
+      expect(verse('025002020'), contains('Yahweh, look'));
+      expect(verse('025002020'), contains('the Lord’s sanctuary'));
+      expect(verse('010005020'), contains('The Lord Bursts Out'));
+      expect(verse('026018025'), contains('The Lord’s way'));
+    });
+
     test('the population is pinned', () {
       // 5,041 already in the module + the restorations. A re-import that
       // silently lost the divine-name pass would sit at 5,041 and every
       // spot check above except the Shema would still pass.
       final withName = csb.where((r) => (r['text'] as String)
           .contains('Yahweh'));
-      expect(withName, hasLength(5801));
+      // 5,801 until the SeekSparks port of this importer, which ships
+      // Strong's-tagged KJV and could therefore enumerate every verse
+      // the rule had not reached; five were stragglers and are pinned
+      // in the group below.
+      expect(withName, hasLength(5805));
     });
   });
 

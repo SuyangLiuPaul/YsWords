@@ -165,9 +165,47 @@ def fetch_rows():
 #
 # Had no witness been used, three Psalms would address Adonai by the
 # personal name.
+#
+# Two details that each cost a verse, both found later in the SeekSparks
+# port of this importer (`SeekSparks/tools/import_csb.py`), where the
+# shipped `assets/tagged/kjvs/` gives every candidate a Strong's number
+# and the leftovers can be enumerated exactly:
+#
+#   * `<` belongs in the lookahead. A `<CL>` can land straight after the
+#     residue space — Psalm 15:4, "rejected by the Lord <CL> but honors
+#     those who fear Yahweh", which spelled the name both ways in one
+#     verse until this was allowed for.
+#   * the article can be separated from the name by its own placeholder
+#     tag, `the<WH9998> Lord ’s word`. Three verses are written that way,
+#     and Jeremiah 5:13 is reached by nothing else. It is the same trap
+#     that made STRAY_ARTICLE below match six of ten on the first
+#     attempt — a tag sitting where a space is expected.
 LOST_LORD_ARTICLE = re.compile(
-    r'\b[Tt]he Lord (?=[\s,.;:!?’”\'")]|$)')
-LOST_LORD_BARE = re.compile(r'\bLord (?=[\s,.;:!?’”\'")]|$)')
+    r'\b[Tt]he(?:<W[HG]\d+[a-z]?>)? Lord (?=[\s<,.;:!?’”\'")]|$)')
+LOST_LORD_BARE = re.compile(r'\bLord (?=[\s<,.;:!?’”\'")]|$)')
+
+# ── the possessive ─────────────────────────────────────────────────
+# CSB writes the divine possessive "the LORD's". Losing the small-caps
+# run leaves `the Lord ’s`, a space before the apostrophe, and the rule
+# above restores all 889 of those. Three verses lost the space too, so
+# nothing marks them, and they are the only place in this import where a
+# verse is named rather than matched:
+#
+#   1Kgs 3:15  "the ark of the Lord’s covenant"
+#   Isa 59:20  "This is the Lord’s declaration."
+#   Mal 1:12   "The Lord’s table is defiled"   (Mal 1:7 has the space)
+#
+# The signal is exact where it survives: of the 889 spaced possessives
+# not one carries a Strong's number in the module, while every genuine
+# Adonai or Kyrios possessive (Num 14:17, Lam 2:19-20, the four Ezekiel
+# "the Lord’s way" verses, Dan 9:17, and the whole NT set) is written
+# without the space. Each of these three is also corroborated twice
+# over: `SeekSparks/assets/tagged/kjvs/` tags H3068 on the LORD-bearing
+# run, and the Chinese 和合本雅伟版 reads 雅伟 — at 1Kgs 3:15 and Mal 1:12
+# with the translator's own footnote `<note: 原文作"主">` recording that
+# the source says Adonai and they restored it anyway.
+POSSESSIVE = re.compile(r'\b[Tt]he Lord(?=’s)')
+RESTORE_POSSESSIVE = {'011003015', '023059020', '039001012'}
 
 TS = re.compile(r'<TS\d*>.*?<Ts>')
 STRONGS = re.compile(r'<W[HG]\d+[a-z]?>')   # the trailing letter covers
@@ -188,7 +226,7 @@ SPACE_BEFORE_PUNCT = re.compile(r'\s+(?=[,.;:!?’”)])')
 STRAY_ARTICLE = re.compile(r'\b[Tt]he Yahweh\b')
 
 
-def clean(raw, kjv_has_yhwh):
+def clean(raw, kjv_has_yhwh, vid=''):
     """Returns (text, n_name_fixes, leftover_tags).
 
     [kjv_has_yhwh] is whether the KJV verse at this same id prints
@@ -200,6 +238,11 @@ def clean(raw, kjv_has_yhwh):
     if kjv_has_yhwh:
         s, extra = LOST_LORD_BARE.subn('Yahweh ', s)
         n += extra
+    if vid in RESTORE_POSSESSIVE:
+        s, poss = POSSESSIVE.subn('Yahweh', s)
+        if poss != 1:
+            sys.exit(f'{vid}: expected one possessive to restore, got {poss}')
+        n += poss
     s = TS.sub('', s)
     s = STRONGS.sub('', s)
     s = REDLETTER.sub('', s)
@@ -274,7 +317,10 @@ def main():
 
     out, changed, leftovers = [], [], set()
     for (b, c, v, raw), cn, kv in zip(rows, cuv, kjv):
-        text, n, left = clean(raw, bool(lord.search(kv['text'])))
+        # `kv['id']` rather than an id built here: kjv.json is aligned
+        # with this import verse for verse by `book_map`'s assertions,
+        # and the ids below are rebuilt from the same order anyway.
+        text, n, left = clean(raw, bool(lord.search(kv['text'])), kv['id'])
         leftovers.update(left)
         if n:
             changed.append((names[b], c, v, n, '雅伟' in cn['text'], text))
