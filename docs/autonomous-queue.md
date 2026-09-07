@@ -13313,6 +13313,44 @@ so the bundle-size answer stays on the record.
 
 </details>
 
+- [ ] **A loop stage can end rc=0 with a background verification still
+      unresolved, silently destroying the iteration's output.** Found
+      2026-09-08, from `run.log` timestamps 04:14–04:20: the execution
+      stage did real work (a punctuation-guard test for biblexg-v2/-tr,
+      plus a queue write), kicked the full `flutter test` suite off in
+      the **background**, printed *"I'll stop polling now and wait for
+      the background task notification when the full test suite
+      finishes"* — and then the stage ended. Nothing was committed,
+      nothing pushed. The tree was left dirty:
+      `docs/autonomous-queue.md` modified (+53 lines, a P0 entry at
+      what was then line 7227) and `test/biblexg_punctuation_test.dart`
+      untracked (130 lines). The next iteration inherited a dirty
+      checkout and had to spend its own turn re-verifying and landing
+      work someone else had already done, rather than picking a new
+      item.
+      This is the harness/prompt-discipline gap, not a one-off mistake:
+      nothing in this file's process enforces that a stage's last
+      action is a *foreground*, awaited command. A background
+      notification that nothing is listening for is a no-op.
+      **Landed 2026-09-08** by the following iteration: re-ran the test
+      in the foreground (8/8 pass), `flutter analyze` clean, full suite
+      in the foreground (2504/2504), refuted the central claim, then
+      committed and pushed both orphaned files as `a533630d`.
+      **Left open, and deliberately not touched here**: the fix belongs
+      in `run.sh`/`prompt.md` under `~/Library/Application Support/
+      yswords-loop/`, which are outside the repo and are the loop
+      itself — this file's own guard rails say not to edit them
+      unattended, since a bad edit there stops every future iteration
+      with no one watching. Filing it is as far as this item goes; the
+      user needs to add an explicit "do not end a stage while a
+      background job you started is unresolved — wait, or don't start
+      it in the background" rule to the loop's own prompt.
+      **Also observed, not acted on**: `flutter_tester` pid 89398 has
+      been orphaned since Sun Sep 6 16:42 (PPID 1, ~36h at the time of
+      observation) — a leaked test engine from an earlier interrupted
+      stage, consistent with this same failure mode having happened at
+      least once before.
+
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
       `nfp_[A-Za-z0-9]{20,}` pattern registered. The two broad AWS
