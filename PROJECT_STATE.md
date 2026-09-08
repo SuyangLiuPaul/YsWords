@@ -61,6 +61,68 @@ the `# YsWords export` / `YsWords.json` format markers — an old backup
 must import into the renamed app. AI features say "AI", never the app
 name. On Android the apostrophe must reach values.xml escaped (\').
 
+## 2026-09-08 — the 對齊項目's Yahwehdehua line
+
+**Three texts added, two held back, and 和合本雅偉版 thawed a second
+time.** 8 versions → 11; 2,763 tests → 2,799.
+
+**Added:** BSB (Yahweh), ASV (Yahweh), Westcott-Hort Greek NT, from the
+theWord modules in Yahwehdehua's `bible.db`.
+
+**Plain BSB was imported and then removed the same day**, on the
+owner's instruction 「bsbs 不用，就 bsb yahweh 版本导入」. Not licensing —
+the BSB is public domain outright since 2023 and was the one text here
+that needed no grant — but after the app's render-time LORD → Yahweh
+rewrite the two display identically in all but **636 verses (2.0%)**,
+so it was 5.9 MB buying a difference the reader mostly could not see.
+The WH's full-canon partner for the daily-verse card moved with it,
+`bsb` → `bsb-yhwh`. Still buildable: `tools/import_ydh_texts.py bsb`.
+
+**CSB (Yahweh) is the `csb` we already ship.** Its source table is what
+`assets/csb.json` was built from — 26,298 of 31,102 verses
+byte-identical, the rest explained by `import_csb.py`'s own repairs —
+and the naming runs backwards: the raw module reads Yahweh in 5,041
+verses and our shipped `csb` in **5,805**, Deuteronomy 6:4 among them.
+A row labelled *(Yahweh)* would have shown FEWER occurrences of the
+name than the plain *CSB* above it.
+
+**The Septuagint is held on licence, not on engineering.**
+Yahwehdehua's own `PROJECT_STATE` records a survey that found no LXX
+source at once available, authoritative and clearly licensed, and its
+note on the module Peter supplied says 「授权仍归 Peter 判断」. The
+export's `meta.licence` does say public domain, but that is the
+exporter's own summary and this repo's rule is that a reader-facing
+claim matches a document on file. **This is the one thing on the
+Yahwehdehua line that is not done, and it needs Peter, not a session.**
+
+### The second thaw of 和合本雅偉版
+
+`test/cuvs_yhwh_frozen_test.dart` re-pinned, both hashes, for the same
+kind of change as the 2026-09-02 `主*` thaw: **1,140 quotation marks in
+495 verses that the publisher wrote and our importer dropped.**
+〔就是"得"的意思〕 was rendering as `<note: 就是得的意思>` — a different
+sentence, not a lighter one.
+
+The safety argument is a gate, not a promise: a verse is touched only
+where the publisher's own current text is identical to ours apart from
+the quotes. It has to be, because **our copy is roughly one editorial
+generation behind theirs.** Their edit log, `bsapp_bible_cuvs_edits`,
+keeps a pre-edit `org_text` for all 31,102 verses; ours matches that
+pre-edit state in 23,400 and the current text in 21,953, and they have
+edited **14,718 verses** since. 哪/那, 啊/阿, 掰/擘, 吗/么, 他/她/它 are
+all theirs. 8,652 verses were skipped so none of it could ride in.
+**你在那里 looks exactly like a defect and is not ours to touch** —
+that is the concrete example to remember the next time an audit finds
+one.
+
+Three places the narrow reading cost something and the cost was taken:
+士師記 1:16 and 4:11 qualify in the Simplified but the two scripts are
+not character-aligned there, so both were skipped rather than leave one
+script ahead of the other (1,144 available, 1,140 taken); 路加福音 8:45
+kept its raw 〔…〕 because `ascii_punctuation_test` pins it; and that
+test's ASCII-double-quote guard moved 336 → 1,474 per edition, in the
+direction it defends.
+
 ## Where each tier is
 
 | Tier | Sites | Version | Rule |
