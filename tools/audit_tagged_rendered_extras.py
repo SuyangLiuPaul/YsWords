@@ -15,9 +15,12 @@ production compares against a verse whose `<note: …>` has already been strippe
 while the tagged line still carries the note inlined as `〔…〕`. On that input
 the class is **1,160 verses**, almost all of it note asymmetry. This file
 compares RAW against RAW instead, which makes the two sides express notes the
-same way and yields **113** — a strict subset of the 1,160, verified. That is
-deliberate: the raw census is the conservative one, and every verse it reports
-is reported by the production census too. Use the Dart test for the production
+same way and yields **102** — a strict subset of the 1,160, verified. (This
+docstring previously said 113 here while the breakdown three lines below it
+already said 102 — self-contradictory. 102 is the one this script actually
+prints, confirmed 2026-09-08 at `ece056b7`. Corrected.) That is deliberate:
+the raw census is the conservative one, and every verse it reports is
+reported by the production census too. Use the Dart test for the production
 figure and this for triage.
 
 `audit_tagged_running_text.py` covers the same two files but answers a different

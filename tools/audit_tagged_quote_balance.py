@@ -19,26 +19,30 @@ the queue entry that opened this item quoted one of them without stating it:
     corpus-wide either: a corpus-wide stack has 595 unmatched opens sitting on
     it and swallows every orphan closer that follows.
 
-On that premise, over 31,102 verses:
+On that premise, as of 2026-09-08 (`ece056b7`), over 31,102 verses:
 
-    2,485  verses hold more `“` than `”`
-       35  of 66 books never reconcile (unclosed opens, or an orphan closer)
-        9  close-before-open events — a `”` arriving with nothing open
+    2,487  verses hold more `“` than `”`
+       33  of 66 books never reconcile (unclosed opens, or an orphan closer)
+        4  close-before-open events — a `”` arriving with nothing open
       604  opens still on the stack at the end of their book
             (deuteronomy 115, leviticus 90, luke 83, ezekiel 70, exodus 60)
 
 The queue entry said 2,480. It is not reproducible at any commit: the figure
-is 2,487 before the three-verse speaker-attribution repair (`d03c81d2`) and
-2,485 at every commit since. Its other six figures reproduce exactly.
+was 2,485 (35 books, 9 events) from `d03c81d2` through the parent of
+`a1406c21`, and became 2,487 (33 books, 4 events) AT `a1406c21` itself, which
+closed three orphan closers — the docstring this script shipped with (in that
+same commit) described the state its own repair left behind incorrectly,
+quoting the pre-repair figures instead. It has held at 2,487 since. The
+unclosed-opens count (604) and the top-five book list never moved.
 
-WHAT THE 2,488 VERSES ACTUALLY ARE. Take every `“` that does not close in its
-own verse — 1,884 that close in a LATER verse of the same book, 604 that never
+WHAT THE 2,490 VERSES ACTUALLY ARE. Take every `“` that does not close in its
+own verse — 1,886 that close in a LATER verse of the same book, 604 that never
 close — and ask what the FROZEN reading asset does at the same reference:
 
     1,244  the reading asset punctuates the verse identically. This edition's
            own text, in a file this repo is not allowed to edit. Not an import
            artifact of any kind.
-    1,243  the reading asset carries no quotation mark in that verse at all.
+    1,245  the reading asset carries no quotation mark in that verse at all.
            The tagged corpus is a separate transcription line and punctuates
            4,043 verses the reading text leaves bare; there is no second
            reading to compare against, so there is nothing to repair towards.

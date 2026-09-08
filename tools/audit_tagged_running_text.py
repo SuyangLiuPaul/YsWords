@@ -19,8 +19,9 @@ on our side, `〔…〕` and `（…）` on the tagged side. Punctuation, quotat
 marks and note wording differ freely between two imports and are not
 scripture.
 
-WHAT COMES OUT, over 31,102 verses: 335 verses differ, and all but the seven
-repaired and the one queued under UNSETTLED are one of
+WHAT COMES OUT, as of 2026-09-08 (`ece056b7`), over 31,102 verses: 322 verses
+differ, and all but the seven repaired and the one queued under UNSETTLED are
+one of
 
   * an orthographic variant the two imports set differently — 阿/啊, 它/他/她,
     复/覆, 吗/么, 糟/蹧, 做/作, 吧/罢, 喇/啦, 逿/趟;
@@ -66,16 +67,24 @@ revelation""".split()
 # The seven real losses are absent on purpose: they are repaired
 # (`tools/repair_tagged_witness_losses.py`), so if a re-import drops them again
 # this should report them as new rather than swallow them as known.
+#
+# Thirteen entries were retired 2026-09-08 rather than kept: this file has no
+# REPAIRED table of its own (unlike `audit_tagged_rendered_extras.py`), and its
+# own comment above says a re-import that brings one back should be reported as
+# NEW, not silently absorbed — so a fixed artifact is deleted, not annotated.
+# Traced to the tagged-corpus commit that actually retired each:
+#   4 supplied-word entries (007015002/007015005/007015018/010021002) —
+#     `a1406c21`, 2026-09-03, `repair_tagged_supplied_words.py`
+#   7 duplication entries (003005007/009020037/011019018/012010005/
+#     018031036/026036001/040009028) —
+#     `1fce89e8`, 2026-08-24, `repair_tagged_rendered_duplication.py`
+#   2 importer-markup entries (013021017/024004022) —
+#     `c2d679c1`, 2026-08-24, "Stray brackets were printed as scripture, and
+#     two verses were short a character" (NOT `5182f261`, 2026-08-12: that
+#     commit's own message says it deliberately left these two for a human;
+#     a refuter traced the actual marker removal to `c2d679c1` via
+#     `git log -S`)
 EXPLAINED = {
-    # Words the tagged import supplies that the printed 1919 does not have.
-    # EVERY ONE OF THESE WAS CHECKED AGAINST THE PRINT, not against the two
-    # witnesses. Two entries that were once on this list — 以斯帖記 6:7 and
-    # 瑪拉基書 2:3 — turned out to be real losses that BOTH witnesses share,
-    # so "the witnesses agree with us" is not grounds for dismissing a hit.
-    "007015002": "tagged supplies 我请求; print reads 你可以娶來代替他罷",
-    "007015005": "tagged supplies 葡萄园; print reads 並橄欖園盡都燒了",
-    "007015018": "tagged supplies 现在; print reads 豈可任我渴死",
-    "010021002": "tagged reads 大发热心; print reads 卻爲以色列人和猶大人發熱心",
     # Note and parenthesis restructuring — no character is missing.
     "006019002": "或名示巴 is a note in ours, a parenthesis in the tagged",
     "018014014": "或译：改变 is a note in ours, a parenthesis in the tagged",
@@ -83,25 +92,16 @@ EXPLAINED = {
     "064001014": "the v.15 marker is a note in ours, a parenthesis in the tagged",
     "019078061": "note marker placement; 手中 vs 中手 is the tagged transposition",
     # Duplicated or transposed runs on the TAGGED side. Ours matches the print.
-    "003005007": "tagged 若若",
     "007016017": "tagged 心所藏的中",
     "009001007": "tagged 给哈拿以",
-    "009020037": "tagged 箭箭",
     "010020003": "tagged 把王从前",
     "011010029": "tagged 买的来车",
-    "011019018": "tagged 未未曾",
     "011021026": "tagged 可憎的恶的事",
-    "012010005": "tagged 我们我们",
-    "013021017": "tagged carries importer markup <WH的8687>",
     "013025008": "tagged 为的徒",
     "013025028": "tagged 第二十是一何提",
     "013027017": "tagged 管利未人基的是",
-    "018031036": "tagged 敌我敌者",
-    "024004022": "tagged carries importer markup <WH873我7>",
     "026005009": "tagged 可的事憎",
     "026032020": "tagged 被杀的中人",
-    "026036001": "tagged 你要要对",
-    "040009028": "tagged 耶稣说说",
     "042023041": "tagged 我们所的受",
     "018010021": "約伯記 10:21 is folded into 10:20 here and marked 见上节",
 }

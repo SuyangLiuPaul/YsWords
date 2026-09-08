@@ -2376,31 +2376,50 @@ reported. Work these top-down before P2.
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
-- [ ] **Three `audit_*.py` docstrings quote stale headline numbers —
-      fix the prose, not the corpus.** Found on a routine 2026-09-08
-      audit re-run (`NEXT_TASK.md` fallback: no queue item was
-      actionable). `audit_tagged_quote_balance.py`'s docstring says
-      2,485 verses / 35 of 66 books unreconciled / 9 close-before-open
-      events "at every commit since `d03c81d2`"; live is 2,487 / 33 /
-      4, which is what `test/tagged_quote_balance_test.dart` already
-      pins — root cause is commit `60e51d4e` (2026-09-03), which
-      re-pinned the Dart test after a P0 branch merge but never touched
-      this script's prose. `audit_tagged_running_text.py`'s docstring
-      says "335 verses differ" (undated); live is 322, and 13 named
-      `EXPLAINED`-table verse-IDs print "no longer reads long — update
-      EXPLAINED/UNSETTLED" — real drift, but no single causing commit
-      identified (ruled out both `60e51d4e` and today's `d423f5e9`).
-      `audit_tagged_rendered_extras.py`'s docstring claims raw-vs-raw
+- [x] **FIXED 2026-09-08 — three `audit_*.py` docstrings quote stale
+      headline numbers, fixed the prose, not the corpus.** Filed a
+      routine 2026-09-08 audit re-run (`NEXT_TASK.md` fallback: no
+      queue item was actionable); fixed by this hour's `NEXT_TASK.md`.
+      All three re-measured in a throwaway `git worktree` at `ece056b7`
+      to avoid the concurrently-modified working copy of
+      `assets/cuvs-yhwh.json`; a refuter agent independently re-derived
+      every number and attribution below and confirmed all but one.
+      `audit_tagged_quote_balance.py`: docstring said 2,485 / 35 of 66
+      / 9 / 604 "at every commit since `d03c81d2`"; live is 2,487 / 33
+      / 4 / 604. The filing's `60e51d4e` attribution was wrong — that
+      commit only re-pins the Dart test, never touches this script's
+      prose. The real cause: the script was ADDED at `a1406c21`
+      (2026-09-03, "closed three quotations it never opened"), and its
+      docstring described the PARENT commit's state (2,485/35/9,
+      confirmed by running the current script logic against
+      `a1406c21^1`'s assets) rather than what `a1406c21`'s own repair
+      left behind (2,487/33/4). Wrong from the moment it was written,
+      not stale drift. Second table: 2,488/1,244/1,243/1 → live
+      2,490/1,244/1,245/1, same cause. `audit_tagged_running_text.py`:
+      "335 verses differ" → live 322 (date-stamped now). 13 of its 30
+      `EXPLAINED`-table verse-IDs no longer read long (real drift, and
+      this script has no `--check` gate but does exit 1 on its own
+      unexplained-drift self-check — it was silently red). Traced each
+      to its retiring commit and removed the 13 rather than annotating
+      them, matching the file's own stated convention (a re-import that
+      reintroduces one should report as NEW, not be silently absorbed):
+      4 supplied-word entries → `a1406c21`; 7 duplication entries →
+      `1fce89e8` (2026-08-24); 2 importer-markup entries → `c2d679c1`
+      (2026-08-24, NOT `5182f261` as first guessed — that commit's own
+      message says it deliberately left those two for a human; the
+      refuter found the actual fix via `git log -S`). Script now exits
+      0. `audit_tagged_rendered_extras.py`'s docstring claimed raw-vs-raw
       "yields 113" in one sentence and then states 102 three lines
       later in the same docstring — self-contradictory before this
-      hour; live is 102. All three are documentation-only: no `--check`
+      hour; live is 102, matching its own breakdown paragraph exactly.
+      All three are documentation-only: no `--check`
       gate, corpus asset, or pinned test disagrees with the live
-      numbers. A refuter agent verified the whole table against a
-      second script run and git history and found no numeric error.
-      Full re-run of all 21 `tools/audit_*.py`, the three `--check`
-      modes and `test/test_audit_p0_check.py` (all pass) in
-      `docs/p0-drift-2026-09-08.md`. Fix: reword the three docstrings
-      to match; nothing to repair in `assets/`.
+      numbers, so nothing in `assets/` needed repair — only the prose.
+      The filing pass's own refuter verified its table against a second
+      script run and git history and found no numeric error there; full
+      re-run of all 21 `tools/audit_*.py`, the three `--check` modes and
+      `test/test_audit_p0_check.py` (all pass) in
+      `docs/p0-drift-2026-09-08.md`.
 
 - [x] **2026-09-08 RECONCILED — three different counts of the CSB
       divine-name restorations were on record at once (962 in
@@ -11080,6 +11099,12 @@ has never seen this repo.
       unattended-unsafe, still the only open P2 checkbox, and the question
       above to the user is still unanswered: start the `GetMaterialApp` →
       `.router` migration branch, or close this as "won't fix"?
+
+      **Deferred a ninth consecutive iteration, 2026-09-08** — this hour's
+      NEXT_TASK.md picked rewording the three `audit_*.py` docstrings with
+      stale headline numbers instead (P0, tooling-only, no asset touched).
+      Still branch-scale, still unattended-unsafe, still the only open P2
+      checkbox, and the question above to the user is still unanswered.
 
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
