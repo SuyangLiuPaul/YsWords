@@ -126,9 +126,15 @@ void main() {
     expect('希斯崙'.allMatches(greek).length, 2);
     // hebrew.json is a genuine split: opencc's phrase table knew 希斯崙 and
     // 沙崙 but not 希伯崙, so half the names in one file were already right.
-    expect('加侖'.allMatches(hebrew).length, 2);
-    expect('侖'.allMatches(hebrew).length, 2, reason: 'only the gallons remain');
-    expect('希伯崙'.allMatches(hebrew).length, 63);
+    // 2, 2 and 63 until 2026-09-08. Rejoining CBOL's wrapped senses
+    // (`tools/repair_zh_gloss_linebreaks.py`) copied H1324's bath-measure
+    // parenthetical — 「大約 9 英加侖或 40 公升」 — and three mentions of
+    // Hebron into the glosses beside the bodies that already carried them.
+    // 侖 tracks 加侖 exactly, which is the assertion that matters: no name
+    // acquired a 侖 and no gallon lost one.
+    expect('加侖'.allMatches(hebrew).length, 3);
+    expect('侖'.allMatches(hebrew).length, 3, reason: 'only the gallons remain');
+    expect('希伯崙'.allMatches(hebrew).length, 66);
   });
 
   test('西伯崙 is fixed as a glyph, and its 西/希 typo is left for the user', () {

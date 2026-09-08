@@ -354,9 +354,9 @@
     "gloss": "a stretch of the arms, i.e. a fathom",
     "def": "from G3713 (ὀρέγομαι); a stretch of the arms, i.e. a fathom KJV: fathom",
     "deriv": "from G3713 (ὀρέγομαι);",
-    "glossZh": "噚 (长度单位) (合六英尺 (1.83 公尺)) ,一般用来测量深度",
+    "glossZh": "噚 (长度单位) (合六英尺 (1.83 公尺)) ,一般用来测量深度当两手臂往外伸直, 两手中指指尖距离所测得的长度 (#徒 27:28|)",
     "defZh": "1) 噚 (长度单位) (合六英尺 (1.83 公尺)) ,一般用来测量深度\n  当两手臂往外伸直, 两手中指指尖距离所测得的长度 (#徒 27:28|)",
-    "glossZhTw": "噚 (長度單位) (合六英尺 (1.83 公尺)) ,一般用來測量深度",
+    "glossZhTw": "噚 (長度單位) (合六英尺 (1.83 公尺)) ,一般用來測量深度當兩手臂往外伸直, 兩手中指指尖距離所測得的長度 (#徒 27:28|)",
     "defZhTw": "1) 噚 (長度單位) (合六英尺 (1.83 公尺)) ,一般用來測量深度\n  當兩手臂往外伸直, 兩手中指指尖距離所測得的長度 (#徒 27:28|)"
   },
   "G968": {
@@ -438,9 +438,9 @@
     "gloss": "the ten-city region",
     "def": "from G1176 (δέκα) and G4172 (πόλις); the ten-city region; the Decapolis, a district in Syria KJV: Decapolis",
     "deriv": "from G1176 (δέκα) and G4172 (πόλις);",
-    "glossZh": "一个由十座城而命名的区域,在约但以东,北方紧邻大马色,",
+    "glossZh": "一个由十座城而命名的区域,在约但以东,北方紧邻大马色, 南方是非拉铁非 (#太 4:25; 可 5:20,7:31|)",
     "defZh": "1) 一个由十座城而命名的区域,在约但以东,北方紧邻大马色,\n   南方是非拉铁非 (#太 4:25; 可 5:20,7:31|)",
-    "glossZhTw": "一個由十座城而命名的區域,在約但以東,北方緊鄰大馬色,",
+    "glossZhTw": "一個由十座城而命名的區域,在約但以東,北方緊鄰大馬色, 南方是非拉鐵非 (#太 4:25; 可 5:20,7:31|)",
     "defZhTw": "1) 一個由十座城而命名的區域,在約但以東,北方緊鄰大馬色,\n   南方是非拉鐵非 (#太 4:25; 可 5:20,7:31|)"
   },
   "G453": {
@@ -2030,9 +2030,9 @@
     "gloss": "Rama (i",
     "def": "of Hebrew origin (H07414); Rama (i.e. Ramah), a place in Palestine KJV: Rama",
     "deriv": "of Hebrew origin (H07414);",
-    "glossZh": "便亚悯支派的一个城镇, 位于耶路撒冷北方大约 5 英哩 (8 公里),",
+    "glossZh": "便亚悯支派的一个城镇, 位于耶路撒冷北方大约 5 英哩 (8 公里), 在往伯特利的路上 (#太 2:18|)",
     "defZh": "1) 便亚悯支派的一个城镇, 位于耶路撒冷北方大约 5 英哩 (8 公里),\n   在往伯特利的路上 (#太 2:18|)",
-    "glossZhTw": "便亞憫支派的一個城鎮, 位於耶路撒冷北方大約 5 英哩 (8 公里),",
+    "glossZhTw": "便亞憫支派的一個城鎮, 位於耶路撒冷北方大約 5 英哩 (8 公里), 在往伯特利的路上 (#太 2:18|)",
     "defZhTw": "1) 便亞憫支派的一個城鎮, 位於耶路撒冷北方大約 5 英哩 (8 公里),\n   在往伯特利的路上 (#太 2:18|)"
   },
   "G1942": {
@@ -2450,9 +2450,9 @@
     "gloss": "in the same way",
     "def": "neuter plural of G3588 (ὁ) and G846 (αὐτός) as adverb; in the same way KJV: even thus, (manner) like, so",
     "deriv": "neuter plural of G3588 (ὁ) and G846 (αὐτός) as adverb;",
-    "glossZh": "即使这样, 同样的,",
+    "glossZh": "即使这样, 同样的",
     "defZh": "1) 即使这样, 同样的,",
-    "glossZhTw": "即使這樣, 同樣的,",
+    "glossZhTw": "即使這樣, 同樣的",
     "defZhTw": "1) 即使這樣, 同樣的,"
   },
   "G2141": {
@@ -2642,9 +2642,9 @@
     "gloss": "Lucas, a Christian",
     "def": "contracted from Latin Lucanus; Lucas, a Christian KJV: Lucas, Luke",
     "deriv": "contracted from Latin Lucanus;",
-    "glossZh": "一位外邦人基督徒, 和保罗一同传福音的人, 也在保罗的多次旅程中与其同行; 他是一位医生和",
+    "glossZh": "一位外邦人基督徒, 和保罗一同传福音的人, 也在保罗的多次旅程中与其同行; 他是一位医生和新约中路加福音及使徒行传的作者",
     "defZh": "1) 一位外邦人基督徒, 和保罗一同传福音的人, 也在保罗的多次旅程中与其同行; 他是一位医生和\n   新约中路加福音及使徒行传的作者",
-    "glossZhTw": "一位外邦人基督徒, 和保羅一同傳福音的人, 也在保羅的多次旅程中與其同行; 他是一位醫生和",
+    "glossZhTw": "一位外邦人基督徒, 和保羅一同傳福音的人, 也在保羅的多次旅程中與其同行; 他是一位醫生和新約中路加福音及使徒行傳的作者",
     "defZhTw": "1) 一位外邦人基督徒, 和保羅一同傳福音的人, 也在保羅的多次旅程中與其同行; 他是一位醫生和\n   新約中路加福音及使徒行傳的作者"
   },
   "G5588": {
@@ -3074,9 +3074,9 @@
     "gloss": "Libye, a region of Africa",
     "def": "probably from G3047 (λίψ); Libye, a region of Africa KJV: Libya",
     "deriv": "probably from G3047 (λίψ);",
-    "glossZh": "位于北非并围绕埃及宽大的一地. 其首都为塞利尼(Cyrene),",
+    "glossZh": "位于北非并围绕埃及宽大的一地. 其首都为塞利尼(Cyrene), 因此称为塞利尼的吕比亚(Libya Cyrenaica) (#徒 2:10|)",
     "defZh": "1) 位于北非并围绕埃及宽大的一地. 其首都为塞利尼(Cyrene), \n因此称为塞利尼的吕比亚(Libya Cyrenaica) (#徒 2:10|)",
-    "glossZhTw": "位於北非並圍繞埃及寬大的一地. 其首都為塞利尼(Cyrene),",
+    "glossZhTw": "位於北非並圍繞埃及寬大的一地. 其首都為塞利尼(Cyrene), 因此稱為塞利尼的呂比亞(Libya Cyrenaica) (#徒 2:10|)",
     "defZhTw": "1) 位於北非並圍繞埃及寬大的一地. 其首都為塞利尼(Cyrene), \n因此稱為塞利尼的呂比亞(Libya Cyrenaica) (#徒 2:10|)"
   },
   "G2019": {
@@ -3770,9 +3770,9 @@
     "gloss": "a double drachma (didrachm)",
     "def": "from G1364 (δίς) and G1406 (δραχμή); a double drachma (didrachm) KJV: tribute",
     "deriv": "from G1364 (δίς) and G1406 (δραχμή);",
-    "glossZh": "古希腊银币, 一个银币等于双倍德拉克马,",
+    "glossZh": "古希腊银币, 一个银币等于双倍德拉克马, 雅典人的古希腊银币(德拉克马)等于一个亚历山大钱币, 或半个舍客勒 (#太 17:24|)",
     "defZh": "1) 古希腊银币, 一个银币等于双倍德拉克马, \n   雅典人的古希腊银币(德拉克马)等于一个亚历山大钱币, 或半个舍客勒 (#太 17:24|)",
-    "glossZhTw": "古希臘銀幣, 一個銀幣等於雙倍德拉克馬,",
+    "glossZhTw": "古希臘銀幣, 一個銀幣等於雙倍德拉克馬, 雅典人的古希臘銀幣(德拉克馬)等於一個亞歷山大錢幣, 或半個舍客勒 (#太 17:24|)",
     "defZhTw": "1) 古希臘銀幣, 一個銀幣等於雙倍德拉克馬, \n   雅典人的古希臘銀幣(德拉克馬)等於一個亞歷山大錢幣, 或半個舍客勒 (#太 17:24|)"
   },
   "G4109": {
@@ -3998,9 +3998,9 @@
     "gloss": "Saron (i",
     "def": "of Hebrew origin (H08289); Saron (i.e. Sharon), a district of Palestine KJV: Saron",
     "deriv": "of Hebrew origin (H08289);",
-    "glossZh": "从巴勒斯坦的该撒利亚直到约帕的平坦区域,",
+    "glossZh": "从巴勒斯坦的该撒利亚直到约帕的平坦区域, 好牧草丰盛, 且以肥沃而出名 #徒 9:35|",
     "defZh": "1) 从巴勒斯坦的该撒利亚直到约帕的平坦区域,\n   好牧草丰盛, 且以肥沃而出名 #徒 9:35|",
-    "glossZhTw": "從巴勒斯坦的該撒利亞直到約帕的平坦區域,",
+    "glossZhTw": "從巴勒斯坦的該撒利亞直到約帕的平坦區域, 好牧草豐盛, 且以肥沃而出名 #徒 9:35|",
     "defZhTw": "1) 從巴勒斯坦的該撒利亞直到約帕的平坦區域,\n   好牧草豐盛, 且以肥沃而出名 #徒 9:35|"
   },
   "G1649": {
@@ -4034,9 +4034,9 @@
     "gloss": "to think against, i.e. disesteem",
     "def": "from G2596 (κατά) and G5426 (φρονέω); to think against, i.e. disesteem KJV: despise",
     "deriv": "from G2596 (κατά) and G5426 (φρονέω);",
-    "glossZh": "蔑视, 轻视, 轻蔑,鄙弃,",
+    "glossZh": "蔑视, 轻视, 轻蔑,鄙弃",
     "defZh": "1) 蔑视, 轻视, 轻蔑,鄙弃, \n2) 不在乎, 不怕, 不放在眼里 (#来 12:2|)",
-    "glossZhTw": "蔑視, 輕視, 輕蔑,鄙棄,",
+    "glossZhTw": "蔑視, 輕視, 輕蔑,鄙棄",
     "defZhTw": "1) 蔑視, 輕視, 輕蔑,鄙棄, \n2) 不在乎, 不怕, 不放在眼裏 (#來 12:2|)"
   },
   "G4297": {
@@ -4166,9 +4166,9 @@
     "gloss": "to wake fully",
     "def": "from G1223 (διά) and G1453 (ἐγείρω); to wake fully; i.e. arouse (literally or figuratively) KJV: arise, awake, raise, stir up",
     "deriv": "from G1223 (διά) and G1453 (ἐγείρω);",
-    "glossZh": "醒来, 苏醒, 觉醒,",
+    "glossZh": "醒来, 苏醒, 觉醒",
     "defZh": "1) 醒来, 苏醒, 觉醒, \n  1a) 指海浪掀起, 波涛汹涌\n  1b) 隐喻.\n       1b1) 使心智苏醒\n       1b2) 搅动, 激发, 发动",
-    "glossZhTw": "醒來, 甦醒, 覺醒,",
+    "glossZhTw": "醒來, 甦醒, 覺醒",
     "defZhTw": "1) 醒來, 甦醒, 覺醒, \n  1a) 指海浪掀起, 波濤洶湧\n  1b) 隱喻.\n       1b1) 使心智甦醒\n       1b2) 攪動, 激發, 發動"
   },
   "G2197": {
@@ -4454,9 +4454,9 @@
     "gloss": "copper-like, i.e. \"chalcedony\"",
     "def": "from G5475 (χαλκός) and perhaps G1491 (εἶδος); copper-like, i.e. \"chalcedony\" KJV: chalcedony",
     "deriv": "from G5475 (χαλκός) and perhaps G1491 (εἶδος);",
-    "glossZh": "玉髓: 一种不透明的宝石, 其色泽常是灰色中有蓝色, 黄色,",
+    "glossZh": "玉髓: 一种不透明的宝石, 其色泽常是灰色中有蓝色, 黄色, 或紫色等如云雾状地混在一起 (#启 21:19|)",
     "defZh": "1) 玉髓: 一种不透明的宝石, 其色泽常是灰色中有蓝色, 黄色, \n   或紫色等如云雾状地混在一起 (#启 21:19|)",
-    "glossZhTw": "玉髓: 一種不透明的寶石, 其色澤常是灰色中有藍色, 黃色,",
+    "glossZhTw": "玉髓: 一種不透明的寶石, 其色澤常是灰色中有藍色, 黃色, 或紫色等如雲霧狀地混在一起 (#啓 21:19|)",
     "defZhTw": "1) 玉髓: 一種不透明的寶石, 其色澤常是灰色中有藍色, 黃色, \n   或紫色等如雲霧狀地混在一起 (#啓 21:19|)"
   },
   "G1053": {
@@ -4490,9 +4490,9 @@
     "gloss": "of Hebrew origin (H06865): Tyrus (i",
     "def": "of Hebrew origin (H06865): Tyrus (i.e. Tsor), a place in Palestine KJV: Tyre",
     "deriv": "of Hebrew origin (H06865): Tyrus (i.e. Tsor), a place in Palestine",
-    "glossZh": "在地中海的腓尼基城, 古老, 庞大,",
+    "glossZh": "在地中海的腓尼基城, 古老, 庞大, 辉煌, 商业兴盛, 海陆两方面都很强盛",
     "defZh": "1) 在地中海的腓尼基城, 古老, 庞大,\n   辉煌, 商业兴盛, 海陆两方面都很强盛",
-    "glossZhTw": "在地中海的腓尼基城, 古老, 龐大,",
+    "glossZhTw": "在地中海的腓尼基城, 古老, 龐大, 輝煌, 商業興盛, 海陸兩方面都很強盛",
     "defZhTw": "1) 在地中海的腓尼基城, 古老, 龐大,\n   輝煌, 商業興盛, 海陸兩方面都很強盛"
   },
   "G855": {
@@ -4802,9 +4802,9 @@
     "gloss": "Charrhan (i",
     "def": "of Hebrew origin (H02771); Charrhan (i.e. Charan), a place in Mesopotamia KJV: Charran",
     "deriv": "of Hebrew origin (H02771);",
-    "glossZh": "米索波大米的一个充满古老遗迹的城市, 因Crassus大军在此溃败而出名",
+    "glossZh": "米索波大米的一个充满古老遗迹的城市, 因Crassus大军在此溃败而出名 Crassus的大军于西元前53年于此被Parthian击溃, 他自身也遭到谋杀.",
     "defZh": "1) 米索波大米的一个充满古老遗迹的城市, 因Crassus大军在此溃败而出名\n   Crassus的大军于西元前53年于此被Parthian击溃, 他自身也遭到谋杀.",
-    "glossZhTw": "米索波大米的一個充滿古老遺蹟的城市, 因Crassus大軍在此潰敗而出名",
+    "glossZhTw": "米索波大米的一個充滿古老遺蹟的城市, 因Crassus大軍在此潰敗而出名 Crassus的大軍於西元前53年於此被Parthian擊潰, 他自身也遭到謀殺.",
     "defZhTw": "1) 米索波大米的一個充滿古老遺蹟的城市, 因Crassus大軍在此潰敗而出名\n   Crassus的大軍於西元前53年於此被Parthian擊潰, 他自身也遭到謀殺."
   },
   "G2904": {
@@ -4946,9 +4946,9 @@
     "gloss": "Phrygia, a region of Asia Minor",
     "def": "probably of foreign origin; Phrygia, a region of Asia Minor KJV: Phrygia",
     "deriv": "probably of foreign origin;",
-    "glossZh": "在小亚细亚的一地区, 以庇推尼, 加拉太, 吕高尼,",
+    "glossZh": "在小亚细亚的一地区, 以庇推尼, 加拉太, 吕高尼, 彼西底, 吕底亚, 每西亚为邻界, 它有老底嘉, 希拉波立, 和歌罗西等城市",
     "defZh": "1) 在小亚细亚的一地区, 以庇推尼, 加拉太, 吕高尼,\n   彼西底, 吕底亚, 每西亚为邻界, 它有老底嘉,\n   希拉波立, 和歌罗西等城市",
-    "glossZhTw": "在小亞細亞的一地區, 以庇推尼, 加拉太, 呂高尼,",
+    "glossZhTw": "在小亞細亞的一地區, 以庇推尼, 加拉太, 呂高尼, 彼西底, 呂底亞, 每西亞為鄰界, 它有老底嘉, 希拉波立, 和歌羅西等城市",
     "defZhTw": "1) 在小亞細亞的一地區, 以庇推尼, 加拉太, 呂高尼,\n   彼西底, 呂底亞, 每西亞為鄰界, 它有老底嘉,\n   希拉波立, 和歌羅西等城市"
   },
   "G1668": {
@@ -5570,9 +5570,9 @@
     "gloss": "a prolonged form of a primary and defective verb",
     "def": "the first person singular present indicative; a prolonged form of a primary and defective verb; I exist (used only when emphatic) KJV: am, have been, X it is I, was",
     "deriv": "the first person singular present indicative; a prolonged form of a primary and defective verb;",
-    "glossZh": "是; 在, 存在,  发生, 生活, 住, 留在, 有,",
+    "glossZh": "是; 在, 存在,  发生, 生活, 住, 留在, 有",
     "defZh": "1) 是; 在, 存在,  发生, 生活, 住, 留在, 有,",
-    "glossZhTw": "是; 在, 存在,  發生, 生活, 住, 留在, 有,",
+    "glossZhTw": "是; 在, 存在,  發生, 生活, 住, 留在, 有",
     "defZhTw": "1) 是; 在, 存在,  發生, 生活, 住, 留在, 有,"
   },
   "G3363": {
@@ -6014,9 +6014,9 @@
     "gloss": "apprehension (of evil)",
     "def": "from G4328 (προσδοκάω); apprehension (of evil); by implication, infliction anticipated KJV: expectation, looking after",
     "deriv": "from G4328 (προσδοκάω);",
-    "glossZh": "期待, 预料 (无论好或不好的)",
+    "glossZh": "期待, 预料 (无论好或不好的) #路 21:26;徒 12:11|",
     "defZh": "1) 期待, 预料 (无论好或不好的) \n   #路 21:26;徒 12:11|",
-    "glossZhTw": "期待, 預料 (無論好或不好的)",
+    "glossZhTw": "期待, 預料 (無論好或不好的) #路 21:26;徒 12:11|",
     "defZhTw": "1) 期待, 預料 (無論好或不好的) \n   #路 21:26;徒 12:11|"
   },
   "G3752": {
@@ -6434,9 +6434,9 @@
     "gloss": "Sarepta (i",
     "def": "of Hebrew origin (H06886); Sarepta (i.e. Tsarephath), a place in Palestine KJV: Sarepta",
     "deriv": "of Hebrew origin (H06886);",
-    "glossZh": "撒勒法的希腊名, 在推罗与西顿之间但比较靠近西顿的",
+    "glossZh": "撒勒法的希腊名, 在推罗与西顿之间但比较靠近西顿的一个腓尼基城镇。(#路 4:26|)",
     "defZh": "1) 撒勒法的希腊名, 在推罗与西顿之间但比较靠近西顿的\n   一个腓尼基城镇。(#路 4:26|)",
-    "glossZhTw": "撒勒法的希臘名, 在推羅與西頓之間但比較靠近西頓的",
+    "glossZhTw": "撒勒法的希臘名, 在推羅與西頓之間但比較靠近西頓的一個腓尼基城鎮。(#路 4:26|)",
     "defZhTw": "1) 撒勒法的希臘名, 在推羅與西頓之間但比較靠近西頓的\n   一個腓尼基城鎮。(#路 4:26|)"
   },
   "G3940": {
@@ -6830,9 +6830,9 @@
     "gloss": "the Judæan land (i",
     "def": "feminine of G2453 (Ἰουδαῖος) (with G1093 (γῆ) implied); the Judæan land (i.e. Judæa), a region of Palestine KJV: Judæa",
     "deriv": "feminine of G2453 (Ἰουδαῖος) (with G1093 (γῆ) implied);",
-    "glossZh": "狭义来说, 指巴勒斯坦南方, 位于约旦河和死海的西边的地区",
+    "glossZh": "狭义来说, 指巴勒斯坦南方, 位于约旦河和死海的西边的地区它和撒玛利亚、加利利、彼利亚、以土买等地是不同的",
     "defZh": "1) 狭义来说, 指巴勒斯坦南方, 位于约旦河和死海的西边的地区\n   它和撒玛利亚、加利利、彼利亚、以土买等地是不同的 \n   \n2) 广义来说, 指全部的巴勒斯坦\n\n2453\n1) 犹太的\n2) 犹太人的, 犹太地的 ( #徒 10:28)",
-    "glossZhTw": "狹義來說, 指巴勒斯坦南方, 位於約旦河和死海的西邊的地區",
+    "glossZhTw": "狹義來說, 指巴勒斯坦南方, 位於約旦河和死海的西邊的地區它和撒瑪利亞、加利利、彼利亞、以土買等地是不同的",
     "defZhTw": "1) 狹義來說, 指巴勒斯坦南方, 位於約旦河和死海的西邊的地區\n   它和撒瑪利亞、加利利、彼利亞、以土買等地是不同的 \n   \n2) 廣義來說, 指全部的巴勒斯坦\n\n2453\n1) 猶太的\n2) 猶太人的, 猶太地的 ( #徒 10:28)"
   },
   "G625": {
@@ -7274,9 +7274,9 @@
     "gloss": "Rhodus, an island of the Mediterranean",
     "def": "probably from (a rose); Rhodus, an island of the Mediterranean KJV: Rhodes",
     "deriv": "probably from (a rose);",
-    "glossZh": "基克拉泽群岛(Cyclades)中著名的一座岛，在加里亚(Caria)和吕喀亚(Lycia)对面,",
+    "glossZh": "基克拉泽群岛(Cyclades)中著名的一座岛，在加里亚(Caria)和吕喀亚(Lycia)对面, 罗底是首都 (#徒 21:1|)",
     "defZh": "1) 基克拉泽群岛(Cyclades)中著名的一座岛，在加里亚(Caria)和吕喀亚(Lycia)对面,\n   罗底是首都 (#徒 21:1|)",
-    "glossZhTw": "基克拉澤群島(Cyclades)中著名的一座島，在加里亞(Caria)和呂喀亞(Lycia)對面,",
+    "glossZhTw": "基克拉澤群島(Cyclades)中著名的一座島，在加里亞(Caria)和呂喀亞(Lycia)對面, 羅底是首都 (#徒 21:1|)",
     "defZhTw": "1) 基克拉澤群島(Cyclades)中著名的一座島，在加里亞(Caria)和呂喀亞(Lycia)對面,\n   羅底是首都 (#徒 21:1|)"
   },
   "G3104": {
@@ -7862,9 +7862,9 @@
     "gloss": "self (in some oblique case or reflexively, relation)",
     "def": "contracted for G1438 (ἑαυτοῦ); self (in some oblique case or reflexively, relation) KJV: her (own), (of) him(-self), his (own), of it, thee, their (own), them(-selves), they",
     "deriv": "contracted for G1438 (ἑαυτοῦ);",
-    "glossZh": "他自己, 他们自己,",
+    "glossZh": "他自己, 他们自己",
     "defZh": "1) 他自己, 他们自己,",
-    "glossZhTw": "他自己, 他們自己,",
+    "glossZhTw": "他自己, 他們自己",
     "defZhTw": "1) 他自己, 他們自己,"
   },
   "G5524": {
@@ -8006,9 +8006,9 @@
     "gloss": "Syria (i",
     "def": "probably of Hebrew origin (H06865); Syria (i.e. Tsyria or Tyre), a region of Asia KJV: Syria",
     "deriv": "probably of Hebrew origin (H06865);",
-    "glossZh": "亚洲的一区, 北边界为Taurus(山脉),",
+    "glossZh": "亚洲的一区, 北边界为Taurus(山脉), 东边是幼发拉底河地区, 南边界是巴勒斯坦, 西边以地中海为界.主后64年成为罗马一省,定都于安提阿",
     "defZh": "1) 亚洲的一区, 北边界为Taurus(山脉),\n   东边是幼发拉底河地区, 南边界是巴勒斯坦, \n   西边以地中海为界.主后64年成为罗马一省,定都于安提阿",
-    "glossZhTw": "亞洲的一區, 北邊界為Taurus(山脈),",
+    "glossZhTw": "亞洲的一區, 北邊界為Taurus(山脈), 東邊是幼發拉底河地區, 南邊界是巴勒斯坦, 西邊以地中海為界.主後64年成為羅馬一省,定都於安提阿",
     "defZhTw": "1) 亞洲的一區, 北邊界為Taurus(山脈),\n   東邊是幼發拉底河地區, 南邊界是巴勒斯坦, \n   西邊以地中海為界.主後64年成為羅馬一省,定都於安提阿"
   },
   "G5280": {
@@ -8186,9 +8186,9 @@
     "gloss": "(adverb) not, (conjunction) lest",
     "def": "a primary particle of qualified negation (whereas G3756 (οὐ) expresses an absolute denial); (adverb) not, (conjunction) lest; also (as an interrogative implying a negative answer (whereas G3756 (οὐ) expects an affirmative one)) whether KJV: any but (that), X forbear, + God forbid, + lack, lest, neither, never, no (X wise in), none, nor, (can-)not, nothing, that not, un(-taken), without",
     "deriv": "a primary particle of qualified negation (whereas G3756 (οὐ) expresses an absolute denial);",
-    "glossZh": "不 (通常与直说语气以外的动词, 及不定词与分词连用, 在期待否定答案的问句中使用;",
+    "glossZh": "不 (通常与直说语气以外的动词, 及不定词与分词连用, 在期待否定答案的问句中使用; 与ou连用, 表示强调或郑重其事)",
     "defZh": "1) 不 (通常与直说语气以外的动词, 及不定词与分词连用, 在期待否定答案的问句中使用;\n      与ou连用, 表示强调或郑重其事)",
-    "glossZhTw": "不 (通常與直說語氣以外的動詞, 及不定詞與分詞連用, 在期待否定答案的問句中使用;",
+    "glossZhTw": "不 (通常與直說語氣以外的動詞, 及不定詞與分詞連用, 在期待否定答案的問句中使用; 與ou連用, 表示強調或鄭重其事)",
     "defZhTw": "1) 不 (通常與直說語氣以外的動詞, 及不定詞與分詞連用, 在期待否定答案的問句中使用;\n      與ou連用, 表示強調或鄭重其事)"
   },
   "G281": {
@@ -8582,9 +8582,9 @@
     "gloss": "persuasion, i.e. credence",
     "def": "from G3982 (πείθω); persuasion, i.e. credence; moral conviction (of religious truth, or the truthfulness of God or a religious teacher), especially reliance upon Christ for salvation; abstractly, constancy in such profession; by extension, the system of religious (Gospel) truth itself KJV: assurance, belief, believe, faith, fidelity",
     "deriv": "from G3982 (πείθω);",
-    "glossZh": "对任何真理的坚信, 相信;",
+    "glossZh": "对任何真理的坚信, 相信; 在新约里, 是针对人与神的关系, 以及属神的事的坚信和相信, 一般都包含着信靠的观念, 以及由相信而生的神圣火热, 并加入其中",
     "defZh": "1) 对任何真理的坚信, 相信;\n   在新约里, 是针对人与神的关系, 以及属神的事的坚信和相信,\n   一般都包含着信靠的观念, 以及由相信而生的神圣火热, 并加入其中\n   1a) 与神有关\n       1a1) 坚信神的存在, 以及神是万有的创造者和统治者,\n            是藉着基督的永恒救恩的供应者和赠与者\n   1b) 与基督有关\n       1b1) 一种强烈的和欣然接受的坚信或相信耶稣就是那一位弥赛亚,\n            我们藉着他在神的国度里得到永恒的救恩\n   1c) 基督教的信仰\n   1d) 对神或基督的那种信靠 (或是信心), 是从对神和基督的信心所发出的\n2) 忠贞, 忠实\n   2a) 能让人信靠的个性",
-    "glossZhTw": "對任何真理的堅信, 相信;",
+    "glossZhTw": "對任何真理的堅信, 相信; 在新約裏, 是針對人與神的關係, 以及屬神的事的堅信和相信, 一般都包含著信靠的觀念, 以及由相信而生的神聖火熱, 並加入其中",
     "defZhTw": "1) 對任何真理的堅信, 相信;\n   在新約裏, 是針對人與神的關係, 以及屬神的事的堅信和相信,\n   一般都包含著信靠的觀念, 以及由相信而生的神聖火熱, 並加入其中\n   1a) 與神有關\n       1a1) 堅信神的存在, 以及神是萬有的創造者和統治者,\n            是藉著基督的永恆救恩的供應者和贈與者\n   1b) 與基督有關\n       1b1) 一種強烈的和欣然接受的堅信或相信耶穌就是那一位彌賽亞,\n            我們藉著他在神的國度裏得到永恆的救恩\n   1c) 基督教的信仰\n   1d) 對神或基督的那種信靠 (或是信心), 是從對神和基督的信心所發出的\n2) 忠貞, 忠實\n   2a) 能讓人信靠的個性"
   },
   "G3979": {
@@ -9782,9 +9782,9 @@
     "gloss": "Junias, a Christian",
     "def": "of Latin origin; Junias, a Christian KJV: Junias",
     "deriv": "of Latin origin;",
-    "glossZh": "罗马的一个基督徒女性, 保罗提到她是保罗的亲属并且与保罗同坐监",
+    "glossZh": "罗马的一个基督徒女性, 保罗提到她是保罗的亲属并且与保罗同坐监 #罗 16:7|",
     "defZh": "1) 罗马的一个基督徒女性, 保罗提到她是保罗的亲属并且与保罗同坐监\n   #罗 16:7|",
-    "glossZhTw": "羅馬的一個基督徒女性, 保羅提到她是保羅的親屬並且與保羅同坐監",
+    "glossZhTw": "羅馬的一個基督徒女性, 保羅提到她是保羅的親屬並且與保羅同坐監 #羅 16:7|",
     "defZhTw": "1) 羅馬的一個基督徒女性, 保羅提到她是保羅的親屬並且與保羅同坐監\n   #羅 16:7|"
   },
   "G2871": {
@@ -9950,9 +9950,9 @@
     "gloss": "palm-country",
     "def": "from G5404 (φοῖνιξ); palm-country; Phœnice (or Phœnicia), a region of Palestine KJV: Phenice, Phenicia",
     "deriv": "from G5404 (φοῖνιξ);",
-    "glossZh": "叙利亚省份的领土, 位于地中海岸边，在Eleutherus河(艾鲁瑟鲁斯河)与卡密儿岬之间，",
+    "glossZh": "叙利亚省份的领土, 位于地中海岸边，在Eleutherus河(艾鲁瑟鲁斯河)与卡密儿岬之间，大约30英里（50公里）长，3英里（5公里）宽。",
     "defZh": "1) 叙利亚省份的领土, 位于地中海岸边，在Eleutherus河(艾鲁瑟鲁斯河)与卡密儿岬之间，\n   大约30英里（50公里）长，3英里（5公里）宽。",
-    "glossZhTw": "敘利亞省份的領土, 位於地中海岸邊，在Eleutherus河(艾魯瑟魯斯河)與卡密兒岬之間，",
+    "glossZhTw": "敘利亞省份的領土, 位於地中海岸邊，在Eleutherus河(艾魯瑟魯斯河)與卡密兒岬之間，大約30英里（50公里）長，3英里（5公里）寬。",
     "defZhTw": "1) 敘利亞省份的領土, 位於地中海岸邊，在Eleutherus河(艾魯瑟魯斯河)與卡密兒岬之間，\n   大約30英里（50公里）長，3英里（5公里）寬。"
   },
   "G4983": {
@@ -9974,9 +9974,9 @@
     "gloss": "Sidon (i",
     "def": "of Hebrew origin (H06721); Sidon (i.e. Tsidon), a place in Palestine KJV: Sidon",
     "deriv": "of Hebrew origin (H06721);",
-    "glossZh": "腓尼基一富有的古老城市, 在地中海东岸,",
+    "glossZh": "腓尼基一富有的古老城市, 在地中海东岸, 位于推罗北方不到 20 哩 (30 公里)",
     "defZh": "1) 腓尼基一富有的古老城市, 在地中海东岸,\n   位于推罗北方不到 20 哩 (30 公里)",
-    "glossZhTw": "腓尼基一富有的古老城市, 在地中海東岸,",
+    "glossZhTw": "腓尼基一富有的古老城市, 在地中海東岸, 位於推羅北方不到 20 哩 (30 公里)",
     "defZhTw": "1) 腓尼基一富有的古老城市, 在地中海東岸,\n   位於推羅北方不到 20 哩 (30 公里)"
   },
   "G5150": {
@@ -11558,9 +11558,9 @@
     "gloss": "\"cherubim\" (i",
     "def": "plural of Hebrew origin (H03742); \"cherubim\" (i.e. cherubs or kerubim) KJV: cherubims",
     "deriv": "plural of Hebrew origin (H03742);",
-    "glossZh": "基路伯 (#来 9:5|), 固定约柜盖子上的两个带翅的活物的像, 约柜原是放在以色列人的圣幕中的至圣所,",
+    "glossZh": "基路伯 (#来 9:5|), 固定约柜盖子上的两个带翅的活物的像, 约柜原是放在以色列人的圣幕中的至圣所, 后被移至所罗门王所建的圣殿中的至圣所. 此二像面互相向, 脸朝下向着约柜的盖子, 以其张开的翅遮盖了约柜. 在其二者中间的位置被认为是神所处的地方.",
     "defZh": "1) 基路伯 (#来 9:5|), 固定约柜盖子上的两个带翅的活物的像, 约柜原是放在以色列人的圣幕中的至圣所, \n   后被移至所罗门王所建的圣殿中的至圣所. 此二像面互相向, 脸朝下向着约柜的盖子, 以其\n   张开的翅遮盖了约柜. 在其二者中间的位置被认为是神所处的地方.",
-    "glossZhTw": "基路伯 (#來 9:5|), 固定約櫃蓋子上的兩個帶翅的活物的像, 約櫃原是放在以色列人的聖幕中的至聖所,",
+    "glossZhTw": "基路伯 (#來 9:5|), 固定約櫃蓋子上的兩個帶翅的活物的像, 約櫃原是放在以色列人的聖幕中的至聖所, 後被移至所羅門王所建的聖殿中的至聖所. 此二像面互相向, 臉朝下向著約櫃的蓋子, 以其張開的翅遮蓋了約櫃. 在其二者中間的位置被認為是神所處的地方.",
     "defZhTw": "1) 基路伯 (#來 9:5|), 固定約櫃蓋子上的兩個帶翅的活物的像, 約櫃原是放在以色列人的聖幕中的至聖所, \n   後被移至所羅門王所建的聖殿中的至聖所. 此二像面互相向, 臉朝下向著約櫃的蓋子, 以其\n   張開的翅遮蓋了約櫃. 在其二者中間的位置被認為是神所處的地方."
   },
   "G310": {
@@ -11762,9 +11762,9 @@
     "gloss": "Joel, an Israelite",
     "def": "of Hebrew origin (H03100); Joel, an Israelite KJV: Joel",
     "deriv": "of Hebrew origin (H03100);",
-    "glossZh": "十二小先知中的第二位, 毗土珥的儿子,",
+    "glossZh": "十二小先知中的第二位, 毗土珥的儿子, 很可能在乌西亚王执政时, 在犹大作先知宣讲讯息 (#徒 2:16)",
     "defZh": "1) 十二小先知中的第二位, 毗土珥的儿子,\n   很可能在乌西亚王执政时, 在犹大作先知宣讲讯息 (#徒 2:16)",
-    "glossZhTw": "十二小先知中的第二位, 毗土珥的兒子,",
+    "glossZhTw": "十二小先知中的第二位, 毗土珥的兒子, 很可能在烏西亞王執政時, 在猶大作先知宣講訊息 (#徒 2:16)",
     "defZhTw": "1) 十二小先知中的第二位, 毗土珥的兒子,\n   很可能在烏西亞王執政時, 在猶大作先知宣講訊息 (#徒 2:16)"
   },
   "G3125": {
@@ -12722,9 +12722,9 @@
     "gloss": "urbane, i.e. (by implication) handsome",
     "def": "from (a city); urbane, i.e. (by implication) handsome KJV: fair",
     "deriv": "from (a city);",
-    "glossZh": "城市的建筑与文化与乡野大相迳庭.此字原意",
+    "glossZh": "城市的建筑与文化与乡野大相迳庭.此字原意为\"与城市相称的\",以此形容出身好,有修养",
     "defZh": "1) 城市的建筑与文化与乡野大相迳庭.此字原意\n   为\"与城市相称的\",以此形容出身好,有修养 \n2) 有教养的 (#徒 7:20), 英俊的 (#来 11:23)",
-    "glossZhTw": "城市的建築與文化與鄉野大相逕庭.此字原意",
+    "glossZhTw": "城市的建築與文化與鄉野大相逕庭.此字原意為\"與城市相稱的\",以此形容出身好,有修養",
     "defZhTw": "1) 城市的建築與文化與鄉野大相逕庭.此字原意\n   為\"與城市相稱的\",以此形容出身好,有修養 \n2) 有教養的 (#徒 7:20), 英俊的 (#來 11:23)"
   },
   "G5581": {
@@ -14402,9 +14402,9 @@
     "gloss": "Gallion (i",
     "def": "of Latin origin; Gallion (i.e. Gallio), a Roman officer KJV: Gallio",
     "deriv": "of Latin origin;",
-    "glossZh": "主后五十三年,保罗在哥林多之际,迦流是亚该亚的总督,",
+    "glossZh": "主后五十三年,保罗在哥林多之际,迦流是亚该亚的总督, 此时正值克劳狄欧皇地执政.",
     "defZh": "1)主后五十三年,保罗在哥林多之际,迦流是亚该亚的总督,\n  此时正值克劳狄欧皇地执政.",
-    "glossZhTw": "主後五十三年,保羅在哥林多之際,迦流是亞該亞的總督,",
+    "glossZhTw": "主後五十三年,保羅在哥林多之際,迦流是亞該亞的總督, 此時正值克勞狄歐皇地執政.",
     "defZhTw": "1)主後五十三年,保羅在哥林多之際,迦流是亞該亞的總督,\n  此時正值克勞狄歐皇地執政."
   },
   "G1309": {
@@ -15854,9 +15854,9 @@
     "gloss": "Athenæ, the capitol of Greece",
     "def": "plural of (the goddess of wisdom, who was reputed to have founded the city); Athenæ, the capitol of Greece KJV: Athens",
     "deriv": "plural of (the goddess of wisdom, who was reputed to have founded the city);",
-    "glossZh": "一座希腊名城，为 阿提喀 的首府，也是希腊历史的黄金时期时，",
+    "glossZh": "一座希腊名城，为 阿提喀 的首府，也是希腊历史的黄金时期时，学问与文明最昌盛的城市。",
     "defZh": "1) 一座希腊名城，为 阿提喀 的首府，也是希腊历史的黄金时期时，\n   学问与文明最昌盛的城市。",
-    "glossZhTw": "一座希臘名城，為 阿提喀 的首府，也是希臘歷史的黃金時期時，",
+    "glossZhTw": "一座希臘名城，為 阿提喀 的首府，也是希臘歷史的黃金時期時，學問與文明最昌盛的城市。",
     "defZhTw": "1) 一座希臘名城，為 阿提喀 的首府，也是希臘歷史的黃金時期時，\n   學問與文明最昌盛的城市。"
   },
   "G5327": {
@@ -16166,9 +16166,9 @@
     "gloss": "a tenth, i.e. as a percentage or (technically) tithe",
     "def": "feminine of G1182 (δέκατος); a tenth, i.e. as a percentage or (technically) tithe KJV: tenth (part), tithe",
     "deriv": "feminine of G1182 (δέκατος);",
-    "glossZh": "某物的十分之一,",
+    "glossZh": "某物的十分之一",
     "defZh": "1) 某物的十分之一,\n  1a) (实名词) 十分之一 (#启 11:13|)\n  1b) 十分之一的, 什一供献",
-    "glossZhTw": "某物的十分之一,",
+    "glossZhTw": "某物的十分之一",
     "defZhTw": "1) 某物的十分之一,\n  1a) (實名詞) 十分之一 (#啓 11:13|)\n  1b) 十分之一的, 什一供獻"
   },
   "G1515": {
@@ -17966,9 +17966,9 @@
     "gloss": "Cyrene, a region of Africa",
     "def": "of uncertain derivation; Cyrene, a region of Africa KJV: Cyrene",
     "deriv": "of uncertain derivation;",
-    "glossZh": "位于北非Libya Cyrenaica或Pentapolis的首府,后与克理特合并为一省,",
+    "glossZh": "位于北非Libya Cyrenaica或Pentapolis的首府,后与克理特合并为一省, 由总督管辖,有许多犹太居民 (#徒 2:10|)",
     "defZh": "1) 位于北非Libya Cyrenaica或Pentapolis的首府,后与克理特合并为一省,\n   由总督管辖,有许多犹太居民 (#徒 2:10|)",
-    "glossZhTw": "位於北非Libya Cyrenaica或Pentapolis的首府,後與克理特合併為一省,",
+    "glossZhTw": "位於北非Libya Cyrenaica或Pentapolis的首府,後與克理特合併為一省, 由總督管轄,有許多猶太居民 (#徒 2:10|)",
     "defZhTw": "1) 位於北非Libya Cyrenaica或Pentapolis的首府,後與克理特合併為一省,\n   由總督管轄,有許多猶太居民 (#徒 2:10|)"
   },
   "G2690": {
@@ -18086,9 +18086,9 @@
     "gloss": "Patmus, an islet in the Mediterranean",
     "def": "of uncertain derivation; Patmus, an islet in the Mediterranean KJV: Patmos",
     "deriv": "of uncertain derivation;",
-    "glossZh": "爱琴海中一个崎岖且寸草不生的海岛",
+    "glossZh": "爱琴海中一个崎岖且寸草不生的海岛 #启 1:9|",
     "defZh": "1) 爱琴海中一个崎岖且寸草不生的海岛\n   #启 1:9|",
-    "glossZhTw": "愛琴海中一個崎嶇且寸草不生的海島",
+    "glossZhTw": "愛琴海中一個崎嶇且寸草不生的海島 #啓 1:9|",
     "defZhTw": "1) 愛琴海中一個崎嶇且寸草不生的海島\n   #啓 1:9|"
   },
   "G807": {
@@ -18218,9 +18218,9 @@
     "gloss": "to be straight-footed, i.e. (figuratively) to go directly forward",
     "def": "from a compound of G3717 (ὀρθός) and G4228 (πούς); to be straight-footed, i.e. (figuratively) to go directly forward KJV: walk uprightly",
     "deriv": "from a compound of G3717 (ὀρθός) and G4228 (πούς);",
-    "glossZh": "行在正路上,",
+    "glossZh": "行在正路上",
     "defZh": "1) 行在正路上, \n2) 隐喻. 行为正直 (#加 2:14|)",
-    "glossZhTw": "行在正路上,",
+    "glossZhTw": "行在正路上",
     "defZhTw": "1) 行在正路上, \n2) 隱喻. 行為正直 (#加 2:14|)"
   },
   "G1424": {
@@ -18985,9 +18985,9 @@
     "gloss": "Gomorrha (i",
     "def": "of Hebrew origin (H06017); Gomorrha (i.e. Amorah), a place near the Dead Sea KJV: Gomorrha",
     "deriv": "of Hebrew origin (H06017);",
-    "glossZh": "一个位于犹大东方的城市, 被神用如雨般的火和硫黄所毁灭;",
+    "glossZh": "一个位于犹大东方的城市, 被神用如雨般的火和硫黄所毁灭; 现今被死海所覆盖",
     "defZh": "1) 一个位于犹大东方的城市, 被神用如雨般的火和硫黄所毁灭; \n   现今被死海所覆盖",
-    "glossZhTw": "一個位於猶大東方的城市, 被神用如雨般的火和硫黃所毀滅;",
+    "glossZhTw": "一個位於猶大東方的城市, 被神用如雨般的火和硫黃所毀滅; 現今被死海所覆蓋",
     "defZhTw": "1) 一個位於猶大東方的城市, 被神用如雨般的火和硫黃所毀滅; \n   現今被死海所覆蓋"
   },
   "G171": {
@@ -19213,9 +19213,9 @@
     "gloss": "Jacobus, the name of three Israelites",
     "def": "the same as G2384 (Ἰακώβ) Græcized; Jacobus, the name of three Israelites KJV: James",
     "deriv": "the same as G2384 (Ἰακώβ) Græcized;",
-    "glossZh": "一位使徒, 是西庇太的儿子, 使徒约翰的兄弟",
+    "glossZh": "一位使徒, 是西庇太的儿子, 使徒约翰的兄弟一般称为\"大雅各\",被希律杀害 (使徒行传12章)",
     "defZh": "1) 一位使徒, 是西庇太的儿子, 使徒约翰的兄弟\n   一般称为\"大雅各\",被希律杀害 (使徒行传12章)\n2) 一位使徒, 是亚勒腓的儿子,又被称为\"小雅各\"\n3) 耶稣的兄弟\n4) 使徒犹大的父亲",
-    "glossZhTw": "一位使徒, 是西庇太的兒子, 使徒約翰的兄弟",
+    "glossZhTw": "一位使徒, 是西庇太的兒子, 使徒約翰的兄弟一般稱為\"大雅各\",被希律殺害 (使徒行傳12章)",
     "defZhTw": "1) 一位使徒, 是西庇太的兒子, 使徒約翰的兄弟\n   一般稱為\"大雅各\",被希律殺害 (使徒行傳12章)\n2) 一位使徒, 是亞勒腓的兒子,又被稱為\"小雅各\"\n3) 耶穌的兄弟\n4) 使徒猶大的父親"
   },
   "G4171": {
@@ -19585,9 +19585,9 @@
     "gloss": "to retail, i.e. (by implication) to adulterate (figuratively)",
     "def": "from (a huckster); to retail, i.e. (by implication) to adulterate (figuratively) KJV: corrupt",
     "deriv": "from (a huckster);",
-    "glossZh": "交易,贩卖,叫卖.因着小贩的诡诈行径,",
+    "glossZh": "交易,贩卖,叫卖.因着小贩的诡诈行径, 这个字几乎就是\"掺杂\"的意思 (#林后 2:17|)",
     "defZh": "1) 交易,贩卖,叫卖.因着小贩的诡诈行径,\n   这个字几乎就是\"掺杂\"的意思 (#林后 2:17|)",
-    "glossZhTw": "交易,販賣,叫賣.因著小販的詭詐行徑,",
+    "glossZhTw": "交易,販賣,叫賣.因著小販的詭詐行徑, 這個字幾乎就是\"摻雜\"的意思 (#林後 2:17|)",
     "defZhTw": "1) 交易,販賣,叫賣.因著小販的詭詐行徑,\n   這個字幾乎就是\"摻雜\"的意思 (#林後 2:17|)"
   },
   "G695": {
@@ -19765,9 +19765,9 @@
     "gloss": "a \"legion\", i.e. Roman regiment (figuratively)",
     "def": "of Latin origin; a \"legion\", i.e. Roman regiment (figuratively) KJV: legion",
     "deriv": "of Latin origin;",
-    "glossZh": "军团, 一队军人, 军人的编制在不同时期有所差别,",
+    "glossZh": "军团, 一队军人, 军人的编制在不同时期有所差别, 在奥古斯都时约有6826人(亦即6100步兵和726骑兵) (#太26:53;可5:9,15;路8:30|)",
     "defZh": "1) 军团, 一队军人, 军人的编制在不同时期有所差别,\n   在奥古斯都时约有6826人(亦即6100步兵和726骑兵) (#太26:53;可5:9,15;路8:30|)",
-    "glossZhTw": "軍團, 一隊軍人, 軍人的編制在不同時期有所差別,",
+    "glossZhTw": "軍團, 一隊軍人, 軍人的編制在不同時期有所差別, 在奧古斯都時約有6826人(亦即6100步兵和726騎兵) (#太26:53;可5:9,15;路8:30|)",
     "defZhTw": "1) 軍團, 一隊軍人, 軍人的編制在不同時期有所差別,\n   在奧古斯都時約有6826人(亦即6100步兵和726騎兵) (#太26:53;可5:9,15;路8:30|)"
   },
   "G5278": {
@@ -20124,9 +20124,9 @@
     "gloss": "Hosee (i",
     "def": "of Hebrew origin (H01954); Hosee (i.e. Hoshea), an Israelite KJV: Osee",
     "deriv": "of Hebrew origin (H01954);",
-    "glossZh": "著名的希伯来先知 (第一个小先知), 备利的儿子, 当耶罗波安二世在位时于北国以色列作先知,",
+    "glossZh": "著名的希伯来先知 (第一个小先知), 备利的儿子, 当耶罗波安二世在位时于北国以色列作先知, 是和以赛亚同时代的人 (#罗 9:25|)",
     "defZh": "1) 著名的希伯来先知 (第一个小先知), 备利的儿子, 当耶罗波安二世在位时于北国以色列作先知, \n   是和以赛亚同时代的人 (#罗 9:25|)",
-    "glossZhTw": "著名的希伯來先知 (第一個小先知), 備利的兒子, 當耶羅波安二世在位時於北國以色列作先知,",
+    "glossZhTw": "著名的希伯來先知 (第一個小先知), 備利的兒子, 當耶羅波安二世在位時於北國以色列作先知, 是和以賽亞同時代的人 (#羅 9:25|)",
     "defZhTw": "1) 著名的希伯來先知 (第一個小先知), 備利的兒子, 當耶羅波安二世在位時於北國以色列作先知, \n   是和以賽亞同時代的人 (#羅 9:25|)"
   },
   "G4360": {
@@ -20748,9 +20748,9 @@
     "gloss": "directly opposite",
     "def": "from G2596 (κατά) and G1725 (ἔναντι); directly opposite KJV: before, over against",
     "deriv": "from G2596 (κατά) and G1725 (ἔναντι);",
-    "glossZh": "在...对面,",
+    "glossZh": "在...对面",
     "defZh": "1) 在...对面, \n2) 隐喻. 在某人跟前 亦即 被审判",
-    "glossZhTw": "在...對面,",
+    "glossZhTw": "在...對面",
     "defZhTw": "1) 在...對面, \n2) 隱喻. 在某人跟前 亦即 被審判"
   },
   "G5217": {
@@ -20868,9 +20868,9 @@
     "gloss": "Seleuceia, a place in Syria",
     "def": "from (Seleucus, a Syrian king); Seleuceia, a place in Syria KJV: Seleucia",
     "deriv": "from (Seleucus, a Syrian king);",
-    "glossZh": "一个叙利亚城市，接近奥伦提斯河(Orontes)口,",
+    "glossZh": "一个叙利亚城市，接近奥伦提斯河(Orontes)口, 距离安提阿大约 16 英哩(25公里) (#徒 13:4|)",
     "defZh": "1) 一个叙利亚城市，接近奥伦提斯河(Orontes)口, \n   距离安提阿大约 16 英哩(25公里) (#徒 13:4|)",
-    "glossZhTw": "一個敘利亞城市，接近奧倫提斯河(Orontes)口,",
+    "glossZhTw": "一個敘利亞城市，接近奧倫提斯河(Orontes)口, 距離安提阿大約 16 英哩(25公里) (#徒 13:4|)",
     "defZhTw": "1) 一個敘利亞城市，接近奧倫提斯河(Orontes)口, \n   距離安提阿大約 16 英哩(25公里) (#徒 13:4|)"
   },
   "G2873": {
@@ -21072,9 +21072,9 @@
     "gloss": "Spania, a region of Europe",
     "def": "probably of foreign origin; Spania, a region of Europe KJV: Spain",
     "deriv": "probably of foreign origin;",
-    "glossZh": "法国以南的整个半岛",
+    "glossZh": "法国以南的整个半岛 #罗 15:23;15:28|",
     "defZh": "1) 法国以南的整个半岛\n   #罗 15:23;15:28|",
-    "glossZhTw": "法國以南的整個半島",
+    "glossZhTw": "法國以南的整個半島 #羅 15:23;15:28|",
     "defZhTw": "1) 法國以南的整個半島\n   #羅 15:23;15:28|"
   },
   "G1321": {
@@ -21156,9 +21156,9 @@
     "gloss": "people-ruling",
     "def": "from G757 (ἄρχω) and G2994 (Λαοδικεύς); people-ruling; Archelaus, a Jewish king KJV: Archelaus",
     "deriv": "from G757 (ἄρχω) and G2994 (Λαοδικεύς);",
-    "glossZh": "希律大帝之子,为犹大,撒玛利亚,以土买的分封王,生性凶残,",
+    "glossZh": "希律大帝之子,为犹大,撒玛利亚,以土买的分封王,生性凶残, 后被奥古思都皇帝所贬谪 (#太 2:22|)",
     "defZh": "1) 希律大帝之子,为犹大,撒玛利亚,以土买的分封王,生性凶残,\n   后被奥古思都皇帝所贬谪 (#太 2:22|)",
-    "glossZhTw": "希律大帝之子,為猶大,撒瑪利亞,以土買的分封王,生性兇殘,",
+    "glossZhTw": "希律大帝之子,為猶大,撒瑪利亞,以土買的分封王,生性兇殘, 後被奧古思都皇帝所貶謫 (#太 2:22|)",
     "defZhTw": "1) 希律大帝之子,為猶大,撒瑪利亞,以土買的分封王,生性兇殘,\n   後被奧古思都皇帝所貶謫 (#太 2:22|)"
   },
   "G4566": {
@@ -21455,9 +21455,9 @@
     "gloss": "zealous",
     "def": "of Chaldee origin (compare H07067); zealous; Cananites, an epithet KJV: Canaanite (by mistake for a derivative from G5477 (Χαναάν))",
     "deriv": "of Chaldee origin (compare H07067);",
-    "glossZh": "原意为\"热心,狂热\",在新约用来称呼耶稣的门徒西门,因为他以前可能隶属\"激进\"或\"自由战士\"党派",
+    "glossZh": "原意为\"热心,狂热\",在新约用来称呼耶稣的门徒西门,因为他以前可能隶属\"激进\"或\"自由战士\"党派因此和合本译为\"奋锐党的\" (#太 10:4; 可 3:18|)",
     "defZh": "1) 原意为\"热心,狂热\",在新约用来称呼耶稣的门徒西门,因为他以前可能隶属\"激进\"或\"自由战士\"党派\n   因此和合本译为\"奋锐党的\" (#太 10:4; 可 3:18|)",
-    "glossZhTw": "原意為\"熱心,狂熱\",在新約用來稱呼耶穌的門徒西門,因為他以前可能隸屬\"激進\"或\"自由戰士\"黨派",
+    "glossZhTw": "原意為\"熱心,狂熱\",在新約用來稱呼耶穌的門徒西門,因為他以前可能隸屬\"激進\"或\"自由戰士\"黨派因此和合本譯為\"奮銳黨的\" (#太 10:4; 可 3:18|)",
     "defZhTw": "1) 原意為\"熱心,狂熱\",在新約用來稱呼耶穌的門徒西門,因為他以前可能隸屬\"激進\"或\"自由戰士\"黨派\n   因此和合本譯為\"奮銳黨的\" (#太 10:4; 可 3:18|)"
   },
   "G3513": {
@@ -21611,9 +21611,9 @@
     "gloss": "Emmaus, a place in Palestine",
     "def": "probably of Hebrew origin (compare H03222); Emmaus, a place in Palestine KJV: Emmaus",
     "deriv": "probably of Hebrew origin (compare H03222);",
-    "glossZh": "耶稣复活那日，门徒中有两人前往以马忤斯这个村庄，",
+    "glossZh": "耶稣复活那日，门徒中有两人前往以马忤斯这个村庄，耶稣显现和他们同行#路 24:13| 离耶路撒冷约有二十五里。",
     "defZh": "1)耶稣复活那日，门徒中有两人前往以马忤斯这个村庄，\n  耶稣显现和他们同行#路 24:13| 离耶路撒冷约有二十五里。\n  约瑟夫提到『有个称做以马忤斯的村庄』在同样的距离位置上.\n  不过以马忤斯的地点尚位找到.",
-    "glossZhTw": "耶穌復活那日，門徒中有兩人前往以馬忤斯這個村莊，",
+    "glossZhTw": "耶穌復活那日，門徒中有兩人前往以馬忤斯這個村莊，耶穌顯現和他們同行#路 24:13| 離耶路撒冷約有二十五里。",
     "defZhTw": "1)耶穌復活那日，門徒中有兩人前往以馬忤斯這個村莊，\n  耶穌顯現和他們同行#路 24:13| 離耶路撒冷約有二十五里。\n  約瑟夫提到『有個稱做以馬忤斯的村莊』在同樣的距離位置上.\n  不過以馬忤斯的地點尚位找到."
   },
   "G4063": {
@@ -21863,9 +21863,9 @@
     "gloss": "to march in (military) rank (keep step), i.e. (figuratively) to conform to virtue and piety",
     "def": "from a derivative of (to range in regular line); to march in (military) rank (keep step), i.e. (figuratively) to conform to virtue and piety KJV: walk (orderly)",
     "deriv": "from a derivative of (to range in regular line);",
-    "glossZh": "遵循, 顺应, 同意,",
+    "glossZh": "遵循, 顺应, 同意",
     "defZh": "1) 遵循, 顺应, 同意,",
-    "glossZhTw": "遵循, 順應, 同意,",
+    "glossZhTw": "遵循, 順應, 同意",
     "defZhTw": "1) 遵循, 順應, 同意,"
   },
   "G924": {
@@ -22715,9 +22715,9 @@
     "gloss": "a Gadarene or inhabitant of Gadara",
     "def": "from (a town east of the Jordan); a Gadarene or inhabitant of Gadara KJV: Gadarene",
     "deriv": "from (a town east of the Jordan);",
-    "glossZh": "是一个地区, 位于加利利海东南方约十公里的地方, #太 8:28|, 加大拉人的地方;",
+    "glossZh": "是一个地区, 位于加利利海东南方约十公里的地方, #太 8:28|, 加大拉人的地方",
     "defZh": "1) 是一个地区, 位于加利利海东南方约十公里的地方, #太 8:28|, 加大拉人的地方;\n2) #可 5:1| 和 #路 8:27| 则用该区的首府 \"格拉森\" 称之.\n\n见 1086",
-    "glossZhTw": "是一個地區, 位於加利利海東南方約十公里的地方, #太 8:28|, 加大拉人的地方;",
+    "glossZhTw": "是一個地區, 位於加利利海東南方約十公里的地方, #太 8:28|, 加大拉人的地方",
     "defZhTw": "1) 是一個地區, 位於加利利海東南方約十公里的地方, #太 8:28|, 加大拉人的地方;\n2) #可 5:1| 和 #路 8:27| 則用該區的首府 \"格拉森\" 稱之.\n\n見 1086"
   },
   "G2353": {
@@ -23579,9 +23579,9 @@
     "gloss": "Salamis, a place in Cyprus",
     "def": "probably from G4535 (σάλος) (from the surge on the shore); Salamis, a place in Cyprus KJV: Salamis",
     "deriv": "probably from G4535 (σάλος) (from the surge on the shore);",
-    "glossZh": "塞普勒斯岛（位于地中海东部）东边的一个主要都市",
+    "glossZh": "塞普勒斯岛（位于地中海东部）东边的一个主要都市 #徒 13:5|",
     "defZh": "1) 塞普勒斯岛（位于地中海东部）东边的一个主要都市\n   #徒 13:5|",
-    "glossZhTw": "塞普勒斯島（位於地中海東部）東邊的一個主要都市",
+    "glossZhTw": "塞普勒斯島（位於地中海東部）東邊的一個主要都市 #徒 13:5|",
     "defZhTw": "1) 塞普勒斯島（位於地中海東部）東邊的一個主要都市\n   #徒 13:5|"
   },
   "G1061": {
@@ -23987,9 +23987,9 @@
     "gloss": "to (with or by) you",
     "def": "irregular dative case of G5210 (ὑμεῖς); to (with or by) you KJV: ye, you, your(-selves)",
     "deriv": "irregular dative case of G5210 (ὑμεῖς);",
-    "glossZh": "你们, 给你们, 为你们,",
+    "glossZh": "你们, 给你们, 为你们",
     "defZh": "1) 你们, 给你们, 为你们,",
-    "glossZhTw": "你們, 給你們, 為你們,",
+    "glossZhTw": "你們, 給你們, 為你們",
     "defZhTw": "1) 你們, 給你們, 為你們,"
   },
   "G4350": {
@@ -24443,9 +24443,9 @@
     "gloss": "holy city",
     "def": "from G2413 (ἱερός) and G4172 (πόλις); holy city; Hierapolis, a place in Asia Minor KJV: Hierapolis",
     "deriv": "from G2413 (ἱερός) and G4172 (πόλις);",
-    "glossZh": "弗吕家(Phrygia)的一个城市, 位于莱科斯河(Lycus)与米安大河(Maeander)交接处,",
+    "glossZh": "弗吕家(Phrygia)的一个城市, 位于莱科斯河(Lycus)与米安大河(Maeander)交接处, 靠近歌罗西(Colosse)与老底嘉(Laodicea) (#西 4:13|)",
     "defZh": "1) 弗吕家(Phrygia)的一个城市, 位于莱科斯河(Lycus)与米安大河(Maeander)交接处, \n靠近歌罗西(Colosse)与老底嘉(Laodicea) (#西 4:13|)",
-    "glossZhTw": "弗呂家(Phrygia)的一個城市, 位於萊科斯河(Lycus)與米安大河(Maeander)交接處,",
+    "glossZhTw": "弗呂家(Phrygia)的一個城市, 位於萊科斯河(Lycus)與米安大河(Maeander)交接處, 靠近歌羅西(Colosse)與老底嘉(Laodicea) (#西 4:13|)",
     "defZhTw": "1) 弗呂家(Phrygia)的一個城市, 位於萊科斯河(Lycus)與米安大河(Maeander)交接處, \n靠近歌羅西(Colosse)與老底嘉(Laodicea) (#西 4:13|)"
   },
   "G2241": {
@@ -25748,9 +25748,9 @@
     "gloss": "Sychar (i",
     "def": "of Hebrew origin (H07941); Sychar (i.e. Shekar), a place in Palestine KJV: Sychar",
     "deriv": "of Hebrew origin (H07941);",
-    "glossZh": "可能是示剑城的另一个名字, 撒玛利亚的一个城市,",
+    "glossZh": "可能是示剑城的另一个名字, 撒玛利亚的一个城市, 靠近雅各井 #约 4:5|",
     "defZh": "1) 可能是示剑城的另一个名字, 撒玛利亚的一个城市,\n   靠近雅各井 #约 4:5|",
-    "glossZhTw": "可能是示劍城的另一個名字, 撒瑪利亞的一個城市,",
+    "glossZhTw": "可能是示劍城的另一個名字, 撒瑪利亞的一個城市, 靠近雅各井 #約 4:5|",
     "defZhTw": "1) 可能是示劍城的另一個名字, 撒瑪利亞的一個城市,\n   靠近雅各井 #約 4:5|"
   },
   "G5361": {
@@ -26684,9 +26684,9 @@
     "gloss": "little wells, i.e. mineral springs",
     "def": "of Latin origin; little wells, i.e. mineral springs; Potioli (i.e. Puteoli), a place in Italy KJV: Puteoli",
     "deriv": "of Latin origin;",
-    "glossZh": "义大利甘巴里亚的一个城市，位于那不勒斯的海湾旁",
+    "glossZh": "义大利甘巴里亚的一个城市，位于那不勒斯的海湾旁 #徒 28:13|",
     "defZh": "1) 义大利甘巴里亚的一个城市，位于那不勒斯的海湾旁\n   #徒 28:13|",
-    "glossZhTw": "義大利甘巴里亞的一個城市，位於那不勒斯的海灣旁",
+    "glossZhTw": "義大利甘巴里亞的一個城市，位於那不勒斯的海灣旁 #徒 28:13|",
     "defZhTw": "1) 義大利甘巴里亞的一個城市，位於那不勒斯的海灣旁\n   #徒 28:13|"
   },
   "G4489": {
@@ -27392,9 +27392,9 @@
     "gloss": "hard-hearted towards kindred",
     "def": "from G1 (Α) (as a negative particle) and a presumed derivative of (to cherish affectionately); hard-hearted towards kindred KJV: without natural affection",
     "deriv": "from G1 (Α) (as a negative particle) and a presumed derivative of (to cherish affectionately);",
-    "glossZh": "硬心, 冷漠, 不为别人着想的 (#罗1:31; 提后3:3|),",
+    "glossZh": "硬心, 冷漠, 不为别人着想的 (#罗1:31; 提后3:3|)",
     "defZh": "1) 硬心, 冷漠, 不为别人着想的 (#罗1:31; 提后3:3|),",
-    "glossZhTw": "硬心, 冷漠, 不為別人著想的 (#羅1:31; 提後3:3|),",
+    "glossZhTw": "硬心, 冷漠, 不為別人著想的 (#羅1:31; 提後3:3|)",
     "defZhTw": "1) 硬心, 冷漠, 不為別人著想的 (#羅1:31; 提後3:3|),"
   },
   "G2249": {
@@ -28904,9 +28904,9 @@
     "gloss": "a separatist, i.e. exclusively religious",
     "def": "of Hebrew origin (compare H06567); a separatist, i.e. exclusively religious; a Pharisean, i.e. Jewish sectary KJV: Pharisee",
     "deriv": "of Hebrew origin (compare H06567);",
-    "glossZh": "一个犹太教派, 似乎发轫于犹太人被掳之后。除了旧约书卷之外,",
+    "glossZh": "一个犹太教派, 似乎发轫于犹太人被掳之后。除了旧约书卷之外, 法利赛人还认可口传的信仰与生活准则。表面上恪守礼仪, 诸如洁净、禁食、祷告、周济, 藉此沽名钓誉; 以自以为是的好行为自豪, 相对之下却忽略了敬虔实质。坚信有善恶天使, 也期待弥赛亚降临; 所怀的盼望是, 死人在阴间先经过赏罚之后, 神使之复活, 再按着个别的行为报应各人。与执政的罗马当局唱反调, 拥护神权政治并家国利益, 对普罗大众有举足轻重的影响力。根据犹太史学家约瑟夫的研究, 他们总共有六千多人; 对耶稣恨之入骨, 耶稣也痛斥他们人心不足蛇吞象、野心勃勃、假冒为善。",
     "defZh": "1) 一个犹太教派, 似乎发轫于犹太人被掳之后。除了旧约书卷之外,\n   法利赛人还认可口传的信仰与生活准则。表面上恪守礼仪, 诸如洁\n   净、禁食、祷告、周济, 藉此沽名钓誉; 以自以为是的好行为自豪\n   , 相对之下却忽略了敬虔实质。坚信有善恶天使, 也期待弥赛亚降\n   临; 所怀的盼望是, 死人在阴间先经过赏罚之后, 神使之复活, 再\n   按着个别的行为报应各人。与执政的罗马当局唱反调, 拥护神权政\n   治并家国利益, 对普罗大众有举足轻重的影响力。根据犹太史学家\n   约瑟夫的研究, 他们总共有六千多人; 对耶稣恨之入骨, 耶稣也痛\n   斥他们人心不足蛇吞象、野心勃勃、假冒为善。",
-    "glossZhTw": "一個猶太教派, 似乎發軔於猶太人被擄之後。除了舊約書卷之外,",
+    "glossZhTw": "一個猶太教派, 似乎發軔於猶太人被擄之後。除了舊約書卷之外, 法利賽人還認可口傳的信仰與生活準則。表面上恪守禮儀, 諸如潔淨、禁食、禱告、賙濟, 藉此沽名釣譽; 以自以為是的好行為自豪, 相對之下卻忽略了敬虔實質。堅信有善惡天使, 也期待彌賽亞降臨; 所懷的盼望是, 死人在陰間先經過賞罰之後, 神使之復活, 再按著個別的行為報應各人。與執政的羅馬當局唱反調, 擁護神權政治並家國利益, 對普羅大眾有舉足輕重的影響力。根據猶太史學家約瑟夫的研究, 他們總共有六千多人; 對耶穌恨之入骨, 耶穌也痛斥他們人心不足蛇吞象、野心勃勃、假冒為善。",
     "defZhTw": "1) 一個猶太教派, 似乎發軔於猶太人被擄之後。除了舊約書卷之外,\n   法利賽人還認可口傳的信仰與生活準則。表面上恪守禮儀, 諸如潔\n   淨、禁食、禱告、賙濟, 藉此沽名釣譽; 以自以為是的好行為自豪\n   , 相對之下卻忽略了敬虔實質。堅信有善惡天使, 也期待彌賽亞降\n   臨; 所懷的盼望是, 死人在陰間先經過賞罰之後, 神使之復活, 再\n   按著個別的行為報應各人。與執政的羅馬當局唱反調, 擁護神權政\n   治並家國利益, 對普羅大眾有舉足輕重的影響力。根據猶太史學家\n   約瑟夫的研究, 他們總共有六千多人; 對耶穌恨之入骨, 耶穌也痛\n   斥他們人心不足蛇吞象、野心勃勃、假冒為善。"
   },
   "G2439": {
@@ -29132,9 +29132,9 @@
     "gloss": "to raise in mid-air, i.e. (figuratively) suspend (passively, fluctuate or be anxious)",
     "def": "from a compound of G3326 (μετά) and a collateral form of G142 (αἴρω) or perhaps rather G109 (ἀήρ) (compare \"meteor\"); to raise in mid-air, i.e. (figuratively) suspend (passively, fluctuate or be anxious) KJV: be of doubtful mind",
     "deriv": "from a compound of G3326 (μετά) and a collateral form of G142 (αἴρω) or perhaps rather G109 (ἀήρ) (compare \"meteor\");",
-    "glossZh": "有\"被举起,被抬高\"的意思,在圣经中只出现一次,是隐喻用法",
+    "glossZh": "有\"被举起,被抬高\"的意思,在圣经中只出现一次,是隐喻用法意为\"担忧\" (#路 12:29|)",
     "defZh": "1) 有\"被举起,被抬高\"的意思,在圣经中只出现一次,是隐喻用法\n   意为\"担忧\" (#路 12:29|)",
-    "glossZhTw": "有\"被舉起,被抬高\"的意思,在聖經中只出現一次,是隱喻用法",
+    "glossZhTw": "有\"被舉起,被抬高\"的意思,在聖經中只出現一次,是隱喻用法意為\"擔憂\" (#路 12:29|)",
     "defZhTw": "1) 有\"被舉起,被抬高\"的意思,在聖經中只出現一次,是隱喻用法\n   意為\"擔憂\" (#路 12:29|)"
   },
   "G1154": {
@@ -29900,9 +29900,9 @@
     "gloss": "to be a murderer (of)",
     "def": "from G5406 (φονεύς); to be a murderer (of) KJV: kill, do murder, slay",
     "deriv": "from G5406 (φονεύς);",
-    "glossZh": "谋杀, 杀害,",
+    "glossZh": "谋杀, 杀害",
     "defZh": "1) 谋杀, 杀害,",
-    "glossZhTw": "謀殺, 殺害,",
+    "glossZhTw": "謀殺, 殺害",
     "defZhTw": "1) 謀殺, 殺害,"
   },
   "G1104": {
@@ -29936,9 +29936,9 @@
     "gloss": "a burrow or lurking-place",
     "def": "of uncertain derivative; a burrow or lurking-place KJV: hole",
     "deriv": "of uncertain derivative;",
-    "glossZh": "兽穴, 兽窝,",
+    "glossZh": "兽穴, 兽窝",
     "defZh": "1) 兽穴, 兽窝,",
-    "glossZhTw": "獸穴, 獸窩,",
+    "glossZhTw": "獸穴, 獸窩",
     "defZhTw": "1) 獸穴, 獸窩,"
   },
   "G1036": {
@@ -30368,9 +30368,9 @@
     "gloss": "likely, i.e. perhaps",
     "def": "adverb from G2470 (ἴσος); likely, i.e. perhaps KJV: it may be",
     "deriv": "adverb from G2470 (ἴσος);",
-    "glossZh": "一样地, 相同的样式,",
+    "glossZh": "一样地, 相同的样式",
     "defZh": "1) 一样地, 相同的样式, \n2) 可能, 大概 (#路 20:13|)",
-    "glossZhTw": "一樣地, 相同的樣式,",
+    "glossZhTw": "一樣地, 相同的樣式",
     "defZhTw": "1) 一樣地, 相同的樣式, \n2) 可能, 大概 (#路 20:13|)"
   },
   "G2009": {
@@ -30608,9 +30608,9 @@
     "gloss": "a conditional particle",
     "def": "from G1487 (εἰ) and G302 (ἄν); a conditional particle; in case that, provided, etc.; often used in connection with other particles to denote indefiniteness or uncertainty KJV: before, but, except, (and) if, (if) so, (what-, whither-)soever, though, when (-soever), whether (or), to whom, (who-)so(-ever)",
     "deriv": "from G1487 (εἰ) and G302 (ἄν);",
-    "glossZh": "若是, 万一, 如果, 假如, 要是, 即使, 只要, 虽然, 当...时,",
+    "glossZh": "若是, 万一, 如果, 假如, 要是, 即使, 只要, 虽然, 当...时",
     "defZh": "1) 若是, 万一, 如果, 假如, 要是, 即使, 只要, 虽然, 当...时, \n2) 有时等于 302 an ( #太5:19| )\n3) ean +  3261 me , 除非\n4) eanper 只要是\n\n上列出现次数不包括此字用在其它的词(有另外的Strong's number)中的情形. J.B. Smith\n列的出现次数是 341 次.",
-    "glossZhTw": "若是, 萬一, 如果, 假如, 要是, 即使, 只要, 雖然, 當...時,",
+    "glossZhTw": "若是, 萬一, 如果, 假如, 要是, 即使, 只要, 雖然, 當...時",
     "defZhTw": "1) 若是, 萬一, 如果, 假如, 要是, 即使, 只要, 雖然, 當...時, \n2) 有時等於 302 an ( #太5:19| )\n3) ean +  3261 me , 除非\n4) eanper 只要是\n\n上列出現次數不包括此字用在其它的詞(有另外的Strong's number)中的情形. J.B. Smith\n列的出現次數是 341 次."
   },
   "G1148": {
@@ -30704,9 +30704,9 @@
     "gloss": "a spot (general in space, but limited by occupancy",
     "def": "apparently a primary word; a spot (general in space, but limited by occupancy; whereas G5561 (χώρα) is a large but participle locality), i.e. location (as a position, home, tract, etc.); figuratively, condition, opportunity; specially, a scabbard KJV: coast, licence, place, X plain, quarter, + rock, room, where",
     "deriv": "apparently a primary word;",
-    "glossZh": "地方, 地区, 地点,",
+    "glossZh": "地方, 地区, 地点",
     "defZh": "1) 地方, 地区, 地点, \n 1a) 居住的地方,例: 一个城巿, 一个村庄\n 1b) (居住的建筑物) 空间, 地方, 建筑物\n 1c) (一块广大的区域) 地点, 地方, 地区\n 1d) (住处) 地方, 房间\n 1e) 人生命终结所去之处 (#路16:28;徒1:24b|)\n2) 一本书中的某一处 (某一段) (#路4:17|)\n3) 岗位,职位 (#徒1:24b|)\n4) 机会,可能性\n   \n\n见同义词5875",
-    "glossZhTw": "地方, 地區, 地點,",
+    "glossZhTw": "地方, 地區, 地點",
     "defZhTw": "1) 地方, 地區, 地點, \n 1a) 居住的地方,例: 一個城巿, 一個村莊\n 1b) (居住的建築物) 空間, 地方, 建築物\n 1c) (一塊廣大的區域) 地點, 地方, 地區\n 1d) (住處) 地方, 房間\n 1e) 人生命終結所去之處 (#路16:28;徒1:24b|)\n2) 一本書中的某一處 (某一段) (#路4:17|)\n3) 崗位,職位 (#徒1:24b|)\n4) 機會,可能性\n   \n\n見同義詞5875"
   },
   "G2951": {
@@ -30776,9 +30776,9 @@
     "gloss": "Herodias, a woman of the Heodian family",
     "def": "from G2264 (Ἡρώδης); Herodias, a woman of the Heodian family KJV: Herodias",
     "deriv": "from G2264 (Ἡρώδης);",
-    "glossZh": "亚利多布的女儿、大希律的孙女.先是嫁给希律腓力一世,",
+    "glossZh": "亚利多布的女儿、大希律的孙女.先是嫁给希律腓力一世, 大希律的儿子 ;后来跟希律安提帕有不合法的关系, 并诱使希律安提帕杀害施洗约翰 ，不过罗马之行也毁了希律安提帕;最后两人被放逐于高卢.",
     "defZh": "1)亚利多布的女儿、大希律的孙女.先是嫁给希律腓力一世, \n  大希律的儿子 ;后来跟希律安提帕有不合法的关系, 并诱\n  使希律安提帕杀害施洗约翰 ，不过罗马之行也毁了希律\n  安提帕;最后两人被放逐于高卢.",
-    "glossZhTw": "亞利多布的女兒、大希律的孫女.先是嫁給希律腓力一世,",
+    "glossZhTw": "亞利多布的女兒、大希律的孫女.先是嫁給希律腓力一世, 大希律的兒子 ;後來跟希律安提帕有不合法的關係, 並誘使希律安提帕殺害施洗約翰 ，不過羅馬之行也毀了希律安提帕;最後兩人被放逐於高盧.",
     "defZhTw": "1)亞利多布的女兒、大希律的孫女.先是嫁給希律腓力一世, \n  大希律的兒子 ;後來跟希律安提帕有不合法的關係, 並誘\n  使希律安提帕殺害施洗約翰 ，不過羅馬之行也毀了希律\n  安提帕;最後兩人被放逐於高盧."
   },
   "G2158": {
@@ -32144,9 +32144,9 @@
     "gloss": "Tiberias, the name of a town and a lake in Palestine",
     "def": "from G5086 (Τιβέριος); Tiberias, the name of a town and a lake in Palestine KJV: Tiberias",
     "deriv": "from G5086 (Τιβέριος);",
-    "glossZh": "靠近革尼撒勒湖的一个加利利城市,希律安提帕管辖的加利利属地,",
+    "glossZh": "靠近革尼撒勒湖的一个加利利城市,希律安提帕管辖的加利利属地, 极大而美, 为了纪念罗马皇帝提比留而命名为提比哩亚",
     "defZh": "1) 靠近革尼撒勒湖的一个加利利城市,希律安提帕管辖的加利利属地, \n   极大而美, 为了纪念罗马皇帝提比留而命名为提比哩亚",
-    "glossZhTw": "靠近革尼撒勒湖的一個加利利城市,希律安提帕管轄的加利利屬地,",
+    "glossZhTw": "靠近革尼撒勒湖的一個加利利城市,希律安提帕管轄的加利利屬地, 極大而美, 為了紀念羅馬皇帝提比留而命名為提比哩亞",
     "defZhTw": "1) 靠近革尼撒勒湖的一個加利利城市,希律安提帕管轄的加利利屬地, \n   極大而美, 為了紀念羅馬皇帝提比留而命名為提比哩亞"
   },
   "G614": {
@@ -32300,9 +32300,9 @@
     "gloss": "Jambres, an Egyptian",
     "def": "of Egyptian origin; Jambres, an Egyptian KJV: Jambres",
     "deriv": "of Egyptian origin;",
-    "glossZh": "烊庇与雅尼是两名埃及法师,在法老面前模仿亚伦",
+    "glossZh": "烊庇与雅尼是两名埃及法师,在法老面前模仿亚伦所行的神迹 (#提后 3:8|)",
     "defZh": "1) 烊庇与雅尼是两名埃及法师,在法老面前模仿亚伦\n   所行的神迹 (#提后 3:8|)",
-    "glossZhTw": "烊庇與雅尼是兩名埃及法師,在法老面前模仿亞倫",
+    "glossZhTw": "烊庇與雅尼是兩名埃及法師,在法老面前模仿亞倫所行的神蹟 (#提後 3:8|)",
     "defZhTw": "1) 烊庇與雅尼是兩名埃及法師,在法老面前模仿亞倫\n   所行的神蹟 (#提後 3:8|)"
   },
   "G2669": {
@@ -32468,9 +32468,9 @@
     "gloss": "Abihud, an Israelite",
     "def": "of Hebrew origin (H031); Abihud, an Israelite KJV: Abiud",
     "deriv": "of Hebrew origin (H031);",
-    "glossZh": "耶稣家谱中所罗巴伯的后代",
+    "glossZh": "耶稣家谱中所罗巴伯的后代 (在#代上8:3|是便雅悯家的一员)",
     "defZh": "1) 耶稣家谱中所罗巴伯的后代 \n   (在#代上8:3|是便雅悯家的一员)",
-    "glossZhTw": "耶穌家譜中所羅巴伯的後代",
+    "glossZhTw": "耶穌家譜中所羅巴伯的後代 (在#代上8:3|是便雅憫家的一員)",
     "defZhTw": "1) 耶穌家譜中所羅巴伯的後代 \n   (在#代上8:3|是便雅憫家的一員)"
   },
   "G5152": {
@@ -32732,9 +32732,9 @@
     "gloss": "Ptolemais, a place in Palestine",
     "def": "from (Ptolemy, after whom it was named); Ptolemais, a place in Palestine KJV: Ptolemais",
     "deriv": "from (Ptolemy, after whom it was named);",
-    "glossZh": "腓尼基的一个滨海城巿, 明显地是从多利买(Ptolemy Lathyrus)而得名,",
+    "glossZh": "腓尼基的一个滨海城巿, 明显地是从多利买(Ptolemy Lathyrus)而得名, 多利买在主前103年虏获这城, 并重建得更美丽 (#徒 21:7|)",
     "defZh": "1) 腓尼基的一个滨海城巿, 明显地是从多利买(Ptolemy Lathyrus)而得名, \n   多利买在主前103年虏获这城, 并重建得更美丽 (#徒 21:7|)",
-    "glossZhTw": "腓尼基的一個濱海城巿, 明顯地是從多利買(Ptolemy Lathyrus)而得名,",
+    "glossZhTw": "腓尼基的一個濱海城巿, 明顯地是從多利買(Ptolemy Lathyrus)而得名, 多利買在主前103年虜獲這城, 並重建得更美麗 (#徒 21:7|)",
     "defZhTw": "1) 腓尼基的一個濱海城巿, 明顯地是從多利買(Ptolemy Lathyrus)而得名, \n   多利買在主前103年虜獲這城, 並重建得更美麗 (#徒 21:7|)"
   },
   "G2699": {
@@ -34244,9 +34244,9 @@
     "gloss": "a miscarriage (abortion), i.e. (by analogy) untimely birth",
     "def": "from a comparative of G1537 (ἐκ) and (to wound); a miscarriage (abortion), i.e. (by analogy) untimely birth KJV: born out of due time",
     "deriv": "from a comparative of G1537 (ἐκ) and (to wound);",
-    "glossZh": "流产,",
+    "glossZh": "流产",
     "defZh": "1) 流产, \n2) 早产 (#林前 15:8|)",
-    "glossZhTw": "流產,",
+    "glossZhTw": "流產",
     "defZhTw": "1) 流產, \n2) 早產 (#林前 15:8|)"
   },
   "G1836": {
@@ -34808,9 +34808,9 @@
     "gloss": "wind",
     "def": "from the base of G109 (ἀήρ); wind; (plural) by implication, (the four) quarters (of the earth) KJV: wind",
     "deriv": "from the base of G109 (ἀήρ);",
-    "glossZh": "风,",
+    "glossZh": "风",
     "defZh": "1) 风, \n2) 四主要的或基本方位, 四面\n3) 风潮(#弗 4:14|)",
-    "glossZhTw": "風,",
+    "glossZhTw": "風",
     "defZhTw": "1) 風, \n2) 四主要的或基本方位, 四面\n3) 風潮(#弗 4:14|)"
   },
   "G3907": {
@@ -35000,9 +35000,9 @@
     "gloss": "fugitive",
     "def": "probably from G5343 (φεύγω); fugitive; Phygellus, an apostate Christian KJV: Phygellus",
     "deriv": "probably from G5343 (φεύγω);",
-    "glossZh": "一个基督徒他本来跟随保罗，后来离弃保罗",
+    "glossZh": "一个基督徒他本来跟随保罗，后来离弃保罗 #提后 1:15|",
     "defZh": "1) 一个基督徒他本来跟随保罗，后来离弃保罗 \n   #提后 1:15|",
-    "glossZhTw": "一個基督徒他本來跟隨保羅，後來離棄保羅",
+    "glossZhTw": "一個基督徒他本來跟隨保羅，後來離棄保羅 #提後 1:15|",
     "defZhTw": "1) 一個基督徒他本來跟隨保羅，後來離棄保羅 \n   #提後 1:15|"
   },
   "G3084": {
@@ -35119,9 +35119,9 @@
     "gloss": "Ephesus, a city of Asia Minor",
     "def": "probably of foreign origin; Ephesus, a city of Asia Minor KJV: Ephesus",
     "deriv": "probably of foreign origin;",
-    "glossZh": "一个小亚细亚沿海的都市, 爱奥尼亚的首都, 受罗马人的亚洲地区官长治理,",
+    "glossZh": "一个小亚细亚沿海的都市, 爱奥尼亚的首都, 受罗马人的亚洲地区官长治理, 位于士每拿和米利都之间的Icarian海",
     "defZh": "1)一个小亚细亚沿海的都市, 爱奥尼亚的首都, 受罗马人的亚洲地区官长治理, \n  位于士每拿和米利都之间的Icarian海",
-    "glossZhTw": "一個小亞細亞沿海的都市, 愛奧尼亞的首都, 受羅馬人的亞洲地區官長治理,",
+    "glossZhTw": "一個小亞細亞沿海的都市, 愛奧尼亞的首都, 受羅馬人的亞洲地區官長治理, 位於士每拿和米利都之間的Icarian海",
     "defZhTw": "1)一個小亞細亞沿海的都市, 愛奧尼亞的首都, 受羅馬人的亞洲地區官長治理, \n  位於士每拿和米利都之間的Icarian海"
   },
   "G2875": {
@@ -36811,9 +36811,9 @@
     "gloss": "manly",
     "def": "from G435 (ἀνήρ); manly; Andreas, an Israelite KJV: Andrew",
     "deriv": "from G435 (ἀνήρ);",
-    "glossZh": "加利利的伯赛大人,是西门彼得的兄弟, 原为施洗约翰的门徒,",
+    "glossZh": "加利利的伯赛大人,是西门彼得的兄弟, 原为施洗约翰的门徒, 后来成为基督的门徒,据说后来也被钉死.",
     "defZh": "1) 加利利的伯赛大人,是西门彼得的兄弟, 原为施洗约翰的门徒,\n   后来成为基督的门徒,据说后来也被钉死.",
-    "glossZhTw": "加利利的伯賽大人,是西門彼得的兄弟, 原為施洗約翰的門徒,",
+    "glossZhTw": "加利利的伯賽大人,是西門彼得的兄弟, 原為施洗約翰的門徒, 後來成為基督的門徒,據說後來也被釘死.",
     "defZhTw": "1) 加利利的伯賽大人,是西門彼得的兄弟, 原為施洗約翰的門徒,\n   後來成為基督的門徒,據說後來也被釘死."
   },
   "G1810": {
@@ -36907,9 +36907,9 @@
     "gloss": "rough district",
     "def": "from a derivative of G5138 (τραχύς); rough district; Trachonitis, a region of Syria KJV: Trachonitis",
     "deriv": "from a derivative of G5138 (τραχύς);",
-    "glossZh": "高低不平的地区, 为强盗所居住, 西临 Antilibanus,",
+    "glossZh": "高低不平的地区, 为强盗所居住, 西临 Antilibanus, 东临 Batanaea 山脉, 北临大马色 (大马士革) 版图 (#路3:1|)",
     "defZh": "1) 高低不平的地区, 为强盗所居住, 西临 Antilibanus,\n   东临 Batanaea 山脉, 北临大马色 (大马士革) 版图 (#路3:1|)",
-    "glossZhTw": "高低不平的地區, 為強盜所居住, 西臨 Antilibanus,",
+    "glossZhTw": "高低不平的地區, 為強盜所居住, 西臨 Antilibanus, 東臨 Batanaea 山脈, 北臨大馬色 (大馬士革) 版圖 (#路3:1|)",
     "defZhTw": "1) 高低不平的地區, 為強盜所居住, 西臨 Antilibanus,\n   東臨 Batanaea 山脈, 北臨大馬色 (大馬士革) 版圖 (#路3:1|)"
   },
   "G5363": {
@@ -37003,9 +37003,9 @@
     "gloss": "Cæsaria, the name of two places in Palestine",
     "def": "from G2541 (Καῖσαρ); Cæsaria, the name of two places in Palestine KJV: Cæsarea",
     "deriv": "from G2541 (Καῖσαρ);",
-    "glossZh": "位于黑门山脚下的一座城,原先称为Paneas;后来由分封王腓立比重建,",
+    "glossZh": "位于黑门山脚下的一座城,原先称为Paneas;后来由分封王腓立比重建, 起名为该撒利亚,纪念该撒提比留斯(Tiberias Caesar) (#太16:13; 可 8:27|)",
     "defZh": "1) 位于黑门山脚下的一座城,原先称为Paneas;后来由分封王腓立比重建,\n   起名为该撒利亚,纪念该撒提比留斯(Tiberias Caesar) (#太16:13; 可 8:27|)\n2) 位于迦密山南方的城市,由希律大帝所建,纪念该撒奥古斯督,后来成为\n   罗马总督所在地.",
-    "glossZhTw": "位於黑門山腳下的一座城,原先稱為Paneas;後來由分封王腓立比重建,",
+    "glossZhTw": "位於黑門山腳下的一座城,原先稱為Paneas;後來由分封王腓立比重建, 起名為該撒利亞,紀念該撒提比留斯(Tiberias Caesar) (#太16:13; 可 8:27|)",
     "defZhTw": "1) 位於黑門山腳下的一座城,原先稱為Paneas;後來由分封王腓立比重建,\n   起名為該撒利亞,紀念該撒提比留斯(Tiberias Caesar) (#太16:13; 可 8:27|)\n2) 位於迦密山南方的城市,由希律大帝所建,紀念該撒奧古斯督,後來成為\n   羅馬總督所在地."
   },
   "G5493": {
@@ -37230,9 +37230,9 @@
     "gloss": "mustard (the plant)",
     "def": "perhaps from (to hurt, i.e. sting); mustard (the plant) KJV: mustard",
     "deriv": "perhaps from (to hurt, i.e. sting);",
-    "glossZh": "芥菜, 植物名, 在东方国家中生长, 从非常小的种籽长成有10尺(3公尺)高",
+    "glossZh": "芥菜, 植物名, 在东方国家中生长, 从非常小的种籽长成有10尺(3公尺)高或比10尺还高的树",
     "defZh": "1) 芥菜, 植物名, 在东方国家中生长, 从非常小的种籽长成有10尺(3公尺)高\n   或比10尺还高的树",
-    "glossZhTw": "芥菜, 植物名, 在東方國家中生長, 從非常小的種籽長成有10尺(3公尺)高",
+    "glossZhTw": "芥菜, 植物名, 在東方國家中生長, 從非常小的種籽長成有10尺(3公尺)高或比10尺還高的樹",
     "defZhTw": "1) 芥菜, 植物名, 在東方國家中生長, 從非常小的種籽長成有10尺(3公尺)高\n   或比10尺還高的樹"
   },
   "G1119": {
@@ -37350,9 +37350,9 @@
     "gloss": "a disturbance",
     "def": "from the base of G2360 (θροέω); a disturbance KJV: tumult, uproar",
     "deriv": "from the base of G2360 (θροέω);",
-    "glossZh": "吵杂声, 喧哗,",
+    "glossZh": "吵杂声, 喧哗",
     "defZh": "1) 吵杂声, 喧哗,\n2) 骚动, 激动, 骚乱",
-    "glossZhTw": "吵雜聲, 喧譁,",
+    "glossZhTw": "吵雜聲, 喧譁",
     "defZhTw": "1) 吵雜聲, 喧譁,\n2) 騷動, 激動, 騷亂"
   },
   "G1582": {
@@ -37890,9 +37890,9 @@
     "gloss": "but not, not even",
     "def": "from G3361 (μή) and G1161 (δέ); but not, not even; in a continued negation, nor KJV: neither, nor (yet), (no) not (once, so much as)",
     "deriv": "from G3361 (μή) and G1161 (δέ);",
-    "glossZh": "不要, 但不.., 亦非, 不,",
+    "glossZh": "不要, 但不.., 亦非, 不",
     "defZh": "1) 不要, 但不.., 亦非, 不, \n2) 甚至...也不",
-    "glossZhTw": "不要, 但不.., 亦非, 不,",
+    "glossZhTw": "不要, 但不.., 亦非, 不",
     "defZhTw": "1) 不要, 但不.., 亦非, 不, \n2) 甚至...也不"
   },
   "G3413": {
@@ -38658,9 +38658,9 @@
     "gloss": "in readiness",
     "def": "adverb from G2092 (ἕτοιμος); in readiness KJV: ready",
     "deriv": "adverb from G2092 (ἕτοιμος);",
-    "glossZh": "不迟疑地, 准备好地,",
+    "glossZh": "不迟疑地, 准备好地",
     "defZh": "1) 不迟疑地, 准备好地,",
-    "glossZhTw": "不遲疑地, 準備好地,",
+    "glossZhTw": "不遲疑地, 準備好地",
     "defZhTw": "1) 不遲疑地, 準備好地,"
   },
   "G3124": {
@@ -39294,9 +39294,9 @@
     "gloss": "Philippi, a place in Macedonia",
     "def": "plural of G5376 (Φίλιππος); Philippi, a place in Macedonia KJV: Philippi",
     "deriv": "plural of G5376 (Φίλιππος);",
-    "glossZh": "马其顿的一个城市, 在爱情海的北岸或其附近, 在 Strymon 和 Nestus 两河和",
+    "glossZh": "马其顿的一个城市, 在爱情海的北岸或其附近, 在 Strymon 和 Nestus 两河和 Neapolis 和 Amphipolis 两城市之间",
     "defZh": "1) 马其顿的一个城市, 在爱情海的北岸或其附近, 在 Strymon 和 Nestus 两河和\n   Neapolis 和 Amphipolis 两城市之间",
-    "glossZhTw": "馬其頓的一個城市, 在愛情海的北岸或其附近, 在 Strymon 和 Nestus 兩河和",
+    "glossZhTw": "馬其頓的一個城市, 在愛情海的北岸或其附近, 在 Strymon 和 Nestus 兩河和 Neapolis 和 Amphipolis 兩城市之間",
     "defZhTw": "1) 馬其頓的一個城市, 在愛情海的北岸或其附近, 在 Strymon 和 Nestus 兩河和\n   Neapolis 和 Amphipolis 兩城市之間"
   },
   "G2872": {
@@ -39342,9 +39342,9 @@
     "gloss": "if, whether, that, etc.",
     "def": "a primary particle of conditionality; if, whether, that, etc. KJV: forasmuch as, if, that, (al-)though, whether",
     "deriv": "a primary particle of conditionality;",
-    "glossZh": "如果, 倘若, 要是; 是否, 是不是; 只要, 但愿, 巴不得;",
+    "glossZh": "如果, 倘若, 要是; 是否, 是不是; 只要, 但愿, 巴不得; 就是...(#徒 26:23| ; 后接名词子句, 有时不必译出) 既然 (罗十五27); 虽然 (# 路11:13| )",
     "defZh": "1) 如果, 倘若, 要是; 是否, 是不是; 只要, 但愿, 巴不得;\n   就是...(#徒 26:23| ; 后接名词子句, 有时不必译出)\n   既然 (罗十五27); 虽然 (# 路11:13| );",
-    "glossZhTw": "如果, 倘若, 要是; 是否, 是不是; 只要, 但願, 巴不得;",
+    "glossZhTw": "如果, 倘若, 要是; 是否, 是不是; 只要, 但願, 巴不得; 就是...(#徒 26:23| ; 後接名詞子句, 有時不必譯出) 既然 (羅十五27); 雖然 (# 路11:13| )",
     "defZhTw": "1) 如果, 倘若, 要是; 是否, 是不是; 只要, 但願, 巴不得;\n   就是...(#徒 26:23| ; 後接名詞子句, 有時不必譯出)\n   既然 (羅十五27); 雖然 (# 路11:13| );"
   },
   "G327": {
@@ -39426,9 +39426,9 @@
     "gloss": "to produce (from seed, as a mother, a plant, the earth, etc.), literally or figuratively",
     "def": "a strengthened form of a primary (which is used only as alternate in certain tenses); to produce (from seed, as a mother, a plant, the earth, etc.), literally or figuratively KJV: bear, be born, bring forth, be delivered, be in travail",
     "deriv": "a strengthened form of a primary (which is used only as alternate in certain tenses);",
-    "glossZh": "分娩, 生产,",
+    "glossZh": "分娩, 生产",
     "defZh": "1) 分娩, 生产, \n2) 带出, 生产 (土地的) (#来6:7;雅1:15|)",
-    "glossZhTw": "分娩, 生產,",
+    "glossZhTw": "分娩, 生產",
     "defZhTw": "1) 分娩, 生產, \n2) 帶出, 生產 (土地的) (#來6:7;雅1:15|)"
   },
   "G3744": {
@@ -39510,9 +39510,9 @@
     "gloss": "Galilæa (i",
     "def": "of Hebrew origin (H01551); Galilæa (i.e. the heathen circle), a region of Palestine KJV: Galilee",
     "deriv": "of Hebrew origin (H01551);",
-    "glossZh": "南巴勒斯坦的一个区域名, 叙利亚北边",
+    "glossZh": "南巴勒斯坦的一个区域名, 叙利亚北边西顿、推罗的西方, 多利买地区、 迦密山隆突处, 撒玛利亚南方,约旦的东方.",
     "defZh": "1) 南巴勒斯坦的一个区域名, 叙利亚北边\n   西顿、推罗的西方, 多利买地区、 迦密\n   山隆突处, 撒玛利亚南方,约旦的东方. \n   被分为上加利利、下加利利",
-    "glossZhTw": "南巴勒斯坦的一個區域名, 敘利亞北邊",
+    "glossZhTw": "南巴勒斯坦的一個區域名, 敘利亞北邊西頓、推羅的西方, 多利買地區、 迦密山隆突處, 撒瑪利亞南方,約旦的東方.",
     "defZhTw": "1) 南巴勒斯坦的一個區域名, 敘利亞北邊\n   西頓、推羅的西方, 多利買地區、 迦密\n   山隆突處, 撒瑪利亞南方,約旦的東方. \n   被分為上加利利、下加利利"
   },
   "G3458": {
@@ -39642,9 +39642,9 @@
     "gloss": "vessel or receptacle under the press, i.e. lower wine-vat",
     "def": "neuter of a presumed compound of G5259 (ὑπό) and G3025 (ληνός); vessel or receptacle under the press, i.e. lower wine-vat KJV: winefat",
     "deriv": "neuter of a presumed compound of G5259 (ὑπό) and G3025 (ληνός);",
-    "glossZh": "放在榨酒器下面的容器 (在东方国家通常插入地里) , 接收压榨出来的葡萄汁,",
+    "glossZh": "放在榨酒器下面的容器 (在东方国家通常插入地里) , 接收压榨出来的葡萄汁, 凹处  (#可 12:1|)",
     "defZh": "1) 放在榨酒器下面的容器 (在东方国家通常插入地里) , 接收压榨出来的葡萄汁, \n   凹处  (#可 12:1|)",
-    "glossZhTw": "放在榨酒器下面的容器 (在東方國家通常插入地裏) , 接收壓榨出來的葡萄汁,",
+    "glossZhTw": "放在榨酒器下面的容器 (在東方國家通常插入地裏) , 接收壓榨出來的葡萄汁, 凹處  (#可 12:1|)",
     "defZhTw": "1) 放在榨酒器下面的容器 (在東方國家通常插入地裏) , 接收壓榨出來的葡萄汁, \n   凹處  (#可 12:1|)"
   },
   "G1170": {
@@ -41790,9 +41790,9 @@
     "gloss": "the Hebraistic (Hebrew) or Jewish (Chaldee) language",
     "def": "from G1443 (Ἐβέρ); the Hebraistic (Hebrew) or Jewish (Chaldee) language KJV: Hebrew",
     "deriv": "from G1443 (Ἐβέρ);",
-    "glossZh": "希伯来语, 并非写成旧约的希伯来文而是亚兰文,",
+    "glossZh": "希伯来语, 并非写成旧约的希伯来文而是亚兰文, 在耶稣与使徒时代在巴勒斯坦地长期的被废弃使用 (#徒 21:40, 22:2; 26:14|)",
     "defZh": "1) 希伯来语, 并非写成旧约的希伯来文而是亚兰文, \n   在耶稣与使徒时代在巴勒斯坦地长期的被废弃使用 (#徒 21:40, 22:2; 26:14|)",
-    "glossZhTw": "希伯來語, 並非寫成舊約的希伯來文而是亞蘭文,",
+    "glossZhTw": "希伯來語, 並非寫成舊約的希伯來文而是亞蘭文, 在耶穌與使徒時代在巴勒斯坦地長期的被廢棄使用 (#徒 21:40, 22:2; 26:14|)",
     "defZhTw": "1) 希伯來語, 並非寫成舊約的希伯來文而是亞蘭文, \n   在耶穌與使徒時代在巴勒斯坦地長期的被廢棄使用 (#徒 21:40, 22:2; 26:14|)"
   },
   "G3646": {
@@ -42198,9 +42198,9 @@
     "gloss": "a denarius (or ten asses)",
     "def": "of Latin origin; a denarius (or ten asses) KJV: pence, penny(-worth)",
     "deriv": "of Latin origin;",
-    "glossZh": "是新约时代罗马的一种钱币,从葡萄园工人的比喻来看(#太 20:2-13|),",
+    "glossZh": "是新约时代罗马的一种钱币,从葡萄园工人的比喻来看(#太 20:2-13|), 一个得拿利是普通人的一天工资.",
     "defZh": "1) 是新约时代罗马的一种钱币,从葡萄园工人的比喻来看(#太 20:2-13|),\n   一个得拿利是普通人的一天工资.",
-    "glossZhTw": "是新約時代羅馬的一種錢幣,從葡萄園工人的比喻來看(#太 20:2-13|),",
+    "glossZhTw": "是新約時代羅馬的一種錢幣,從葡萄園工人的比喻來看(#太 20:2-13|), 一個得拿利是普通人的一天工資.",
     "defZhTw": "1) 是新約時代羅馬的一種錢幣,從葡萄園工人的比喻來看(#太 20:2-13|),\n   一個得拿利是普通人的一天工資."
   },
   "G326": {
@@ -43614,9 +43614,9 @@
     "gloss": "Arabia, a region of Asia",
     "def": "of Hebrew origin (H06152); Arabia, a region of Asia KJV: Arabia",
     "deriv": "of Hebrew origin (H06152);",
-    "glossZh": "亚洲一朝着非洲的知名半岛, 与其接壤的有埃及, 巴勒斯坦,",
+    "glossZh": "亚洲一朝着非洲的知名半岛, 与其接壤的有埃及, 巴勒斯坦, 亚兰 (叙利亚), 米所波大米 (美索不达米亚), 巴比伦, 亚拉伯湾, 波斯湾, 红海与印度洋 (#加 1:17, 4:25| )",
     "defZh": "1) 亚洲一朝着非洲的知名半岛, 与其接壤的有埃及, 巴勒斯坦,\n   亚兰 (叙利亚), 米所波大米 (美索不达米亚), 巴比伦, 亚拉\n   伯湾, 波斯湾, 红海与印度洋 (#加 1:17, 4:25| )",
-    "glossZhTw": "亞洲一朝著非洲的知名半島, 與其接壤的有埃及, 巴勒斯坦,",
+    "glossZhTw": "亞洲一朝著非洲的知名半島, 與其接壤的有埃及, 巴勒斯坦, 亞蘭 (敘利亞), 米所波大米 (美索不達米亞), 巴比倫, 亞拉伯灣, 波斯灣, 紅海與印度洋 (#加 1:17, 4:25| )",
     "defZhTw": "1) 亞洲一朝著非洲的知名半島, 與其接壤的有埃及, 巴勒斯坦,\n   亞蘭 (敘利亞), 米所波大米 (美索不達米亞), 巴比倫, 亞拉\n   伯灣, 波斯灣, 紅海與印度洋 (#加 1:17, 4:25| )"
   },
   "G4522": {
@@ -44466,9 +44466,9 @@
     "gloss": "Sina (i",
     "def": "of Hebrew origin (H05514); Sina (i.e. Sinai), a mountain in Arabia KJV: Sina",
     "deriv": "of Hebrew origin (H05514);",
-    "glossZh": "在阿拉伯彼特拉伊(Petraea)半岛中的一座山或是群山区",
+    "glossZh": "在阿拉伯彼特拉伊(Petraea)半岛中的一座山或是群山区因颁摩西律法而出名",
     "defZh": "1) 在阿拉伯彼特拉伊(Petraea)半岛中的一座山或是群山区\n   因颁摩西律法而出名",
-    "glossZhTw": "在阿拉伯彼特拉伊(Petraea)半島中的一座山或是群山區",
+    "glossZhTw": "在阿拉伯彼特拉伊(Petraea)半島中的一座山或是群山區因頒摩西律法而出名",
     "defZhTw": "1) 在阿拉伯彼特拉伊(Petraea)半島中的一座山或是群山區\n   因頒摩西律法而出名"
   },
   "G2020": {
@@ -45366,9 +45366,9 @@
     "gloss": "fortified",
     "def": "from G4444 (πύργος); fortified; Pergamus, a place in Asia Minor KJV: Pergamos",
     "deriv": "from G4444 (πύργος);",
-    "glossZh": "位于小亚细亚西北,每西亚的一座城市,是一些异教的敬拜中心",
+    "glossZh": "位于小亚细亚西北,每西亚的一座城市,是一些异教的敬拜中心也是君王崇拜的中心.基督徒在此很早即受到逼迫 (#启1:11,2:12|)",
     "defZh": "1) 位于小亚细亚西北,每西亚的一座城市,是一些异教的敬拜中心\n   也是君王崇拜的中心.基督徒在此很早即受到逼迫 (#启1:11,2:12|)",
-    "glossZhTw": "位於小亞細亞西北,每西亞的一座城市,是一些異教的敬拜中心",
+    "glossZhTw": "位於小亞細亞西北,每西亞的一座城市,是一些異教的敬拜中心也是君王崇拜的中心.基督徒在此很早即受到逼迫 (#啓1:11,2:12|)",
     "defZhTw": "1) 位於小亞細亞西北,每西亞的一座城市,是一些異教的敬拜中心\n   也是君王崇拜的中心.基督徒在此很早即受到逼迫 (#啓1:11,2:12|)"
   },
   "G4948": {
@@ -45726,9 +45726,9 @@
     "gloss": "Lycaonia, a region of Asia Minor",
     "def": "perhaps remotely from G3074 (λύκος); Lycaonia, a region of Asia Minor KJV: Lycaonia",
     "deriv": "perhaps remotely from G3074 (λύκος);",
-    "glossZh": "小亚细亚内陆的一个省份,位于彼西底,基利家,加帕多家,加拉太,",
+    "glossZh": "小亚细亚内陆的一个省份,位于彼西底,基利家,加帕多家,加拉太, 弗吕家之间,其主要城市为保罗拜访过的特庇,路司得,以哥念(#徒 14:6|)",
     "defZh": "1) 小亚细亚内陆的一个省份,位于彼西底,基利家,加帕多家,加拉太,\n   弗吕家之间,其主要城市为保罗拜访过的特庇,路司得,以哥念(#徒 14:6|)",
-    "glossZhTw": "小亞細亞內陸的一個省份,位於彼西底,基利家,加帕多家,加拉太,",
+    "glossZhTw": "小亞細亞內陸的一個省份,位於彼西底,基利家,加帕多家,加拉太, 弗呂家之間,其主要城市為保羅拜訪過的特庇,路司得,以哥念(#徒 14:6|)",
     "defZhTw": "1) 小亞細亞內陸的一個省份,位於彼西底,基利家,加帕多家,加拉太,\n   弗呂家之間,其主要城市為保羅拜訪過的特庇,路司得,以哥念(#徒 14:6|)"
   },
   "G1720": {
@@ -46133,9 +46133,9 @@
     "gloss": "an Elamite or Persian",
     "def": "of Hebrew origin (H05867); an Elamite or Persian KJV: Elamite",
     "deriv": "of Hebrew origin (H05867);",
-    "glossZh": "以拦人, 亦即在以拦省的居民, 以拦省在波斯湾以南一带,",
+    "glossZh": "以拦人, 亦即在以拦省的居民, 以拦省在波斯湾以南一带, 但其实际边界则众说纷纭 (#徒 2:9|)",
     "defZh": "1) 以拦人, 亦即在以拦省的居民, 以拦省在波斯湾以南一带, \n   但其实际边界则众说纷纭 (#徒 2:9|)",
-    "glossZhTw": "以攔人, 亦即在以攔省的居民, 以攔省在波斯灣以南一帶,",
+    "glossZhTw": "以攔人, 亦即在以攔省的居民, 以攔省在波斯灣以南一帶, 但其實際邊界則眾說紛紜 (#徒 2:9|)",
     "defZhTw": "1) 以攔人, 亦即在以攔省的居民, 以攔省在波斯灣以南一帶, \n   但其實際邊界則眾說紛紜 (#徒 2:9|)"
   },
   "G3621": {
@@ -46169,9 +46169,9 @@
     "gloss": "an assarius or as, a Roman coin",
     "def": "of Latin origin; an assarius or as, a Roman coin KJV: farthing",
     "deriv": "of Latin origin;",
-    "glossZh": "罗马铜币, 相当于银币denarius的十六分之一,",
+    "glossZh": "罗马铜币, 相当于银币denarius的十六分之一, 和合本译为\"银子\" (#太 10:29; 路 12:6|)",
     "defZh": "1) 罗马铜币, 相当于银币denarius的十六分之一,\n   和合本译为\"银子\" (#太 10:29; 路 12:6|)",
-    "glossZhTw": "羅馬銅幣, 相當於銀幣denarius的十六分之一,",
+    "glossZhTw": "羅馬銅幣, 相當於銀幣denarius的十六分之一, 和合本譯為\"銀子\" (#太 10:29; 路 12:6|)",
     "defZhTw": "1) 羅馬銅幣, 相當於銀幣denarius的十六分之一,\n   和合本譯為\"銀子\" (#太 10:29; 路 12:6|)"
   },
   "G1155": {
@@ -47365,9 +47365,9 @@
     "gloss": "Rhegium, a place in Italy",
     "def": "of Latin origin; Rhegium, a place in Italy KJV: Rhegium",
     "deriv": "of Latin origin;",
-    "glossZh": "位于卡拉布里亚 (Bruttian)海岸边, 墨西拿 (Messina)海峡的南入口处,",
+    "glossZh": "位于卡拉布里亚 (Bruttian)海岸边, 墨西拿 (Messina)海峡的南入口处, 一个义大利小镇 (#徒 28:13|)",
     "defZh": "1) 位于卡拉布里亚 (Bruttian)海岸边, 墨西拿 (Messina)海峡的南入口处, \n   一个义大利小镇 (#徒 28:13|)",
-    "glossZhTw": "位於卡拉布里亞 (Bruttian)海岸邊, 墨西拿 (Messina)海峽的南入口處,",
+    "glossZhTw": "位於卡拉布里亞 (Bruttian)海岸邊, 墨西拿 (Messina)海峽的南入口處, 一個義大利小鎮 (#徒 28:13|)",
     "defZhTw": "1) 位於卡拉布里亞 (Bruttian)海岸邊, 墨西拿 (Messina)海峽的南入口處, \n   一個義大利小鎮 (#徒 28:13|)"
   },
   "G5382": {
@@ -47772,9 +47772,9 @@
     "gloss": "Ituræa (i",
     "def": "of Hebrew origin (H03195); Ituræa (i.e. Jetur), a region of Palestine KJV: Ituræa",
     "deriv": "of Hebrew origin (H03195);",
-    "glossZh": "在巴勒斯坦东北部,大马色西边的山区.施洗约翰公开传道之际,",
+    "glossZh": "在巴勒斯坦东北部,大马色西边的山区.施洗约翰公开传道之际, 该区为分封王腓力管辖. 该区居民以抢劫与善用弓箭闻名 (#路 3:1|)",
     "defZh": "1) 在巴勒斯坦东北部,大马色西边的山区.施洗约翰公开传道之际,\n   该区为分封王腓力管辖. 该区居民以抢劫与善用弓箭闻名 (#路 3:1|)",
-    "glossZhTw": "在巴勒斯坦東北部,大馬色西邊的山區.施洗約翰公開傳道之際,",
+    "glossZhTw": "在巴勒斯坦東北部,大馬色西邊的山區.施洗約翰公開傳道之際, 該區為分封王腓力管轄. 該區居民以搶劫與善用弓箭聞名 (#路 3:1|)",
     "defZhTw": "1) 在巴勒斯坦東北部,大馬色西邊的山區.施洗約翰公開傳道之際,\n   該區為分封王腓力管轄. 該區居民以搶劫與善用弓箭聞名 (#路 3:1|)"
   },
   "G3668": {
@@ -48048,9 +48048,9 @@
     "gloss": "to incarcerate in eternal torment",
     "def": "from (the deepest abyss of Hades); to incarcerate in eternal torment KJV: cast down to hell",
     "deriv": "from (the deepest abyss of Hades);",
-    "glossZh": "Tartaros是希腊人认为比阴府还要低深的一处地方,",
+    "glossZh": "Tartaros是希腊人认为比阴府还要低深的一处地方, 是神明执行审判之处.以色列的天启文学也提到这样的地方.",
     "defZh": "1) Tartaros是希腊人认为比阴府还要低深的一处地方,\n   是神明执行审判之处.以色列的天启文学也提到这样\n   的地方.\n2) 被关在,打入Tartaros(#彼后 2:4|)",
-    "glossZhTw": "Tartaros是希臘人認為比陰府還要低深的一處地方,",
+    "glossZhTw": "Tartaros是希臘人認為比陰府還要低深的一處地方, 是神明執行審判之處.以色列的天啓文學也提到這樣的地方.",
     "defZhTw": "1) Tartaros是希臘人認為比陰府還要低深的一處地方,\n   是神明執行審判之處.以色列的天啓文學也提到這樣\n   的地方.\n2) 被關在,打入Tartaros(#彼後 2:4|)"
   },
   "G752": {
@@ -48576,9 +48576,9 @@
     "gloss": "Pisidia, a region of Asia Minor",
     "def": "probably of foreign origin; Pisidia, a region of Asia Minor KJV: Pisidia",
     "deriv": "probably of foreign origin;",
-    "glossZh": "位于小亚细亚的一个地区, 由旁非利亚(Pamphylia), 旁非利亚海(Pamphylian",
+    "glossZh": "位于小亚细亚的一个地区, 由旁非利亚(Pamphylia), 旁非利亚海(Pamphylian Sea), 弗吕家(Phrygia), 和力卡奥尼亚(Lycaonia)所环绕 (#徒 13:14, 14:24|)",
     "defZh": "1) 位于小亚细亚的一个地区, 由旁非利亚(Pamphylia), 旁非利亚海(Pamphylian\n   Sea), 弗吕家(Phrygia), 和力卡奥尼亚(Lycaonia)所环绕 (#徒 13:14, 14:24|)",
-    "glossZhTw": "位於小亞細亞的一個地區, 由旁非利亞(Pamphylia), 旁非利亞海(Pamphylian",
+    "glossZhTw": "位於小亞細亞的一個地區, 由旁非利亞(Pamphylia), 旁非利亞海(Pamphylian Sea), 弗呂家(Phrygia), 和力卡奧尼亞(Lycaonia)所環繞 (#徒 13:14, 14:24|)",
     "defZhTw": "1) 位於小亞細亞的一個地區, 由旁非利亞(Pamphylia), 旁非利亞海(Pamphylian\n   Sea), 弗呂家(Phrygia), 和力卡奧尼亞(Lycaonia)所環繞 (#徒 13:14, 14:24|)"
   },
   "G3948": {
@@ -48828,9 +48828,9 @@
     "gloss": "which some, i.e. any that",
     "def": "from G3739 (ὅς) and G5100 (τὶς); which some, i.e. any that; also (definite) which same KJV: X and (they), (such) as, (they) that, in that they, what(-soever), whereas ye, (they) which, who(-soever)",
     "deriv": "from G3739 (ὅς) and G5100 (τὶς);",
-    "glossZh": "无论谁, 无论什么事,",
+    "glossZh": "无论谁, 无论什么事",
     "defZh": "1) 无论谁, 无论什么事, \n2) 任何一个, 某一个, 某一\n3) 他, 她, 它\n4) 这, 那",
-    "glossZhTw": "無論誰, 無論什麼事,",
+    "glossZhTw": "無論誰, 無論什麼事",
     "defZhTw": "1) 無論誰, 無論什麼事, \n2) 任何一個, 某一個, 某一\n3) 他, 她, 它\n4) 這, 那"
   },
   "G4994": {
@@ -49127,9 +49127,9 @@
     "gloss": "Syracuse, the capital of Sicily",
     "def": "plural of uncertain derivation; Syracuse, the capital of Sicily KJV: Syracuse",
     "deriv": "plural of uncertain derivation;",
-    "glossZh": "西西里岛的一沿海大城, 拥有很优良的港口,",
+    "glossZh": "西西里岛的一沿海大城, 拥有很优良的港口, 被14英哩(23公里)长的城墙所围绕 (#徒 28:12|)",
     "defZh": "1) 西西里岛的一沿海大城, 拥有很优良的港口, \n   被14英哩(23公里)长的城墙所围绕 (#徒 28:12|)",
-    "glossZhTw": "西西里島的一沿海大城, 擁有很優良的港口,",
+    "glossZhTw": "西西里島的一沿海大城, 擁有很優良的港口, 被14英哩(23公里)長的城牆所圍繞 (#徒 28:12|)",
     "defZhTw": "1) 西西里島的一沿海大城, 擁有很優良的港口, \n   被14英哩(23公里)長的城牆所圍繞 (#徒 28:12|)"
   },
   "G626": {
@@ -49871,9 +49871,9 @@
     "gloss": "Samuel (i",
     "def": "of Hebrew origin (H08050); Samuel (i.e. Shemuel), an Israelite KJV: Samuel",
     "deriv": "of Hebrew origin (H08050);",
-    "glossZh": "以利加拿和他的妻子哈拿的儿子, 最后的一位士师, 有名的先知和先知学校的创始人,",
+    "glossZh": "以利加拿和他的妻子哈拿的儿子, 最后的一位士师, 有名的先知和先知学校的创始人, 他膏了扫罗及大卫王, 其中扫罗是犹太人的第一个王.",
     "defZh": "1) 以利加拿和他的妻子哈拿的儿子, 最后的一位士师, 有名的先知和先知学校的创始人,\n   他膏了扫罗及大卫王, 其中扫罗是犹太人的第一个王.",
-    "glossZhTw": "以利加拿和他的妻子哈拿的兒子, 最後的一位士師, 有名的先知和先知學校的創始人,",
+    "glossZhTw": "以利加拿和他的妻子哈拿的兒子, 最後的一位士師, 有名的先知和先知學校的創始人, 他膏了掃羅及大衛王, 其中掃羅是猶太人的第一個王.",
     "defZhTw": "1) 以利加拿和他的妻子哈拿的兒子, 最後的一位士師, 有名的先知和先知學校的創始人,\n   他膏了掃羅及大衛王, 其中掃羅是猶太人的第一個王."
   },
   "G594": {
@@ -50423,9 +50423,9 @@
     "gloss": "Thaddæus, one of the Apostles",
     "def": "of uncertain origin; Thaddæus, one of the Apostles KJV: Thaddæus",
     "deriv": "of uncertain origin;",
-    "glossZh": "十二使徒之一(#太 10:3; 可 3:18|).比照#路 6:16|与#徒 1:13|的",
+    "glossZh": "十二使徒之一(#太 10:3; 可 3:18|).比照#路 6:16|与#徒 1:13|的使徒名单:达太与雅各的儿子犹大似乎是同一人",
     "defZh": "1) 十二使徒之一(#太 10:3; 可 3:18|).比照#路 6:16|与#徒 1:13|的\n   使徒名单:达太与雅各的儿子犹大似乎是同一人",
-    "glossZhTw": "十二使徒之一(#太 10:3; 可 3:18|).比照#路 6:16|與#徒 1:13|的",
+    "glossZhTw": "十二使徒之一(#太 10:3; 可 3:18|).比照#路 6:16|與#徒 1:13|的使徒名單:達太與雅各的兒子猶大似乎是同一人",
     "defZhTw": "1) 十二使徒之一(#太 10:3; 可 3:18|).比照#路 6:16|與#徒 1:13|的\n   使徒名單:達太與雅各的兒子猶大似乎是同一人"
   },
   "G3023": {
@@ -50567,9 +50567,9 @@
     "gloss": "merciful",
     "def": "of Latin origin; merciful; Clemes (i.e. Clemens), a Christian KJV: Clement",
     "deriv": "of Latin origin;",
-    "glossZh": "保罗的同工,应该是腓立比教会一员(#腓 4:3|).根据传统说法,",
+    "glossZh": "保罗的同工,应该是腓立比教会一员(#腓 4:3|).根据传统说法, 他就是初世纪末的罗马主教革利免",
     "defZh": "1) 保罗的同工,应该是腓立比教会一员(#腓 4:3|).根据传统说法, \n   他就是初世纪末的罗马主教革利免",
-    "glossZhTw": "保羅的同工,應該是腓立比教會一員(#腓 4:3|).根據傳統說法,",
+    "glossZhTw": "保羅的同工,應該是腓立比教會一員(#腓 4:3|).根據傳統說法, 他就是初世紀末的羅馬主教革利免",
     "defZhTw": "1) 保羅的同工,應該是腓立比教會一員(#腓 4:3|).根據傳統說法, \n   他就是初世紀末的羅馬主教革利免"
   },
   "G1434": {
@@ -50615,9 +50615,9 @@
     "gloss": "of (or from) us",
     "def": "genitive case plural of G1473 (ἐγώ); of (or from) us KJV: our (company), us, we",
     "deriv": "genitive case plural of G1473 (ἐγώ);",
-    "glossZh": "我们的,",
+    "glossZh": "我们的",
     "defZh": "1) 我们的,",
-    "glossZhTw": "我們的,",
+    "glossZhTw": "我們的",
     "defZhTw": "1) 我們的,"
   },
   "G5191": {
@@ -51059,9 +51059,9 @@
     "gloss": "Abijah, the name of two Israelites",
     "def": "of Hebrew origin (H029); Abijah, the name of two Israelites KJV: Abia",
     "deriv": "of Hebrew origin (H029);",
-    "glossZh": "一个祭司, 祭司家族的领袖同着大卫将祭司分为二十四班次，",
+    "glossZh": "一个祭司, 祭司家族的领袖同着大卫将祭司分为二十四班次，亚比雅是第八班。路加福音的撒迦利亚即属于该班次 (#路 1:5|)",
     "defZh": "1)一个祭司, 祭司家族的领袖同着大卫将祭司分为二十四班次，\n  亚比雅是第八班。路加福音的撒迦利亚即属于该班次 (#路 1:5|)\n2)犹大王罗波安的儿子与继承者 (#太 1:7|)",
-    "glossZhTw": "一個祭司, 祭司家族的領袖同著大衛將祭司分為二十四班次，",
+    "glossZhTw": "一個祭司, 祭司家族的領袖同著大衛將祭司分為二十四班次，亞比雅是第八班。路加福音的撒迦利亞即屬於該班次 (#路 1:5|)",
     "defZhTw": "1)一個祭司, 祭司家族的領袖同著大衛將祭司分為二十四班次，\n  亞比雅是第八班。路加福音的撒迦利亞即屬於該班次 (#路 1:5|)\n2)猶大王羅波安的兒子與繼承者 (#太 1:7|)"
   },
   "G5111": {
@@ -51539,9 +51539,9 @@
     "gloss": "fiftieth (G2250 (ἡμέρα) being implied) from Passover, i.e. the festival of \"Pentecost\"",
     "def": "feminine of the ordinal of G4004 (πεντήκοντα); fiftieth (G2250 (ἡμέρα) being implied) from Passover, i.e. the festival of \"Pentecost\" KJV: Pentecost",
     "deriv": "feminine of the ordinal of G4004 (πεντήκοντα);",
-    "glossZh": "三大犹太节期中第二大节期, 每年于耶路撒冷庆祝",
+    "glossZh": "三大犹太节期中第二大节期, 每年于耶路撒冷庆祝时间是逾越节后第七个礼拜, 表彰收获完成的感恩",
     "defZh": "1) 三大犹太节期中第二大节期, 每年于耶路撒冷庆祝\n   时间是逾越节后第七个礼拜, 表彰收获完成的感恩",
-    "glossZhTw": "三大猶太節期中第二大節期, 每年於耶路撒冷慶祝",
+    "glossZhTw": "三大猶太節期中第二大節期, 每年於耶路撒冷慶祝時間是逾越節後第七個禮拜, 表彰收穫完成的感恩",
     "defZhTw": "1) 三大猶太節期中第二大節期, 每年於耶路撒冷慶祝\n   時間是逾越節後第七個禮拜, 表彰收穫完成的感恩"
   },
   "G2980": {
@@ -53459,9 +53459,9 @@
     "gloss": "Antiochia, a place in Syria",
     "def": "from (a Syrian king); Antiochia, a place in Syria KJV: Antioch",
     "deriv": "from (a Syrian king);",
-    "glossZh": "叙利亚最大城,亦为西流基帝国的首都,位于Orontes河,为Seleucus Nicanor所",
+    "glossZh": "叙利亚最大城,亦为西流基帝国的首都,位于Orontes河,为Seleucus Nicanor所建,为纪念其父Antiochus而取名为安提阿.很多希腊化的犹太人住在那里.是该城信徒首先被称为\"基督徒\".",
     "defZh": "1) 叙利亚最大城,亦为西流基帝国的首都,位于Orontes河,为Seleucus Nicanor所\n   建,为纪念其父Antiochus而取名为安提阿.很多希腊化的犹太人住在那里.是该城\n   信徒首先被称为\"基督徒\".\n\n2) 彼西底的一座城,隶属加拉太省,是南加拉太的行政中心,保罗曾数次拜访该城.",
-    "glossZhTw": "敘利亞最大城,亦為西流基帝國的首都,位於Orontes河,為Seleucus Nicanor所",
+    "glossZhTw": "敘利亞最大城,亦為西流基帝國的首都,位於Orontes河,為Seleucus Nicanor所建,為紀念其父Antiochus而取名為安提阿.很多希臘化的猶太人住在那裏.是該城信徒首先被稱為\"基督徒\".",
     "defZhTw": "1) 敘利亞最大城,亦為西流基帝國的首都,位於Orontes河,為Seleucus Nicanor所\n   建,為紀念其父Antiochus而取名為安提阿.很多希臘化的猶太人住在那裏.是該城\n   信徒首先被稱為\"基督徒\".\n\n2) 彼西底的一座城,隸屬加拉太省,是南加拉太的行政中心,保羅曾數次拜訪該城."
   },
   "G172": {
@@ -53591,9 +53591,9 @@
     "gloss": "the (sometimes to be supplied, at others omitted, in English idiom)",
     "def": "the definite article; the (sometimes to be supplied, at others omitted, in English idiom) KJV: the, this, that, one, he, she, it, etc",
     "deriv": "the definite article;",
-    "glossZh": "这, 那,",
+    "glossZh": "这, 那",
     "defZh": "1) 这, 那, \n2) 他, 她, 它",
-    "glossZhTw": "這, 那,",
+    "glossZhTw": "這, 那",
     "defZhTw": "1) 這, 那, \n2) 他, 她, 它"
   },
   "G1415": {
@@ -55929,9 +55929,9 @@
     "gloss": "sons of Jupiter, i.e. the twins Dioscuri",
     "def": "from the alternate of G2203 (Ζεύς) and a form of the base of G2877 (κοράσιον); sons of Jupiter, i.e. the twins Dioscuri KJV: Castor and Pollux",
     "deriv": "from the alternate of G2203 (Ζεύς) and a form of the base of G2877 (κοράσιον);",
-    "glossZh": "Castor and Pollux(双子座α和β星), 为宙斯(Jupiter)与莉达(Leda)",
+    "glossZh": "Castor and Pollux(双子座α和β星), 为宙斯(Jupiter)与莉达(Leda) 所生的峦生之子, 被航海家认为守护之神 (#徒 28:11|)",
     "defZh": "1) Castor and Pollux(双子座α和β星), 为宙斯(Jupiter)与莉达(Leda)\n所生的峦生之子, 被航海家认为守护之神 (#徒 28:11|)",
-    "glossZhTw": "Castor and Pollux(雙子座α和β星), 為宙斯(Jupiter)與莉達(Leda)",
+    "glossZhTw": "Castor and Pollux(雙子座α和β星), 為宙斯(Jupiter)與莉達(Leda) 所生的巒生之子, 被航海家認為守護之神 (#徒 28:11|)",
     "defZhTw": "1) Castor and Pollux(雙子座α和β星), 為宙斯(Jupiter)與莉達(Leda)\n所生的巒生之子, 被航海家認為守護之神 (#徒 28:11|)"
   },
   "G1400": {
@@ -57536,9 +57536,9 @@
     "gloss": "Abilene, a region of Syria",
     "def": "of foreign origin (compare H058); Abilene, a region of Syria KJV: Abilene",
     "deriv": "of foreign origin (compare H058);",
-    "glossZh": "亚比拉城四周的地区,位于前黎巴嫩山脉南端,大马色西北方,",
+    "glossZh": "亚比拉城四周的地区,位于前黎巴嫩山脉南端,大马色西北方, 由分封王吕撒聂治理 (#路 3:1|)",
     "defZh": "1) 亚比拉城四周的地区,位于前黎巴嫩山脉南端,大马色西北方,\n   由分封王吕撒聂治理 (#路 3:1|)",
-    "glossZhTw": "亞比拉城四周的地區,位於前黎巴嫩山脈南端,大馬色西北方,",
+    "glossZhTw": "亞比拉城四周的地區,位於前黎巴嫩山脈南端,大馬色西北方, 由分封王呂撒聶治理 (#路 3:1|)",
     "defZhTw": "1) 亞比拉城四周的地區,位於前黎巴嫩山脈南端,大馬色西北方,\n   由分封王呂撒聶治理 (#路 3:1|)"
   },
   "G1861": {
@@ -57847,9 +57847,9 @@
     "gloss": "crimson-colored",
     "def": "from G2848 (κόκκος) (from the kernel-shape of the insect); crimson-colored KJV: scarlet (colour, coloured)",
     "deriv": "from G2848 (κόκκος) (from the kernel-shape of the insect);",
-    "glossZh": "深红色的, 鲜红色的. 一种由\"ilex coccifera\"( 胭脂虫)的卵所聚成,",
+    "glossZh": "深红色的, 鲜红色的. 一种由\"ilex coccifera\"( 胭脂虫)的卵所聚成, 其形状像是一团谷粒或莓子. 可收集磨碎后作红色的染料使用 (蒲林尼, AD. 23-79, 罗马学者, 拉丁名 Gaius Plinius Secundus)",
     "defZh": "1) 深红色的, 鲜红色的. 一种由\"ilex coccifera\"( 胭脂虫)的卵所聚成, \n   其形状像是一团谷粒或莓子. 可收集磨碎后作红色的染料使用\n   (蒲林尼, AD. 23-79, 罗马学者, 拉丁名 Gaius Plinius Secundus)",
-    "glossZhTw": "深紅色的, 鮮紅色的. 一種由\"ilex coccifera\"( 胭脂蟲)的卵所聚成,",
+    "glossZhTw": "深紅色的, 鮮紅色的. 一種由\"ilex coccifera\"( 胭脂蟲)的卵所聚成, 其形狀像是一團穀粒或莓子. 可收集磨碎後作紅色的染料使用 (蒲林尼, AD. 23-79, 羅馬學者, 拉丁名 Gaius Plinius Secundus)",
     "defZhTw": "1) 深紅色的, 鮮紅色的. 一種由\"ilex coccifera\"( 胭脂蟲)的卵所聚成, \n   其形狀像是一團穀粒或莓子. 可收集磨碎後作紅色的染料使用\n   (蒲林尼, AD. 23-79, 羅馬學者, 拉丁名 Gaius Plinius Secundus)"
   },
   "G1395": {
@@ -58303,9 +58303,9 @@
     "gloss": "a Parthian, i.e. inhabitant of Parthia",
     "def": "probably of foreign origin; a Parthian, i.e. inhabitant of Parthia KJV: Parthian",
     "deriv": "probably of foreign origin;",
-    "glossZh": "帕提亚位居里海东南方,为波斯人后代,新约时代帝国版图",
+    "glossZh": "帕提亚位居里海东南方,为波斯人后代,新约时代帝国版图扩及幼发拉底河(#徒 2:9|)",
     "defZh": "1) 帕提亚位居里海东南方,为波斯人后代,新约时代帝国版图\n   扩及幼发拉底河(#徒 2:9|)",
-    "glossZhTw": "帕提亞位居里海東南方,為波斯人後代,新約時代帝國版圖",
+    "glossZhTw": "帕提亞位居里海東南方,為波斯人後代,新約時代帝國版圖擴及幼發拉底河(#徒 2:9|)",
     "defZhTw": "1) 帕提亞位居里海東南方,為波斯人後代,新約時代帝國版圖\n   擴及幼發拉底河(#徒 2:9|)"
   },
   "G344": {
@@ -58675,9 +58675,9 @@
     "gloss": "Trogyllium, a place in Asia Minor",
     "def": "of uncertain derivation; Trogyllium, a place in Asia Minor KJV: Trogyllium",
     "deriv": "of uncertain derivation;",
-    "glossZh": "一城镇的名字, 也是伊奥尼亚海一个岬口, 离撒摩岛不远,",
+    "glossZh": "一城镇的名字, 也是伊奥尼亚海一个岬口, 离撒摩岛不远, 在以弗所与米安大河口间的麦卡尔(Mt. Mycale)山脚边",
     "defZh": "1) 一城镇的名字, 也是伊奥尼亚海一个岬口, 离撒摩岛不远, \n   在以弗所与米安大河口间的麦卡尔(Mt. Mycale)山脚边",
-    "glossZhTw": "一城鎮的名字, 也是伊奧尼亞海一個岬口, 離撒摩島不遠,",
+    "glossZhTw": "一城鎮的名字, 也是伊奧尼亞海一個岬口, 離撒摩島不遠, 在以弗所與米安大河口間的麥卡爾(Mt. Mycale)山腳邊",
     "defZhTw": "1) 一城鎮的名字, 也是伊奧尼亞海一個岬口, 離撒摩島不遠, \n   在以弗所與米安大河口間的麥卡爾(Mt. Mycale)山腳邊"
   },
   "G449": {
@@ -59059,9 +59059,9 @@
     "gloss": "properly, belonging to the same spot, i.e. in this (or that) place",
     "def": "genitive (i.e. possessive) of G846 (αὐτός), used as an adverb of location; properly, belonging to the same spot, i.e. in this (or that) place KJV: (t-)here",
     "deriv": "genitive (i.e. possessive) of G846 (αὐτός), used as an adverb of location;",
-    "glossZh": "他的,",
+    "glossZh": "他的",
     "defZh": "1)他的,  \n2)在那个地方, 那里, 这里",
-    "glossZhTw": "他的,",
+    "glossZhTw": "他的",
     "defZhTw": "1)他的,  \n2)在那個地方, 那裏, 這裏"
   },
   "G2147": {
@@ -59527,9 +59527,9 @@
     "gloss": "a buckler (or round shield)",
     "def": "of uncertain derivation; a buckler (or round shield); used of a serpent (as coiling itself), probably the \"asp\" KJV: asp",
     "deriv": "of uncertain derivation;",
-    "glossZh": "角奎 (埃及眼镜蛇), 一种很小但很毒的蛇,一口毙命",
+    "glossZh": "角奎 (埃及眼镜蛇), 一种很小但很毒的蛇,一口毙命，除非把被咬的地方切除 (#罗 3:13|)",
     "defZh": "1) 角奎 (埃及眼镜蛇), 一种很小但很毒的蛇,一口毙命 \n ，除非把被咬的地方切除 (#罗 3:13|)",
-    "glossZhTw": "角奎 (埃及眼鏡蛇), 一種很小但很毒的蛇,一口斃命",
+    "glossZhTw": "角奎 (埃及眼鏡蛇), 一種很小但很毒的蛇,一口斃命，除非把被咬的地方切除 (#羅 3:13|)",
     "defZhTw": "1) 角奎 (埃及眼鏡蛇), 一種很小但很毒的蛇,一口斃命 \n ，除非把被咬的地方切除 (#羅 3:13|)"
   },
   "G776": {
@@ -59959,9 +59959,9 @@
     "gloss": "Philadelphia, a place in Asia Minor",
     "def": "from (the same as G5361 (φιλάδελφος)), a king of Pergamos; Philadelphia, a place in Asia Minor KJV: Philadelphia",
     "deriv": "from (the same as G5361 (φιλάδελφος)), a king of Pergamos;",
-    "glossZh": "小亚西亚的吕底亚城之一, 位置近于他漠勒斯山麓东边,",
+    "glossZh": "小亚西亚的吕底亚城之一, 位置近于他漠勒斯山麓东边, 以别迦摩(今柏迦玛)王, 阿他勒斯二世非拉铁非斯命名而建造.",
     "defZh": "1) 小亚西亚的吕底亚城之一, 位置近于他漠勒斯山麓东边, \n   以别迦摩(今柏迦玛)王, 阿他勒斯二世非拉铁非斯命名而建造.\n   在阿他勒斯三世非罗麦塔过逝之后, 主前 133 年,\n   在他的遗志下, 这城和整个王国一起在罗马的管辖之下.",
-    "glossZhTw": "小亞西亞的呂底亞城之一, 位置近於他漠勒斯山麓東邊,",
+    "glossZhTw": "小亞西亞的呂底亞城之一, 位置近於他漠勒斯山麓東邊, 以別迦摩(今柏迦瑪)王, 阿他勒斯二世非拉鐵非斯命名而建造.",
     "defZhTw": "1) 小亞西亞的呂底亞城之一, 位置近於他漠勒斯山麓東邊, \n   以別迦摩(今柏迦瑪)王, 阿他勒斯二世非拉鐵非斯命名而建造.\n   在阿他勒斯三世非羅麥塔過逝之後, 主前 133 年,\n   在他的遺志下, 這城和整個王國一起在羅馬的管轄之下."
   },
   "G2997": {
@@ -61854,9 +61854,9 @@
     "gloss": "Matthias (i",
     "def": "apparently a shortened form of G3161 (Ματταθίας); Matthias (i.e. Mattithjah), an Israelite KJV: Matthias",
     "deriv": "apparently a shortened form of G3161 (Ματταθίας);",
-    "glossZh": "补选代替卖主的犹大所遗留的使徒职分的人",
+    "glossZh": "补选代替卖主的犹大所遗留的使徒职分的人 #徒 1:23;1:26|",
     "defZh": "1) 补选代替卖主的犹大所遗留的使徒职分的人\n   #徒 1:23;1:26|",
-    "glossZhTw": "補選代替賣主的猶大所遺留的使徒職分的人",
+    "glossZhTw": "補選代替賣主的猶大所遺留的使徒職分的人 #徒 1:23;1:26|",
     "defZhTw": "1) 補選代替賣主的猶大所遺留的使徒職分的人\n   #徒 1:23;1:26|"
   },
   "G5396": {
@@ -62202,9 +62202,9 @@
     "gloss": "a Samarite, i.e. inhabitant of Samaria",
     "def": "from G4540 (Σαμάρεια); a Samarite, i.e. inhabitant of Samaria KJV: Samaritan",
     "deriv": "from G4540 (Σαμάρεια);",
-    "glossZh": "撒玛利亚人,",
+    "glossZh": "撒玛利亚人",
     "defZh": "1) 撒玛利亚人,",
-    "glossZhTw": "撒瑪利亞人,",
+    "glossZhTw": "撒瑪利亞人",
     "defZhTw": "1) 撒瑪利亞人,"
   },
   "G4036": {
@@ -63089,9 +63089,9 @@
     "gloss": "a Roman freedman",
     "def": "of Latin origin; a Roman freedman KJV: Libertine",
     "deriv": "of Latin origin;",
-    "glossZh": "利百底拿 (#徒 6:9|) 意谓 \"自由的人\",指的是被罗马俘虏,又获释,并且",
+    "glossZh": "利百底拿 (#徒 6:9|) 意谓 \"自由的人\",指的是被罗马俘虏,又获释,并且在耶路撒冷建立自己会堂的以色列人,有别于那些生来是自由身的以色列人.",
     "defZh": "1) 利百底拿 (#徒 6:9|) 意谓 \"自由的人\",指的是被罗马俘虏,又获释,并且\n   在耶路撒冷建立自己会堂的以色列人,有别于那些生来是自由身的以色列人.",
-    "glossZhTw": "利百底拿 (#徒 6:9|) 意謂 \"自由的人\",指的是被羅馬俘虜,又獲釋,並且",
+    "glossZhTw": "利百底拿 (#徒 6:9|) 意謂 \"自由的人\",指的是被羅馬俘虜,又獲釋,並且在耶路撒冷建立自己會堂的以色列人,有別於那些生來是自由身的以色列人.",
     "defZhTw": "1) 利百底拿 (#徒 6:9|) 意謂 \"自由的人\",指的是被羅馬俘虜,又獲釋,並且\n   在耶路撒冷建立自己會堂的以色列人,有別於那些生來是自由身的以色列人."
   },
   "G84": {
@@ -63449,9 +63449,9 @@
     "gloss": "a childling (of either sex), i.e. (properly), an infant, or (by extension) a half-grown boy or girl",
     "def": "neuter diminutive of G3816 (παῖς); a childling (of either sex), i.e. (properly), an infant, or (by extension) a half-grown boy or girl; figuratively, an immature Christian KJV: (little, young) child, damsel",
     "deriv": "neuter diminutive of G3816 (παῖς);",
-    "glossZh": "小孩子,",
+    "glossZh": "小孩子",
     "defZh": "1) 小孩子, \n   1a) 婴孩\n   1b) 孩子\n2) (肯受教的) 隐喻.孩子 (#林前 14:20|)\n3) 父母珍爱的孩子\n\n其同义字, 参见 5868",
-    "glossZhTw": "小孩子,",
+    "glossZhTw": "小孩子",
     "defZhTw": "1) 小孩子, \n   1a) 嬰孩\n   1b) 孩子\n2) (肯受教的) 隱喻.孩子 (#林前 14:20|)\n3) 父母珍愛的孩子\n\n其同義字, 參見 5868"
   },
   "G5006": {
@@ -63629,9 +63629,9 @@
     "gloss": "sardian (3037 being implied), i.e. (as noun) the gem so called",
     "def": "properly, an adjective from an uncertain base; sardian (3037 being implied), i.e. (as noun) the gem so called KJV: sardius",
     "deriv": "properly, an adjective from an uncertain base;",
-    "glossZh": "一种红色的宝石, 有两类, 前者因其肉色泽, 故称为\"肉红玉髓\" (carnelian),",
+    "glossZh": "一种红色的宝石, 有两类, 前者因其肉色泽, 故称为\"肉红玉髓\" (carnelian), 后者称为\"肉红石髓\" (sard) (#启 21:20|)",
     "defZh": "1) 一种红色的宝石, 有两类, 前者因其肉色泽, 故称为\"肉红玉髓\" (carnelian),\n   后者称为\"肉红石髓\" (sard) (#启 21:20|)",
-    "glossZhTw": "一種紅色的寶石, 有兩類, 前者因其肉色澤, 故稱為\"肉紅玉髓\" (carnelian),",
+    "glossZhTw": "一種紅色的寶石, 有兩類, 前者因其肉色澤, 故稱為\"肉紅玉髓\" (carnelian), 後者稱為\"肉紅石髓\" (sard) (#啓 21:20|)",
     "defZhTw": "1) 一種紅色的寶石, 有兩類, 前者因其肉色澤, 故稱為\"肉紅玉髓\" (carnelian),\n   後者稱為\"肉紅石髓\" (sard) (#啓 21:20|)"
   },
   "G1158": {
@@ -64432,9 +64432,9 @@
     "gloss": "Myra, a place in Asia Minor",
     "def": "of uncertain derivation; Myra, a place in Asia Minor KJV: Myra",
     "deriv": "of uncertain derivation;",
-    "glossZh": "位于小亚细亚西南处, 吕家地一个重要的城镇, 距river Andriacus河口 2.5 英里(4 公里)",
+    "glossZh": "位于小亚细亚西南处, 吕家地一个重要的城镇, 距river Andriacus河口 2.5 英里(4 公里) 保罗的罗马旅程中去过的地方 (#徒 27:5|)",
     "defZh": "1) 位于小亚细亚西南处, 吕家地一个重要的城镇, 距river Andriacus河口 2.5 英里(4 公里)\n   保罗的罗马旅程中去过的地方 (#徒 27:5|)",
-    "glossZhTw": "位於小亞細亞西南處, 呂家地一個重要的城鎮, 距river Andriacus河口 2.5 英里(4 公里)",
+    "glossZhTw": "位於小亞細亞西南處, 呂家地一個重要的城鎮, 距river Andriacus河口 2.5 英里(4 公里) 保羅的羅馬旅程中去過的地方 (#徒 27:5|)",
     "defZhTw": "1) 位於小亞細亞西南處, 呂家地一個重要的城鎮, 距river Andriacus河口 2.5 英里(4 公里)\n   保羅的羅馬旅程中去過的地方 (#徒 27:5|)"
   },
   "G1914": {
@@ -64540,9 +64540,9 @@
     "gloss": "a sea",
     "def": "of Latin origin; a sea; Pontus, a region of Asia Minor KJV: Pontus",
     "deriv": "of Latin origin;",
-    "glossZh": "原先为海 (黑海) 的名称,后来用作波斯亚几米德王朝在东北部的小亚细亚",
+    "glossZh": "原先为海 (黑海) 的名称,后来用作波斯亚几米德王朝在东北部的小亚细亚建立的一个地区名称.庞贝征服后,成为罗马的一省 (#徒 2:9; 彼前 1:1|)",
     "defZh": "1) 原先为海 (黑海) 的名称,后来用作波斯亚几米德王朝在东北部的小亚细亚\n   建立的一个地区名称.庞贝征服后,成为罗马的一省 (#徒 2:9; 彼前 1:1|)",
-    "glossZhTw": "原先為海 (黑海) 的名稱,後來用作波斯亞幾米德王朝在東北部的小亞細亞",
+    "glossZhTw": "原先為海 (黑海) 的名稱,後來用作波斯亞幾米德王朝在東北部的小亞細亞建立的一個地區名稱.龐貝征服後,成為羅馬的一省 (#徒 2:9; 彼前 1:1|)",
     "defZhTw": "1) 原先為海 (黑海) 的名稱,後來用作波斯亞幾米德王朝在東北部的小亞細亞\n   建立的一個地區名稱.龐貝征服後,成為羅馬的一省 (#徒 2:9; 彼前 1:1|)"
   },
   "G3191": {
@@ -65426,9 +65426,9 @@
     "gloss": "Demas, a Christian",
     "def": "probably for G1216 (Δημήτριος); Demas, a Christian KJV: Demas",
     "deriv": "probably for G1216 (Δημήτριος);",
-    "glossZh": "保罗的同工之一, 当保罗在罗马为囚时,",
+    "glossZh": "保罗的同工之一, 当保罗在罗马为囚时, 他弃保罗而回到帖撒罗尼迦去了 (#西 4:14; 提后 4:10; 门 24|)",
     "defZh": "1) 保罗的同工之一, 当保罗在罗马为囚时, \n   他弃保罗而回到帖撒罗尼迦去了 (#西 4:14; 提后 4:10; 门 24|)",
-    "glossZhTw": "保羅的同工之一, 當保羅在羅馬為囚時,",
+    "glossZhTw": "保羅的同工之一, 當保羅在羅馬為囚時, 他棄保羅而回到帖撒羅尼迦去了 (#西 4:14; 提後 4:10; 門 24|)",
     "defZhTw": "1) 保羅的同工之一, 當保羅在羅馬為囚時, \n   他棄保羅而回到帖撒羅尼迦去了 (#西 4:14; 提後 4:10; 門 24|)"
   },
   "G986": {

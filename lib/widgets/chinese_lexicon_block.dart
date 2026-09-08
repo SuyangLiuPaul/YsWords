@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/services/chinese_lexicon_service.dart';
+import 'package:yswords/widgets/cbol_reference_text.dart';
 
 /// The Chinese BDB/Thayer article, rendered under the CBOL definition
 /// that YsWords already shows.
@@ -118,23 +119,37 @@ class ChineseLexiconBlock extends StatelessWidget {
         ),
       );
 
+  /// One labelled row of the article.
+  ///
+  /// The senses cite scripture inline in CBOL's `#…|` notation, so the
+  /// value goes through [CbolReferenceText] rather than a plain
+  /// [TextSpan]: the delimiters come off and every citation the parser
+  /// can resolve becomes a tap into the reader. This is the surface
+  /// that gets the links because it is the one holding the raw asset —
+  /// `StrongsEntry` flattens its own fields to plain text before any
+  /// widget sees them, since the six places it is printed have room for
+  /// one line, not for a target.
   Widget _field(ColorScheme scheme, String label, String value) => Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: Text.rich(
-          TextSpan(children: [
-            TextSpan(
-              text: '$label  ',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: scheme.onSurfaceVariant,
-              ),
+        child: Semantics(
+          label: value.contains('#')
+              ? cbolReferenceSemanticsLabel(locale)
+              : null,
+          child: CbolReferenceText(
+            source: value,
+            label: '$label  ',
+            labelStyle: TextStyle(
+              fontSize: fontSize,
+              height: 1.45,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurfaceVariant,
             ),
-            TextSpan(
-              text: value,
-              style: TextStyle(color: scheme.onSurface),
+            style: TextStyle(
+              fontSize: fontSize,
+              height: 1.45,
+              color: scheme.onSurface,
             ),
-          ]),
-          style: TextStyle(fontSize: fontSize, height: 1.45),
+          ),
         ),
       );
 }

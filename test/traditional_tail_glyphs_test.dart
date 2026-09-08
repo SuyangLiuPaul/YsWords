@@ -98,9 +98,14 @@ void main() {
     }
 
     // The Simplified twin is the per-field witness and must still hold exactly
-    // the count the Traditional side now holds — 19 in Hebrew, 2 in Greek.
-    expect(lexCount(hebrew, '姪', true), 19);
-    expect(lexCount(hebrew, '侄', false), 19);
+    // the count the Traditional side now holds — 20 in Hebrew, 2 in Greek.
+    // Hebrew was 19 a side until 2026-09-08: rejoining CBOL's wrapped senses
+    // (`tools/repair_zh_gloss_linebreaks.py`) carried H6667's clause about
+    // Jehoiachin, the nephew Nebuchadnezzar deported, into the gloss beside
+    // the body that already held it. The two sides moved together, which is
+    // the only thing this pair of numbers is here to check.
+    expect(lexCount(hebrew, '姪', true), 20);
+    expect(lexCount(hebrew, '侄', false), 20);
     expect(lexCount(greek, '姪', true), 2);
     expect(lexCount(greek, '侄', false), 2);
     expect(lexCount(hebrew, '侄', true), 0);

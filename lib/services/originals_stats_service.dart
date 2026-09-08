@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:yswords/utils/cbol_references.dart';
 
 /// One row in the Originals stats table — a single Strong's number
 /// with its Hebrew/Greek lemma, transliteration, English + Chinese
@@ -169,8 +170,13 @@ class OriginalsStatsService {
           lemma: (lex['lemma'] ?? '').toString(),
           translit: (lex['translit'] ?? '').toString(),
           glossEn: (lex['gloss'] ?? '').toString(),
-          glossZhHans: (lex['glossZh'] ?? '').toString(),
-          glossZhHant: (lex['glossZhTw'] ?? '').toString(),
+          // The statistics table prints these on one row, so the
+          // CBOL citation block goes the way it goes in
+          // `StrongsEntry.localizedGloss` — the reference is in the
+          // entry's definition body, one tap away on the entry page.
+          glossZhHans: stripCbolReferences((lex['glossZh'] ?? '').toString()),
+          glossZhHant:
+              stripCbolReferences((lex['glossZhTw'] ?? '').toString()),
           count: count,
           byBook: byBook,
         ));

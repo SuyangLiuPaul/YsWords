@@ -73,13 +73,19 @@ void main() {
     }
   });
 
-  test('the lexicon is set in this edition\'s orthography — 2,816 positions',
+  test('the lexicon is set in this edition\'s orthography — 2,930 positions',
       () {
+    // 2026-09-08: 為 1883→1976, 眾 195→202, 著 419→427, 群 195→196. All 114
+    // new positions are characters `glossZhTw` picked up out of its own
+    // `defZhTw` when `tools/repair_zh_gloss_linebreaks.py` rejoined the
+    // sense CBOL had wrapped — the gloss now says more of what the body
+    // beside it already said. That is the growth this file's doc comment
+    // calls the sanctioned direction; nothing was re-converted.
     const edition = <String, int>{
-      '為': 1883,
-      '群': 195,
-      '眾': 195,
-      '著': 419,
+      '為': 1976,
+      '群': 196,
+      '眾': 202,
+      '著': 427,
       '吃': 82, // 5 original 口吃 (stammer) + 77 swept from 喫 (eat)
       '床': 47,
     };
@@ -118,12 +124,16 @@ void main() {
     }
   });
 
-  test('the Simplified aspect particle 着 was left alone — 368 positions',
+  test('the Simplified aspect particle 着 was left alone — 374 positions',
       () {
-    // 419 original 着 in glossZh/defZh minus the 51 zhù-sense repair above.
-    // A blanket sweep here would corrupt all 368 — this number is what
+    // 419 original 着 in glossZh/defZh minus the 51 zhù-sense repair above
+    // gave 368, plus 6 that the 2026-09-08 gloss rejoin lifted out of the
+    // definition bodies and into the glosses beside them (G4102 包含着,
+    // G5330 按着, G5502 向着, H2652 因着, H3316 and H5912 为着 — every one
+    // the aspect particle, none of them a zhù bigram).
+    // A blanket sweep here would corrupt all 374 — this number is what
     // proves the repair was bigram-targeted, not a find-and-replace.
-    expect(count(sc, '着'), 368);
+    expect(count(sc, '着'), 374);
   });
 
   test('the Bible text is unaffected and unswept', () {

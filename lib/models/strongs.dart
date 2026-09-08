@@ -1,3 +1,5 @@
+import 'package:yswords/utils/cbol_references.dart';
+
 /// A Strong's Concordance dictionary entry.
 ///
 /// `number` is the Strong's identifier prefixed by language: "G####" for
@@ -83,6 +85,19 @@ class StrongsEntry {
       if ((glossZh ?? '').isNotEmpty) raw = glossZh;
       if ((definitionZh ?? '').isNotEmpty) rawDef = definitionZh;
     }
+    // A one-line gloss is the wrong place for a citation list:
+    // `结束, 完成 (#路 14:19-30|)` spends more characters on markup than
+    // on meaning, and the six surfaces that print this string have room
+    // for one line. Dropping the citation is lossless — measured over
+    // both lexicons, all 15,274 citations in a `glossZh` / `glossZhTw`
+    // also stand in that entry's own definition body, which
+    // [localizedDefinition] returns whole.
+    //
+    // The definition is stripped too, because the only thing read out
+    // of it here is a phrase to stand in for a missing or stub gloss —
+    // which lands on the same one line.
+    if (raw != null) raw = stripCbolReferences(raw);
+    if (rawDef != null) rawDef = stripCbolReferences(rawDef);
     if (raw == null && rawDef != null) {
       final extracted = _extractFirstPhrase(rawDef);
       if (extracted.isNotEmpty) return extracted;
@@ -226,15 +241,36 @@ class StrongsEntry {
 
   /// Returns the full definition appropriate for [locale], with the
   /// same fallback semantics as [localizedGloss].
+  ///
+  /// The Chinese body KEEPS its scripture citations — they are the
+  /// evidence for the sense — but sheds the `#`/`|` CBOL wrapped them
+  /// in. Doing it here rather than at each surface makes it an
+  /// invariant: no delimiter reaches a reader through this model, and
+  /// the only way to obtain the raw field is to read the asset, which
+  /// is what a surface that renders citations as links does with
+  /// [buildCbolSpans].
   String localizedDefinition(String locale) {
     if (locale == 'zh-Hant') {
-      if ((definitionZhTw ?? '').isNotEmpty) return definitionZhTw!;
-      if ((definitionZh ?? '').isNotEmpty) return definitionZh!;
+      if ((definitionZhTw ?? '').isNotEmpty) {
+        return _plainCitations(definitionZhTw!);
+      }
+      if ((definitionZh ?? '').isNotEmpty) return _plainCitations(definitionZh!);
     } else if (locale.startsWith('zh')) {
-      if ((definitionZh ?? '').isNotEmpty) return definitionZh!;
+      if ((definitionZh ?? '').isNotEmpty) return _plainCitations(definitionZh!);
     }
     return definition;
   }
+
+  /// [body] with the CBOL delimiters removed and every citation left
+  /// standing.
+  ///
+  /// Line by line: the delimiters never span a newline, and a
+  /// whole-body pass would let one malformed block swallow the sense
+  /// printed after it.
+  static String _plainCitations(String body) => body
+      .split('\n')
+      .map((l) => l.contains('#') || l.contains('|') ? cbolPlainText(l) : l)
+      .join('\n');
 
   /// v1.3.x: the Chinese definition body with English-only CBOL noise
   /// stripped, for display in a Chinese-locale exegesis panel.
@@ -272,7 +308,9 @@ class StrongsEntry {
       if (cjk == 0 && ascii >= 3) continue;
       kept.add(line);
     }
-    var out = kept.join('\n').replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
+    final out = kept.join('\n').replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
+    // No CBOL pass here: [localizedDefinition] above already returned
+    // the body with its delimiters gone and its citations intact.
     return out.isEmpty ? def : out;
   }
 
@@ -363,11 +401,12 @@ class StrongsEntry {
       return gloss;
     }
     // User reading in English; complementary view is the Chinese
-    // biblical identification.
+    // biblical identification — which is a one-line gloss and drops
+    // its citation list for the same reason [localizedGloss] does.
     if (locale == 'zh-Hant') {
-      if ((glossZhTw ?? '').isNotEmpty) return glossZhTw!;
+      if ((glossZhTw ?? '').isNotEmpty) return stripCbolReferences(glossZhTw!);
     }
-    return glossZh ?? '';
+    return stripCbolReferences(glossZh ?? '');
   }
 
   /// 2026-05-07 follow-up: same idea as [complementaryGloss] but for
@@ -382,10 +421,16 @@ class StrongsEntry {
     if (locale.startsWith('zh')) {
       return definition;
     }
+    // A body, not a gloss, so the citations stay and only the `#`/`|`
+    // go — the same treatment [cleanChineseDefinition] gives the
+    // locale-preferred side, which is rendered directly beside this one
+    // on the originals sheet's proper-noun panel.
     if (locale == 'zh-Hant') {
-      if ((definitionZhTw ?? '').isNotEmpty) return definitionZhTw!;
+      if ((definitionZhTw ?? '').isNotEmpty) {
+        return _plainCitations(definitionZhTw!);
+      }
     }
-    return definitionZh ?? '';
+    return _plainCitations(definitionZh ?? '');
   }
 
   factory StrongsEntry.fromJson(String number, Map<String, dynamic> json) {

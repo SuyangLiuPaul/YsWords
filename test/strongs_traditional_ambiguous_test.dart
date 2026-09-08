@@ -155,7 +155,13 @@ void main() {
       ]) {
         expect(inTw(keep), greaterThan(0), reason: keep);
       }
-      expect(inTw('裏海'), 4,
+      // Was 4 until 2026-09-08, when the gloss rejoin
+      // (`tools/repair_zh_gloss_linebreaks.py`) carried H6539's and
+      // H6540's description of the Persian empire's reach past the line
+      // CBOL wrapped it on, so 裏海 now stands in each entry's
+      // `glossZhTw` as well as its `defZhTw`. Same two entries, twice
+      // each — no new occurrence of the word anywhere in the corpus.
+      expect(inTw('裏海'), 6,
           reason: '裏海/裡海 IS the Traditional name for the Caspian — the '
               '裏海→里海 rule was REFUTED and must stay disarmed');
     });

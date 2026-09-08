@@ -8133,4 +8133,15 @@ const uiStrings = {
     'en': 'Brown-Driver-Briggs (1906) & Thayer (1889) public domain · '
         'Chinese edition used with permission (yahwehdehua.net).',
   },
+
+  // ====== CBOL citations in the Chinese lexicon ======
+  // The scripture references the Chinese lexicon cites inside its own
+  // prose are now links. This is what a screen reader announces for
+  // one; the visible text is the citation itself, which is already the
+  // clearest label a sighted reader could get.
+  'cbolOpenReference': {
+    'zh-Hans': '打开这处经文',
+    'zh-Hant': '開啟這處經文',
+    'en': 'Open this reference',
+  },
 };
