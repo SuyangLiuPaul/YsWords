@@ -11106,6 +11106,14 @@ has never seen this repo.
       Still branch-scale, still unattended-unsafe, still the only open P2
       checkbox, and the question above to the user is still unanswered.
 
+      **Deferred a tenth consecutive iteration, 2026-09-09** — this hour's
+      NEXT_TASK.md picked landing the orphaned event-lane semantics fix
+      instead (Tier 5, `queue:13728`'s seventh recurrence). Still
+      branch-scale, still unattended-unsafe, still the only open P2
+      checkbox, and the question above to the user is still unanswered:
+      start the `GetMaterialApp` → `.router` migration branch, or close
+      this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -12898,10 +12906,31 @@ has never seen this repo.
       **Left open, deliberately.** The NT's densest decade still cannot
       label every tick — fourteen events in ten years, six on one year,
       five label rows. That needs a different device (a tap-to-expand
-      cluster, or a callout list), not more zoom. The merged event-lane
-      semantics node is also an accessibility defect in its own right: a
-      screen reader is read all 64 titles as one utterance. Splitting it
-      needs per-tick hit boxes, which the lane deliberately avoids.
+      cluster, or a callout list), not more zoom.
+
+      **The accessibility half of this note was stale, and was fixed
+      2026-09-09** (`queue:13728`'s seventh recurrence, below). It was
+      not true that the lane "deliberately avoids" per-tick hit boxes —
+      `labelHits` (`chronology_chart.dart:1631`) has built one since the
+      stacked-label tap fix, and a pointer tap already routed to the
+      label actually touched. What was actually missing was a semantics
+      *boundary* per label: each title was a bare `Text` with nothing of
+      its own to anchor a node, so it merged upward into the lane's one
+      shared `GestureDetector` and read as a single run-on utterance —
+      **a merging problem, not a wiring one**; a refuter checking the
+      first draft's claim that `onTapDown` alone "wires no
+      `SemanticsAction.tap`" found that false against Flutter's own
+      `gesture_detector.dart`/`proxy_box.dart` source (the semantics
+      delegate synthesizes a tap handler off the recognizer's presence,
+      not off which specific callback exists). Fixed by wrapping each
+      label in `Semantics(label:, button: true, excludeSemantics: true,
+      onTap:)`, the same shape already used at `:1812` and `:1903` in
+      this file — house precedent, not a new pattern. Regression-pinned
+      in `bible_chronology_test.dart` (fails without the wrapper:
+      `Expected: 1, Actual: 0` per title; passes with it). The "64
+      titles" figure above was one capture at one viewport (phone
+      portrait, deepest zoom); it is real but viewport-dependent — do
+      not restate it as a fixed count.
 
 - [x] **A sermon that would not play left its Listen button dead, because
       only songs caught `PlaybackBlockedException`.** Reported from a live
@@ -13820,6 +13849,25 @@ so the bundle-size answer stays on the record.
       pattern is outside this repo's reach — it lives in `run.sh`/
       `prompt.md` under `~/Library/Application Support/yswords-loop/`,
       which this loop's own guard rails say not to edit unattended.
+
+      **Seventh recurrence, 2026-09-09 00:16:06–00:36:40.** The stage
+      did real work — a new `testWidgets` case in
+      `test/bible_chronology_test.dart` reproducing the event-lane
+      merged-semantics defect (+97 lines) — then ended `rc=0` with its
+      entire final message reading: *"I'll pause here — the baseline
+      build is running in the background and I'll resume automatically
+      when it completes or the scheduled wakeup fires."* Nothing was
+      committed or pushed; the fix itself
+      (`lib/widgets/chronology_chart.dart`) was never written and
+      stayed clean at HEAD. Landed the following hour: reproduced the
+      failure in the foreground first (`"Paul's First Missionary
+      Journey" should have exactly one semantics node` — Expected: 1,
+      Actual: 0), then wrapped each drawn label in `Semantics(label:,
+      button: true, excludeSemantics: true, onTap:)` — the same shape
+      already used at `:1812` and `:1903` in that file. All 79 tests in
+      the file pass, `flutter analyze` clean. See the corrected note on
+      `queue:12717` above (the "Left open, deliberately" paragraph) for
+      what the fix actually changed and why its prior claim was stale.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an

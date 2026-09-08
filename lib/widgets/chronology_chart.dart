@@ -1655,22 +1655,34 @@ class _ChronologyChartState extends State<ChronologyChart> {
         left: lefts[c.index],
         top: 13 + c.row * pitch,
         width: c.width + 1,
-        child: DecoratedBox(
-          // A soft ground under the selected title. It is drawn at the
-          // label's own measured width, so turning it on cannot nudge
-          // anything the packer placed.
-          decoration: selected
-              ? BoxDecoration(
-                  color: scheme.primary.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(3),
-                )
-              : const BoxDecoration(),
-          child: Text(
-            texts[c.index],
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            style: styles[c.index],
+        child: Semantics(
+          // Each drawn title needs its own boundary — with none, a bare
+          // Text here merges upward into the lane's single shared
+          // GestureDetector below, so every label used to read as one
+          // run-on utterance instead of one per title. `excludeSemantics`
+          // keeps the child Text from adding a second, duplicate node for
+          // the same label.
+          label: texts[c.index],
+          button: true,
+          excludeSemantics: true,
+          onTap: () => _showEventSheet(context, candidates[c.index]),
+          child: DecoratedBox(
+            // A soft ground under the selected title. It is drawn at the
+            // label's own measured width, so turning it on cannot nudge
+            // anything the packer placed.
+            decoration: selected
+                ? BoxDecoration(
+                    color: scheme.primary.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(3),
+                  )
+                : const BoxDecoration(),
+            child: Text(
+              texts[c.index],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: styles[c.index],
+            ),
           ),
         ),
       ));

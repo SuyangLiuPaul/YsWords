@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderParagraph;
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -604,6 +605,102 @@ void main() {
         findsOneWidget,
         reason: 'the sheet must name the label that was tapped',
       );
+    });
+
+    testWidgets('every drawn event label is its own accessibility node, '
+        'not one merged utterance for the whole lane', (tester) async {
+      // 2026-09-09, residual #2 of the "left open, deliberately" note on
+      // `queue:12717`. The lane was one opaque GestureDetector wrapping
+      // bare Text widgets — nothing gave any individual label its own
+      // semantics boundary, so every title on screen merged upward into
+      // that one ancestor node. A screen reader read all of them as a
+      // single run-on utterance and could not target one event.
+      //
+      // Reproduced first: this pumps the same New Testament decade the
+      // "tapping a stacked label" test above uses, where fourteen events
+      // are visibly stacked, and measures the semantics tree that is
+      // ACTUALLY there — not the "64" the queue note inherited from a
+      // different capture.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: const Size(900, 1700));
+      for (var i = 0; i < 16; i++) {
+        await tester.tap(find.byIcon(Icons.zoom_in_rounded));
+        await tester.pump(const Duration(milliseconds: 60));
+      }
+      await tester.tap(find.byKey(const ValueKey('chronoChip_john_patmos')));
+      await tester.pumpAndSettle();
+
+      // Same predicate the tap-routing test above uses to find labels
+      // actually on glass at this viewport.
+      final onGlass = find
+          .byWidgetPredicate((w) =>
+              w is Text &&
+              w.style?.fontSize != null &&
+              (w.style!.fontSize! - 12).abs() < 0.01 &&
+              w.maxLines == 1 &&
+              w.softWrap == false)
+          .evaluate()
+          .map((e) => (
+                tester.getRect(find.byWidget(e.widget)),
+                (e.widget as Text).data!,
+              ))
+          .where((r) => r.$1.left >= 0 && r.$1.right <= 900)
+          .toList();
+      expect(onGlass.length, greaterThan(1),
+          reason: 'need more than one visible label for this test to mean '
+              'anything at this viewport');
+      final titles = onGlass.map((e) => e.$2).toSet();
+      expect(titles.length, onGlass.length,
+          reason: 'two labels on glass share a title — the per-title '
+              'lookup below would be ambiguous; adjust the viewport');
+
+      final owner = tester.semantics.find(find.byType(ChronologyChart)).owner!;
+      List<SemanticsNode> flatten(SemanticsNode n) {
+        final out = <SemanticsNode>[n];
+        n.visitChildren((c) {
+          out.addAll(flatten(c));
+          return true;
+        });
+        return out;
+      }
+
+      final all = flatten(owner.rootSemanticsNode!);
+      for (final title in titles) {
+        final matches = all
+            .where((n) => n.getSemanticsData().label == title)
+            .toList();
+        expect(matches.length, 1,
+            reason: '"$title" should have exactly one semantics node');
+        final node = matches.single;
+        expect(node.isMergedIntoParent, isFalse,
+            reason: '"$title" is merged into an ancestor — a screen reader '
+                'cannot address it on its own');
+        expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue,
+            reason: '"$title" carries no tap action of its own');
+      }
+
+      // And the accessibility tap actually opens THAT event, exactly the
+      // way `SemanticsOwner.performAction` drives it for a screen reader
+      // or Flutter web's DOM overlay — not `tester.tap`, which hit-tests
+      // the render tree and would pass even if every label above were
+      // merged into one node.
+      final deepest =
+          (onGlass.toList()..sort((a, b) => b.$1.top.compareTo(a.$1.top)))
+              .first;
+      final target =
+          all.firstWhere((n) => n.getSemanticsData().label == deepest.$2);
+      owner.performAction(target.id, SemanticsAction.tap);
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text(deepest.$2),
+        ),
+        findsOneWidget,
+        reason: 'the accessibility tap must open the sheet for the label '
+            'that was actually activated',
+      );
+      handle.dispose();
     });
 
     testWidgets('tapping the plot reads the year off it, and does not '
