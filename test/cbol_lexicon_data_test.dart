@@ -73,14 +73,17 @@ void main() {
         reason: 'entries whose Chinese text carries CBOL markup');
     expect(sites, 39596);
 
-    // 46,692 citations resolve to a book, chapter and verse the reader
+    // 46,693 citations resolve to a book, chapter and verse the reader
     // can navigate to. 2,635 of those are reachable only because
     // `_traditionalBookChars` retries a Traditional book token in
     // Simplified; without it the Traditional half of the Strong's
-    // lexicon linked almost nothing.
-    expect(citations, 46692);
+    // lexicon linked almost nothing. The 46,693rd arrived on
+    // 2026-09-08, when `约伯` was added to `_chineseShortAliases`:
+    // 約伯記 10:22, the one citation the missing alias had been costing,
+    // which `cbol_references_test.dart` had been pinning as a known gap.
+    expect(citations, 46693);
 
-    // 69 `#` sites do not parse — 35 entries, and most of those are the
+    // 68 `#` sites do not parse — 34 entries, and most of those are the
     // same defect appearing twice because it sits in both the
     // Simplified and the Traditional column. They are defects in the
     // source: a missing book token (`#119:128`), a chapter and verse
@@ -89,8 +92,13 @@ void main() {
     // book token (`#徒 徒 12:23`), or an abbreviation that is genuinely
     // ambiguous between two books (`代`, `撒`). Each is passed through
     // verbatim rather than guessed at.
-    expect(unreadable, 69);
-    expect(unreadableEntries.length, 35);
+    //
+    // It was 69 sites in 35 entries until 2026-09-08. The one that left
+    // was not a source defect at all — `#约伯10:22` is well-formed and
+    // we simply had no alias for 约伯 — and it was the only unreadable
+    // site in its entry, so the entry count fell with it.
+    expect(unreadable, 68);
+    expect(unreadableEntries.length, 34);
   });
 
   test('nothing readable reaches the reader still wearing its delimiters',
@@ -156,8 +164,13 @@ void main() {
 
   test('the book-token map is complete and minimal for these assets', () {
     // Complete: after the retry, the only tokens the parser still
-    // cannot read are the two genuinely ambiguous abbreviations and
-    // `约伯`, which `reference_parser.dart` has no alias for.
+    // cannot read are the two genuinely ambiguous abbreviations — `代`
+    // (代上/代下) and `撒` (撒上/撒下), which name two books each and are
+    // not resolvable without a chapter range nobody supplies. `约伯`
+    // was the third until 2026-09-08, and it was a different kind of
+    // miss: an alias simply absent from `reference_parser.dart`. It is
+    // there now, so it belongs in `resolvedTokens` below rather than
+    // here.
     //
     // Minimal: every character in the map is one the corpus actually
     // uses in a book position. A key that stopped earning its place
@@ -181,7 +194,8 @@ void main() {
         }
       }
     }
-    expect(unresolved, {'代': 8, '撒': 1, '约伯': 1});
+    expect(unresolved, {'代': 8, '撒': 1});
+    expect(resolvedTokens, contains('约伯'));
 
     // Each mapped script character is used by at least one token that
     // needed the retry to resolve — i.e. one `resolveBookName` refuses

@@ -69,23 +69,26 @@ void main() {
       expect(refs('(#代上 3:5|译作 拔书亚)').single.reference, '1 Chronicles 3:5');
     });
 
-    test('约伯 is Job, not John, so YsWords declines to read it at all', () {
-      // The whole 1-5 character token is looked up, never a prefix of
-      // it. `约伯` (Job) is not an alias `reference_parser.dart` carries
-      // — it indexes `伯` and `约伯记` but not the two-character middle
-      // form — and the prefix `约` is John, a different book on the
-      // other side of the canon. So this citation is passed through as
-      // text rather than linked to John 10:22.
-      //
-      // It is the ONE resolvable reference in the corpus this costs:
-      // scanning every book token the parser captures leaves exactly
-      // three it cannot read, and the other two (`代`, `撒`) are
-      // genuinely ambiguous between two books. Adding `约伯` to
+    test('约伯 is Job, and is now read as Job', () {
+      // This test asserted the opposite until 2026-09-08, and said why:
+      // the whole 1-5 character token is looked up and never a prefix
+      // of it, so `约伯` fell between the `伯` and the full `约伯记`
+      // that `reference_parser.dart` indexed, and resolved to nothing —
+      // while the prefix `约` is John, a different book on the other
+      // side of the canon. It ended: "Adding `约伯` to
       // `_chineseShortAliases` would fix it, in a file this change does
-      // not own; failing visibly is the correct behaviour until then.
-      expect(refs('(#约伯10:22|)'), isEmpty);
+      // not own; failing visibly is the correct behaviour until then."
+      //
+      // It was added. So this is the fix arriving, not the gap being
+      // re-recorded, and it was the ONE resolvable reference in the
+      // corpus the gap cost. The two book tokens the corpus still
+      // cannot read, `代` and `撒`, are each genuinely ambiguous
+      // between two books and are not this kind of problem.
+      expect(refs('(#约伯10:22|)').single.reference, 'Job 10:22');
       expect(cbolPlainText('1) 安排, 有序 (#约伯10:22 |)'),
-          contains('#约伯10:22'));
+          contains('约伯10:22'));
+      // The prefix it must still not shadow.
+      expect(refs('(#约 10:22|)').single.reference, 'John 10:22');
     });
   });
 
