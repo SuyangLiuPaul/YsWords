@@ -4302,7 +4302,7 @@ reported. Work these top-down before P2.
       whether that something was opencc; the measurement described above is
       still the way to find out.
 
-- [ ] **`tools/audit_lexicon_provenance.py`'s baseline is now stale, and it
+- [x] **`tools/audit_lexicon_provenance.py`'s baseline is now stale, and it
       is the tool's own fault line, not the lexicon's.** Its docstring
       claims "28,276 of 28,377 field pairs byte-identical to opencc s2t —
       99.64%" and a `KNOWN_EDITS` list of two hand-edits (侖→崙, 侄→姪), both
@@ -4311,25 +4311,44 @@ reported. Work these top-down before P2.
       "never seen before" hand-edits — 爲→為 1883×, 着→著 368×, 羣→群 195×,
       衆→眾 195×, 喫→吃 77×, 牀→床 47× — with `EXPECTED None` next to each.
 
-      **Not a new defect.** Those six are exactly the six positions
-      `tools/reset_lexicon_orthography.py --apply --user-ruled` re-set on
-      2026-09-06, on a delegated user decision («这个你决定吧»), already
-      verified by a refuter against the raw JSON and pinned by
-      `test/lexicon_traditional_orthography_test.dart` (see the item above
-      and the one below). The provenance audit was written five days
-      earlier and has no way to know about a change made after it, so it
-      reports the deliberate reset as unexplained drift.
+      **Not a new defect. Also not just six.** Re-measuring at HEAD (SHA
+      `42e35a2a`, in a throwaway worktree so the concurrent session's dirty
+      tree wasn't touched) found the drift is TWO undocumented commits deep,
+      not one: `33f04a02` (2026-09-03, 89 wrong Traditional expansions,
+      16 more character pairs — 併→並, 幹→乾, 里→裏, 幹→干, 闢→辟, 睏→困,
+      乾→干, 覆→復, 須→鬚, 複→復, 面→麪, 裏→里, 谷→穀, 蔘→參, 髮→發, 徵→征)
+      as well as `3c514a7b` (2026-09-06, the six-pair reset this item names,
+      delegated by the user, «这个你决定吧»). `KNOWN_EDITS` now has 24
+      entries, not 8, all traced to a commit in the tool's own docstring.
 
-      What's actually owed: re-run the s2t/s2tw/s2twp/s2hk percentages
-      against the POST-reset lexicon, add the six reset pairs to
-      `KNOWN_EDITS` with their counts, and re-date the "WHAT IT FOUND"
-      section. Left unfixed, the tool prints a false alarm every time it
-      runs — cheap to be wrong about, since the underlying data is fine and
-      already tested, but worth closing so the next person who runs this
-      audit doesn't spend an hour re-deriving what this entry just did.
-      Not attempted here: recomputing which of the resulting non-matching
-      fields are pre-existing vs post-reset is real analysis, not a
-      docstring number swap, and belongs in its own pass.
+      A second problem the six-pair framing missed entirely: raw byte-match
+      no longer discriminates `s2t` from the others at all — `s2tw` now
+      matches 96.14% RAW, ahead of `s2t`'s 91.84%, because both undocumented
+      commits moved characters toward Taiwan-standard forms that `s2tw`
+      already produces. Widening `MAX_RUNNER_UP_RATIO` to let that through
+      would have been the wrong fix (weakens the check to fit the number).
+      Replaced the metric instead: "fraction of fields identical to opencc
+      OR differing only by a `KNOWN_EDITS` pair" — `s2t` explains 100.00%
+      exactly (28377/28377), the runner-ups explain 96.74%/95.67%/94.63%
+      because their mismatches are a different, unrelated character set this
+      repo has never touched (`s2tw` alone disagrees on 啟/啓, 裡/裏, 汙/污
+      and 16 more pairs nothing here has ever mentioned). Verified: 吃 total
+      in the lexicon is 82 = 77 swept + 5 untouched 口吃 stammer, and 着→著
+      counts 374 not 419−51=368 because `42e35a2a` (landed mid-iteration,
+      see below) un-truncated 426 glosses that already held more 着/著/崙/姪
+      text in `defZh`, revealing it in `glossZh` too — not a new edit.
+      `tools/repair_tr_tail_glyphs.py:74` and
+      `tools/repair_strongs_tw_ambiguous.py:7-29` (both propagated the stale
+      number/premise) now point at the current audit instead of a frozen
+      count. `python3 tools/audit_lexicon_provenance.py` exits 0 from a
+      clean worktree at HEAD.
+
+      The repo moved twice more while this ran (a second Claude session
+      landed `42e35a2a` mid-measurement) — both re-measurements above are
+      against the SHA actually committed, not the one this item opened
+      with. Not attempted here: recomputing which non-matching fields are
+      pre- vs post-reset is real analysis, not a docstring edit, and stays
+      its own pass.
 
 - [x] **The lexicon and the Bible are set in two different Traditional
       orthographies, and the word-tap sheet shows them side by side — 2,816
@@ -13728,6 +13747,28 @@ so the bundle-size answer stays on the record.
       by hand before it was acted on. Still open — the fix (recording
       which paths a stage touched, and never blanket-restoring paths it
       didn't write) belongs in `run.sh`/`prompt.md`, outside the repo.
+
+      **Fifth and sixth recurrence, 2026-09-08.** Two consecutive execution
+      stages ended `rc=0` with real work uncommitted: 17:12:28-17:35:25
+      ("Waiting for the background test task to complete — will resume once
+      notified.", leaving `tools/repair_tr_tail_glyphs.py`,
+      `tools/repair_strongs_tw_ambiguous.py` and a queue edit dirty) and
+      18:39:51-18:52:56 ("I'll stop here and wait for the background test
+      task notification before proceeding.", leaving
+      `tools/audit_lexicon_provenance.py` dirty). Both stage-window
+      attributions are derived from file mtimes against `run.log`, not
+      recorded by the loop itself. Landed the following hour together with
+      this note: the orphaned diff (the lexicon-provenance audit's
+      stale-baseline fix, covering two undocumented commits' worth of drift
+      since the 2026-08-23 baseline) was verified sound, `flutter analyze`
+      clean, full `flutter test` suite run to completion in the foreground
+      (2799/2799), and a refuter caught one real error in it — the docstring
+      claimed s2tw's undocumented mismatch was "1,051 characters" when the
+      script's own `field_pairs`/`convert`/`KNOWN_EDITS` measure 1,065;
+      fixed before commit. As before, the actual fix for the recurring
+      pattern is outside this repo's reach — it lives in `run.sh`/
+      `prompt.md` under `~/Library/Application Support/yswords-loop/`,
+      which this loop's own guard rails say not to edit unattended.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an

@@ -71,11 +71,16 @@ THE LEXICON MOVES WITH THE TEXT — 21 MORE
   `assets/strongs/*.json` hold a Simplified field and a Traditional one per
   entry, and the Traditional side was produced by opencc, which has no 侄 → 姪
   mapping. (Asserted here without proof when this was written; MEASURED and
-  confirmed 2026-08-23 by `tools/audit_lexicon_provenance.py` — 28,276 of
-  28,377 field pairs are byte-identical to `opencc -c s2t`, against ~89% for
-  s2tw/s2twp/s2hk. It matters that this is now measured rather than assumed,
-  because the neighbouring VERSE asset was NOT made by opencc and the two files
-  therefore need different arguments.)
+  confirmed 2026-08-23 by `tools/audit_lexicon_provenance.py` — at that date,
+  28,276 of 28,377 field pairs were byte-identical to `opencc -c s2t`, against
+  ~89% for s2tw/s2twp/s2hk. That raw ratio has since moved — two later,
+  deliberate, user-ruled edits (2026-09-03, 2026-09-06) rewrote thousands of
+  characters toward this app's Bible-edition orthography — but the provenance
+  conclusion has not: see that tool's current docstring for the up-to-date
+  ratio and the "fully explained" metric it now uses instead of raw match.
+  It matters that this is now measured rather than assumed, because the
+  neighbouring VERSE asset was NOT made by opencc and the two files therefore
+  need different arguments.)
   So all 21 Traditional 侄 came through untouched, in 14 entries, and
   every one of them is 侄子 or 侄女 — Lot (H3876, G3091), Bethuel (H1328),
   Iscah (H3252), Jonadab (H3082, H3122), Jonathan (H3083). A reader who taps

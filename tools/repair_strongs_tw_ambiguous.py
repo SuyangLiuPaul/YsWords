@@ -5,28 +5,42 @@ A DIFFERENT DEFECT FROM THE VERSE ASSET, THOUGH IT LOOKS THE SAME
   Every fix so far has been a converter HOLE in `assets/cuvs-yhwh-tr.json` — a
   Traditional form the converter could not write at all (隻, 淨, 牆, 餘, 癒 …),
   found by "our asset holds zero of it". `assets/strongs/{hebrew,greek}.json`
-  has no holes: `glossZhTw`/`defZhTw` are `opencc -c s2t` of `glossZh`/`defZh`,
-  character for character, in 28,276 of the 28,377 field pairs. Remeasured
-  2026-08-23 by `tools/audit_lexicon_provenance.py`, which also rules out
-  s2tw/s2twp/s2hk — each matches only ~89%, so the configuration is pinned and
-  not merely the tool.
+  has no holes: `glossZhTw`/`defZhTw` ARE `opencc -c s2t` of `glossZh`/`defZh`
+  — not "character for character with a fixed high match rate" any more, since
+  a later, deliberate 2026-09-06 orthography reset (see below) rewrote
+  thousands of characters away from raw `s2t` output on purpose. The provenance
+  claim that survives is: **every character where this file disagrees with
+  fresh `opencc -c s2t` output falls into a short, dated, named list of edits —
+  none unexplained.** `tools/audit_lexicon_provenance.py` verifies exactly that
+  ("fully explained" ratio, currently 100.00% for s2t against ~95–97% for
+  s2tw/s2twp/s2hk, whose disagreements are a different, unrelated set of
+  characters this repo has never touched) — so the configuration is still
+  pinned, just no longer provable from raw match rate alone.
 
   CORRECTION, 2026-08-23. This paragraph used to end "with ZERO manual edits in
   all 28,377 field pairs (verified by re-converting every Simplified field and
   comparing)", and that was already false when it was written. 109 characters
-  in 101 fields disagree with opencc: 88 侖 → 崙 (cf0782d, 14:03) and 21
-  侄 → 姪 (ca09531), both of which landed hours before this file did at 14:15
-  the same afternoon. Nothing was damaged, because none of the rules below
-  touches either character — but a later pass reasoning "the lexicon has never
-  been hand-edited, so reconverting it is safe" would spell Hebron 希伯侖 again.
-  The audit enumerates the exceptions instead of assuming there are none.
+  in 101 fields disagreed with opencc at the time: 88 侖 → 崙 (cf0782d, 14:03)
+  and 21 侄 → 姪 (ca09531), both of which landed hours before this file did at
+  14:15 the same afternoon. Nothing was damaged, because none of the rules
+  below touches either character — but a later pass reasoning "the lexicon has
+  never been hand-edited, so reconverting it is safe" would spell Hebron 希伯侖
+  again. The audit enumerates the exceptions instead of assuming there are
+  none — and now enumerates 24, not 2, after this script's own 89 substitutions
+  (applied 2026-09-03, below) and a further 2026-09-06 reset of ~2,872
+  characters (爲→為, 羣→群, 衆→眾, 着→著, 喫→吃, 牀→床) onto this app's
+  Bible-edition orthography, delegated by the user and applied by
+  `tools/reset_lexicon_orthography.py --apply --user-ruled`.
 
   So the exposure here runs the other way. opencc never fails to convert; it
   fails by picking the WRONG expansion when one Simplified character maps to
-  several Traditional ones, and apart from those two repairs the file has never
-  been hand-edited, so every one of those mistakes is still in it. An inventory diff cannot see this —
-  the character it wrote is a perfectly good Traditional character, just not
-  the right one.
+  several Traditional ones. Every character this script and the 2026-09-06
+  reset touch is now in `tools/audit_lexicon_provenance.py`'s `KNOWN_EDITS`,
+  so a re-conversion pass can tell a documented repair from real drift — but
+  it can no longer assume "nothing else has ever been hand-edited": a lot else
+  now has, all of it named. An inventory diff cannot see any of this — every
+  character opencc wrote is a perfectly good Traditional character, just not
+  always the right one, or not always the one this edition has chosen to keep.
 
 WHAT IT ACTUALLY PRINTS TODAY
   Names first, because a study tool that misspells a Bible name is the worst
