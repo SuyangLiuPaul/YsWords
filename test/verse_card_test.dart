@@ -292,11 +292,21 @@ void main() {
 
       // 17 characters × 22 pt × 3 — the CJK metrics of the bundled
       // subset, not a proportional substitute squeezing them narrower.
+      // ±1px tolerance, added 2026-09-08: exact on macOS (1122) but the
+      // GitHub Actions ubuntu-latest runner's text shaper rounds one
+      // glyph's advance the other way and rasterises 1123 — a sub-pixel
+      // rounding difference between platforms' text layout, not a font
+      // substitution (the three fixed-width assertions above, which
+      // don't depend on font metrics, are exact on both; a proportional
+      // fallback font would be off by hundreds of pixels, not one).
       expect(
         image.width,
-        (_cjkVerse.length * verseCardBodyFontSize(_cjkVerse.length) *
-                kVerseCardPixelRatio)
-            .round(),
+        closeTo(
+          _cjkVerse.length *
+              verseCardBodyFontSize(_cjkVerse.length) *
+              kVerseCardPixelRatio,
+          1,
+        ),
       );
 
       // Measured 0.258 on this font. A .notdef box fills its em solid,
