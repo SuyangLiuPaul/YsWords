@@ -2376,6 +2376,32 @@ reported. Work these top-down before P2.
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
+- [ ] **Three `audit_*.py` docstrings quote stale headline numbers —
+      fix the prose, not the corpus.** Found on a routine 2026-09-08
+      audit re-run (`NEXT_TASK.md` fallback: no queue item was
+      actionable). `audit_tagged_quote_balance.py`'s docstring says
+      2,485 verses / 35 of 66 books unreconciled / 9 close-before-open
+      events "at every commit since `d03c81d2`"; live is 2,487 / 33 /
+      4, which is what `test/tagged_quote_balance_test.dart` already
+      pins — root cause is commit `60e51d4e` (2026-09-03), which
+      re-pinned the Dart test after a P0 branch merge but never touched
+      this script's prose. `audit_tagged_running_text.py`'s docstring
+      says "335 verses differ" (undated); live is 322, and 13 named
+      `EXPLAINED`-table verse-IDs print "no longer reads long — update
+      EXPLAINED/UNSETTLED" — real drift, but no single causing commit
+      identified (ruled out both `60e51d4e` and today's `d423f5e9`).
+      `audit_tagged_rendered_extras.py`'s docstring claims raw-vs-raw
+      "yields 113" in one sentence and then states 102 three lines
+      later in the same docstring — self-contradictory before this
+      hour; live is 102. All three are documentation-only: no `--check`
+      gate, corpus asset, or pinned test disagrees with the live
+      numbers. A refuter agent verified the whole table against a
+      second script run and git history and found no numeric error.
+      Full re-run of all 21 `tools/audit_*.py`, the three `--check`
+      modes and `test/test_audit_p0_check.py` (all pass) in
+      `docs/p0-drift-2026-09-08.md`. Fix: reword the three docstrings
+      to match; nothing to repair in `assets/`.
+
 - [x] **2026-09-08 RECONCILED — three different counts of the CSB
       divine-name restorations were on record at once (962 in
       `bible_versions.dart`'s comment, 964 in `d9de55f6`'s own commit
