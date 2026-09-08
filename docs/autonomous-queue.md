@@ -3916,6 +3916,24 @@ reported. Work these top-down before P2.
       sentence, and invites correction. **Change nothing until they
       answer.**
 
+      **2026-09-09: the internal disagreement above is CLOSED by
+      `50dcc102`'s publisher-text adoption — the reading-asset-vs-official
+      question is not.** The adopted 太 17:20 now ends
+      `……并且你们没有一件不能做的事了。”` with the quotation closed at
+      17:20's own end, and 17:21 is now itself the whole self-contained
+      `〔有古卷在此有21节：……〕` apparatus — i.e. the reading asset switched
+      sides and now agrees with the tagged corpus that 17:21 is apparatus,
+      not scripture. §二's reason 1 above (「阅读档 17:20 的引号开了没有关，
+      一直到 17:21 末尾才关上」) is therefore now **false of the current
+      asset** and has been rewritten out of the letter. What is still
+      live, and still needs the publisher: the **official** witness
+      (`7a2dc43`) keeps the old pattern — quotation open across 17:20/21,
+      17:21 read as scripture — so this edition's current text now
+      disagrees with the official 和合本 instead of with the tagged
+      corpus. §二 has been reworded to ask that question.
+      **Checkbox stays open — this is a publisher question, not a
+      tagged-corpus one, and it is not this loop's to close.**
+
 
 - [x] **Four verses print a WORD the tagged import supplies and this edition
       does not: 士師記 15:2 我請求, 15:5 葡萄園, 15:18 現在, 撒下 21:2 大.**
@@ -7580,6 +7598,38 @@ has never seen this repo.
       are worth touching at all — take one narrow question at a time,
       starting with 使徒行传 7:32 since it has the strongest internal
       evidence.
+
+- [ ] **The 2026-09-09 publisher-text adoption introduced two new
+      discrepancies against both the official 和合本 and our own tagged
+      corpus.** `50dcc102` ("Adopt the publisher's current text, then
+      repair it against the official 和合本") replaced 8,566 verses in
+      `assets/cuvs-yhwh.json` / `-tr.json`. Running
+      `tools/audit_tagged_rendered_extras.py` afterwards surfaced two ids
+      where the newly adopted text now reads against both witnesses —
+      confirmed by an independent refuter, not just re-derived by me:
+
+      | id | ours (post-adoption) | official `7a2dc43` | tagged corpus |
+      |---|---|---|---|
+      | `010002023` 撒下 2:23 | 枪**𨱔**刺入 | 槍**鐏**刺入 | 枪**鐏**刺入 |
+      | `041015012` 可 15:12 | 「那么，」 | 「那**麼樣**，」 | 「那**么样**，」 |
+
+      Both `50dcc102^` (the commit right before the adoption) and the two
+      independent witnesses agree with each other and disagree only with
+      the newly adopted text, so this is something the adoption
+      introduced, not a pre-existing defect in either witness. Character
+      counts confirmed by direct grep: `assets/cuvs-yhwh.json` has 𨱔×1,
+      鐏×0; the tagged corpus combined has 鐏×1, 𨱔×0.
+
+      **Filed, not repaired: `assets/cuvs-yhwh.json` and `-tr.json` are
+      frozen.** `test/cuvs_yhwh_frozen_test.dart` pins both by hash; every
+      thaw so far has been lifted by the owner, in his own commit, for
+      the publisher's own text — never by this loop. Two candidate
+      repairs are ready (鐏 for 𨱔; 那么样 for 那么) but that decision, and
+      whether it counts as "the publisher's own text" the way the two
+      prior thaws did, belongs to the owner. Held in `tools/
+      audit_tagged_rendered_extras.py`'s `CANDIDATE` table so a future
+      re-import that fixes or worsens either is visible as drift, not
+      silently swallowed.
 
 ## P1 — Bible study correctness
 

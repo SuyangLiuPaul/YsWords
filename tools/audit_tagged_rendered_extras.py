@@ -15,13 +15,10 @@ production compares against a verse whose `<note: …>` has already been strippe
 while the tagged line still carries the note inlined as `〔…〕`. On that input
 the class is **1,160 verses**, almost all of it note asymmetry. This file
 compares RAW against RAW instead, which makes the two sides express notes the
-same way and yields **102** — a strict subset of the 1,160, verified. (This
-docstring previously said 113 here while the breakdown three lines below it
-already said 102 — self-contradictory. 102 is the one this script actually
-prints, confirmed 2026-09-08 at `ece056b7`. Corrected.) That is deliberate:
-the raw census is the conservative one, and every verse it reports is
-reported by the production census too. Use the Dart test for the production
-figure and this for triage.
+same way and yields a much smaller number — a strict subset of the 1,160,
+verified. That is deliberate: the raw census is the conservative one, and
+every verse it reports is reported by the production census too. Use the Dart
+test for the production figure and this for triage.
 
 `audit_tagged_running_text.py` covers the same two files but answers a different
 question — it strips notes from both sides first and asks whether OUR text lost
@@ -30,33 +27,33 @@ duplication artifacts with "ours is right, do not repair towards the tagged
 copy", which is true of the reading text and says nothing about what the sheet
 prints. Seven of those dismissed artifacts were on screen.
 
-WHAT COMES OUT, over 31,102 verses:
+WHAT COMES OUT, over 31,102 verses (re-measured 2026-09-09, after `50dcc102`
+"Adopt the publisher's current text…" replaced 8,566 verses in the reading
+asset — see the retirement note below the tables for why these figures moved
+so far from what this docstring said the day before):
 
-    270  hidden by the guard, sheet falls back to the reader's verse
- 30,730  tagged line matches ideograph for ideograph
-    102  PASS the guard and read long   <- this file
+    386  hidden by the guard, sheet falls back to the reader's verse
+ 30,698  tagged line matches ideograph for ideograph
+     18  PASS the guard and read long   <- this file
 
-and the 102 split:
+and the 18 split:
 
-     89  note formatting only — identical once notes are stripped from both
+     10  note formatting only — identical once notes are stripped from both
          sides. This edition writes a translator note as `<note: …>` in the
          reading asset and inlines it as `〔…〕` in the tagged corpus, and the
          two imports word them differently.
-     13  still read long, of which
-          6  divine-name or cross-reference NOTE WORDING
-          6  the 〔有古卷在此有…〕 textual-variant convention, where the
-             reading asset opens the bracket at the end of the PREVIOUS verse
-             and closes it at the end of this one while the tagged corpus
-             inlines the whole bracket into this verse alone
-          1  馬太福音 17:21, which LOOKS like the six and is not — checked
-             individually after a refuter broke the assumption. 太 17:20 does
-             not open a bracket, and the print sets 17:21 as plain text with a
-             footnote, so the tagged corpus's 「有古卷在此有21節：」 is an
-             editorial claim neither this edition nor the print makes there.
-             Still queued for the publisher — see the note on EXPLAINED below.
+      8  still read long, of which
+          4  divine-name or cross-reference NOTE WORDING (unchanged by the
+             adoption)
+          2  a versification / apparatus-placement shift the adoption made TO
+             our own reading asset, moving where a sentence or a bracket
+             attaches relative to the tagged corpus's placement, with no text
+             lost on either side — see EXPLAINED
+          2  CANDIDATE — the adoption's own new discrepancies, filed as a P0
+             item, not repaired here (the asset is frozen) — see CANDIDATE
 
-and two classes that USED to be here and are not any more, both kept in tables
-so a re-import that brings one back is reported as a REGRESSION:
+and one class that USED to be here and is not any more, kept in a table so a
+re-import that brings one back is reported as a REGRESSION:
 
       7  DUPLICATION — a character of scripture printed twice. Repaired
          2026-08-24, `repair_tagged_rendered_duplication.py`.
@@ -65,6 +62,29 @@ so a re-import that brings one back is reported as a REGRESSION:
          witness lines were read for each and the Hebrew was found to be
          carried independently by `assets/originals/` — so deleting the word
          from the sheet costs the app no Strong's number. See that file.
+
+RETIRED 2026-09-09: nine entries that used to sit in EXPLAINED — six of the
+〔有古卷在此有…〕 split-bracket family (太 18:11, 太 23:14, 可 15:28, 路 23:17,
+约 5:4, 徒 24:7), 馬太福音 17:21 (which had its own note, below), and two
+divine-name NOTE WORDING entries (亚 6:14, 亚 8:14) — stopped reading long when
+`50dcc102` changed the READING asset's own bracket/note convention to match
+the tagged corpus at those ids. Not moved into a REGRESSION-style table: the
+mechanism was an external text swap by the publisher, not a repair this
+script's tooling performed, so there is nothing here for a future re-import to
+regress against — a fresh import would show up as new NEW/EXPLAINED work on
+its own terms, not as a reappearance of an old one.
+
+馬太福音 17:21 in particular did not just stop reading long — the internal
+DISAGREEMENT it was filed over is now gone. Before `50dcc102`, the reading
+asset's 17:20 left its quotation OPEN and closed it at the end of 17:21,
+treating 17:21 as scripture; the tagged corpus treated all of 17:21 as a
+`〔有古卷在此有21節…〕` apparatus. The adopted text now closes the quotation at
+the END of 17:20 and renders 17:21 as exactly that apparatus bracket — i.e.
+the reading asset switched sides and now agrees with the tagged corpus. What
+is left is a NEW disagreement, reading asset vs. the official witness (git
+blob `7a2dc43`), which still sets 17:21 as scripture inside the quotation the
+way this edition used to. That is a publisher question, not a tagged-corpus
+one, and `docs/和合本雅伟版-请教出版方.md` §二 has been rewritten to ask it.
 """
 import json
 import re
@@ -111,43 +131,39 @@ EXPLAINED = {
     "001018019": "note wording; tagged repeats the 原文是雅伟 gloss",
     "002024001": "note wording; ours marks the second place [雅伟]",
     "014029006": "note wording; ours marks the second place [雅伟]",
-    "038006014": "note wording; tagged quotes the name inside the note",
-    "038008014": "note wording; tagged reads 万军之雅伟说的 for 说",
     "038010012": "note wording; tagged quotes the pronoun inside the note",
-    # The 〔有古卷在此有…〕 convention. The bracket opens at the end of the
-    # PREVIOUS verse in the reading asset and closes at the end of this one, so
-    # the reading verse carries only its half; the tagged corpus inlines the
-    # whole apparatus into this verse. Nothing is missing on either side.
-    # NOT one of the six below, though it reads like one. 太 17:20 ends
-    # 「…沒有一件不能做的事了。」 and opens no bracket, and the printed 1919
-    # sets 17:21 as plain text with a footnote. The tagged corpus supplies the
-    # whole 「有古卷在此有21節：」 apparatus by itself.
+    # 2026-09-09: `50dcc102` ("Adopt the publisher's current text…") replaced
+    # most of the reading asset and, at these two ids, changed which verse a
+    # sentence or bracket is attached to relative to the tagged corpus's
+    # placement. Checked against both the tagged corpus and `50dcc102^`
+    # (pre-adoption): the full text is present on both sides once the pair of
+    # verses is read together — nothing is missing, only where it is split.
     #
-    # 2026-09-03, a THIRD line of evidence, structural and from inside the
-    # frozen asset itself: the reading asset's 太 17:20 ends 「…不能做的事了。」
-    # with its quotation still OPEN, and closes it at the end of 17:21
-    # (「…不能趕它出來>。”」). This edition can only be reading 17:21 as
-    # scripture inside the speech opened at 17:20 — an apparatus bracket would
-    # not close a quotation. Blob `7a2dc43` does exactly the same thing, AND
-    # sets （有古卷加：…） across 18:10/18:11 where the convention does apply.
-    # So it is two independent lines against the tagged import, not the
-    # symmetric standoff this entry used to describe.
-    #
-    # STILL not deleted, and the reason is now the only one left: what would be
-    # deleted is an instance of the publisher's OWN apparatus notation, which
-    # is the exact class docs/cuv-yhwh-publisher-notes.md was written about
-    # after this repo removed the publisher's notation three times. Undoing it
-    # also needs a SECOND edit — the tagged 17:20's `”`, which the frozen asset
-    # does not carry — or 17:21's closer would be left orphaned. Both edits are
-    # ready and neither touches a Strong's number (the tagged 17:21 is one
-    # untagged run); they need the publisher's word, not a script's.
-    "040017021": "tagged supplies a 有古卷在此有21節 apparatus 太 17:20 does not open",
-    "040018011": "有古卷在此有 bracket; opener is on 太 18:10",
-    "040023014": "有古卷在此有 bracket; opener is on 太 23:13",
-    "041015028": "有古卷在此有 bracket; opener is on 可 15:27",
-    "042023017": "有古卷在此有 bracket; opener is on 路 23:16",
-    "043005004": "有古卷在此有 bracket; opener and 等候水动 are on 约 5:3",
-    "044024007": "有古卷在此有 bracket; opener and 要按我们的律法审问 are on 徒 24:6",
+    # 路 20:30/31: the reading asset now ends v30 after 「第二個、」 and opens
+    # v31 with 「第三個也娶過她；」; the tagged corpus (unchanged) keeps both
+    # clauses in v30 and opens v31 at 「那七個…」.
+    "042020030": "versification shift; 第三个也娶过她 moved from v30 to v31",
+    # 徒 28:28/29: the reading asset now ends v28 plain and opens v29 with the
+    # whole `〔有古卷在此有：…〕` apparatus self-contained; the tagged corpus
+    # (unchanged) still opens the bracket at the end of v28 and closes it at
+    # the end of v29, the way the OTHER six 有古卷 entries used to before this
+    # same adoption made every one of them self-contained too (see the
+    # retirement note in the module docstring).
+    "044028028": "bracket-convention shift; 有古卷 apparatus is now self-contained on v29",
+}
+
+# Genuine candidates, opened 2026-09-09 by the SAME adoption commit
+# (`50dcc102`) that retired the entries the module docstring lists above.
+# Verified against BOTH the official witness (git blob `7a2dc43`, the plain
+# 耶和華 edition the repair layer itself reads) and the independent tagged
+# corpus, which agree with each other and disagree with the adopted text —
+# see `docs/autonomous-queue.md` for the full three-way witness table. Filed
+# as a P0 item, NOT repaired here: `assets/cuvs-yhwh*.json` are frozen
+# (`test/cuvs_yhwh_frozen_test.dart`) and only the owner may thaw them for a
+# publisher character, in his own commit.
+CANDIDATE = {
+    "010002023": "撒下 2:23 — ours reads 枪𨱔, witness+tagged agree on 枪鐏",
+    "041015012": "可 15:12 — ours reads 那么, witness+tagged agree on 那么样",
 }
 
 # The four supplied words, repaired 2026-09-03. Kept here rather than deleted
@@ -234,13 +250,18 @@ def main():
     print(f"  reads long on scripture: {len(real)}")
 
     repaired = {**REPAIRED_DUPLICATION, **REPAIRED_SUPPLIED}
-    known = repaired.keys() | EXPLAINED.keys()
+    known = repaired.keys() | EXPLAINED.keys() | CANDIDATE.keys()
     regressed = [h for h in real if h[0] in repaired]
+    candidates_hit = [h for h in real if h[0] in CANDIDATE]
     fresh = [h for h in real if h[0] not in known]
 
     for vid, row, line in regressed:
         print(f"\nREGRESSION {vid}  {row['book']} {row['chapter']}:{row['verse']}"
               f"  — {repaired[vid]} is back")
+    for vid, row, line in candidates_hit:
+        print(f"\nCANDIDATE {vid}  {row['book']} {row['chapter']}:{row['verse']}"
+              f"  — {CANDIDATE[vid]}"
+              f"  (filed in docs/autonomous-queue.md, not repaired: asset frozen)")
     for vid, row, line in fresh:
         extra = "".join(
             ideographs(line)[j1:j2]
@@ -256,10 +277,11 @@ def main():
 
     # A triage note whose verse stopped reading long is drift too: a stale
     # entry can go on to swallow a real hit at the same id.
-    gone = sorted(EXPLAINED.keys() - {vid for vid, _, _ in real})
+    gone = sorted((EXPLAINED.keys() | CANDIDATE.keys()) - {vid for vid, _, _ in real})
     for vid in gone:
+        table = EXPLAINED if vid in EXPLAINED else CANDIDATE
         print(f"\n{vid} no longer reads long — update the tables: "
-              f"{EXPLAINED[vid]}")
+              f"{table[vid]}")
 
     return 1 if regressed or fresh or gone else 0
 
