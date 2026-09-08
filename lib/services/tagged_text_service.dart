@@ -11,11 +11,23 @@
 /// `cuvs-yhwh` can answer per word. Ported from SeekSparks, whose
 /// importer produced these assets.
 ///
-/// **Simplified only.** There is no Traditional tagged set — producing
-/// one means running the Simplified tagging through a 简→繁 conversion,
-/// and this app has no converter. So `cuvs-yhwh-tr` is deliberately
-/// absent from [taggedVersions], and the UI must not offer the gesture
-/// on that version rather than offering one that silently does nothing.
+/// **2026-09-08: four editions, in two scripts and two languages.**
+/// Until that day this was `cuvs-yhwh` alone, and this note said a
+/// Traditional set was impossible because "producing one means running
+/// the Simplified tagging through a 简→繁 conversion, and this app has
+/// no converter". The premise was right and the conclusion was not:
+/// nothing has to be converted, because the edition's own Traditional
+/// text is shipped beside its Simplified one and is character-aligned
+/// with it. `tools/derive_tagged_traditional.py` reads the Traditional
+/// character out of `assets/cuvs-yhwh-tr.json` at the position the
+/// Simplified character stands in, which is why the one-to-many cases
+/// (发→發/髮, 谷→谷/穀) never arise — the publisher already chose.
+///
+/// `bsb-yhwh` and `asv-yhwh` joined the same day, built by
+/// `tools/import_ydh_texts.py --tagged` out of the same 雅伟的话 export
+/// the reading assets came from, with the Strong's markup kept instead
+/// of dropped. That is what gives the Exegesis picker a real choice in
+/// English as well as Chinese.
 ///
 /// One file per book under `assets/tagged/<version>/<book>.json`,
 /// loaded lazily and cached — the set is 13 MB, far too much to hold
@@ -114,11 +126,38 @@ class TaggedTextService {
   /// Versions with a tagged asset set. Checked before any load, so an
   /// untagged version costs nothing.
   ///
-  /// Only the Simplified 雅伟版. SeekSparks also tags bsb / kjvs /
-  /// lxxwh / cuvs-plus, but YsWords does not ship those versions, and
-  /// `cuvs-yhwh-tr` has no tagged set at all — see the library note.
+  /// **This set is half of the Exegesis picker's offer** — the other
+  /// half is `availableVersions`, and `lib/utils/interlinear_editions
+  /// .dart` intersects them. Adding a code here without adding the
+  /// asset directory to `pubspec.yaml` puts a row in that picker which
+  /// opens a file the shipped app does not contain.
+  ///
+  /// SeekSparks also tags bsb / kjvs / lxxwh / cuvs-plus / csb; YsWords
+  /// does not ship those editions. `wh` is not here either: it is the
+  /// Greek original, and an interlinear of the original against itself
+  /// is a different feature from this one.
   static const Set<String> taggedVersions = {
     'cuvs-yhwh',
+    // 2026-09-08. Derived from `cuvs-yhwh` rather than tagged afresh —
+    // see the library note and `tools/derive_tagged_traditional.py`.
+    // 61 verses are absent from it (their two scripts are not the same
+    // length, so there is no position to read the Traditional character
+    // from) and fall back to plain text, exactly as an untagged verse
+    // already does.
+    'cuvs-yhwh-tr',
+    // 2026-09-08, from `tools/import_ydh_texts.py --tagged`. Both tag
+    // BOTH Testaments: 381,927 numbered runs of 388,449 (98.3%) and
+    // 346,817 of 346,832 (100.0%). Both are `g`-free — neither module
+    // carries a tense/voice/mood code anywhere, so the key is not
+    // written at all rather than written empty.
+    //
+    // The BSB one also carries 55,633 IMPLIED numbers, the largest such
+    // set in this app. Its source marks them with a trailing `x` —
+    // `eat<WH398><WH4480x>` — meaning the lemma is in the Hebrew and has
+    // no English word of its own. Those go to [TaggedRun.implied], never
+    // to `.strongs`.
+    'bsb-yhwh',
+    'asv-yhwh',
   };
 
 

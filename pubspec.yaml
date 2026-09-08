@@ -195,10 +195,26 @@ flutter:
     # marked 「见上节」 in the CUV — 民数记 1:20 carries the Hebrew of
     # 1:20 and 1:21. Per version, because the KJV beside it does not.
     - assets/originals_versification_merged.json
-    # Strong's tagging for 和合本雅伟版 — which word on screen
-    # renders which original word. 13 MB, one file per book,
-    # loaded lazily by TaggedTextService (never all at once).
+    # Strong's tagging — which word on screen renders which original
+    # word, and the data behind the Exegesis sheet's numbered running
+    # line. One file per book, loaded lazily by TaggedTextService
+    # (never all at once); 56 MB across the four editions, which is why
+    # "lazily" is not a nicety.
+    #
+    # Every code here must also be in `TaggedTextService.taggedVersions`
+    # and vice versa: the set is half of what the interlinear picker
+    # offers, so a code in the set without a line here puts a row in
+    # that picker which opens a file the shipped app does not contain.
+    # test/interlinear_picker_test.dart fails if the two disagree.
     - assets/tagged/cuvs-yhwh/
+    # 2026-09-08. Derived from the Simplified layer above rather than
+    # tagged afresh — tools/derive_tagged_traditional.py.
+    - assets/tagged/cuvs-yhwh-tr/
+    # 2026-09-08, from tools/import_ydh_texts.py --tagged: the same
+    # 雅伟的话 export the reading assets came from, with the Strong's
+    # markup kept instead of dropped.
+    - assets/tagged/bsb-yhwh/
+    - assets/tagged/asv-yhwh/
     # Public-domain commentary, one file per book, loaded lazily by
     # CommentaryService. Matthew only so far (~526 KB). Without this
     # line the failure is SILENT — the service catches the load error

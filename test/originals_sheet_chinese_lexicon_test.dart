@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -12,8 +13,7 @@ import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/services/tagged_text_service.dart';
-import 'package:yswords/widgets/implied_coverage_line.dart'
-    show kTaggedVerseFontSize;
+import 'package:yswords/utils/strongs_inline.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 
 /// The word-study sheet — the surface this port was actually for.
@@ -120,6 +120,40 @@ void main() {
     }
   }
 
+  /// Fire the tagged line's span recogniser for one run.
+  ///
+  /// The line is a single `Text.rich` whose runs are SPANS with their
+  /// own recognisers, so there is no widget to hand `tap`. This used to
+  /// be done by offset — the test font is Ahem, every glyph exactly
+  /// `fontSize` wide, 「起初，神创造天地。」 putting 创 at index 4. On
+  /// 2026-09-08 the line grew the Strong's numbers, so its plain text is
+  /// now 「起初 H7225 ，神 H430 创造 H1254 H8804 …」 and no arithmetic over
+  /// the verse's own characters lands anywhere. Firing the recogniser is
+  /// what `implied_coverage_sheet_test.dart` already does, and it does
+  /// not care where on the line the run sits.
+  ///
+  /// Matched on the STEM: the number has to land against the word rather
+  /// than after the punctuation the source baked onto it, so the
+  /// tappable span is 创造 and any trailing 。/，is a span of its own.
+  void tapRun(WidgetTester tester, String run) {
+    final (stem, _) = splitTrailingCjkPunctuation(run);
+    TextSpan? target;
+    for (final text in tester.widgetList<Text>(find.byType(Text))) {
+      final span = text.textSpan;
+      if (span is! TextSpan) continue;
+      for (final child in span.children ?? const <InlineSpan>[]) {
+        if (child is TextSpan &&
+            (child.text == run || child.text == stem) &&
+            child.recognizer is TapGestureRecognizer) {
+          target = child;
+        }
+      }
+    }
+    expect(target, isNotNull,
+        reason: 'no tappable run "$run" on the tagged line');
+    (target!.recognizer! as TapGestureRecognizer).onTap!();
+  }
+
   testWidgets('tapping an original word puts the fuller article under the '
       'CBOL definition, with the CBOL attribution still between them',
       (tester) async {
@@ -173,21 +207,7 @@ void main() {
 
     // 创造 in 创世记 1:1 is the one run in the verse that carries a
     // grammar code: H8804, Qal perfect.
-    //
-    // The tagged line is a single `Text.rich` whose runs are SPANS with
-    // their own recognisers, so there is no widget to hand `tap` — it
-    // has to be hit by offset. The test font is Ahem, whose every glyph
-    // is exactly `fontSize` wide, which makes the arithmetic exact
-    // rather than approximate: 「起初，神创造天地。」 puts 创 at index 4.
-    final line = find.byWidgetPredicate((w) =>
-        w is RichText &&
-        w.text.toPlainText().startsWith('起初，神创造')).first;
-    final origin = tester.getTopLeft(line);
-    final size = tester.getSize(line);
-    await tester.tapAt(Offset(
-      origin.dx + kTaggedVerseFontSize * 4.5,
-      origin.dy + size.height / 2,
-    ));
+    tapRun(tester, '创造');
     for (var i = 0; i < 16; i++) {
       await tester.pump();
     }
@@ -210,14 +230,7 @@ void main() {
     }
 
     // Tap 创造 (H1254, carries H8804) …
-    final line = find.byWidgetPredicate((w) =>
-        w is RichText && w.text.toPlainText().startsWith('起初，神创造')).first;
-    final origin = tester.getTopLeft(line);
-    final size = tester.getSize(line);
-    await tester.tapAt(Offset(
-      origin.dx + kTaggedVerseFontSize * 4.5,
-      origin.dy + size.height / 2,
-    ));
+    tapRun(tester, '创造');
     for (var i = 0; i < 16; i++) {
       await tester.pump();
     }
@@ -235,6 +248,12 @@ void main() {
     }
     expectOnlyTheKnownInkWarning(tester);
     expect(heading, findsNothing);
-    expect(find.textContaining('H8804'), findsNothing);
+    // 2026-09-08: was `findsNothing`. H8804 is still on screen once, and
+    // has to be: the tagged line now prints the Strong's numbers in it,
+    // and H8804 is 创造's grammar code — a fact about the VERSE, which
+    // does not stop being true because the reader opened a different
+    // entry. What must be gone is the decoded block under the card,
+    // which is what `heading` above is.
+    expect(find.textContaining('H8804'), findsOneWidget);
   });
 }

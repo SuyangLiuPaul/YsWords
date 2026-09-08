@@ -8213,4 +8213,38 @@ const uiStrings = {
     'zh-Hant': 'WH — 韋斯科特-霍特希臘文新約（1881）',
     'en': 'WH — Westcott-Hort Greek New Testament (1881)',
   },
+  // ====== 2026-09-08: the Exegesis sheet's interlinear picker ======
+  // 「words要看选择可以看到的有数字的和翻译可以选版本的」 — the reader
+  // should SEE the numbered line, and the translation should let them
+  // pick a version. See lib/utils/interlinear_editions.dart.
+  'interlinearVersion': {
+    'zh-Hans': '原文对照译本',
+    'zh-Hant': '原文對照譯本',
+    'en': 'Interlinear version',
+  },
+  // Said when the reader's own Bible has no tagged layer, so the line
+  // below belongs to someone else's translation. Nothing narrows in
+  // silence: they are told whose, by name.
+  'interlinearSubstituted': {
+    'zh-Hans': '{reading} 没有原文编号对照，下面这行是 {shown}。',
+    'zh-Hant': '{reading} 沒有原文編號對照，下面這行是 {shown}。',
+    'en': '{reading} carries no Strong\'s alignment, so the line below '
+        'is {shown}.',
+  },
+  // Said on a verse the chosen edition has no runs for at all — the 61
+  // verses of 和合本雅偉版(繁體) whose two scripts are not the same
+  // length, and a partial canon's missing books.
+  'interlinearVerseMissing': {
+    'zh-Hans': '{shown} 这一节没有原文编号对照。',
+    'zh-Hant': '{shown} 這一節沒有原文編號對照。',
+    'en': '{shown} has no tagged text for this verse.',
+  },
+  // Unreachable while any tagged edition ships. Written anyway because
+  // "the list is empty" and "the list has a first element" must not be
+  // the same code path — see InterlinearSource.none.
+  'interlinearNone': {
+    'zh-Hans': '目前没有任何随附译本带有原文编号对照。',
+    'zh-Hant': '目前沒有任何隨附譯本帶有原文編號對照。',
+    'en': 'No bundled edition carries a Strong\'s alignment.',
+  },
 };

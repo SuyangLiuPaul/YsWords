@@ -4,6 +4,7 @@ import 'dart:convert';
 // the conditional-export helper. Web build still uses
 // `fetch(url)`; native build skips with a debug log (the
 // offline-pack UI is web-only anyway).
+import 'package:yswords/services/tagged_text_service.dart';
 import 'package:yswords/utils/fetch_helper.dart';
 
 import 'package:flutter/foundation.dart';
@@ -359,9 +360,42 @@ class OfflinePackService extends ChangeNotifier {
       'philemon', 'hebrews', 'james', '1_peter', '2_peter',
       '1_john', '2_john', '3_john', 'jude', 'revelation',
     ];
+    // 2026-09-08: the Strong's-tagged layers — the data behind the
+    // Exegesis sheet's numbered running line.
+    //
+    // **These had never been in the offline pack at all**, and the
+    // omission was not a decision anybody took: the note on the Chinese
+    // lexicons two lines up says a reader taking this pack offline
+    // "would have got the tagging and the English gloss and then an
+    // empty lexicon block", which is written on the belief that the
+    // tagging was already here. It was not. `assets/tagged/cuvs-yhwh/`
+    // has shipped in the bundle since the sheet was ported and appears
+    // in no URL list, so downloading the originals pack and going
+    // offline left the sheet falling back to plain verse text — the
+    // exact feature the pack exists to make available.
+    //
+    // Read off `TaggedTextService.taggedVersions` rather than written
+    // out, so an edition cannot join the picker and quietly miss the
+    // pack the way these four did. It is 56 MB of the 91 this category
+    // now states, which is a real number on a metered connection and is
+    // why `approximateMbFor` moved rather than being rounded.
+    const editions = <String>[
+      'cuvs-yhwh',
+      'cuvs-yhwh-tr',
+      'bsb-yhwh',
+      'asv-yhwh',
+    ];
+    assert(
+      editions.length == TaggedTextService.taggedVersions.length &&
+          editions.every(TaggedTextService.taggedVersions.contains),
+      'the offline pack and TaggedTextService.taggedVersions disagree '
+      'about which editions are tagged',
+    );
     return [
       ...lexicon,
       for (final b in books) 'assets/originals/$b.json',
+      for (final v in editions)
+        for (final b in books) 'assets/tagged/$v/$b.json',
     ];
   }
 
@@ -456,9 +490,23 @@ class OfflinePackService extends ChangeNotifier {
         // never re-measured" staleness as the sermons figure).
         return 12;
       case OfflinePackCategory.originals:
-        // 3.4 MB of that is the Chinese BDB + Thayer, added
-        // 2026-09-08; measured, not estimated.
-        return 35; // 17 MB Strong's + 17 MB per-book interlinear
+        // 2026-09-08: 35 -> 87. 3.4 MB of the old figure was the
+        // Chinese BDB + Thayer; the 52 MB that moved it this far is
+        // `assets/tagged/`, four editions of Strong's-tagged running
+        // text that had never been enumerated here at all. See the
+        // note in `_originalsUrls`: the omission was an oversight, not
+        // a size decision somebody took, and it made the Exegesis
+        // sheet's whole line unavailable to a reader who had "taken
+        // the originals offline".
+        //
+        // This is now the second-largest category after `bibles` and
+        // it is a raw-bytes number like all the others. The four tagged
+        // sets gzip to 9.4 MB of the 54, so a reader on a metered
+        // connection downloads far less than this says — but stating
+        // the compressed number for one category alone would make it
+        // look cheaper than `maps`, which is already-compressed JPEG
+        // and does not shrink at all.
+        return 87; // 17 Strong's + 17 interlinear + 54 tagged
       case OfflinePackCategory.maps:
         return 29; // 55 jpg/png images
     }

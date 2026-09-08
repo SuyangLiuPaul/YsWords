@@ -10,6 +10,7 @@ import 'package:yswords/services/originals_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/services/tagged_text_service.dart';
 import 'package:yswords/widgets/implied_coverage_line.dart';
+import 'package:yswords/utils/strongs_inline.dart';
 import 'package:yswords/widgets/originals_sheet.dart';
 
 /// The same rules as `implied_coverage_line_test.dart`, but driven
@@ -116,14 +117,23 @@ void main() {
   // `tapOnText` refuses 「天」 because 創世記 1:1's own word chips print
   // the same character three more times. Fire the span's recognizer,
   // which is the callback a real tap dispatches to.
+  //
+  // 2026-09-08: matched on the STEM, not on the whole run. The line now
+  // prints the Strong's numbers in it, and the number has to land
+  // against the word rather than after the punctuation the source baked
+  // onto it — 起初H7225， and not 起初，H7225, which reads as though the
+  // number tagged the comma. So the tappable span is the stem and the
+  // trailing 。/，/」 is a span of its own with no recogniser. See
+  // `splitTrailingCjkPunctuation`.
   Future<void> tapRun(WidgetTester tester, String run) async {
+    final (stem, _) = splitTrailingCjkPunctuation(run);
     TextSpan? target;
     for (final text in tester.widgetList<Text>(find.byType(Text))) {
       final span = text.textSpan;
       if (span is! TextSpan) continue;
       for (final child in span.children ?? const <InlineSpan>[]) {
         if (child is TextSpan &&
-            child.text == run &&
+            (child.text == run || child.text == stem) &&
             child.recognizer is TapGestureRecognizer) {
           target = child;
         }

@@ -128,6 +128,31 @@ const _kNotesSortMode = 'notesSortMode';
 const Set<String> _kNotesSortAllowed = {'canonical', 'recent', 'oldest'};
 const String _kNotesSortDefault = 'canonical';
 
+// 2026-09-08: the reader's standing pick of interlinear edition for
+// the Exegesis sheet — the version whose own words carry the Strong's
+// numbers in the running line, 「地<0776>是<01961>空虚<08414>」.
+//
+// Left unset the sheet follows the reader's own Bible
+// (`resolveInterlinearEdition`), which is right for the reader who never
+// opens the picker and is most of them. Touching the picker is therefore
+// not "show me this once" — it is a reader saying their reading version
+// and their study version are different texts, which is an ordinary
+// thing to want (梁家铿译本 has no tagging; 和合本雅伟版 does) and a
+// tedious thing to re-say on every verse. So an explicit pick persists.
+//
+// NOT allowlist-clamped here, unlike `_kNotesSortMode` and `_kAiModel`
+// above: the legal set is `interlinearEditions`, computed from the
+// catalogue and the tagged-asset set, so it cannot be written as a
+// const. The clamp is applied where it is READ — an unoffered code
+// resolves to the default rather than being honoured — which also means
+// an edition that leaves `availableVersions` after a reader picked it
+// degrades quietly instead of blanking the sheet.
+//
+// `''` is "never picked". The picker never writes `''` back, because a
+// "follow my reading version" row would mean something different from
+// every other row in the list.
+const _kInterlinearVersion = 'interlinearVersion';
+
 // Dashboard layout (Round 55). Every section has its own
 // `dashboard_section_visible_<name>` flag plus a single
 // `dashboard_section_order` list that drives the render order.
@@ -215,6 +240,8 @@ class AppSettings extends ChangeNotifier {
   // 2026-05-24 (v1.3.19): TTS fields removed with the 朗读 feature.
   // 2026-05-24 (v1.2.91): see _kNotesSortMode comment.
   String _notesSortMode = _kNotesSortDefault;
+  // 2026-09-08: see _kInterlinearVersion comment.
+  String _interlinearVersion = '';
 
   /// Render section / paragraph headings (e.g. "The Sermon on the
   /// Mount" / "登山宝训") above the matched verse in the reading
@@ -384,6 +411,19 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kNotesSortMode, mode);
+  }
+
+  /// 2026-09-08: the reader's standing pick of interlinear edition, or
+  /// `''` when they have never made one. See `_kInterlinearVersion` for
+  /// why it persists and why it is not clamped here.
+  String get interlinearVersion => _interlinearVersion;
+
+  Future<void> setInterlinearVersion(String version) async {
+    if (_interlinearVersion == version) return;
+    _interlinearVersion = version;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kInterlinearVersion, version);
   }
 
   Future<void> setGeminiApiKey(String key) async {
@@ -899,6 +939,7 @@ class AppSettings extends ChangeNotifier {
     _fuzzySearch = false;
     setFuzzySearchEnabled(false);
     _showStrongsInOriginals = true;
+    _interlinearVersion = '';
     _autoExpandFirstRef = false;
     _showBibleEvidence = true;
     _notificationsEnabled = false;
@@ -935,6 +976,7 @@ class AppSettings extends ChangeNotifier {
       _kBoldVerseText,
       _kFuzzySearch,
       _kShowStrongsInOriginals,
+      _kInterlinearVersion,
       _kAutoExpandFirstRef,
       _kShowBibleEvidence,
       _kNotificationsEnabled,
@@ -1136,6 +1178,12 @@ class AppSettings extends ChangeNotifier {
         ? storedNotesSort
         : _kNotesSortDefault;
 
+    // 2026-09-08: see _kInterlinearVersion. No allowlist clamp on the
+    // way in — the legal set is computed, and a code that has since left
+    // it is turned back into the default by `resolveInterlinearEdition`,
+    // which is the only reader.
+    _interlinearVersion = prefs.getString(_kInterlinearVersion) ?? '';
+
     // Dashboard layout (Round 55): load order list + per-section
     // visibility. Missing entries fall back to defaults; the legacy
     // showBibleEvidence flag wins over the new key when both are set
@@ -1283,6 +1331,7 @@ class AppSettings extends ChangeNotifier {
         'pickVerseAfterChapter': _pickVerseAfterChapter,
         'aiModel': _aiModel,
         'notesSortMode': _notesSortMode,
+        'interlinearVersion': _interlinearVersion,
         'dashboardSectionOrder':
             _dashboardSectionOrder.map((s) => s.name).toList(),
         'dashboardVisibility': {
@@ -1383,6 +1432,15 @@ class AppSettings extends ChangeNotifier {
         final raw = m['notesSortMode'] as String;
         _notesSortMode =
             _kNotesSortAllowed.contains(raw) ? raw : _kNotesSortDefault;
+      }
+      // 2026-09-08: no clamp, deliberately — see _kInterlinearVersion.
+      // A code that is not offered on THIS device (a build where the
+      // edition was withdrawn, a web build with a restricted asset
+      // stripped) is still worth carrying across a settings import: the
+      // reader may be importing into a device where it IS offered, and
+      // `resolveInterlinearEdition` ignores it everywhere it is not.
+      if (m['interlinearVersion'] is String) {
+        _interlinearVersion = m['interlinearVersion'] as String;
       }
       if (m['dashboardSectionOrder'] is List) {
         final names = (m['dashboardSectionOrder'] as List)

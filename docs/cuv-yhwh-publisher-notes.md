@@ -1,7 +1,9 @@
 # 和合本雅偉版 — what the publisher has told us about their own text
 
 **Read this before repairing anything in `assets/cuvs-yhwh*.json` or
-`assets/tagged/cuvs-yhwh/`.**
+`assets/tagged/cuvs-yhwh/` — and, since 2026-09-08,
+`assets/tagged/cuvs-yhwh-tr/`, which is derived from both (see the last
+section).**
 
 This file exists because its absence cost us three deletions of the same
 correct data. The publisher had already explained their notation; the
@@ -87,3 +89,36 @@ Add it here, verbatim, with the date and who said it, before acting on
 it. The verbatim text is the point — this whole episode turned on the
 difference between "an asterisk appears in 115 NT verses" and "we use
 主* for 耶穌", and only one of those can settle anything.
+
+## The Traditional tagged layer, 2026-09-08 — derived, not tagged
+
+`assets/tagged/cuvs-yhwh-tr/` is not a second import and is not a
+conversion. `tools/derive_tagged_traditional.py` takes the Simplified
+tagged layer run by run and, for each character, reads the **Traditional
+character the publisher printed at that position** out of
+`assets/cuvs-yhwh-tr.json`. Nothing is translated, transliterated or
+looked up in a conversion table.
+
+That is the whole reason it is allowed to exist. The one-to-many cases
+that make 简→繁 a judgement call — 发→發/髮, 谷→谷/穀, 面→面/麵, 松→松/鬆
+— are all already decided in the publisher's own Traditional text, so
+this repo never has to make one. 19 characters stand opposite more than
+one Traditional form across the Bible; not one of them is guessed at.
+
+Three things follow, and all three are the kind of thing this page
+exists to record before somebody rediscovers them:
+
+  * **61 verses are absent from the layer.** Their two scripts are not
+    the same length, so there is no position to read from. They are
+    skipped and named (`--list-skipped`), never guessed. The Exegesis
+    sheet falls back to plain text there, exactly as for any untagged
+    verse.
+  * **23,730 verses are verified against the shipped Traditional text
+    character for character**, by `tools/derive_tagged_traditional.py`
+    and again by `test/tagged_traditional_derived_test.dart`. The rest
+    cannot be, because the tagged import writes a publisher's note as
+    〔…〕 where the reading asset writes `<note: …>` — a notation
+    difference, not a scripture difference.
+  * **Neither reading asset is opened for writing**, and the freeze
+    above is untouched. If a future pass wants to "fix" the derived
+    layer, the thing to fix is the generator; the layer is output.

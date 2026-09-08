@@ -464,6 +464,24 @@ String bibleVersionLanguage(String value) {
   return 'zh-Hans';
 }
 
+/// 2026-09-08: the edition's full name — 'Berean Standard Bible
+/// (Yahweh)', '和合本雅偉版(繁體)' — for a list where the reader is
+/// choosing a text rather than glancing at a gutter tag.
+///
+/// The complaint this answers was filed against the sibling app on the
+/// day the Exegesis picker was asked for: 「BGT BSB 雅简这些别人看简写不
+/// 知道什么意思」. A picker whose entire purpose is letting a reader
+/// choose a text they recognise cannot label its rows with the
+/// abbreviation they said they could not read. Falls back to the code
+/// itself for an edition the catalogue does not know, the same as
+/// [shortBibleVersionLabel].
+String fullBibleVersionLabel(String version) {
+  for (final v in bibleVersions) {
+    if (v.value == version) return v.menuLabel;
+  }
+  return version;
+}
+
 String shortBibleVersionLabel(String version) {
   return bibleVersions
       .firstWhere(

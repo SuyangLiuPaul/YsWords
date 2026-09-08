@@ -11,13 +11,65 @@ import 'package:yswords/services/tagged_text_service.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('only the Simplified 雅伟版 claims tagging', () {
+  test('four editions claim tagging, and the untagged ones do not', () {
+    // 2026-09-08: this test read "only the Simplified 雅伟版 claims
+    // tagging", and said of `cuvs-yhwh-tr` that "no Traditional tagged
+    // set exists. Claiming otherwise would put a gesture on screen that
+    // answers nothing." The claim was true when it was written and the
+    // reasoning behind it was not: the set did not exist because nobody
+    // had derived one, and deriving one needs no converter — the
+    // edition's own Traditional text is shipped beside its Simplified
+    // one and is character-aligned with it. See
+    // `tools/derive_tagged_traditional.py` and
+    // `test/tagged_traditional_derived_test.dart`.
     expect(TaggedTextService.supports('cuvs-yhwh'), isTrue);
-    // No Traditional tagged set exists. Claiming otherwise would put a
-    // gesture on screen that answers nothing.
-    expect(TaggedTextService.supports('cuvs-yhwh-tr'), isFalse);
+    expect(TaggedTextService.supports('cuvs-yhwh-tr'), isTrue);
+    expect(TaggedTextService.supports('bsb-yhwh'), isTrue);
+    expect(TaggedTextService.supports('asv-yhwh'), isTrue);
+    // Still nothing on screen that answers nothing: an edition with no
+    // layer must not claim one.
     expect(TaggedTextService.supports('kjv'), isFalse);
+    expect(TaggedTextService.supports('leb'), isFalse);
+    expect(TaggedTextService.supports('csb'), isFalse);
+    expect(TaggedTextService.supports('biblexg-v2'), isFalse);
+    expect(TaggedTextService.supports('biblexg-v2-tr'), isFalse);
+    // The Greek original. An interlinear of the original against itself
+    // is a different feature from this one.
+    expect(TaggedTextService.supports('wh'), isFalse);
     expect(TaggedTextService.supports('nasb'), isFalse);
+  });
+
+  test('the Traditional layer answers in the Traditional script', () async {
+    final runs = await TaggedTextService.forVerse(
+      version: 'cuvs-yhwh-tr',
+      englishBook: 'Genesis',
+      chapter: 1,
+      verse: 1,
+    );
+    expect(runs, isNotNull,
+        reason: 'assets/tagged/cuvs-yhwh-tr/ must be registered in '
+            'pubspec.yaml and shipped');
+    final joined = runs!.map((r) => r.text).join();
+    expect(joined, '起初，神創造天地。');
+    expect(runs.firstWhere((r) => r.text.contains('創造')).strongs, 'H1254');
+  });
+
+  test('the English layers answer too', () async {
+    for (final (version, word, number) in [
+      ('bsb-yhwh', 'created', 'H1254'),
+      ('asv-yhwh', 'created', 'H1254'),
+    ]) {
+      final runs = await TaggedTextService.forVerse(
+        version: version,
+        englishBook: 'Genesis',
+        chapter: 1,
+        verse: 1,
+      );
+      expect(runs, isNotNull, reason: '$version has no Genesis 1:1');
+      final hit = runs!.where((r) => r.text.contains(word));
+      expect(hit, isNotEmpty, reason: '$version 1:1 does not print "$word"');
+      expect(hit.first.strongs, number);
+    }
   });
 
   test('Genesis 1:1 resolves word by word', () async {

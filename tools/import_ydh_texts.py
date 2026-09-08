@@ -269,6 +269,75 @@ DROP_TAG_ONLY = re.compile(
     r'|<RF>|<Rf>')             # theWord footnote marker, Lam 1:1 only
 ANY_TAG = re.compile(r'<[^>]*>')
 
+# ── the same mapping again, but keeping the numbers ─────────────────
+# `--tagged` writes `assets/tagged/<code>/<book>.json`, the layer behind
+# the Exegesis sheet's numbered running line
+# (「地<0776>是<01961>空虚<08414>」). It is the SAME markup table above,
+# read once more with the Strong's tags kept instead of dropped, which is
+# why it lives in this file rather than in a script of its own: two
+# readings of one source in one place cannot drift apart.
+#
+# Only `bsb-yhwh` and `asv-yhwh`. `bsb` is not offered as a version here,
+# and `wh` is the Greek original — an interlinear of the original against
+# itself is a different feature, and its 90,911 `<WT…>` morphology tags
+# would want a `g` field this pass does not build.
+TAGGED = {'bsb-yhwh', 'asv-yhwh'}
+
+# theWord puts the tag AFTER the text it governs, so a run is the text
+# since the previous tag. Group 3 is the `x` suffix.
+#
+# **`x` is not a malformed tag.** It is the module's own mark for a lemma
+# that IS in the Hebrew or Greek and has no English word of its own —
+# `eat<WH398><WH4480x>` for מִן, `Hallelujah<WH1984><WH3050x>` for
+# הַלְלוּ + יָהּ. `bsbys` writes 55,633 of them, headed by H853x (the
+# direct-object marker אֵת) and G3588x (the Greek article); `asvs` writes
+# none at all. They become `TaggedRun.i` — implied — never `.s`. Reading
+# them as ordinary numbers would either put 55,633 empty runs in the
+# layer or attach the article's number to whatever English word happened
+# to precede it.
+STRONGS = re.compile(r'<W([HG])(\d+)(x?)>')
+
+# Everything in DROP_TAG_ONLY except the Strong's tags, which this pass
+# consumes rather than discards. Written out again rather than cut out of
+# the other pattern by string surgery: a regex assembled by deleting an
+# alternative from another regex is a thing nobody can read. The two are
+# kept honest by the check that actually matters instead — every verse's
+# runs must concatenate to the string `clean()` produced for the SAME
+# verse, so a tag one pattern knows and the other does not stops the run.
+DROP_TAG_ONLY_KEEPING_STRONGS = re.compile(
+    r'<WT[^>]*>'               # morphology (none in these two)
+    r'|<C[LM]>'                # poetic line / paragraph break
+    r'|</?redletter>'          # words of Christ
+    r'|</?i>'                  # ASV italics for supplied words
+    r'|</?cite>'               # ASV psalm superscription
+    r'|<RF>|<Rf>')             # theWord footnote marker
+
+# Strong's itself stops at H8674 / G5624. Neither module writes above its
+# own ceiling — measured, not assumed — and neither carries a tag in the
+# H99xx placeholder band the CSB module is full of. The constant is here
+# so a future source that DOES grow one fails loudly instead of shipping
+# a number no lexicon can answer.
+MAX_STRONGS = {'H': 8674, 'G': 5624}
+
+# What `--tagged` must produce. Measured against the shipped reading
+# assets; exact rather than a ceiling, for the reason EXPECTED_REPAIRS is
+# exact. Measured 2026-09-08.
+#
+# `numbered` is 98.3% of `bsb-yhwh`'s runs and 100.0% of `asv-yhwh`'s.
+# The ASV figure is not a rounding: 15 of its 346,832 runs carry no
+# number, and they are the `<cite>` psalm superscriptions, which no
+# Strong's tag governs.
+#
+# `implied` is `bsb-yhwh`'s 55,633 `x` tags, the largest such set in this
+# app. `asv-yhwh` has none — that module writes no `x` at all — and a
+# zero here is a fact about the source rather than a gap in this pass.
+TAGGED_EXPECTED = {
+    'bsb-yhwh': {'verses': 31086, 'runs': 388449, 'numbered': 381927,
+                 'implied': 55633},
+    'asv-yhwh': {'verses': 31086, 'runs': 346832, 'numbered': 346817,
+                 'implied': 0},
+}
+
 # ASV John 8:11's orphaned closing bracket — see the docstring.
 #
 # **Keyed by text, and that is the whole point.** The first version of
@@ -327,6 +396,194 @@ def clean(raw):
     return re.sub(r'\s+', ' ', s).strip(), leftover
 
 
+def classify(pending):
+    """-> (the run's own number, the numbers it only implies).
+
+    The `x` suffix is the source's own statement that the lemma has no
+    English word here, so it never becomes `s` however few numbers the
+    run has. A run whose tags are ALL `x` therefore carries no `s` at
+    all, which is the honest reading: whatever word is in that run is
+    not what those numbers render.
+    """
+    real = [n for n, x in pending if not x]
+    implied = [n for n, x in pending if x]
+    return (real[0] if real else ''), real[1:] + implied
+
+
+def split_runs(s, code, ref):
+    """A cleaned verse with its Strong's tags still in it → runs.
+
+    `s` has already had DROP_WITH_CONTENT applied, so no footnote body
+    can reach a run and inherit the number of the word it interrupted —
+    the defect `scripture_markup.dart` records for the Septuagint's
+    `(102:12)` markers, 4,400 of which took the number they were glued
+    to. This app drops footnotes from the reading text entirely (see the
+    header), so unlike the SeekSparks importer there is no note run to
+    emit; there is nothing left to emit one for.
+    """
+    out, cursor, pending = [], 0, []
+
+    def strip(seg):
+        return DROP_TAG_ONLY_KEEPING_STRONGS.sub('', seg)
+
+    for m in STRONGS.finditer(s):
+        seg = strip(s[cursor:m.start()])
+        cursor = m.end()
+        number = int(m.group(2))
+        if number > MAX_STRONGS[m.group(1)]:
+            sys.exit(f'{code} {ref}: {m.group(1)}{number} is above the '
+                     "Strong's ceiling — this source has grown a "
+                     'placeholder band, adjudicate it before importing')
+        pending.append((f'{m.group(1)}{number}', m.group(3) == 'x'))
+        if seg == '' and STRONGS.match(s, cursor):
+            # Consecutive tags govern the one run between them; collect
+            # the numbers rather than emit a run with no text.
+            continue
+        strongs, implied = classify(pending)
+        pending = []
+        if seg == '' and out:
+            if strongs:
+                out[-1]['i'].append(strongs)
+            out[-1]['i'].extend(implied)
+            continue
+        out.append({'w': seg, 's': strongs, 'i': implied})
+
+    tail = strip(s[cursor:])
+    if tail:
+        if pending:
+            strongs, implied = classify(pending)
+            out.append({'w': tail, 's': strongs, 'i': implied})
+        elif out:
+            out[-1]['w'] += tail
+        else:
+            out.append({'w': tail, 's': '', 'i': []})
+    elif pending:
+        strongs, implied = classify(pending)
+        if out:
+            if strongs:
+                out[-1]['i'].append(strongs)
+            out[-1]['i'].extend(implied)
+        else:
+            out.append({'w': '', 's': strongs, 'i': implied})
+    return out
+
+
+_WS = re.compile(r'\s')
+
+
+def collapse_runs(runs):
+    """`re.sub(r'\\s+', ' ', …).strip()`, applied ACROSS the run boundaries.
+
+    `clean()` normalises the whole verse in one call, so a run pass that
+    normalised each run on its own would leave a doubled space wherever
+    the tagger happened to cut between two whitespace characters, and the
+    runs would then no longer concatenate to the text this app ships.
+    Streaming the same rule with one bit of carried state — "was the last
+    character emitted a space" — reproduces it exactly.
+    """
+    out, last_was_space = [], True   # True so leading space is dropped
+    for r in runs:
+        buf = []
+        for ch in r['w']:
+            if _WS.match(ch):
+                if last_was_space:
+                    continue
+                buf.append(' ')
+                last_was_space = True
+            else:
+                buf.append(ch)
+                last_was_space = False
+        out.append({**r, 'w': ''.join(buf)})
+    # `.strip()`'s trailing half: walk back over runs that are now empty
+    # or all space.
+    for r in reversed(out):
+        r['w'] = r['w'].rstrip(' ')
+        if r['w']:
+            break
+    return out
+
+
+def fold_empty_runs(runs):
+    """Drop runs with no text, keeping their numbers.
+
+    A run can lose its text three ways — it was whitespace the collapse
+    above ate, it was a `<cite>`/`<i>` tag and nothing else, or the
+    tagger cut twice in the same place. Its numbers are still a fact
+    about the verse, so they move to the run in front as IMPLIED: they
+    are numbers the original has that no English word here renders,
+    which is exactly what `TaggedRun.i` means.
+
+    A leading empty run has no run in front and its numbers move to the
+    run behind instead. Dropping them silently would lose a lemma; the
+    count is reported either way.
+    """
+    out = []
+    orphaned = []
+    for r in runs:
+        if r['w']:
+            if orphaned:
+                r = {**r, 'i': orphaned + r['i']}
+                orphaned = []
+            out.append(r)
+            continue
+        if r['s']:
+            if out:
+                out[-1]['i'].append(r['s'])
+            else:
+                orphaned.append(r['s'])
+        if out:
+            out[-1]['i'].extend(r['i'])
+        else:
+            orphaned.extend(r['i'])
+    if orphaned and out:
+        out[0] = {**out[0], 'i': orphaned + out[0]['i']}
+    return out
+
+
+def encode_runs(runs):
+    """The on-disk shape: `i` omitted when empty, no `g` at all.
+
+    `assets/tagged/cuvs-yhwh/` omits an empty `i`/`g` and
+    `TaggedRun.fromJson` defaults both, so this matches its neighbour
+    rather than carrying an empty array on every run. `g` is never
+    written: neither module carries a tense/voice/mood code anywhere, and
+    an empty list would claim the question was asked and came back empty.
+    """
+    out = []
+    for r in runs:
+        row = {'w': r['w'], 's': r['s']}
+        if r['i']:
+            row['i'] = r['i']
+        out.append(row)
+    return out
+
+
+def tagged_verse(raw, code, ref, body):
+    """Runs for one verse, checked against the text this app ships.
+
+    `body` is what `clean()` produced for the same source string, after
+    the one hand-named repair — the exact characters that go into
+    `assets/<code>.json`. The runs must concatenate to it. That single
+    equality is what makes the layer safe to render INSTEAD of the verse,
+    which is what the Exegesis sheet does with it.
+    """
+    s = DROP_WITH_CONTENT.sub('', raw)
+    runs = fold_empty_runs(collapse_runs(split_runs(s, code, ref)))
+    if code in REPAIR_STRAY_CLOSER and runs:
+        # ASV John 8:11's orphaned `]]`, removed from the tail run the
+        # same way `build` removes it from the verse. Not a general rule
+        # here either: see the note on REPAIR_STRAY_CLOSER.
+        runs[-1] = {**runs[-1], 'w': STRAY_CLOSER.sub('', runs[-1]['w'])}
+        runs = [r for r in runs if r['w']] or runs[:1]
+        runs[-1] = {**runs[-1], 'w': runs[-1]['w'].rstrip()}
+    joined = ''.join(r['w'] for r in runs)
+    if joined != body:
+        sys.exit(f'{code} {ref}: the runs do not reproduce the verse\n'
+                 f'  runs : {joined!r}\n'
+                 f'  text : {body!r}')
+    return runs
+
+
 def load_books(db):
     """(seq, source code, English name) for all 66, in canonical order.
 
@@ -342,7 +599,7 @@ def load_books(db):
         'SELECT seq, code, name_en FROM books ORDER BY seq'))
 
 
-def build(db, text, check=False):
+def build(db, text, check=False, tagged=False):
     books = load_books(db)
     seq_of = {code: seq for seq, code, _name in books}
     name_of = {code: name for _seq, code, name in books}
@@ -355,6 +612,7 @@ def build(db, text, check=False):
                  f'expected {text.verses}')
 
     out, empties, leftovers, repairs, diffs = [], 0, set(), [], []
+    layer = {}   # english book -> {"chapter:verse": [run, ...]}
     for book, chapter, verse, raw, plain in rows:
         body, left = clean(raw)
         leftovers.update(left)
@@ -375,6 +633,10 @@ def build(db, text, check=False):
             'text': body,
             'id': f'{seq_of[book]:03d}{chapter:03d}{verse:03d}',
         })
+        if tagged:
+            ref = f'{chapter}:{verse}'
+            layer.setdefault(name_of[book], {})[ref] = tagged_verse(
+                raw, text.code, f'{name_of[book]} {ref}', body)
 
     # Everything below refuses to write rather than warning. A Bible
     # asset that is subtly wrong is worse than one that is missing: the
@@ -404,6 +666,22 @@ def build(db, text, check=False):
     if len({r['id'] for r in out}) != len(out):
         sys.exit(f'{text.code}: duplicate verse ids')
 
+    if tagged:
+        counted = {
+            'verses': sum(len(b) for b in layer.values()),
+            'runs': sum(len(r) for b in layer.values() for r in b.values()),
+            'numbered': sum(1 for b in layer.values() for r in b.values()
+                            for x in r if x['s']),
+            'implied': sum(len(x['i']) for b in layer.values()
+                           for r in b.values() for x in r),
+        }
+        expected = TAGGED_EXPECTED.get(text.code)
+        if expected is not None and counted != expected:
+            sys.exit(f'{text.code}: tagged layer measures {counted}, '
+                     f'expected {expected} — read the difference before '
+                     'changing TAGGED_EXPECTED')
+        print(f'  tagged layer             : {counted}')
+
     if check:
         print(f'  repaired                 : {repairs or "none"}')
         print(f'  disagrees with `plain` in: {len(diffs)} verses')
@@ -413,7 +691,7 @@ def build(db, text, check=False):
             print(f'      here : {body[:100]}')
         named = sum(1 for r in out if 'Yahweh' in r['text'])
         print(f'  verses reading Yahweh    : {named}')
-    return out
+    return out, layer
 
 
 def main():
@@ -427,6 +705,9 @@ def main():
     ap.add_argument('--check', action='store_true',
                     help='print the `plain` disagreements and the divine-'
                          'name census')
+    ap.add_argument('--tagged', action='store_true',
+                    help='build `assets/tagged/<code>/` instead of the '
+                         'reading asset — see TAGGED')
     ap.add_argument('--db', default=SOURCE_DB)
     args = ap.parse_args()
 
@@ -444,6 +725,12 @@ def main():
     unknown = [c for c in codes if c not in BY_CODE]
     if unknown:
         sys.exit(f'unknown text(s): {unknown}')
+    if args.tagged:
+        untagged = [c for c in codes if c not in TAGGED]
+        if untagged:
+            sys.exit(f'--tagged: {untagged} has no tagged layer here — '
+                     f'only {sorted(TAGGED)} do, and the reason each other '
+                     'text does not is in the note on TAGGED')
     if not os.path.isfile(args.db):
         sys.exit(f'{args.db}: not found — run Yahwehdehua/tools/'
                  'export-app-db.py to produce it')
@@ -452,7 +739,7 @@ def main():
     for code in codes:
         text = BY_CODE[code]
         print(f'{code} (source `{text.source}`)')
-        out = build(db, text, check=args.check)
+        out, layer = build(db, text, check=args.check, tagged=args.tagged)
         print(f'  records                  : {len(out)}')
         by_ref = {(r['book'], r['chapter'], r['verse']): r['text']
                   for r in out}
@@ -460,6 +747,43 @@ def main():
             body = by_ref.get((bk, str(c), str(v)))
             if body is not None:
                 print(f'  {bk} {c}:{v}: {body[:80]}')
+
+        if args.tagged:
+            # The reading asset is NOT rewritten here, and it is not
+            # merely left alone either: the freshly-built records are
+            # compared against the shipped file byte for byte. The whole
+            # value of this layer is that the runs concatenate to the
+            # verse a reader sees, and that claim is only worth
+            # something if the verse this pass checked against is the
+            # verse that ships.
+            shipped_path = os.path.join(ASSETS, f'{code}.json')
+            with io.open(shipped_path, encoding='utf-8') as f:
+                shipped = f.read()
+            fresh = json.dumps(out, ensure_ascii=False,
+                               separators=(',', ':'))
+            if fresh != shipped:
+                sys.exit(f'  {code}: this run rebuilds `{shipped_path}` '
+                         'differently from the file on disk. The tagged '
+                         'layer would be checked against a verse nobody '
+                         'reads. Reconcile the reading asset first.')
+            print(f'  reading asset            : matches {shipped_path}')
+            if args.dry_run:
+                print('  dry run — nothing written')
+                continue
+            out_dir = os.path.join(ASSETS, 'tagged', code)
+            os.makedirs(out_dir, exist_ok=True)
+            total = 0
+            for english_book, verses in layer.items():
+                path = os.path.join(
+                    out_dir, english_book.lower().replace(' ', '_') + '.json')
+                with io.open(path, 'w', encoding='utf-8') as f:
+                    json.dump(verses, f, ensure_ascii=False,
+                              separators=(',', ':'))
+                total += os.path.getsize(path)
+            print(f'  wrote                    : {len(layer)} files to '
+                  f'{out_dir} ({total / 1e6:.1f} MB)')
+            continue
+
         if args.dry_run:
             print('  dry run — nothing written')
             continue

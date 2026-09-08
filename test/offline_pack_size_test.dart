@@ -160,9 +160,19 @@ void main() {
       extractBetween('static const List<String> _toolsUrls = [', '];');
   final lexiconUrls = extractBetween('const lexicon = <String>[', '];');
   final bookNames = extractBetween('const books = <String>[', '];');
+  // 2026-09-08: the four Strong's-tagged editions joined the originals
+  // pack. Extracted from the source the same way the other two lists
+  // are, so adding an edition to the service cannot leave this test
+  // measuring the old set — which is exactly how `assets/tagged/`
+  // managed to be in the bundle and in no URL list for as long as it
+  // was.
+  final taggedEditions =
+      extractBetween('const editions = <String>[', '];');
   final originalsUrls = [
     ...lexiconUrls,
     for (final b in bookNames) 'assets/originals/$b.json',
+    for (final v in taggedEditions)
+      for (final b in bookNames) 'assets/tagged/$v/$b.json',
   ];
 
   late List<String> mapUrls;
@@ -181,6 +191,10 @@ void main() {
     // 4 -> 6 on 2026-09-08 with the Chinese BDB and Thayer.
     expect(lexiconUrls, hasLength(6));
     expect(bookNames, hasLength(66), reason: '39 OT + 27 NT books');
+    // cuvs-yhwh, cuvs-yhwh-tr, bsb-yhwh, asv-yhwh — and the same four
+    // are `TaggedTextService.taggedVersions`, which
+    // test/interlinear_picker_test.dart pins against pubspec.yaml.
+    expect(taggedEditions, hasLength(4));
   });
 
   test('debugUrlsFor(maps) is non-empty and matches the source=="asset" '

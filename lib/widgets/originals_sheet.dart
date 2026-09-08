@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/text_patterns.dart'
     show sanitizeForSearch, notePattern, bracePattern, squarePattern;
+import 'package:yswords/constants/bible_versions.dart'
+    show fullBibleVersionLabel;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/original_word.dart';
@@ -13,6 +15,8 @@ import 'package:yswords/models/strongs.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/interlinear_editions.dart';
+import 'package:yswords/utils/strongs_inline.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
 import 'package:yswords/widgets/collapsible_english_ref.dart';
@@ -68,6 +72,16 @@ class OriginalsSheet extends StatefulWidget {
 
 class _OriginalsSheetState extends State<OriginalsSheet> {
   late Future<List<_VerseOriginals>> _future;
+
+  /// Which edition's tagged line this sheet is drawing, and why.
+  ///
+  /// Resolved once when the sheet opens and again whenever the reader
+  /// uses the picker — not watched off `AppSettings` in `build`, because
+  /// changing it means re-reading a 13 MB asset set and `build` is not
+  /// the place to start that. The picker is the only thing that can
+  /// change it while a sheet is open, so it does both: writes the
+  /// preference and reloads.
+  late InterlinearChoice _choice;
   OriginalWord? _selectedWord;
   StrongsEntry? _selectedEntry;
   ConcordanceResult? _selectedConcordance;
@@ -200,6 +214,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   @override
   void initState() {
     super.initState();
+    _choice = resolveInterlinearEdition(
+      chosen: context.read<AppSettings>().interlinearVersion,
+      currentVersion: widget.currentVersion,
+    );
     _future = _loadAll();
     _verseIndex = {
       for (final v in widget.allVerses)
@@ -227,10 +245,13 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       final words = await OriginalsService.forVerse(
           english, v.chapter, v.verse,
           version: widget.currentVersion);
-      // Costs nothing on an untagged version: supports() is checked
+      // The CHOSEN edition, not the reader's own — that is what the
+      // picker is for. They are the same code for a reader whose Bible
+      // is tagged and has not been overridden, which is most readers.
+      // Costs nothing when nothing is offerable: supports() is checked
       // before any asset is touched.
       final tagged = await TaggedTextService.forVerse(
-        version: widget.currentVersion ?? '',
+        version: _choice.version ?? '',
         englishBook: english,
         chapter: v.chapter,
         verse: v.verse,
@@ -348,11 +369,50 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   /// target to reach H854 אֵת or G2532 καί would reopen that decision to
   /// buy 7 runs out of 364,539. Pinned by
   /// `test/implied_coverage_census_test.dart`.
+  ///
+  /// ## 2026-09-08: whose verse this is, and the numbers in it
+  ///
+  /// The line is the CHOSEN edition's verse, which is not necessarily
+  /// the reader's — see `_choice` and the picker above it.
+  ///
+  /// And the numbers are new. This line has existed since the
+  /// sheet was ported and printed the words alone, with a dotted
+  /// underline marking what was tappable — which answers "where can I
+  /// tap" and not the question the owner asked, 「可以看到的有数字的」.
+  /// The form he pointed at is 精读圣经's, numbers set into the sentence:
+  ///
+  ///     地<0776>是<01961>空虚<08414>混沌<0922>，渊<08415>面<06440>黑暗<02822>；
+  ///
+  /// Behind `showStrongsInOriginals`, the switch that already hides the
+  /// H####/G#### badge under each original-word chip in this same
+  /// sheet — its Settings subtitle says "in the exegesis sheet", and
+  /// this line is in the exegesis sheet. One switch for one kind of
+  /// apparatus in one panel, rather than a second switch a reader would
+  /// have to find. Off leaves the line as running prose: the same words
+  /// in the same order, minus the numbers.
+  ///
+  /// The number is not itself a tap target. At 10 pt a bare `H776` is
+  /// well under the 44 pt a finger needs, and tapping anywhere on the
+  /// word opens exactly what tapping the number would.
   Widget _taggedVerseLine(List<TaggedRun> runs, ColorScheme scheme) {
     final base = TextStyle(
       fontSize: kTaggedVerseFontSize,
       color: scheme.onSurface,
       height: 1.5,
+    );
+    final showNumbers = context.watch<AppSettings>().showStrongsInOriginals;
+    final lexical = TextStyle(
+      fontSize: kImpliedNoteFontSize,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.2,
+      color: scheme.primary,
+    );
+    // Grammar codes and implied numbers are apparatus about the
+    // apparatus, so they sit a step back from the word's own number
+    // rather than beside it in the same weight.
+    final secondary = lexical.copyWith(
+      fontWeight: FontWeight.w400,
+      color: scheme.onSurfaceVariant,
     );
     return Text.rich(
       TextSpan(
@@ -365,29 +425,83 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
           // character was the stray brace, so the guard is what keeps the
           // repair from adding to a fault it was meant to remove.
           for (final run in runs.where((r) => r.text.isNotEmpty))
-            if (!run.isTagged)
-              TextSpan(text: run.text, style: base)
-            else
-              TextSpan(
-                text: run.text,
-                style: base.copyWith(
-                  // A dotted underline rather than link colouring:
-                  // nearly every word is tappable, and colouring them
-                  // all would repaint scripture as a wall of links.
-                  decoration: TextDecoration.underline,
-                  decorationStyle: TextDecorationStyle.dotted,
-                  decorationColor: scheme.primary.withValues(alpha: 0.45),
-                ),
-                recognizer: (TapGestureRecognizer()
-                  ..onTap = () {
-                    setState(() => _impliedRun = run);
-                    _loadRootEntry(run.strongs, grammarFrom: run);
-                  }),
-              ),
+            ..._taggedRunSpans(run, base, lexical, secondary, scheme,
+                showNumbers: showNumbers),
         ],
       ),
     );
   }
+
+  /// One run: its word, then its numbers, then the punctuation the
+  /// source baked onto the end of the word.
+  ///
+  /// The punctuation is split off by [splitTrailingCjkPunctuation] so
+  /// the number lands against the word it tags. 25.5% of this corpus's
+  /// runs end in a CJK mark — `{"w":"起初，","s":"H7225"}` is Genesis
+  /// 1:1 — and H7225 is רֵאשִׁית, "beginning". Printing the run whole
+  /// gives 起初，H7225, which reads as though the number tagged the
+  /// comma.
+  List<InlineSpan> _taggedRunSpans(
+    TaggedRun run,
+    TextStyle base,
+    TextStyle lexical,
+    TextStyle secondary,
+    ColorScheme scheme, {
+    required bool showNumbers,
+  }) {
+    final numbers = showNumbers && run.isTagged
+        ? inlineStrongsNumbers(
+            strongs: run.strongs,
+            grammar: run.grammar,
+            implied: run.implied,
+          )
+        : const <StrongsNumberToken>[];
+    if (numbers.isEmpty) {
+      return [
+        if (!run.isTagged)
+          TextSpan(text: run.text, style: base)
+        else
+          TextSpan(
+            text: run.text,
+            style: _taggableStyle(base, scheme),
+            recognizer: _runRecognizer(run),
+          ),
+      ];
+    }
+    final (stem, trailing) = splitTrailingCjkPunctuation(run.text);
+    return [
+      TextSpan(
+        text: stem,
+        style: _taggableStyle(base, scheme),
+        recognizer: _runRecognizer(run),
+      ),
+      for (final n in numbers)
+        TextSpan(
+          text: ' ${n.text}',
+          style: n.kind == StrongsNumberKind.lexical ? lexical : secondary,
+        ),
+      // Chinese sets no space between words, so without this the next
+      // run's first character butts against the number: 地H776是.
+      const TextSpan(text: ' '),
+      if (trailing.isNotEmpty) TextSpan(text: trailing, style: base),
+    ];
+  }
+
+  /// A dotted underline rather than link colouring: nearly every word is
+  /// tappable, and colouring them all would repaint scripture as a wall
+  /// of links.
+  TextStyle _taggableStyle(TextStyle base, ColorScheme scheme) =>
+      base.copyWith(
+        decoration: TextDecoration.underline,
+        decorationStyle: TextDecorationStyle.dotted,
+        decorationColor: scheme.primary.withValues(alpha: 0.45),
+      );
+
+  TapGestureRecognizer _runRecognizer(TaggedRun run) => TapGestureRecognizer()
+    ..onTap = () {
+      setState(() => _impliedRun = run);
+      _loadRootEntry(run.strongs, grammarFrom: run);
+    };
 
   /// [grammarFrom] is the tagged run the reader tapped, when they
   /// reached this entry by tapping the Chinese line. Passed explicitly
@@ -773,6 +887,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                     controller: scrollController,
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                     children: [
+                      // Scrolls with the content rather than being
+                      // pinned above it: on a phone this sheet's whole
+                      // job is to show a verse and an entry card, and a
+                      // permanently parked control row would spend a
+                      // line of that on something a reader touches once.
+                      _buildInterlinearPicker(scheme, locale),
                       for (final vo in data) _buildVerseBlock(vo, scheme),
                       // `_rootEntry` as well as `_selectedWord`: tapping
                       // a word in the Chinese line, or a chip on the
@@ -804,6 +924,162 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     );
   }
 
+  /// The picker, and the one sentence it sometimes has to say.
+  ///
+  /// A menu rather than a row of chips, and the rows carry
+  /// [fullBibleVersionLabel] rather than the gutter tag — see the note
+  /// on that function for the complaint that settles it.
+  Widget _buildInterlinearPicker(ColorScheme scheme, String locale) {
+    final offered = interlinearEditions;
+    final label =
+        uiStrings['interlinearVersion']?[locale] ?? 'Interlinear version';
+
+    if (offered.isEmpty || _choice.version == null) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Text(
+          uiStrings['interlinearNone']?[locale] ??
+              'No bundled edition carries a Strong\'s alignment.',
+          style: TextStyle(
+            fontSize: 11,
+            color: scheme.onSurfaceVariant,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
+    final shown = _choice.version!;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Wrap, not Row: at 375 pt "Interlinear version" beside
+          // "和合本雅偉版(繁體)" is wider than the column, and a Row would
+          // either overflow or ellipsise the edition name — the one
+          // string on this line the reader is here to read.
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              PopupMenuButton<String>(
+                tooltip: label,
+                initialValue: shown,
+                onSelected: _onInterlinearVersionPicked,
+                itemBuilder: (_) => [
+                  for (final code in offered)
+                    PopupMenuItem<String>(
+                      value: code,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            code == shown
+                                ? Icons.check
+                                : Icons.check_box_outline_blank,
+                            size: 14,
+                            color: code == shown
+                                ? scheme.primary
+                                : Colors.transparent,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              fullBibleVersionLabel(code),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest
+                        .withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: scheme.outlineVariant),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          fullBibleVersionLabel(shown),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        size: 18,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Nothing narrows in silence: a reader whose Bible has no
+          // tagging is told whose translation they are looking at
+          // instead, by name, rather than left to notice.
+          if (_choice.source == InterlinearSource.substituted &&
+              widget.currentVersion != null) ...[
+            const SizedBox(height: 5),
+            Text(
+              (uiStrings['interlinearSubstituted']?[locale] ??
+                      '{reading} carries no Strong\'s alignment, so the '
+                          'line below is {shown}.')
+                  .replaceAll('{reading}',
+                      fullBibleVersionLabel(widget.currentVersion!))
+                  .replaceAll('{shown}', fullBibleVersionLabel(shown)),
+              style: TextStyle(
+                fontSize: 11,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Persist the pick and reload the sheet against it.
+  ///
+  /// The preference write is fire-and-forget; the reload is not, because
+  /// the runs on screen have to change in the same frame the label does.
+  void _onInterlinearVersionPicked(String code) {
+    unawaited(context.read<AppSettings>().setInterlinearVersion(code));
+    setState(() {
+      _choice = resolveInterlinearEdition(
+        chosen: code,
+        currentVersion: widget.currentVersion,
+      );
+      // The tapped run belonged to the edition being replaced. Keeping
+      // it would leave the implied-coverage line quoting a word that is
+      // no longer on screen.
+      _impliedRun = null;
+      _future = _loadAll();
+    });
+  }
+
   Widget _buildVerseBlock(_VerseOriginals vo, ColorScheme scheme) {
     final ref = '${vo.verse.book} ${vo.verse.chapter}:${vo.verse.verse}';
     final isHebrew = (vo.words ?? const []).isNotEmpty &&
@@ -818,6 +1094,36 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     // reads cleanly. We keep `[...]` (e.g. KJV italicized supplied
     // words) since that's part of the published text.
     final verseText = sanitizeForSearch(vo.verse.text);
+
+    // 2026-09-08: `coversVerse` is applied ONLY when the tagged line is
+    // the reader's own edition.
+    //
+    // That guard exists because the sheet prints the tagged runs
+    // INSTEAD of the verse, and `assets/tagged/cuvs-yhwh/` is a separate
+    // import of the same translation: where the two divide a verse
+    // differently the sheet showed less scripture than the pane behind
+    // it. On 約伯記 10:20 the reading asset folds 10:21 in and the
+    // tagged asset does not, and the sheet printed the first clause
+    // only. 223 verses of the word-tap gesture, and never a word of
+    // text — see the method's own docstring.
+    //
+    // The claim it protects is "this line is your verse". Once the
+    // reader has picked a DIFFERENT edition that claim is not being
+    // made — the picker above says whose words these are, by name — so
+    // there is nothing for the check to protect and applying it anyway
+    // would blank the line the reader asked for on every verse whose
+    // ideographs happen not to be a subsequence of a translation they
+    // are not reading. For an English edition against a Chinese reader
+    // that is every verse in the Bible.
+    final ownEdition = _choice.version != null &&
+        _choice.version == widget.currentVersion?.toLowerCase();
+    final tagged = vo.tagged;
+    final runs = (tagged != null &&
+            tagged.isNotEmpty &&
+            (!ownEdition ||
+                TaggedTextService.coversVerse(tagged, verseText)))
+        ? tagged
+        : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -863,9 +1169,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
               // the gesture, so those fall back to the plain line.
               // (Was 238 here until 2026-09-03; that figure described
               // neither this input nor the raw one, which is 270.)
-              child: vo.tagged == null ||
-                      vo.tagged!.isEmpty ||
-                      !TaggedTextService.coversVerse(vo.tagged!, verseText)
+              child: runs == null
                   ? Text(
                       verseText,
                       style: TextStyle(
@@ -874,8 +1178,29 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                         height: 1.5,
                       ),
                     )
-                  : _taggedVerseLine(vo.tagged!, scheme),
+                  : _taggedVerseLine(runs, scheme),
             ),
+            // Said only when the chosen edition genuinely has no runs
+            // for this verse — 61 verses of `cuvs-yhwh-tr`, 16 of
+            // `bsb-yhwh`, and whatever a partial canon leaves out. NOT
+            // said when `coversVerse` sent the reader back to their own
+            // verse: there the line above IS their scripture, and
+            // captioning it with "this edition has no tagged text" would
+            // be describing a fallback that cost them nothing.
+            if ((tagged == null || tagged.isEmpty) &&
+                _choice.version != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                (uiStrings['interlinearVerseMissing']?[widget.locale] ??
+                        '{shown} has no tagged text for this verse.')
+                    .replaceAll(
+                        '{shown}', fullBibleVersionLabel(_choice.version!)),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
           const SizedBox(height: 10),
           if (words == null || words.isEmpty)
@@ -2875,8 +3200,14 @@ class _VerseOriginals {
   final List<OriginalWord>? words;
 
   /// The translation line broken into Strong's-tagged runs, when the
-  /// version the reader is on has tagging. Null means "show the verse
-  /// as plain text" — which is every version except 和合本雅伟版.
+  /// edition the sheet is drawing against has tagging for this verse.
+  ///
+  /// That edition is [_OriginalsSheetState._choice], not necessarily the
+  /// one the reader is reading — the picker at the head of the sheet is
+  /// what makes those two different. Null means "show the verse as plain
+  /// text", which until 2026-09-08 was every version except the
+  /// Simplified 和合本雅伟版 and is now four editions' worth of verses
+  /// less often.
   final List<TaggedRun>? tagged;
 
   _VerseOriginals({required this.verse, required this.words, this.tagged});
