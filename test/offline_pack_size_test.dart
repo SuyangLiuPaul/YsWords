@@ -178,7 +178,8 @@ void main() {
       () {
     expect(bibleUrls, isNotEmpty);
     expect(toolsUrls, isNotEmpty);
-    expect(lexiconUrls, hasLength(4));
+    // 4 -> 6 on 2026-09-08 with the Chinese BDB and Thayer.
+    expect(lexiconUrls, hasLength(6));
     expect(bookNames, hasLength(66), reason: '39 OT + 27 NT books');
   });
 

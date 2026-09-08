@@ -359,22 +359,23 @@ void main() {
     });
   });
 
-  group('the offline pack does not yet know about these two files', () {
-    /// Recorded rather than asserted away. `OfflinePackService`'s
-    /// `originals` category enumerates four lexicon files and this port
-    /// added a fifth and sixth, so a reader who downloads that pack and
-    /// then goes offline gets every other word-study surface and an
-    /// empty Chinese block. Nothing REGRESSES — the files were not
-    /// fetchable offline before the port either, because they were not
-    /// in the app — but the pack's promise is now incomplete.
+  group('the offline pack knows about these two files', () {
+    /// This group used to be titled "does not yet know", and recorded a
+    /// gap rather than asserting it away: `OfflinePackService`'s
+    /// `originals` category enumerated four lexicon files, this port
+    /// added a fifth and sixth, and a Chinese reader who took that pack
+    /// offline got every other word-study surface and an empty Chinese
+    /// block — the one audience the module exists for.
     ///
-    /// The fix is two lines in `_originalsUrls()`, `approximateMbFor`
-    /// 31 -> 35, and `offline_pack_size_test.dart`'s
-    /// `expect(lexiconUrls, hasLength(4))` -> 6. All three are outside
-    /// what this port was scoped to touch, so this test states the gap
-    /// where the next person will see it instead of leaving it to be
-    /// found offline.
-    test('the gap is real and this is where it is written down', () {
+    /// It named the fix precisely (two lines in `_originalsUrls()`,
+    /// `approximateMbFor` 31 -> 35, and `offline_pack_size_test`'s
+    /// `hasLength(4)` -> 6) because all three were outside what that
+    /// port was scoped to touch. All three were done on 2026-09-08. The
+    /// assertion below is unchanged and now passes on its other branch:
+    /// it was written to fire if someone added the files and left the
+    /// size figure behind.
+    test('the two files are in the originals pack, and the size '
+        'figure moved with them', () {
       final src =
           File('lib/services/offline_pack_service.dart').readAsStringSync();
       final knows = src.contains('bdb_zh') && src.contains('thayer_zh');

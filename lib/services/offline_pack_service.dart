@@ -331,6 +331,15 @@ class OfflinePackService extends ChangeNotifier {
       'assets/strongs/hebrew.json',
       'assets/strongs/greek.json',
       'assets/strongs/lxx_hebrew_to_greek.json',
+      // The Chinese BDB and Thayer, added to the bundle 2026-09-08 and
+      // to this list the same day. `chinese_lexicon_test.dart` had
+      // recorded the gap in words ("the offline pack does not yet know
+      // about these two files"); a Chinese reader taking the originals
+      // pack offline would have got the tagging and the English gloss
+      // and then an empty lexicon block, which is the one audience this
+      // module exists for.
+      'assets/strongs/bdb_zh.json',
+      'assets/strongs/thayer_zh.json',
     ];
     const books = <String>[
       // OT (39)
@@ -447,7 +456,9 @@ class OfflinePackService extends ChangeNotifier {
         // never re-measured" staleness as the sermons figure).
         return 12;
       case OfflinePackCategory.originals:
-        return 31; // 14 MB Strong's + 17 MB per-book interlinear
+        // 3.4 MB of that is the Chinese BDB + Thayer, added
+        // 2026-09-08; measured, not estimated.
+        return 35; // 17 MB Strong's + 17 MB per-book interlinear
       case OfflinePackCategory.maps:
         return 29; // 55 jpg/png images
     }
