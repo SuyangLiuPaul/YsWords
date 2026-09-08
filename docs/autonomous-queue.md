@@ -2376,6 +2376,88 @@ reported. Work these top-down before P2.
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
+- [x] **2026-09-08 RECONCILED — three different counts of the CSB
+      divine-name restorations were on record at once (962 in
+      `bible_versions.dart`'s comment, 964 in `d9de55f6`'s own commit
+      message, 969 as `docs/csb-divine-name-restorations.md`'s title and
+      row count) and none of the three had been checked against the
+      others, or against `assets/csb.json` as it actually shipped.**
+      Measured, not guessed — first from git history and the asset, then
+      confirmed by actually re-running `tools/import_csb.py --dry-run
+      --report` against the source DB (it turned out reachable from this
+      checkout after all, contrary to this item's own working
+      assumption; a refuter agent tried it and it worked).
+      **What each number was counting.** `969` was never sloppy — it is
+      exactly `len(changed)` from the importer's own `main()`, the count
+      of every verse `clean()` touched for a divine-name reason. That
+      splits into two categories: a lost LORD restored to Yahweh (967 of
+      them, as of HEAD), and 7 verses that already read Yahweh but kept
+      a stray "the/The" from the module's own earlier restoration (e.g.
+      Exodus 28:36 "Holy to the Yahweh" → "Holy to Yahweh") — not a
+      restoration of the name, just an article repaired. `962` and `964`
+      were both hand-typed attempts at the lost-LORD subset, written in
+      the same commit as the doc and never checked against it — `962`
+      undercounts by the 7 stray-article verses only if you also assume
+      no drift since, which was also false (see below); `964` turned out
+      to be reproducible exactly by running the stray-article rule
+      *before* tag-stripping, an intermediate/superseded version of the
+      script whose output was pasted into the commit message and then
+      abandoned.
+      **The actual drift.** `e41d5209` (the next day) restored 5 more
+      lost LORDs straight into `assets/csb.json` (Ps 15:4, Jer 5:13,
+      1 Kings 3:15, Isa 59:20, Mal 1:12 — confirmed by diffing the asset
+      between the two commits: exactly those 5 verse texts changed,
+      each `the Lord`/`Lord` → `Yahweh`) and its commit message correctly
+      said "962 -> 967", but it never regenerated
+      `docs/csb-divine-name-restorations.md` (`git log` shows exactly one
+      commit ever touched that file) — so the doc sat at 969 rows while
+      the shipped asset carried 974 verses' worth of fixes. Confirmed by
+      grep: none of the 5 new refs appeared in the doc before this fix.
+      **Fixed:** regenerated `docs/csb-divine-name-restorations.md` in
+      full from the DB-backed `--report` run (974 rows, replacing a
+      doc that had gone stale rather than hand-patching around it —
+      the hand-patch this item started with had 2 correct rows with
+      stale `n` values inherited from the original 969-row doc, caught
+      by the refuter and discarded in favor of the regenerated file).
+      Corrected `bible_versions.dart`'s comment and
+      `test/csb_asset_test.dart`'s docstring from 962/967→967 (both
+      sentences are specifically about the lost-LORD case, so 967 is
+      right there; the doc's title uses 974 because it counts both
+      categories). **Asset untouched** — this was a docs+comment+test
+      fix, no scripture text changed.
+      **New `test/csb_asset_test.dart` test** (`'the restorations doc is
+      not stale'`) parses the doc's row count and every ref in it against
+      `assets/csb.json`, so the next time the asset and the doc diverge,
+      CI catches it instead of a third stale figure accumulating.
+      Verified red against the original 969-row doc (restored from
+      `d9de55f6`), green after, before committing.
+      `flutter analyze` clean; full suite green except one isolated
+      pre-existing flake unrelated to this change
+      (`sermon_list_audio_signal_test.dart`'s "the sermons list renders
+      the count and the audio clause" — fails only as part of the full
+      2,638-test run, passes cleanly in isolation; this iteration's
+      changes are docs + one comment + one independent test file, none
+      of which touch sermons or locale state, so the cause is elsewhere
+      in the tree — most likely the second live session's in-flight
+      work, described below).
+      **Refuter used** (this was exactly the count-and-root-cause class
+      the refuter exists for) — it broke my first pass in two places:
+      the DB was reachable after all (I had assumed otherwise from the
+      task brief and was about to hand-patch instead of regenerating),
+      and 962/967 turned out to be *correct* under the lost-LORD-only
+      reading rather than sloppy prose as I'd first concluded. Both
+      corrections are reflected above.
+      **Note on the working tree this iteration ran in:** a second,
+      human-driven Claude session was live in this checkout throughout
+      (verse-card / projection / fuzzy-search work — 18 modified + 21
+      untracked files, still growing). Only this iteration's three files
+      (`docs/csb-divine-name-restorations.md`,
+      `lib/constants/bible_versions.dart`, `test/csb_asset_test.dart`)
+      were staged, committed, or read for this fix; the other session's
+      files were read where the task brief required it
+      (`lib/services/offline_pack_service.dart`, to rule it out as the
+      cause of the flake above) but never edited.
+
 - [x] **2026-09-07 FIXED — CSB (added the same hour, `e41d5209`) was
       listed as a version but wired into almost nothing else: missing
       from `_englishVersionCodes`, `sectionTitleSetByVersion`, and the

@@ -186,6 +186,47 @@ void main() {
       // in the group below.
       expect(withName, hasLength(5805));
     });
+
+    test('the restorations doc is not stale', () {
+      // Three figures for "how many restorations" were on record at once
+      // — 962 here, 964 in the commit that added CSB, 969 as the doc's own
+      // row count — because 969 counts every verse `clean()` touched for a
+      // divine-name reason (967 lost-LORD restorations + 7 stray-article
+      // repairs to verses that already read Yahweh), while 962/964 were
+      // hand-typed attempts at the lost-LORD subset that were never
+      // checked against the doc's actual count. Then `e41d5209` restored
+      // 5 more lost LORDs into the asset (Ps 15:4, Jer 5:13, 1Kgs 3:15,
+      // Isa 59:20, Mal 1:12) without regenerating the doc, so it sat at
+      // 969 rows while the asset carried 974 verses' worth of fixes. This
+      // pins the doc's row count and that every ref it lists actually
+      // carries the name in the asset today.
+      final lines = File('docs/csb-divine-name-restorations.md')
+          .readAsLinesSync();
+      final dataRows = lines
+          .where((l) => l.startsWith('| ') && !l.startsWith('| ref '))
+          .toList();
+      expect(dataRows, hasLength(974));
+
+      final bookIndex = <String, int>{};
+      for (final r in csb) {
+        bookIndex.putIfAbsent(r['book'] as String,
+            () => int.parse((r['id'] as String).substring(0, 3)));
+      }
+      final refPattern = RegExp(r'^(.+) (\d+):(\d+)$');
+      for (final row in dataRows) {
+        final ref = row.split('|')[1].trim();
+        final m = refPattern.firstMatch(ref);
+        expect(m, isNotNull, reason: 'unparseable ref: $ref');
+        final book = m![1]!;
+        expect(bookIndex.containsKey(book), isTrue,
+            reason: 'unknown book in ref: $ref');
+        final id = '${bookIndex[book].toString().padLeft(3, '0')}'
+            '${m[2]!.padLeft(3, '0')}${m[3]!.padLeft(3, '0')}';
+        expect(verse(id), contains('Yahweh'),
+            reason: '$ref -> $id is listed as a restoration but the '
+                'asset does not carry the name');
+      }
+    });
   });
 
   test('bracket balance is pinned to the known disputed-passage spans', () {

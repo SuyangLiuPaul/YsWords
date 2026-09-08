@@ -1,6 +1,19 @@
-# CSB divine-name restorations (969)
+# CSB divine-name restorations (974)
 
 `Lord ` + extra space -> `Yahweh`. See the module docstring in tools/import_csb.py for why this is a typographic repair and not a translation change.
+
+Regenerated from the source DB via `tools/import_csb.py --dry-run --report`
+(2026-09-08), replacing a table that had gone stale: it was written once
+at import time (`d9de55f6`, 969 rows) and never regenerated when a later
+commit (`e41d5209`) restored 5 more lost LORDs straight into
+`assets/csb.json` (Ps 15:4, Jer 5:13, 1 Kings 3:15, Isa 59:20, Mal 1:12).
+The 974 rows here are every verse the importer's `clean()` touched for a
+divine-name reason — both a lost LORD restored (967 of them, the number
+`e41d5209`'s commit message and this doc's own row count now agree on)
+and the 7 where the source already read Yahweh but kept a stray article
+("Holy to the Yahweh") that got stripped. `lib/constants/bible_versions.dart`
+and `test/csb_asset_test.dart` cite 967 because their sentence is
+specifically about the lost-LORD case; this file's title counts both.
 
 | ref | n | in cuvs-yhwh | verse |
 |---|---|---|---|
@@ -275,6 +288,7 @@
 | 1 Kings 2:43 | 1 | yes | So why have you not kept Yahweh’s oath and the command that I gave you?” |
 | 1 Kings 3:1 | 1 | yes | Solomon made an alliance with Pharaoh king of Egypt by marrying Pharaoh’s daughter. Solomon brought her to the |
 | 1 Kings 3:2 | 1 | yes | However, the people were sacrificing on the high places, because until that time a temple for Yahweh’s name ha |
+| 1 Kings 3:15 | 1 | yes | Then Solomon woke up and realized it had been a dream. He went to Jerusalem, stood before the ark of Yahweh’s  |
 | 1 Kings 6:19 | 1 | yes | He prepared the inner sanctuary inside the temple to put the ark of Yahweh’s covenant there. |
 | 1 Kings 6:37 | 1 | yes | The foundation of Yahweh’s temple was laid in Solomon’s fourth year in the month of Ziv. |
 | 1 Kings 7:12 | 1 | yes | Around the great courtyard, as well as the inner courtyard of Yahweh’s temple and the portico of the temple, w |
@@ -504,7 +518,7 @@
 | 2 Chronicles 24:2 | 1 | yes | Throughout the time of the priest Jehoiada, Joash did what was right in Yahweh’s sight. |
 | 2 Chronicles 24:4 | 1 | yes | Afterward, Joash took it to heart to renovate Yahweh’s temple. |
 | 2 Chronicles 24:6 | 1 | yes | So the king called Jehoiada the high priest and said, “Why haven’t you required the Levites to bring from Juda |
-| 2 Chronicles 24:7 | 3 | yes | For the sons of that wicked Athaliah broke into Yahweh’s temple and even used the sacred things of Yahweh’s te |
+| 2 Chronicles 24:7 | 2 | yes | For the sons of that wicked Athaliah broke into Yahweh’s temple and even used the sacred things of Yahweh’s te |
 | 2 Chronicles 24:8 | 1 | yes | At the king’s command a chest was made and placed outside the gate of Yahweh’s temple. |
 | 2 Chronicles 24:12 | 3 | yes | Then the king and Jehoiada gave it to those in charge of the labor on Yahweh’s temple, who were hiring stonecu |
 | 2 Chronicles 24:14 | 2 | yes | When they finished, they presented the rest of the silver to the king and Jehoiada, who made articles for Yahw |
@@ -578,6 +592,7 @@
 | Job 1:12 | 1 | yes | “Very well,” Yahweh told Satan, “everything he owns is in your power. However, do not lay a hand on Job himsel |
 | Job 2:7 | 1 | yes | So Satan left Yahweh’s presence and infected Job with terrible boils from the soles of his feet to the top of  |
 | Psalms 2:7 | 1 | yes | I will declare Yahweh’s decree. He said to me, “You are my Son; today I have become your Father. |
+| Psalms 15:4 | 1 | yes | who despises the one rejected by Yahweh but honors those who fear Yahweh, who keeps his word whatever the cost |
 | Psalms 22:8 | 1 | yes | “He relies on Yahweh; let him save him; let Yahweh rescue him, since he takes pleasure in him.” |
 | Psalms 25:10 | 1 | yes | All Yahweh’s ways show faithful love and truth to those who keep his covenant and decrees. |
 | Psalms 27:13 | 1 | yes | I am certain that I will see Yahweh’s goodness in the land of the living. |
@@ -607,7 +622,7 @@
 | Psalms 117:2 | 1 | yes | For his faithful love to us is great; Yahweh’s faithfulness endures forever. Hallelujah! |
 | Psalms 118:15 | 1 | yes | There are shouts of joy and victory in the tents of the righteous: “Yahweh’s right hand performs valiantly! |
 | Psalms 118:16 | 2 | yes | Yahweh’s right hand is raised. Yahweh’s right hand performs valiantly!” |
-| Psalms 118:20 | 2 | yes | This is Yahweh’s gate; the righteous will enter through it. |
+| Psalms 118:20 | 1 | yes | This is Yahweh’s gate; the righteous will enter through it. |
 | Psalms 119:1 | 1 | yes | How happy are those whose way is blameless, who walk according to Yahweh’s instruction! |
 | Psalms 122:4 | 1 | yes | where the tribes, Yahweh’s tribes, go up to give thanks to the name of Yahweh. (This is an ordinance for Israe |
 | Psalms 129:8 | 1 | yes | Then none who pass by will say, “May Yahweh’s blessing be on you. We bless you in the name of Yahweh.” |
@@ -660,6 +675,7 @@
 | Isaiah 55:8 | 1 | yes | “For my thoughts are not your thoughts, and your ways are not my ways.” This is Yahweh’s declaration. |
 | Isaiah 58:8 | 1 | yes | Then your light will appear like the dawn, and your recovery will come quickly. Your righteousness will go bef |
 | Isaiah 59:1 | 1 | yes | Indeed, Yahweh’s arm is not too weak to save, and his ear is not too deaf to hear. |
+| Isaiah 59:20 | 1 | yes | “The Redeemer will come to Zion, and to those in Jacob who turn from transgression.” This is Yahweh’s declarat |
 | Isaiah 61:2 | 1 | yes | to proclaim the year of Yahweh’s favor, and the day of our God’s vengeance; to comfort all who mourn, |
 | Isaiah 61:6 | 1 | yes | But you will be called Yahweh’s priests; they will speak of you as ministers of our God; you will eat the weal |
 | Isaiah 62:2 | 1 | yes | Nations will see your righteousness and all kings, your glory. You will be given a new name that Yahweh’s mout |
@@ -691,6 +707,7 @@
 | Jeremiah 4:17 | 1 | yes | They have her surrounded like those who guard a field, because she has rebelled against me. This is Yahweh’s d |
 | Jeremiah 5:9 | 1 | yes | Should I not punish them for these things? This is Yahweh’s declaration. Should I not avenge myself on such a  |
 | Jeremiah 5:11 | 1 | yes | They, the house of Israel and the house of Judah, have dealt very treacherously with me. This is Yahweh’s decl |
+| Jeremiah 5:13 | 1 | — | The prophets become only wind, for Yahweh’s word is not in them. This will in fact happen to them. |
 | Jeremiah 5:15 | 1 | yes | I am about to bring a nation from far away against you, house of Israel. This is Yahweh’s declaration. It is a |
 | Jeremiah 5:18 | 1 | yes | “But even in those days” ​— ​this is Yahweh’s declaration ​— ​“I will not finish you off. |
 | Jeremiah 5:22 | 1 | yes | Do you not fear me? This is Yahweh’s declaration. Do you not tremble before me, the one who set the sand as th |
@@ -970,6 +987,7 @@
 | Zechariah 14:20 | 1 | yes | On that day, the words Holy to Yahweh will be on the bells of the horses. The pots in the house of Yahweh will |
 | Malachi 1:2 | 1 | yes | “I have loved you,” says Yahweh. Yet you ask, “How have you loved us?” “Wasn’t Esau Jacob’s brother?” This is  |
 | Malachi 1:7 | 1 | yes | “By presenting defiled food on my altar.” “How have we defiled you?” you ask. When you say: “Yahweh’s table is |
+| Malachi 1:12 | 1 | yes | “But you are profaning it when you say: ‘Yahweh’s table is defiled, and its product, its food, is contemptible |
 | Malachi 2:11 | 1 | yes | Judah has acted treacherously, and a detestable act has been done in Israel and in Jerusalem. For Judah has pr |
 | Malachi 2:13 | 1 | yes | This is another thing you do. You are covering Yahweh’s altar with tears, with weeping and groaning, because h |
 | Malachi 2:17 | 1 | yes | You have wearied Yahweh with your words. Yet you ask, “How have we wearied him?” When you say, “Everyone who d |

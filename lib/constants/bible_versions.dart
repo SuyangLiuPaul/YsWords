@@ -62,7 +62,7 @@ const bibleVersions = <BibleVersionInfo>[
   // and the owner's decision on worldwide distribution.
   //
   // The text is NOT the module as received. `tools/import_csb.py`
-  // restores the divine name in 962 verses where the source had lost
+  // restores the divine name in 967 verses where the source had lost
   // CSB's own small-caps LORD and left "Lord" behind — Deuteronomy 6:4
   // among them. `docs/csb-divine-name-restorations.md` lists every one.
   BibleVersionInfo(
