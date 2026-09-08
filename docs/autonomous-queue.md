@@ -4302,6 +4302,35 @@ reported. Work these top-down before P2.
       whether that something was opencc; the measurement described above is
       still the way to find out.
 
+- [ ] **`tools/audit_lexicon_provenance.py`'s baseline is now stale, and it
+      is the tool's own fault line, not the lexicon's.** Its docstring
+      claims "28,276 of 28,377 field pairs byte-identical to opencc s2t —
+      99.64%" and a `KNOWN_EDITS` list of two hand-edits (侖→崙, 侄→姪), both
+      "WHAT IT FOUND, 2026-08-23." Running it at HEAD (2026-09-08) instead
+      reports **DRIFT: s2t now matches only 92.04%** and flags six more
+      "never seen before" hand-edits — 爲→為 1883×, 着→著 368×, 羣→群 195×,
+      衆→眾 195×, 喫→吃 77×, 牀→床 47× — with `EXPECTED None` next to each.
+
+      **Not a new defect.** Those six are exactly the six positions
+      `tools/reset_lexicon_orthography.py --apply --user-ruled` re-set on
+      2026-09-06, on a delegated user decision («这个你决定吧»), already
+      verified by a refuter against the raw JSON and pinned by
+      `test/lexicon_traditional_orthography_test.dart` (see the item above
+      and the one below). The provenance audit was written five days
+      earlier and has no way to know about a change made after it, so it
+      reports the deliberate reset as unexplained drift.
+
+      What's actually owed: re-run the s2t/s2tw/s2twp/s2hk percentages
+      against the POST-reset lexicon, add the six reset pairs to
+      `KNOWN_EDITS` with their counts, and re-date the "WHAT IT FOUND"
+      section. Left unfixed, the tool prints a false alarm every time it
+      runs — cheap to be wrong about, since the underlying data is fine and
+      already tested, but worth closing so the next person who runs this
+      audit doesn't spend an hour re-deriving what this entry just did.
+      Not attempted here: recomputing which of the resulting non-matching
+      fields are pre-existing vs post-reset is real analysis, not a
+      docstring number swap, and belongs in its own pass.
+
 - [x] **The lexicon and the Bible are set in two different Traditional
       orthographies, and the word-tap sheet shows them side by side — 2,816
       positions. Nothing is false; it is an edition-wide typographic choice and
@@ -4441,6 +4470,19 @@ reported. Work these top-down before P2.
       on the same six glyphs, just at 429 files' worth of them, not
       289's. Docs-only; the asset itself is untouched, per this item's
       own standing rule.
+
+      **Re-measured 2026-09-08 — drifted again, by +15, no new commit
+      responsible.** `--measure` at HEAD reports **3,305** (羣 715, 衆
+      1174, 喫 1266, 牀 150) against the 3,290 figure above. File count
+      is unchanged at 429 for both locales (`git log` shows no commit to
+      `assets/sermons/zh-TW/` between the 2026-09-07 correction and this
+      one), so the delta is not the file-count-drift pattern the last two
+      corrections were — some other change in the same window moved a
+      handful of characters. Not chased further: this item is a pending
+      user decision, not a live invariant, and the fourth number in a row
+      is itself the evidence for `tools/audit_p0.py`'s docstring fix
+      (queue tooling item below) — print `--measure`'s live output when
+      quoting this, do not copy a number out of prose again.
 
 - [x] **The Strong's lexicon spells 著名/著稱/著作/著述/顯著 with 着 in 51
       places — wrong in BOTH orthographies, so it is not blocked on the
@@ -13939,6 +13981,33 @@ so the bundle-size answer stays on the record.
       holds 107 checkboxes, 12 still `[ ]`). Docstring now says "107 items
       (12 still open as of 2026-09-08)" rather than swapping one bare
       number for another.
+
+      **Re-drifted the SAME DAY, 2026-09-08 — fourth occurrence of this
+      exact class, fixed for good this time by removing the number rather
+      than correcting it again.** By the time this line above was quoted
+      back in the next planning pass, the P0 section had grown to **110**
+      checkboxes (12 open) — independently re-derived with `awk` over the
+      `## P0` … `## P1` line range and confirmed by an adversarial refuter
+      call that could not break it. Rewrote the docstring to describe what
+      the tier IS without asserting a count, and gave `--check` a live
+      counts block instead: it now prints `P0 tier: N items, N open` and
+      `sermon files: en N, zh-CN N, zh-TW N` (289/429/429 today) every time
+      it runs, computed from `docs/autonomous-queue.md` and the sermon
+      dirs directly rather than typed by a person. `test/
+      test_audit_p0_check.py` gained a `LiveCounts` class (4 cases:
+      checkbox counting incl. indentation and uppercase `[X]`, empty
+      section, missing headers, and the printed-output assertion itself)
+      — 14 cases total, still hermetic tempdirs, still green. Swept
+      `tools/audit_*.py` and `tools/reset_lexicon_orthography.py` for the
+      same class: most corpus-derived numbers there are already dated
+      snapshots ("as of 2026-08-23" etc.), which is the safe pattern and
+      needed no change; the two exceptions are filed separately —
+      `assets/sermons/zh-TW/`'s OpenCC-orthography-position count under
+      the lexicon-orthography item above (re-measured, now 3,305, was
+      3,290), and `tools/audit_lexicon_provenance.py`'s stale s2t baseline
+      filed as its own new item above (in the Strong's-lexicon-provenance
+      block), since fixing that one is real re-analysis, not a docstring
+      edit.
 
 - [x] **2026-09-07 FILED, 2026-09-08 FIXED (for `audit_p0.py`; the other
       half stays local by design, see below) — neither `tools/audit_p0.py`

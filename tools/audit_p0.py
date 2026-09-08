@@ -7,13 +7,19 @@
 
 Why this exists
 ---------------
-The P0 tier in docs/autonomous-queue.md holds 107 items (12 still open as
-of 2026-09-08), spanning two 6.4 MB scripture JSONs, 66 tagged-corpus
-files and 429 Traditional sermon files. The expensive way to work it is to
-read those assets into a model's context — twice as expensive if two agents
-each read their own copy. This script emits COUNTS AND VERSE IDS instead, so
-the reading is done once by grep-speed code and the judgement is done on a
-table. Re-running it later costs nothing.
+The P0 tier in docs/autonomous-queue.md tracks scripture-accuracy defects
+across two 6.4 MB scripture JSONs, the tagged word-tap corpus and the
+Traditional sermon files. Its own item count and the corpus's file counts
+both grow over time — a number typed into this docstring goes stale within
+days (it happened to this exact sentence three times before this rewrite;
+see the queue's own record of the class). Run `--check` for live counts
+instead of trusting prose here.
+
+The expensive way to work the tier is to read those assets into a model's
+context — twice as expensive if two agents each read their own copy. This
+script emits COUNTS AND VERSE IDS instead, so the reading is done once by
+grep-speed code and the judgement is done on a table. Re-running it later
+costs nothing.
 
 THE GLYPH SECTION IS NOW A MUSEUM PIECE — READ THIS BEFORE ACTING ON IT
 -----------------------------------------------------------------------
@@ -58,6 +64,8 @@ HANS = os.path.join(ROOT, 'assets/cuvs-yhwh.json')
 TAGGED = os.path.join(ROOT, 'assets/tagged/cuvs-yhwh')
 SERMONS_TW = os.path.join(ROOT, 'assets/sermons/zh-TW')
 SERMONS_CN = os.path.join(ROOT, 'assets/sermons/zh-CN')
+SERMONS_EN = os.path.join(ROOT, 'assets/sermons/en')
+QUEUE = os.path.join(ROOT, 'docs/autonomous-queue.md')
 
 
 def load(path):
@@ -223,7 +231,7 @@ SECTIONS = {
 
 # ── --check: CI gate, exits non-zero on real drift ──────────────────────
 # Deliberately narrow. This asserts INVARIANTS that stay true as the
-# corpus legitimately grows, not the counts printed above — a hardcoded
+# corpus legitimately grows, not a specific count — a hardcoded
 # "== 429" would turn CI red the next time a sermon is added, which is
 # the same class of self-inflicted failure commit 04cbdcdd just removed
 # from this repo's CI. What IS checked:
@@ -233,6 +241,30 @@ SECTIONS = {
 #      empty — 'other non-conforming s' in section 3 should be empty.
 # Both hold today by construction; this exists so a future regression in
 # either is caught before it ships, not discovered by the next audit.
+#
+# The live counts below are PRINTED, never asserted — they are exactly
+# the numbers that kept going stale when they were typed into this file's
+# prose instead. Reading them here always matches the corpus this ran
+# against, because it IS the corpus this ran against.
+def _p0_counts():
+    """(total, open) checkboxes strictly between the P0 and P1 headers."""
+    with open(QUEUE, encoding='utf-8') as fh:
+        lines = fh.readlines()
+    start = end = None
+    for i, line in enumerate(lines):
+        if line.startswith('## P0'):
+            start = i + 1
+        elif line.startswith('## P1') and start is not None:
+            end = i
+            break
+    if start is None or end is None:
+        return None
+    section = lines[start:end]
+    total = sum(1 for l in section if re.match(r'\s*- \[[ xX]\]', l))
+    open_ = sum(1 for l in section if re.match(r'\s*- \[ \]', l))
+    return total, open_
+
+
 def check() -> int:
     problems = []
 
@@ -258,12 +290,23 @@ def check() -> int:
             f'{len(bad_strongs)} tagged run(s) with a malformed Strong\'s '
             f'code, e.g. {bad_strongs[0]}')
 
+    print('Live counts (printed, not asserted — these are expected to move):')
+    p0 = _p0_counts()
+    if p0 is not None:
+        total, open_ = p0
+        print(f'  P0 tier: {total} items, {open_} open ({total - open_} closed)')
+    else:
+        print('  P0 tier: could not locate ## P0 / ## P1 headers in the queue')
+    en = len([f for f in glob.glob(os.path.join(SERMONS_EN, '*'))
+               if os.path.isfile(f)])
+    print(f'  sermon files: en {en}, zh-CN {len(cn)}, zh-TW {len(tw)}')
+
     if problems:
-        print('FAIL:')
+        print('\nFAIL:')
         for p in problems:
             print(f'  {p}')
         return 1
-    print('OK: sermon locale parity holds; every tagged Strong\'s code is '
+    print('\nOK: sermon locale parity holds; every tagged Strong\'s code is '
           'well-formed.')
     return 0
 

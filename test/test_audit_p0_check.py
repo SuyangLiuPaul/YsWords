@@ -17,8 +17,17 @@ unchanged, and `if s and ...` then treats `None` the same as "no code"
 instead of "malformed code". Confirmed against the pre-fix line before
 writing the corrected one: it returned 0 (no problem found) for exactly
 this fixture.
+
+`LiveCounts` pins the 2026-09-08 fix for the opposite defect class: a
+corpus-derived count (P0 item total, sermon file counts) hand-typed into
+this script's docstring going stale within days. `check()` now PRINTS
+those counts instead of asserting them in prose — `_p0_counts()` is
+tested against a synthetic queue file so the P0/P1 header search and the
+checkbox regex are pinned independently of the real, ever-changing queue.
 """
+import contextlib
 import importlib.util
+import io
 import json
 import os
 import tempfile
@@ -40,19 +49,35 @@ class CheckFixture(unittest.TestCase):
         self.addCleanup(self._tmp.cleanup)
         root = self._tmp.name
 
-        self._orig = (audit_p0.TAGGED, audit_p0.SERMONS_TW, audit_p0.SERMONS_CN)
+        self._orig = (audit_p0.TAGGED, audit_p0.SERMONS_TW, audit_p0.SERMONS_CN,
+                      audit_p0.SERMONS_EN, audit_p0.QUEUE)
 
         audit_p0.TAGGED = os.path.join(root, 'tagged')
         audit_p0.SERMONS_TW = os.path.join(root, 'sermons', 'zh-TW')
         audit_p0.SERMONS_CN = os.path.join(root, 'sermons', 'zh-CN')
+        audit_p0.SERMONS_EN = os.path.join(root, 'sermons', 'en')
+        audit_p0.QUEUE = os.path.join(root, 'queue.md')
         os.makedirs(audit_p0.TAGGED)
         os.makedirs(audit_p0.SERMONS_TW)
         os.makedirs(audit_p0.SERMONS_CN)
+        os.makedirs(audit_p0.SERMONS_EN)
+        self._write_queue([])
 
         self.addCleanup(self._restore)
 
     def _restore(self):
-        audit_p0.TAGGED, audit_p0.SERMONS_TW, audit_p0.SERMONS_CN = self._orig
+        (audit_p0.TAGGED, audit_p0.SERMONS_TW, audit_p0.SERMONS_CN,
+         audit_p0.SERMONS_EN, audit_p0.QUEUE) = self._orig
+
+    def _write_queue(self, p0_lines):
+        """A minimal queue file with real ## P0 / ## P1 headers, so
+        _p0_counts() has something to search between."""
+        with open(audit_p0.QUEUE, 'w', encoding='utf-8') as fh:
+            fh.write('## P0 — scripture accuracy\n')
+            for line in p0_lines:
+                fh.write(line + '\n')
+            fh.write('## P1 — Bible study correctness\n')
+            fh.write('- [ ] not part of P0, must not be counted\n')
 
     def _write_tagged(self, name, verses):
         with open(os.path.join(audit_p0.TAGGED, name), 'w', encoding='utf-8') as fh:
@@ -121,6 +146,48 @@ class SermonLocaleParity(CheckFixture):
     def test_matched_locale_counts_pass(self):
         self._match_sermons(n=3)
         self.assertEqual(audit_p0.check(), 0)
+
+
+class LiveCounts(CheckFixture):
+    """Pins the 2026-09-08 fix: check() prints live counts instead of a
+    hand-typed number going stale in the docstring."""
+
+    def test_p0_counts_ignores_p1_and_counts_open_vs_closed(self):
+        self._write_queue([
+            '- [x] done one',
+            '- [ ] open one',
+            '  - [x] indented, still counts',
+            'not a checkbox line',
+            '- [X] uppercase X still counts as closed',
+        ])
+        self.assertEqual(audit_p0._p0_counts(), (4, 1))
+
+    def test_p0_counts_empty_section(self):
+        self._write_queue([])
+        self.assertEqual(audit_p0._p0_counts(), (0, 0))
+
+    def test_missing_headers_returns_none(self):
+        with open(audit_p0.QUEUE, 'w', encoding='utf-8') as fh:
+            fh.write('no headers here at all\n')
+        self.assertIsNone(audit_p0._p0_counts())
+
+    def test_check_prints_live_p0_and_sermon_counts(self):
+        self._write_queue(['- [x] done', '- [ ] open'])
+        self._match_sermons(n=2)
+        self._write_sermon(audit_p0.SERMONS_EN, 'a.txt')
+        self._write_sermon(audit_p0.SERMONS_EN, 'b.txt')
+        self._write_sermon(audit_p0.SERMONS_EN, 'c.txt')
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            result = audit_p0.check()
+        out = buf.getvalue()
+
+        self.assertEqual(result, 0)
+        self.assertIn('P0 tier: 2 items, 1 open (1 closed)', out)
+        self.assertIn('sermon files: en 3, zh-CN 2, zh-TW 2', out)
+        # the fixture asset never asserts a bare number as fact
+        self.assertNotIn('107 items', out)
 
 
 if __name__ == '__main__':
