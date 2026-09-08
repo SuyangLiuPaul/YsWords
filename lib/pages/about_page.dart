@@ -683,6 +683,21 @@ class _LexiconsTable extends StatelessWidget {
                 'Brown, 1871) · digital text from the CrossWire SWORD '
                 'module JFB 3.0, which states Public Domain.',
         url: 'https://www.crosswire.org/sword/modules/',
+      ),
+      // 2026-09-08: the Chinese BDB/Thayer module, ported from
+      // SeekSparks with `lib/services/chinese_lexicon_service.dart`.
+      // Used with the permission of the publisher at yahwehdehua.net —
+      // the same permission `assets/tagged/cuvs-yhwh/` already ships
+      // under. The wording is SeekSparks' own row copied verbatim
+      // rather than reworded, so one module is credited identically in
+      // both apps. test/chinese_lexicon_test.dart fails if it goes away.
+      _AttribRow(
+        name: uiStrings['aboutLexBdbThayer']?[locale] ??
+            'BDB (Hebrew) + Thayer (Greek) lexicons, Chinese edition',
+        licence: uiStrings['aboutLicenseBdbThayer']?[locale] ??
+            'Brown-Driver-Briggs (1906) & Thayer (1889) public domain · '
+                'Chinese edition used with permission (yahwehdehua.net).',
+        url: 'https://yahwehdehua.net/cn/resource/bible',
         last: true,
       ),
     ];

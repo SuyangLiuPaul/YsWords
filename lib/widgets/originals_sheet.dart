@@ -16,10 +16,12 @@ import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
 import 'package:yswords/widgets/collapsible_english_ref.dart';
+import 'package:yswords/widgets/chinese_lexicon_block.dart';
 import 'package:yswords/widgets/implied_coverage_line.dart';
 import 'package:yswords/widgets/left_accent_card.dart';
 import 'package:yswords/services/tagged_text_service.dart';
 import 'package:yswords/services/ai_word_service.dart';
+import 'package:yswords/services/chinese_lexicon_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/lxx_service.dart';
 import 'package:yswords/services/originals_service.dart';
@@ -82,6 +84,18 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // run's own `s`. Cleared whenever the reader asks a different
   // question, so a stale line cannot outlive the tap that opened it.
   TaggedRun? _impliedRun;
+  // The fuller BDB/Thayer article for the entry on screen, and the
+  // decoded grammar codes of the run the reader tapped. Both are
+  // Chinese-locale only and both are empty for an English reader, who
+  // sees the card exactly as it was before the 2026-09-08 port.
+  //
+  // The grammar codes are the half nothing in this app could show
+  // before: `TaggedRun.grammar` carries 98,861 of them across the
+  // shipped corpus and neither hebrew.json nor greek.json reaches the
+  // range they live in. See lib/services/chinese_lexicon_service.dart.
+  ChineseLexEntry? _zhEntry;
+  List<ChineseLexEntry> _zhGrammar = const [];
+
   // TapGestureRecognizers for inline derivation links — disposed on change.
   final _tapRecognizers = <TapGestureRecognizer>[];
 
@@ -261,8 +275,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     setState(() {
       _selectedWord = w;
       // A chip tap is a different question from a Chinese-word tap, so
-      // the implied-coverage line for the previous run stops applying.
+      // the implied-coverage line for the previous run stops applying —
+      // and with it the grammar codes, which belong to that run's form
+      // and would be a claim about this word if they outlived the tap.
       _impliedRun = null;
+      _zhEntry = null;
+      _zhGrammar = const [];
       _selectedEntry = null;
       _selectedConcordance = null;
       _rootEntry = null;
@@ -309,6 +327,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     });
     // Word family + synonyms load in the background — doesn't block the entry card.
     unawaited(_loadRelations(w.strongs, gen: myGen));
+    unawaited(_loadChinese(w.strongs, gen: myGen));
   }
 
   /// The translation line, with each tagged word tappable.
@@ -362,7 +381,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                 recognizer: (TapGestureRecognizer()
                   ..onTap = () {
                     setState(() => _impliedRun = run);
-                    _loadRootEntry(run.strongs);
+                    _loadRootEntry(run.strongs, grammarFrom: run);
                   }),
               ),
         ],
@@ -370,8 +389,19 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     );
   }
 
+  /// [grammarFrom] is the tagged run the reader tapped, when they
+  /// reached this entry by tapping the Chinese line. Passed explicitly
+  /// rather than read off [_impliedRun], which survives a subsequent
+  /// family/synonym chip tap: the codes describe the form of THAT run,
+  /// so attaching them to whatever entry is on screen later would put a
+  /// parsing note under a word it does not parse.
+  ///
+  /// Defensive rather than test-proven: the chip path that would expose
+  /// it needs a lemma with a word family to tap, and no fixture in
+  /// `test/originals_sheet_chinese_lexicon_test.dart` has one. That
+  /// file says so where a reader will look for it.
   Future<void> _loadRootEntry(String strongsNumber,
-      {String? pivotFromNumber}) async {
+      {String? pivotFromNumber, TaggedRun? grammarFrom}) async {
     final myGen = ++_lookupGen;
     _pivotFromNumber = pivotFromNumber;
     _clearTapRecognizers();
@@ -385,6 +415,8 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _refsShowAll.clear();
       _lxxEquivalents = const [];
       _hebrewSources = const [];
+      _zhEntry = null;
+      _zhGrammar = const [];
       // Round 56 fix: navigating to a different lemma (via 完整研经
       // or a family/synonym chip) means any AI explanation that was
       // generated for the PREVIOUS lemma is now irrelevant. Clear it
@@ -416,6 +448,31 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     // visible immediately — saves an extra tap.
     unawaited(_loadRelations(strongsNumber,
         pivotFromNumber: pivotFromNumber, gen: myGen));
+    unawaited(_loadChinese(strongsNumber,
+        grammarFrom: grammarFrom, gen: myGen));
+  }
+
+  /// Resolve the fuller Chinese article for [number], plus the decoded
+  /// grammar codes of [grammarFrom] when the reader arrived by tapping
+  /// a tagged run.
+  ///
+  /// Off the critical path on purpose — the card renders its Strong's
+  /// entry immediately and this fills in underneath, because the first
+  /// call of a session pays a 2 MB asset read that the reader should
+  /// not be made to wait behind. An English reader never triggers it at
+  /// all, so the asset is never fetched for them.
+  Future<void> _loadChinese(String number,
+      {TaggedRun? grammarFrom, required int gen}) async {
+    if (!ChineseLexiconService.appliesTo(widget.locale)) return;
+    final article = await ChineseLexiconService.lookup(number);
+    final grammar = grammarFrom == null
+        ? const <ChineseLexEntry>[]
+        : await ChineseLexiconService.lookupGrammar(grammarFrom.grammar);
+    if (!mounted || gen != _lookupGen) return;
+    setState(() {
+      _zhEntry = (article?.isGrammarCode ?? true) ? null : article;
+      _zhGrammar = grammar;
+    });
   }
 
   void _clearRoot() {
@@ -1457,6 +1514,36 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                   ),
                 ),
               ],
+            ],
+            // ── The fuller Chinese article, then the decoded grammar
+            // codes of the run the reader tapped.
+            //
+            // Article first, directly under the definition it expands:
+            // its header claims to be "the same number, fuller entry",
+            // and that claim only reads correctly while the entry it
+            // expands is the thing immediately above it. (SeekSparks
+            // puts the grammar codes above the article; here the CBOL
+            // definition sits between them and doing the same would
+            // break that adjacency.)
+            //
+            // The grammar codes then follow under their own heading,
+            // because they answer a different question — the FORM this
+            // word takes in this verse, not what the word means.
+            if (_zhEntry case final zh?)
+              ChineseLexiconBlock(entry: zh, locale: locale),
+            if (_zhGrammar.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                uiStrings['chineseLexGrammarTitle']?[locale] ??
+                    'Grammar codes',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurfaceVariant,
+                  letterSpacing: 0.4,
+                ),
+              ),
+              ChineseGrammarCodes(codes: _zhGrammar),
             ],
             // ── AI explanation (Gemini, opt-in) ───────────────────
             // Renders a button below the lexicon definition; tap to

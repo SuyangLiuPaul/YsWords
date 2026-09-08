@@ -52,6 +52,26 @@ void main() {
     'assets/sermons/zh-TW/fy-nm31.txt': '不能自已地追求不可能達到的目標',
   };
 
+  /// CBOL's derivation formula — 源自 + 已不使用 — which is correct
+  /// Chinese and must survive.
+  ///
+  /// The docstring above named this class and recorded that none of the
+  /// fields carrying it had been imported, so our assets were clean of
+  /// it. That stopped being true on 2026-09-08, when the Chinese
+  /// BDB/Thayer module (`assets/strongs/bdb_zh.json`,
+  /// `thayer_zh.json`) arrived with its etymology field: 18 readings of
+  /// 「源自已不使用的字根」 and 「源自已废弃不用的…」 across the two files.
+  ///
+  /// Licensed as a READING, exactly as `permitted` above is, not as a
+  /// file exemption. The same import also carried two GENUINE instances
+  /// of the reflexive pronoun — at H2616 and G3962, the very numbers
+  /// this test already repaired in `hebrew.json` and `greek.json`,
+  /// which is itself the evidence that the module and CBOL share a
+  /// source for those senses. Those two were repaired in the assets
+  /// rather than exempted, and a new one anywhere in either file still
+  /// lands in `offenders`.
+  final derivationFormula = RegExp('源自已(不使用|廢棄不用|废弃不用)');
+
   test('no asset spells the reflexive pronoun 自已', () {
     final offenders = <String>[];
     for (final dir in ['assets/sermons', 'assets/strongs']) {
@@ -64,10 +84,38 @@ void main() {
           // 自已 in the same file still lands in `offenders`.
           text = text.replaceAll(ok, '');
         }
+        text = text.replaceAll(derivationFormula, '');
         if (text.contains('自已')) offenders.add(f.path);
       }
     }
     expect(offenders, isEmpty);
+  });
+
+  test('the Chinese BDB/Thayer module keeps the derivation formula it is '
+      'entitled to', () {
+    // The other half of the licence: a sweep that "finished the job"
+    // over the imported etymology would break correct Chinese in 18
+    // places, and this is what fails if one runs.
+    var found = 0;
+    for (final f in const ['bdb_zh', 'thayer_zh']) {
+      found += derivationFormula
+          .allMatches(File('assets/strongs/$f.json').readAsStringSync())
+          .length;
+    }
+    expect(found, greaterThan(10),
+        reason: 'measured 18 readings on 2026-09-08');
+  });
+
+  test('and its two real typos were repaired the same way CBOL\'s were', () {
+    final bdb = json.decode(
+        File('assets/strongs/bdb_zh.json').readAsStringSync())
+        as Map<String, dynamic>;
+    expect((bdb['H2616'] as Map)['s'].join('\n'), contains('对自己仁慈'));
+    final thayer = json.decode(
+        File('assets/strongs/thayer_zh.json').readAsStringSync())
+        as Map<String, dynamic>;
+    expect((thayer['G3962'] as Map)['s'].join('\n'),
+        contains('不再害怕自己是罪人'));
   });
 
   test('the one correct 自已 is still there and is still the idiom', () {

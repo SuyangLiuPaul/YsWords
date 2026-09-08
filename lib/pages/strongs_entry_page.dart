@@ -8,6 +8,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/strongs.dart';
 import 'package:yswords/utils/navigate_to_reader.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/services/chinese_lexicon_service.dart';
 import 'package:yswords/services/concordance_service.dart';
 import 'package:yswords/services/strongs_service.dart';
 import 'package:yswords/utils/app_nav.dart';
@@ -15,6 +16,7 @@ import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
 import 'package:yswords/utils/version_mapper.dart'
     show translateBookName, localeAwareBookName, toEnglish;
+import 'package:yswords/widgets/chinese_lexicon_block.dart';
 import 'package:yswords/widgets/collapsible_english_ref.dart';
 import 'package:yswords/widgets/home_icon_button.dart';
 import 'package:yswords/widgets/language_switcher_button.dart';
@@ -50,30 +52,62 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
   bool _loading = true;
   bool _notFound = false;
 
+  /// The fuller BDB/Thayer article for the same number, for Chinese
+  /// readers. Null for an English reader, and null when the module has
+  /// nothing — in both cases the page renders exactly as it did before
+  /// the 2026-09-08 port.
+  ChineseLexEntry? _zh;
+
+  /// Set when [widget.number] turns out to be a grammar code rather
+  /// than a word — H8804, G5656 and the 282 others the tagged corpus
+  /// uses. These are Strong's-SHAPED, so the search bar routes them
+  /// here, but they sit above the top of both shipped lexicons
+  /// (hebrew.json ends at H8674, greek.json at G5624) and this page
+  /// answered 「找不到该编号」 for every one of them until now.
+  ChineseLexEntry? _grammarCode;
+
   /// The occurrence list is numbered for the version it will be opened
   /// in, so it has to be rebuilt when the reader switches version —
   /// see [ConcordanceService.lookup].
   String? _loadedForVersion;
 
+  /// The Chinese article is fetched per locale, not once: an English
+  /// reader is never shown it and must not pay the 2 MB load for it, so
+  /// switching into 中文 on this page is what triggers the first fetch.
+  String? _loadedForLocale;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final version = Provider.of<MainProvider>(context).currentVersion;
-    if (version == _loadedForVersion) return;
+    final locale = Provider.of<AppSettings>(context).locale;
+    if (version == _loadedForVersion && locale == _loadedForLocale) return;
     _loadedForVersion = version;
-    _load(version);
+    _loadedForLocale = locale;
+    _load(version, locale);
   }
 
-  Future<void> _load(String version) async {
+  Future<void> _load(String version, String locale) async {
     final entry = await StrongsService.lookup(widget.number);
     if (entry == null) {
+      // Before giving up, ask whether this is a grammar code. Done for
+      // every locale, not only Chinese: the Hebrew codes in this module
+      // read in English ('Stem -Qal See [H8851]'), and even a Chinese
+      // Greek parsing beats the dead end this page showed before. The
+      // asset load it costs only happens when a reader has deliberately
+      // searched a number outside Strong's range.
+      final code = await ChineseLexiconService.lookup(widget.number);
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _notFound = true;
+        _grammarCode = (code?.isGrammarCode ?? false) ? code : null;
+        _notFound = _grammarCode == null;
       });
       return;
     }
+    final zh = ChineseLexiconService.appliesTo(locale)
+        ? await ChineseLexiconService.lookup(widget.number)
+        : null;
     final family = await StrongsService.wordFamily(widget.number);
     final compare = await StrongsService.compareWords(widget.number);
     final concordance =
@@ -81,6 +115,7 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
     if (!mounted) return;
     setState(() {
       _entry = entry;
+      _zh = (zh?.isGrammarCode ?? true) ? null : zh;
       _family = family;
       _compare = compare;
       _concordance = concordance;
@@ -155,7 +190,9 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _notFound
+          : _grammarCode != null
+              ? _buildGrammarCode(scheme, locale, settings)
+              : _notFound
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
@@ -171,6 +208,43 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
                   ),
                 )
               : _buildEntry(context, scheme, locale, settings),
+    );
+  }
+
+  /// The page a grammar code gets instead of 「找不到该编号」.
+  ///
+  /// Deliberately not the entry layout: there is no lemma, no word
+  /// family and no concordance for a code, and borrowing that layout
+  /// would present a parsing note as if it were a word. The reader is
+  /// told what kind of number they have landed on first, then given the
+  /// decode.
+  Widget _buildGrammarCode(
+      ColorScheme scheme, String locale, AppSettings settings) {
+    final code = _grammarCode!;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(
+          uiStrings['chineseLexGrammarTitle']?[locale] ?? 'Grammar codes',
+          style: TextStyle(
+            fontSize: settings.fontSize + 2,
+            fontWeight: FontWeight.w700,
+            color: scheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          uiStrings['chineseLexGrammarOnly']?[locale] ??
+              'A grammar code, not a word entry — it describes the form a '
+                  'word takes in the text.',
+          style: TextStyle(
+            fontSize: settings.fontSize - 1,
+            color: scheme.onSurfaceVariant,
+            height: 1.45,
+          ),
+        ),
+        ChineseGrammarCodes(codes: [code], fontSize: settings.fontSize),
+      ],
     );
   }
 
@@ -288,6 +362,15 @@ class _StrongsEntryPageState extends State<StrongsEntryPage> {
             height: 1.5,
           ),
         ),
+        // The fuller BDB/Thayer article, directly under the CBOL
+        // definition it expands rather than replaces — its own header
+        // says which of the two the reader is looking at.
+        if (_zh case final zh?)
+          ChineseLexiconBlock(
+            entry: zh,
+            locale: locale,
+            fontSize: settings.fontSize,
+          ),
         if ((e.derivation ?? '').isNotEmpty) ...[
           const SizedBox(height: 12),
           // v1.3.x: derivation/etymology is English-only — collapse it

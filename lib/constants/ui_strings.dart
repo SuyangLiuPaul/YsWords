@@ -8064,4 +8064,73 @@ const uiStrings = {
     'zh-Hant': '閱讀紀錄已清除。',
     'en': 'Reading record cleared.',
   },
+  // ── Chinese BDB/Thayer lexicon (ported from SeekSparks 2026-09-08).
+  // The block that renders under the CBOL definition, not instead of
+  // it — `chineseLexTitle` is the line that says so, and must keep
+  // saying "same number" in every locale or the two Chinese paragraphs
+  // read as a contradiction. `aboutLexBdbThayer` /
+  // `aboutLicenseBdbThayer` are SeekSparks' existing credit for the
+  // module, copied verbatim rather than rewritten.
+  'chineseLexTitle': {
+    'zh-Hans': '同一编号的完整词条（BDB／Thayer 中文版）',
+    'zh-Hant': '同一編號的完整詞條（BDB／Thayer 中文版）',
+    'en': "Fuller entry for the same number (BDB / Thayer, Chinese edition)",
+  },
+  'chineseLexLemma': {
+    'zh-Hans': '原文',
+    'zh-Hant': '原文',
+    'en': 'Lemma',
+  },
+  'chineseLexOrigin': {
+    'zh-Hans': '字源',
+    'zh-Hant': '字源',
+    'en': 'Origin',
+  },
+  'chineseLexSenses': {
+    'zh-Hans': '释义',
+    'zh-Hant': '釋義',
+    'en': 'Definition',
+  },
+  'chineseLexUsage': {
+    'zh-Hans': '钦定本译法',
+    'zh-Hant': '欽定本譯法',
+    'en': 'KJV usage',
+  },
+  // Shown to zh-Hant readers only. The module has no Traditional
+  // edition and this app has no 简→繁 converter, so the honest label is
+  // the whole fix — see chinese_lexicon_service.dart.
+  'chineseLexSimplifiedOnly': {
+    'zh-Hans': '此词典仅有简体版。',
+    'zh-Hant': '此詞典僅發行簡體版，以上為簡體原文。',
+    'en': 'This lexicon is published in Simplified Chinese only.',
+  },
+  // The heading over the decoded grammar codes on a tagged word. These
+  // are a note about the FORM on the line, not a second definition, so
+  // the wording says 语法编号 and never 释义.
+  'chineseLexGrammarTitle': {
+    'zh-Hans': '语法编号',
+    'zh-Hant': '語法編號',
+    'en': 'Grammar codes',
+  },
+  // The Strong's entry page reached by searching a grammar-shaped
+  // number (H8804). Before the port it answered 「找不到该编号」.
+  'chineseLexGrammarOnly': {
+    'zh-Hans': '这是语法编号，不是词条 — 它说明经文中该词的形态。',
+    'zh-Hant': '這是語法編號，不是詞條 — 它說明經文中該詞的形態。',
+    'en': "A grammar code, not a word entry — it describes the form a "
+        "word takes in the text.",
+  },
+  'aboutLexBdbThayer': {
+    'zh-Hans': 'BDB（希伯来文）+ Thayer（希腊文）词典 中文版',
+    'zh-Hant': 'BDB（希伯來文）+ Thayer（希臘文）詞典 中文版',
+    'en': 'BDB (Hebrew) + Thayer (Greek) lexicons, Chinese edition',
+  },
+  'aboutLicenseBdbThayer': {
+    'zh-Hans': 'Brown-Driver-Briggs（1906）与 Thayer（1889）原著属公有领域 · '
+        '中文版经许可使用（yahwehdehua.net）。',
+    'zh-Hant': 'Brown-Driver-Briggs（1906）與 Thayer（1889）原著屬公有領域 · '
+        '中文版經許可使用（yahwehdehua.net）。',
+    'en': 'Brown-Driver-Briggs (1906) & Thayer (1889) public domain · '
+        'Chinese edition used with permission (yahwehdehua.net).',
+  },
 };

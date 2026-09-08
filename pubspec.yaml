@@ -169,6 +169,14 @@ flutter:
     - assets/gospel_synopsis.json
     - assets/daily_verses.json
     - assets/bible_evidence.json
+    # Registered as a DIRECTORY, so bdb_zh.json + thayer_zh.json
+    # (the Chinese BDB/Thayer module ported from SeekSparks on
+    # 2026-09-08, 3.4 MB together) are bundled by this line already —
+    # they need no entry of their own. They are NOT on the boot path:
+    # web/app_shell_sw.js precaches a six-entry minimal shell and is
+    # network-first, so a bundled asset costs nothing until
+    # ChineseLexiconService reads it, which is once per language on the
+    # first Chinese word study and never for an English reader.
     - assets/strongs/
     - assets/originals/
     # Both of the above are numbered as the Hebrew and Greek editions
