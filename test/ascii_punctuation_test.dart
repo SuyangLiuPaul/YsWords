@@ -118,12 +118,26 @@ void main() {
   }
 
   test('the apparatus keeps its ASCII double quote — do not sweep it', () {
-    // 336 inside <note: …>, 8 in the inline （原文有 "…"）parentheticals of
+    // Inside <note: …>, plus the inline （原文有 "…"）parentheticals of
     // 撒迦利亞書 1:3, 8:14, 10:1 and 10:12. One convention, two placements.
-    // Converting the 8 to 「」 sets them against the 157 ASCII 原文 notes,
-    // which is why a first pass that did exactly that was reverted. Whether
-    // the whole convention should be full-width is the user's call, not a
-    // sweep's; until then this test fails the sweep.
+    // Converting the running-text ones to 「」 sets them against the ASCII
+    // 原文 notes, which is why a first pass that did exactly that was
+    // reverted. Whether the whole convention should be full-width is the
+    // user's call, not a sweep's; until then this test fails the sweep.
+    //
+    // 2026-09-08: this was 336 in notes and 8 in running text for both
+    // editions, until the quotes our importer had DROPPED were put back
+    // — 1,144 in the Simplified, 1,140 mirrored into the Traditional,
+    // every one taken from the publisher's own current text. That is the
+    // same direction this test defends: the ASCII quote is the right
+    // mark here, and for years most of the convention was simply
+    // missing rather than full-width.
+    //
+    // The number is the same for both editions on purpose: 士師記 1:16
+    // and 4:11 could have taken the repair in the Simplified but are not
+    // character-aligned between the scripts, so the mirror could not
+    // place a mark in their Traditional twins — and they were therefore
+    // skipped in BOTH rather than left one script ahead of the other.
     for (final edition in editions.keys) {
       var inNotes = 0;
       var inRunning = 0;
@@ -134,8 +148,8 @@ void main() {
         }
         inRunning += '"'.allMatches(running(text)).length;
       }
-      expect(inNotes, 336, reason: edition);
-      expect(inRunning, 8, reason: edition);
+      expect(inNotes, 1474, reason: edition);
+      expect(inRunning, 10, reason: edition);
     }
   });
 }
