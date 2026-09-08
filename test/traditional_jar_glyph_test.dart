@@ -63,7 +63,13 @@ void main() {
     expect(textOf('列王紀上', '18', '30'), contains('重修已經毀壞雅偉的壇'));
     expect(textOf('列王紀上', '18', '35'), contains('水流在壇的四圍'));
     expect(textOf('使徒行傳', '17', '23'), contains('遇見一座壇'));
-    expect(textOf('歷代志下', '33', '15'), contains('所築的各壇都拆毀'));
+    // 2026-09-09: 「所築的各壇都拆毀」 → 「所築的各壇，都拆毀」. Punctuation,
+    // not the glyph — the publisher sync repunctuated the clause (it inserted
+    // ~920 「，」 across the edition and cut ~180 「；」), and the official
+    // 和合本繁體 runs the clause on with no comma at all. The character this
+    // test is about did not move, so the cue is re-cut around the comma rather
+    // than relaxed to a bare 「壇」, which would stop distinguishing 壇 from 罈.
+    expect(textOf('歷代志下', '33', '15'), contains('所築的各壇，都拆毀'));
     expect(textOf('阿摩司書', '2', '8'), contains('他們在各壇旁鋪人所當的衣服'));
   });
 
@@ -74,6 +80,11 @@ void main() {
     expect(textOf('列王紀上', '17', '14'), contains('罈內的麵必不減少'));
     expect(textOf('列王紀上', '17', '16'), contains('罈內的麵果不減少'));
     expect(textOf('耶利米書', '13', '12'), contains('各罈都要盛滿了酒'));
-    expect(textOf('耶利米書', '48', '12'), contains('打碎它的罈子'));
+    // 2026-09-09: 「打碎它的罈子」 → 「打碎她的罈子」. Moab is 她 throughout
+    // the verse now (「往她那裏去，將她倒出來，倒空她的器皿」), where this
+    // edition used to break the run with one 它. The official 和合本繁體 reads
+    // 她 in all four positions, so the sync moved us onto the witness. The
+    // 罈 is untouched, which is what this line is here for.
+    expect(textOf('耶利米書', '48', '12'), contains('打碎她的罈子'));
   });
 }

@@ -66,7 +66,12 @@ void main() {
     expect(textOf('以賽亞書', '55', '13'), contains('松樹長出'));
     expect(textOf('耶利米書', '17', '6'), contains('沙漠的杜松'));
     expect(textOf('列王紀上', '19', '4'), contains('松類'));
-    expect(textOf('撒迦利亞書', '11', '2'), contains('松樹啊，應當哀號'));
+    // 2026-09-09: 「松樹啊，應當哀號」 → 「松樹啊！應當哀號」. Punctuation,
+    // not the glyph — the publisher sync raised the vocative to an
+    // exclamation here and in the parallel 「巴珊的橡樹啊！」 in the same
+    // verse (it added ~690 「！」 across the edition). The official 和合本繁體
+    // keeps the comma. The tree is still 松, which is the claim.
+    expect(textOf('撒迦利亞書', '11', '2'), contains('松樹啊！應當哀號'));
   });
 
   test('the verses a reader would notice read correctly', () {

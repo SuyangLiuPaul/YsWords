@@ -222,8 +222,16 @@ void main() {
       expect(byKind(cuvs, cuvsText, '磯法'),
           {FuzzyMatch.script: 9, FuzzyMatch.synonym: 175});
       expect(byKind(cuvs, cuvsText, '愛'), {FuzzyMatch.script: 822});
+      // 2026-09-09: the synonym rung went 540 → 541, and the script
+      // rung did not move. 基督 is in 543 search keys now rather than
+      // 542, because 使徒行传 8:37 — a textual variant this edition
+      // carried inside a `<note:>` popup, which `sanitizeForSearch`
+      // strips — was moved into the running text by the publisher sync
+      // as 〔有古卷在此有37节：…我信耶稣基督是神的儿子。〕. The rung
+      // reports 基督's verses minus the 2 the script rung already
+      // claimed for 弥赛亚, so 543 − 2 = 541.
       expect(byKind(cuvs, cuvsText, '彌賽亞'),
-          {FuzzyMatch.script: 2, FuzzyMatch.synonym: 540});
+          {FuzzyMatch.script: 2, FuzzyMatch.synonym: 541});
     });
 
     test('an English query reaches the other forms of its own verb', () {

@@ -43,7 +43,12 @@ void main() {
     '010005017': ['非利士众人就上来寻索', '非利士眾人就上來尋索'],
     '023023001': ['因为推罗变为荒场', '因為推羅變為荒場'],
     '017006007': ['王所喜悦尊荣的人', '王所喜悅尊榮的人'],
-    '039002003': ['粪抹在你们的脸上', '糞抹在你們的臉上'],
+    // 2026-09-09: the publisher's current text sets a pause mark between
+    // the two clauses — 「又把你們犧牲的糞，抹在你們的臉上」 — so a literal
+    // that spans the 糞 cannot match any more. What this row is for is
+    // the 在, and the 在 is still there; the comma in front of it is the
+    // publisher's punctuation and not this test's business.
+    '039002003': ['抹在你们的脸上', '抹在你們的臉上'],
     '023041016': ['以以色列的圣者为夸耀', '以以色列的聖者為誇耀'],
   };
 
@@ -99,8 +104,18 @@ void main() {
   });
 
   test('the repair inserted characters and replaced nothing', () {
+    // 2026-09-09: the publisher's current text sets 「論推羅的默示。」 with
+    // a full stop where it used to set a colon, and did the same to
+    // 賽 15:1, 17:1, 19:1, 21:1, 21:11, 21:13 and 22:1 — eight of the
+    // nine oracle headings in the book, 30:6 alone keeping its colon.
+    // (Blob 7a2dc43 sets a colon in all nine, so this is the
+    // publisher's house style rather than the official edition's.) A
+    // mark is not a character this repair put in, so the claim is made
+    // over the two clauses either side of it rather than across it.
+    // Both halves of 推羅 are what this test is for and both are here.
+    expect(zhHant['023023001'], contains('論推羅的默示'));
     expect(zhHant['023023001'],
-        contains('論推羅的默示：他施的船隻都要哀號；因為推羅變為荒場'));
+        contains('他施的船隻都要哀號；因為推羅變為荒場'));
     expect(zhHant['010005017'],
         contains('非利士人聽見人膏大衛作以色列王，非利士眾人就上來尋索大衛'));
   });

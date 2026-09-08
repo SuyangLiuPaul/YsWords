@@ -93,11 +93,25 @@ FOLD = str.maketrans({"幹": "干", "乾": "干"})
 # cannot quietly redefine the target.
 EXPECTED = {"干": 111, "乾": 221, "幹": 9}
 
-# The two verses where the editions do not describe the same sentence. Both
-# were read in full; see the module docstring.
+# What OUR corpus must hold, which is the witness's counts plus the
+# edition differences below. Kept as an offset rather than a second
+# hard-coded triple so the two can never drift apart silently.
+#
+# 2026-09-08: this offset used to be zero, and that was a coincidence
+# of two errors cancelling. 使徒行傳 8:27 has always given us one 干 the
+# witness spells 甘 (干大基 / 甘大基, Candace), and 希伯來書 2:2 used to
+# cost us one back by reading 「凡犯悖逆的」 where the witness reads
+# 凡干犯悖逆 — a character the publisher's text dropped, restored over
+# the newly synced text by `repair_dropped_characters.py`. With that
+# verse repaired the cancellation is gone and the real +1 shows.
+OURS_MINUS_WITNESS = {"干": 1}
+
+# The verse where the editions do not describe the same sentence. It was
+# read in full; see the module docstring. (希伯來書 2:2 was the second
+# entry here until 2026-09-08, when the dropped 干犯 was restored and the
+# two editions stopped differing — see EXPECTED above.)
 EDITION_DIFFERS = {
     "044008027": "Candace — 埃提阿伯…干大基 here, 衣索匹亞…甘大基 in the witness",
-    "058002002": "ours drops 干犯 (so does our Simplified) — upstream, not conversion",
 }
 
 # The single position no aligned witness text exists for, with the reading two
@@ -222,8 +236,10 @@ def main() -> int:
         return 1
 
     got = {g: after.count(g) for g in FORMS}
-    if got != EXPECTED:
-        print(f"  ✗ result holds {got} against the witness's {EXPECTED} "
+    want = {g: EXPECTED[g] + OURS_MINUS_WITNESS.get(g, 0) for g in FORMS}
+    if got != want:
+        print(f"  ✗ result holds {got} against the expected {want} "
+              f"(the witness's {EXPECTED} plus {OURS_MINUS_WITNESS}) "
               f"— refusing")
         return 1
 

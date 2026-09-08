@@ -74,9 +74,31 @@ def book_slugs() -> dict[str, str]:
     return out
 
 
+# A wholly-editorial verse keeps the publisher's own brackets rather
+# than becoming an empty verse behind a footnote icon — see `unfold()`
+# in tools/sync_cuv_yhwh_to_publisher.py, and the 84 blank verses that
+# rule cost to learn. So the 70 stubs read 〔见上节〕 rather than a bare
+# 见上节, and this classifier has to strip the brackets before it can
+# recognise one. It did not, and the map it wrote on 2026-09-09 held
+# 2 entries instead of 71 — which is not a small mistake: the Originals
+# sheet uses this map to widen a merged verse, so an empty map silently
+# stops showing the Hebrew of every folded verse in the Bible.
+BRACKETED = re.compile(r"^〔([^〕]*)〕$")
+
+
 def merge_direction(text: str) -> str | None:
     """'prev', 'next', or None — read off the translation's own marker."""
     body = NOTE.sub("", text).strip()
+    bracketed = BRACKETED.match(body)
+    if bracketed:
+        inner = bracketed.group(1).strip()
+        if inner in BARE_PREV:
+            return "prev"
+        if any(k in inner for k in NOTE_NEXT):
+            return "next"
+        if any(k in inner for k in NOTE_PREV):
+            return "prev"
+        return None
     if body in BARE_PREV:
         return "prev"
     if body:

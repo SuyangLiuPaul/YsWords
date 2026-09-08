@@ -18,17 +18,27 @@ import 'package:flutter_test/flutter_test.dart';
 /// where the Simplified tagged layer already reproduces the Simplified
 /// reading text exactly, the derived runs must concatenate to the
 /// Traditional reading text exactly — same characters, same length, no
-/// normalisation, no allowance. That is 23,730 verses of real Bible.
+/// normalisation, no allowance. That is 27,306 verses of real Bible.
 ///
-/// It is not all 31,041, and the shortfall is notation rather than
+/// It is not all 31,042, and the shortfall is notation rather than
 /// scripture: the tagged import prints a publisher's note as
 /// 〔原文作"天空的表面"〕 where the reading asset writes
 /// `<note: 原文作"天空的表面">`. Those verses are covered by the weaker
 /// checks below — the run boundaries, the numbers, and the absence of
 /// any Simplified-only character the reading pair disagrees about.
 ///
-/// The 61 verses the generator refuses are asserted to be exactly the
+/// The 60 verses the generator refuses are asserted to be exactly the
 /// ones with no positional correspondence to refuse for.
+///
+/// **2026-09-09: every figure in this file moved, because the reading
+/// assets did.** `tools/sync_cuv_yhwh_to_publisher.py` brought
+/// `assets/cuvs-yhwh.json` up to the publisher's current text (8,566
+/// verses), `tools/mirror_publisher_sync_to_tr.py` replayed the same
+/// edits into the Traditional twin at the same character positions,
+/// and the derivation was re-run over that base. The tool's own
+/// `EXPECTED` block carries the same four numbers and the same
+/// reasons; they are restated here because this file measures the
+/// written files rather than the run.
 void main() {
   const srcDir = 'assets/tagged/cuvs-yhwh';
   const outDir = 'assets/tagged/cuvs-yhwh-tr';
@@ -123,14 +133,29 @@ void main() {
     expect(failures, isEmpty,
         reason: 'the derived line is not the shipped Traditional verse:\n'
             '${failures.join('\n')}');
-    expect(derived, 31041,
-        reason: '31,102 verses less the 61 with no positional '
+    // 31,041 -> 31,042, and the one verse is 路加福音 23:16. Before the
+    // publisher sync the Simplified alone carried a leaked
+    // 「〔有古卷在此有：」 at the end of it — the opener of 23:17's
+    // variant, stranded in the wrong verse — which made the two scripts
+    // different lengths and left the verse with no position to derive
+    // from. The publisher's current text does not have it, so the pair
+    // is aligned again and the verse is back in the derived layer.
+    expect(derived, 31042,
+        reason: '31,102 verses less the 60 with no positional '
             'correspondence');
     // Not a floor. This number moving means the two imports of this
     // edition agree in a different number of places than they did, which
     // is a fact about the assets and has to be read before it is
     // accepted.
-    expect(verified, 23730);
+    //
+    // 23,730 -> 27,306, and it is an improvement of 3,569 verses rather
+    // than a drift. The reading text moved TOWARDS the publisher's
+    // current text and the tagged import was already on it, so the two
+    // now agree character for character in 3,569 more places — and each
+    // of those is a verse whose derived Traditional line is checked
+    // against the shipped Traditional asset with no allowance instead of
+    // only through the weaker checks below.
+    expect(verified, 27306);
   });
 
   test('only the characters changed — every run boundary, number, implied '
@@ -157,12 +182,16 @@ void main() {
         }
       }
     }
-    // Exact: this is the source layer's own run count over the 31,041
+    // Exact: this is the source layer's own run count over the 31,042
     // verses that survive, and a change to it means a boundary moved.
-    expect(runs, 366682);
+    // 366,682 -> 366,687: the five extra runs are 路加福音 23:16's, the
+    // verse that rejoined the derived layer above. No boundary inside
+    // any other verse moved — every one of them is asserted equal to
+    // the source layer's own, one run at a time, in the loop above.
+    expect(runs, 366687);
   });
 
-  test('the 61 skipped verses are exactly the ones with no positional '
+  test('the 60 skipped verses are exactly the ones with no positional '
       'correspondence to derive from', () {
     final skipped = <String>[];
     for (var i = 0; i < zhBooks.length; i++) {
@@ -181,7 +210,10 @@ void main() {
                 'it');
       }
     }
-    expect(skipped, hasLength(61));
+    // 61 -> 60. 路加福音 23:16's stranded 「〔有古卷在此有：」 is gone from
+    // the publisher's current Simplified text, so its two scripts are
+    // the same length and the verse has a position to derive from.
+    expect(skipped, hasLength(60));
   });
 
   test('no derived verse still reads in the Simplified script where the '

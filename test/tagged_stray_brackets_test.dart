@@ -153,6 +153,25 @@ void main() {
         TaggedTextService.coversVerse(
             load('jeremiah')['4:22']!, reading['耶利米书 4:22']!),
         isTrue);
+    // **2026-09-09: this assertion is RED, and what it is reporting is a
+    // defect in the publisher's text.** The 的 this repair put back into the
+    // corpus — 「吩咐數點百姓的不是我嗎」 — has moved in the publisher's
+    // current reading text, which now sets
+    //
+    //     吩咐数点百姓不是我吗？我犯了罪，行了恶的，但这群羊做了什么呢？
+    //
+    // so the clause that needs the 的 has lost it and the clause four
+    // characters later has gained one. The publisher's own previous text,
+    // this tagged corpus and blob 7a2dc43 (「吩咐數點百姓的不是我嗎？我犯了
+    // 罪，行了惡，但這群羊」) all agree on the earlier position, and the
+    // publisher's `bsapp_bible_cuvs` row carries the transposed form
+    // verbatim, so it came from them rather than from the sync.
+    //
+    // `coversVerse` is a subsequence test, so the reader's 的 at the later
+    // position has no match left in the tagged line and the verse falls back
+    // to plain text. The repair this file records is intact — the corpus
+    // still reads 數點百姓的 — and the test is left failing rather than
+    // relaxed, because the thing to fix is the verse.
     expect(
         TaggedTextService.coversVerse(
             load('1_chronicles')['21:17']!, reading['历代志上 21:17']!),

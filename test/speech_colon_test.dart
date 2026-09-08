@@ -18,6 +18,11 @@ import 'package:flutter_test/flutter_test.dart';
 /// 「而且述說；他堅定」 and 加拉太書 2:2 「對弟兄們陳說；卻是背地裏…」 are a
 /// clause ending in 說 followed by a legitimate semicolon.
 ///
+/// Nine of those ten since the 2026-09-09 publisher sync. The tenth,
+/// 利未記 25:25, was 說； inside a translator's note and their current text
+/// rewrites the note without the 說 — see the entry. Its semicolon is
+/// unchanged and is still pinned; it is the 說 in front of it that went.
+///
 /// Settled on three lines that are not the same line twice — the separately
 /// imported 和合本 Traditional (git blob `7a2dc43`), which reads `：` at
 /// exactly these five and `；` at the other ten; our own tagged corpus, which
@@ -32,26 +37,50 @@ void main() {
 
   /// id → (Simplified, Traditional). Every one fails on the pre-fix data.
   const opened = <String, List<String>>{
-    '011022013': ['对米该雅说：众先知', '對米該雅說：眾先知'],
+    // 2026-09-09: this probe was 对米该雅说：众先知 / 對米該雅說：眾先知.
+    // The publisher's current text now sets the messenger's words as
+    // speech — 對米該雅說：「眾先知一口同音地都向王說吉言…」 — which is
+    // what the tagged corpus was already telling us when it carried
+    // the quotation marks the running text lacked, and is what the
+    // official 和合本繁體 prints. The character after the colon is
+    // therefore a quotation mark now, and it is a different one in
+    // each script, so the probe stops at the mark this test is about.
+    // It still fails on the pre-fix data, which read 對米該雅說；眾先知.
+    '011022013': ['对米该雅说：', '對米該雅說：'],
     '042013002': ['耶稣说：“你们以为', '耶穌說：「你們以為'],
     '043007045': ['对差役说：“你们为什么', '對差役說：「你們為什麽'],
     '043009009': ['又有人说：“不是', '又有人說：「不是'],
     '058003011': ['起誓说：‘他们断不可', '起誓說：『他們斷不可'],
   };
 
-  /// The ten legitimate 「說；」. Each is a clause ending in the verb 說,
-  /// not a speech introduction, and none carries an opening quotation mark
-  /// in the tagged corpus either. Two sit inside a translator's note.
+  /// The ten legitimate semicolons, nine of them still after 說. Each is a
+  /// clause ending in the verb 說, not a speech introduction, and none
+  /// carries an opening quotation mark in the tagged corpus either. Two sit
+  /// inside a translator's note.
   const keepSemicolon = <String, List<String>>{
     '001032019': ['也要这样对他说；', '也要這樣對他說；'],
-    '003025025': ['是指本国人说；下同', '是指本國人說；下同'],
+    // 2026-09-09: this probe was 是指本国人说；下同 / 是指本國人說；下同.
+    // The publisher rewrote the note itself. Their current notes name
+    // the word they annotate instead of trailing 說 — 322 of them do
+    // now where 72 did — so 利未記 25:25 reads
+    // <note: "弟兄"是指"本國人"；下同>. The 說 this entry was filed
+    // under is gone with it; the semicolon it was filed to protect is
+    // still there and still ends a clause rather than opening speech,
+    // which is the claim, so the probe is now the part that is still
+    // being asserted. The official prints （弟兄是指本國人說；下同）.
+    '003025025': ['是指"本国人"；下同', '是指"本國人"；下同'],
     '007008008': ['也是这样说；', '也是這樣說；'],
     '011002019': ['要为亚多尼雅提说；', '要為亞多尼雅提說；'],
     '018028027': ['而且述说；', '而且述說；'],
     '018029022': ['他们就不再说；', '他們就不再說；'],
     '018033033': ['你就听我说；', '你就聽我說；'],
     '018037019': ['我们愚昧不能陈说；', '我們愚昧不能陳說；'],
-    '037002009': ['原文有“万军之雅伟说；”', '原文有「萬軍之雅偉說；」'],
+    // 2026-09-09: was 原文有“万军之雅伟说；” / 原文有「萬軍之雅偉說；」.
+    // Same note rewrite as 利未記 25:25 above — the publisher's current
+    // notes quote with the straight mark in both scripts, so the pair
+    // that used to differ by script no longer does. The semicolon, and
+    // the 說 in front of it, are untouched.
+    '037002009': ['原文有"万军之雅伟说；"', '原文有"萬軍之雅偉說；"'],
     '048002002': ['对弟兄们陈说；', '對弟兄們陳說；'],
   };
 

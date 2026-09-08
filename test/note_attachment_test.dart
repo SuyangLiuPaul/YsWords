@@ -21,9 +21,22 @@ import 'package:flutter_test/flutter_test.dart';
 /// in its UNSETTLED set with the full argument on both sides.
 void main() {
   test('那鴻書 3:4 keeps its 原文是賣 note on the first 誘惑', () {
+    // 2026-09-09: the note's own wording changed and its position did
+    // not. The publisher's current notes name the word they annotate
+    // — 322 of them do now where 72 did — so this one reads
+    // <note: "誘惑"原文是"賣"> instead of <note: 原文是賣>. That is the
+    // publisher's rendering of the same note, and the question this
+    // file guards is untouched by it: the note still hangs on the
+    // FIRST 誘惑, where it was deliberately left, and the three
+    // digital witnesses and the official — which prints 用邪術誘惑
+    // （原文是賣）多族 — still put it on the second. Naming the lemma
+    // does not settle that: 誘惑 is the word twice over. Still
+    // unsettled, still the user's call.
     const files = {
-      'assets/cuvs-yhwh.json': '借淫行诱惑<note: 原文是卖>列国，用邪术诱惑多族。',
-      'assets/cuvs-yhwh-tr.json': '藉淫行誘惑<note: 原文是賣>列國，用邪術誘惑多族。',
+      'assets/cuvs-yhwh.json':
+          '借淫行诱惑<note: "诱惑"原文是"卖">列国，用邪术诱惑多族。',
+      'assets/cuvs-yhwh-tr.json':
+          '藉淫行誘惑<note: "誘惑"原文是"賣">列國，用邪術誘惑多族。',
     };
 
     files.forEach((path, expected) {

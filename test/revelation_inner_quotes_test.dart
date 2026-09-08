@@ -63,6 +63,23 @@ void main() {
     // reopens across verses is the paragraph convention, not this defect.
     // Notes are stripped first — a note may quote scripture and carry its own
     // marks.
+    //
+    // FAILING 2026-09-09 at 撒母耳記上 16:11 and 列王紀下 10:13, and
+    // deliberately left failing. This is not the Revelation defect
+    // recurring; it is a closing mark the publisher sync lost. Their
+    // 撒上 16:11 ships 說：「你的兒子都在這裏嗎？他回答說：「還有個小的
+    // — Samuel's question is never closed, so Jesse's answer opens
+    // while Samuel is still speaking. 王下 10:13 is the same shape at
+    // 你們是誰？回答說：. The official (blob 7a2dc43) closes both:
+    // 「你的兒子都在這裡嗎？」他回答說：「… and 「你們是誰？」回答說：「….
+    // One 」 per verse, in both scripts. Note that our own tagged
+    // corpus has read it the official's way since 2026-08-24 — see
+    // 'the word-tap sheet no longer answers its own questions' in
+    // speaker_attribution_test.dart, which pins these two verses at
+    // exactly this reading and still passes. So the reading text has
+    // regressed BEHIND the word-tap sheet that renders over it, and
+    // the same verse now says two different things in one app. That
+    // is scripture, so it is the owner's edit; do not relax this.
     final note = RegExp('<note:[^>]*>');
     for (final entry in {simplified: zhHans, traditional: zhHant}.entries) {
       final open = entry.key == simplified ? '“' : '「';
@@ -116,6 +133,18 @@ void main() {
     // The five 『 are left unclosed: this edition leaves 說：『 running with no
     // closer at 申 32:20, 路 15:17, 徒 7:6 and through the 申 5 Decalogue.
     expect(zhHant['066002007'], endsWith('賜給他吃。」'));
+    // FAILING 2026-09-09 at 2:29 and 3:6, and deliberately left
+    // failing. The refrain that closes each of the seven letters —
+    // 聖靈向眾教會所說的話，凡有耳的，就應當聽！ — lost its ！ in six of
+    // the seven. 2:7, 2:11, 2:29, 3:6, 3:13 and 3:22 now read 就應當聽。
+    // and 2:17 alone still reads 就應當聽！, so the publisher's own text
+    // now punctuates one formula two ways within twenty-two verses.
+    // The official (blob 7a2dc43) prints ！ at all seven, and so did
+    // our text before the sync: 就應當聽！ was 16 in the corpus and is
+    // now 10, with 6 of them turned into 就應當聽。. Six marks, one
+    // repeated sentence, and the odd one out proves it was not a
+    // decision. Owner's edit — the class is small enough for
+    // tools/repair_by_official_cuv.py.
     expect(zhHant['066002029'], endsWith('就應當聽！」'));
     expect(zhHant['066003006'], endsWith('就應當聽！」'));
 

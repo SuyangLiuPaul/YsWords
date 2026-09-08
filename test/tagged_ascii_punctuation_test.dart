@@ -87,13 +87,36 @@ void main() {
     // And the frozen reading assets carry it too — which is the whole
     // reason it stays. If this ever fails, the corpus and the edition have
     // stopped agreeing and the ellipsis needs reading again, not deleting.
+    //
+    // 2026-09-09: they have stopped agreeing about its LENGTH, and it has
+    // been read. The publisher rewrote this note. It used to run
+    //
+    //     有基督....或作是已经死了，而且从死里复活…
+    //
+    // and it now quotes its own lemma and sets a full-width colon,
+    //
+    //     "有基督..."：或作"是已经死了，而且从死里复活…"
+    //
+    // so the ellipsis went from four ASCII dots to three. The tagged corpus
+    // still sets four (the `holders` check above), and so does blob 7a2dc43
+    // — 「（有基督....或譯：…）」 — so the four-dot form is the older one and
+    // three is the publisher's own current typography inside their own note.
+    // It is still the same ellipsis, still the only ASCII period anywhere in
+    // either reading asset, and still inside the edition's apparatus rather
+    // than in scripture, so it stays. The count is pinned on both sides
+    // rather than matched between them, because a change on either side is
+    // now a fact to look at.
     for (final asset in ['assets/cuvs-yhwh.json', 'assets/cuvs-yhwh-tr.json']) {
       final rows = (json.decode(File(asset).readAsStringSync()) as List)
           .cast<Map<String, dynamic>>();
       final dotted = rows.where((r) => (r['text'] as String).contains('.'));
       expect(dotted, hasLength(1), reason: asset);
       expect('${dotted.single['chapter']}:${dotted.single['verse']}', '8:34');
-      expect(dotted.single['text'], contains('有基督....'));
+      expect(dotted.single['text'], contains('"有基督..."：或作'),
+          reason: asset);
+      expect('.'.allMatches(dotted.single['text'] as String).length, 3,
+          reason: '$asset: three dots on the reading side, four on the '
+              'tagged side and in blob 7a2dc43');
     }
   });
 

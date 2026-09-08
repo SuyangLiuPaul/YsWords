@@ -106,8 +106,14 @@ FIXES = [
      "為自已所", "為自己所", "psalms", "80:15"),
     ("019080017", "詩 80:17", "为自已所", "为自己所",
      "為自已所", "為自己所", "psalms", "80:17"),
-    ("024012014", "耶 12:14", "所承巡菇业", "所承受产业",
-     "所承巡菇業", "所承受產業", "jeremiah", "12:14"),
+    # 2026-09-08: was ("所承巡菇业", …, "所承巡菇業", …). The publisher's
+    # current text repairs HALF of this one on its own — 菇 became 产 —
+    # and leaves 巡 for 受, which is exactly the state their tagged
+    # corpus has been in all along (see TAGGED_OVERRIDE below). So the
+    # flat search string is now the half-corrupt form, and the two
+    # halves of this file agree about what is left to fix.
+    ("024012014", "耶 12:14", "所承巡产业", "所承受产业",
+     "所承巡產業", "所承受產業", "jeremiah", "12:14"),
     ("041015025", "可 15:25", "是已初", "是巳初",
      "是已初", "是巳初", "mark", "15:25"),
     ("042002024", "路 2:24", "班鸠", "斑鸠",

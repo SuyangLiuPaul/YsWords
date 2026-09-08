@@ -120,10 +120,20 @@ already treats as the dividing line:
     and 14 close `]]`, over Mark 16:9-20, Luke 22:43-44, the Western
     non-interpolations in Luke 24, and John 7:53-8:11.
   * `bsb-yhwh` — `the Lord [Yahweh]` where the New Testament quotes an
-    Old Testament passage that has the name (187 verses), and `Lord*`
-    where the edition marks a Kyrios it read as Adonai rather than YHWH
-    (111 verses). This is the same convention as the 和合本雅伟版's
-    `[雅伟]`, which this app already ships untouched.
+    Old Testament passage that has the name (187 verses). This is the
+    same convention as the 和合本雅伟版's `[雅伟]`, which this app
+    already ships untouched.
+
+    The other TWO markers of that same convention arrived unexpanded
+    and are repaired by `tools/expand_bsb_yhwh_markers.py`: `Lord*` in
+    111 verses and `Lord#` in 16. This docstring used to say `Lord*`
+    marked "a Kyrios the edition read as Adonai rather than YHWH".
+    That was wrong. Of the 111 verses carrying it, 108 read 主[耶稣] in
+    the publisher's own Chinese edition at the same verse id, and 15 of
+    the 16 carrying `Lord#` read 主[基督] — they are 耶稣 and 基督, the
+    second and third members of the three-marker system whose first
+    member this paragraph already recognised. If a future import
+    reintroduces them, expand them; do not ship the printer's marks.
 
 WHAT IS NOT RESTORED HERE
 -------------------------

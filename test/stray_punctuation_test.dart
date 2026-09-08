@@ -62,8 +62,34 @@ void main() {
       });
 
       test('the enumeration commas it displaced are all present', () {
-        // 6271 before the repair + the 53 that were written as 丶.
-        expect(blobOf(edition).split('、').length - 1, 6324);
+        // 6271 before the repair + the 53 that were written as 丶 = 6324,
+        // which this pinned until 2026-09-08.
+        //
+        // Then 6307, which was the count with only the first half of
+        // the 、 work done. The publisher's own text carries 6217;
+        // tools/restore_enumeration_commas.py put back the 90 they had
+        // deleted outright — 「用藍色紫色朱紅色線」, 「你祖你父之地」 —
+        // because a list of three colours with no separator is not a
+        // punctuation decision. 6217 + 90 = 6307.
+        //
+        // 6357 since 2026-09-09, and the 50 are one tool rather than a
+        // drift. `restore_enumeration_commas.py` touches a DELETION
+        // only and leaves alone every 、 the publisher REPLACED with
+        // ，; that was the safe half of the rule and not the whole
+        // rule. `settle_enumeration_commas_by_witness.py` asks the
+        // official 和合本繁體 (blob 7a2dc43) at each of those positions
+        // instead of reasoning about any of them, which is the owner's
+        // ruling 「参考和合本繁體官方的去决定」 applied one mark at a
+        // time. It settled 90: 70 became 、 — 耶利米書 2:22
+        // 「你雖用鹼、多用肥皂洗濯」, two items of a list — and 20
+        // became ， — 創世記 41:43 「這樣，法老派他治理埃及全地」, a
+        // discourse adverb, where theirs is better. 70 - 20 = 50.
+        //
+        // The 90 are checkable one by one rather than on trust: take
+        // the six Traditional characters either side of each settled
+        // mark and look for that window in blob 7a2dc43. All 90 are
+        // there.
+        expect(blobOf(edition).split('、').length - 1, 6357);
       });
 
       test('no punctuation mark is doubled or orphaned', () {
@@ -115,12 +141,44 @@ void main() {
         expect(textOf(edition, '016009005'), contains('甲篾、巴尼'.chars(edition)));
         expect(textOf(edition, '002025035'), contains('接連一塊。燈臺'.chars(edition)));
         expect(textOf(edition, '004026032'), contains('有希弗族。'.chars(edition)));
-        expect(textOf(edition, '025004015'), contains('喊著說：不潔淨的'.chars(edition)));
-        expect(textOf(edition, '038003008'), contains('作預兆的）。我必使'.chars(edition)));
-        expect(textOf(edition, '030006010'), contains('又說：不要作聲'.chars(edition)));
-        expect(textOf(edition, '030006014'), contains('說：以色列家啊'.chars(edition)));
+        // 2026-09-08: these two were 喊著說：不潔淨的 and 又說：不要作聲.
+        // The publisher's current text QUOTES both cries —
+        // 喊著說：「不潔淨的…」, 又說：「不要作聲…」 — which is what the
+        // repair these lines guard was reaching for and could not do
+        // from punctuation alone.
+        //
+        // The quotation mark itself is not written into the expected
+        // string: `chars()` maps Han characters between the scripts and
+        // leaves the marks alone, and the two editions use different
+        // ones. So the claim is made the way it was always meant —
+        // 說 is followed by a colon, and NOT by the stray ！ this file
+        // is named after.
+        expect(textOf(edition, '025004015'), contains('喊著說：'.chars(edition)));
+        expect(textOf(edition, '025004015'), isNot(contains('：！')));
+        // 2026-09-08: was 作預兆的）。我必使. The publisher's current text
+        // puts the full stop inside the parenthesis — （他們是作預兆的。）
+        // — which is where it belongs when the parenthetical is a whole
+        // sentence, and is what the official edition prints. The claim
+        // here was never which side the 。 falls on; it was that there
+        // is exactly one of them, which there still is.
+        expect(textOf(edition, '038003008'),
+            contains('作預兆的。）我必使'.chars(edition)));
+        expect(textOf(edition, '030006010'), contains('又說：'.chars(edition)));
+        expect(textOf(edition, '030006010'), isNot(contains('：！')));
+        expect(textOf(edition, '030006014'), contains('說：'.chars(edition)));
+        expect(textOf(edition, '030006014'), isNot(contains('：！')));
+        expect(textOf(edition, '030006014'),
+            contains('以色列家啊'.chars(edition)));
         expect(textOf(edition, '058013003'), contains('同受捆綁；也要'.chars(edition)));
-        expect(textOf(edition, '042017036'), endsWith('>'));
+        // 2026-09-08: was endsWith('>'). A verse whose WHOLE body is
+        // the publisher's 〔…〕 now keeps the brackets rather than
+        // becoming an empty verse behind a footnote icon — see
+        // `unfold()` in tools/sync_cuv_yhwh_to_publisher.py, which is
+        // what 84 blank verses cost to learn. So the mark that must be
+        // there is the closing 〕, and the point of the assertion is
+        // unchanged: this verse ends where its note ends, with nothing
+        // trailing it.
+        expect(textOf(edition, '042017036'), endsWith('〕'));
         // The mark that stays. Deleting THIS one instead would have left
         // Jesus' discourse closing after an icon; three lines — the tagged
         // Strong's corpus, 梁家鏗's independent NT, and the five other

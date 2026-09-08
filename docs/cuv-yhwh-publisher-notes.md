@@ -122,3 +122,49 @@ exists to record before somebody rediscovers them:
   * **Neither reading asset is opened for writing**, and the freeze
     above is untouched. If a future pass wants to "fix" the derived
     layer, the thing to fix is the generator; the layer is output.
+
+## The two scripts differ in their quotation marks, 2026-09-08
+
+Recorded here because it is exactly the kind of thing that reads as
+noise until it has cost something, and it has now cost 7,170 characters.
+
+**This edition's Simplified sets `“ ” ‘ ’`; its Traditional sets
+`「 」 『 』`.** Not a preference — a correspondence, one-to-one, with no
+counter-example anywhere in the Bible. Walking every character-aligned
+verse pair as they stood before the publisher sync:
+
+| Simplified | Traditional | positions | other forms seen |
+|---|---|---|---|
+| `“` | `「` | 3,410 | none |
+| `”` | `」` | 3,087 | none |
+| `‘` | `『` | 630 | none |
+| `’` | `』` | 599 | none |
+
+Those four are the **only** non-Han characters that ever stand opposite
+something different. Every comma, 。, ASCII `"`, digit and Latin letter
+is identical in both scripts.
+
+Two consequences worth keeping:
+
+  * **"Punctuation is script-neutral" is false for this edition**, and
+    it is a comfortable thing to believe. `mirror_publisher_sync_to_tr.py`
+    believed it — it carried a `if not is_han(ch)` shortcut inherited
+    from `mirror_inner_quotes_to_tr.py`, where it was true, because that
+    pass only ever inserted an ASCII `"`. The publisher's current text
+    roughly doubles the curly quotes, so the shortcut put 3,155 `“`,
+    2,871 `”`, 574 `‘` and 570 `’` into a Traditional file that had
+    **zero of all four**, leaving 3,905 verses that open 「 and close ”.
+    創世記 30:6 and 出埃及記 3:5 are the two to look at.
+  * **Nothing in the suite would have caught it.**
+    `ascii_punctuation_test` counts the ASCII `"` and is right not to
+    care about these; the mirror's own leak check compared against a
+    correspondence table that had been filtered to Han pairs, so it
+    listed all four at the top of "characters new to the Traditional
+    file" and then reported "a real leak: 0". A guard derived from the
+    same wrong premise as the code it guards is not a second opinion.
+
+The fix was to stop asking whether a character is Han and let the
+derived correspondence answer, which is what the rest of that script
+already did. If a future pass needs to touch either mirror, the check to
+run afterwards is simply: the Traditional edition contains no `“`, `”`,
+`‘` or `’`, and the two scripts hold equal counts of their own four.

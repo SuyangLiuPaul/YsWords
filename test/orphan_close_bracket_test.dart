@@ -76,7 +76,18 @@ void main() {
       test('士師記 8:24 and 耶利米書 10:11 now end on their own punctuation', () {
         // Fails on the pre-repair data, where both ended `〕`.
         expect(byId['007008024']!['text'] as String, endsWith('。'));
-        expect(byId['024010011']!['text'] as String, endsWith('！'));
+        // 2026-09-09: 耶利米書 10:11 was pinned at endsWith('！'). The
+        // publisher's current text QUOTES the message this verse tells
+        // the reader to deliver — 你們要對他們如此說：「不是那創造天地
+        // 的神，必從地上從天下被除滅！」 — so the last character is now
+        // the closing quotation mark and the ！ is the last mark of
+        // scripture before it. The claim was never which character is
+        // last; it was that the verse ends on its own punctuation and
+        // not on a bracket nothing opened, and the loop below still
+        // says so. Written as a class rather than a literal because
+        // the two editions close with different marks and one string
+        // cannot be both.
+        expect(byId['024010011']!['text'] as String, matches(RegExp('！[」”]\$')));
         for (final id in ['007008024', '024010011']) {
           final text = byId[id]!['text'] as String;
           for (final mark in ['〕', '〔', '（', '）']) {
@@ -93,17 +104,47 @@ void main() {
             contains(RegExp('必從地上|必从地上')));
       });
 
-      test('the 12 legitimate asides still pair, and are not swept', () {
-        // Eleven cross-verse pairs plus the self-contained 路 8:45. A future
-        // "tidy the brackets" pass must not take these.
-        const openIds = [
-          '004031043', '011021025', '024026020', '024027019', //
-          '040018010', '040023013', '041015027', '042008045', //
-          '042023016', '043005003', '044024006', '044028028',
+      test('the legitimate asides still pair, and are not swept', () {
+        // This used to be twelve ids all asserted to contain `〔`, and
+        // the publisher sync moved every part of that. Their current
+        // text does not use 〔〕 for a cross-verse aside at all — it
+        // writes （）, as the official does — and it no longer splits
+        // the 「有古卷在此有」 variant readings across a verse boundary:
+        // where 馬太福音 18:10 used to end 「…常見我天父的面。〔有古卷在
+        // 此有」 and 18:11 close it, 18:10 is now clean and 18:11 is the
+        // whole aside, self-contained. Seven of the old twelve were
+        // that shape. Both changes are the better one for an app that
+        // renders a verse at a time.
+        //
+        // So the ledger is rewritten as what it was always measuring:
+        // the openers whose closer is in a LATER verse, which are the
+        // ones a per-verse balance check cannot see and a "tidy the
+        // brackets" pass would take first. The eleven below are exactly
+        // the cross-verse pairs the corpus holds now.
+        const crossVerseOpeners = [
+          '004031043', '005002010', '005002020', '005010006', //
+          '011021025', '023016004', '026028003', '041007003', //
+          '044005012', '045002013', '049004009',
         ];
-        for (final id in openIds) {
-          expect(byId[id]!['text'] as String, contains('〔'),
-              reason: '$id opens a legitimate aside');
+        for (final id in crossVerseOpeners) {
+          expect(byId[id]!['text'] as String, contains('（'),
+              reason: '$id opens an aside that a later verse closes');
+        }
+
+        // And the self-contained 〔…〕 asides, which is where the
+        // publisher now puts a variant reading. 路加福音 8:45 was
+        // already this shape and is the one survivor of the old list;
+        // the other seven arrived when the sync moved their content
+        // wholly into the following verse.
+        const selfContained = [
+          '040018011', '040023014', '041015028', '042008045', //
+          '042017036', '042023017', '043005004', '044024007', //
+          '044028029',
+        ];
+        for (final id in selfContained) {
+          final text = byId[id]!['text'] as String;
+          expect(text, contains('〔'), reason: '$id is a whole aside');
+          expect(text, contains('〕'), reason: '$id closes in its own verse');
         }
       });
     });

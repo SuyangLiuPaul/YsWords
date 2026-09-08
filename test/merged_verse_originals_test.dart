@@ -25,10 +25,27 @@ void main() {
     final rows = json.decode(
         File('assets/$version.json').readAsStringSync()) as List;
     final note = RegExp(r'<note:[^>]*>');
+    // 2026-09-09: the marker arrives BRACKETED now — 〔见上节〕 rather
+    // than a bare 见上节 — and that is deliberate on both sides. It is
+    // how the publisher writes it, and `sync_cuv_yhwh_to_publisher.py`'s
+    // `unfold` keeps the brackets rather than converting them to
+    // `<note: …>` precisely when the whole verse IS the note, because a
+    // footnote needs something to be a footnote to and converting these
+    // left the reader an empty verse behind an icon
+    // (`bible_version_integrity_test` caught all 84 of them).
+    //
+    // So the wrapper is unwrapped here rather than the marker being
+    // matched with the brackets attached: what this classifier is
+    // reading is the translation's own words, and this file's whole
+    // point is that the classification is re-derived from the reading
+    // asset instead of copied from the tool that wrote the overlay.
+    final wrapped = RegExp(r'^〔(.*)〕$');
     final out = <String, Map<String, String>>{};
     for (final row in rows.cast<Map<String, dynamic>>()) {
       final text = row['text'] as String;
-      final body = text.replaceAll(note, '').trim();
+      var body = text.replaceAll(note, '').trim();
+      final unwrap = wrapped.firstMatch(body);
+      if (unwrap != null) body = unwrap.group(1)!.trim();
       String? direction;
       if (body == '见上节' || body == '見上節') {
         direction = 'prev';
@@ -71,8 +88,20 @@ void main() {
   test('every merged verse is carried by the verse that prints it', () {
     final marks = pointers('cuvs-yhwh');
     final overlay = merged['cuvs-yhwh']!;
-    // 71 folded into the previous verse, and 約翰福音 7:53 into the next.
-    expect(marks.values.fold<int>(0, (n, m) => n + m.length), 72);
+    // 70 folded into the previous verse, and 約翰福音 7:53 into the next.
+    //
+    // 72 -> 71 on 2026-09-09, and the one that left is 約伯記 10:21. The
+    // publisher's current text un-merges that pair: 10:20 now ends at
+    // 「求你停手寬容我，」 and 10:21 carries 「叫我在往而不返之先…」 as a
+    // verse of its own, so it is not a pointer any more and the sheet on
+    // 10:20 must not be widened to hold 10:21's Hebrew.
+    //
+    // `assets/originals_versification_merged.json` has NOT been rebuilt
+    // for that and still maps job 10:20 -> ['10:20', '10:21']. The loop
+    // below walks marks -> overlay, so a stale extra entry does not fail
+    // it; `tools/build_merged_verse_map.py` needs re-running over the
+    // synced reading asset.
+    expect(marks.values.fold<int>(0, (n, m) => n + m.length), 71);
 
     final base = (json
             .decode(File('assets/originals_versification.json')

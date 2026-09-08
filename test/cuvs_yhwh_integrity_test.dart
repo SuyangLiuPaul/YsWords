@@ -6,22 +6,35 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  // 2026-09-08: all four gained their quotation marks.
+  //
+  // Both verses are speech and both were pinned without the marks that
+  // say so. The publisher's current text closes them —
+  // 士師記 13:7 「卻對我說：『你要懷孕生一個兒子…』」 and 18:10 ends on
+  // 」 — and so does the official 和合本繁體 (git blob 7a2dc43, the plain
+  // 耶和華 edition, spot-checked against bible.fhl.net). Two witnesses
+  // that do not share our copy's history agree against it, so the marks
+  // belong and these pins were recording their absence.
+  //
+  // What this file is FOR is unchanged: these two verses were repaired
+  // by hand once and must not silently drift again. The words are still
+  // asserted character for character; only the punctuation moved.
   const expected = <String, Map<String, String>>{
     'assets/cuvs-yhwh.json': {
       '007013007':
-          '却对我说：你要怀孕生一个儿子，所以清酒浓酒都不可喝，一切不洁之物也'
-          '不可吃；因为这孩子从出胎一直到死，必归神作拿细耳人。',
+          '却对我说：‘你要怀孕生一个儿子，所以清酒浓酒都不可喝，一切不洁之物也'
+          '不可吃；因为这孩子从出胎一直到死，必归神作拿细耳人。’”',
       '007018010':
           '你们到了那里，必看见安居无虑的民，地也宽阔。神已将那地交在你们手'
-          '中；那地百物俱全，一无所缺。',
+          '中；那地百物俱全，一无所缺。”',
     },
     'assets/cuvs-yhwh-tr.json': {
       '007013007':
-          '卻對我說：你要懷孕生一個兒子，所以清酒濃酒都不可喝，一切不潔之物'
-          '也不可吃；因為這孩子從出胎一直到死，必歸神作拿細耳人。',
+          '卻對我說：『你要懷孕生一個兒子，所以清酒濃酒都不可喝，一切不潔之物'
+          '也不可吃；因為這孩子從出胎一直到死，必歸神作拿細耳人。』」',
       '007018010':
           '你們到了那裏，必看見安居無慮的民，地也寬闊。神已將那地交在你們手'
-          '中；那地百物俱全，一無所缺。',
+          '中；那地百物俱全，一無所缺。」',
     },
   };
 

@@ -97,7 +97,19 @@ void main() {
   test('the repair inserted characters and replaced nothing', () {
     // Every restored verse must still contain the surrounding words it had
     // before, so an "insertion" that quietly rewrote a clause would fail.
-    expect(zhHant['019078044'], contains('把他們的江河並河汊的水都變為血'));
+    //
+    // 2026-09-09: 詩篇 78:44 is now probed with the punctuation taken
+    // out. The publisher's current text writes 把他們的江河，並河汊的水
+    // — a comma the official does not print — and the probe was a
+    // literal run of characters that spanned the position it went
+    // into. The claim here is about CHARACTERS: that the 汊 this
+    // repair put back is still in the clause it was put back into,
+    // and that nothing around it was rewritten to accommodate it. So
+    // the probe now asks the question it always meant, and asks it in
+    // a way a later comma cannot break either.
+    expect(
+        zhHant['019078044']!.replaceAll(RegExp('[，。；：、！？]'), ''),
+        contains('把他們的江河並河汊的水都變為血'));
     expect(zhHant['044026029'], contains('無論是少勸是多勸，我向神所求的'));
     expect(zhHant['058002002'], contains('那藉著天使所傳的話既是確定的；凡干犯悖逆的'));
   });

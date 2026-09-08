@@ -133,21 +133,30 @@ void main() {
   });
 
   test('every repaired verse still balances its quotation marks', () {
-    // 馬太福音 17:26 deliberately does not: its quotation opens in v.26 and
-    // closes in v.27, which is why a balanced-span check never found it.
+    // 馬太福音 17:26 used to be the exception, and was excused from the
+    // loop for it: its quotation opened in v.26 and closed in v.27,
+    // which is why a balanced-span check never found the defect this
+    // file repairs. The publisher's current text ends that. Their
+    // 17:26 closes Jesus's speech at 免稅了。」 and their 17:27 reopens
+    // it at 「但恐怕觸犯他們, so each verse now balances on its own —
+    // the official runs the quotation across the two, but this app
+    // renders a verse at a time and a verse that closes what it opens
+    // is the better shape for it. The exception is therefore gone, and
+    // that the exception is gone is itself worth asserting: an app
+    // that shows 17:26 alone no longer shows an open quotation.
     for (final id in repaired.keys) {
-      if (id == '040017026') continue;
       final text = zhHant[id]!.replaceAll(RegExp(r'<note:[^>]*>'), '');
       expect('「'.allMatches(text).length, '」'.allMatches(text).length,
           reason: '$id: unbalanced 「」 after the repair');
     }
-    // 17:26 opens one that 17:27 closes.
     final v26 = zhHant['040017026']!.replaceAll(RegExp(r'<note:[^>]*>'), '');
     final v27 = zhHant['040017027']!.replaceAll(RegExp(r'<note:[^>]*>'), '');
-    expect('「'.allMatches(v26).length - '」'.allMatches(v26).length, 1,
-        reason: '馬太福音 17:26 should leave exactly one quotation open');
-    expect('」'.allMatches(v27).length - '「'.allMatches(v27).length, 1,
-        reason: '馬太福音 17:27 should close it');
+    expect(v26, endsWith('免稅了。」'),
+        reason: '馬太福音 17:26 closes the speech it opens');
+    expect(v27, startsWith('「但恐怕觸犯'),
+        reason: '馬太福音 17:27 opens its own');
+    expect('「'.allMatches(v27).length, '」'.allMatches(v27).length,
+        reason: '馬太福音 17:27 balances too, now that 17:26 does');
   });
 
   test('the tagged corpus reads the same as the verse it renders', () {

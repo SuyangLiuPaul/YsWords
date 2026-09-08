@@ -19,21 +19,21 @@ import 'package:yswords/widgets/implied_coverage_line.dart';
 /// itself which numbers it would print:
 ///
 ///   * a verse whose tagged runs do not cover the reader's verse falls
-///     back to plain text and has no tap targets at all — 223 verses;
+///     back to plain text and has no tap targets at all — 184 verses;
 ///   * a run whose `i` only repeats its own `s`, names `H0`/`G0`, or
 ///     names something the lexicon cannot answer prints nothing;
 ///   * one tap shows one line, so the unit of gain is a RUN, not a pair.
 ///
 /// The answer is that the line is worth having and is also mostly
-/// silent: **22,672 of 30,879 rendered verses (73.4%)** hold at least
-/// one run that can print it, but **304,831 of 364,539 rendered runs
+/// silent: **22,692 of 30,918 rendered verses (73.4%)** hold at least
+/// one run that can print it, but **305,393 of 365,102 rendered runs
 /// (83.6%) gain nothing** — tapping those is exactly what it was
 /// before.
 ///
 /// Restricted to numbers the verse's own original really contains and
 /// that no run of the verse shows as `s` — the queue's question, asked
-/// on production's input — the gain is **39,534 pairs over 21,230
-/// verses**, against the queue's 39,868 / 21,390. The gap is the 223
+/// on production's input — the gain is **39,557 pairs over 21,246
+/// verses**, against the queue's 39,868 / 21,390. The gap is the 184
 /// fallen-back verses, the `i` entries that only repeat their run's own
 /// `s`, and the 7 untagged runs that carry an `i` and no tap target.
 /// Quote whichever figure you like, but say which one.
@@ -41,6 +41,18 @@ import 'package:yswords/widgets/implied_coverage_line.dart';
 /// A ratchet like the rest of this suite: these may move when the
 /// corpus is re-imported, and a move is a fact about the import, not a
 /// licence to re-pin.
+///
+/// **2026-09-09: every figure here moved, and the corpus did not.**
+/// `tools/sync_cuv_yhwh_to_publisher.py` brought `assets/cuvs-yhwh.json`
+/// up to the publisher's current text — 8,566 verses — and this census
+/// measures the tagged corpus THROUGH that reading text, because
+/// `coversVerse` is what decides whether a verse renders a tagged line
+/// at all. 39 more verses now pass the guard, so 39 more verses' runs
+/// enter every count below. The proportions are unchanged to a tenth of
+/// a percent, which is what you would expect from a denominator that
+/// grew by 0.13% and nothing else: 223 -> 184 fallen back, 30,879 ->
+/// 30,918 rendered, 364,539 -> 365,102 runs, 22,672 -> 22,692 verses
+/// that gain, 39,534 -> 39,557 pairs over 21,230 -> 21,246 verses.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -181,38 +193,60 @@ void main() {
     }
   }
 
-  test('the sheet renders a tagged line on 30,879 verses', () {
+  test('the sheet renders a tagged line on 30,918 verses', () {
     expect(taggedVerses, 31102);
     expect(droppedMarkup, 0,
         reason: 'the markup repair cleared this class; a re-import that '
             'reintroduces `<WH7931s>` would take verses off the line '
             'entirely, and that is a bigger problem than this feature');
-    expect(droppedCoverage, 223,
+    // 223 -> 184, 30,879 -> 30,918. The corpus is unchanged; the reading
+    // text moved onto the publisher's current text and 39 more verses
+    // net now pass `coversVerse`. Pinned independently, with the verses
+    // that moved the other way named, by tagged_verse_coverage_test.dart.
+    expect(droppedCoverage, 184,
         reason: 'pinned independently by tagged_verse_coverage_test.dart');
-    expect(renderedVerses, 30879);
+    expect(renderedVerses, 30918);
   });
 
-  test('22,672 verses gain a line; 304,831 runs gain nothing', () {
-    expect(renderedRuns, 364539);
-    expect(runsThatGain, 59708);
-    expect(runsThatGainNothing, 304831);
+  test('22,692 verses gain a line; 305,393 runs gain nothing', () {
+    // All five counts below are the same measurement over a rendered set
+    // that is 39 verses larger — see the file note. `runsThatGain` is the
+    // one that FELL, 59,708 -> 59,706, which it can do because the set
+    // changed in both directions: the verses that LEFT it (士師記 15:2 /
+    // 15:5 / 15:18, 撒母耳記下 21:2, 約伯記 31:36, 歷代志上 21:17) took a
+    // few more chip-bearing runs out than the ones that joined brought
+    // in.
+    // 365,069 for a few hours on 2026-09-08; 365,102 once the last of
+    // the publisher's own defects were repaired against the official
+    // edition — 16 transpositions, the Revelation refrain's ！, two
+    // lost closing quotes, 約伯記 31:36's doubled 敵, 歷代志上 21:17's
+    // displaced 的 — each of which let another verse's tagged line
+    // through.
+    expect(renderedRuns, 365102);
+    expect(runsThatGain, 59709);
+    expect(runsThatGainNothing, 305393);
     expect(runsThatGain + runsThatGainNothing, renderedRuns,
         reason: 'every rendered run is in exactly one bucket');
-    expect(versesThatGain, 22672);
+    expect(versesThatGain, 22692);
     // 73.4% of rendered verses, 16.4% of rendered runs. Both are worth
     // stating together: the feature reaches most of the corpus and
-    // almost none of the taps.
+    // almost none of the taps. Both proportions are unmoved, which is
+    // the point of keeping them beside the raw counts.
     expect(versesThatGain / renderedVerses, closeTo(0.734, 0.001));
     expect(runsThatGain / renderedRuns, closeTo(0.164, 0.001));
   });
 
-  test('39,534 (verse, number) pairs become reachable, over 21,230 verses', () {
+  test('39,557 (verse, number) pairs become reachable, over 21,246 verses', () {
     // The queue's figures for the same question on the raw corpus are
-    // 39,868 over 21,390. Lower here because 223 verses never render a
+    // 39,868 over 21,390. Lower here because 184 verses never render a
     // tap target and because an `i` that only repeats its run's own `s`
     // is not new reach.
-    expect(newlyReachable, hasLength(39534));
-    expect(versesNewlyReachable, hasLength(21230));
+    //
+    // 39,534 -> 39,557 over 21,230 -> 21,246: the same 39 verses again,
+    // bringing their own pairs with them. The queue's gap narrowed
+    // because the count of fallen-back verses did.
+    expect(newlyReachable.length, 39557);
+    expect(versesNewlyReachable.length, 21246);
     // 約翰福音 3:5, the verse the whole argument was conducted over: the
     // span repair promoted 神 to G2316 θεός and 的国。 to G932 βασιλεία,
     // which left G3588 ὁ reachable nowhere. It is reachable again.
@@ -221,7 +255,9 @@ void main() {
 
   test('a line never has more than 12 chips, and usually has one', () {
     expect(mostChipsOnOneLine, 12);
-    expect(runsWithSeveralChips, 6026);
+    // 6,026 -> 6,030: four more multi-chip runs, carried in by the
+    // verses that rejoined the rendered set. The ceiling did not move.
+    expect(runsWithSeveralChips, 6031);
   });
 
   test('no number in the shipped corpus is a dead end', () {

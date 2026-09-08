@@ -29,25 +29,40 @@ class CollapsibleEnglishRef extends StatelessWidget {
       // suppress it so this reads as an inline disclosure, not a
       // list section.
       data: theme.copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        childrenPadding: const EdgeInsets.only(bottom: 4),
-        expandedAlignment: Alignment.centerLeft,
-        expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        dense: true,
-        visualDensity: VisualDensity.compact,
-        leading: Icon(Icons.translate,
-            size: 16, color: scheme.onSurfaceVariant),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: scheme.onSurfaceVariant,
-            letterSpacing: 0.3,
+      // 2026-09-08: its own Material.
+      //
+      // [ExpansionTile]'s header is a [ListTile], which paints its ink
+      // splash on the nearest Material ancestor. Both callers put this
+      // inside a decorated box — the exegesis sheet's entry card is a
+      // Container with a `surfaceContainerHighest` fill — which sits
+      // BELOW that Material and therefore paints over the splash. So
+      // the disclosure gave no feedback on tap, and Flutter said so:
+      // every build of the entry card in a debug build threw
+      // "ListTile background color or ink splashes may be invisible",
+      // which is why nothing could render this card in a test.
+      // Transparent, so the decoration a caller drew stays visible.
+      child: Material(
+        type: MaterialType.transparency,
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(bottom: 4),
+          expandedAlignment: Alignment.centerLeft,
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          leading: Icon(Icons.translate,
+              size: 16, color: scheme.onSurfaceVariant),
+          title: Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurfaceVariant,
+              letterSpacing: 0.3,
+            ),
           ),
+          children: [child],
         ),
-        children: [child],
       ),
     );
   }

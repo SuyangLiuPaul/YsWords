@@ -98,7 +98,13 @@ void main() {
 
   test('the words the corpus already spelt correctly are now unanimous', () {
     expect(count(trBlob, '囑咐'), 75); // was 74 against a single 囑吩
-    expect(count(trBlob, '自己'), 1511); // was 1509 against two 自已
+    // 1511 until 2026-09-09, then 1512, and the extra one is not
+    // scripture. The publisher's current notes name the word they
+    // annotate, so 撒母耳記上 3:21 went from <note: 原文是"雅偉"> to
+    // <note: "自己"原文是"雅偉"> and this blob count reads notes too.
+    // 322 notes now open with a quoted lemma where 72 did. The verse
+    // itself still says 自己 exactly once, as the official does.
+    expect(count(trBlob, '自己'), 1512); // was 1509 against two 自已
     expect(count(trBlob, '斑鳩'), 15); // was 14 against a single 班鳩
     expect(count(trBlob, '雅億'), 12); // was 11, and Jael is a person
     expect(count(trBlob, '如此如此'), 18);
@@ -107,7 +113,7 @@ void main() {
     expect(count(trBlob, '腮骨'), 6);
     expect(count(trBlob, '巳初'), 3);
     expect(count(scBlob, '嘱咐'), 75);
-    expect(count(scBlob, '自己'), 1511);
+    expect(count(scBlob, '自己'), 1512); // same note, same lemma, both scripts
     expect(count(scBlob, '斑鸠'), 15);
     expect(count(scBlob, '雅亿'), 12);
   });
@@ -181,6 +187,15 @@ void main() {
   test('the remaining non-words read as words', () {
     expect(trText('010014025').endsWith('毫無瑕疵。'), isTrue);
     expect(trText('011002001').contains('就囑咐他兒子所羅門'), isTrue);
+    // FAILING 2026-09-09, and deliberately left failing. The publisher
+    // sync brought back the transposition this family repaired: their
+    // current 列王紀上 14:5 ships 「你當如此如此告她訴」 in both scripts.
+    // The official (blob 7a2dc43) reads 你當如此如此告訴她, our own
+    // tagged corpus reads 告诉她, and 告她訴 is not a word. This is
+    // scripture, so it is the owner's edit to make — either a verse in
+    // tools/repair_by_official_cuv.py or an entry in
+    // tools/repair_transposed_characters.py, whose REPAIRS list does
+    // not yet carry 王上 14:5. Do not relax this line to make it pass.
     expect(trText('011014005').contains('你當如此如此告訴她'), isTrue);
     expect(trText('019080015').contains('你為自己所堅固的枝子'), isTrue);
     expect(trText('019080017').contains('你為自己所堅固的人子'), isTrue);
@@ -203,7 +218,16 @@ void main() {
     expect(count(trBlob, '儆醒'), greaterThan(0)); // witness: 警醒
     expect(count(trBlob, '沈'), greaterThan(0)); // witness: 沉
     expect(count(trBlob, '擡'), greaterThan(0)); // witness: 抬
-    expect(count(trBlob, '輥'), greaterThan(0)); // witness: 滾
+    // 輥 left this list on 2026-09-09. It was 8 occurrences against the
+    // witness's 滾 and it was pinned as edition preference; the
+    // publisher's current text has adopted 滾 at all eight — 約書亞記
+    // 5:9 「將埃及的羞辱從你們身上滾去了」, 馬可福音 16:3 「把石頭從墓門
+    // 滾開」 — so ours now reads 輥 0, 滾 32, which is the official's
+    // count exactly. This is the publisher moving to the witness, not
+    // a sweep of ours, and the two are worth telling apart: the pin
+    // below is what a sweep of ours would break.
+    expect(count(trBlob, '輥'), 0); // was greaterThan(0); witness: 滾
+    expect(count(trBlob, '滾'), 32); // and the eight landed here
     expect(count(trBlob, '禦'), greaterThan(0)); // witness: 御
     expect(count(trBlob, '號啕'), greaterThan(0)); // witness: 號咷
   });
@@ -220,10 +244,21 @@ void main() {
     // cuvs-plus.json reads these exactly as we do, so the single Traditional
     // witness disagreeing is edition drift, not a defect. This is the check
     // that kept the instalment at sixteen instead of twenty-one.
+    //
+    // 2026-09-09: two of the four are no longer ours to hold. The
+    // publisher's current text settled 以賽亞書 44:19 as 木墩子 and
+    // 耶利米書 4:31 as 挓挲手 — the witness's reading at both — so what
+    // was a standoff between two digital lineages has been decided by
+    // the edition this app is an edition OF. Nothing was swept here;
+    // the base text moved, and it moved towards the official. The two
+    // that still stand are the ones the publisher has not moved, and
+    // they are the ones this test is now for.
     expect(count(trBlob, '大姆指'), 2); // witness: 大拇指
-    expect(count(trBlob, '木丕子'), 1); // witness: 木墩子
-    expect(count(trBlob, '挓抄手'), 1); // witness: 挓挲手
     expect(count(trBlob, '以士利亞'), 1); // witness: 以土利亞
+    expect(count(trBlob, '木丕子'), 0); // was 1; publisher now reads 木墩子
+    expect(count(trBlob, '木墩子'), 1);
+    expect(count(trBlob, '挓抄手'), 0); // was 1; publisher now reads 挓挲手
+    expect(count(trBlob, '挓挲手'), 1);
   });
 
   test('於沙希悉 has been fixed and moved to its own instalment', () {

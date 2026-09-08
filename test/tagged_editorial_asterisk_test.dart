@@ -104,8 +104,29 @@ void main() {
       final rows = (json.decode(File('assets/$name').readAsStringSync()) as List)
           .cast<Map<String, dynamic>>();
       expect(rows, hasLength(31102), reason: name);
-      expect(rows.where((r) => (r['text'] as String).contains('*')), isEmpty,
+      // 2026-09-09: asked of the VERSE, with its notes removed, rather than
+      // of the whole row. The publisher's current text adds one asterisk to
+      // this edition and it is not a referent marker: 馬太福音 21:31 gained
+      // an apparatus note that opens `**注：` / `**註：`, the publisher's own
+      // emphasis on their own footnote about WH / NA27 / BYZ. It sits inside
+      // `<note: …>`, so it prints behind the footnote icon and never as
+      // scripture, and it says nothing about 主. Stripping notes is what the
+      // claim was always about — a raw `主*` standing in the text — and the
+      // one exception is pinned immediately below so nothing can hide behind
+      // it.
+      final note = RegExp(r'<note:[^>]*>');
+      expect(
+          rows.where(
+              (r) => (r['text'] as String).replaceAll(note, '').contains('*')),
+          isEmpty,
           reason: '$name should carry the bracket, not the raw asterisk');
+      final starred =
+          rows.where((r) => (r['text'] as String).contains('*')).toList();
+      expect(starred.map((r) => r['id']), <String>['040021031'], reason: name);
+      expect(starred.single['text'],
+          contains(name.endsWith('-tr.json') ? '**註：' : '**注：'),
+          reason: '$name: the only asterisk left is the publisher\'s own '
+              'note marker');
       final marker = name.endsWith('-tr.json') ? '主[耶穌]' : '主[耶稣]';
       expect(rows.where((r) => (r['text'] as String).contains(marker)),
           hasLength(114),

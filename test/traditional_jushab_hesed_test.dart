@@ -13,11 +13,15 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// THE MECHANISM. Simplified merged the preposition 於 into 于, so the step
 /// that produced this asset had to expand one Simplified character into two
-/// Traditional ones. It did so with a blanket per-character map — our
-/// Simplified holds 1,388 于 and 0 於, our Traditional held 1,388 於 and 0 于 —
-/// which is unconditional, and therefore blind to the single position in
-/// 31,102 verses where the syllable is a name and not a function word. Right
-/// 1,387 times, wrong once.
+/// Traditional ones. It did so with a blanket per-character map — at the time
+/// the defect was found our Simplified held 1,388 于 and 0 於, and our
+/// Traditional held 1,388 於 and 0 于 — which is unconditional, and therefore
+/// blind to the single position in 31,102 verses where the syllable is a name
+/// and not a function word. Right 1,387 times, wrong once.
+///
+/// (2026-09-09: the ledger is 1,386 now, not 1,388. Nothing about the
+/// mechanism changed — the publisher sync dropped the two 關於 in 尼希米記
+/// 1:2, which is the third test below.)
 ///
 /// WHAT THIS TEST MUST NOT BE READ AS CLAIMING, because an adversarial check
 /// broke a stronger draft of it:
@@ -82,22 +86,38 @@ void main() {
   });
 
   test('the blanket 1:1 expansion that caused this is still visible', () {
-    // The Simplified twin has 1,388 于 and no 於 at all; the Traditional side
-    // now has 1,387 於 plus the one restored 于. If these ever stop summing,
+    // The Simplified twin has 1,386 于 and no 於 at all; the Traditional side
+    // now has 1,385 於 plus the one restored 于. If these ever stop summing,
     // something has re-run a wholesale conversion over the repaired asset.
-    expect(count(simplified, '于'), 1388);
+    //
+    // 2026-09-09: 1,388 → 1,386, and the two that left are the two the test
+    // below used to pin. 尼希米記 1:2 read 「我問他們關於那些被擄歸回…和關於
+    // 耶路撒冷的光景」; the publisher sync dropped both 关于 / 關於, so the
+    // Simplified ledger falls by exactly two and the Traditional sum falls
+    // with it. What this test is actually for — the IDENTITY, that every 于 in
+    // the Simplified has exactly one 於-or-于 opposite it — is untouched.
+    expect(count(simplified, '于'), 1386);
     expect(count(simplified, '於'), 0);
-    expect(count(corpus, '於') + count(corpus, '于'), 1388);
+    expect(count(corpus, '於') + count(corpus, '于'), 1386);
   });
 
-  test('尼 1:2 is an edition difference and stays as it is', () {
-    // The only other verse whose 于/於 sequence differs from the witness blob.
-    // Ours reads 關於 twice where the witness's clause omits the phrase
-    // entirely — a wording difference, not a character choice, and our own
-    // Simplified twin reads 关于 in both places. Pinned so a future 于 sweep
-    // does not mistake it for a second instance of this defect.
-    expect(textOf('016001002'), contains('關於那些被擄歸回'));
-    expect(textOf('016001002'), contains('和關於耶路撒冷的光景'));
+  test('尼 1:2 no longer differs from the witness at all', () {
+    // This used to be the only OTHER verse whose 于/於 sequence differed from
+    // the witness blob: ours read 關於 twice where the witness's clause omits
+    // the phrase entirely. It was pinned as a wording difference so that a
+    // future 于 sweep would not mistake it for a second instance of this
+    // defect.
+    //
+    // 2026-09-09: the publisher sync settled it the witness's way. The verse
+    // now matches the official 和合本繁體 (blob 7a2dc43) character for
+    // character and holds neither 于 nor 於. The pin stays, inverted, so that
+    // a re-import which puts 關於 back has to come past this test.
+    expect(
+        textOf('016001002'),
+        '那時，有我一個弟兄哈拿尼，同著幾個人從猶大來。'
+            '我問他們那些被擄歸回、剩下逃脫的猶大人和耶路撒冷的光景。');
+    expect(textOf('016001002'), isNot(contains('於')));
+    expect(textOf('016001002'), isNot(contains('于')));
   });
 
   test('the Strong\'s tag that makes this a name is still there', () {

@@ -53,20 +53,30 @@ void main() {
     // The page splits our 9:43 in half and gives the remainder the number that
     // belongs to the bracketed 「在那裏蟲是不死的，火是不滅的」.
     expect(tr['041009043'], contains('你缺了肢體進入永生'));
-    expect(tr['041009044'], startsWith('<note:'));
-    expect(tr['041009044'], contains('第四十四節'));
+    // 2026-09-08: these two were `<note: 有些抄本有第四十四節…>`. A verse
+    // whose WHOLE body is the publisher's 〔…〕 now keeps the brackets
+    // instead of becoming an empty verse behind a footnote icon — 84
+    // verses were rendering blank before that rule went in. The
+    // publisher also writes 44節 where our copy wrote 第四十四節.
+    // What this test is for is unchanged: 9:43 keeps its whole
+    // sentence and 9:44 stays a variant note rather than scripture.
+    expect(tr['041009044'], startsWith('〔'));
+    expect(tr['041009044'], contains('44節'));
     expect(tr['041009045'], contains('你瘸腿進入永生'));
-    expect(tr['041009046'], startsWith('<note:'));
+    expect(tr['041009046'], startsWith('〔'));
   });
 
   test('the 「見上節」 class is exactly 70 verses and the same 70 in both files',
       () {
+    // 2026-09-08: the stub is 〔見上節〕 rather than a bare 見上節, for
+    // the reason given above — a verse that is nothing but its note
+    // keeps the brackets, or the reader gets an empty verse.
     final trStubs = tr.entries
-        .where((e) => e.value.trim() == '見上節')
+        .where((e) => e.value.trim() == '〔見上節〕')
         .map((e) => e.key)
         .toSet();
     final scStubs = sc.entries
-        .where((e) => e.value.trim() == '见上节')
+        .where((e) => e.value.trim() == '〔见上节〕')
         .map((e) => e.key)
         .toSet();
     expect(trStubs.length, 70);
@@ -85,8 +95,19 @@ void main() {
     // Outside the 70 「見上節」 the same merge is recorded three other ways.
     // A sweep keyed on the stub string alone would read these as defects.
     expect(tr['043007053'], '<note: 見下節>');
-    expect(tr['019063006'], '<note: 合和譯本並入上一節>');
-    expect(tr['064001014'], contains('<note: 15節>'));
+    // 2026-09-08: 詩篇 63:6 was '<note: 合和譯本並入上一節>' and the
+    // publisher's current text says 見上節 like the other seventy, so
+    // this merge no longer uses its own notation — it has joined the
+    // class above. Kept named here because the point of the test is
+    // that a sweep keyed on the stub string must not treat the OTHER
+    // notations as defects, and two of them still exist.
+    expect(tr['019063006'], '〔見上節〕');
+    // 腓利門書 1:14 was '… <note: 15節> 願你平安 …' and their text now
+    // prints the merged verse inline as （15節：願你平安…）. That is the
+    // words of verse 15 on screen instead of behind an icon, which is
+    // the direction this file's whole queue was pushing.
+    expect(tr['064001014'], contains('（15節：'));
+    expect(tr['064001014'], contains('願你平安'));
     expect(tr.containsKey('064001015'), isFalse);
   });
 
@@ -95,6 +116,13 @@ void main() {
     // parentheticals rather than as `<note:>` markup, which is what the
     // original count was blind to.
     expect(tr['038004007'], contains('（殿：或譯石）'));
-    expect(tr['038008023'], contains('（原文是方言）'));
+    // 2026-09-08: 撒迦利亞書 8:23's gloss moved the other way — the
+    // publisher's current text carries it as a note, `<note: 原文是
+    // "方言">`, which is how this edition writes its other 543 原文是
+    // glosses. The gloss is not lost and the queue's complaint (that it
+    // was missing altogether) still does not hold; it is simply theirs
+    // to render, and one parenthetical against 543 notes was the odd
+    // one out.
+    expect(tr['038008023'], contains('原文是"方言"'));
   });
 }

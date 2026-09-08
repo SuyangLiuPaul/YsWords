@@ -123,10 +123,22 @@ void main() {
       });
 
       test('no verse carries a character that is not in the text', () {
+        // Checked OUTSIDE `<note: …>`, and that distinction is the
+        // whole point of the rule rather than a loophole in it. What
+        // this guard exists to catch is importer markup reaching
+        // SCRIPTURE — a `主*` marker printed as a bare asterisk beside
+        // the word, which is what happened and what got 123 markers
+        // deleted three times over. A publisher's own apparatus note is
+        // not scripture; 馬太福音 21:31 carries one that opens
+        // `**注：29-31WH與NA27/BYZ具差異…`, and forbidding its asterisks
+        // would mean either deleting the publisher's note or rewriting
+        // it, neither of which is ours to do.
+        final note = RegExp(r'<note:[^>]*>');
         final offenders = <String>[];
         for (final v in verses) {
+          final scripture = (v['text'] as String).replaceAll(note, '');
           for (final c in forbidden[version]!.split('')) {
-            if ((v['text'] as String).contains(c)) {
+            if (scripture.contains(c)) {
               offenders.add('${appKey(v)} — $c');
             }
           }
@@ -304,23 +316,63 @@ void main() {
       );
       String bare(String s) => s.replaceAll(punctuation, '');
 
-      /// Whether an editorial bracket encloses [body] in [text].
+      /// Whether [text] — the witness — puts [body] anywhere other than
+      /// inside `（…）`, which is the only placement this test objects to.
+      ///
+      /// This used to find [body] once and read the character in front of
+      /// it. That works only while the two texts agree about where the note
+      /// STARTS, and on 2026-09-08 they stopped: the publisher writes
+      /// 〔"血"原文作"生命"〕 where the witness has 〔原文作"生命"〕, so our
+      /// note body bares to 血原文作生命 — and the witness happens to carry a
+      /// bare 血 in the running text immediately BEFORE its 〔. The match
+      /// therefore began one character to the left of the bracket, the
+      /// look-behind saw 将, and 100 translators' footnotes in the
+      /// Simplified and 33 in the Traditional were reported as hidden
+      /// scripture. Every one of them was a matching artifact; none was a
+      /// regression in the data.
+      ///
+      /// So classify by where the match SITS rather than by what precedes
+      /// it: track the enclosing bracket per character and ask whether the
+      /// body is mostly inside `（…）`. A body that straddles the boundary
+      /// — 血 outside, 原文作生命 inside — lands where it mostly is.
+      ///
+      /// The guard keeps its teeth. Demoting each of the 269 `（…）` clauses
+      /// the witness prints into a `<note: …>` is caught 268 times; the one
+      /// escape is 詩篇 120:1, where the witness nests 〔或作"登階"〕 INSIDE
+      /// the parenthesis, so most of the body genuinely is editorial.
+      /// 約伯記 14:14 and 20:19 are still flagged by this function and are
+      /// suppressed only by `argued` below — that they still reach it is
+      /// the standing proof the `（…）` detection works.
       bool editorial(String text, String body) {
-        final kept = <int>[];
         final buffer = StringBuffer();
+        final enclosing = <String?>[];
+        final stack = <String>[];
         for (var i = 0; i < text.length; i++) {
-          if (!punctuation.hasMatch(text[i])) {
-            kept.add(i);
-            buffer.write(text[i]);
+          final ch = text[i];
+          if ('（〔【'.contains(ch)) {
+            stack.add(ch);
+          } else if ('）〕】'.contains(ch) && stack.isNotEmpty) {
+            stack.removeLast();
+          }
+          if (!punctuation.hasMatch(ch)) {
+            buffer.write(ch);
+            enclosing.add(stack.isEmpty ? null : stack.last);
           }
         }
-        final at = buffer.toString().indexOf(body);
+        final hay = buffer.toString();
+        var at = hay.indexOf(body);
         if (at < 0) return true; // the witness does not carry it at all
-        for (var i = kept[at] - 1; i >= 0; i--) {
-          if ('（〔【'.contains(text[i])) return text[i] != '（';
-          if ('）〕】'.contains(text[i])) break;
+        while (at >= 0) {
+          var scripture = 0;
+          for (var k = at; k < at + body.length; k++) {
+            if (enclosing[k] == '（') scripture++;
+          }
+          // Not predominantly inside （…）: a note, or running text the
+          // match only clipped. Either way, not a demoted parenthesis.
+          if (scripture * 2 <= body.length) return true;
+          at = hay.indexOf(body, at + 1);
         }
-        return false; // unbracketed running scripture
+        return false; // every occurrence is （…） parenthetical scripture
       }
 
       // 約翰三書 1:14 is a versification label, not scripture, and the
@@ -359,14 +411,39 @@ void main() {
       String textOf(String version, String ref) => load(version)
           .firstWhere((v) => appKey(v) == ref)['text'] as String;
 
-      expect(sanitizeVerseText(textOf('cuvs-yhwh', '2 Samuel 21:12')),
-          contains('（是因非利士人从前在基利波杀扫罗'));
+      // 撒母耳記下 21:12 was the headline case: the importer had hidden
+      // 「是因非利士人……偷了去」 behind a footnote icon, and it was put back
+      // as `（…）` parenthetical scripture in 2026-08.
+      //
+      // In the 2026-09-08 sync the publisher DROPPED the parentheses and set
+      // a comma: 搬了來，是因非利士人從前在基利波殺掃羅，……偷了去。 The
+      // repair's conclusion holds — the clause is scripture and it reads —
+      // so what is pinned here is that conclusion rather than the bracket
+      // the repair happened to use to express it. Asserting `（` would be
+      // asserting our punctuation over the publisher's, which is the one
+      // thing this edition's freeze exists to stop.
+      //
+      // The clause must be present AND outside every note, or the defect is
+      // back; `sanitizeVerseText` alone would not catch a re-demotion,
+      // because it strips the note markup and keeps the words.
+      for (final version in ['cuvs-yhwh', 'cuvs-yhwh-tr']) {
+        final clause = version.endsWith('-tr')
+            ? '是因非利士人從前在基利波殺掃羅'
+            : '是因非利士人从前在基利波杀扫罗';
+        final text = textOf(version, '2 Samuel 21:12');
+        expect(sanitizeVerseText(text), contains(clause), reason: version);
+        expect(text.replaceAll(RegExp('<note:[^>]*>'), ''), contains(clause),
+            reason: '$version demoted the clause back into a note');
+      }
       expect(sanitizeVerseText(textOf('cuvs-yhwh-tr', 'Leviticus 24:11')),
           contains('（他母親名叫示羅密'));
       // The witness brackets this one 〔…〕 — it explains what a name
-      // means, so it stays a note in both editions.
+      // means, so it stays a note in both editions. The publisher put their
+      // own quotes round the gloss on 2026-09-08 (就是"雅偉賜平安"的意思);
+      // what is pinned is that it is still a NOTE, so the inner quotes are
+      // matched loosely rather than spelt out.
       expect(textOf('cuvs-yhwh-tr', 'Judges 6:24'),
-          contains('<note: 就是雅偉賜平安的意思>'));
+          matches(RegExp('<note: 就是"?雅偉賜平安"?的意思>')));
     });
   });
 

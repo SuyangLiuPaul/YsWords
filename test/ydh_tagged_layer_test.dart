@@ -29,14 +29,28 @@ void main() {
       runs: 388449,
       numbered: 381927,
       implied: 55633,
-      // The BSB edition prints the publisher's own `Lord#` marker, and
-      // `#` is one of the characters `carriesImporterMarkup` treats as a
-      // leftover importer tag. Those verses lose the tagged line at load
-      // time and fall back to plain text, which is the same trade that
-      // rule already makes elsewhere: the text outranks the gesture.
-      // Named here rather than worked around — the marker is the
-      // publisher's and is not ours to strip.
-      markupVerses: 16,
+      // 16 -> 0, and the marker was not stripped to get there.
+      //
+      // The BSB edition used to print the publisher's own raw `Lord#`,
+      // and `#` is one of the characters `carriesImporterMarkup` treats
+      // as a leftover importer tag, so those 16 verses lost the tagged
+      // line at load time and fell back to plain text. This entry named
+      // that as a trade we were accepting: the text outranks the
+      // gesture, and the marker is the publisher's, not ours to delete.
+      //
+      // `tools/expand_bsb_yhwh_markers.py` has since expanded the raw
+      // `Lord#` / `Lord*` into `Lord [Christ]` / `Lord [Jesus]` — the
+      // same notation this file already used for `Lord [Yahweh]`, so
+      // the marker is still carried, in the form its siblings are
+      // carried in. The two meanings are not read off the shape of the
+      // mark: the publisher's own Chinese edition sets 主[基督] at 108
+      // of the 111 `Lord#` verse ids and 主[耶稣] at 15 of the 16
+      // `Lord*` ones, and that correspondence is what established them.
+      //
+      // With no `#` left in the corpus the guard stops firing, so the
+      // count is 0 and all 16 verses have their tagged line back. A
+      // rise above 0 still means what it always meant.
+      markupVerses: 0,
     ),
     'asv-yhwh': (
       runs: 346832,

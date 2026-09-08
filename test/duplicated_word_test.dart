@@ -95,6 +95,18 @@ void main() {
     // (如此如此, 察看察看, 毀壞毀壞). They are listed below because each was
     // read, so that a new one — which is what 眾人眾人 was — fails here
     // instead of reaching a reader.
+    //
+    // FAILING 2026-09-09 at 箴言 30:15 給呀給呀 / 给呀给呀, and
+    // deliberately left failing. It is not a new legitimate
+    // reduplication and must not be added to the list below. The
+    // publisher sync took a mark OUT from between the two: our text
+    // read 常說：『給呀，給呀！』 before it and reads 常說：『給呀給呀。』
+    // now. The official (blob 7a2dc43) prints 常說：給呀，給呀！ — the
+    // comma is there and so is the exclamation, and the same sync
+    // turned the ！ into 。 here as it did six times in Revelation.
+    // The leech's two daughters cry twice, with a breath between; with
+    // the comma gone the verse reads as one four-character word that
+    // does not exist. Two marks, one verse, owner's edit.
     final offenders = <String>[];
     for (final edition in [zhHans, zhHant]) {
       edition.forEach((id, text) {

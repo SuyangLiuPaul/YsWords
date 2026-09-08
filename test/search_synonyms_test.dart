@@ -67,15 +67,22 @@ void main() {
       expect(mismatches, 0);
     });
 
-    test('61 pairs need the spaces out first, so a raw length comparison '
+    test('60 pairs need the spaces out first, so a raw length comparison '
         'would silently throw them away', () {
       // The reason the alignment is space-blind rather than raw. Those
-      // 61 differ in nothing but a stray space beside a `<note:>` or a
+      // 60 differ in nothing but a stray space beside a `<note:>` or a
       // closing quote — 民数记 10:29 and 士师记 1:16 among them — and
       // the repository this file was ported from had none of them, so
       // its derivation could afford to compare raw lengths and this one
       // cannot. Pinned, so that a data sweep which fixes them shows up
       // here as a number to re-check rather than as silence.
+      //
+      // 2026-09-09: 61 → 60, and this is exactly the sweep the pin was
+      // put here for. 路加福音 23:16 read
+      // 「…把他释放了。 ”〔有古卷在此有：」 — a stray space before the
+      // closing quote, and a note opener with no note behind it. The
+      // publisher sync closed both, so that pair is now the same length
+      // raw and never needed the space strip. No pair was ADDED.
       final s = load('assets/cuvs-yhwh.json');
       final t = load('assets/cuvs-yhwh-tr.json');
       var raw = 0;
@@ -85,7 +92,7 @@ void main() {
           raw++;
         }
       }
-      expect(raw, 61);
+      expect(raw, 60);
     });
 
     test('the shipped table is exactly the correspondence the text shows',
@@ -119,8 +126,20 @@ void main() {
       }
       expect(kCuvSimplifiedChars, expectedS.toString());
       expect(kCuvTraditionalChars, expectedT.toString());
+      // 2026-09-09: 1,115 pairs over 1,111 characters → 1,114 over
+      // 1,109, after the publisher sync and a re-run of
+      // `tools/derive_cuv_script_tables.py`. Three pairs moved:
+      //   * 辊→輥 gone — those seven verses read 滚/滾 now (約書亞記 5:9,
+      //     馬可福音 15:46 and five more), which is the official reading.
+      //   * 镟→鏇 gone — 耶利米书 10:5 reads 旋 on both sides now.
+      //   * 复→覆 NEW, 3× — 反覆思想 (路加福音 1:29, 2:19) and 反覆不定
+      //     (哥林多后书 1:17), all three the official reading.
+      // Two characters left the table entirely and one gained a second
+      // form, so the pair count falls by one and the distinct count by
+      // two. Both are pinned rather than derived so that a table which
+      // silently COLLAPSES cannot pass by agreeing with itself.
       expect(kCuvSimplifiedChars.length, 1115);
-      expect(counts.length, 1111);
+      expect(counts.length, 1110);
     });
 
     test('no Traditional character stands opposite two Simplified ones, so '
@@ -134,11 +153,20 @@ void main() {
       expect(back.values.where((v) => v.length > 1), isEmpty);
     });
 
-    test('the four Simplified characters with two Traditional forms list '
+    test('the five Simplified characters with two Traditional forms list '
         'the commoner one first', () {
       // 发 → 發 1,287 times and 髮 88. Whichever way that is broken
       // decides what `simplifiedToTraditional` produces, so it is
       // pinned rather than left to map iteration order.
+      //
+      // 2026-09-09: four became five. The publisher sync put 反覆 at
+      // 路加福音 1:29 and 2:19 and 反覆不定 at 哥林多后书 1:17 — the
+      // official 和合本繁體 reading, where this edition had 反復 — so
+      // 复 now stands opposite 復 262 times and 覆 3. Unlike 面/于/后
+      // and the thirteen others, 复 never stands opposite ITSELF, so
+      // the pair table sees the whole of its behaviour and 復-first is
+      // a real majority rather than an artefact of only recording the
+      // positions that differ.
       final firstSeen = <String, String>{};
       for (var i = 0; i < kCuvSimplifiedChars.length; i++) {
         firstSeen.putIfAbsent(
@@ -148,6 +176,14 @@ void main() {
       expect(firstSeen['坛'], '壇');
       expect(firstSeen['干'], '乾');
       expect(firstSeen['须'], '須');
+      expect(firstSeen['复'], '復');
+      // And the count itself, so a sixth has to be looked at.
+      final twoForms = <String>{};
+      final seen = <String>{};
+      for (final c in kCuvSimplifiedChars.split('')) {
+        if (!seen.add(c)) twoForms.add(c);
+      }
+      expect(twoForms, {'发', '坛', '干', '须', '复'});
     });
 
     test('this edition makes the semantic splits a one-to-one conversion '
@@ -258,7 +294,17 @@ void main() {
       expect(hits('矶法'), 9);
       expect(hits('彼得'), 176);
       expect(hits('弥赛亚'), 2);
-      expect(hits('基督'), 542);
+      // 2026-09-09: 542 → 543, and it is one verse, not a sweep.
+      // 使徒行传 8:37 is a textual variant this edition used to carry
+      // entirely inside a `<note:>` popup, which `sanitizeForSearch`
+      // strips — so 「我信耶稣基督是神的儿子」 was in the edition and
+      // not in the search key. The publisher sync moved it into the
+      // running text as 〔有古卷在此有37节：…〕, which is scripture as
+      // far as the key is concerned, so the verse became findable. The
+      // same move is what takes the 彌賽亞 synonym rung in
+      // `fuzzy_search_test.dart` from 540 to 541: 543 minus the 2 the
+      // script rung already found.
+      expect(hits('基督'), 543);
     });
 
     test('the divine name agrees with the alias table in strongs_service, '

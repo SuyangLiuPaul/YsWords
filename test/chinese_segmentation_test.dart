@@ -69,7 +69,23 @@ void main() {
       // ask the corpus: every character of the 和合本 that is not
       // punctuation, whitespace or a Latin digit must be Han.
       const notHan = '，。；：？！、“”‘’（）—…《》·「」『』〈〉〔〕　 \n'
-          '0123456789─．＂"[].';
+          '0123456789─．＂"[].'
+          // 2026-09-09, both from the publisher sync.
+          //
+          // U+2009 THIN SPACE: 约书亚记 5:13 now carries one before its
+          // closing quote. It is whitespace, which the sentence above
+          // has always admitted, so it belongs on this list — but it is
+          // also a stray the official 和合本繁體 does not print, and it
+          // is reported as one rather than quietly absorbed here.
+          '\u2009'
+          // ASCII punctuation, every character of it from ONE `<note:>`
+          // marker: 马太福音 21:31's note on the WH / NA27 / BYZ variant,
+          // which cites 「29-31」, 「NA27/BYZ」, 「KJV,BYZ(与NA27一致)」 and
+          // 「G4413(小儿子)」. Same source as the Latin letters stripped
+          // below, and admitted for the same reason — a note body is
+          // apparatus, not scripture, and nothing in it was ever going
+          // to be Han.
+          '*,-/()';
       final missed = <String>{};
       for (final text in verses.values) {
         for (final c in text.split('')) {
@@ -81,6 +97,26 @@ void main() {
       // Latin letters reach here from the `<note:>` markers the raw
       // asset carries; nothing else may.
       missed.removeWhere((c) => RegExp(r'[A-Za-z<>:]').hasMatch(c));
+      // 2026-09-09: 撒母耳记下 2:23 spells the butt-end of Abner's spear
+      // 𨱔 (U+28C54, the Simplified 鐏), a Han character living outside
+      // the Basic Multilingual Plane. `isHanChar` takes a UTF-16 CODE
+      // UNIT, so what reaches it is half a surrogate pair, and no range
+      // of code units could honestly answer yes to that. It is a limit
+      // of a code-unit predicate rather than a wrong range, so the
+      // surrogates are excluded by name and the three ranges are left
+      // exactly as the doc comment claims them.
+      missed.removeWhere((c) {
+        final unit = c.codeUnitAt(0);
+        return unit >= 0xD800 && unit <= 0xDFFF;
+      });
+      // LEFT FAILING ON PURPOSE, 2026-09-09. What is left in `missed` is
+      // 「／」, one occurrence, and it is not a predicate bug — it is a
+      // stray glyph in the scripture. 诗篇 104:31 ends
+      // 「愿雅伟喜悦自己所造的／」 where the official 和合本繁體 (blob
+      // 7a2dc43) ends 「願耶和華喜悅自己所造的！」. It is the only
+      // full-width solidus in either edition, so putting it on the
+      // allowlist above would be hiding the defect inside the mechanism
+      // that found it. It stays out until the text is fixed.
       expect(missed, isEmpty);
     });
   });
@@ -90,6 +126,22 @@ void main() {
         () {
       // 创世纪 1:1. With nothing in the dictionary there is no honest
       // word boundary to report, so the segmenter reports none.
+      //
+      // LEFT FAILING ON PURPOSE, 2026-09-09. The segmenter is fine; the
+      // verse changed under it. The publisher sync now reads
+      // 「起初神创造天地。」 where the official 和合本繁體 (blob 7a2dc43)
+      // reads 「起初，　神創造天地。」, and this edition drops the reverent
+      // space before 神 everywhere — 180 verses of the witness carry
+      // 「，　神」 and 164 of ours keep the comma and drop only the space.
+      // These 16 dropped the comma as well, which looks like 「，　」 being
+      // stripped where only 「　」 should have been: 创世纪 1:1, 20:3 and
+      // 31:24, 士师记 20:27, 约伯记 22:29, 诗篇 76:1, 马太福音 19:6,
+      // 马可福音 10:9, 约翰福音 1:29, 罗马书 11:22, 以弗所书 2:4,
+      // 提摩太后书 2:19, 希伯来书 4:4, 约翰一书 3:24, 启示录 18:5 and
+      // 21:3. Fixing it
+      // is a change to the scripture and therefore not this file's to
+      // make; the expectation stays on the witness's reading so that the
+      // day the text is fixed, this goes green by itself.
       expect(
         segmentHan(verse('001001001')),
         ['起', '初', '，', '神', '创', '造', '天', '地', '。'],
@@ -126,7 +178,7 @@ void main() {
 
   group('the conjuncts a segmented query is allowed to ask for', () {
     test('drops the characters too common to narrow anything', () {
-      // 的 is in 24,527 of the 31,102 verses. Requiring it requires
+      // 的 is in 24,525 of the 31,102 verses. Requiring it requires
       // nothing while making the search look narrower than it is.
       expect(
         segmentedConjuncts('神的爱', commonChars: '的'),

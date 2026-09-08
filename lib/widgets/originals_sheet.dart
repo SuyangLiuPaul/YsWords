@@ -113,6 +113,29 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   // TapGestureRecognizers for inline derivation links — disposed on change.
   final _tapRecognizers = <TapGestureRecognizer>[];
 
+  // One recognizer per tagged run of the translation line, kept for the
+  // life of the run rather than rebuilt with the span.
+  //
+  // `_taggedRunSpans` runs on every build — every setState, every
+  // `showStrongsInOriginals` toggle — and a recognizer minted there and
+  // dropped on the next build is never disposed by anything: these
+  // could not go in [_tapRecognizers], which `_loadRootEntry` empties
+  // from inside a tap callback and would therefore dispose the very
+  // recognizer that was mid-gesture. Keyed by run identity; TaggedRun
+  // does not override `==`, and the run lists are built once per load
+  // and cached, so the map is stable while the sheet is open. Cleared
+  // in [_loadAll], which is what a picker change re-runs.
+  final Map<TaggedRun, TapGestureRecognizer> _runRecognizers = {};
+
+  // The entry card, so a tap can scroll it into view — see
+  // [_revealEntryCard] for why a tap needs to.
+  final _entryCardKey = GlobalKey();
+
+  // The list's controller, handed down by [DraggableScrollableSheet]'s
+  // builder. Held so [_revealEntryCard] can walk the list down to a
+  // card that is below the fold and therefore not built yet.
+  ScrollController? _listController;
+
   // Strong's-entry cache for the interlinear gloss line rendered below
   // each word chip. Populated once in [_loadAll] and reused by every
   // chip so we don't re-fetch the same lemma over and over.
@@ -228,6 +251,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   @override
   void dispose() {
     _clearTapRecognizers();
+    for (final r in _runRecognizers.values) {
+      r.dispose();
+    }
+    _runRecognizers.clear();
     super.dispose();
   }
 
@@ -239,6 +266,12 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   }
 
   Future<List<_VerseOriginals>> _loadAll() async {
+    // The runs about to be replaced are the keys of the recognizer map,
+    // so anything still in it belongs to an edition going off screen.
+    for (final r in _runRecognizers.values) {
+      r.dispose();
+    }
+    _runRecognizers.clear();
     final results = <_VerseOriginals>[];
     for (final v in widget.verses) {
       final english = toEnglish(v.book) ?? v.book;
@@ -391,9 +424,20 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
   /// have to find. Off leaves the line as running prose: the same words
   /// in the same order, minus the numbers.
   ///
-  /// The number is not itself a tap target. At 10 pt a bare `H776` is
-  /// well under the 44 pt a finger needs, and tapping anywhere on the
-  /// word opens exactly what tapping the number would.
+  /// The word's own number is part of the word's tap target — the
+  /// grammar and implied numbers beside it are not.
+  ///
+  /// It shipped inert, on the reasoning that at 10 pt a bare `H776` is
+  /// well under the 44 pt a finger needs and tapping the word opens
+  /// exactly what tapping the number would. The premise was right and
+  /// left a dead zone inside one visual unit: `摩西 H4872` reads as one
+  /// thing, and the half of it a reader is likeliest to aim at answered
+  /// nothing. Extending the WORD's recognizer over its own number costs
+  /// nothing and asks no new question — same run, same lemma. The
+  /// grammar codes and implied numbers stay inert because they are
+  /// different numbers, and opening the run's lemma from `(H853)` would
+  /// answer a question the reader did not ask; those are what
+  /// `ImpliedCoverageLine` is for.
   Widget _taggedVerseLine(List<TaggedRun> runs, ColorScheme scheme) {
     final base = TextStyle(
       fontSize: kTaggedVerseFontSize,
@@ -479,6 +523,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         TextSpan(
           text: ' ${n.text}',
           style: n.kind == StrongsNumberKind.lexical ? lexical : secondary,
+          recognizer: n.kind == StrongsNumberKind.lexical
+              ? _runRecognizer(run)
+              : null,
         ),
       // Chinese sets no space between words, so without this the next
       // run's first character butts against the number: 地H776是.
@@ -497,11 +544,14 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         decorationColor: scheme.primary.withValues(alpha: 0.45),
       );
 
-  TapGestureRecognizer _runRecognizer(TaggedRun run) => TapGestureRecognizer()
-    ..onTap = () {
-      setState(() => _impliedRun = run);
-      _loadRootEntry(run.strongs, grammarFrom: run);
-    };
+  TapGestureRecognizer _runRecognizer(TaggedRun run) =>
+      _runRecognizers.putIfAbsent(
+          run,
+          () => TapGestureRecognizer()
+            ..onTap = () {
+              setState(() => _impliedRun = run);
+              _loadRootEntry(run.strongs, grammarFrom: run);
+            });
 
   /// [grammarFrom] is the tagged run the reader tapped, when they
   /// reached this entry by tapping the Chinese line. Passed explicitly
@@ -556,6 +606,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       _loadingEntry = false;
       _expandedConcordanceBook = null;
     });
+    _revealEntryCard();
     // pivotFromNumber: when the user reached this entry via a chip in
     // a cross-language section (LXX or Hebrew Sources), auto-expand the
     // chip pointing back to where they came from so the OT context is
@@ -564,6 +615,64 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
         pivotFromNumber: pivotFromNumber, gen: myGen));
     unawaited(_loadChinese(strongsNumber,
         grammarFrom: grammarFrom, gen: myGen));
+  }
+
+  /// Scroll the entry card into view.
+  ///
+  /// ## 2026-09-08: why a tap needed this
+  ///
+  /// The owner, on 出埃及記 7:1: 「应该按任何都应该有反应吧但是上面这个
+  /// 没有反应」 — tapping 摩西 in the numbered line does nothing, while
+  /// the מֹשֶׁה card below reacts. The gesture was never the problem.
+  /// It arrives, `_loadRootEntry` resolves H4872, and the card is
+  /// built — at the FOOT of the sheet's list, under the verse line and
+  /// under the whole grid of original-word chips, entirely below the
+  /// fold. Measured on 創世記 1:1 in an 800x600 test surface the card's
+  /// top lands 41 logical pixels past the bottom of a 339-pixel
+  /// viewport, and a phone is worse: the line wraps to more rows and
+  /// the chips to more rows, so everything above the card is taller.
+  /// The reader taps, the sheet answers 1,600 pixels away, and the word
+  /// reads as dead.
+  ///
+  /// Tapping an original-word CHIP has always had the same layout —
+  /// which is why this was never reported before the line shipped. A
+  /// chip sits directly above the card and turns visibly selected under
+  /// the finger, so the tap acknowledges itself and the answer is one
+  /// short scroll away. A word in the line is neither.
+  ///
+  /// The walk down exists because the card is the last child of a lazy
+  /// `SliverList`: below the fold it is built during layout and then
+  /// collected again, so [GlobalKey.currentContext] is null at the
+  /// moment the entry lands and `Scrollable.ensureVisible` has nothing
+  /// to reveal. One viewport of scrolling materialises it; the
+  /// alignment pass then puts its top where the reader is looking. On
+  /// every measured verse the first step is enough, and the bound stops
+  /// a list whose card never appears from scrolling forever.
+  void _revealEntryCard({int attempt = 0}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _entryCardKey.currentContext;
+      if (ctx != null) {
+        unawaited(Scrollable.ensureVisible(
+          ctx,
+          alignment: 0,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+        ));
+        return;
+      }
+      final controller = _listController;
+      if (controller == null || !controller.hasClients) return;
+      final position = controller.position;
+      if (attempt >= 6 || position.pixels >= position.maxScrollExtent) return;
+      final next = (position.pixels + position.viewportDimension)
+          .clamp(position.minScrollExtent, position.maxScrollExtent);
+      unawaited(controller
+          .animateTo(next,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut)
+          .then((_) => _revealEntryCard(attempt: attempt + 1)));
+    });
   }
 
   /// Resolve the fuller Chinese article for [number], plus the decoded
@@ -810,6 +919,9 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
+        // Held for [_revealEntryCard]: the entry card is the last child
+        // of the list below and there is no other handle on it.
+        _listController = scrollController;
         // Local Scaffold so snackbars from ScaffoldMessenger.of(ctx)
         // (e.g. the "Copied!" feedback after tapping a copy icon)
         // render INSIDE this modal sheet — without it the snackbar
@@ -907,7 +1019,10 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
                           _rootEntry != null ||
                           _loadingEntry) ...[
                         const SizedBox(height: 16),
-                        _buildEntryCard(context, scheme, locale),
+                        KeyedSubtree(
+                          key: _entryCardKey,
+                          child: _buildEntryCard(context, scheme, locale),
+                        ),
                       ] else ...[
                         const SizedBox(height: 16),
                         _buildHint(scheme, locale),

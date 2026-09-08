@@ -32,6 +32,29 @@ import 'package:yswords/services/tagged_text_service.dart';
 /// the printed 1919 as read by `tools/audit_tagged_rendered_extras.py`.
 ///
 /// `tools/repair_tagged_supplied_words.py` applies it.
+///
+/// **2026-09-09: the publisher put all four words back, and two of the four
+/// witness lines changed sides.** `sync_cuv_yhwh_to_publisher.py` brought the
+/// reading assets up to the publisher's current text, and the current text
+/// prints 我請求, 葡萄園, 現在 and 大發熱心 — the long readings, the ones the
+/// tagged import had all along. So the two frozen reading assets no longer
+/// corroborate the deletion; blob `7a2dc43` and the printed 1919 still do, and
+/// the publisher's own database row is now the long form for all four
+/// (checked directly, not inferred from the sync).
+///
+/// Nothing here is edited in response. The tagged corpus is left as the
+/// 2026-09-03 pass made it, the assertions below still hold over it, and the
+/// LAST test is inverted rather than deleted: those four verses now read SHORT
+/// against the reader's verse, so `coversVerse` refuses them and the sheet
+/// falls back to plain text. That is the guard doing its job — a reader is
+/// shown their own verse rather than a line missing a word — and it is
+/// asserted here, with the proof that the one missing word is the ONLY
+/// difference, so this cannot quietly become a lost clause.
+///
+/// The one thing that would settle it is a decision, not a test: either the
+/// corpus takes the four words back (the reading text is now the publisher's
+/// current text and the tagged import agrees with it), or the four verses stay
+/// on the plain line. Until then the state is written down here.
 void main() {
   Map<String, dynamic> tagged(String slug) => json.decode(
         File('assets/tagged/cuvs-yhwh/$slug.json').readAsStringSync(),
@@ -124,27 +147,52 @@ void main() {
     expect(empty, 12);
   });
 
-  test('all four still reach the word-tap sheet, and now read exactly', () {
+  test('the publisher put the four words back, so all four now fall back to '
+      'the plain line — and the word is the only difference', () {
+    // Was: "all four still reach the word-tap sheet, and now read exactly".
+    // That held while the reading assets read short. They do not any more:
+    // the publisher's current text prints all four words, so each of these
+    // four tagged lines is now one word SHORT of the reader's verse instead
+    // of one word long.
+    //
+    // Both halves below matter and they say different things.
+    //
+    //   `coversVerse` is false   — the sheet does not print a line that is
+    //       missing a word of the reader's verse. It falls back to plain
+    //       text, exactly as it does for any untagged verse. Asserted so
+    //       that nobody reads the four green tests above and concludes the
+    //       sheet is still showing a tagged line here.
+    //   the word is the ONLY difference   — the reader's verse with that one
+    //       word taken out IS the tagged line, ideograph for ideograph. This
+    //       is what keeps the state above from drifting into a lost clause
+    //       while still looking like the same known case.
     String ideographs(String s) => String.fromCharCodes(
         s.codeUnits.where((u) => u >= 0x3400 && u <= 0x9fff));
-    const pairs = <String, String>{
-      'judges|15:2': '007015002',
-      'judges|15:5': '007015005',
-      'judges|15:18': '007015018',
-      '2_samuel|21:2': '010021002',
+    // slug|ref : (verse id, the reader's phrase, the corpus's phrase)
+    const cases = <String, List<String>>{
+      'judges|15:2': ['007015002', '吗我请求你', '吗你'],
+      'judges|15:5': ['007015005', '并葡萄园橄榄园', '并橄榄园'],
+      'judges|15:18': ['007015018', '拯救现在岂可', '拯救岂可'],
+      '2_samuel|21:2': ['010021002', '大发热心', '发热心'],
     };
-    for (final entry in pairs.entries) {
+    for (final entry in cases.entries) {
       final parts = entry.key.split('|');
-      final shown = sanitizeForSearch(reading[entry.value]!);
+      final shown = sanitizeForSearch(reading[entry.value[0]]!);
       final taggedRuns = (tagged(parts[0])[parts[1]] as List)
           .map((r) => TaggedRun.fromJson(r as Map<String, dynamic>))
           .toList(growable: false);
-      expect(TaggedTextService.coversVerse(taggedRuns, shown), isTrue,
-          reason: '${entry.key} must still reach the sheet');
-      // Before the repair each of these read LONG against the reader's verse.
-      expect(ideographs(taggedRuns.map((r) => r.text).join()),
-          ideographs(shown),
-          reason: '${entry.key} must now print this edition and nothing more');
+      expect(TaggedTextService.coversVerse(taggedRuns, shown), isFalse,
+          reason: '${entry.key}: the corpus does not carry the word the '
+              'publisher restored, so the guard must hide the tagged line '
+              'rather than print a verse with a word missing');
+      expect(ideographs(shown), contains(entry.value[1]),
+          reason: '${entry.key}: the reader\'s verse should carry the '
+              'restored word');
+      expect(
+          ideographs(taggedRuns.map((r) => r.text).join()),
+          ideographs(shown).replaceFirst(entry.value[1], entry.value[2]),
+          reason: '${entry.key}: the tagged line must be the reader\'s verse '
+              'with exactly that one word missing and nothing else');
     }
   });
 }

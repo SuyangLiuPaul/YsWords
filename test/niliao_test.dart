@@ -57,6 +57,29 @@ void main() {
   test('以賽亞書 64:3 and 使徒行傳 25:18 keep the editorial 意料', () {
     // Do NOT "restore" 逆料 here on the strength of the print or the
     // witnesses. See the commit named above; ask the user first.
+    //
+    // FAILING 2026-09-09, and deliberately left failing, because what
+    // failed is the thing this file was written to prevent. The
+    // publisher sync overwrote both verses with 逆料 — 意料 was 2 in
+    // the corpus and is now 0 — which is exactly the change commit
+    // 81db105 made in the other direction, by hand, in a pass the
+    // owner signed. The sync did not weigh the evidence and lose; it
+    // never saw the question. An automated import cannot revert an
+    // editorial decision on the strength of agreeing with four
+    // witnesses, because agreeing with four witnesses is precisely
+    // what 81db105 chose against.
+    //
+    // So this is the owner's call twice over: keep 意料 and re-apply
+    // it (the natural home is tools/repair_by_official_cuv.py, which
+    // is verse-anchored, though here the official is what we are
+    // declining to follow), or say the 2025 edit is superseded and
+    // retire this test with the tagged corpus brought to match. Either
+    // way it is not settled by loosening the assertion. Note what has
+    // happened to the open item in the docstring above: the reading
+    // text and the tagged corpus disagreed, and they now agree — on
+    // 逆料, the side the owner ruled against. The inconsistency closed
+    // itself in the direction nobody chose, which is worse than the
+    // inconsistency and much easier to miss.
     expect(zhHant['023064003'], contains('不能意料可畏的事'));
     expect(zhHans['023064003'], contains('不能意料可畏的事'));
     expect(zhHant['044025018'], contains('我所意料的那等惡事'));

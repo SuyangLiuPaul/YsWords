@@ -13,6 +13,17 @@ import 'package:yswords/services/tagged_text_service.dart';
 /// and marks 10:21 「见上节」, the tagged asset keeps the two apart, and
 /// the sheet showed 「我的日子不是甚少吗？求你停手宽容我，」 and stopped.
 ///
+/// **2026-09-09: 約伯記 10:20 is no longer one of them.** The publisher's
+/// current text un-merges the pair — 10:20 now ends at 「求你停手寬容我，」
+/// and 10:21 carries 「叫我在往而不返之先…」 as a verse of its own, which is
+/// how the tagged asset always held it — so the two imports agree there
+/// and the verse this file was written for has left the list. The unit
+/// test below still holds it as a FIXTURE: what is being guarded is the
+/// shape of the defect, and that does not stop being worth guarding when
+/// one instance of it is repaired. The corpus sweep needs a live member
+/// instead, and 路加福音 20:31 is one — the tagged line drops
+/// 「第三個也娶過她」 and starts at 「那七個人都娶過她」.
+///
 /// A DATA test as well as a unit test. `assets/tagged/cuvs-yhwh/` is a
 /// separate import of the same translation, not a tagging of our own
 /// reading asset, so the two can drift apart again on any re-import —
@@ -95,7 +106,20 @@ void main() {
     // The ratchet only ever tightens. It stood at 236 while the real
     // number had already fallen to 223, so it would not have caught
     // thirteen verses of regression.
-    const known = 223;
+    //
+    // Re-measured 2026-09-09: 184. `sync_cuv_yhwh_to_publisher.py`
+    // brought the reading asset up to the publisher's current text
+    // (8,566 verses) and the tagged corpus was already largely on it,
+    // so the two agree in 39 more verses net than they did. The
+    // movement is not one-way — 士師記 15:2 / 15:5 / 15:18 and
+    // 撒母耳記下 21:2 ENTERED the list, because the publisher restored
+    // the four words the 2026-09-03 repair had deleted from the corpus
+    // (see `tagged_supplied_word_deletions_test.dart`), and 約伯記
+    // 31:36 and 歷代志上 21:17 entered it because the publisher's text
+    // acquired a doubled 敵 and a transposed 的 respectively. So the
+    // ratchet is retightened to what is really there rather than left
+    // slack at 223, exactly as the note above says it must be.
+    const known = 184;
 
     final reading = <String, Map<String, String>>{};
     final rows =
@@ -138,8 +162,15 @@ void main() {
 
     expect(compared, greaterThan(30000),
         reason: 'the sweep must actually open the corpus');
-    expect(uncovered, contains('job 10:20'),
-        reason: 'the verse this check was written for');
+    // 約伯記 10:20 was the verse this check was written for and it is
+    // repaired — see the file note. 路加福音 20:31 is the standing
+    // instance of the same class: the tagged line begins at
+    // 「那七個人都娶過她」 and the reader's verse begins seven characters
+    // earlier, at 「第三個也娶過她」. If the sweep ever stops finding it,
+    // either the corpus gained the clause or the sweep stopped working,
+    // and both need reading.
+    expect(uncovered, contains('luke 20:31'),
+        reason: 'the standing instance of a clause lost on the tagged side');
     expect(uncovered.length, lessThanOrEqualTo(known),
         reason: 'the tagged import lost text in ${uncovered.length} verses, '
             'up from $known — a re-import has dropped scripture the '

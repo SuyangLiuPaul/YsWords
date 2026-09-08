@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -154,5 +156,125 @@ void main() {
     // edition substituted is the one in the reader's OWN script.
     expect(find.textContaining('沒有原文編號對照，下面這行是'), findsOneWidget);
     expect(find.text('和合本雅偉版(繁體)'), findsOneWidget);
+  });
+
+  /// Tap the word [word] where it stands in the tagged line.
+  ///
+  /// A real hit test at a real pixel, not a poke at the recognizer:
+  /// the owner's report is that the gesture does not arrive, and a
+  /// test that reaches into the span and calls `onTap` itself would
+  /// pass on the day the line stopped receiving taps at all.
+  Future<void> tapInLine(WidgetTester tester, String word) async {
+    // The line, not the H7225 badge under the רֵאשִׁית chip in the
+    // grid — both are `RichText` and both carry the number.
+    final finder = find.byWidgetPredicate((w) =>
+        w is RichText &&
+        w.text.toPlainText().contains('H7225') &&
+        w.text.toPlainText().contains('H430'));
+    expect(finder, findsOneWidget, reason: 'the tagged line should be on screen');
+    final paragraph = tester.renderObject<RenderParagraph>(finder);
+    final plain = paragraph.text.toPlainText();
+    final start = plain.indexOf(word);
+    expect(start, isNonNegative, reason: '$word should be in the line');
+    final a = paragraph.getOffsetForCaret(
+        TextPosition(offset: start), Rect.zero);
+    final b = paragraph.getOffsetForCaret(
+        TextPosition(offset: start + word.length), Rect.zero);
+    final height =
+        paragraph.getFullHeightForCaret(TextPosition(offset: start));
+    final local = Offset((a.dx + b.dx) / 2, a.dy + height / 2);
+    await tester.tapAt(paragraph.localToGlobal(local));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('tapping a word in the numbered line opens its lexicon entry',
+      (tester) async {
+    await warmCaches(tester, 'cuvs-yhwh-tr');
+    await tester.pumpWidget(sheet('cuvs-yhwh-tr'));
+    await tester.pumpAndSettle();
+
+    // Nothing is open yet: the back arrow belongs to the entry card
+    // and is drawn only while a root entry is being browsed, which is
+    // the state a tap on the line is supposed to produce.
+    expect(find.byIcon(Icons.arrow_back), findsNothing);
+    // H7225 is on screen once already — the badge under the רֵאשִׁית
+    // chip in the grid below. The entry card adds a second.
+    expect(find.text('H7225'), findsOneWidget);
+
+    await tapInLine(tester, '起初');
+
+    expect(find.byIcon(Icons.arrow_back), findsOneWidget,
+        reason: 'the tap should have opened the lexicon entry');
+    // And the reader can SEE it. That is the half that failed: the
+    // entry resolved and the card was built at the FOOT of a
+    // 2,000-pixel list, below the verse line and below the whole grid
+    // of word chips — 41 logical pixels past the bottom of a
+    // 339-pixel viewport on this surface, further on a phone. Nothing
+    // on screen moved, so 摩西 read as dead.
+    final list = tester.getRect(find.byType(ListView));
+    final card = tester.getRect(find.byIcon(Icons.arrow_back));
+    expect(card.top, greaterThanOrEqualTo(list.top));
+    expect(card.bottom, lessThanOrEqualTo(list.bottom));
+  });
+
+  testWidgets('the number is part of the word it tags, not a dead zone',
+      (tester) async {
+    await warmCaches(tester, 'cuvs-yhwh-tr');
+    await tester.pumpWidget(sheet('cuvs-yhwh-tr'));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.arrow_back), findsNothing);
+
+    // `摩西 H4872` reads as one thing and the owner circled the whole of
+    // it. Half of it used to answer nothing.
+    await tapInLine(tester, 'H7225');
+    expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+  });
+
+  testWidgets('the line\'s tap recognizers outlive a rebuild', (tester) async {
+    await warmCaches(tester, 'cuvs-yhwh-tr');
+    final settings = AppSettings();
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => MainProvider()),
+        ChangeNotifierProvider<AppSettings>.value(value: settings),
+      ],
+      child: const MaterialApp(
+        home: Scaffold(
+          body: OriginalsSheet(
+            verses: [genesis11],
+            allVerses: [genesis11],
+            locale: 'zh-Hant',
+            currentVersion: 'cuvs-yhwh-tr',
+          ),
+        ),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    GestureRecognizer? recognizerFor(String word) {
+      final line = find.byWidgetPredicate((w) =>
+          w is RichText &&
+          w.text.toPlainText().contains('H7225') &&
+          w.text.toPlainText().contains('H430'));
+      final paragraph = tester.renderObject<RenderParagraph>(line);
+      final at = paragraph.text.toPlainText().indexOf(word);
+      final span = paragraph.text.getSpanForPosition(TextPosition(offset: at));
+      return (span as TextSpan?)?.recognizer;
+    }
+
+    final before = recognizerFor('起初');
+    expect(before, isNotNull);
+    // A rebuild the reader can cause without touching the line at all.
+    await tester.runAsync(() => settings.setShowStrongsInOriginals(false));
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => settings.setShowStrongsInOriginals(true));
+    await tester.pumpAndSettle();
+
+    // The same object, not a fresh one. Each build used to mint a
+    // TapGestureRecognizer per run and drop the last build's on the
+    // floor undisposed — and they could not simply be added to
+    // `_tapRecognizers`, which `_loadRootEntry` empties from inside a
+    // tap callback and would therefore dispose mid-gesture.
+    expect(identical(recognizerFor('起初'), before), isTrue);
   });
 }

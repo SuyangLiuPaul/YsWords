@@ -25,12 +25,25 @@ import 'package:yswords/services/tagged_text_service.dart';
 /// note formatting, 17 are apparatus or supplied readings, and these 7 are
 /// characters no edition has. The four supplied readings were repaired on
 /// 2026-09-03 (`tagged_supplied_word_deletions_test.dart`), which is why the figures
-/// pinned below are 102 and 13 rather than 113 and 17.
+/// pinned below were 102 and 13 rather than 113 and 17.
+///
+/// **2026-09-09: 102 and 13 became 18 and 8, and almost none of that is
+/// this file's doing.** `tools/sync_cuv_yhwh_to_publisher.py` brought
+/// `assets/cuvs-yhwh.json` up to the publisher's current text — 8,566
+/// verses — and the tagged corpus was already on it, so most of the 102
+/// stopped reading long by the reading side moving rather than by anything
+/// being deleted from the corpus. A verse that now matches exactly drops
+/// out of the census entirely. Four of the 102 went the other way and are
+/// no longer in it because they no longer PASS the guard at all: the
+/// publisher restored the very words the 2026-09-03 pass deleted from the
+/// corpus, so 士師記 15:2 / 15:5 / 15:18 and 撒母耳記下 21:2 are now short
+/// against the reader's verse and fall back to plain text. See
+/// `tagged_supplied_word_deletions_test.dart`, which records that reversal.
 ///
 /// That census is measured RAW against RAW. Production is not:
 /// `originals_sheet` passes `sanitizeForSearch(vo.verse.text)`, so the
 /// reader's `<note: …>` is gone while the tagged line still inlines it as
-/// `〔…〕`, and on that input the class is 1,149 — dominated by the asymmetry
+/// `〔…〕`, and on that input the class is 1,160 — dominated by the asymmetry
 /// rather than by scripture. The raw census is a strict subset of it, so a
 /// defect found in it is a defect on screen; the test below pins the
 /// production number directly.
@@ -148,12 +161,43 @@ void main() {
     // 113 before the duplication repair, 106 after, 102 once the four supplied
     // words went too: a repaired verse matches the reader's verse exactly and
     // drops out of the count entirely.
-    expect(long, 102);
-    // The 13 that remain are apparatus and note wording — enumerated in
-    // `audit_tagged_rendered_extras.py`. Neither the seven duplications nor
-    // the four supplied words is here any more, and nothing new may appear
-    // without a decision.
-    expect(onScripture, hasLength(13));
+    //
+    // 102 -> 18 on 2026-09-09, and nothing was deleted from the corpus to get
+    // there. The publisher sync moved the reading text onto the text the
+    // tagged import was already carrying, so 80 of the 102 now match exactly
+    // and leave the census; the remaining four left it by failing the guard
+    // instead (see the header note on 士師記 15 and 撒母耳記下 21:2).
+    expect(long, 18);
+    // The 8 that remain are apparatus, referent glosses and note wording, and
+    // every one has been read:
+    //
+    //   genesis 18:19, exodus 24:1, 2_chronicles 29:6   the reader's verse
+    //       carries a `[雅伟]` referent gloss — 我[雅伟], 他[雅伟] — which this
+    //       census does not strip and the tagged import does not have;
+    //   zechariah 10:12   the reader's （原文是"雅伟"） is set in full-width
+    //       parentheses, which `noteOurs` does not strip;
+    //   2_samuel 2:23   the tagged line reads 槍鐏 against the reader's 槍;
+    //   mark 15:12   the tagged line reads 那麼樣 against the reader's 那麼;
+    //   luke 20:30   the tagged line carries the Received-Text
+    //       「第三個也娶過她」 the reader's verse does not;
+    //   acts 28:28   the tagged line opens 28:29's 〔有古卷在此有 here, which
+    //       is the CUV's own way of bracketing a whole-verse variant.
+    //
+    // 13 -> 8, by the same movement: the reading text caught up with the
+    // tagged import in five of the thirteen. None of the seven duplications
+    // and none of the four supplied words is here, and nothing new may appear
+    // without a decision — which is why the membership is pinned and not just
+    // the count.
+    expect(onScripture, <String>[
+      'genesis 18:19',
+      'exodus 24:1',
+      '2_samuel 2:23',
+      '2_chronicles 29:6',
+      'zechariah 10:12',
+      'mark 15:12',
+      'luke 20:30',
+      'acts 28:28',
+    ]);
     expect(
         onScripture,
         isNot(anyElement(isIn(<String>[
@@ -190,8 +234,19 @@ void main() {
         if (ideographs(line) != ideographs(shown)) production++;
       }
     }
-    expect(fallback, 223);
-    expect(production, 1149);
+    // 223 -> 184, a net 39 fewer, and pinned independently by
+    // `tagged_verse_coverage_test.dart` and `implied_coverage_census_test.dart`.
+    // The movement runs both ways: the reading text catching up with the
+    // tagged import put verses back inside the guard, and a handful — 士師記
+    // 15:2 / 15:5 / 15:18, 撒母耳記下 21:2, 約伯記 31:36, 歷代志上 21:17 —
+    // came out of it, because there the reading text moved AWAY from the
+    // corpus. Those six are named in the two files that own them.
+    expect(fallback, 184);
+    // 1,149 -> 1,160. This census is dominated by the `<note: …>` / `〔…〕`
+    // asymmetry rather than by scripture, so a rise here says the two sides
+    // set their apparatus differently in eleven more verses than they did.
+    // It is pinned so it cannot drift; the raw census above is the triaged one.
+    expect(production, 1160);
   });
 
   test('馬太福音 9:28 keeps the αὐτοῖς the deleted run would have thrown away',
@@ -255,6 +310,22 @@ void main() {
   });
 
   test('all seven still cover the verse the reader is on', () {
+    // **2026-09-09: this test is RED on 約伯記 31:36, and the defect it is
+    // reporting is in the publisher's text, not in this corpus.** The
+    // publisher's current 約伯記 31:36 reads
+    //
+    //     愿那敌我敌者所写的状词在我这里，我必带在肩上…
+    //
+    // where its own previous text, this tagged corpus, and blob 7a2dc43
+    // (「願那敵我者所寫的狀詞在我這裡！」) all read 敵我者. 敵我敵者 is not a
+    // word; the 敵 is doubled, and the ！ became a ，in the same edit. It is
+    // carried verbatim in the publisher's own `bsapp_bible_cuvs` row, so it
+    // came from them and not from `sync_cuv_yhwh_to_publisher.py`.
+    //
+    // `coversVerse` is a subsequence test, so the reader's second 敵 has no
+    // match in the tagged line and the verse falls back to plain text. That
+    // is the guard behaving correctly. The test is left failing rather than
+    // relaxed, because the thing to fix is the verse.
     const pairs = <String, String>{
       'leviticus|5:7': '利未记 5:7',
       '1_samuel|20:37': '撒母耳记上 20:37',
@@ -264,13 +335,18 @@ void main() {
       'ezekiel|36:1': '以西结书 36:1',
       'matthew|9:28': '马太福音 9:28',
     };
+    // Collected rather than asserted one at a time, so the failure names
+    // every verse that has fallen out instead of stopping at the first.
+    final lost = <String>[];
     for (final entry in pairs.entries) {
       final parts = entry.key.split('|');
-      expect(
-          TaggedTextService.coversVerse(
-              load(parts[0])[parts[1]]!, reading[entry.value]!),
-          isTrue,
-          reason: '${entry.value} must still reach the word-tap sheet');
+      if (!TaggedTextService.coversVerse(
+          load(parts[0])[parts[1]]!, reading[entry.value]!)) {
+        lost.add(entry.value);
+      }
     }
+    expect(lost, isEmpty,
+        reason: 'these must still reach the word-tap sheet: '
+            '${lost.join(', ')}');
   });
 }

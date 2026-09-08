@@ -86,8 +86,17 @@ void main() {
     expect(zhHant['045008036']!.replaceAll('「', '').replaceAll('」', ''),
         '如經上所記：我們為你的緣故終日被殺；人看我們如將宰的羊。');
     expect(zhHant['019044022'], '我們為你的緣故終日被殺；人看我們如將宰的羊。');
+    // 2026-09-09: this literal used to end 是耶利米或是先知裏的一位。
+    // The publisher's current 馬太福音 16:14 sets off the last item of
+    // the list with a comma — 是耶利米，或是先知裏的一位 — which the
+    // official does not print. It is one mark of theirs, in a verse
+    // where this test's own subject is the quotation marks, and it is
+    // recorded here rather than absorbed: the claim being made is that
+    // THIS repair added and removed no character, and the literal is
+    // how that claim is checked, so the literal has to be the verse as
+    // it now stands.
     expect(zhHant['040016014']!.replaceAll('「', '').replaceAll('」', ''),
-        '他們說：有人說是施洗的約翰；有人說是以利亞；又有人說是耶利米或是先知裏的一位。');
+        '他們說：有人說是施洗的約翰；有人說是以利亞；又有人說是耶利米，或是先知裏的一位。');
   });
 
   test('所記： is followed by an opening quote wherever the verse quotes', () {

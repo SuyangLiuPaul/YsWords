@@ -141,12 +141,34 @@ void main() {
       expect(count(bible, ch), 0,
           reason: 'the Traditional Bible gained $ch');
     }
+    // 2026-09-09, the publisher sync. Three of the six moved and 為 /
+    // 群 / 床 did not shift by a character. None of the three is an
+    // orthography choice — this test's floor still holds, and the sweep
+    // it guards still has not touched the Bible.
+    //
+    //   眾 1,895 → 1,896. Speaker labels inside 雅歌's `<note:>` markers
+    //   were rewritten — 男 → 眾人 (1:8), 眾女 → 佳偶 (3:6), 男 → 良人
+    //   with the second label dropped (5:1), 女的兄弟 → 眾人 (8:8) — and
+    //   the note at 耶利米哀歌 2:4 was reworded. Note labels, not
+    //   scripture; +1 net.
+    //
+    //   著 2,651 → 2,648, and this one is a repair we were owed. THREE
+    //   verses of 耶利米書 had 著 standing where 裏 belongs — 7:20
+    //   「地著的出產」, 20:2 「雅偉殿著便雅憫高門」, 26:15 「到你們這著
+    //   來」 — a corrupted glyph, not an orthography, and the official
+    //   和合本繁體 reads 裡 in all three. The sync fixed them. The other
+    //   two positions are note rewordings (歷代志下 30:21 dropped 向著 →
+    //   向, 約翰福音 3:36 now quotes 得不著永生 in its note): −3 net.
+    //
+    //   吃 1,043 → 1,044. 以賽亞書 33:4's note was reworded to quote the
+    //   word it glosses (「"吃"原文是"斂"」); the running text is
+    //   unchanged. +1.
     const edition = <String, int>{
       '為': 7952,
       '群': 323,
-      '眾': 1895,
-      '著': 2651,
-      '吃': 1043,
+      '眾': 1896,
+      '著': 2648,
+      '吃': 1044,
       '床': 80,
     };
     edition.forEach((ch, expected) {
