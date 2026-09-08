@@ -161,6 +161,20 @@ jobs:
       - name: P0 audit gate unit tests
         run: python3 test/test_audit_p0_check.py
 
+      # Strong's-tagging census (tools/audit_strongs_tagging.py), read-only.
+      # Filed 2026-09-08: the tool backs docs/autonomous-queue.md:7553's P1
+      # tick, but nothing pinned its totals, so 38 corpus edits drifted the
+      # figures quoted there silently for weeks (367,589 -> 367,572 runs,
+      # unnoticed until this iteration re-ran it and diffed by hand). Unlike
+      # audit_p0.py's `--check` above, this one DOES pin raw totals — a
+      # deliberate ratchet in the style of test/strongs_alignment_test.dart's
+      # singleton-pair count, not an invariant true by construction. Any
+      # legitimate repair moves these numbers; the fix is to re-derive and
+      # bump `PINNED` in the same commit, explaining the delta, not to loosen
+      # the check.
+      - name: Strong's-tagging census totals
+        run: python3 tools/audit_strongs_tagging.py --check
+
       - name: Test
         run: flutter test --reporter expanded
 

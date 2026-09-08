@@ -95,13 +95,15 @@ def bare(word: str) -> str:
                    if not unicodedata.combining(c)).lower()
 
 
-def audit(version: str, verbose: bool, tail: int, versify: bool) -> int:
+def _compute(version: str, versify: bool, verbose: bool = False) -> dict | None:
+    """The counting pass, shared by `audit()` (prints it) and `check()`
+    (compares it to the pinned totals below). Returns None if there is
+    no tagged corpus for `version`."""
     lex = lexicon()
     roots = inflection_roots(lex)
     books = sorted((TAGGED / version).glob("*.json"))
     if not books:
-        print(f"no tagged books for {version}", file=sys.stderr)
-        return 2
+        return None
 
     base = load(VERSIFICATION) if versify else {}
     merged = load(MERGED).get(version, {}) if versify else {}
@@ -190,11 +192,42 @@ def audit(version: str, verbose: bool, tail: int, versify: bool) -> int:
 
         per_book.append((book, book_verses, book_orphans))
 
+    return {
+        "lex": lex,
+        "books": len(books),
+        "total_runs": total_runs,
+        "total_tagged": total_tagged,
+        "verses_compared": verses_compared,
+        "verses_no_original": verses_no_original,
+        "missing_from_lexicon": missing_from_lexicon,
+        "verses_with_orphan": verses_with_orphan,
+        "not_in_verse": not_in_verse,
+        "explained_inflection": explained_inflection,
+        "explained_form": explained_form,
+        "unexplained": unexplained,
+        "example": example,
+        "per_book": per_book,
+    }
+
+
+def audit(version: str, verbose: bool, tail: int, versify: bool) -> int:
+    result = _compute(version, versify, verbose)
+    if result is None:
+        print(f"no tagged books for {version}", file=sys.stderr)
+        return 2
+    lex = result["lex"]
+    missing_from_lexicon = result["missing_from_lexicon"]
+    not_in_verse = result["not_in_verse"]
+    unexplained = result["unexplained"]
+    example = result["example"]
+
     print(f"version: {version}"
           f"{'' if versify else '   (versification NOT applied)'}")
-    print(f"books: {len(books)}  runs: {total_runs}  tagged runs: {total_tagged}")
-    print(f"verses compared against originals: {verses_compared}")
-    print(f"verses with no original-language counterpart: {verses_no_original}")
+    print(f"books: {result['books']}  runs: {result['total_runs']}  "
+          f"tagged runs: {result['total_tagged']}")
+    print(f"verses compared against originals: {result['verses_compared']}")
+    print(f"verses with no original-language counterpart: "
+          f"{result['verses_no_original']}")
     print()
     print(f"tagged numbers absent from the lexicon: "
           f"{sum(missing_from_lexicon.values())} occurrences, "
@@ -203,30 +236,88 @@ def audit(version: str, verbose: bool, tail: int, versify: bool) -> int:
         print(f"    {n}: {c}")
     print()
     print(f"verses where a tagged number is not in that verse's original: "
-          f"{verses_with_orphan} / {verses_compared}"
-          f" ({100.0 * verses_with_orphan / max(verses_compared, 1):.1f}%)")
+          f"{result['verses_with_orphan']} / {result['verses_compared']}"
+          f" ({100.0 * result['verses_with_orphan'] / max(result['verses_compared'], 1):.1f}%)")
     total_orphans = sum(not_in_verse.values())
     print(f"orphan tag occurrences: {total_orphans}, "
           f"{len(not_in_verse)} distinct numbers")
     print()
     print("of those, accounted for WITHOUT changing any data:")
     print(f"  the tagger's inflected-form number for a lemma the verse "
-          f"does have: {sum(explained_inflection.values())}")
+          f"does have: {sum(result['explained_inflection'].values())}")
     print(f"  the lexicon's headword is printed in the verse verbatim:  "
-          f"{sum(explained_form.values())}")
+          f"{sum(result['explained_form'].values())}")
     left = sum(unexplained.values())
     print(f"  LEFT TO READ: {left} "
-          f"({100.0 * left / max(total_tagged, 1):.2f}% of tagged runs), "
+          f"({100.0 * left / max(result['total_tagged'], 1):.2f}% of tagged runs), "
           f"{len(unexplained)} distinct numbers")
     print()
     for n, c in unexplained.most_common(tail):
         lemma = (lex.get(n) or {}).get("lemma", "NOT IN THE LEXICON")
         print(f"    {n}: {c:5}  {lemma}   e.g. {example[n]}")
     print()
-    worst = sorted(per_book, key=lambda t: -t[2])[:10]
+    worst = sorted(result["per_book"], key=lambda t: -t[2])[:10]
     print("worst books by orphan verses:")
     for book, verses, orphans in worst:
         print(f"    {book}: {orphans} / {verses}")
+    return 0
+
+
+# Pinned totals for `--check`, measured at commit 3c68bf5e (2026-09-08).
+# This is a RATCHET, the same way test/strongs_alignment_test.dart's
+# singleton-pair count is: a legitimate repair can move any of these
+# numbers, in EITHER direction, and when one does the fix updates the
+# pin in the same commit and explains the delta by naming the commits
+# that caused it (see docs/autonomous-queue.md:7553 for the worked
+# example) rather than widening the check to tolerate drift. A raw
+# total that could silently move is exactly what let this one drift
+# unnoticed from the true 2026-08-12 baseline for four weeks.
+PINNED = {
+    True: {  # versify=True — the figure the queue quotes
+        "total_runs": 367572,
+        "total_tagged": 360929,
+        "left_to_read": 1991,
+        "left_to_read_distinct": 682,
+        "orphan_occurrences": 9761,
+    },
+    False: {  # --no-versification — the pre-2026-08 raw figure
+        "total_runs": 367572,
+        "total_tagged": 360929,
+        "orphan_occurrences": 25133,
+    },
+}
+
+
+def check() -> int:
+    problems = []
+    for versify, expected in PINNED.items():
+        result = _compute("cuvs-yhwh", versify)
+        if result is None:
+            problems.append(f"versify={versify}: no tagged corpus found")
+            continue
+        not_in_verse = result["not_in_verse"]
+        unexplained = result["unexplained"]
+        actual = {
+            "total_runs": result["total_runs"],
+            "total_tagged": result["total_tagged"],
+            "orphan_occurrences": sum(not_in_verse.values()),
+        }
+        if versify:
+            actual["left_to_read"] = sum(unexplained.values())
+            actual["left_to_read_distinct"] = len(unexplained)
+        for key, want in expected.items():
+            got = actual[key]
+            if got != want:
+                problems.append(
+                    f"versify={versify} {key}: pinned {want}, measured {got} "
+                    f"(delta {got - want:+d}) — re-derive and update PINNED, "
+                    f"explaining the delta, don't just widen the check")
+    if problems:
+        print("FAIL:")
+        for p in problems:
+            print(f"  {p}")
+        return 1
+    print("OK: all pinned Strong's-tagging totals hold.")
     return 0
 
 
@@ -239,7 +330,12 @@ def main() -> int:
     ap.add_argument("--no-versification", action="store_true",
                     help="compare verse-for-verse, as the first version of "
                          "this tool did; for reproducing the old figure")
+    ap.add_argument("--check", action="store_true",
+                    help="assert the PINNED totals hold (cuvs-yhwh only); "
+                         "for CI, exits 1 on any drift")
     args = ap.parse_args()
+    if args.check:
+        return check()
     return audit(args.version, args.verbose, args.tail,
                  not args.no_versification)
 

@@ -7551,11 +7551,113 @@ has never seen this repo.
       cannot move them quietly.
 
 - [x] **Verify the Strong's tagging against the originals.** Done —
-      the honest figure is **1,996 runs, 0.55% of tagged runs**, and
-      nothing read in that tail is data to change.
-      `tools/audit_strongs_tagging.py` counts the whole corpus (66
-      books, 367,589 runs, 360,946 tagged) rather than spot-checking,
-      because one wrong number looks exactly like a right one on screen.
+      the honest figure is **1,991 runs, 0.55% of tagged runs** at HEAD
+      (1,996 when first measured at `663b798b`; see the drift table
+      below — the headline here is kept current rather than restating
+      the stale number), and nothing read in that tail is data to
+      change. `tools/audit_strongs_tagging.py` counts the whole corpus
+      (66 books, 367,572 runs, 360,929 tagged at HEAD) rather than
+      spot-checking, because one wrong number looks exactly like a
+      right one on screen.
+
+      **DRIFTED — 2026-09-08 audit, fallback task from that hour's
+      NEXT_TASK.md.** The 367,589/360,946 above (and every other figure
+      in this item) was measured at `663b798b` (2026-08-12, confirmed by
+      `git blame` on this line — not 2026-08-24 as an earlier note
+      guessed). A fresh run at HEAD (`3c68bf5e`) gives:
+
+      | figure | then | now | Δ |
+      |---|---|---|---|
+      | runs | 367,589 | 367,572 | −17 |
+      | tagged runs | 360,946 | 360,929 | −17 |
+      | LEFT TO READ | 1,996 (0.55%) | 1,991 (0.55%) | −5 |
+      | distinct in that tail | 683 | 682 | −1 |
+      | orphan tag occurrences | 9,765 | 9,761 | −4 |
+      | raw (`--no-versification`) orphan occurrences | 25,137 | 25,133 | −4 |
+
+      **Every delta re-verified by direct measurement** — checking out
+      just `assets/tagged/cuvs-yhwh/*.json` and `assets/strongs/` at
+      each of the 34 commits between `663b798b` and HEAD that touch
+      those paths, and re-running the unchanged tool fresh (not by
+      inference). **A second adversarial pass, 2026-09-08, ordered by
+      that hour's NEXT_TASK.md, found the first draft's per-commit
+      story was wrong in a way its own correct sums had hidden.** It
+      named `db5e6079` (the `p0/corpus1` merge) as the commit that
+      silently reverted `a1406c21`'s fold — but `db5e6079` does not even
+      contain `a1406c21` as an ancestor (`git merge-base --is-ancestor
+      a1406c21 db5e6079` is false; `a1406c21` is on `p0/corpus2` and
+      first enters this history at the *next* merge, `2d6702de`). The
+      wrong attribution still summed to the right totals because two
+      other terms it named (`a1406c21 +1` and `0a225b91 −1`, both on
+      LEFT TO READ) were themselves fabricated and cancelled each
+      other — a second coincidence hiding the first error, the same
+      failure shape the first adversarial pass had already caught once
+      (a cancelling pair landing on matching endpoints looks like a
+      no-op or a correct sum either way). Corrected, with every
+      commit's *own* delta now checked against its real parent (or, for
+      the three merges, against both real parents):
+
+        * `ca1d33fc` +1 run, `4591f4aa` +1 run / +1 orphan occurrence
+          (versified and raw), `65eef087` −15 runs, `1fce89e8` −2 runs —
+          none of these four touch LEFT TO READ or either distinct
+          count.
+        * `113a5ce2` −4 LEFT TO READ, −4 orphan occurrences (versified
+          and raw), 0 change to runs or to either distinct count.
+          `375a4031`, the commit between `1fce89e8` and `113a5ce2`, is
+          confirmed a no-op for every figure.
+        * `a1406c21` (on `p0/corpus2`) −2 runs, −2 tagged runs, **0 to
+          everything else** — the first draft's "+1 to LEFT TO READ" for
+          this commit does not reproduce; measured against its real
+          parent (`9c01789a`), LEFT TO READ, orphan occurrences and both
+          distinct counts are all unchanged.
+        * `0a225b91` (on `p0/strongs`) −1 LEFT TO READ, −1 orphan
+          occurrence (both versified and raw — `--no-versification`
+          also drops 25,134→25,133 against this same parent, which the
+          "0 to the raw orphan figure" in an earlier draft of this line
+          did not reproduce and the `60e51d4e` bullet below already
+          states correctly), −1 on that tail's distinct count, **0 to
+          runs** — measured against its real parent (`2d23bda9`).
+        * The three merges, measured against their real parents, move
+          **nothing**: `db5e6079` (367,574 / 1,992 / 9,762 / 740 —
+          identical to both its parents `460fd541` and `6e58b16c`,
+          neither of which contains `a1406c21` or `0a225b91`);
+          `2d6702de`, which *does* merge in `a1406c21`, still measures
+          367,574 / 1,992 / 9,762 / 740 — identical to `db5e6079`, so
+          this merge, not `db5e6079`, is where `a1406c21`'s −2 on runs
+          was silently dropped; `09854777`, which merges in `0a225b91`,
+          still measures 367,574 / 1,992 / 9,762 / 740 — identical to
+          `2d6702de`, so this merge, not `db5e6079`, is where
+          `0a225b91`'s −1 on LEFT TO READ / orphan occurrences /
+          distinct was silently dropped.
+        * `60e51d4e` ("test: re-pin two censuses the parallel branches
+          moved under each other") reinstates **both** drops in one
+          commit — measured against its real parent `09854777`:
+          367,574/1,992/9,762/740 → 367,572/1,991/9,761/739 (raw orphan
+          25,134 → 25,133): −2 runs (`a1406c21`'s fix, dropped at
+          `2d6702de`) and −1 each on LEFT TO READ, orphan occurrences
+          (both versified and raw) and the LEFT-TO-READ distinct count
+          (`0a225b91`'s fix, dropped at `09854777`).
+
+      **Net result unchanged** — the six pinned totals in the table
+      above were always measured directly at `663b798b` and HEAD, never
+      summed from the per-commit story, so they still hold. What was
+      wrong was the *explanation* of how the drift happened, not the
+      drift itself: it is really driven by seven commits (`ca1d33fc`,
+      `4591f4aa`, `65eef087`, `1fce89e8`, `113a5ce2`, `a1406c21`,
+      `0a225b91`) plus `60e51d4e` reinstating two of them after two
+      *different* merges (`2d6702de`, `09854777`) silently dropped
+      them — not the nine-commit, one-merge story the first draft told.
+      `db5e6079` moves nothing at all.
+
+      **Pinned against a third drift** by
+      `tools/audit_strongs_tagging.py --check` (added 2026-09-08, wired
+      into CI). Deliberately a raw-total pin, not an invariant true by
+      construction — chosen over widening `audit_p0.py --check`'s
+      structural-invariant style because these totals are exactly the
+      kind of number that legitimately moves with every repair; the
+      precedent is `test/strongs_alignment_test.dart`'s own singleton-
+      pair ratchet, bumped by hand with the delta explained, never
+      widened to tolerate drift silently.
 
       The tool's own first headline — "24,983 carrying a number that is
       not in that verse's original" — was worthless, and the rewrite now
@@ -7627,6 +7729,12 @@ has never seen this repo.
       missing from the lexicon. `test/tagged_supplied_words_test.dart`
       pins that against the real assets and fails on the pre-fix code
       with the right diagnosis (`{'H0': 253, 'G0': 42}`).
+
+      **The 367,589/360,946 here drifted to 367,572/360,929 by HEAD** —
+      decomposed at this item's sibling above (`Verify the Strong's
+      tagging against the originals`) — but `H0`/`G0` themselves are
+      unchanged at 253/42; the drift is elsewhere in the corpus, not in
+      this count. Not re-filed as a new finding: 253+42=295 is closed.
 
 - [x] **Commentary import (public domain).** One module first — Matthew
       Henry or JFB — via the published `.cmt.mybible` SQLite file, never
@@ -13453,6 +13561,42 @@ so the bundle-size answer stays on the record.
       observation) — a leaked test engine from an earlier interrupted
       stage, consistent with this same failure mode having happened at
       least once before.
+
+      **Fourth recurrence, 2026-09-08 11:00:11–11:14:38.** The stage
+      was assigned landing the *third* recurrence (the biblexg
+      v2-vs-TR census decomposition), did the actual correction work —
+      ~38 lines re-deriving which commit dropped which delta and why
+      the first draft's attribution was wrong — then ended `rc=0`
+      saying only *"Waiting on the background test run and the
+      scheduled wakeup — will resume once either fires."* Nothing was
+      committed; the correction sat in the dirty tree for another full
+      iteration. Landed the following hour (2026-09-08, this item's own
+      recurrence-fixing pass) together with one factual error the
+      correction itself had introduced: its `0a225b91` bullet claimed
+      "0 to the raw orphan figure" while the very next paragraph, about
+      `60e51d4e`, already stated the opposite (a −1 on both versified
+      and raw) — re-measured in a throwaway worktree and the raw figure
+      does move, 25,134→25,133, confirming the second bullet and fixing
+      the first.
+
+      **New sub-finding, from the same hour**: the loop cannot tell its
+      own orphaned work apart from a concurrent human session's WIP in
+      the same checkout. The planning stage that assigned this landing
+      found the tree mixed with an unrelated, unqueued verse-card
+      feature (7 untracked files, plus edits to
+      `lib/constants/ui_strings.dart`, `lib/widgets/bible_reading_pane.dart`
+      and a 只→隻 scripture edit in `assets/biblexg-v2-tr.json`) written
+      by a second, human-driven Claude session on this Mac, and had to
+      reconstruct which files were whose from mtimes against `run.log`'s
+      own stage windows — nothing in the loop records this itself. The
+      previous hour's plan had told the execution stage to "restore the
+      working tree cleanly afterwards (`git checkout --` the asset
+      paths)"; run literally against a tree in this state, that command
+      would have discarded the human session's uncommitted scripture
+      edit. No harm done this time only because the mix-up was caught
+      by hand before it was acted on. Still open — the fix (recording
+      which paths a stage touched, and never blanket-restoring paths it
+      didn't write) belongs in `run.sh`/`prompt.md`, outside the repo.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
