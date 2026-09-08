@@ -10,6 +10,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/motion.dart';
+import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/app_nav.dart';
@@ -28,6 +29,7 @@ import 'package:yswords/pages/bible_trivia_page.dart' as trivia;
 import 'package:yswords/pages/books_page.dart';
 import 'package:yswords/pages/evidence_page.dart';
 import 'package:yswords/pages/highlights_page.dart';
+import 'package:yswords/pages/projection_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/search_page.dart';
@@ -7706,6 +7708,18 @@ class _FloatingHeader extends StatelessWidget {
                           case 'highlights':
                             onHighlights?.call();
                             break;
+                          // 2026-09-09: projection had a route and no
+                          // door. `#/project` is typeable on the web and
+                          // unreachable on iOS and Android, which have no
+                          // address bar — so on the two platforms a
+                          // Sunday service is most likely to be driven
+                          // from, the feature did not exist. SeekSparks
+                          // hit the identical gap a day earlier and put
+                          // its door in the equivalent menu.
+                          case 'project':
+                            pushPage(const ProjectionPage(),
+                                routeName: '/project');
+                            break;
                           case 'evidence':
                             pushPage(
                               EvidencePage(
@@ -7869,6 +7883,21 @@ class _FloatingHeader extends StatelessWidget {
                         // illustrate the chapter on screen. Falls back
                         // to book-wide and then to the full archive
                         // when chapter-specific coverage is thin.
+                        // 投影 — the passage on the wall at the front of
+                        // the room. Sits here rather than in the bottom
+                        // bar or the dashboard grid because it is opened
+                        // once at the start of a service and never during
+                        // one, which is what this menu is for.
+                        items.add(PopupMenuItem(
+                          value: 'project',
+                          child: _menuRow(
+                            context,
+                            icon: Icons.cast_outlined,
+                            label: projectionStrings['projectionTitle']
+                                    ?[locale] ??
+                                projectionStrings['projectionTitle']!['en']!,
+                          ),
+                        ));
                         items.add(PopupMenuItem(
                           value: 'evidence',
                           child: _menuRow(

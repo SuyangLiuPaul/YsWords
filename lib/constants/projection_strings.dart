@@ -15,6 +15,17 @@
 library;
 
 const projectionStrings = <String, Map<String, String>>{
+  // The name of the page, for the one door that leads to it. Added
+  // 2026-09-09: this page had a route and no door, so `#/project` was
+  // typeable on the web and unreachable on iOS and Android — which have
+  // no address bar. On the two platforms a Sunday service is most
+  // likely to be driven from, the feature did not exist.
+  'projectionTitle': {
+    'zh-Hans': '投影',
+    'zh-Hant': '投影',
+    'en': 'Projection',
+  },
+
   // ── the wall ──────────────────────────────────────────────────────
   'projectionNoPassage': {
     'zh-Hans': '尚未打开经文',

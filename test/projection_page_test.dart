@@ -16,6 +16,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/book.dart';
 import 'package:yswords/models/chapter.dart';
 import 'package:yswords/models/verse.dart';
+import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/pages/projection_page.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
@@ -393,4 +394,55 @@ void main() {
     expect(kSplitSecondaryVersionKey, 'secondary_version',
         reason: 'the two halves above compose to exactly this key');
   });
+
+/// A route with no door is not a feature.
+///
+/// Added 2026-09-09, after the owner asked 「投影怎么做」 and the honest
+/// answer was "type `#/project` in the address bar". `/project` had been
+/// a registered GetX route since it shipped and nothing anywhere in the
+/// UI pushed [ProjectionPage] — so on iOS and Android, which have no
+/// address bar, the page could not be reached at all. SeekSparks hit the
+/// identical gap a day earlier and found it the same way: by opening the
+/// build and looking for it.
+///
+/// Neither repo had a test that could have caught it, because every test
+/// either drove the page directly or checked the URL path. Both are
+/// claims about the page; neither is a claim that a person can GET
+/// there. This is that claim, and it is deliberately made against the
+/// source rather than by pumping a 7,900-line reading pane: what went
+/// wrong was structural — nobody wrote the call — and a grep for the
+/// call is exactly the shape of the mistake.
+  group('the door', () {
+    test('some widget in lib/ actually opens the projection', () {
+      final callers = <String>[];
+      for (final f in Directory('lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))) {
+        if (f.path.endsWith('projection_page.dart')) continue;
+        final src = f.readAsStringSync();
+        // `main.dart`'s GetPage builder is the ROUTE, not a door — it is
+        // what a typed URL lands on, and it is what was already there
+        // while the feature was unreachable on two platforms.
+        final withoutRoute =
+            src.replaceAll(RegExp(r"page:\s*\(\)\s*=>\s*const ProjectionPage\(\)"), '');
+        if (withoutRoute.contains('ProjectionPage()')) callers.add(f.path);
+      }
+      expect(callers, isNotEmpty,
+          reason: 'no widget pushes ProjectionPage, so 投影 is reachable '
+              'only by typing #/project — which iOS and Android cannot '
+              'do. Put a door back in the reader\'s overflow menu.');
+    });
+
+    test('the door has a label in all three locales', () {
+      final title = projectionStrings['projectionTitle'];
+      expect(title, isNotNull);
+      for (final locale in ['zh-Hans', 'zh-Hant', 'en']) {
+        expect(title![locale], isNotNull,
+            reason: '$locale has no label for the projection door');
+        expect(title[locale], isNotEmpty);
+      }
+    });
+  });
+
 }
