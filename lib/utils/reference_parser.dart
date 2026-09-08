@@ -711,7 +711,13 @@ const Map<String, String> _chineseShortAliases = {
   '王上': '1 Kings', '王下': '2 Kings',
   '代上': '1 Chronicles', '代下': '2 Chronicles',
   '拉': 'Ezra', '尼': 'Nehemiah', '斯': 'Esther',
-  '伯': 'Job', '诗': 'Psalms', '诗篇': 'Psalms', '箴': 'Proverbs',
+  // '约伯' is here for the same reason '诗篇' and '雅歌' are: it is a
+  // name people type, and the exact-match index plus the zhToEn
+  // full-name fallback ('约伯记') both miss it, so '约伯 3:1' resolved
+  // to nothing at all. It cannot shadow '约' (John) — the index is
+  // looked up by exact key, not by prefix.
+  '伯': 'Job', '约伯': 'Job',
+  '诗': 'Psalms', '诗篇': 'Psalms', '箴': 'Proverbs',
   '传': 'Ecclesiastes', '歌': 'Song of Solomon', '雅歌': 'Song of Solomon',
   '赛': 'Isaiah', '耶': 'Jeremiah', '哀': 'Lamentations',
   '结': 'Ezekiel', '但': 'Daniel',
@@ -741,6 +747,7 @@ const Map<String, String> _chineseShortAliases = {
   '彌': 'Micah', '鴻': 'Nahum', '該': 'Haggai',
   '亞': 'Zechariah', '瑪': 'Malachi',
   '羅': 'Romans',
+  '約伯': 'Job',
   '門': 'Philemon', '來': 'Hebrews', '雅各': 'James',
   '猶': 'Jude', '啟': 'Revelation',
 };

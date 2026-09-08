@@ -117,6 +117,17 @@ void main() {
       expect(r.verseStart, 16);
     });
 
+    // 2026-09-08. '约伯' resolved to nothing: the alias index is exact
+    // match (so '约' did not cover it) and the zhToEn fallback holds
+    // only the full '约伯记'. Both spellings of the two-character name
+    // people actually type now resolve, and neither one steals '约'.
+    test('two-character Chinese name — Job, not John', () {
+      expect(parseReference('约伯 3:1')!.englishBook, 'Job');
+      expect(parseReference('約伯 3:1')!.englishBook, 'Job');
+      expect(parseReference('约 3:16')!.englishBook, 'John');
+      expect(parseReference('伯 3:1')!.englishBook, 'Job');
+    });
+
     test('tightly-typed Chinese', () {
       final r = parseReference('创1:1')!;
       expect(r.englishBook, 'Genesis');
