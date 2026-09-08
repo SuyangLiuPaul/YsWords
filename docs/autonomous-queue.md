@@ -6800,9 +6800,17 @@ has never seen this repo.
       約伯記 10:20 (12%) and it is explained — `assets/tagged/` divides
       10:20/10:21 where `assets/cuvs-yhwh.json` merges them, and the
       reading verse does contain the clause (verified by containment).
-      `test/merged_verse_originals_test.dart` re-derives the 72 from
-      `assets/cuvs-yhwh.json` in Dart rather than trusting the tool, and
-      fails on the pre-fix data at all 72.
+      `test/merged_verse_originals_test.dart` re-derives the merge count
+      from `assets/cuvs-yhwh.json` in Dart rather than trusting the tool.
+      **Re-measured 2026-09-09: 71, not 72** — 約伯記 10:20/10:21
+      un-merged in the publisher-text sync (`50dcc102`) and the overlay
+      was rebuilt in the same commit (70 carriers / 71 absorbed refs,
+      both CUV editions identical). The test only checked marks →
+      overlay, so a stale overlay entry with no mark behind it would
+      have passed silently; **closed 2026-09-09** by adding the reverse
+      assertion (overlay → marks, reusing the file's own `pointers()`
+      and `baseRefs()`), proved to fail against the pre-sync overlay on
+      exactly `job 10:20 -> 10:21`.
 
 - [x] **554 concordance references opened a 「见上节」 verse — fixed.**
       The other direction of the same defect. `VersificationService
@@ -6866,9 +6874,14 @@ has never seen this repo.
       same translation**, and the wording differences read as edition
       variants (姊姊/姐姐, 她/它, 回覆/回复). Do not "fix" them by
       copying one into the other; that is choosing a reading. 約伯記
-      10:20/10:21 is the one structural case: the reading asset folds
-      both into 10:20 and marks 10:21 「见上节」 while the tagged asset
-      divides them, so the sheet shows the first half only. Two honest
+      10:20/10:21 was the one structural case at the time this was
+      written: the reading asset folded both into 10:20 and marked
+      10:21 「见上节」 while the tagged asset divided them, so the sheet
+      showed the first half only. **No longer true of the publisher's
+      current text as of `50dcc102` (2026-09-09): 10:21 is now its own
+      verse in `assets/cuvs-yhwh.json`, not a 「见上节」 pointer**, so
+      this pair has left the structural-case class; the ruling below
+      was made for the general class and is unaffected. Two honest
       options, and the second needs no data change:
       (a) join the tagged 10:21 runs into 10:20 — the concatenation
       reproduces reading 10:20 exactly, so it is evidence-based, or
@@ -11113,6 +11126,14 @@ has never seen this repo.
       checkbox, and the question above to the user is still unanswered:
       start the `GetMaterialApp` → `.router` migration branch, or close
       this as "won't fix"?
+
+      **Deferred an eleventh consecutive iteration, 2026-09-09** — this
+      hour's NEXT_TASK.md picked closing the merged-verse overlay test
+      hole instead (fallback tier, test-only). Still branch-scale, still
+      unattended-unsafe, still the only open P2 checkbox, and the
+      question above to the user is still unanswered: start the
+      `GetMaterialApp` → `.router` migration branch, or close this as
+      "won't fix"?
 
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two

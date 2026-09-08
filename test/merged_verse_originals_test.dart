@@ -96,11 +96,13 @@ void main() {
     // verse of its own, so it is not a pointer any more and the sheet on
     // 10:20 must not be widened to hold 10:21's Hebrew.
     //
-    // `assets/originals_versification_merged.json` has NOT been rebuilt
-    // for that and still maps job 10:20 -> ['10:20', '10:21']. The loop
-    // below walks marks -> overlay, so a stale extra entry does not fail
-    // it; `tools/build_merged_verse_map.py` needs re-running over the
-    // synced reading asset.
+    // `assets/originals_versification_merged.json` WAS rebuilt inside
+    // the same commit (`50dcc102`): at HEAD it has no `job` `10:20`
+    // entry, only `38:37` and `38:39`, and 70 carriers / 71 absorbed
+    // refs overall (down from 71 / 72 at the parent commit). The loop
+    // below walks marks -> overlay, so it cannot catch a stale entry the
+    // overlay still carries; the reverse direction (overlay -> marks) is
+    // the next test.
     expect(marks.values.fold<int>(0, (n, m) => n + m.length), 71);
 
     final base = (json
@@ -149,6 +151,49 @@ void main() {
       }
     }
     expect(unaccounted, isEmpty, reason: unaccounted.join('\n'));
+  });
+
+  test('the overlay does not widen a verse the reading asset no longer '
+      'merges', () {
+    // The other direction of the previous test. That one walks marks ->
+    // overlay, so a stale overlay entry with no mark behind it any more
+    // (the `job` 10:20 -> 10:21 shape at commit `25a538da`, before the
+    // publisher's current text un-merged the pair) passes it silently.
+    // If it shipped, `VersificationService.originalRefs` would hand the
+    // Originals sheet on a verse the Hebrew of a DIFFERENT verse the
+    // reader's translation does not actually merge into it any more.
+    final marks = pointers('cuvs-yhwh');
+    final base = (json
+            .decode(File('assets/originals_versification.json')
+                .readAsStringSync()) as Map<String, dynamic>)
+        .map((book, refs) => MapEntry(book, (refs as Map<String, dynamic>)
+            .map((ref, t) => MapEntry(ref, (t as List).cast<String>()))));
+    List<String> baseRefs(String book, String ref) =>
+        base[book]?[ref] ?? [ref];
+
+    for (final version in merged.keys) {
+      final overlay = merged[version]!;
+      final unexplained = <String>[];
+      for (final book in overlay.entries) {
+        final bookMarks = marks[book.key] ?? const <String, String>{};
+        // Every original-numbering ref that SOME marked verse in this
+        // book maps to, via the same helper the forward test uses.
+        final explainedByMark = <String>{
+          for (final markRef in bookMarks.keys) ...baseRefs(book.key, markRef)
+        };
+        for (final entry in book.value.entries) {
+          final own = baseRefs(book.key, entry.key).toSet();
+          for (final target in entry.value) {
+            if (own.contains(target)) continue;
+            if (!explainedByMark.contains(target)) {
+              unexplained.add('$version ${book.key} ${entry.key} -> $target: '
+                  'no verse the reading asset marks as merged maps to $target');
+            }
+          }
+        }
+      }
+      expect(unexplained, isEmpty, reason: unexplained.join('\n'));
+    }
   });
 
   test('every target exists in the originals asset', () {
