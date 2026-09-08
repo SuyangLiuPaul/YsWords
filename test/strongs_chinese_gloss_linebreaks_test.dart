@@ -15,6 +15,15 @@ import 'package:flutter_test/flutter_test.dart';
 /// search results and the distribution table, so every one of those was
 /// on screen. `tools/repair_zh_gloss_linebreaks.py` rebuilt them.
 ///
+/// 2026-09-08: **the generator was fixed too, and that is the half that
+/// makes this stick.** Repairing the assets alone left the truncating
+/// regex in `build_originals.py`, so the next rebuild would have put all
+/// 426 back — silently, since nothing compares a rebuild to what it
+/// replaced. It now imports `sense_one_gloss` from the repair script, so
+/// the rule lives in one place and both callers use it. The assertions
+/// below read the shipped assets and would fail either way; this note is
+/// here so a future reader knows the generator is no longer the old one.
+///
 /// The opposite error is the danger this file is mostly here to guard,
 /// because CBOL writes a wrap and a deliberate break with the same
 /// newline: joining across a real break invents a reading. Both halves

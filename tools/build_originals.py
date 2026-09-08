@@ -21,6 +21,12 @@ so re-runs are quick. Delete the cache to force a fresh fetch.
 
 from __future__ import annotations
 
+import os as _os
+import sys as _sys
+
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from repair_zh_gloss_linebreaks import sense_one_gloss  # noqa: E402
+
 import argparse
 import csv
 import io
@@ -223,8 +229,18 @@ def _parse_zh_strongs_body(raw: str) -> tuple[str, str]:
            ...
 
     For `def_zh` we keep everything from the first numbered line to the
-    end. For `gloss_zh` we take the first "1)" line — short but
-    accurate; the user can read the full body for nuance.
+    end. For `gloss_zh` we take sense 1 — REJOINED across the physical
+    lines CBOL wrapped it on, via `repair_zh_gloss_linebreaks
+    .sense_one_gloss`.
+
+    That import is the whole point of this docstring. This function
+    used to take the first "1)" LINE, which is not the same as the
+    first sense: CBOL hard-wraps, so 426 glosses in the shipped assets
+    ended mid-word (`藉着神所赐` with `解梦的恩赐` left on the floor).
+    Those were repaired in the ASSETS on 2026-09-08 — and a repaired
+    asset is worth nothing if the generator that produced it still
+    truncates, because the next rebuild silently puts all 426 back.
+    So the rule lives in one place and both callers use it.
     """
     if not raw:
         return ('', '')
@@ -238,13 +254,12 @@ def _parse_zh_strongs_body(raw: str) -> tuple[str, str]:
     if def_start is None:
         return ('', raw.strip())
     body = '\n'.join(lines[def_start:]).rstrip()
-    # CBOL is inconsistent about the space between `1)` and the text
-    # (e.g. G25 has `1)珍爱`, while G2316 has `1) 神或女神`). Accept
-    # either form. Also fall back to "2)..." when "1)" is missing.
-    m = re.search(r'^\s*1\)\s*(.+?)\s*$', body, re.MULTILINE)
-    if not m:
+    gloss = sense_one_gloss(body)
+    if not gloss:
+        # No "1)" at all — fall back to the first numbered sense there
+        # is, on its own line. Rare, and not worth a second joiner.
         m = re.search(r'^\s*\d+\)\s*(.+?)\s*$', body, re.MULTILINE)
-    gloss = m.group(1).strip() if m else ''
+        gloss = m.group(1).strip() if m else ''
     return (gloss, body.strip())
 
 
