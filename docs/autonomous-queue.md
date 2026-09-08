@@ -7649,6 +7649,13 @@ has never seen this repo.
       them — not the nine-commit, one-merge story the first draft told.
       `db5e6079` moves nothing at all.
 
+      **One bullet in the above corrected 2026-09-08** (landed as
+      `f3e71c40`, green CI run `34179887073`): the `0a225b91` line had
+      claimed 0 change to the raw (`--no-versification`) orphan figure,
+      contradicting its own next paragraph; re-measured in a throwaway
+      worktree against `0a225b91`'s real parent `2d23bda9`, the raw
+      figure does move, 25,134→25,133, same as versified. Fixed.
+
       **Pinned against a third drift** by
       `tools/audit_strongs_tagging.py --check` (added 2026-09-08, wired
       into CI). Deliberately a raw-total pin, not an invariant true by
