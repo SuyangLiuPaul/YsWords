@@ -7382,8 +7382,35 @@ class _FloatingHeader extends StatelessWidget {
                         // yielded all the way to an empty ellipsis at narrow
                         // widths — "书卷不见了". Now both are Flexible and the
                         // book keeps the larger share; the version ellipsizes.
-                        Flexible(
-                          flex: 3,
+                        // 2026-09-08: NOT `Flexible`, and that is the
+                        // fix. The two chips used to split this row 3:2
+                        // by flex, and flex divides by RATIO rather than
+                        // by need: `書 22` wants almost nothing and was
+                        // handed three fifths of the row, while the
+                        // version chip was capped at two fifths and
+                        // ellipsised to 「雅…」 with the book chip's
+                        // unused share sitting empty beside it. Flutter
+                        // does not hand a loose `Flexible`'s surplus to
+                        // its sibling, so the only fix is to stop
+                        // reserving it. Reported from an iPhone 12 and
+                        // an older Huawei P — both narrow enough for the
+                        // ratio to bite.
+                        //
+                        // A non-flex child takes its intrinsic width and
+                        // the version chip, still `Flexible`, takes
+                        // everything left. The cap replaces what the
+                        // flex share was really for (v1.3.73): a long
+                        // version label must never squeeze the book name
+                        // to a bare ellipsis — 「书卷不见了」. It is a
+                        // fraction of the SCREEN rather than of the row
+                        // because the row's own width is not knowable
+                        // here without wrapping this subtree in a
+                        // `LayoutBuilder`, and the two differ only by
+                        // the fixed icon clusters either side.
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.45),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(20),
                             onTap: onBookTap,
@@ -7435,7 +7462,9 @@ class _FloatingHeader extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Flexible(
-                          flex: 2,
+                          // No `flex:` — it is the only flexible child in
+                          // this row now, so it receives every pixel the
+                          // book chip did not take.
                           // 2026-06-22 (v1.3.102): language-grouped popup
                           // — third design pass. Earlier attempts:
                           //   • v1.3.98 modal bottom sheet — user found it
