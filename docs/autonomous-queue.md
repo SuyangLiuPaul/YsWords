@@ -2376,6 +2376,52 @@ reported. Work these top-down before P2.
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
+- [ ] **NEW 2026-09-09 — the `50dcc102` publisher-text adoption (8,566
+      verses, 2026-09-08) introduced witness-confirmed word-level drift;
+      `audit_dropped_characters.py` / `audit_inserted_characters.py` had
+      not been re-run since. This is the omitted/blanked-verse-text
+      carve-out — start here next, ahead of everything else in this
+      tier.** Re-ran both per this hour's audit-drift fallback (queue
+      was otherwise all blocked; see this hour's log). Baseline first:
+      both scripts against `50dcc102^`'s `assets/cuvs-yhwh.json` exit 0,
+      "NEW, unexamined: 0" — clean immediately before the swap. Against
+      HEAD they report **97** new dropped-character hits and **120**
+      new inserted-character hits (both exit 1). Classified all 217 raw
+      hits by comparing the sorted multiset of Han characters in
+      `ours[vid]["text"]` between `50dcc102^` and HEAD for each flagged
+      verse id — independently reproduced by a refuter agent, which got
+      an identical split: **44 unique verses** are a pure footnote-anchor
+      reorder, the `<note: ...>` tag moving from before the word it
+      annotates to after it (e.g. `007006026` 士師記6:26: old `在这磐石
+      <note: 原文是保障>上…`, new `在这磐石上<note: 原文是"保障">…`) — no
+      Han character actually added or removed, so this class is
+      cosmetic, not a text loss; not investigated further here. The
+      remaining **105 unique verses** have a genuinely different Han
+      multiset old vs new, and on these both independent witnesses side
+      with the *pre-adoption* reading (refuter's own stat: OLD matches
+      witness A exactly on 94 of 105; NEW matches on 0 of 105). Two
+      refuter-verified concrete examples — **do not reuse
+      `016001002`/`016003003`**, an earlier draft of this entry cited
+      them and the refuter caught that both are pre-existing PENDING
+      entries the adoption actually *fixed* (both witnesses lack 关于/他们
+      too; moving toward them was correct), not new drift:
+      `007015013` 士師記15:13 — 以坦 (the place name Etam) is present
+      pre-adoption (`将他从以坦磐带上去`) and **absent** post-adoption
+      (`将他从磐带上去`); `007015005` 士師記15:5 — 葡萄园 is **added**
+      post-adoption (`并葡萄园橄榄园尽都烧了`) where neither witness has
+      it. Filed, not fixed: repairing 105 verses correctly needs a
+      verse-by-verse read against the witnesses (never invent the
+      wording), which is a full iteration's work on its own, not
+      something to rush inside an audit-only hour with a concurrent
+      human session already editing this checkout. Reproduce with
+      `python3 tools/audit_dropped_characters.py` /
+      `audit_inserted_characters.py` from repo root against current
+      HEAD (raw lists were only saved to `/tmp`, which is ephemeral).
+      Before repairing, also check whether the printed 1919 or the
+      publisher's own convention agrees with the old or new note-anchor
+      placement — that question was not investigated here, only that it
+      is non-lossy either way.
+
 - [x] **FIXED 2026-09-08 — three `audit_*.py` docstrings quote stale
       headline numbers, fixed the prose, not the corpus.** Filed a
       routine 2026-09-08 audit re-run (`NEXT_TASK.md` fallback: no
