@@ -300,6 +300,19 @@ class SongPlayerService extends ChangeNotifier {
   /// Paired with the `/song-media/*` rules in `netlify.toml`.
   static const Map<String, String> _webProxyPrefixes = {
     'https://fydt.org/': '/song-media/fydt/',
+    // The SAME source under its other domain, deliberately sharing the
+    // `fydt` slot rather than being given a fourth one. On 2026-09-08
+    // the weekly sync came back with all 744 of that source's URLs on
+    // `fuyindiantai.org`: the site's own WordPress now reports it as
+    // home (every `link` and `guid` in `wp/v2/song`), so the domain it
+    // 301'd away from through 2025 is canonical again. Both names serve
+    // the identical file — `S03_006.mp3` answers `206` with
+    // `Content-Range: bytes 0-99/4726227` on each — and neither sends
+    // `Access-Control-Allow-Origin`, so both still need the proxy.
+    // netlify.toml keeps ONE `/song-media/fydt/*` rule, pointing at
+    // `fydt.org`: same paths, and it is the name whose DNS has not gone
+    // down here.
+    'https://fuyindiantai.org/': '/song-media/fydt/',
     'https://www.christiandiscipleschurch.org/': '/song-media/cdc/',
     'https://cahayapengharapan.org/': '/song-media/cahaya/',
     'https://cgdc.hk/': '/song-media/cgdc/',

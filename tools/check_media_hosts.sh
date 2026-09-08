@@ -21,6 +21,8 @@ set -uo pipefail
 
 HOSTS=(
   "fydt.org"                          # 578 songs
+  "fuyindiantai.org"                  # the same site, and since 2026-09-08
+                                      # the name the catalogue's URLs use
   "www.christiandiscipleschurch.org"  # 402 songs + the 124 Matthew sermons
   "cgdc.hk"                           # 63 songs
   "cahayapengharapan.org"             # 25 songs

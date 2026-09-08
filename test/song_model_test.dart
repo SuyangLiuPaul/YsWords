@@ -386,6 +386,11 @@ void main() {
       // AND in netlify.toml.
       const proxied = {
         'fydt.org',
+        // Not a fifth source: the same site as fydt.org, which since
+        // 2026-09-08 publishes its media under this name again. It
+        // shares the `/song-media/fydt/` rule, whose `:splat` paths are
+        // identical on both hostnames.
+        'fuyindiantai.org',
         'www.christiandiscipleschurch.org',
         'cahayapengharapan.org',
         'cgdc.hk',

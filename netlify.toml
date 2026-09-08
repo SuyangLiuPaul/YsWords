@@ -81,6 +81,11 @@
 # `SongPlayerService.resolvePlaybackUrl`, which rewrites URLs on
 # `kIsWeb` only. That keeps the media off our bandwidth everywhere it
 # can be, which matters: these are ~5 MB mp3s.
+# This one rule serves BOTH of that source's hostnames. Since
+# 2026-09-08 the catalogue's URLs come back on `fuyindiantai.org` (the
+# site's WordPress reports it as home again), but the upload paths are
+# byte-identical on `fydt.org`, so `resolvePlaybackUrl` folds both into
+# this prefix rather than adding a fifth source. Do not split them.
 [[redirects]]
   from = "/song-media/fydt/*"
   to = "https://fydt.org/:splat"
