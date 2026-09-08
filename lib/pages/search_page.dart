@@ -15,6 +15,7 @@ import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/services/recent_searches_service.dart';
 import 'package:yswords/utils/clipboard_helper.dart' show ClipboardHelper;
 import 'package:yswords/utils/format_searched_text.dart';
+import 'package:yswords/utils/fuzzy_result_label.dart';
 import 'package:yswords/utils/jump_to_reference.dart';
 import 'package:yswords/utils/reference_parser.dart';
 import 'package:yswords/utils/version_mapper.dart'
@@ -1215,7 +1216,19 @@ class _SearchPageState extends State<SearchPage> {
     // across keystrokes — collapsing each search from O(n × regex
     // chain) to O(n × String.contains).
     final searchKeys = mp.searchKeys;
-    final queryNorm = query.replaceAll(' ', '').toLowerCase();
+    // 2026-09-08: the query is normalised the same way the key was.
+    //
+    // It used to be `query.replaceAll(' ', '').toLowerCase()`, which
+    // normalised nothing, while `MainProvider.searchKeys` runs the
+    // VERSE through `sanitizeForSearch` — and that rewrites the divine
+    // name (耶和华 → 雅伟, all-caps LORD → Yahweh). One side of the
+    // comparison was rewritten and the other was not, so a reader who
+    // typed 耶和华 — the spelling in every Chinese Bible in print —
+    // matched 0 of the 6,106 verses about exactly what they asked for.
+    // `fuzzy_result_label.dart` states the measurement; this is one
+    // call, and it can only add rows, because a key that went through
+    // the sanitiser can never contain 耶和华 in the first place.
+    final segments = fuzzySearchSegments(query);
     final matches = <Verse>[];
     final localCounts = <String, int>{};
     final useFilter = filterBook != null;
@@ -1227,7 +1240,12 @@ class _SearchPageState extends State<SearchPage> {
       if (useFilter && verse.book != filterTarget) continue;
       if (useCurBook && verse.book != filterTarget) continue;
       scanCount++;
-      if (searchKeys[i].contains(queryNorm)) {
+      // Literal first, always. While the fuzzy switch is off this is
+      // the same single `String.contains` the scan always was; when it
+      // is on, the looser rungs are tried only after the literal one
+      // has missed, so turning it on can only ADD rows.
+      if (fuzzySearchMatches(searchKeys[i], segments,
+          scriptureText: verse.text)) {
         matches.add(verse);
         localCounts[verse.book] = (localCounts[verse.book] ?? 0) + 1;
       }
@@ -1889,9 +1907,21 @@ class _SearchPageState extends State<SearchPage> {
                             // v1.3.95: unified result layout — reference on
                             // top (coloured, like the Strong's / boolean
                             // lists), highlighted verse text below.
+                            // 2026-09-08: a row the fuzzy switch found
+                            // says which rung found it — 约翰福音 1:42 ·
+                            // 同名异写. Nothing is appended to a row that
+                            // holds what the reader typed, and nothing
+                            // at all while the switch is off; a view
+                            // that widened in silence would be the same
+                            // defect as one that narrowed in silence.
                             title: Text(
-                              '${verse.book} ${verse.chapter}:'
-                                  '${verse.verseLabel}',
+                              fuzzyLabelledReference(
+                                '${verse.book} ${verse.chapter}:'
+                                    '${verse.verseLabel}',
+                                query: _textEditingController.text,
+                                scriptureText: verse.text,
+                                locale: settings.locale,
+                              ),
                               style: TextStyle(
                                 fontSize: settings.fontSize,
                                 color: Theme.of(context).colorScheme.primary,
@@ -1904,7 +1934,15 @@ class _SearchPageState extends State<SearchPage> {
                                 final sanitized = sanitizeForSearch(verse.text);
                                 return formatSearchText(
                                   input: sanitized,
-                                  text: _textEditingController.text.trim(),
+                                  // The highlighter matches a literal
+                                  // substring against the SANITISED
+                                  // verse, so it has to be handed the
+                                  // sanitised query too — otherwise a
+                                  // search for 耶和华 returns rows whose
+                                  // text says 雅伟 with nothing in them
+                                  // marked.
+                                  text: fuzzySearchHighlightQuery(
+                                      _textEditingController.text.trim()),
                                   context: context,
                                 );
                               },

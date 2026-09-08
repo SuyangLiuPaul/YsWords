@@ -1018,6 +1018,10 @@ class _AppLicenseCard extends StatelessWidget {
             // 2026-06-16 (v1.3.88): native-only "Check for updates" against
             // the GitHub release feed (hides itself on web — PWA is current).
             UpdateCheckTile(locale: locale, scheme: scheme),
+            // 2026-09-08: and the switch that means nobody has to find
+            // that button. Same platform gate, so the pair appears and
+            // disappears together.
+            AutoUpdateCheckToggle(locale: locale),
           ],
         ),
       ),

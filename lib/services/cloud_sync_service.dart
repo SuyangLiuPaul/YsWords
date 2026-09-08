@@ -175,25 +175,33 @@ class CloudSyncService extends ChangeNotifier {
   DateTime? get lastSyncedAt => _lastSyncedAt;
 
   // The keys this service syncs. Names match the unscoped base
-  // names used in MainProvider / ReadingPlanService — the actual
-  // SharedPreferences key lives at `profile.<id>.<base>` and is
-  // built via ProfileService.scopedKey() at access time.
+  // names used in MainProvider — the actual SharedPreferences key
+  // lives at `profile.<id>.<base>` and is built via
+  // ProfileService.scopedKey() at access time.
+  //
+  // 2026-09-08: 'plan.activeId' (here), 'plan.startMs' (_intKeys),
+  // 'plan.useDate' (_boolKeys) and the dynamic `plan.completed.*`
+  // sweep are removed. The reading-plan feature was deleted in
+  // v1.2.69, so these named a document field with no writer and no
+  // reader. This is the same removal RealtimeDbSyncService made in
+  // v1.3.45; the Firestore path was missed because that change was
+  // scoped to the service whose key rules the dotted names broke.
+  //
+  // As there, this touches the transport list only — no migration
+  // clears a reader's stored `plan.*` entries, on this device or in
+  // an old Firestore document. An orphaned key costs nothing;
+  // deleting someone's saved progress on their behalf is a decision
+  // that belongs to the owner (same reasoning as the v1.3.19
+  // `ttsVoiceGender` note in app_settings.dart).
   static const _stringKeys = <String>[
     'highlights',
     'verseNotes',
-    'plan.activeId',
   ];
   static const _stringListKeys = <String>[
     'bookmarks',
   ];
-  static const _intKeys = <String>[
-    'plan.startMs',
-  ];
-  static const _boolKeys = <String>[
-    'plan.useDate',
-  ];
-  // plan.completed.* keys have a variable suffix per plan id, so
-  // we collect them dynamically when uploading.
+  static const _intKeys = <String>[];
+  static const _boolKeys = <String>[];
 
   /// Wire up auth + profile listeners. Call once at startup, after
   /// CloudAuthService.init().
@@ -361,13 +369,6 @@ class CloudSyncService extends ChangeNotifier {
     if (hl is String && hl.isNotEmpty && hl != '{}') return true;
     final notes = local['verseNotes'];
     if (notes is String && notes.isNotEmpty && notes != '{}') return true;
-    if (local.containsKey('plan.activeId')) return true;
-    for (final k in local.keys) {
-      if (k.startsWith('plan.completed.')) {
-        final v = local[k];
-        if (v is List && v.isNotEmpty) return true;
-      }
-    }
     return false;
   }
 
@@ -379,12 +380,6 @@ class CloudSyncService extends ChangeNotifier {
   ///                              on conflicting verse keys (the
   ///                              user just edited them seconds ago,
   ///                              cloud copy is stale)
-  ///   plan.activeId / startMs / useDate
-  ///                            — prefer LOCAL when set, else remote
-  ///                              (a fresh pick on this device should
-  ///                              not be reverted by a stale cloud
-  ///                              value)
-  ///   `plan.completed.<planId>`  — union of day indices
   Map<String, dynamic> _mergeSnapshots({
     required Map<String, dynamic> local,
     required Map<String, dynamic> remote,
@@ -411,35 +406,6 @@ class CloudSyncService extends ChangeNotifier {
       // means local entries overwrite remote entries on key collision.
       final merged = {...rm, ...lm};
       out[k] = jsonEncode(merged);
-    }
-
-    // plan scalars: prefer local when present (fresh pick wins),
-    // fall back to remote.
-    for (final k in const ['plan.activeId', 'plan.startMs', 'plan.useDate']) {
-      if (local.containsKey(k)) {
-        out[k] = local[k];
-      } else if (remote.containsKey(k)) {
-        out[k] = remote[k];
-      }
-    }
-
-    // plan.completed.<id>: union of day strings.
-    final completedKeys = <String>{};
-    for (final k in local.keys) {
-      if (k.startsWith('plan.completed.')) completedKeys.add(k);
-    }
-    for (final k in remote.keys) {
-      if (k.startsWith('plan.completed.')) completedKeys.add(k);
-    }
-    for (final k in completedKeys) {
-      final ll = ((local[k] as List?) ?? const [])
-          .map((e) => e.toString())
-          .toList();
-      final rl = ((remote[k] as List?) ?? const [])
-          .map((e) => e.toString())
-          .toList();
-      final union = <String>{...ll, ...rl}.toList();
-      if (union.isNotEmpty) out[k] = union;
     }
 
     return out;
@@ -489,16 +455,6 @@ class CloudSyncService extends ChangeNotifier {
       final scoped = ProfileService.instance.scopedKey(base);
       if (prefs.containsKey(scoped)) out[base] = prefs.getBool(scoped);
     }
-    // Walk all plan.completed.* keys for the active profile.
-    final scopedPrefix =
-        ProfileService.instance.scopedKey('plan.completed.');
-    for (final k in prefs.getKeys()) {
-      if (k.startsWith(scopedPrefix)) {
-        final base = k.substring(
-            'profile.${ProfileService.instance.currentId}.'.length);
-        out[base] = prefs.getStringList(k);
-      }
-    }
     return out;
   }
 
@@ -524,8 +480,8 @@ class CloudSyncService extends ChangeNotifier {
         await prefs.remove(scoped);
       }
     }
-    // Notify the rest of the app so MainProvider / ReadingPlanService
-    // listeners reload from the freshly-overwritten prefs.
+    // Notify the rest of the app so MainProvider listeners reload
+    // from the freshly-overwritten prefs.
     ProfileService.instance.notifyListeners();
   }
 
@@ -703,8 +659,8 @@ class CloudSyncService extends ChangeNotifier {
     return _status == CloudSyncStatus.synced;
   }
 
-  /// Public API — MainProvider and ReadingPlanService call this
-  /// after they persist a change locally. Debounced because a typical
+  /// Public API — MainProvider calls this after it persists a
+  /// change locally. Debounced because a typical
   /// user action (e.g. selecting a multi-verse highlight color)
   /// fires several writes in quick succession; one combined upload
   /// is enough.

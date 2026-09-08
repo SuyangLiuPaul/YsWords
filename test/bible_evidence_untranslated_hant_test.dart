@@ -132,6 +132,16 @@ void main() {
     // lib/models/strongs.dart describing how the LEXICON asset was built.
     // So a Traditional reader is shown these strings exactly as stored, which
     // is why the fix had to be made in the asset.
+    //
+    // 2026-09-08: `lib/constants/search_synonyms.dart` joined the list, and
+    // this guard fired exactly as designed — so it was re-read before acting,
+    // and the item does NOT change shape. That file mentions opencc only to
+    // record that it was rejected as a RUNTIME dependency; the converter it
+    // ships, `simplifiedToTraditional`, is derived from this repo's own two
+    // 和合本 assets and is reachable only from a search QUERY. Nothing renders
+    // a stored string through it, so a Traditional reader still sees these
+    // evidence strings exactly as the asset holds them — which is the claim
+    // this test exists to protect, and it still holds.
     final hits = <String>[];
     for (final f in Directory('lib').listSync(recursive: true)) {
       if (f is! File || !f.path.endsWith('.dart')) continue;
@@ -140,7 +150,8 @@ void main() {
         hits.add(f.path);
       }
     }
-    expect(hits, ['lib/models/strongs.dart'],
+    expect(hits,
+        ['lib/constants/search_synonyms.dart', 'lib/models/strongs.dart'],
         reason: 'if a render-time converter is ever added, this item changes '
             'shape entirely — re-read it before acting');
   });

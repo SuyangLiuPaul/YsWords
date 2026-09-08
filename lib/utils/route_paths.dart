@@ -24,6 +24,11 @@ const Set<String> kRegisteredRoutePaths = {
   '/videos',
   '/songs',
   '/stats',
+  // 2026-09-08. Separate from '/stats' on purpose: that path is Bible
+  // Tools (original-language vocabulary), this one is the reader's own
+  // reading record. Sharing a prefix would invite the same confusion in
+  // the URL that keeping them on one page would have caused in the UI.
+  '/reading-stats',
   '/songs/downloads',
   '/songs/playlists',
   '/profiles',
@@ -63,6 +68,12 @@ const Set<String> kRegisteredRoutePaths = {
   // entirely with a raw `Navigator.push(MaterialPageRoute(...))`.
   '/songs/:songId/score',
   '/songs/:songId/video',
+  // 投影, the room-facing projection view. No params: it reads the
+  // reference the reader is already on rather than carrying one, so a
+  // cold load lands on whatever the restored reading position is —
+  // which is the correct behaviour for a bookmark an operator opens at
+  // the start of a service. See `kProjectionUrlPath`.
+  '/project',
 };
 
 /// True if [path] (a concrete path such as `/sermons/004`, or a plain

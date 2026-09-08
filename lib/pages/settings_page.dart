@@ -16,6 +16,7 @@ import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/build_flags.dart';
+import 'package:yswords/constants/fuzzy_search_strings.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForCopy;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
@@ -1069,6 +1070,40 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                       onChanged: (val) =>
                           settings.setAutoExpandFirstRef(val),
                     ),
+                    const Divider(height: 1),
+                    // 2026-09-08: the only search-behaviour switch this
+                    // page has, so it lives at the foot of the Reading
+                    // card rather than under a one-row section header of
+                    // its own. Its strings are in
+                    // `fuzzy_search_strings.dart` and not `uiStrings`;
+                    // see that file's header for why.
+                    SwitchListTile(
+                      title: Text(
+                        fuzzySearchStrings['fuzzySearchSetting']
+                                ?[settings.locale] ??
+                            'Broaden a search that finds nothing',
+                        style: TextStyle(
+                          fontSize: settings.fontSize + 2,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: settings.fontFamily,
+                          fontFamilyFallback: kCjkFontFallback,
+                        ),
+                      ),
+                      subtitle: Text(
+                        fuzzySearchStrings['fuzzySearchSettingSubtitle']
+                                ?[settings.locale] ??
+                            'Lets 磯法 reach 矶法, 上帝 reach 神 and '
+                                '"loved" reach "love". Rows found this '
+                                'way are labelled.',
+                        style: TextStyle(
+                          fontSize: settings.fontSize,
+                          fontFamily: settings.fontFamily,
+                          fontFamilyFallback: kCjkFontFallback,
+                        ),
+                      ),
+                      value: settings.fuzzySearch,
+                      onChanged: (val) => settings.setFuzzySearch(val),
+                    ),
                     // 2026-05-07 (v17): "Check for Updates" tile
                     // removed. It re-ran FetchVerses against the
                     // already-bundled assets and unconditionally
@@ -1144,8 +1179,6 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
               // sync / sign-in controls should be the first thing they
               // see — not buried halfway down. Display/Reading/App
               // still come right after.
-              // 2026-05-21 (v1.2.69): "Reading plans" section removed
-              // along with the rest of the feature.
               SizedBox(height: 16 * s),
               KeyedSubtree(
                 key: _dashboardKey,
@@ -1250,10 +1283,15 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
   // surfaced on the About page footer instead.
 }
 
-/// Settings card for picking a reading plan, choosing the start
-/// date, and resetting completion progress. Lives at the bottom of
-/// the settings list because it's an opt-in feature and most users
-/// will never touch it.
+/// Sign-in, sync status and local-profile controls — the top card of
+/// the Settings list, because a profile chip on the dashboard
+/// navigates straight here.
+///
+/// The doc comment above this class described a reading-plan picker
+/// until 2026-09-08. The plan card was deleted in v1.2.69 and its
+/// docstring was left sitting on whichever class ended up next in the
+/// file, describing a start-date field and a progress reset that this
+/// widget has never had.
 class _AccountSection extends StatefulWidget {
   final AppSettings settings;
   final double s;
@@ -1798,8 +1836,8 @@ class _AccountSectionState extends State<_AccountSection> {
 /// Compact uppercase section divider that sits above a group of
 /// related cards in the settings list. Round 34 added these to
 /// give the long settings list visual structure (Display / Reading
-/// / App / Account / Reading plans) without forcing a refactor of
-/// the existing card layout.
+/// / App / Account) without forcing a refactor of the existing card
+/// layout.
 class _SectionHeader extends StatelessWidget {
   final String label;
   /// 2026-08-02 (round 60): icon-prefixed section headers, mirroring
@@ -2626,7 +2664,8 @@ class _NotificationsCardState extends State<_NotificationsCard> {
             ? (uiStrings['notificationsBlocked']?[locale] ??
                 'Permission blocked at the browser level. Re-enable in browser settings, then toggle on here.')
             : (uiStrings['notificationsHint']?[locale] ??
-                'Get gentle daily reminders for verse, reading, and news.');
+                'Gentle daily reminders for the daily verse, Bible '
+                    'evidence and the sermon of the day.');
 
     return Card(
       child: Padding(
@@ -2741,6 +2780,49 @@ class _NotificationsCardState extends State<_NotificationsCard> {
                       ),
                     ),
                   ),
+                ),
+              ),
+            // 2026-09-08: say out loud what the web can and cannot do.
+            //
+            // On the web these reminders are delivered by
+            // NotificationCatchup when the reader opens the app, not at
+            // the minute they chose — a page cannot wake itself, and
+            // real background delivery needs a push backend this app
+            // does not have. Before this line existed the times below
+            // read as a promise of a 07:00 banner that never came. The
+            // scheduling UI stays live because catch-up makes it mean
+            // something; the copy stops it meaning more than it does.
+            //
+            // Shown BEFORE the reader opts in, not only after: it is
+            // information that should inform the decision, and a reader
+            // who reads it and installs the app instead has been served
+            // better than one who finds out afterwards.
+            if (kIsWeb && supported && perm != NotificationPermission.denied)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 16, color: scheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        uiStrings['notificationsWebCatchUp']?[locale] ??
+                            'In the browser these arrive the next time you '
+                                'open the app, not at the minute you set — a '
+                                'web page cannot wake itself. Install the app '
+                                'for reminders that arrive on time.',
+                        style: TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontFamilyFallback: kCjkFontFallback,
+                          fontSize:
+                              (settings.fontSize - 3).clamp(11.0, 14.0),
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             // 2026-05-24 (v1.3.0): per-category notification rows.

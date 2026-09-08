@@ -33,9 +33,12 @@ import 'package:yswords/pages/settings_page.dart';
 import 'package:yswords/pages/songs_page.dart';
 import 'package:yswords/pages/videos_page.dart';
 import 'package:yswords/pages/misconceptions_page.dart';
+import 'package:yswords/pages/reading_stats_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/sermon_service.dart';
+import 'package:yswords/services/link_opener.dart';
+import 'package:yswords/services/update_check_scheduler.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/realtime_db_sync_service.dart';
@@ -116,6 +119,49 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadDailyEvidence();
     _loadResumeSermon();
     _maybeShowOnboarding();
+    // 2026-09-08: the daily update check. After the first frame, never
+    // before it — this is a network call about a version number and the
+    // reader opened the app to read scripture. Nothing on screen waits
+    // for it, and every path through `runDailyUpdateCheck` that is not
+    // "there is a newer build" returns null and says nothing at all
+    // (including the whole web/PWA channel, where it never runs).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _maybeOfferUpdate();
+    });
+  }
+
+  /// Offer a newer release, once a day, if there is one.
+  ///
+  /// A SnackBar rather than a dialog, and this is the part that must
+  /// not regress: the dashboard already has one thing that can take
+  /// the screen on launch (`_maybeShowOnboarding`), and a second modal
+  /// racing it would land on top of the tour or, worse, on top of a
+  /// song sheet a shared link just opened. A bar states the fact,
+  /// carries the one action, and dismisses itself — it never takes
+  /// focus from whatever the reader came here to do. Six seconds
+  /// because it has a button, and the default four is not long enough
+  /// to read a sentence and decide.
+  Future<void> _maybeOfferUpdate() async {
+    final settings = context.read<AppSettings>();
+    final info = await runDailyUpdateCheck(settings);
+    if (!mounted || info == null) return;
+    final locale = settings.locale;
+    final label = (uiStrings['updateAvailableBar']?[locale] ??
+            'Version v{new} is available')
+        .replaceAll('{new}', info.latestVersion);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(label),
+        duration: const Duration(seconds: 6),
+        action: LinkOpener.isAvailable
+            ? SnackBarAction(
+                label: uiStrings['updateDownload']?[locale] ?? 'Download',
+                onPressed: () => LinkOpener.open(info.downloadUrl),
+              )
+            : null,
+      ),
+    );
   }
 
   Future<void> _loadDailyEvidence() async {
@@ -871,6 +917,16 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: Icons.insights_outlined,
                   label: uiStrings['statistics']?[locale] ?? 'Statistics',
                   onTap: () => pushPage(const StatsPage(), routeName: '/stats'),
+                ),
+                // Sits beside Bible Tools rather than inside it: same
+                // shelf, different subject — that page counts what is in
+                // the Bible, this one counts what the reader has been in.
+                _LinkTile(
+                  icon: Icons.auto_stories_outlined,
+                  label: uiStrings['readingStats']?[locale] ??
+                      'Reading statistics',
+                  onTap: () => pushPage(const ReadingStatsPage(),
+                      routeName: '/reading-stats'),
                 ),
                 if (settings.isDashboardSectionVisible(
                     DashboardSection.todayEvidence))

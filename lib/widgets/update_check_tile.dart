@@ -6,10 +6,18 @@
 // opens the right release asset for this platform via [LinkOpener]. On web
 // it renders nothing (the PWA is always current). Manages its own loading
 // state; every context use after an await is `mounted`-guarded.
+//
+// 2026-09-08: this file now holds both halves of the About page's
+// update controls — the manual button below and [AutoUpdateCheckToggle]
+// at the bottom, which switches the once-a-day check on. They live
+// together because they share one platform gate, and a reader must
+// never see one without the other.
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/update_service.dart';
 
@@ -122,6 +130,46 @@ class _UpdateCheckTileState extends State<UpdateCheckTile> {
             : _s('checkForUpdates', 'Check for updates'),
       ),
       onPressed: _checking ? null : _check,
+    );
+  }
+}
+
+/// The automatic half of the same question, sitting directly under
+/// [UpdateCheckTile].
+///
+/// Beside the manual button rather than in the Settings list on
+/// purpose: this is the switch that decides whether the reader ever
+/// has to press that button, and a control is easiest to understand
+/// next to the thing it makes unnecessary. It shares the button's
+/// platform gate — [UpdateService.isSupported] — so on the web both
+/// vanish together and neither implies the other exists.
+class AutoUpdateCheckToggle extends StatelessWidget {
+  final String locale;
+  const AutoUpdateCheckToggle({super.key, required this.locale});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!UpdateService.isSupported) return const SizedBox.shrink();
+    final settings = context.watch<AppSettings>();
+    final scheme = Theme.of(context).colorScheme;
+    return SwitchListTile.adaptive(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      value: settings.autoCheckUpdates,
+      onChanged: settings.setAutoCheckUpdates,
+      title: Text(
+        uiStrings['autoCheckUpdates']?[locale] ?? 'Check for updates daily',
+        style: const TextStyle(fontSize: 13),
+      ),
+      subtitle: Text(
+        uiStrings['autoCheckUpdatesHint']?[locale] ??
+            'Asks GitHub at most once a day whether a newer release '
+                'exists. You only hear about it when there is one.',
+        style: TextStyle(
+          fontSize: 11,
+          color: scheme.onSurface.withValues(alpha: 0.7),
+        ),
+      ),
     );
   }
 }

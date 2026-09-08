@@ -10,6 +10,7 @@ import 'package:yswords/models/book.dart';
 import 'package:yswords/services/error_reporter.dart';
 import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
 import 'package:yswords/services/fetch_verses.dart' show FetchVerses;
+import 'package:yswords/services/reading_history_service.dart';
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -1217,6 +1218,19 @@ class MainProvider extends ChangeNotifier {
     currentBook = book;
     currentChapter = chapter;
     if (isPrimary) saveCurrentState();
+    // 2026-09-08: feed the reading log. This is the one place that knows
+    // a chapter became current, so it is the only honest place to record
+    // from — and it is deliberately the noisy one, because the service's
+    // dwell gate is what separates "read" from "passed through on the
+    // way somewhere else". Primary pane only: the split-pane secondary
+    // is a comparison view, not a second reader.
+    if (isPrimary) {
+      unawaited(ReadingHistoryService.instance.noteChapterOpen(
+        book: book,
+        chapter: chapter,
+        version: currentVersion,
+      ));
+    }
     notifyListeners();
   }
 

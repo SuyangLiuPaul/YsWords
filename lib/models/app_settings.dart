@@ -8,12 +8,15 @@ import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/models/notification_category.dart';
 import 'package:yswords/services/app_icon_service.dart';
+import 'package:yswords/services/notification_catchup.dart';
 import 'package:yswords/services/notification_scheduler.dart'
     as scheduler;
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/realtime_db_sync_service.dart';
 import 'package:yswords/utils/font_catalog.dart';
+import 'package:yswords/utils/fuzzy_search.dart'
+    show setFuzzySearchEnabled;
 import 'package:yswords/utils/log_diag.dart';
 
 const _kFontFamily = 'fontFamily';
@@ -58,6 +61,7 @@ String normalizeBooksViewMode(String? raw) =>
     kBooksViewModes.contains(raw) ? raw! : 'sections';
 
 const _kBoldVerseText = 'boldVerseText';
+const _kFuzzySearch = 'fuzzySearch';
 const _kShowStrongsInOriginals = 'showStrongsInOriginals';
 const _kAutoExpandFirstRef = 'autoExpandFirstRef';
 const _kShowBibleEvidence = 'showBibleEvidence';
@@ -68,6 +72,21 @@ const _kNotificationCategories = 'notificationCategories';
 const _kShowSectionTitles = 'showSectionTitles';
 const _kShowBookIntro = 'showBookIntro';
 const _kPickVerseAfterChapter = 'pickVerseAfterChapter';
+// 2026-09-08: the once-a-day GitHub release check (see
+// `lib/services/update_check_scheduler.dart`). Native builds only —
+// the web/PWA has its own live-update path in WebUpdateChecker and
+// this never runs there.
+//
+// A setting rather than always-on, because a background network call
+// nobody asked for is a thing a reader may decline. Default true: it
+// is one request a day, and a sideloaded APK with no store behind it
+// cannot otherwise tell anyone it is stale.
+const _kAutoCheckUpdates = 'autoCheckUpdates';
+// When that check last ran, as millisecondsSinceEpoch.
+//
+// PER-DEVICE, and deliberately NOT profile-scoped and NOT in the
+// `userPrefs` sync blob — see the note on [lastUpdateCheck].
+const _kLastUpdateCheck = 'lastUpdateCheckMs';
 // User-supplied Gemini API key (BYOK). When non-empty, AI calls are
 // routed through the user's own AI Studio key — gives them their own
 // quota (15 RPM / 1500 RPD on the free tier) and keeps the app
@@ -159,6 +178,14 @@ class AppSettings extends ChangeNotifier {
   String _booksViewMode = 'sections';
   /// Render verse text with FontWeight.w700 instead of normal weight.
   bool _boldVerseText = false;
+  /// Let a search fall back to a looser reading of the query when the
+  /// exact one runs out — the other Chinese script, another spelling of
+  /// the same name, an English word's other forms. Off by default; see
+  /// `lib/utils/fuzzy_search.dart` for why that is not timidity. The
+  /// live switch the search actually reads is the global in that file;
+  /// this field is only the persisted half, and every write to it also
+  /// writes there.
+  bool _fuzzySearch = false;
   /// Show the Strong's # badge inside each word chip in the originals
   /// (exegesis) sheet — handy for power users, distracting for some.
   bool _showStrongsInOriginals = true;
@@ -200,6 +227,9 @@ class AppSettings extends ChangeNotifier {
   /// Settings → Reading.
   bool _showBookIntro = true;
 
+  bool _autoCheckUpdates = true;
+  int _lastUpdateCheckMs = 0;
+
   /// When ON, picking a chapter from the book/chapter sidebar shows
   /// a second-step verse-number grid so the user can land directly
   /// on a specific verse instead of the chapter header. Default
@@ -214,8 +244,10 @@ class AppSettings extends ChangeNotifier {
   // stored as a list of [DashboardSection.name] strings; each
   // section also has its own visibility bool. We seed both from
   // [defaultDashboardOrder] / [defaultVisibility] and migrate the
-  // legacy `showBibleEvidence` / `showReadingPlan` flags into the new
-  // map on first load (see [loadSettings]).
+  // legacy `showBibleEvidence` flag into the new map on first load
+  // (see [loadSettings]). `showReadingPlan` was named here too until
+  // 2026-09-08; its section left the enum in v1.2.69, so there has
+  // been nothing for that flag to migrate onto.
 
   /// Current render order of dashboard sections.
   List<DashboardSection> _dashboardSectionOrder =
@@ -245,6 +277,7 @@ class AppSettings extends ChangeNotifier {
   CardMaterial get cardMaterial => _cardMaterial;
   String get booksViewMode => _booksViewMode;
   bool get boldVerseText => _boldVerseText;
+  bool get fuzzySearch => _fuzzySearch;
   bool get showStrongsInOriginals => _showStrongsInOriginals;
   bool get autoExpandFirstRef => _autoExpandFirstRef;
   bool get showBibleEvidence => _showBibleEvidence;
@@ -262,6 +295,58 @@ class AppSettings extends ChangeNotifier {
   bool get showSectionTitles => _showSectionTitles;
   bool get showBookIntro => _showBookIntro;
   bool get pickVerseAfterChapter => _pickVerseAfterChapter;
+
+  /// Ask GitHub once a day whether a newer release exists. See
+  /// [_kAutoCheckUpdates]; the platform gate is separate and lives in
+  /// `UpdateService.isSupported`.
+  bool get autoCheckUpdates => _autoCheckUpdates;
+
+  /// When the daily check last ran on THIS install. Epoch 0 = never.
+  ///
+  /// Per-device on purpose, and the reason is worth stating because
+  /// every other preference on this class goes the other way. The two
+  /// alternatives were both wrong:
+  ///
+  ///   • **Per-profile** (a `ProfileService.scopedKey`) would restart
+  ///     the daily cadence every time someone on a shared tablet
+  ///     switched profiles, so a household of four would ask GitHub
+  ///     four times a day about one binary. Which reader is signed in
+  ///     has nothing to do with whether the installed app is stale.
+  ///   • **Synced** (an entry in [_userPrefsSnapshot]) would let the
+  ///     phone's check silence the desktop's for the day — and they do
+  ///     not even want the same answer, because `UpdateService`
+  ///     resolves a different release asset per platform. The laptop
+  ///     would be told nothing while a Windows build sat waiting.
+  ///
+  /// The thing being checked is one installed binary on one machine,
+  /// so the record of having checked it belongs to that machine.
+  DateTime get lastUpdateCheck =>
+      DateTime.fromMillisecondsSinceEpoch(_lastUpdateCheckMs);
+
+  /// True when the switch is on AND a day has passed. The caller still
+  /// has to decide whether the PLATFORM supports updating at all —
+  /// that is `UpdateService.isSupported`, and it is not a setting.
+  bool updateCheckDueAt(DateTime now) =>
+      _autoCheckUpdates &&
+      now.difference(lastUpdateCheck) >= const Duration(days: 1);
+
+  Future<void> setAutoCheckUpdates(bool enabled) async {
+    if (_autoCheckUpdates == enabled) return;
+    _autoCheckUpdates = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kAutoCheckUpdates, enabled);
+  }
+
+  /// Records that the check ran. Stamped whatever the ANSWER was,
+  /// including a failure — a device that is offline every morning
+  /// would otherwise retry on every launch all day, which is the
+  /// opposite of what "once a day" is for.
+  Future<void> markUpdateChecked(DateTime when) async {
+    _lastUpdateCheckMs = when.millisecondsSinceEpoch;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kLastUpdateCheck, _lastUpdateCheckMs);
+  }
 
   /// User-supplied Gemini API key. Empty string when the user is on
   /// the developer-shared key. Caller services (AiWordService /
@@ -575,6 +660,21 @@ class AppSettings extends ChangeNotifier {
     await prefs.setBool(_kBoldVerseText, enabled);
   }
 
+  /// The push into `fuzzy_search.dart` happens BEFORE `notifyListeners`
+  /// on purpose. The search page rebuilds on the notification and
+  /// re-runs the live query; if it read the global first it would run
+  /// the search under the value that is about to be replaced, and the
+  /// user would see the old results and have to type a character to get
+  /// the new ones. `_load` does the same, in the same order.
+  Future<void> setFuzzySearch(bool enabled) async {
+    if (_fuzzySearch == enabled) return;
+    _fuzzySearch = enabled;
+    setFuzzySearchEnabled(enabled);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kFuzzySearch, enabled);
+  }
+
   Future<void> setShowStrongsInOriginals(bool enabled) async {
     if (_showStrongsInOriginals == enabled) return;
     _showStrongsInOriginals = enabled;
@@ -609,6 +709,7 @@ class AppSettings extends ChangeNotifier {
     // category notifications when the master toggle flips.
     // Lazy-import to avoid pulling timezone/native code into web.
     unawaited(_rescheduleAllSafely());
+    unawaited(_armCatchupSafely());
   }
 
   /// Replace per-category prefs and persist. Callers from the
@@ -630,6 +731,7 @@ class AppSettings extends ChangeNotifier {
     }
     await prefs.setString(_kNotificationCategories, jsonEncode(map));
     unawaited(_rescheduleAllSafely());
+    unawaited(_armCatchupSafely());
   }
 
   /// Wrapper that pulls the scheduler off the conditional-import
@@ -640,6 +742,23 @@ class AppSettings extends ChangeNotifier {
     } catch (_) {
       // Schedule failures shouldn't kill the settings write path.
       // notification_scheduler logs internally with debugPrint.
+    }
+  }
+
+  /// 2026-09-08: stamp the web catch-up ledger so that switching a
+  /// reminder ON does not immediately deliver the times that have
+  /// already passed today.
+  ///
+  /// Called ONLY from the two notification-preference writers, never
+  /// from `_rescheduleAllSafely` — that helper also runs on a locale
+  /// change, and arming there would swallow a reader's 07:00 verse
+  /// simply because they switched to Traditional Chinese at 08:00.
+  /// No-op off the web.
+  Future<void> _armCatchupSafely() async {
+    try {
+      await NotificationCatchup.instance.armToday(this);
+    } catch (_) {
+      // The ledger is a convenience, not the setting itself.
     }
   }
 
@@ -705,8 +824,8 @@ class AppSettings extends ChangeNotifier {
   }
 
   /// Toggle visibility of one dashboard section. Mirrors the legacy
-  /// `setShowBibleEvidence` / `setShowReadingPlan` / etc. for any new
-  /// section; the legacy setters remain available and stay in sync.
+  /// `setShowBibleEvidence` for any new section; that setter remains
+  /// available and stays in sync.
   ///
   /// No-op for [DashboardSection.readBible] — it's the app's primary
   /// entry point and stays mandatory regardless of what the caller
@@ -777,6 +896,8 @@ class AppSettings extends ChangeNotifier {
     _cardMaterial = CardMaterial.classic;
     _booksViewMode = 'sections';
     _boldVerseText = false;
+    _fuzzySearch = false;
+    setFuzzySearchEnabled(false);
     _showStrongsInOriginals = true;
     _autoExpandFirstRef = false;
     _showBibleEvidence = true;
@@ -784,6 +905,8 @@ class AppSettings extends ChangeNotifier {
     _showSectionTitles = true;
     _showBookIntro = true;
     _pickVerseAfterChapter = false;
+    _autoCheckUpdates = true;
+    _lastUpdateCheckMs = 0;
     _dashboardSectionOrder = List.of(defaultDashboardOrder);
     _dashboardVisibility
       ..clear()
@@ -810,6 +933,7 @@ class AppSettings extends ChangeNotifier {
       'offlineMode',
       _kBooksViewMode,
       _kBoldVerseText,
+      _kFuzzySearch,
       _kShowStrongsInOriginals,
       _kAutoExpandFirstRef,
       _kShowBibleEvidence,
@@ -817,6 +941,10 @@ class AppSettings extends ChangeNotifier {
       _kShowSectionTitles,
       _kShowBookIntro,
       _kPickVerseAfterChapter,
+      // Both, together: a reset that cleared the switch but left the
+      // timestamp would silently skip the first day back on.
+      _kAutoCheckUpdates,
+      _kLastUpdateCheck,
       _kDashboardSectionOrder,
       for (final s in DashboardSection.values) _kDashboardVisible(s),
       // Re-show the onboarding tour after a reset so the user can
@@ -952,6 +1080,8 @@ class AppSettings extends ChangeNotifier {
     // choice change under them.
     _booksViewMode = normalizeBooksViewMode(prefs.getString(_kBooksViewMode));
     _boldVerseText = prefs.getBool(_kBoldVerseText) ?? false;
+    _fuzzySearch = prefs.getBool(_kFuzzySearch) ?? false;
+    setFuzzySearchEnabled(_fuzzySearch);
     _showStrongsInOriginals =
         prefs.getBool(_kShowStrongsInOriginals) ?? true;
     _autoExpandFirstRef = prefs.getBool(_kAutoExpandFirstRef) ?? false;
@@ -982,6 +1112,9 @@ class AppSettings extends ChangeNotifier {
     _showBookIntro = prefs.getBool(_kShowBookIntro) ?? true;
     _pickVerseAfterChapter =
         prefs.getBool(_kPickVerseAfterChapter) ?? false;
+    // Unscoped reads: this pair is per-device (see [lastUpdateCheck]).
+    _autoCheckUpdates = prefs.getBool(_kAutoCheckUpdates) ?? true;
+    _lastUpdateCheckMs = prefs.getInt(_kLastUpdateCheck) ?? 0;
     _geminiApiKey = prefs.getString(_kGeminiApiKey) ?? '';
     // 2026-05-10 (v1.2.26): restore aiModel from prefs. Allowlist
     // -clamp so a corrupt entry doesn't drive the server to an
@@ -1005,9 +1138,8 @@ class AppSettings extends ChangeNotifier {
 
     // Dashboard layout (Round 55): load order list + per-section
     // visibility. Missing entries fall back to defaults; the legacy
-    // showBibleEvidence / showReadingPlan flags win over the new keys
-    // when both are set so a user upgrading from Round 54 keeps their
-    // existing toggles.
+    // showBibleEvidence flag wins over the new key when both are set
+    // so a user upgrading from Round 54 keeps their existing toggle.
     final storedOrder = prefs.getStringList(_kDashboardSectionOrder) ?? const [];
     _dashboardSectionOrder = normalizeDashboardOrder(storedOrder);
     _dashboardVisibility.clear();
@@ -1122,6 +1254,13 @@ class AppSettings extends ChangeNotifier {
   /// can never drift (a drift would defeat the guard and re-open the
   /// flicker loop). `geminiApiKey` is deliberately excluded — separate
   /// sync path.
+  ///
+  /// `autoCheckUpdates` / `lastUpdateCheck` are excluded too, and for
+  /// a different reason: they describe one installed binary on one
+  /// machine, not a preference about scripture. Syncing the timestamp
+  /// would let a phone's check silence a desktop's for the day even
+  /// though the two need different release assets. See
+  /// [lastUpdateCheck].
   Map<String, dynamic> _userPrefsSnapshot() => {
         'fontFamily': _fontSelection,
         'fontSize': _fontSize,

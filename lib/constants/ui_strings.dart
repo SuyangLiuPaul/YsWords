@@ -1578,103 +1578,13 @@ const uiStrings = {
     'zh-Hant': '最早建立',
     'en': 'Oldest first',
   },
-  // ── Reading plans (Round 26) ─────────────────────────────────────
-  'tabPlan': {'zh-Hans': '读经计划', 'zh-Hant': '讀經計劃', 'en': 'Plan'},
-  'readingPlans': {
-    'zh-Hans': '读经计划',
-    'zh-Hant': '讀經計劃',
-    'en': 'Reading Plans',
-  },
-  'todayReading': {
-    'zh-Hans': '今日读经',
-    'zh-Hant': '今日讀經',
-    'en': 'Today\'s Reading',
-  },
-  'planDayLabel': {
-    'zh-Hans': '第 {day} 天 / 共 {total} 天',
-    'zh-Hant': '第 {day} 天 / 共 {total} 天',
-    'en': 'Day {day} of {total}',
-  },
-  'planChooseActive': {
-    'zh-Hans': '选择读经计划',
-    'zh-Hant': '選擇讀經計劃',
-    'en': 'Choose Reading Plan',
-  },
-  'planNoActive': {
-    'zh-Hans': '尚未选择读经计划。',
-    'zh-Hant': '尚未選擇讀經計劃。',
-    'en': 'No reading plan selected.',
-  },
-  'planActive': {
-    'zh-Hans': '当前计划',
-    'zh-Hant': '當前計劃',
-    'en': 'Active plan',
-  },
-  'planStartDate': {
-    'zh-Hans': '起始日期',
-    'zh-Hant': '起始日期',
-    'en': 'Start date',
-  },
-  'planUseCalendarDate': {
-    'zh-Hans': '按日历日期推算',
-    'zh-Hant': '按日曆日期推算',
-    'en': 'Use calendar date',
-  },
-  'planUseCalendarDateSub': {
-    'zh-Hans': '关闭则按一年中的第几天计算（每年 1 月 1 日重置）。',
-    'zh-Hant': '關閉則按一年中的第幾天計算（每年 1 月 1 日重置）。',
-    'en': 'When off, day-of-plan follows the day of year (resets every Jan 1).',
-  },
-  'planResetProgress': {
-    'zh-Hans': '重置进度',
-    'zh-Hant': '重置進度',
-    'en': 'Reset Progress',
-  },
-  'planResetProgressConfirm': {
-    'zh-Hans': '确定要清除所有已完成标记吗？',
-    'zh-Hant': '確定要清除所有已完成標記嗎？',
-    'en': 'Clear all completion marks for this plan?',
-  },
-  'planMarkDone': {
-    'zh-Hans': '标记为已读',
-    'zh-Hant': '標記為已讀',
-    'en': 'Mark as done',
-  },
-  'planMarkUndone': {
-    'zh-Hans': '取消已读',
-    'zh-Hant': '取消已讀',
-    'en': 'Mark as unread',
-  },
-  'planJumpToToday': {
-    'zh-Hans': '跳到今天',
-    'zh-Hant': '跳到今天',
-    'en': 'Jump to today',
-  },
-  'planProgress': {
-    'zh-Hans': '进度: {done} / {total} ({percent}%)',
-    'zh-Hant': '進度: {done} / {total} ({percent}%)',
-    'en': 'Progress: {done} / {total} ({percent}%)',
-  },
-  'planNone': {
-    'zh-Hans': '不使用读经计划',
-    'zh-Hant': '不使用讀經計劃',
-    'en': 'No plan',
-  },
-  'planLibraryEmpty': {
-    'zh-Hans': '尚未选择读经计划。前往「设置」中挑选一份。',
-    'zh-Hant': '尚未選擇讀經計劃。前往「設定」中挑選一份。',
-    'en': 'No reading plan selected. Pick one from Settings.',
-  },
-  'planHomeHint': {
-    'zh-Hans': '选择一份读经计划，每日内容会显示在此。',
-    'zh-Hant': '選擇一份讀經計劃，每日內容會顯示在此。',
-    'en': 'Choose a reading plan to see today\'s passages here.',
-  },
-  'planHomeHintSub': {
-    'zh-Hans': '点击进入设置。',
-    'zh-Hant': '點擊進入設定。',
-    'en': 'Tap to open Settings.',
-  },
+  // 2026-09-08: the Round 26 reading-plan copy (tabPlan, readingPlans,
+  // todayReading, planDayLabel and the thirteen plan* strings after
+  // them) is deleted here. The feature went in v1.2.69; the strings
+  // outlived it by four months with no caller, which made the app
+  // read as if a reading plan were one Settings tap away. A string
+  // that promises a feature nobody can reach is a defect, not dead
+  // weight — so this is a deletion, not a deprecation comment.
   'home': {
     'zh-Hans': '主页',
     'zh-Hant': '主頁',
@@ -1828,10 +1738,10 @@ const uiStrings = {
     'en': 'Customize & sync',
   },
   'onboardCustomizeBody': {
-    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块；选择读经计划；用 Google 登录即可在所有设备同步书签、笔记和高亮。',
-    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊；選擇讀經計劃；用 Google 登入即可在所有裝置同步書籤、筆記和高亮。',
+    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块；用 Google 登录即可在所有设备同步书签、笔记和高亮。',
+    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊；用 Google 登入即可在所有裝置同步書籤、筆記和高亮。',
     'en':
-        'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with Google to sync bookmarks, notes, and highlights across devices.',
+        'Drag-reorder or hide any block under Settings → Dashboard layout. Sign in with Google to sync bookmarks, notes, and highlights across devices.',
   },
   // 2026-05-10 (v1.2.11): the Customize slide above explicitly
   // pitches Google sign-in for cross-device sync — but the China
@@ -1848,26 +1758,21 @@ const uiStrings = {
     'en': 'Customize',
   },
   'onboardCustomizeBodyChina': {
-    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块。选择读经计划。中国版的所有标记、笔记和收藏都保存在本设备。',
-    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊。選擇讀經計劃。中國版的所有標記、筆記和收藏都保存在本裝置。',
+    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块。中国版的所有标记、笔记和收藏都保存在本设备。',
+    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊。中國版的所有標記、筆記和收藏都保存在本裝置。',
     'en':
-        'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. In the China build, highlights, notes, and bookmarks all stay on this device.',
+        'Drag-reorder or hide any block under Settings → Dashboard layout. In the China build, highlights, notes, and bookmarks all stay on this device.',
   },
 
   // Legacy v1 onboarding strings — kept for backward compatibility
   // with any external translation file that still references these
   // keys. The active tour uses the v2 keys above.
-  'onboardPlansTitle': {
-    'zh-Hans': '读经计划',
-    'zh-Hant': '讀經計劃',
-    'en': 'Reading plans',
-  },
-  'onboardPlansBody': {
-    'zh-Hans': '在「设置」中选择一年、按历史顺序或麦琴计划——今日内容会自动显示在主页。',
-    'zh-Hant': '在「設定」中選擇一年、按歷史順序或麥琴計劃——今日內容會自動顯示在主頁。',
-    'en':
-        'Pick a one-year, chronological, or McCheyne plan in Settings — today\'s readings show on this Home page automatically.',
-  },
+  //
+  // 2026-09-08: 'onboardPlansTitle' / 'onboardPlansBody' are the one
+  // exception and are gone. Backward compatibility is a reason to keep
+  // a string that is merely unused; it is not a reason to keep one that
+  // walks a reader through picking a McCheyne plan in a Settings screen
+  // that has had no such control since v1.2.69.
   'onboardLibraryTitle': {
     'zh-Hans': '笔记与书签',
     'zh-Hant': '筆記與書籤',
@@ -1911,11 +1816,8 @@ const uiStrings = {
     'zh-Hant': '帳號',
     'en': 'Account',
   },
-  'settingsSectionPlan': {
-    'zh-Hans': '读经计划',
-    'zh-Hant': '讀經計劃',
-    'en': 'Reading plans',
-  },
+  // 'settingsSectionPlan' deleted 2026-09-08 — the Settings section it
+  // headed went with the reading-plan feature in v1.2.69.
   'settingsSectionDashboard': {
     // Renamed in Round 55: this section now controls reorder + per-
     // section visibility (the old single "show/hide" switches still
@@ -2010,9 +1912,10 @@ const uiStrings = {
     'en': "{name}'s sermons (429, 289 × 3 langs)",
   },
   'offlinePackTools': {
-    'zh-Hans': '研经工具（家谱 / 时间轴 / 证据 / 互参 / 读经计划等）',
-    'zh-Hant': '研經工具（家譜 / 時間軸 / 證據 / 互參 / 讀經計劃等）',
-    'en': 'Tools & references (tree / timeline / evidence / refs / plans)',
+    'zh-Hans': '研经工具（家谱 / 时间轴 / 证据 / 互参 / 福音合参等）',
+    'zh-Hant': '研經工具（家譜 / 時間軸 / 證據 / 互參 / 福音合參等）',
+    'en':
+        'Tools & references (tree / timeline / evidence / refs / synopsis)',
   },
   // Added 2026-05 — exegesis word study + Bible-history maps were
   // previously not pre-cached, so they silently failed offline.
@@ -2101,7 +2004,7 @@ const uiStrings = {
   },
   'setupStep1Detail': {
     'zh-Hans': '【作用】在 Firebase Console 中启用 Realtime Database。\n\n'
-        '【为什么需要】同步功能（高亮、书签、笔记、读经计划）将每个用户的数据'
+        '【为什么需要】同步功能（高亮、书签、笔记）将每个用户的数据'
         '存放在 RTDB 的 users/{uid}/sync 路径下。RTDB 是 Firebase 的"实时云数据库"——'
         '与 Firestore 是不同的产品，使用 WebSocket 传输（更可靠地穿透防火墙），'
         '而且不需要任何额外的 OAuth 范围。\n\n'
@@ -2110,7 +2013,7 @@ const uiStrings = {
         '点击 "Create Database" 然后选择 "United States (us-central1)" 区域和 "Start in locked mode"。'
         '步骤 3 设置安全规则后才能真正读写。',
     'zh-Hant': '【作用】在 Firebase Console 中啟用 Realtime Database。\n\n'
-        '【為什麼需要】同步功能（標亮、書籤、筆記、讀經計劃）將每個使用者的資料'
+        '【為什麼需要】同步功能（標亮、書籤、筆記）將每個使用者的資料'
         '存放在 RTDB 的 users/{uid}/sync 路徑下。RTDB 是 Firebase 的「即時雲資料庫」——'
         '與 Firestore 是不同的產品，使用 WebSocket 傳輸（更可靠地穿透防火牆），'
         '而且不需要任何額外的 OAuth 範圍。\n\n'
@@ -2123,8 +2026,8 @@ const uiStrings = {
             'It\'s a separate product from Firestore — uses '
             'WebSocket transport (works through more firewalls) and '
             'doesn\'t need any extra OAuth scope at sign-in.\n\n'
-            "WHY: Sync (highlights / bookmarks / notes / reading-plan "
-            "progress) stores each user's data at "
+            "WHY: Sync (highlights / bookmarks / notes) stores each "
+            "user's data at "
             "users/{uid}/sync.\n\n"
             "WHAT BREAKS WITHOUT IT: Sign-in works but sync fails "
             "with code `database-disabled`. AI features still work.\n\n"
@@ -3420,16 +3323,9 @@ const uiStrings = {
     'zh-Hant': '每天精選一節經文，所有設備同步。',
     'en': 'One curated verse per day, the same on every device.',
   },
-  'dashboardSection_todayReading_label': {
-    'zh-Hans': '今日读经',
-    'zh-Hant': '今日讀經',
-    'en': "Today's Reading",
-  },
-  'dashboardSection_todayReading_description': {
-    'zh-Hans': '当前读经计划的今日段落。',
-    'zh-Hant': '目前讀經計劃的今日段落。',
-    'en': "Today's passage from your active reading plan.",
-  },
+  // The two 'dashboardSection_todayReading_*' strings were deleted
+  // 2026-09-08. DashboardSection.todayReading itself was removed in
+  // v1.2.69, so these labelled a row the layout editor cannot render.
   'dashboardSection_counts_label': {
     'zh-Hans': '收藏 / 笔记 / 高亮',
     'zh-Hant': '收藏 / 筆記 / 高亮',
@@ -3481,20 +3377,25 @@ const uiStrings = {
     'zh-Hant': '主頁「今日證據」卡片與快捷入口。',
     'en': "Show Today's Evidence card and quick-link tile.",
   },
-  'settingsShowPlanHint': {
-    'zh-Hans': '主页显示当前读经计划。',
-    'zh-Hant': '主頁顯示當前讀經計劃。',
-    'en': 'Show the active reading plan on the dashboard.',
-  },
+  // 'settingsShowPlanHint' deleted 2026-09-08 — described a dashboard
+  // toggle for a reading plan that no longer exists (v1.2.69).
   'notificationsToggle': {
     'zh-Hans': '启用通知',
     'zh-Hant': '啟用通知',
     'en': 'Enable notifications',
   },
+  // 2026-09-08: was "verse, reading, and news". Neither of the last
+  // two exists. "Reading" read as the reading plan (deleted v1.2.69),
+  // and `news_digest` is Phase 2 in notification_category.dart —
+  // `phase1` ships exactly the three named below. Corrected while
+  // clearing the reading-plan copy, because the sentence could not be
+  // half-fixed.
   'notificationsHint': {
-    'zh-Hans': '每日经文、读经与新闻的轻提醒。',
-    'zh-Hant': '每日經文、讀經與新聞的輕提醒。',
-    'en': 'Gentle daily reminders for verse, reading, and news.',
+    'zh-Hans': '每日经文、圣经证据与每日讲道的轻提醒。',
+    'zh-Hant': '每日經文、聖經證據與每日講道的輕提醒。',
+    'en':
+        'Gentle daily reminders for the daily verse, Bible evidence and '
+            'the sermon of the day.',
   },
   'notificationsUnsupported': {
     'zh-Hans': '此浏览器不支持通知。',
@@ -4752,10 +4653,10 @@ const uiStrings = {
     'en': 'Delete',
   },
   'profileDeleteConfirm': {
-    'zh-Hans': '确定要删除「{name}」及其在本设备上的所有笔记、书签、高亮与读经进度吗？',
-    'zh-Hant': '確定要刪除「{name}」及其在本裝置上的所有筆記、書籤、高亮與讀經進度嗎？',
+    'zh-Hans': '确定要删除「{name}」及其在本设备上的所有笔记、书签与高亮吗？',
+    'zh-Hant': '確定要刪除「{name}」及其在本裝置上的所有筆記、書籤與高亮嗎？',
     'en':
-        'Permanently delete "{name}" and all its notes, bookmarks, highlights and reading-plan progress on this device?',
+        'Permanently delete "{name}" and all its notes, bookmarks and highlights on this device?',
   },
   'profileCreateTitle': {
     'zh-Hans': '新建账号',
@@ -7935,11 +7836,232 @@ const uiStrings = {
   // reason as authNoticeNotSignedIn: the old copy told China-build
   // readers cloud sync was not on the table, and it now is.
   'onboardCustomizeBodyEmail': {
-    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块；选择读经计划；用邮箱登录即可在所有设备同步书签、笔记和高亮。',
-    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊；選擇讀經計劃；用電郵登入即可在所有裝置同步書籤、筆記和高亮。',
+    'zh-Hans': '在「设置 → 主页布局」中拖动排序或隐藏任意板块；用邮箱登录即可在所有设备同步书签、笔记和高亮。',
+    'zh-Hant': '在「設定 → 主頁佈局」中拖動排序或隱藏任意板塊；用電郵登入即可在所有裝置同步書籤、筆記和高亮。',
     'en':
         'Drag-reorder or hide any block under Settings → Dashboard '
-            'layout. Pick a reading plan. Sign in with an email address '
+            'layout. Sign in with an email address '
             'to sync bookmarks, notes and highlights across devices.',
+  },
+
+  // ---- Verse image / share card ---------------------------------------
+  // 2026-09-08. Appended, never interleaved — this file is edited by
+  // several people at once and a reordered block is a merge conflict
+  // with no diff worth reading.
+  'verseCardAction': {
+    'zh-Hans': '生成图片',
+    'zh-Hant': '產生圖片',
+    'en': 'Verse image',
+  },
+  'verseCardTitle': {
+    'zh-Hans': '经文图片',
+    'zh-Hant': '經文圖片',
+    'en': 'Verse image',
+  },
+  'verseCardStylePlain': {
+    'zh-Hans': '素色',
+    'zh-Hant': '素色',
+    'en': 'Plain',
+  },
+  'verseCardStyleTinted': {
+    'zh-Hans': '淡彩',
+    'zh-Hant': '淡彩',
+    'en': 'Tinted',
+  },
+  'verseCardStyleGradient': {
+    'zh-Hans': '渐层',
+    'zh-Hant': '漸層',
+    'en': 'Gradient',
+  },
+  'verseCardLight': {
+    'zh-Hans': '浅色',
+    'zh-Hant': '淺色',
+    'en': 'Light',
+  },
+  'verseCardDark': {
+    'zh-Hans': '深色',
+    'zh-Hant': '深色',
+    'en': 'Dark',
+  },
+  'verseCardShare': {
+    'zh-Hans': '分享图片',
+    'zh-Hant': '分享圖片',
+    'en': 'Share image',
+  },
+  'verseCardSave': {
+    'zh-Hans': '保存图片',
+    'zh-Hant': '儲存圖片',
+    'en': 'Save image',
+  },
+  'verseCardShared': {
+    'zh-Hans': '已分享',
+    'zh-Hant': '已分享',
+    'en': 'Shared',
+  },
+  'verseCardDownloaded': {
+    'zh-Hans': '图片已下载',
+    'zh-Hant': '圖片已下載',
+    'en': 'Image downloaded',
+  },
+  // {path} is substituted with the absolute path actually written, not
+  // a folder name — on a desktop that is the one piece of information
+  // the reader needs and cannot guess.
+  'verseCardSavedTo': {
+    'zh-Hans': '已保存到 {path}',
+    'zh-Hant': '已儲存到 {path}',
+    'en': 'Saved to {path}',
+  },
+  // Shown on iOS and Android, where this app has no share-sheet plugin
+  // and no directory a reader could open. Says the true thing rather
+  // than offering a button that writes to a sandbox nobody can reach.
+  'verseCardScreenshotHint': {
+    'zh-Hans': '这个平台还不能直接保存图片。请为上面的卡片截屏。',
+    'zh-Hant': '這個平台還不能直接儲存圖片。請為上面的卡片截圖。',
+    'en':
+        'Saving images is not supported on this platform yet — take a '
+            'screenshot of the card above.',
+  },
+  'verseCardFailed': {
+    'zh-Hans': '生成图片失败，请再试一次。',
+    'zh-Hant': '產生圖片失敗，請再試一次。',
+    'en': "Couldn't create the image. Please try again.",
+  },
+  // The CSB is excluded from this feature; see
+  // kVerseImageRestrictedVersions in verse_card_service.dart. Worded so
+  // it does not read as a defect the reader could fix, and does not
+  // name a licence the app has not established.
+  'verseCardVersionExcluded': {
+    'zh-Hans': '这个译本暂不提供图片分享。可以用「复制」把经文分享出去。',
+    'zh-Hant': '這個譯本暫不提供圖片分享。可以用「複製」把經文分享出去。',
+    'en':
+        'This translation is not available as an image. You can still '
+            'share it with Copy.',
+  },
+
+  // ---- Daily update check ---------------------------------------------
+  // 2026-09-08. Appended as its own contiguous block at the end of the
+  // file, per the convention set by the verse-card block above: several
+  // people edit this file at once and a reordered map is a merge
+  // conflict with no diff worth reading.
+  //
+  // Native builds only. These strings sit beside the manual "Check for
+  // updates" button on the About page and never render on the web,
+  // where WebUpdateChecker owns the question instead.
+  'autoCheckUpdates': {
+    'zh-Hans': '每天自动检查更新',
+    'zh-Hant': '每天自動檢查更新',
+    'en': 'Check for updates daily',
+  },
+  'autoCheckUpdatesHint': {
+    'zh-Hans': '每天最多向 GitHub 查询一次是否有新版本；有新版才会提示。',
+    'zh-Hant': '每天最多向 GitHub 查詢一次是否有新版本；有新版才會提示。',
+    'en':
+        'Asks GitHub at most once a day whether a newer release exists. '
+            'You only hear about it when there is one.',
+  },
+  // The one-line form, for the launch-time bar. `updateAvailableBody`
+  // is the dialog's paragraph and is far too long to read in six
+  // seconds.
+  'updateAvailableBar': {
+    'zh-Hans': '新版本 v{new} 已发布',
+    'zh-Hant': '新版本 v{new} 已發布',
+    'en': 'Version v{new} is available',
+  },
+
+  // ---- Web reminder catch-up + reading statistics ---------------------
+  // 2026-09-08. Appended as one contiguous block at the end of the file,
+  // per the convention the two blocks above set: several people edit
+  // this file at once and a reordered map is a merge conflict with no
+  // diff worth reading. Nothing above this line was touched.
+
+  // Shown on the web only, under the notifications toggle. A browser
+  // tab cannot wake itself, so `NotificationCatchup` delivers a due
+  // reminder when the reader next opens the app instead of at the
+  // minute they chose. Before this line the times below read as a
+  // promise of a 07:00 banner that would never arrive.
+  'notificationsWebCatchUp': {
+    'zh-Hans': '在浏览器里，这些提醒会在你下次打开应用时送达，而不是你设定的那一刻'
+        '——网页无法自己唤醒。想按时收到，请安装应用。',
+    'zh-Hant': '在瀏覽器裡，這些提醒會在你下次打開應用時送達，而不是你設定的那一刻'
+        '——網頁無法自己喚醒。想準時收到，請安裝應用。',
+    'en': 'In the browser these arrive the next time you open the app, '
+        'not at the minute you set — a web page cannot wake itself. '
+        'Install the app for reminders that arrive on time.',
+  },
+
+  // Reading statistics. "Opened", not "read", throughout: the app can
+  // see a chapter being opened and dwelt in, and cannot see it being
+  // read. Claiming the second would be the more flattering wording and
+  // the false one.
+  'readingStats': {
+    'zh-Hans': '阅读统计',
+    'zh-Hant': '閱讀統計',
+    'en': 'Reading statistics',
+  },
+  'readingStatsChapters': {
+    'zh-Hans': '打开过的章',
+    'zh-Hant': '開啟過的章',
+    'en': 'Chapters opened',
+  },
+  'readingStatsBooks': {
+    'zh-Hans': '打开过的书卷',
+    'zh-Hant': '開啟過的書卷',
+    'en': 'Books opened',
+  },
+  'readingStatsCoverage': {
+    'zh-Hans': '正典覆盖',
+    'zh-Hant': '正典覆蓋',
+    'en': 'Canon coverage',
+  },
+  'readingStatsWholeBible': {
+    'zh-Hans': '全本圣经',
+    'zh-Hant': '全本聖經',
+    'en': 'Whole Bible',
+  },
+  'readingStatsByBook': {
+    'zh-Hans': '按书卷',
+    'zh-Hant': '按書卷',
+    'en': 'By book',
+  },
+  'readingStatsRecent': {
+    'zh-Hans': '最近阅读',
+    'zh-Hant': '最近閱讀',
+    'en': 'Recently read',
+  },
+  // The period line. Without it every percentage on the page reads as a
+  // lifetime figure, and the record may be days old.
+  'readingStatsSince': {
+    'zh-Hans': '统计范围：本设备自 {date} 起记录的阅读。在此之前读过的不计入。',
+    'zh-Hant': '統計範圍：本裝置自 {date} 起記錄的閱讀。在此之前讀過的不計入。',
+    'en': 'Covers reading recorded on this device since {date}. Anything '
+        'you read before then is not counted.',
+  },
+  'readingStatsEmpty': {
+    'zh-Hans': '还没有记录。',
+    'zh-Hant': '還沒有紀錄。',
+    'en': 'Nothing recorded yet.',
+  },
+  'readingStatsEmptyBody': {
+    'zh-Hans': '你停留过的章节只记在本设备上，不会发送到任何地方。打开一章停留片刻，再回来看看。',
+    'zh-Hant': '你停留過的章節只記在本裝置上，不會傳送到任何地方。打開一章停留片刻，再回來看看。',
+    'en': 'Chapters you spend time in are noted on this device only, and '
+        'never sent anywhere. Open a chapter and stay a moment, then '
+        'come back.',
+  },
+  'readingStatsClear': {
+    'zh-Hans': '清除阅读记录',
+    'zh-Hant': '清除閱讀紀錄',
+    'en': 'Clear reading record',
+  },
+  'readingStatsClearBody': {
+    'zh-Hans': '这会删除本设备记录的全部阅读数据，无法撤销。',
+    'zh-Hant': '這會刪除本裝置記錄的全部閱讀資料，無法復原。',
+    'en': 'This deletes everything this device has recorded about your '
+        'reading. It cannot be undone.',
+  },
+  'readingStatsCleared': {
+    'zh-Hans': '阅读记录已清除。',
+    'zh-Hant': '閱讀紀錄已清除。',
+    'en': 'Reading record cleared.',
   },
 };

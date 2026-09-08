@@ -19,6 +19,7 @@ import 'package:yswords/utils/progress_pill_geometry.dart';
 import 'package:yswords/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
 import 'package:yswords/widgets/commentary_sheet.dart';
+import 'package:yswords/widgets/verse_card_sheet.dart';
 import 'package:yswords/widgets/note_reference_picker_sheet.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/bible_map.dart';
@@ -1194,6 +1195,47 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
           ? Icons.check_circle_rounded
           : Icons.error_outline_rounded,
       background: ok ? scheme.primary : scheme.error,
+    );
+  }
+
+  /// Compose the selection as a verse card and open the preview sheet.
+  ///
+  /// The card's body is deliberately NOT `_formattedSelectedVerses`
+  /// output. That text exists to survive being pasted somewhere with
+  /// no context, so every format it produces repeats the citation and
+  /// the verse numbers — on a card those are already printed in the
+  /// header, and the picture would say everything twice. The clipboard
+  /// text IS reused, as the share-sheet payload that travels beside
+  /// the image, where the "no context" assumption holds again.
+  ///
+  /// The selection is left standing afterwards, unlike Copy and Share.
+  /// Making a picture is not obviously the last thing a reader wants
+  /// to do with a passage, and re-selecting six verses to then copy
+  /// them costs six long-presses.
+  Future<void> _shareSelectedVersesAsImage({
+    required BuildContext context,
+    required MainProvider mainProvider,
+    required AppSettings settings,
+  }) async {
+    final verses = [...mainProvider.selectedVerses]..sort((a, b) {
+        if (a.chapter != b.chapter) return a.chapter.compareTo(b.chapter);
+        if (a.verse != b.verse) return a.verse.compareTo(b.verse);
+        // 路加福音 23:34a and 23:34 share `verse`, so the comparison
+        // above returns 0 for them and Dart's sort is UNSTABLE — the
+        // two halves could land either way round on the picture.
+        return a.subVerseOrder.compareTo(b.subVerseOrder);
+      });
+    if (verses.isEmpty) return;
+    final first = verses.first;
+    final version = mainProvider.currentVersion;
+    await VerseCardSheet.show(
+      context,
+      reference:
+          '${first.book} ${first.chapter}:${formatVerseRangeLabels(verses)}',
+      body: verses.map((v) => sanitizeForCopy(v.text)).join(' '),
+      version: version,
+      versionLabel: shortBibleVersionLabel(version),
+      shareText: _formattedSelectedVerses(verses: verses),
     );
   }
 
@@ -2426,6 +2468,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 mainProvider: mainProvider,
                                 settings: settings,
                               ),
+                              onImage: () => _shareSelectedVersesAsImage(
+                                context: context,
+                                mainProvider: mainProvider,
+                                settings: settings,
+                              ),
                               onClear: mainProvider.clearSelectedVerses,
                               onHighlight: (color) {
                                 mainProvider.setHighlightsForVerses(
@@ -2885,6 +2932,11 @@ class _SelectionActionBar extends StatelessWidget {
   final bool anyHighlighted;
   final VoidCallback onCopy;
   final VoidCallback onShare;
+
+  /// Compose the selection as a picture. Distinct from [onShare],
+  /// which sends the text and a deep link — this is the one that
+  /// leaves the app as a file.
+  final VoidCallback onImage;
   final VoidCallback onClear;
   final ValueChanged<int> onHighlight;
   final VoidCallback onRemoveHighlight;
@@ -2914,6 +2966,7 @@ class _SelectionActionBar extends StatelessWidget {
     required this.anyHighlighted,
     required this.onCopy,
     required this.onShare,
+    required this.onImage,
     required this.onClear,
     required this.onHighlight,
     required this.onRemoveHighlight,
@@ -3114,6 +3167,21 @@ class _SelectionActionBar extends StatelessWidget {
         // which violates Apple HIG's 44 pt minimum. Standard density
         // keeps the bar a touch taller but every icon is reliably
         // tappable on phones.
+        visualDensity: VisualDensity.standard,
+      ),
+      // 2026-09-08: the verse-image card. It sits at the end of the
+      // action row rather than beside Copy/Share because those two are
+      // the row's fixed furniture — the count and the Copy button are
+      // the flexible children whose widths the layout below is
+      // budgeting, and a ninth fixed icon among them is what pushed
+      // the bar into its degraded state the last time (see the 2026-08-23
+      // note further down). In the icon list it is just another entry
+      // the scrollable narrow row already knows how to carry.
+      IconButton(
+        tooltip:
+            uiStrings['verseCardAction']?[settings.locale] ?? 'Verse image',
+        onPressed: onImage,
+        icon: const Icon(Icons.image_outlined),
         visualDensity: VisualDensity.standard,
       ),
     ];

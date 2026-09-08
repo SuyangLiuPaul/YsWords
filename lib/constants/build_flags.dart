@@ -28,8 +28,11 @@
 /// is bundled):
 ///
 ///   • All 14 bundled Bibles, search, exegesis, Strong's lexicon,
-///     reading plans, sermons, Bible Trivia, Bible Timeline,
-///     Family Tree, Songs — all 100% offline.
+///     sermons, Bible Trivia, Bible Timeline, Family Tree, Songs —
+///     all 100% offline. (Reading plans were on this list until
+///     2026-09-08 and had not existed since v1.2.69: the flag doc
+///     was promising a China-build reader an offline feature that
+///     no build of the app has.)
 ///   • AI features that run via `/api/aiBibleSearch` etc. — those
 ///     hit Netlify functions which call Gemini server-to-server,
 ///     bypassing the GFW.  As long as Netlify itself is reachable

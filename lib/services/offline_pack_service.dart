@@ -31,8 +31,10 @@ enum OfflinePackCategory {
 
   /// Family tree / timeline / evidence / cross-refs / section
   /// titles / book intros / daily verses / sermon refs / songs /
-  /// reading plans / gospel synopsis / loading + app icon (~12 MB,
-  /// measured 2026-09-07).
+  /// gospel synopsis / loading + app icon (~12 MB, measured
+  /// 2026-09-07). The doc listed reading plans until 2026-09-08,
+  /// which contradicted the asset list below — `reading_plans.json`
+  /// stopped being downloaded in v1.2.69.
   tools,
 
   /// Strong's lexicon (concordance, Hebrew, Greek, LXX cross-

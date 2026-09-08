@@ -133,7 +133,7 @@ class _ProfilesPageState extends State<ProfilesPage> {
         title: Text(uiStrings['profileDelete']?[locale] ?? 'Delete profile'),
         content: Text(
           (uiStrings['profileDeleteConfirm']?[locale] ??
-                  'Permanently delete "{name}" and all its notes, bookmarks, highlights and reading-plan progress on this device?')
+                  'Permanently delete "{name}" and all its notes, bookmarks and highlights on this device?')
               .replaceAll('{name}', p.name),
         ),
         actions: [

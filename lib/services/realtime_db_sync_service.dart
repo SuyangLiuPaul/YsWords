@@ -526,7 +526,7 @@ class RealtimeDbSyncService extends ChangeNotifier {
     return _status == CloudSyncStatus.synced;
   }
 
-  /// Public API for MainProvider / ReadingPlanService — debounced
+  /// Public API for MainProvider — debounced
   /// auto-upload after a local change. 600 ms gives a typical multi-
   /// verse highlight stroke time to coalesce into a single upload.
   ///

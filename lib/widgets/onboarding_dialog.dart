@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// First-run onboarding carousel. ~4 slides explaining the
-/// non-obvious features (daily verse, reading plans, library,
+/// non-obvious features (daily verse, study tools, library,
 /// cloud sync). Shown once per device — flag stored globally in
 /// SharedPreferences so even profile switches don't re-trigger it.
 ///
@@ -298,7 +298,7 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
           title: uiStrings['onboardCustomizeTitle']?[locale] ??
               'Customize & sync',
           body: uiStrings['onboardCustomizeBodyEmail']?[locale] ??
-              'Drag-reorder or hide any block under Settings → Dashboard layout. Pick a reading plan. Sign in with an email address to sync bookmarks, notes and highlights across devices.',
+              'Drag-reorder or hide any block under Settings → Dashboard layout. Sign in with an email address to sync bookmarks, notes and highlights across devices.',
         ),
       ];
 }

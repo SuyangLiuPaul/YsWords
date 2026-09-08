@@ -148,6 +148,7 @@ accept the parameter that would make it so (documented per-row).
 | `VideosPage` | `/videos` | none | — | yes |
 | `SongsPage` | `/songs` | none | — | yes |
 | `StatsPage` | `/stats` | none | — | yes — reads accumulated local stats |
+| `ReadingStatsPage` | `/reading-stats` | none | — | yes — reads the local reading record (`ReadingHistoryService`), which is per-device and never synced, so the page reconstructs from SharedPreferences alone. A separate path from `/stats` on purpose: that page counts what is in the Bible, this one counts what the reader has been in |
 | `EvidencePage` | `/evidence` | `filterBook?`, `filterChapter?` — Stage 5 carries both in the QUERY STRING (`/evidence?book=John&chapter=3`), not path segments: they are optional, independent and unordered | canonical English book name + chapter int (both already used as URL-safe strings elsewhere) | yes |
 | `SongDownloadsPage` | `/songs/downloads` | none | — | yes |
 | `SongPlaylistsPage` | `/songs/playlists` | none | — | yes |
@@ -170,8 +171,9 @@ accept the parameter that would make it so (documented per-row).
 | `MapViewerPage` | `/maps/:id` | `map`, `locale`, `relatedMaps` | `BibleMap.id` | yes — map data is a bundled asset |
 | `SongScorePage` | `/songs/:songId/score` | `song`, `locale` (bypasses `pushPage`, see §2) | `Song.id` (e.g. `"cdc:d0180"`) | yes |
 | `SongVideoPage` | `/songs/:songId/video` | `song`, `locale` (bypasses `pushPage`, see §2) | `Song.id` | yes |
+| `ProjectionPage` | `/project` | none — it reads the reference off `MainProvider` at open and never writes one back | — (the passage is the reader's own current position, not a parameter) | yes — a cold load lands on the restored reading position, which is the right answer for a bookmark an operator opens at the start of a service. Deliberately carries NO reference of its own: parameterizing it would make two sources of truth for where the projection points, and the whole design rests on there being one. See `projection_page.dart` |
 
-23 of 32 destinations are cleanly addressable with an id already
+24 of 33 destinations are cleanly addressable with an id already
 carried by their pushing call site. 3 (`ProfileEditPage`,
 `NowPlayingPage`, `BooksPage`'s split-view use) genuinely have nothing
 durable to address and should stay unrouted by design, not by

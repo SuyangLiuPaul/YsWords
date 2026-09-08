@@ -20,6 +20,7 @@ import 'package:yswords/pages/loading_page.dart';
 import 'package:yswords/pages/map_viewer_page.dart';
 import 'package:yswords/pages/misconceptions_page.dart';
 import 'package:yswords/pages/profiles_page.dart';
+import 'package:yswords/pages/projection_page.dart';
 import 'package:yswords/pages/sermon_detail_page.dart';
 import 'package:yswords/pages/sermons_page.dart';
 import 'package:yswords/pages/settings_page.dart';
@@ -29,6 +30,7 @@ import 'package:yswords/pages/song_playlists_page.dart';
 import 'package:yswords/pages/song_score_page.dart';
 import 'package:yswords/pages/song_video_page.dart';
 import 'package:yswords/pages/songs_page.dart';
+import 'package:yswords/pages/reading_stats_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/pages/strongs_entry_page.dart';
 import 'package:yswords/pages/videos_page.dart';
@@ -48,6 +50,7 @@ import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/daily_verse_service.dart';
 import 'package:yswords/services/error_reporter.dart';
 import 'package:yswords/utils/breadcrumb_observer.dart';
+import 'package:yswords/services/notification_catchup.dart';
 import 'package:yswords/services/notification_scheduler.dart'
     as notif_scheduler;
 import 'package:yswords/services/realtime_db_sync_service.dart';
@@ -211,6 +214,17 @@ final List<GetPage> _registeredGetPages = [
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,
   ),
+  // 2026-09-08. NOT nested under '/stats': that route is Bible Tools
+  // (original-language vocabulary), this one is the reader's own
+  // reading, and a shared prefix would invite the same confusion in the
+  // URL that keeping them on one page would have caused in the UI.
+  GetPage(
+    name: '/reading-stats',
+    page: () => const ReadingStatsPage(),
+    transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
   // Nests under '/songs', also registered above — verify in the browser
   // that this doesn't fall through to SongsPage; see the queue entry for
   // this stage.
@@ -340,6 +354,24 @@ final List<GetPage> _registeredGetPages = [
     name: '/misconceptions',
     page: () => const MisconceptionsPage(),
     transition: Transition.rightToLeft,
+    transitionDuration: AppMotion.standard,
+    curve: AppMotion.enter,
+  ),
+  // 投影 — the room-facing view over whatever passage the reader is
+  // already on. Registered because being addressable is currently its
+  // ONLY door: the reading pane's overflow menu is where an "开始投影"
+  // item belongs and that is not this change's file to touch, so for now
+  // the operator types the path. See `projection_page.dart`'s library
+  // doc, and `kProjectionUrlPath` for the three-file sync this entry is
+  // one third of.
+  //
+  // `fadeIn`, not the `rightToLeft` every entry above uses: this one is
+  // opened by someone standing in front of a congregation, and a page
+  // that slides in from the side is a page the whole room watches slide.
+  GetPage(
+    name: '/project',
+    page: () => const ProjectionPage(),
+    transition: Transition.fadeIn,
     transitionDuration: AppMotion.standard,
     curve: AppMotion.enter,
   ),
@@ -532,8 +564,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
     try {
       // Profiles must be initialised before MainProvider.restoreState
       // because that step reads highlights / notes / bookmarks under
-      // the active profile's namespace. Same goes for ReadingPlanService
-      // calls that fire while the home page builds.
+      // the active profile's namespace.
       step = 'ProfileService.init';
       ErrorReporter.breadcrumb('boot:step', data: step);
       await ProfileService.instance.init();
@@ -820,6 +851,15 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
       (Object e, StackTrace st) =>
           debugPrint('notif scheduler init failed: $e'),
     );
+
+    // 2026-09-08: the web's half of the same feature. `rescheduleAll`
+    // above returns immediately on the web — a browser tab cannot wake
+    // itself — so nothing delivered the reminders a reader had switched
+    // on at yahwehword.com, which is the app's primary channel. This
+    // catches up anything that fell due while they were away, and keeps
+    // watching for as long as the tab stays open. No-op off the web; see
+    // notification_catchup.dart for why push was not the answer.
+    NotificationCatchup.instance.start(appSettings);
 
     // Clears the false-positive "Failed to load" window — see
     // MainProvider.bootInFlight doc comment. Set before the `_loading`

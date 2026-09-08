@@ -129,54 +129,40 @@ class ProfileService extends ChangeNotifier {
       await prefs.setStringList(scoped, v);
     }
 
-    Future<void> moveBool(String key) async {
-      if (!prefs.containsKey(key)) return;
-      final v = prefs.getBool(key);
-      if (v == null) return;
-      final scoped = 'profile.$guestId.$key';
-      if (prefs.getBool(scoped) != null) return;
-      await prefs.setBool(scoped, v);
-    }
-
-    Future<void> moveInt(String key) async {
-      if (!prefs.containsKey(key)) return;
-      final v = prefs.getInt(key);
-      if (v == null) return;
-      final scoped = 'profile.$guestId.$key';
-      if (prefs.getInt(scoped) != null) return;
-      await prefs.setInt(scoped, v);
-    }
+    // `moveBool` / `moveInt` used to live here. Their only callers
+    // were plan.useDate and plan.startMs; see the note below. Every
+    // key still worth migrating is a string or a string list.
 
     await moveString('highlights');
     await moveString('verseNotes');
     await moveStringList('bookmarks');
-    await moveString('plan.activeId');
-    await moveInt('plan.startMs');
-    await moveBool('plan.useDate');
-    // Migrate plan.completed.<planId> keys.
-    for (final k in prefs.getKeys()) {
-      if (k.startsWith('plan.completed.')) {
-        final list = prefs.getStringList(k);
-        if (list == null) continue;
-        final scoped = 'profile.$guestId.$k';
-        if (prefs.getStringList(scoped) == null) {
-          await prefs.setStringList(scoped, list);
-        }
-      }
-    }
+    // 2026-09-08: the four `plan.*` moves that used to sit here are
+    // gone. This migration copies pre-profile data into the guest
+    // namespace, and nothing has read a scoped `plan.*` key since the
+    // reading-plan feature was deleted in v1.2.69 — so every copy it
+    // made was of data with no reader, doubling it on disk.
+    //
+    // Note what this deliberately does NOT do: it does not remove the
+    // unscoped `plan.activeId` / `plan.startMs` / `plan.useDate` /
+    // `plan.completed.*` entries a long-time reader still has. Not
+    // copying someone's bytes is subtraction; deleting them is not,
+    // and this project leaves orphaned prefs alone (see the v1.3.19
+    // note on `ttsVoiceGender` in app_settings.dart). If the owner
+    // ever brings reading plans back, that stored progress is still
+    // exactly where its old version left it.
 
     await prefs.setBool(migratedFlag, true);
   }
 
   /// Returns the SharedPreferences key for [base] under the current
-  /// profile. All user-data persistence in MainProvider /
-  /// ReadingPlanService routes through this so switching profiles
-  /// flips the entire dataset atomically.
+  /// profile. All user-data persistence in MainProvider routes
+  /// through this so switching profiles flips the entire dataset
+  /// atomically.
   String scopedKey(String base) => 'profile.$_currentId.$base';
 
   /// Switch the active profile. Notifies listeners so UIs that watch
-  /// profile-scoped data (e.g. MainProvider, today-reading card,
-  /// library plan tab) can reload.
+  /// profile-scoped data (e.g. MainProvider, the Library tabs) can
+  /// reload.
   Future<void> setCurrent(String id) async {
     if (_currentId == id) return;
     final prefs = await SharedPreferences.getInstance();
