@@ -1905,6 +1905,21 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     this workflow now means something is genuinely wrong**, not
     routine upstream lag — restore that meaning by not reverting the
     hard/soft split.
+65. **A docstring's headline number can be wrong from the moment it was
+    written, not just drift stale later — check what the SAME commit's
+    own repair actually left behind, not what the author believed while
+    writing the prose.** Found 2026-09-08:
+    `tools/audit_tagged_quote_balance.py` was added in commit `a1406c21`
+    (2026-09-03, "closed three quotations it never opened"), and its
+    docstring quoted 2,485/35 books/9 events — which is what the script
+    would have printed on the PARENT commit's assets, not on what
+    `a1406c21`'s own fix in the same commit left behind (2,487/33/4).
+    The queue item that filed this attributed the drift to an unrelated
+    later commit (`60e51d4e`, which only re-pins a Dart test) — a
+    plausible-looking guess that a worktree re-run at both commits
+    disproved directly. When a docstring's own commit also touches the
+    asset it describes, check the number against THAT commit's diff,
+    not just against HEAD.
 
 ## Trap: "local green" and "CI green" are different claims
 
