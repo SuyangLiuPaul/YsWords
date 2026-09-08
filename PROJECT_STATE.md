@@ -5,7 +5,7 @@ right now and the traps that have already cost real time. The per-item
 work list is `docs/autonomous-queue.md`; this file is the orientation
 above it.
 
-Last updated: 2026-08-26.
+Last updated: 2026-09-09.
 
 **The refuter earns its keep — do not drop it to save a turn.** On
 2026-08-23 it broke a punctuation repair's stated reasoning twice in one
@@ -1920,6 +1920,42 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     disproved directly. When a docstring's own commit also touches the
     asset it describes, check the number against THAT commit's diff,
     not just against HEAD.
+66. **A correspondence table built only from the positions where two
+    things DIFFER cannot see ambiguity, and will convert confidently and
+    wrongly.** Found 2026-09-09, in
+    `tools/mirror_publisher_sync_to_tr.py`. The table was derived by
+    walking the aligned Simplified/Traditional pair and recording a
+    character only where the two scripts disagreed. 面 differs only ever
+    as 麵 (107 times), so the table read "面 has exactly one Traditional
+    form, 麵" — and every 面 the publisher's newer text INSERTED was
+    converted to flour. 馬太福音 6:2 shipped 「不可在你麵前吹號」: do not
+    sound a trumpet before your dough. **Counting the 2,071 places 面
+    stands opposite 面 puts it back among the fifteen ambiguous
+    characters, where the correct behaviour is to refuse the verse and
+    name it.** 谷, 干, 只, 松, 胡 and ten others were in the same
+    position and got lucky. The same shape appears wherever a "did it
+    change?" table is used to answer "what is this?".
+67. **Punctuation is a script.** The same mirror's first version copied
+    every non-Han character across verbatim, on the reasoning that a
+    quotation mark is not a Chinese character. This edition writes “”‘’
+    in the Simplified and 「」『』 in the Traditional, so 7,170 curly
+    quotes went into a file that had none, and 3,905 verses came out
+    opening 「 and closing ”. Its own leak check reported **"a real leak:
+    0"** because the check was filtered to Han pairs — the detector
+    inherited the bug it was meant to catch. Nothing else caught it
+    either: `ascii_punctuation_test` counts the ASCII `"`, which was
+    untouched.
+68. **When a house-style rule changes the SHAPE of a marker, every
+    consumer that recognises the marker by its shape breaks silently.**
+    2026-09-09: `unfold()` began keeping the publisher's 〔…〕 raw when
+    the whole verse is a note (84 verses had been rendering as an empty
+    verse behind a footnote icon). `tools/build_merged_verse_map.py`
+    looks for a stub whose whole body is 见上节 — bare — so it stopped
+    recognising all 70 of them and wrote a map with **2 entries instead
+    of 71**, which would have stopped the Originals sheet widening every
+    folded verse in the Bible. The tests caught it only because a
+    different test happened to read the same map. Grep for the marker's
+    literal form when you change it.
 
 ## Trap: "local green" and "CI green" are different claims
 
