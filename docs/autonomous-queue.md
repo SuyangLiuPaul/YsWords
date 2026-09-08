@@ -14086,6 +14086,30 @@ so the bundle-size answer stays on the record.
       touched only `tools/`, `test/`, `docs/` and `.github/workflows/` —
       nothing user-facing.
 
+- [x] **2026-09-08 FILED, 2026-09-08 FIXED — `verse_card_test.dart`'s CJK
+      width assertion was exact on this Mac and off by 1px on the CI
+      runner.** Pushed `a9102949` (this iteration's own `audit_p0.py` fix,
+      landed alongside the already-committed, already-verified-locally
+      `8f0dc225`) and watched the run per this loop's own rule rather than
+      trusting the local green. `run 34191215376` failed:
+      `verse_card_test.dart` "CJK advances one full-width em per
+      character", expected 1122, actual 1123 — the ubuntu-latest runner's
+      text shaper rounds one glyph's advance the other way than this
+      Mac's does. The other three width assertions in the same file
+      compare against a fixed, font-independent value (360dp × 3 = 1080)
+      and were exact on both platforms; only the one assertion computed
+      from this font's actual glyph metrics differed, and only by 1px out
+      of 1122 — a proportional fallback swallowing CJK as narrower tofu
+      would miss by hundreds, not one, so this is sub-pixel text-layout
+      rounding between platforms, not a font-substitution regression in
+      `8f0dc225`'s new test. Widened that one expectation from exact
+      equality to `closeTo(expected, 1)`; left the other three untouched.
+      Did not touch the concurrently-edited, unrelated
+      `bible_reading_pane.dart` WIP in the same checkout. `flutter
+      analyze` clean, full suite green (2678) both before and after.
+      Pushed as `1feb8b5d`, watched to completion: **run `34192392272`
+      concluded `success`.**
+
 ## Blocked on the user — do not attempt
 
 - ~~**Do GitHub releases resume?**~~ **ANSWERED 2026-09-01, user:
