@@ -152,6 +152,14 @@ flutter:
     - assets/biblexg-v2-tr.json
     - assets/nasb.json
     - assets/csb.json
+    # 2026-09-08, from the 雅伟的话 export via tools/import_ydh_texts.py.
+    # 20.9 MB raw across the four; 5.0 MB over the wire once Netlify
+    # gzips them, and only for a reader who actually opens one. The
+    # Septuagint and "CSB (Yahweh)" in the same export are deliberately
+    # absent — see lib/constants/bible_versions.dart.
+    - assets/bsb-yhwh.json
+    - assets/asv-yhwh.json
+    - assets/wh.json
     # CUV, CUV-tr, CNV, CNV-tr, biblexg (LJK1), biblexg-tr removed
     # 2026-08 — deleted outright, superseded by cuvs-yhwh /
     # biblexg-v2 (see lib/constants/bible_versions.dart).

@@ -37,6 +37,11 @@ import 'package:yswords/widgets/version_picker_sheet.dart';
 /// completely broken.
 void main() {
   const pillLabels = <String>['English', '繁體中文', '简体中文'];
+  // 2026-09-08: the fourth pill, for the Westcott-Hort Greek NT. Kept
+  // out of `pillLabels` itself because several tests above walk that
+  // list expecting a language with versions a reader can pick between,
+  // and this tab holds exactly one row.
+  const greekPill = '希腊文';
   const simplified = <String>['和合本雅伟版(简体)', '梁家铿译本(简体)'];
   const traditional = <String>['和合本雅偉版(繁體)', '梁家鏗譯本(繁體)'];
   const english = <String>['King James Version', 'Lexham English Bible'];
@@ -224,12 +229,39 @@ void main() {
     //   version row   320 x  39   (x2)
     // If a later change to the picker moves any of them, the owner should
     // hear it from this test and not from the app.
+    //
+    // **2026-09-08 — one of them moved, and this is the notice.** The
+    // Westcott-Hort Greek NT arrived with `language: 'el'`, so
+    // `bibleLanguageOrder` grew a fourth entry and the selector grew a
+    // fourth pill. The pills are `Expanded`, so they split the same row
+    // four ways instead of three:
+    //
+    //   language pill  96 x 48  ->  70.5 x 48   (x4)
+    //
+    // Nothing else moved — the frame is still 320 x 159, the body still
+    // 320 x 143, the version rows still 320 x 39. The pill row was
+    // already 64 high and stays there.
+    //
+    // Why this was accepted rather than avoided. The label does not set
+    // the width — `Expanded` does — so shortening "Traditional" would
+    // not have bought a single point back; the only way to keep 96 was
+    // to not offer the Greek in the picker at all. Against that: the
+    // height is untouched at 48, which is the number that governs the
+    // touch target, and 70.5 is still comfortably wider than the 48-pt
+    // minimum. The label shrinks rather than truncating, because
+    // `_languagePill` wraps its text in `FittedBox(scaleDown)` — it was
+    // built for exactly this and 繁體中文 has always relied on it.
+    //
+    // What the owner is being told, plainly: every reader's language
+    // selector is now 27% narrower, in exchange for one Greek edition
+    // most of them will not open. If that is the wrong trade, the
+    // change to make is in `bibleLanguageOrder`, not here.
     final handle = tester.ensureSemantics();
     final picker = await open(tester);
     expect(picker.nodeFor('Popup menu')!.rect.size, const Size(320, 159));
     expect(picker.bodyNode().rect.size, const Size(320, 143));
-    for (final p in pillLabels) {
-      expect(picker.nodeFor(p)!.rect.size, const Size(96, 48), reason: p);
+    for (final p in [...pillLabels, greekPill]) {
+      expect(picker.nodeFor(p)!.rect.size, const Size(70.5, 48), reason: p);
     }
     for (final v in simplified) {
       expect(picker.nodeFor(v)!.rect.size, const Size(320, 39), reason: v);

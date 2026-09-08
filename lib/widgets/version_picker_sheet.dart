@@ -231,6 +231,13 @@ class _LanguageGroupedVersionBodyState
         return _t('versionLangEnglish', 'English');
       case 'zh-Hant':
         return _t('versionLangTraditional', 'Traditional');
+      // 2026-09-08: a fourth pill, for the Westcott-Hort Greek NT. The
+      // row is `Expanded` per language with a `FittedBox(scaleDown)`
+      // inside each pill, so a fourth one narrows the other three
+      // rather than overflowing — which is also why this label is one
+      // short word in every locale and not "希腊文原文".
+      case 'el':
+        return _t('versionLangGreek', 'Greek');
       case 'zh-Hans':
       default:
         return _t('versionLangSimplified', 'Simplified');

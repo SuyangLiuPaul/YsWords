@@ -12,9 +12,17 @@ class BibleVersionInfo {
   final String? narrowLabel;
 
   /// 2026-06-22: which language family this edition belongs to, so the
-  /// version picker can group the ~14 editions under English / 繁體 /
-  /// 简体 tabs instead of one long flat list. Values match the app
-  /// locale codes: `en`, `zh-Hant`, `zh-Hans`.
+  /// version picker can group the editions under English / 繁體 / 简体
+  /// tabs instead of one long flat list. Values match the app locale
+  /// codes: `en`, `zh-Hant`, `zh-Hans`.
+  ///
+  /// 2026-09-08: and `el`, which is the first value here that is NOT an
+  /// app locale — the interface is not offered in Greek and nothing
+  /// suggests it should be. This field names the language of the TEXT;
+  /// it only ever looked like a locale code because until now every
+  /// edition happened to be in a language the interface also spoke.
+  /// [bibleLanguageOrder] and the picker's `_langLabel` are the two
+  /// places that have to learn a new value.
   final String language;
 
   /// Round 56 user feedback: "和合本新译本should mention which year
@@ -71,6 +79,93 @@ const bibleVersions = <BibleVersionInfo>[
     menuLabel: 'Christian Standard Bible',
     language: 'en',
     editionYear: '2017',
+  ),
+  // ====== 2026-09-08: four texts from the 雅伟的话 export ======
+  //
+  // Built by `tools/import_ydh_texts.py` out of the SQLite that project
+  // already exports (`Yahwehdehua/app/build/bible.db`) — a credential-
+  // free file, unlike the MariaDB `import_csb.py` reads. The markup
+  // mapping, tag by tag, is in that script's docstring.
+  //
+  // **Two of the six texts in that export are NOT here, and neither
+  // omission is an oversight.**
+  //
+  //   * **Septuagint (`lxxs`).** The reflex is "the Septuagint is
+  //     ancient, so it is public domain", and it is the wrong reflex:
+  //     what carries copyright is the modern critical EDITION.
+  //     `Yahwehdehua/PROJECT_STATE.md` records its own survey finding
+  //     no source that was at once available, authoritative and clearly
+  //     licensed — Rahlfs is claimed by the German Bible Society, CATSS
+  //     needs a signed agreement — and the module that ended up in the
+  //     database did not settle it: the note recording its arrival says
+  //     「授权仍归 Peter 判断」, the licence is still Peter's to judge.
+  //     Nothing in a theWord module even names its edition, so this app
+  //     could not say which text it was offering. That gets answered in
+  //     `docs/permissions/`, not here.
+  //   * **CSB (Yahweh) (`hcsbs`).** It is the `csb` directly above.
+  //     Same module, `bsapp_bible_hcsbs`, which `tools/import_csb.py`
+  //     already built `assets/csb.json` from: 26,298 of 31,102 verses
+  //     byte-identical, 1,633 differing only in whitespace, and the
+  //     rest only by that importer's own punctuation and divine-name
+  //     repairs. Adding it would ship 6 MB of a licensed text twice —
+  //     and the row labelled "(Yahweh)" would be the one with FEWER
+  //     occurrences of the name: the raw module reads Yahweh in 5,041
+  //     verses and the shipped `csb` in 5,805, Deuteronomy 6:4 among
+  //     the difference. `docs/permissions/README.md` carries the
+  //     measurement.
+  //
+  // Both stay buildable — `python3 tools/import_ydh_texts.py lxx` and
+  // `... csb-yhwh` — so answering either question is an asset, an entry
+  // here and an About-page row, not a fresh investigation.
+  // Plain BSB is NOT here, and that is deliberate. It was imported
+  // alongside `bsb-yhwh` on 2026-09-08 and removed the same day on the
+  // owner's instruction: 「bsbs 不用，就 bsb yahweh 版本导入」 — import
+  // the Yahweh edition, not the plain one.
+  //
+  // The measurement behind that call, so nobody re-litigates it: after
+  // the app's render-time LORD → Yahweh rewrite the two texts display
+  // identically in all but 636 verses (2.0%) — 299 "Lord GOD" → "Lord
+  // Yahweh", 27 "Yah", 310 NT κύριος restorations. Plain BSB was 5.9 MB
+  // buying a difference the reader mostly could not see, and it is the
+  // same relation the owner settled for `cuvs-plus` in SeekSparks the
+  // same day with 「有雅+ 就不用和合本+了」.
+  //
+  // Not a licensing question — the BSB is public domain outright since
+  // 2023-04-30 and was the one text here that needed no grant. It stays
+  // buildable: `python3 tools/import_ydh_texts.py bsb`.
+  BibleVersionInfo(
+    value: 'bsb-yhwh',
+    shortLabel: 'BSB (Yahweh)',
+    menuLabel: 'Berean Standard Bible (Yahweh)',
+    language: 'en',
+    editionYear: 'BSB · divine name restored',
+    // 'BSB (Yahweh)' is twelve characters in a pill that shares its row
+    // with the book-title pill and the trailing icon cluster — see the
+    // v1.3.161 note on that chip in `bible_reading_pane.dart`, which
+    // gave up on screen-width thresholds precisely because the chip
+    // never gets the whole width. `test/version_chip_label_width_test
+    // .dart` measures every narrow label against 雅伟版, the widest one
+    // the chip was fixed for.
+    narrowLabel: 'BSB-Y',
+  ),
+  BibleVersionInfo(
+    value: 'asv-yhwh',
+    shortLabel: 'ASV (Yahweh)',
+    menuLabel: 'American Standard Version (Yahweh)',
+    language: 'en',
+    editionYear: '1901 · divine name restored',
+    narrowLabel: 'ASV-Y',
+  ),
+  // The first edition here that is neither English nor Chinese, and the
+  // reason [bibleLanguageOrder] grew a fourth entry. It is NT-only, so
+  // it also needs a [bibleVersionFullCanonFallback] — see the bottom of
+  // this file for which edition it falls back to and why that one.
+  BibleVersionInfo(
+    value: 'wh',
+    shortLabel: 'WH',
+    menuLabel: 'Westcott-Hort Greek NT',
+    language: 'el',
+    editionYear: '1881',
   ),
   // NIV (New International Version) was previously listed here.
   // Removed in 2026-05 — Biblica / Zondervan retain commercial
@@ -311,14 +406,30 @@ String resolvableVersionFrom(
 /// the user phrased it ("英语繁体简体"). Only languages that actually have
 /// at least one available version are kept (defensive against a future
 /// all-disabled language).
+///
+/// 2026-09-08: `el` joins it, LAST, for the Westcott-Hort Greek NT.
+///
+/// The alternative considered and rejected was filing the WH under `en`
+/// rather than growing the selector. It would have been the smaller
+/// change — no fourth pill, no new label string, and the picker's
+/// `languages.length > 1` branches all stay as they were. It is also
+/// simply untrue: the tab is captioned "English", and the rows under it
+/// are English translations a reader chooses between. A Greek New
+/// Testament is not one of those, and putting it there would make the
+/// tab a lie in order to save a string.
+///
+/// Last rather than first because it is the specialist's row: the three
+/// language tabs above it are for reading, and this one is for checking
+/// what was read. Being last also means the ordering the user asked for
+/// — 英语繁体简体 — is still the ordering they see.
 List<String> get bibleLanguageOrder {
-  const order = ['en', 'zh-Hant', 'zh-Hans'];
+  const order = ['en', 'zh-Hant', 'zh-Hans', 'el'];
   final present = availableVersions.map((v) => v.language).toSet();
   return order.where(present.contains).toList();
 }
 
 /// The available versions belonging to [language] (`en` / `zh-Hant` /
-/// `zh-Hans`), in catalog order.
+/// `zh-Hans` / `el`), in catalog order.
 List<BibleVersionInfo> versionsForLanguage(String language) =>
     availableVersions.where((v) => v.language == language).toList();
 
@@ -401,6 +512,32 @@ String? bibleVersionFullCanonFallback(String version) {
       return 'cuvs-yhwh';      // 和合本雅伟版 (Simplified, full canon)
     case 'biblexg-v2-tr': // LJK2 (Traditional Chinese, NT only)
       return 'cuvs-yhwh-tr';   // 和合本雅伟版 (Traditional, full canon)
+    // 2026-09-08: the Westcott-Hort is the first NT-only edition whose
+    // own language family has NO full-canon edition to fall back to.
+    // The Greek Old Testament that would have been the obvious partner
+    // — the Septuagint in the same export — is not shipped, because its
+    // licence is unresolved (see the catalogue entry above). So this
+    // one leaves its language family, which the two LJK2 rows never
+    // have to.
+    //
+    // BSB rather than the KJV, and that is a deliberate difference from
+    // [resolvableVersionFrom], which lands a stranded English reader on
+    // the KJV. That function is a SAFETY net — its job is to reach an
+    // edition that can never be withdrawn, and the KJV is the oldest
+    // thing here. This one is an EDITORIAL choice about which English
+    // to show beside a Greek text on the daily-verse card, and there
+    // the BSB is the better neighbour: it is a modern translation from
+    // the same critical text the WH represents, so the daily verse
+    // reads as a companion to the Greek rather than as 1611 English
+    // next to 1881 Greek. Both are public domain, so neither can go
+    // away.
+    //
+    // 2026-09-08: this pointed at plain `bsb` for the few hours that
+    // edition existed here. It is the same translation — the Yahweh
+    // edition differs only in restoring the divine name, which is what
+    // this whole app is for — so the reasoning above transfers intact.
+    case 'wh':            // Westcott-Hort (Greek, NT only)
+      return 'bsb-yhwh';  // Berean Standard Bible (English, full canon)
   }
   return null;
 }

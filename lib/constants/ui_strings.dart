@@ -1678,10 +1678,10 @@ const uiStrings = {
   // now checks this file too — it previously covered only the share
   // card and index.html, which is how this survived.
   'onboardWelcomeBody': {
-    'zh-Hans': '双语圣经阅读应用，8 个版本（英文／简体／繁体）。主页的「读经」卡片会带你回到上次离开的位置。',
-    'zh-Hant': '雙語聖經閱讀應用，8 個版本（英文／簡體／繁體）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
+    'zh-Hans': '双语圣经阅读应用，11 个版本（英文／简体／繁体／希腊文）。主页的「读经」卡片会带你回到上次离开的位置。',
+    'zh-Hant': '雙語聖經閱讀應用，11 個版本（英文／簡體／繁體／希臘文）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
     'en':
-        'A bilingual Bible reader with 8 versions across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
+        'A bilingual Bible reader with 11 versions across English, Chinese and Greek. The "Read Bible" card on Home picks up exactly where you left off.',
   },
   'onboardReadTitle': {
     'zh-Hans': '阅读、高亮、研经',
@@ -1896,10 +1896,16 @@ const uiStrings = {
   // (「应该叫做7 versions吧不然以为7个语言」). The Chinese already read
   // 「共 7 部」 without the same implication, but 版本 matches the word
   // the version picker itself uses.
+  // 2026-09-08: 8 -> 12, with the four 雅伟的话 texts. Edited in place
+  // rather than appended at the end of this file like every new key
+  // below, because a Dart map literal cannot carry the same key twice —
+  // a stale count here has to be corrected where it lives.
+  // `test/offline_pack_counts_test.dart` derives the number from
+  // `bible_versions.dart` and fails on any of the three locales.
   'offlinePackBibles': {
-    'zh-Hans': '圣经版本（共 8 个）',
-    'zh-Hant': '聖經版本（共 8 個）',
-    'en': 'Bibles (8 versions)',
+    'zh-Hans': '圣经版本（共 11 个）',
+    'zh-Hant': '聖經版本（共 11 個）',
+    'en': 'Bibles (11 versions)',
   },
   // {name} is filled from sermon_credit.dart — the single source for
   // the preacher's name. The count was 587, which was the sum of every
@@ -8143,5 +8149,68 @@ const uiStrings = {
     'zh-Hans': '打开这处经文',
     'zh-Hant': '開啟這處經文',
     'en': 'Open this reference',
+  },
+
+  // ====== 2026-09-08: the four texts from the 雅伟的话 export ======
+  // BSB, BSB (Yahweh), ASV (Yahweh) and the Westcott-Hort Greek NT.
+  // Built by `tools/import_ydh_texts.py`; catalogued in
+  // `lib/constants/bible_versions.dart`, which also records why the
+  // Septuagint and "CSB (Yahweh)" in the same export are not here.
+
+  // The fourth pill in the version picker's language selector. One
+  // short word in every locale: the row gives each language an equal
+  // `Expanded` slice, so a long fourth label shrinks the other three
+  // through their `FittedBox` rather than wrapping.
+  'versionLangGreek': {
+    'zh-Hans': '希腊文',
+    'zh-Hant': '希臘文',
+    'en': 'Greek',
+  },
+
+  // ── About page, bundled-texts table ──────────────────────────────
+  // One row for both BSB editions: one translation, one licence, and
+  // the only difference between the two rows in the picker is which
+  // word the ministry prints for the tetragrammaton.
+  'aboutVerBsb': {
+    'zh-Hans': 'BSB / BSB（雅伟）— Berean Standard Bible',
+    'zh-Hant': 'BSB / BSB（雅偉）— Berean Standard Bible',
+    'en': 'BSB / BSB (Yahweh) — Berean Standard Bible',
+  },
+  // Two facts, and the second is the one a reader cannot get anywhere
+  // else: the base text is free outright, and the Yahweh edition's
+  // reading is this ministry's own restoration rather than something
+  // the Berean translators published.
+  'aboutLicenseBsb': {
+    'zh-Hans': '自 2023-04-30 起属公有领域，任何用途均无需授权 · '
+        '「雅伟」版的神名还原为雅伟的话事工的编辑成果。',
+    'zh-Hant': '自 2023-04-30 起屬公有領域，任何用途均無需授權 · '
+        '「雅偉」版的神名還原為雅偉的話事工的編輯成果。',
+    'en': 'Public domain since 2023-04-30, no permission required for '
+        'any use · the Yahweh edition\'s divine-name restoration is '
+        'the work of Yahweh De Hua Ministry.',
+  },
+  'aboutVerAsvYhwh': {
+    'zh-Hans': 'ASV（雅伟）— American Standard Version 1901',
+    'zh-Hant': 'ASV（雅偉）— American Standard Version 1901',
+    'en': 'ASV (Yahweh) — American Standard Version 1901',
+  },
+  'aboutLicenseAsvYhwh': {
+    'zh-Hans': '1901 年版本属公有领域 · 神名由 Jehovah 还原为 Yahweh，'
+        '为雅伟的话事工的编辑成果。',
+    'zh-Hant': '1901 年版本屬公有領域 · 神名由 Jehovah 還原為 Yahweh，'
+        '為雅偉的話事工的編輯成果。',
+    'en': 'Public domain (1901) · the divine name is rendered Yahweh '
+        'where the ASV printed Jehovah, an editorial restoration by '
+        'Yahweh De Hua Ministry.',
+  },
+  // No licence string of its own — the row reads `aboutLicensePublic
+  // Domain`, the same one the KJV row uses. Westcott and Hort published
+  // in 1881 and nothing has been done to the text since; there is no
+  // restoration to declare, which is the whole difference between this
+  // row and the two above it.
+  'aboutVerWh': {
+    'zh-Hans': 'WH — 韦斯科特-霍特希腊文新约（1881）',
+    'zh-Hant': 'WH — 韋斯科特-霍特希臘文新約（1881）',
+    'en': 'WH — Westcott-Hort Greek New Testament (1881)',
   },
 };

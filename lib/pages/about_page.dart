@@ -594,6 +594,41 @@ class _ScripturesTable extends StatelessWidget {
         licence: uiStrings['aboutLicenseCsb']?[locale] ?? '',
         url: 'https://csbible.com/',
       ),
+      // 2026-09-08: the four texts from the 雅伟的话 export. Three rows,
+      // not four — the two BSB editions share one, because they are one
+      // translation and one grant, and splitting them would say the
+      // licence differs between them when the only difference is which
+      // word the ministry prints for the tetragrammaton.
+      //
+      // The restoration is named in each licence line rather than left
+      // to the edition's "(Yahweh)" label. `docs/permissions/README.md`
+      // holds this page to "what a reader is shown must match a
+      // document on file", and what is on file for these is that the
+      // base text is free and the divine-name reading is the
+      // ministry's own work. A reader who is told only "public domain"
+      // has been told the true half that matters least.
+      _AttribRow(
+        name: uiStrings['aboutVerBsb']?[locale] ??
+            'BSB / BSB (Yahweh) — Berean Standard Bible',
+        licence: uiStrings['aboutLicenseBsb']?[locale] ??
+            'Public domain since 2023-04-30 · the Yahweh edition\'s '
+                'divine-name restoration © Yahweh De Hua Ministry.',
+        url: 'https://bereanbible.com/',
+      ),
+      _AttribRow(
+        name: uiStrings['aboutVerAsvYhwh']?[locale] ??
+            'ASV (Yahweh) — American Standard Version 1901',
+        licence: uiStrings['aboutLicenseAsvYhwh']?[locale] ??
+            'Public domain (1901) · divine-name restoration '
+                '© Yahweh De Hua Ministry.',
+        url: 'https://yahwehdehua.net/en/bible',
+      ),
+      _AttribRow(
+        name: uiStrings['aboutVerWh']?[locale] ??
+            'WH — Westcott-Hort Greek New Testament (1881)',
+        licence: uiStrings['aboutLicensePublicDomain']?[locale] ??
+            'Public domain.',
+      ),
       _AttribRow(
         name: uiStrings['aboutVerCuvsYhwh']?[locale] ??
             'CUVS-YHWH (和合本雅伟版, 简/繁)',

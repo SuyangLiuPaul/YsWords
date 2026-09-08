@@ -6,7 +6,8 @@ import 'package:yswords/constants/bible_versions.dart';
 /// so the `language` metadata and the grouping helpers must stay
 /// consistent with the catalog.
 void main() {
-  const validLanguages = {'en', 'zh-Hant', 'zh-Hans'};
+  // 2026-09-08: `el` joins, for the Westcott-Hort Greek NT.
+  const validLanguages = {'en', 'zh-Hant', 'zh-Hans', 'el'};
 
   // 2026-08-09: the 梁家铿 rows shipped with no narrowLabel, so the
   // top-bar pill cut them to "梁家…" on a phone — and BOTH rows cut to
@@ -19,8 +20,22 @@ void main() {
     // longest that survives, which is what 雅伟版 already uses.
     const maxNarrowChars = 3;
 
+    // 2026-09-08: `!= 'en'` was a stand-in for "CJK" and stopped being
+    // one when the Westcott-Hort arrived with `language: 'el'`. A
+    // three-rune cap is a CJK measurement — three Han characters are
+    // about three ems — and applying it to a Latin label would have
+    // failed 'BSB-Y' at five runes while passing '梁繁' at two, which
+    // is nearly twice as wide. The Greek row would have been measured
+    // by a rule written for a script it is not in.
+    //
+    // Latin labels are measured by width instead, in
+    // `test/version_chip_label_width_test.dart`, which lays every one
+    // of them out with the chip's real TextStyle rather than counting
+    // characters.
+    bool isCjk(BibleVersionInfo v) => v.language.startsWith('zh');
+
     test('every Chinese edition has a narrow label that actually fits', () {
-      for (final v in availableVersions.where((v) => v.language != 'en')) {
+      for (final v in availableVersions.where(isCjk)) {
         final narrow = narrowBibleVersionLabel(v.value);
         // runes, not `length`: every one of these labels is CJK, where
         // `String.length` counts UTF-16 units rather than characters.
@@ -32,7 +47,7 @@ void main() {
 
     test('no two editions narrow to the same label', () {
       final seen = <String, String>{};
-      for (final v in availableVersions.where((v) => v.language != 'en')) {
+      for (final v in availableVersions.where(isCjk)) {
         final narrow = narrowBibleVersionLabel(v.value);
         expect(seen.containsKey(narrow), isFalse,
             reason: '${v.value} and ${seen[narrow]} both narrow to '
@@ -59,10 +74,22 @@ void main() {
   });
 
   test('language matches the naming convention', () {
-    const english = {'kjv', 'leb', 'nasb', 'csb'};
+    // 2026-09-08: `bsb-yhwh` and `asv-yhwh` join the English set, and
+    // `wh` gets a branch of its own.
+    //
+    // The `-yhwh` suffix is why this needed thinking about rather than
+    // just extending: the rule below reads a suffix off the code, and
+    // `cuvs-yhwh` — Chinese — carries the same one. So the suffix
+    // cannot decide anything here, and the two new English editions
+    // have to be named, exactly as the four before them are.
+    const english = {'kjv', 'leb', 'nasb', 'csb', 'bsb', 'bsb-yhwh',
+                     'asv-yhwh'};
+    const greek = {'wh'};
     for (final v in bibleVersions) {
       if (english.contains(v.value)) {
         expect(v.language, 'en', reason: '${v.value} should be English');
+      } else if (greek.contains(v.value)) {
+        expect(v.language, 'el', reason: '${v.value} should be Greek');
       } else if (v.value.endsWith('-tr')) {
         expect(v.language, 'zh-Hant',
             reason: '${v.value} should be Traditional');
@@ -74,7 +101,11 @@ void main() {
   });
 
   test('bibleLanguageOrder lists every language that has versions', () {
-    expect(bibleLanguageOrder, ['en', 'zh-Hant', 'zh-Hans']);
+    // 2026-09-08: `el` appended for the Westcott-Hort. Last on purpose
+    // — see the doc comment on `bibleLanguageOrder`, which records both
+    // that and the rejected alternative of filing the Greek under
+    // English to avoid a fourth pill.
+    expect(bibleLanguageOrder, ['en', 'zh-Hant', 'zh-Hans', 'el']);
     for (final lang in bibleLanguageOrder) {
       expect(versionsForLanguage(lang), isNotEmpty);
     }
@@ -104,6 +135,11 @@ void main() {
         containsAll(<String>['cuvs-yhwh', 'biblexg-v2']));
     expect(versionsForLanguage('zh-Hant').map((v) => v.value),
         containsAll(<String>['cuvs-yhwh-tr', 'biblexg-v2-tr']));
+    // 2026-09-08: the three new English editions, and the Greek tab
+    // that holds exactly one row.
+    expect(versionsForLanguage('en').map((v) => v.value),
+        containsAll(<String>['bsb-yhwh', 'asv-yhwh']));
+    expect(versionsForLanguage('el').map((v) => v.value), ['wh']);
   });
 
   test('bibleVersionLanguage resolves known codes + falls back safely', () {

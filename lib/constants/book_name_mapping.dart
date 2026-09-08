@@ -244,6 +244,26 @@ const _englishVersionCodes = <String>{
   'nasb',
   'csb',
   // 'niv' removed 2026-05 (see bible_versions.dart for licence rationale).
+  // 2026-09-08, from the 雅伟的话 export.
+  'bsb-yhwh',
+  'asv-yhwh',
+  // The Westcott-Hort is GREEK and belongs here anyway, which is the
+  // one entry in this set that needs explaining. What this set decides
+  // is not what language the VERSE is in — it is which book-name table
+  // to look the reader's book up in, and `assets/wh.json` keys its
+  // books in English ("Matthew", not "ΚΑΤΑ ΜΑΘΘΑΙΟΝ"). That was a
+  // deliberate choice in `tools/import_ydh_texts.py`: this app has no
+  // Greek book-name table, and inventing one would detach every
+  // highlight and note taken in the WH from the same verse in every
+  // other edition, because `Verse.id` resolves the book through
+  // `bookNameToEnglish`.
+  //
+  // Leave it out and `toLocale` falls through to the Chinese branch
+  // below, which would hand back 馬太福音 for a text whose own rows say
+  // Matthew — and every lookup keyed on the translated name (jumping to
+  // a cross-reference, a concordance hit, the Highlights sheet) would
+  // match nothing.
+  'wh',
 };
 
 String toLocale(String englishKey, String version) {

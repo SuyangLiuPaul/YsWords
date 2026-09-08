@@ -140,3 +140,90 @@ Not in this directory; they are prose notes or have no document.
 | CUVS-YHWH (简/繁) | `docs/cuv-yhwh-publisher-notes.md`; © Yahweh De Hua Ministry, used with permission |
 | LJK1 / LJK2 | © Bible Exegesis Ministry, used with permission — no written document on file |
 | JFB commentary | `docs/jfb-commentary-licence.md` |
+| BSB / BSB (Yahweh) | Public domain since 2023-04-30; Yahweh restoration © Yahweh De Hua Ministry — see below |
+| ASV (Yahweh) 1901 | Public domain by age; Yahweh restoration © Yahweh De Hua Ministry — see below |
+| WH Greek NT 1881 | Public domain — About page |
+
+---
+
+## 2026-09-08 — four texts from the 雅伟的话 export
+
+Built by `tools/import_ydh_texts.py` from
+`CodingProject/Yahwehdehua/app/build/bible.db`, the SQLite that project
+exports for its own phone app. No document is filed here for any of
+them, and none is owed: the three base texts are free, and the two
+restorations are this ministry's own work.
+
+**BSB and BSB (Yahweh).** The Berean Standard Bible has been public
+domain outright since **2023-04-30** — "any use, no permission
+required". `Yahwehdehua/PROJECT_STATE.md` records the same finding,
+along with the detail that the official tagged edition exists only as
+PDF and Word, which is why this app ships the untagged text.
+
+**ASV (Yahweh).** The American Standard Version of 1901 is public
+domain by age.
+
+**What the "(Yahweh)" editions add, and why the About page says so.**
+In both, the divine name is the ministry's own editorial restoration,
+not something the Berean or ASV translators published — BSB (Yahweh)
+reads Yahweh in 5,942 verses where the BSB prints the LORD, and ASV
+(Yahweh) in 5,787 where the 1901 text printed Jehovah. Nothing is owed
+for saying so; it is on the page because a reader told only "public
+domain" has been told the true half that matters least. The four verses
+where the ASV still shouts JEHOVAH inside a quoted inscription (Exod
+28:36, Exod 39:30, Deut 28:58, Zech 14:20) are left as the ministry left
+them.
+
+**Westcott-Hort Greek NT.** Published 1881, public domain by age. The
+module also carries the editors' own single and double brackets for
+doubtful text, which ship untouched.
+
+### Two texts in the same export that this app does NOT ship
+
+**The Septuagint — the licence is unresolved, and not ours to resolve.**
+The reflex is "the Septuagint is ancient, therefore public domain", and
+it is the wrong reflex: what carries copyright is the modern critical
+**edition**. `Yahwehdehua/PROJECT_STATE.md` records its own survey
+finding no source that was at once available, authoritative and clearly
+licensed — Rahlfs is claimed by the German Bible Society, CATSS requires
+a signed agreement, Swete is bare text. The module in the database did
+not settle that. It arrived from Peter on 2026-08-30, and the note
+recording its arrival says in the same breath 「授权仍归 Peter 判断」 —
+the licence is still Peter's to judge. Nothing in a theWord module names
+its edition, so this app could not even state which text it was
+offering.
+
+The exported database's own `meta.licence` string does assert "WH/LXX/
+WLC public domain". That line is the exporter's summary, written after
+the module was already loaded, and it does not survive being read beside
+the decision log above. **This file's rule is that what a reader is
+shown must match a document on file or a note in `docs/`; one sentence
+in a generated database is neither.**
+
+*To ship it:* get Peter's answer on which edition it is and whether it
+may be redistributed, file it here, then
+`python3 tools/import_ydh_texts.py lxx`, add the code to `SHIPPED` in
+that script, add a catalogue entry and an About-page row.
+
+**"CSB (Yahweh)" — it is the CSB above, a second time.** The export
+carries a text under that name. Its source is `bsapp_bible_hcsbs`, which
+is the table `tools/import_csb.py` already built `assets/csb.json` from
+on 2026-09-07. Measured verse by verse: **26,298 of 31,102 identical,
+1,633 differing only in whitespace, and the remaining 3,138 differing
+only by that importer's own two clean-ups** — the `? ”` spacing repair
+and the divine-name restoration.
+
+Shipping it as a distinct edition would put 6 MB of a licensed text in
+the bundle twice, under terms that are gratis only while the work is
+distributed free — and the naming would be backwards. The raw module
+reads Yahweh in **5,041** verses; the `csb` this app already offers
+reads it in **5,805**, Deuteronomy 6:4 among the difference:
+
+> module: "Listen, Israel: The Lord our God, the Lord is one."
+> shipped `csb`: "Listen, Israel: Yahweh our God, Yahweh is one."
+
+So the row labelled "(Yahweh)" would be the one showing a reader FEWER
+occurrences of the name than the row labelled plainly "CSB" above it.
+`test/ydh_imported_texts_test.dart` pins that measurement, so if the two
+ever genuinely diverge the reason recorded here fails rather than
+quietly stops being true.

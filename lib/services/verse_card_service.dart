@@ -105,6 +105,21 @@ String? verseCardLicence(String version, String locale) {
     'cuvs-yhwh-tr': 'aboutLicenseCuvsYhwh',
     'biblexg-v2': 'aboutLicenseLjk',
     'biblexg-v2-tr': 'aboutLicenseLjk',
+    // 2026-09-08. All four are imageable and none joins
+    // [kVerseImageRestrictedVersions]: the concern that set records is
+    // an edition whose permission the app cannot point at, and each of
+    // these can point at one. The BSB is public domain outright, the
+    // ASV by age, the Westcott-Hort by age; the two "(Yahweh)"
+    // restorations are this ministry's own editorial work, which is
+    // the same footing `cuvs-yhwh` has already been shared on.
+    //
+    // The restoration is why the two BSB rows share `aboutLicenseBsb`
+    // rather than the plain public-domain line: a card that leaves the
+    // app carrying "Yahweh is my shepherd" should say on its face whose
+    // reading that is, and "Public domain." would not.
+    'bsb-yhwh': 'aboutLicenseBsb',
+    'asv-yhwh': 'aboutLicenseAsvYhwh',
+    'wh': 'aboutLicensePublicDomain',
   };
   if (!verseImageAllowed(version)) return null;
   final key = keys[version];

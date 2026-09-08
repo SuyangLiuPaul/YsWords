@@ -22,7 +22,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// categories give the user explicit control over those (large)
 /// downloads.
 enum OfflinePackCategory {
-  /// All 7 Bible translations (~40 MB after NIV/CUV/CNV/LJK1 removal).
+  /// Every bundled Bible text `_bibleUrls` enumerates — 12 files,
+  /// ~69 MB on disk, measured 2026-09-08 with the four 雅伟的话 texts.
+  /// (The doc said "7 translations (~40 MB)" until then; it had been
+  /// wrong since the CSB landed the day before.)
   bibles,
 
   /// `sermonCount` (`lib/constants/sermon_credit.dart`) sermons × up to
@@ -280,6 +283,13 @@ class OfflinePackService extends ChangeNotifier {
     'assets/cuvs-yhwh-tr.json',
     'assets/biblexg-v2.json',
     'assets/biblexg-v2-tr.json',
+    // 2026-09-08: the four texts imported from the 雅伟的话 export.
+    // `assets/lxx.json` and a second CSB are absent from this list
+    // because they are absent from the build — see
+    // lib/constants/bible_versions.dart for why neither ships.
+    'assets/bsb-yhwh.json',
+    'assets/asv-yhwh.json',
+    'assets/wh.json',
   ];
 
   static const List<String> _toolsUrls = [
@@ -406,9 +416,21 @@ class OfflinePackService extends ChangeNotifier {
   int approximateMbFor(OfflinePackCategory c) {
     switch (c) {
       case OfflinePackCategory.bibles:
-        // 46 MB for 8 versions (was 40/7 before CSB, added 2026-09-07:
-        // ~45.78 MB on disk across the 8 files _bibleUrls enumerates).
-        return 46;
+        // 69 MB for 12 versions (was 46/8 before the four 雅伟的话 texts
+        // landed 2026-09-08: 68.87 MB on disk across the 12 files
+        // _bibleUrls enumerates, re-measured rather than added to the
+        // old figure — the 8 had already drifted to 48.0 MB).
+        //
+        // **This is the biggest single number on the offline-pack
+        // screen and it is a raw-bytes number, deliberately.** Every
+        // other category here states on-disk size too, so the five stay
+        // comparable to each other; a reader on a metered connection
+        // downloads far less, because Netlify gzips the JSON and these
+        // twelve compress to about 15 MB in total. Stating the smaller
+        // number for this one category alone would make the Bibles look
+        // cheaper than the maps, which are 29 MB of already-compressed
+        // JPEG and do not shrink at all.
+        return 69;
       case OfflinePackCategory.sermons:
         // Measured 2026-09-07 by summing the on-disk bytes of every
         // .txt _sermonUrls() actually enumerates (1147 files: 289 en +

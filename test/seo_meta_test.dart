@@ -247,10 +247,14 @@ void main() {
     };
 
     test('matches what the picker actually offers', () {
-      // 7 -> 8 on 2026-09-07 with the CSB. Both places this pins are
-      // hand-written marketing copy, which is exactly why it is pinned:
-      // the count is not derived at build time anywhere.
-      expect(entries.length, 8,
+      // 7 -> 8 on 2026-09-07 with the CSB. 8 -> 12 on 2026-09-08 with
+      // the Yahwehdehua imports, then 12 -> 11 the same day when plain
+      // BSB was removed on the owner's instruction 「bsbs 不用」 —
+      // BSB, BSB (Yahweh), ASV (Yahweh) and the Westcott-Hort Greek NT.
+      // Both places this pins are hand-written marketing copy, which is
+      // exactly why it is pinned: the count is not derived at build
+      // time anywhere.
+      expect(entries.length, 11,
           reason: 'the version list changed — the share card and the '
               'JSON-LD featureList both advertise a count and neither '
               'is derived at build time');

@@ -45,6 +45,15 @@ Future<void> eagerPreloadAllVersions(
     // LJK2 — NT-only specialty translation.
     'biblexg-v2',
     'biblexg-v2-tr',
+    // 2026-09-08: BSB, BSB (Yahweh), ASV (Yahweh) and the Westcott-Hort
+    // are deliberately NOT here, and this list being hand-picked rather
+    // than derived from `availableVersions` is what keeps that a
+    // choice. Every entry costs a ~1 s `json.decode` on the main thread
+    // at cold boot — the yield in the loop below exists because of
+    // that — so warming all four would buy four more seconds for
+    // editions most readers will never open. A version the reader does
+    // pick costs one decode at the moment they pick it, which is the
+    // trade this list already makes for every edition it omits.
   ];
   // 2026-09-02: skip editions this build has no asset for — on web the
   // NASB and LEB files are stripped for licensing. preloadVersion
