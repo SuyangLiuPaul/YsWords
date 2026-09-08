@@ -336,7 +336,16 @@ void main() {
       // public-domain string the way Westcott-Hort's does.
       expect(File('assets/lxx.json').existsSync(), isTrue);
       expect(bibleVersions.map((v) => v.value), contains('lxx'));
-      expect(versionsForLanguage('el').map((v) => v.value), ['wh', 'lxx']);
+      // 2026-09-09: the Septuagint is still SHIPPED — which is what
+      // this test is named for and what the licence reasoning above is
+      // about — but it is no longer OFFERED. Both `el` rows went into
+      // `disabledVersions` on the owner's word, 「words 其实希腊语可以
+      // hidden 的」, so the picker has no Greek tab. Nothing about the
+      // provenance changes: the asset ships, the About row still must
+      // not claim public domain, and the verse-image restriction below
+      // still stands. Hiding a row is not a licence.
+      expect(versionsForLanguage('el'), isEmpty);
+      expect(disabledVersions, containsAll(<String>['wh', 'lxx']));
       expect(File('pubspec.yaml').readAsStringSync(),
           contains('assets/lxx.json'));
 

@@ -355,8 +355,30 @@ MAX_STRONGS = {'H': 8674, 'G': 5624}
 TAGGED_EXPECTED = {
     'bsb-yhwh': {'verses': 31086, 'runs': 388449, 'numbered': 381927,
                  'implied': 55633},
-    'asv-yhwh': {'verses': 31086, 'runs': 346832, 'numbered': 346817,
-                 'implied': 0},
+    # 2026-09-09: was {'runs': 346832, 'numbered': 346817, 'implied': 0}.
+    #
+    # The publisher rebuilt the ASV(Yahweh) theWord module that morning,
+    # after 895 verses of the previous one shipped the literal string
+    # `None` glued to every word — 以弗所書 2:1 read `NoneAndNone
+    # NoneyouNone did he make alive, NonewhenNone …`. 19,167 glued
+    # `None`s, gone; the 12 that remain are the English word ("None
+    # ought to carry the ark"). Nothing else in the module moved: same
+    # 31,114 lines, same 346,817 Strong's tags, same 6,641 `<i>`.
+    #
+    # But the corruption was MASKING something real, which is why these
+    # three numbers move and `implied` in particular. A Strong's tag with
+    # no English word in front of it is an implied lemma — the thing
+    # `TaggedRun.i` exists for. In the broken module every tag had a word
+    # in front of it, because `None` was that word. With the fake words
+    # gone, 147 lines show a bare tag (`ye be<WG2075> <WG5100>
+    # reprobate<WG96>` — τις, which the ASV renders in nothing), and 22
+    # runs are correctly classified as implied instead of being counted
+    # as numbered words.
+    #
+    # So `implied: 0` was never a fact about the ASV. It was a fact
+    # about the corruption. `runs` and `numbered` fall by the same 22.
+    'asv-yhwh': {'verses': 31086, 'runs': 346810, 'numbered': 346795,
+                 'implied': 22},
 }
 
 # ASV John 8:11's orphaned closing bracket — see the docstring.

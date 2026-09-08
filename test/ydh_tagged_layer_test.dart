@@ -52,10 +52,31 @@ void main() {
       // rise above 0 still means what it always meant.
       markupVerses: 0,
     ),
+    // 2026-09-09: was runs 346832 / numbered 346817 / implied 0, and all
+    // three moved by the same 22 when the publisher rebuilt the
+    // ASV(Yahweh) theWord module.
+    //
+    // The module had been shipping 895 verses with the literal string
+    // `None` glued to every word — 以弗所書 2:1 read `NoneAndNone
+    // NoneyouNone did he make alive, NonewhenNone …`. What matters here
+    // is what that was HIDING. A Strong's tag with no English word in
+    // front of it is an implied lemma, which is what `TaggedRun.i` is
+    // for; in the broken module every tag had a word in front of it,
+    // because `None` was that word. With the fake words gone, 147 lines
+    // show a bare tag — `ye be<WG2075> <WG5100> reprobate<WG96>`, τις,
+    // which the ASV renders in nothing — and 22 runs are now correctly
+    // implied instead of counted as numbered words.
+    //
+    // So `implied: 0` was never a fact about the ASV. It was a fact
+    // about the corruption, and this edition's own row in
+    // `yahwehdehua_editions_test`'s "ASV-Y carries no implied numbers at
+    // all, because its source writes none" was reading the same
+    // artifact. `test/asv_yhwh_none_regression_test.dart` guards the
+    // text; this guards the count.
     'asv-yhwh': (
-      runs: 346832,
-      numbered: 346817,
-      implied: 0,
+      runs: 346810,
+      numbered: 346795,
+      implied: 22,
       markupVerses: 0,
     ),
   };

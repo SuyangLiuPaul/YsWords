@@ -108,7 +108,15 @@ void main() {
     // — see the doc comment on `bibleLanguageOrder`, which records both
     // that and the rejected alternative of filing the Greek under
     // English to avoid a fourth pill.
-    expect(bibleLanguageOrder, ['en', 'zh-Hant', 'zh-Hans', 'el']);
+    //
+    // 2026-09-09: and gone again. Both `el` rows are in
+    // `disabledVersions` on the owner's word — 「words 其实希腊语可以
+    // hidden 的」 — so this getter's "only languages that actually have
+    // at least one available version" filter drops the pill. It was
+    // written as defensive; this is the case it was defending against.
+    // `test/greek_hidden_test.dart` carries the reasoning and the
+    // stored-preference path.
+    expect(bibleLanguageOrder, ['en', 'zh-Hant', 'zh-Hans']);
     for (final lang in bibleLanguageOrder) {
       expect(versionsForLanguage(lang), isNotEmpty);
     }
@@ -142,9 +150,14 @@ void main() {
     // that holds exactly one row.
     expect(versionsForLanguage('en').map((v) => v.value),
         containsAll(<String>['bsb-yhwh', 'asv-yhwh']));
-    // 2026-09-08: `lxx` joined `wh`, so the Greek tab now covers both
+    // 2026-09-08: `lxx` joined `wh`, so the Greek tab covered both
     // testaments across two rows rather than being NT-only.
-    expect(versionsForLanguage('el').map((v) => v.value), ['wh', 'lxx']);
+    // 2026-09-09: both hidden, so the tab has no rows at all. The
+    // CATALOGUE still holds them — asserted below — because hidden is
+    // not removed.
+    expect(versionsForLanguage('el'), isEmpty);
+    expect(bibleVersions.map((v) => v.value),
+        containsAll(<String>['wh', 'lxx']));
   });
 
   test('bibleVersionLanguage resolves known codes + falls back safely', () {

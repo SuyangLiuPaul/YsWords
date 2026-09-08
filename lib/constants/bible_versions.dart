@@ -305,7 +305,50 @@ const bibleVersions = <BibleVersionInfo>[
 ///   * `version_preloader.dart` filters its warm-up queue through
 ///     [availableVersions], so the NASB drops out of it too.
 /// `test/nasb_hidden_test.dart` pins the whole chain.
-const disabledVersions = <String>{'nasb'};
+/// 2026-09-09: **the two Greek editions join it**, on the owner's word
+/// — 「words 其实希腊语可以 hidden 的」.
+///
+/// `wh` (Westcott-Hort NT) and `lxx` (Septuagint OT) are the only `el`
+/// rows, so hiding both removes the fourth language tab entirely, and
+/// that is the point rather than a side effect. This app is the one
+/// people read in; 雅伟之剑 is the one they check the original in, and it
+/// keeps both. A version picker in a reading app that offers a Greek
+/// New Testament as a fourth tab is offering a specialist row to
+/// everyone who opens the picker to switch between 和合本 and the BSB.
+///
+/// Nothing else needs touching, and this time that is worth checking
+/// rather than assuming, because hiding a WHOLE LANGUAGE is not the
+/// shape the NASB had:
+///   * [bibleLanguageOrder] already filters to the languages that have
+///     an available version, so the `el` pill disappears on its own —
+///     the "defensive against a future all-disabled language" branch is
+///     that future arriving.
+///   * [resolvableVersionFrom] cannot fall back within `el` any more,
+///     because there is no `el` left. It falls through to
+///     `available.first`, which is the safety net doing its job: a
+///     reader whose stored preference is `wh` lands on a real edition
+///     instead of on nothing. There is no crash path here of the kind
+///     the 2026-09-02 web strip shipped, because no locale DEFAULTS to
+///     Greek — only a stored preference can name it.
+///   * The interlinear picker is unaffected: it intersects with
+///     `TaggedTextService.taggedVersions`, and neither Greek edition has
+///     a tagged layer in this app, so neither was ever offered there.
+///
+/// **Hidden, not removed**, exactly as the NASB is. `assets/wh.json` and
+/// `assets/lxx.json` still ship, the catalogue keeps both entries so an
+/// old shared link still resolves to something describable, and the
+/// licence lines in `verse_card_service.dart` stay accurate. Reversing
+/// this is deleting two strings.
+///
+/// `test/greek_hidden_test.dart` pins the chain.
+///
+/// 2026-09-09, an hour later: `asv-yhwh` joined them for ninety minutes
+/// and is out again. 895 of its verses read `NoneAndNone NoneyouNone …`
+/// — a defect in the theWord module itself, upstream of the publisher's
+/// database and of us. The publisher rebuilt the module the same
+/// morning; the edition was re-imported and is offered again.
+/// `test/asv_yhwh_none_regression_test.dart` keeps it that way.
+const disabledVersions = <String>{'nasb', 'wh', 'lxx'};
 
 /// 2026-09-02: editions we may not redistribute as a fetchable file, and
 /// therefore do not ship in the WEB bundle.
@@ -433,6 +476,10 @@ String resolvableVersionFrom(
 /// all-disabled language).
 ///
 /// 2026-09-08: `el` joins it, LAST, for the Westcott-Hort Greek NT.
+/// 2026-09-09: and leaves it again — both `el` rows are in
+/// [disabledVersions], so the filter below drops the pill. The reasoning
+/// for where the tab WOULD sit is kept because the decision to hide is
+/// reversible and this is what it would go back to.
 ///
 /// The alternative considered and rejected was filing the WH under `en`
 /// rather than growing the selector. It would have been the smaller

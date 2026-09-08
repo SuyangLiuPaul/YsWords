@@ -25,6 +25,13 @@ import 'package:yswords/utils/interlinear_editions.dart';
 void main() {
   test('the picker offers exactly the tagged editions the app will show, '
       'in catalogue order', () {
+    // 2026-09-09: `asv-yhwh` left this list for ninety minutes and came
+    // back, without a line of code changing here either time — the
+    // intersection earning its keep twice in one morning. It was hidden
+    // because 895 of its verses read `NoneAndNone NoneyouNone …`, a
+    // defect in the theWord module itself; the publisher rebuilt the
+    // module and it was re-imported. See
+    // `test/asv_yhwh_none_regression_test.dart`.
     expect(interlinearEditions,
         ['bsb-yhwh', 'asv-yhwh', 'cuvs-yhwh', 'cuvs-yhwh-tr']);
   });
