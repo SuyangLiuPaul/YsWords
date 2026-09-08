@@ -65,6 +65,15 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Verse-image backgrounds. iOS 14+ picks through PHPicker, which
+	     runs out of process and needs no permission at all — this string
+	     exists for the older path and for the App Store review that asks
+	     what an app that links Photos wants with it. It says "one photo,
+	     onto one card" because that is the whole of it: the app reads the
+	     bytes of the picture the reader hands it, never browses the
+	     library, and keeps nothing after the sheet closes. -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose one of your own photos as the background of a verse image. The photo is used only on that card and is not stored or uploaded.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>

@@ -9,6 +9,16 @@
 // three backgrounds by two brightnesses — six cards, all of them
 // already in the app's palette, none of them a choice you can get
 // wrong.
+//
+// 2026-09-09: a fourth chip, the reader's own photograph, and the
+// count above is now eight cards rather than six. It cost one control,
+// not five, because the chip IS the picker — tapping it opens the
+// camera roll instead of selecting an empty style, so there is no
+// state in which the sheet shows a "Photo" background with no photo
+// in it and no explanation of how to put one there. The sliders
+// YouVersion hangs off this are still refused; see `verse_card.dart`.
+
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +27,7 @@ import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/verse_card_export.dart';
 import 'package:yswords/services/verse_card_service.dart';
+import 'package:yswords/services/verse_photo_picker.dart';
 import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/widgets/verse_card.dart';
@@ -107,6 +118,17 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
   Brightness? _brightness;
   bool _busy = false;
 
+  /// The reader's chosen photograph, held as a decoded provider for
+  /// the life of this sheet and no longer. Null until they pick one,
+  /// and back to null if they clear it.
+  MemoryImage? _photo;
+
+  /// True while the camera roll is open. Separate from [_busy], which
+  /// disables the export button: picking does not block the export of
+  /// the card already on screen, it just should not be startable
+  /// twice.
+  bool _picking = false;
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettings>();
@@ -169,6 +191,7 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
                     scheme: cardScheme,
                     style: _style,
                     fontFamily: settings.fontFamily,
+                    photo: _photo,
                   ),
                 ),
               ),
@@ -177,7 +200,14 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
             _StyleChips(
               locale: locale,
               selected: _style,
+              hasPhoto: _photo != null,
+              picking: _picking,
               onSelected: (s) => setState(() => _style = s),
+              onPickPhoto: _pickPhoto,
+              onClearPhoto: () => setState(() {
+                _photo = null;
+                _style = VerseCardStyle.plain;
+              }),
             ),
             const SizedBox(height: 10),
             _BrightnessToggle(
@@ -232,6 +262,59 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
         ),
       ),
     );
+  }
+
+  /// Open the camera roll, and switch to the photo style only once
+  /// the picture is decoded and in the image cache.
+  ///
+  /// **The `precacheImage` is load-bearing and the ordering with it
+  /// is the whole method.** `captureVerseCardPng` rasterises whatever
+  /// the repaint boundary last PAINTED; a `DecorationImage` whose
+  /// provider is still decoding paints nothing and resolves a frame or
+  /// two later. Flip the style first and a reader who taps Share
+  /// immediately exports their verse on an empty veil — and it would
+  /// look right on screen by the time they noticed, because the photo
+  /// would have arrived in between. So the style is flipped after the
+  /// await, which also means the preview never shows a blank card.
+  Future<void> _pickPhoto() async {
+    if (_picking) return;
+    setState(() => _picking = true);
+    final bytes = await pickVersePhoto();
+    if (!mounted) return;
+    if (bytes == null) {
+      // Backing out of the camera roll is the ordinary case, not a
+      // failure, so it is silent. See `pickVersePhoto`, which cannot
+      // tell a cancel from a refused permission and does not pretend
+      // to.
+      setState(() => _picking = false);
+      return;
+    }
+    final image = MemoryImage(Uint8List.fromList(bytes));
+    try {
+      await precacheImage(image, context);
+    } catch (_) {
+      // A file the picker accepted and the engine cannot decode. Say
+      // so instead of switching to a style that would paint a bare
+      // scrim and look like the app had lost the picture.
+      if (!mounted) return;
+      final locale = context.read<AppSettings>().locale;
+      setState(() => _picking = false);
+      showFloatingToast(
+        context,
+        message: uiStrings['versePhotoFailed']?[locale] ??
+            "Couldn't read that photo.",
+        icon: Icons.error_outline_rounded,
+        background: Theme.of(context).colorScheme.error,
+        duration: const Duration(milliseconds: 2600),
+      );
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _photo = image;
+      _style = VerseCardStyle.photo;
+      _picking = false;
+    });
   }
 
   Future<void> _export() async {
@@ -315,12 +398,20 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
 class _StyleChips extends StatelessWidget {
   final String locale;
   final VerseCardStyle selected;
+  final bool hasPhoto;
+  final bool picking;
   final ValueChanged<VerseCardStyle> onSelected;
+  final VoidCallback onPickPhoto;
+  final VoidCallback onClearPhoto;
 
   const _StyleChips({
     required this.locale,
     required this.selected,
+    required this.hasPhoto,
+    required this.picking,
     required this.onSelected,
+    required this.onPickPhoto,
+    required this.onClearPhoto,
   });
 
   @override
@@ -340,6 +431,48 @@ class _StyleChips extends StatelessWidget {
             label: Text(uiStrings[entry.value]?[locale] ?? entry.value),
             selected: selected == entry.key,
             onSelected: (_) => onSelected(entry.key),
+          ),
+        // The photo chip is not a fourth member of the loop above and
+        // could not be: those three select a style that already
+        // exists, and this one has to GO AND GET the thing it selects
+        // the first time it is tapped. Tapping it with a photo
+        // already chosen selects the style like any other chip;
+        // tapping it while it is already selected re-opens the camera
+        // roll, which is how a reader swaps the picture without first
+        // having to work out that they must clear it.
+        if (canPickVersePhoto)
+          ChoiceChip(
+            avatar: picking
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.image_outlined, size: 18),
+            label: Text(uiStrings['verseCardStylePhoto']?[locale] ?? 'Photo'),
+            selected: selected == VerseCardStyle.photo,
+            onSelected: picking
+                ? null
+                : (_) {
+                    if (!hasPhoto || selected == VerseCardStyle.photo) {
+                      onPickPhoto();
+                    } else {
+                      onSelected(VerseCardStyle.photo);
+                    }
+                  },
+          ),
+        // Only reachable once there is something to remove, and it
+        // says "remove the photo" rather than "back to Plain" because
+        // that is the part the reader cares about — the picture came
+        // out of their camera roll and they may well want it out of
+        // the app again before they hand the phone to someone.
+        if (hasPhoto)
+          ActionChip(
+            avatar: const Icon(Icons.close_rounded, size: 18),
+            label: Text(
+              uiStrings['verseCardPhotoRemove']?[locale] ?? 'Remove photo',
+            ),
+            onPressed: picking ? null : onClearPhoto,
           ),
       ],
     );

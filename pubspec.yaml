@@ -127,6 +127,19 @@ dependencies:
   webview_flutter: ^4.14.1
   webview_flutter_wkwebview: ^3.26.0
   webview_flutter_android: ^4.14.0
+  # Verse-image backgrounds. `verse_card.dart` originally rejected a
+  # photo library outright — "an asset-licensing problem this app does
+  # not need" — and that argument is untouched by this: the reader's
+  # OWN photo carries no licence for us to get wrong. The owner asked
+  # for it on 2026-09-09 (「没有地方选自己手机的图啊」).
+  #
+  # Bytes-only, and deliberately: `pickImage` gives an `XFile` whose
+  # path is a platform detail (a blob URL on the web, a cache path on
+  # Android), while `readAsBytes` is the one shape that works
+  # everywhere and is the only shape a `MemoryImage` — and therefore
+  # the export — can use. Nothing is written to disk and nothing is
+  # kept past the sheet.
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:
@@ -140,6 +153,13 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.3
+  # Test-only, and the reason it is named here rather than left
+  # transitive: `test/verse_photo_test.dart` swaps
+  # `ImagePickerPlatform.instance` for a fake so the photo tests never
+  # touch a camera roll. Depending on a package's implementation
+  # detail by accident is how a `flutter pub upgrade` breaks a suite
+  # for no visible reason; declaring it makes the coupling a decision.
+  image_picker_platform_interface: ^2.11.1
 
 flutter:
   uses-material-design: true

@@ -61,6 +61,72 @@ the `# YsWords export` / `YsWords.json` format markers — an old backup
 must import into the renamed app. AI features say "AI", never the app
 name. On Android the apostrophe must reach values.xml escaped (\').
 
+## 2026-09-09 — the reader's own photograph on a verse card
+
+The owner asked 「很多没有自然的图片或者可爱的图片可以加这个选项吗」 and,
+when the answer was a recommendation rather than a build, closed it with
+the sentence that settled it: 「没有地方选自己手机的图啊」.
+
+**What was reopened and what was not.** `verse_card.dart` had recorded a
+rejection in its own header — YouVersion's editor, "and the photo library
+is an asset-licensing problem this app does not need." Half of that
+still stands and is written into the amended note: the photograph comes
+out of the reader's camera roll, so there is no bundled image set, no
+stock-photo terms, and nothing shipped in the app that somebody else
+owns. The sliders are still refused. `VerseCardStyle.photo` adds **zero**
+controls: the scrim is fixed, the type ladder is untouched, and the
+existing Light/Dark toggle does the only work a photo card needs
+(dark veil + white ink, or light veil + near-black ink). Six cards
+became eight, not sixty.
+
+**The chip IS the picker.** Tapping 自己的照片 with nothing chosen opens
+the camera roll rather than selecting an empty style, so the sheet has
+no state in which it claims a photo background and shows none. Tapping
+it while it is already selected re-opens the roll, which is how the
+picture gets swapped without the reader first having to discover that
+they must clear it. 移除照片 appears only once there is something to
+remove, and is worded for what the reader cares about — the picture came
+out of their camera roll and may want to be out of the app again before
+the phone is handed to somebody.
+
+**Nothing is stored.** `pickVersePhoto` is bytes in, bytes out; the
+`MemoryImage` lives in the sheet's `State` and goes when the sheet does.
+Remembering the last photograph would mean keeping a copy of somebody's
+picture inside the app's own storage, which is a promise this app has
+not made. `readAsBytes` rather than `XFile.path` because the path means
+four different things on four platforms (a blob URL on the web, a cache
+path on Android) and bytes mean one.
+
+**The failure this feature actually has is invisible on screen.**
+`RenderRepaintBoundary.toImage` captures the last frame that was
+*painted*, and a `DecorationImage` whose provider is still decoding
+paints nothing — so the picture can be on the reader's screen and
+absent from the file they just sent, and by the time they look it has
+arrived. `_pickPhoto` therefore `precacheImage`s **before** it flips the
+style, and `test/verse_photo_test.dart` rasterises through the real
+export path rather than asserting on the widget tree.
+
+**Two tests were written badly first and mutation-testing caught it.**
+Deleting the photograph from the card's decoration failed only ONE of
+the three tests that claimed to be about the photograph: "the veil is
+real" asserted the exported magenta was `< 255`, which the photo-less
+fallback fill satisfies, and the light/dark comparison held between the
+two fallback fills as well. Both were rewritten against a band strictly
+between the fill and the raw colour — pure green, 120 < g < 250 — so
+they now fail if the picture is missing AND fail if the scrim is.
+Re-run: dropping the photo fails 3, dropping the scrim fails 3.
+
+**iOS gets an `NSPhotoLibraryUsageDescription` it does not strictly
+need.** iOS 14+ picks through PHPicker, which runs out of process and
+requires no permission; the string is there for the older path and for
+the review question an app that links Photos gets asked.
+
+New: `lib/services/verse_photo_picker.dart`, `test/verse_photo_test.dart`.
+`image_picker` is a dependency; `image_picker_platform_interface` is a
+declared dev dependency because the tests swap
+`ImagePickerPlatform.instance` for a fake and a coupling that deliberate
+should not be left transitive.
+
 ## 2026-09-08 — the 對齊項目's Yahwehdehua line
 
 **Three texts added, two held back, and 和合本雅偉版 thawed a second

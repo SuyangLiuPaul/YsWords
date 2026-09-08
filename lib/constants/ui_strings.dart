@@ -7896,6 +7896,26 @@ const uiStrings = {
     'zh-Hant': '漸層',
     'en': 'Gradient',
   },
+  // 2026-09-09. The three above name a colour treatment; this one
+  // names where the picture comes from, and it says 自己的照片 rather
+  // than 图片 for that reason — the owner's ask was 「没有地方选自己手机
+  // 的图啊」, and a chip reading just 图片 would look like the app had
+  // brought its own.
+  'verseCardStylePhoto': {
+    'zh-Hans': '自己的照片',
+    'zh-Hant': '自己的照片',
+    'en': 'My photo',
+  },
+  'verseCardPhotoRemove': {
+    'zh-Hans': '移除照片',
+    'zh-Hant': '移除照片',
+    'en': 'Remove photo',
+  },
+  'versePhotoFailed': {
+    'zh-Hans': '这张照片读不了，换一张试试。',
+    'zh-Hant': '這張照片讀不了，換一張試試。',
+    'en': "Couldn't read that photo — try another.",
+  },
   'verseCardLight': {
     'zh-Hans': '浅色',
     'zh-Hant': '淺色',
