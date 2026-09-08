@@ -76,7 +76,24 @@ const double kVerseCardPixelRatio = 3.0;
 /// ministry text this project publishes with permission and already
 /// reproduces at will (`cuvs-yhwh`, `biblexg-v2`, and their
 /// Traditional editions).
-const Set<String> kVerseImageRestrictedVersions = <String>{'csb', 'nasb'};
+const Set<String> kVerseImageRestrictedVersions = <String>{
+  'csb',
+  'nasb',
+  // 2026-09-08. The Septuagint joins them, and it is the first entry
+  // here that is NOT a licensed modern translation. What this set
+  // records is an edition whose permission the app cannot point at, and
+  // the LXX is exactly that: what carries copyright in a Septuagint is
+  // the modern critical EDITION, and the module does not name the one it
+  // follows. The owner decided to ship the text (「用 yahwehdehua lxxs
+  // 版本吧」) and that is his to decide; putting it on a card that leaves
+  // the app and travels is a second, further act of redistribution, and
+  // the rule this file follows — anything a reader is shown must match a
+  // document on file — has nothing to point at for it.
+  //
+  // Reading it in the app is unaffected. If the edition is ever
+  // identified, deleting this entry is the whole change.
+  'lxx',
+};
 
 /// Whether [version] may be rendered as a shareable image.
 bool verseImageAllowed(String version) =>
@@ -120,6 +137,13 @@ String? verseCardLicence(String version, String locale) {
     'bsb-yhwh': 'aboutLicenseBsb',
     'asv-yhwh': 'aboutLicenseAsvYhwh',
     'wh': 'aboutLicensePublicDomain',
+    // The Septuagint is deliberately ABSENT from this map: it is in
+    // [kVerseImageRestrictedVersions], so it never reaches a card and a
+    // licence line for it would be a claim with nothing behind it. Its
+    // About-page row is `aboutLicenseLxx`, which states provenance and
+    // stops there. WH sits above it on public domain because we know it
+    // is Westcott and Hort 1881; nobody knows what edition the LXX
+    // module is.
   };
   if (!verseImageAllowed(version)) return null;
   final key = keys[version];

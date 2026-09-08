@@ -1678,10 +1678,10 @@ const uiStrings = {
   // now checks this file too — it previously covered only the share
   // card and index.html, which is how this survived.
   'onboardWelcomeBody': {
-    'zh-Hans': '双语圣经阅读应用，11 个版本（英文／简体／繁体／希腊文）。主页的「读经」卡片会带你回到上次离开的位置。',
-    'zh-Hant': '雙語聖經閱讀應用，11 個版本（英文／簡體／繁體／希臘文）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
+    'zh-Hans': '双语圣经阅读应用，12 个版本（英文／简体／繁体／希腊文）。主页的「读经」卡片会带你回到上次离开的位置。',
+    'zh-Hant': '雙語聖經閱讀應用，12 個版本（英文／簡體／繁體／希臘文）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
     'en':
-        'A bilingual Bible reader with 11 versions across English, Chinese and Greek. The "Read Bible" card on Home picks up exactly where you left off.',
+        'A bilingual Bible reader with 12 versions across English, Chinese and Greek. The "Read Bible" card on Home picks up exactly where you left off.',
   },
   'onboardReadTitle': {
     'zh-Hans': '阅读、高亮、研经',
@@ -1903,9 +1903,9 @@ const uiStrings = {
   // `test/offline_pack_counts_test.dart` derives the number from
   // `bible_versions.dart` and fails on any of the three locales.
   'offlinePackBibles': {
-    'zh-Hans': '圣经版本（共 11 个）',
-    'zh-Hant': '聖經版本（共 11 個）',
-    'en': 'Bibles (11 versions)',
+    'zh-Hans': '圣经版本（共 12 个）',
+    'zh-Hant': '聖經版本（共 12 個）',
+    'en': 'Bibles (12 versions)',
   },
   // {name} is filled from sermon_credit.dart — the single source for
   // the preacher's name. The count was 587, which was the sum of every
@@ -4201,6 +4201,23 @@ const uiStrings = {
     'en': 'Application licence',
   },
   // Per-version licence rows.
+  // 2026-09-08. Deliberately states provenance and NOT a licence: the
+  // module does not name the critical edition it follows, and the note
+  // recording its arrival in the source project reads 「授权仍归 Peter
+  // 判断」. Saying "public domain" here would be the app asserting the
+  // one fact nobody has established.
+  'aboutVerLxx': {
+    'zh-Hans': 'LXX — 七十士译本（希腊文旧约）',
+    'zh-Hant': 'LXX — 七十士譯本（希臘文舊約）',
+    'en': 'LXX — Septuagint (Greek Old Testament)',
+  },
+  'aboutLicenseLxx': {
+    'zh-Hans': '希腊文旧约 · 模块由《雅伟的话》项目提供 · 模块未注明所依据的校勘本。',
+    'zh-Hant': '希臘文舊約 · 模組由《雅偉的話》項目提供 · 模組未註明所依據的校勘本。',
+    'en':
+        'Greek Old Testament. Module supplied by the 雅伟的话 project; it '
+        'does not name the critical edition it follows.',
+  },
   'aboutLicensePublicDomain': {
     'zh-Hans': '公有领域 · 无版权限制。',
     'zh-Hant': '公有領域 · 無版權限制。',

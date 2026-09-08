@@ -291,6 +291,7 @@ class OfflinePackService extends ChangeNotifier {
     'assets/bsb-yhwh.json',
     'assets/asv-yhwh.json',
     'assets/wh.json',
+    'assets/lxx.json',
   ];
 
   static const List<String> _toolsUrls = [

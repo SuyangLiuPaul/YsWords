@@ -146,6 +146,62 @@ Not in this directory; they are prose notes or have no document.
 
 ---
 
+## 2026-09-08 — the Septuagint, and what this app does NOT claim about it
+
+**Shipped as `lxx`, on the owner's instruction, with no licence
+asserted.** This section exists because that combination is unusual and
+should not be discovered later as an oversight.
+
+### What is known
+
+| | |
+|---|---|
+| Source | `bsapp_bible_lxxs` in `Yahwehdehua/app/build/bible.db`, imported by `tools/import_ydh_texts.py lxx` |
+| Where it came from | Peter supplied the module `LXX-WH+.ont` (theWord, 2026-08-30 build) directly to the 雅伟的话 project |
+| Which critical edition it is | **Unknown.** A theWord module does not name its edition, and nothing in the export does either |
+| Licence | **Unresolved.** The note recording its arrival reads 「授权仍归 Peter 判断」 — the licence remains Peter's to judge |
+
+The reflex is "the Septuagint is ancient, so it is public domain." That
+reflex is wrong in the way that matters: the Greek is ancient, but what
+carries copyright is the **modern critical edition** that reconstructs
+it. `Yahwehdehua/PROJECT_STATE.md` records its own survey reaching that
+conclusion — Rahlfs is claimed by the German Bible Society, CATSS
+requires a signed agreement, Swete is bare text, STEPBible's TAGOT was
+unreleased — and a second line in the same file says the edition
+question 「不宜擅自采用，需 Raymond 判断版本」.
+
+### The decision, and who made it
+
+The owner was shown this position **and** the alternative — that the
+sibling app's `lxxwh` is Eagle's View's electronic edition, whose grant
+is written down in this file — and chose this module anyway:
+
+> 用 yahwehdehua lxxs 版本吧 — owner, 2026-09-08
+
+That is his to decide and it is recorded here rather than argued with.
+
+### What the app therefore does and does not say
+
+The rule this repo follows is that **anything a reader is shown must
+match a document on file.** There is no document here, so the app shows
+provenance and stops:
+
+* The About row (`aboutLicenseLxx`) says the module was supplied by the
+  雅伟的话 project and **does not name a critical edition**. It does
+  **not** say "public domain" — `test/ydh_imported_texts_test.dart`
+  asserts the absence of that phrase in all three locales.
+* `editionYear` is not a year. Every other row can name its edition;
+  this one cannot, and filling the field with "Rahlfs" or "1935" would
+  be the app asserting the single fact that decides the licence.
+* `lxx` is in `kVerseImageRestrictedVersions`. Reading it in the app is
+  unaffected; putting it on a shareable image that leaves the app is a
+  further act of redistribution, and there is nothing to print on the
+  card as a licence.
+
+**If the edition is ever identified**, that is the moment to revisit all
+three. Deleting the `kVerseImageRestrictedVersions` entry and rewriting
+`aboutLicenseLxx` is the whole change.
+
 ## 2026-09-08 — four texts from the 雅伟的话 export
 
 Built by `tools/import_ydh_texts.py` from

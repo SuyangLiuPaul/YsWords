@@ -6,6 +6,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/book_names.dart';
+import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/services/verse_card_service.dart';
 
 /// The four texts imported from the 雅伟的话 export on 2026-09-08 —
 /// BSB, BSB (Yahweh), ASV (Yahweh) and the Westcott-Hort Greek NT.
@@ -303,27 +305,60 @@ void main() {
         () {
       // Not shipped is a decision, not a gap. The script keeps the
       // recipe so that answering the question is an asset and a
-      // catalogue entry rather than a fresh investigation — and the
-      // same is true of the Septuagint beside it.
+      // catalogue entry rather than a fresh investigation. The
+      // Septuagint sat beside it here until 2026-09-08 and is now
+      // shipped — which is exactly the path this comment described.
       expect(importer, contains("Text('csb-yhwh', 'hcsbs'"));
       expect(importer, contains("Text('lxx', 'lxxs'"));
       final ships = RegExp(r'SHIPPED = \{([^}]*)\}').firstMatch(importer);
       expect(ships, isNotNull);
       expect(ships!.group(1), isNot(contains('csb-yhwh')));
-      expect(ships.group(1), isNot(contains("'lxx'")));
       for (final code in shipped) {
         expect(ships.group(1), contains("'$code'"));
       }
     });
 
-    test('the Septuagint is not shipped either, and for its own reason',
+    test('the Septuagint IS shipped, and the About row claims no licence',
         () {
-      expect(File('assets/lxx.json').existsSync(), isFalse);
-      expect(bibleVersions.map((v) => v.value), isNot(contains('lxx')));
-      // The Greek tab exists for the Westcott-Hort alone. If the LXX
-      // question is ever answered, this is the assertion that has to be
-      // changed on purpose.
-      expect(versionsForLanguage('el').map((v) => v.value), ['wh']);
+      // This test asserted the opposite until 2026-09-08 and named
+      // itself the assertion that would have to be changed on purpose
+      // if the question were ever answered. It was not answered — the
+      // owner DECIDED, 「用 yahwehdehua lxxs 版本吧」, after being shown
+      // both this position and the alternative (the sibling app's
+      // `lxxwh`, Eagle's View's electronic edition, whose grant is
+      // written down). Changing it on purpose is what this is.
+      //
+      // What the repo still owes is that nothing overstates what is
+      // known, and that is the load-bearing half of this test: the
+      // module does not name the critical edition it follows, and what
+      // carries copyright in a Septuagint is the modern critical
+      // edition. So the About row must NOT resolve to the
+      // public-domain string the way Westcott-Hort's does.
+      expect(File('assets/lxx.json').existsSync(), isTrue);
+      expect(bibleVersions.map((v) => v.value), contains('lxx'));
+      expect(versionsForLanguage('el').map((v) => v.value), ['wh', 'lxx']);
+      expect(File('pubspec.yaml').readAsStringSync(),
+          contains('assets/lxx.json'));
+
+      // It may be READ but not turned into a shareable image: a card
+      // leaving the app is a further act of redistribution, and this
+      // one has no document to point at.
+      expect(verseImageAllowed('wh'), isTrue);
+      expect(verseImageAllowed('lxx'), isFalse,
+          reason: 'the module does not name its critical edition, so the '
+              'app has nothing to print as a licence on a card');
+
+      // And the About row a reader sees states provenance, not licence.
+      final about = File('lib/pages/about_page.dart').readAsStringSync();
+      expect(about, contains("uiStrings['aboutLicenseLxx']"));
+      for (final locale in ['zh-Hans', 'zh-Hant', 'en']) {
+        final row = uiStrings['aboutLicenseLxx']![locale]!;
+        expect(row, isNotEmpty, reason: locale);
+        expect(row.toLowerCase(), isNot(contains('public domain')),
+            reason: locale);
+        expect(row, isNot(contains('公有领域')), reason: locale);
+        expect(row, isNot(contains('公有領域')), reason: locale);
+      }
     });
   });
 

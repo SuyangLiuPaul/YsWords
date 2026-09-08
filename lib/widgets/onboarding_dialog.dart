@@ -242,7 +242,7 @@ class _OnboardingDialogState extends State<OnboardingDialog> {
           // was written, and only ever renders for a locale the map is
           // missing — so it would have been wrong invisibly.
           body: uiStrings['onboardWelcomeBody']?[locale] ??
-              'A bilingual Bible reader with 11 versions across English, Chinese and Greek. The "Read Bible" card on Home picks up exactly where you left off.',
+              'A bilingual Bible reader with 12 versions across English, Chinese and Greek. The "Read Bible" card on Home picks up exactly where you left off.',
         ),
         _Slide(
           icon: Icons.format_color_fill,

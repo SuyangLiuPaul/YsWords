@@ -84,7 +84,10 @@ void main() {
     // have to be named, exactly as the four before them are.
     const english = {'kjv', 'leb', 'nasb', 'csb', 'bsb', 'bsb-yhwh',
                      'asv-yhwh'};
-    const greek = {'wh'};
+    // 2026-09-08:  joined . The else-branch below defaults an
+    // unlisted code to Simplified, so a new Greek row that is not named
+    // here fails with 'should be Simplified' -- which is what happened.
+    const greek = {'wh', 'lxx'};
     for (final v in bibleVersions) {
       if (english.contains(v.value)) {
         expect(v.language, 'en', reason: '${v.value} should be English');
@@ -139,7 +142,9 @@ void main() {
     // that holds exactly one row.
     expect(versionsForLanguage('en').map((v) => v.value),
         containsAll(<String>['bsb-yhwh', 'asv-yhwh']));
-    expect(versionsForLanguage('el').map((v) => v.value), ['wh']);
+    // 2026-09-08: `lxx` joined `wh`, so the Greek tab now covers both
+    // testaments across two rows rather than being NT-only.
+    expect(versionsForLanguage('el').map((v) => v.value), ['wh', 'lxx']);
   });
 
   test('bibleVersionLanguage resolves known codes + falls back safely', () {

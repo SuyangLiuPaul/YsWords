@@ -90,18 +90,27 @@ const bibleVersions = <BibleVersionInfo>[
   // **Two of the six texts in that export are NOT here, and neither
   // omission is an oversight.**
   //
-  //   * **Septuagint (`lxxs`).** The reflex is "the Septuagint is
-  //     ancient, so it is public domain", and it is the wrong reflex:
-  //     what carries copyright is the modern critical EDITION.
+  //   * **Septuagint (`lxxs`) — held for a few hours, then SHIPPED.**
+  //     The reflex is "the Septuagint is ancient, so it is public
+  //     domain", and it is the wrong reflex: what carries copyright is
+  //     the modern critical EDITION.
   //     `Yahwehdehua/PROJECT_STATE.md` records its own survey finding
   //     no source that was at once available, authoritative and clearly
   //     licensed — Rahlfs is claimed by the German Bible Society, CATSS
   //     needs a signed agreement — and the module that ended up in the
   //     database did not settle it: the note recording its arrival says
   //     「授权仍归 Peter 判断」, the licence is still Peter's to judge.
-  //     Nothing in a theWord module even names its edition, so this app
-  //     could not say which text it was offering. That gets answered in
-  //     `docs/permissions/`, not here.
+  //     Nothing in a theWord module even names its edition.
+  //
+  //     It was held on that basis, and the owner then decided
+  //     otherwise: 「用 yahwehdehua lxxs 版本吧」, 2026-09-08, said after
+  //     he was shown this position AND the alternative — that the
+  //     sibling app's `lxxwh` is Eagle's View's electronic edition,
+  //     whose grant IS written down. He chose this module knowing that.
+  //     It is his call to make; what this repo owes is that the About
+  //     row then says only what is known. It does: the row names the
+  //     module's provenance and does NOT claim public domain, because
+  //     nobody has established that. See `docs/permissions/README.md`.
   //   * **CSB (Yahweh) (`hcsbs`).** It is the `csb` directly above.
   //     Same module, `bsapp_bible_hcsbs`, which `tools/import_csb.py`
   //     already built `assets/csb.json` from: 26,298 of 31,102 verses
@@ -166,6 +175,22 @@ const bibleVersions = <BibleVersionInfo>[
     menuLabel: 'Westcott-Hort Greek NT',
     language: 'el',
     editionYear: '1881',
+  ),
+  // The Greek Old Testament, so `el` now covers both testaments across
+  // two rows rather than one NT-only row. OT-only, so it needs a
+  // [bibleVersionFullCanonFallback] for the same reason `wh` does.
+  //
+  // `editionYear` is deliberately NOT a year. Every other row here can
+  // name the edition it is; this one cannot, because the module does
+  // not say, and inventing "Rahlfs" or "1935" to fill the field would
+  // be the app asserting a fact nobody has established — about the one
+  // text whose licence turns on exactly which edition it is.
+  BibleVersionInfo(
+    value: 'lxx',
+    shortLabel: 'LXX',
+    menuLabel: 'Septuagint (Greek OT)',
+    language: 'el',
+    editionYear: 'critical edition unnamed by the module',
   ),
   // NIV (New International Version) was previously listed here.
   // Removed in 2026-05 — Biblica / Zondervan retain commercial
@@ -554,6 +579,12 @@ String? bibleVersionFullCanonFallback(String version) {
     // edition existed here. It is the same translation — the Yahweh
     // edition differs only in restoring the divine name, which is what
     // this whole app is for — so the reasoning above transfers intact.
+    case 'lxx':           // Septuagint (Greek, OT only)
+      // The mirror image of `wh` below, and the same partner for the
+      // same reason: a reader on the Greek OT who follows a New
+      // Testament reference must land somewhere, and BSB (Yahweh) is
+      // the modern English this catalogue pairs with Greek.
+      return 'bsb-yhwh';
     case 'wh':            // Westcott-Hort (Greek, NT only)
       return 'bsb-yhwh';  // Berean Standard Bible (English, full canon)
   }

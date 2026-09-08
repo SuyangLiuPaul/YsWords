@@ -194,8 +194,11 @@ TEXTS = [
          '(1881). Public domain by age.'),
     # ---- built on request, NOT offered to a reader ----
     Text('lxx', 'lxxs', 23145, 39, 303,
-         'Septuagint. NOT SHIPPED — the edition is unidentified and the '
-         'licence is unresolved. See SHIPPED below.'),
+         'Septuagint (Greek OT). Shipped 2026-09-08 on the owner\'s '
+         'instruction. The module does not name the critical edition it '
+         'follows, and the licence note where it arrived reads '
+         '「授权仍归 Peter 判断」 — so the About row says what is known '
+         'and claims nothing more. See docs/permissions/README.md.'),
     Text('csb-yhwh', 'hcsbs', 31102, 66, 0,
          'CSB (Yahweh). NOT SHIPPED — this app already ships this exact '
          'module as `csb`, and ships it better. See SHIPPED below.'),
@@ -246,7 +249,15 @@ TEXTS = [
 # is not a distinct edition a reader could choose between; it is the same
 # licensed text a second time, 6 MB of it, under a label that describes
 # the other row.
-SHIPPED = {'bsb', 'bsb-yhwh', 'asv-yhwh', 'wh'}
+SHIPPED = {'bsb-yhwh', 'asv-yhwh', 'wh', 'lxx'}
+# 'bsb' was shipped for a few hours on 2026-09-08 and withdrawn the same
+# day: 「bsbs 不用，就 bsb yahweh 版本导入」.
+# 'lxx' was NOT shipped on 2026-09-08 and then WAS, later the same day,
+# on the owner's explicit instruction 「用 yahwehdehua lxxs 版本吧」 —
+# given after he was shown both options and what separates them. The
+# licence position is unchanged by that and is recorded verbatim in
+# docs/permissions/README.md; what changed is that the decision is his
+# and he made it.
 
 BY_CODE = {t.code: t for t in TEXTS}
 

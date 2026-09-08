@@ -160,6 +160,7 @@ flutter:
     - assets/bsb-yhwh.json
     - assets/asv-yhwh.json
     - assets/wh.json
+    - assets/lxx.json
     # CUV, CUV-tr, CNV, CNV-tr, biblexg (LJK1), biblexg-tr removed
     # 2026-08 — deleted outright, superseded by cuvs-yhwh /
     # biblexg-v2 (see lib/constants/bible_versions.dart).

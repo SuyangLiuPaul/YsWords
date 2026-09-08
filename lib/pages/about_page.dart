@@ -629,6 +629,21 @@ class _ScripturesTable extends StatelessWidget {
         licence: uiStrings['aboutLicensePublicDomain']?[locale] ??
             'Public domain.',
       ),
+      // The row beneath it says something different on purpose. WH is
+      // public domain BY AGE, and we can say so because we know the
+      // edition is Westcott and Hort 1881. In a Septuagint what carries
+      // copyright is the modern critical edition, and this module does
+      // not name the one it follows — so this row states where the text
+      // came from and claims nothing about its licence.
+      _AttribRow(
+        name: uiStrings['aboutVerLxx']?[locale] ??
+            'LXX — Septuagint (Greek Old Testament)',
+        licence: uiStrings['aboutLicenseLxx']?[locale] ??
+            'Greek Old Testament. Module supplied by the 雅伟的话 '
+                'project; it does not name the critical edition it '
+                'follows.',
+        url: 'https://yahwehdehua.net/cn/bible',
+      ),
       _AttribRow(
         name: uiStrings['aboutVerCuvsYhwh']?[locale] ??
             'CUVS-YHWH (和合本雅伟版, 简/繁)',
