@@ -250,7 +250,14 @@ void main() {
     // 184 -> 191 (second pass, same day): the 8-word omission repair moved
     // the reading text away from the tagged import in 7 more verses, same
     // shape as the six above — named in the two files that own this figure.
-    expect(fallback, 191);
+    //
+    // 191 -> 185 (2026-09-09): 6 of those 7 — 利未記 8:14, 列王紀上 15:31,
+    // 歷代志下 18:18, 以西結書 10:1, 列王紀下 13:10, 耶利米書 11:2 — were
+    // spliced into the existing Strong's run each restored word belongs
+    // under (docs/autonomous-queue.md :2548). The 7th, 士師記 15:13's 以坦
+    // (Etam), needs a brand-new run/Strong's number rather than a splice
+    // into an existing one, so it stays in fallback and stays open.
+    expect(fallback, 185);
     // 1,149 -> 1,160. This census is dominated by the `<note: …>` / `〔…〕`
     // asymmetry rather than by scripture, so a rise here says the two sides
     // set their apparatus differently in eleven more verses than they did.

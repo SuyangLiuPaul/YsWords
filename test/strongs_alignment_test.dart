@@ -352,10 +352,17 @@ void main() {
     // and one in `unanimous` (10,566 -> 10,565); the sum assertion below
     // is what proves it is accounted for rather than absorbed somewhere
     // unnoticed, and it is the reason to keep that assertion.
+    // 185,437 -> 185,456, 140,158 -> 140,139 (2026-09-09, docs/autonomous-
+    // queue.md :2548): 6 restored words widened 6 runs' `w` text (never
+    // their `s`), which moves each into a different `'$text ${number[0]}'`
+    // group — a smaller one, in most of these 6 cases, since the widened
+    // text is a rarer exact string than the pre-restoration one was. `s`,
+    // `i` and `g` are untouched, so `totalRuns`, `admitted` and `unanimous`
+    // do not move.
     expect(totalRuns, 360640);
     expect(admitted, 24480);
-    expect(belowBar, 185437);
-    expect(polysemous, 140158);
+    expect(belowBar, 185456);
+    expect(polysemous, 140139);
     expect(unanimous, 10565);
     expect(admitted + belowBar + polysemous + unanimous, totalRuns);
     // The headline: one run in fifteen is judgeable at all.

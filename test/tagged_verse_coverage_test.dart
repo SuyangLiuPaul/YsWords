@@ -132,7 +132,15 @@ void main() {
     // this list, the same shape as the 士師記/撒母耳記下 entries above.
     // Queued: re-sync or re-tag `assets/tagged/cuvs-yhwh/` against the
     // repaired reading asset (docs/autonomous-queue.md, P0).
-    const known = 191;
+    //
+    // Re-measured 2026-09-09 (third pass): 185, down from 191. 6 of the 7
+    // verses above (all but 士師記 15:13, which needs a new Strong's run
+    // rather than a splice into an existing one) were carried into
+    // `assets/tagged/cuvs-yhwh/` — the restored word spliced into the
+    // existing run it belongs under — so they read whole against the
+    // reading text again and leave this list. Retightened rather than
+    // left slack, same as the two passes above.
+    const known = 185;
 
     final reading = <String, Map<String, String>>{};
     final rows =

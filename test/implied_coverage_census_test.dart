@@ -215,9 +215,15 @@ void main() {
     // import does not have, so 7 of the 8 verses drop out of the
     // rendered set. Pinned independently, with the verses that moved the
     // other way named, by tagged_verse_coverage_test.dart.
-    expect(droppedCoverage, 191,
+    //
+    // 191 -> 185, 30,911 -> 30,917 (2026-09-09): 6 of those 7 restored
+    // words were spliced into the existing Strong's run they belong under
+    // in `assets/tagged/cuvs-yhwh/` (docs/autonomous-queue.md :2548), so
+    // `coversVerse` passes again for those 6 verses. 士師記 15:13's 以坦
+    // stays out — it needs a new run, filed back rather than guessed.
+    expect(droppedCoverage, 185,
         reason: 'pinned independently by tagged_verse_coverage_test.dart');
-    expect(renderedVerses, 30911);
+    expect(renderedVerses, 30917);
   });
 
   test('22,685 verses gain a line; 305,332 runs gain nothing', () {
@@ -228,15 +234,17 @@ void main() {
     // 18:18, 耶利米書 11:2, 以西結書 10:1 — 馬可福音 15:12 was the 8th
     // restoration but stayed rendered, already covered by the tagged
     // side) took their runs out with them.
-    expect(renderedRuns, 365021);
-    expect(runsThatGain, 59689);
-    expect(runsThatGainNothing, 305332);
+    // 365,021 -> 365,087 (2026-09-09): the 6 verses that came back into
+    // the rendered set (see above) brought their 66 runs back with them.
+    expect(renderedRuns, 365087);
+    expect(runsThatGain, 59708);
+    expect(runsThatGainNothing, 305379);
     expect(runsThatGain + runsThatGainNothing, renderedRuns,
         reason: 'every rendered run is in exactly one bucket');
-    expect(versesThatGain, 22685);
+    expect(versesThatGain, 22691);
     // 73.4% of rendered verses, 16.4% of rendered runs — unmoved to a
-    // tenth of a percent, same as the last move: a denominator shrinking
-    // by 7 out of ~31,000 does not touch the proportions.
+    // tenth of a percent, same as the last move: a denominator growing
+    // by 6 out of ~31,000 does not touch the proportions.
     expect(versesThatGain / renderedVerses, closeTo(0.734, 0.001));
     expect(runsThatGain / renderedRuns, closeTo(0.164, 0.001));
   });
@@ -248,9 +256,10 @@ void main() {
     // is not new reach.
     //
     // 39,557 -> 39,537 over 21,246 -> 21,240: the same 7 verses leaving,
-    // taking their pairs with them.
-    expect(newlyReachable.length, 39537);
-    expect(versesNewlyReachable.length, 21240);
+    // taking their pairs with them. 39,537 -> 39,557 over 21,240 -> 21,246
+    // (2026-09-09): 6 of the 7 came back.
+    expect(newlyReachable.length, 39557);
+    expect(versesNewlyReachable.length, 21246);
     // 約翰福音 3:5, the verse the whole argument was conducted over: the
     // span repair promoted 神 to G2316 θεός and 的国。 to G932 βασιλεία,
     // which left G3588 ὁ reachable nowhere. It is reachable again.
@@ -260,8 +269,10 @@ void main() {
   test('a line never has more than 12 chips, and usually has one', () {
     expect(mostChipsOnOneLine, 12);
     // 6,031 -> 6,028: three fewer multi-chip runs, carried out by the
-    // 7 verses that left the rendered set. The ceiling did not move.
-    expect(runsWithSeveralChips, 6028);
+    // 7 verses that left the rendered set. 6,028 -> 6,031 (2026-09-09):
+    // the three came back with the 6 restored verses. The ceiling did
+    // not move either time.
+    expect(runsWithSeveralChips, 6031);
   });
 
   test('no number in the shipped corpus is a dead end', () {
