@@ -21,6 +21,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'package:yswords/services/verse_photo_temp_stub.dart'
+    if (dart.library.io) 'package:yswords/services/verse_photo_temp_io.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -464,4 +467,53 @@ void main() {
       });
     }
   });
+  group('the picker leaves nothing behind', () {
+    test('the copy image_picker made is discarded once the bytes are read',
+        () async {
+      // image_picker does not hand back the reader's original file: it
+      // copies the chosen photograph into the app's cache and returns
+      // that path. Nothing removed it, so a picture out of somebody's
+      // camera roll stayed in the app's storage — contradicting both
+      // verse_photo_picker.dart's own header ("Nothing is stored") and
+      // the App Store permission string ("is not stored or uploaded").
+      final dir = await Directory.systemTemp.createTemp('verse_photo_test');
+      addTearDown(() async {
+        if (await dir.exists()) await dir.delete(recursive: true);
+      });
+      final copy = File('${dir.path}/image_picker_copy.jpg');
+      await copy.writeAsBytes(<int>[1, 2, 3]);
+      expect(await copy.exists(), isTrue);
+
+      await discardPickedFile(copy.path);
+
+      expect(await copy.exists(), isFalse,
+          reason: "the plugin's copy must not outlive the pick");
+    });
+
+    test('a path that is already gone is not an error', () async {
+      // The bytes are in hand by the time this runs, so the pick has
+      // succeeded. A tidy-up that throws would turn a working feature
+      // into an error the reader sees.
+      await expectLater(
+        discardPickedFile('/definitely/not/here/${DateTime.now()}.jpg'),
+        completes,
+      );
+    });
+
+    test('the source says what the permission prompt promises', () {
+      // Pins the wiring, not just the helper: a future edit that reads
+      // the bytes and forgets the discard would leave both claims
+      // false again with every test above still green.
+      final src =
+          File('lib/services/verse_photo_picker.dart').readAsStringSync();
+      expect(src.contains('discardPickedFile(picked.path)'), isTrue,
+          reason: 'pickVersePhoto must discard the copy it was handed');
+
+      final plist = File('ios/Runner/Info.plist').readAsStringSync();
+      expect(plist.contains('is not stored or uploaded'), isTrue,
+          reason: 'if this promise is ever reworded, the discard above '
+              'is what has to keep it true');
+    });
+  });
+
 }

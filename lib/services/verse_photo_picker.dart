@@ -21,6 +21,9 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 
+import 'package:yswords/services/verse_photo_temp_stub.dart'
+    if (dart.library.io) 'package:yswords/services/verse_photo_temp_io.dart';
+
 /// Longest edge the picked photograph is downscaled to before it is
 /// decoded, in pixels.
 ///
@@ -61,7 +64,18 @@ Future<Uint8List?> pickVersePhoto() async {
       imageQuality: kIsWeb ? null : 88,
     );
     if (picked == null) return null;
-    return await picked.readAsBytes();
+    final bytes = await picked.readAsBytes();
+    // The plugin handed us a COPY it made in the app's own cache, not
+    // the reader's original. Now that the bytes are in memory, that
+    // copy is a photograph of theirs sitting in our storage — which is
+    // exactly what this file's header and the permission prompt both
+    // say does not happen. Discarded here, once, where the pick ends.
+    // An XFile can be backed by bytes rather than by a file — the web
+    // always is, and `XFile.fromData` (which is what a fake picker in a
+    // test returns) is too. Both report an empty path, and there is
+    // nothing on disk to discard.
+    if (picked.path.isNotEmpty) await discardPickedFile(picked.path);
+    return bytes;
   } catch (_) {
     return null;
   }
