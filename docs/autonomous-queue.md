@@ -14140,6 +14140,28 @@ so the bundle-size answer stays on the record.
       `queue:12717` above (the "Left open, deliberately" paragraph) for
       what the fix actually changed and why its prior claim was stale.
 
+      **Eighth recurrence, a different cause, 2026-09-09 16:53.** Not the
+      "ended rc=0 while a background job was still pending" pattern above
+      — this stage was **killed outright**, `run.log` reads `stage 2 end
+      rc=143`, after 17 minutes, mid-item. Its finished work (both audit
+      scripts' `SIGNATURES` mechanism, `docs/autonomous-queue.md:2509`'s
+      tick) was left uncommitted in the tree for the next iteration to
+      find and land — same downstream effect as the rc=0 pattern
+      (orphaned diff, a wasted iteration re-verifying someone else's
+      work), different upstream cause (an external kill/timeout, not the
+      stage choosing to end early on its own). Landed 2026-09-09 17:5x:
+      re-verified all four claimed baseline figures fresh (not from the
+      stale `/tmp` files the stage had used), ran the full `flutter test`
+      suite to completion in the foreground (2913/2913), refuted the
+      signature-mechanism claims (all held, including a from-scratch
+      repro of the `019009014` mutation case), committed as `146a6e96`.
+      Still true that the actual fix is outside this repo's reach — both
+      the rc=0 and rc=143 shapes are the same underlying gap (a stage
+      timeout/kill with no "resume and finish, or don't start
+      unattended-background work at all" rule), and it lives in
+      `run.sh`/`prompt.md` under `~/Library/Application Support/
+      yswords-loop/`, not here.
+
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
       `nfp_[A-Za-z0-9]{20,}` pattern registered. The two broad AWS
