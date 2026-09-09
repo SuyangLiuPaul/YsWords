@@ -86,10 +86,42 @@ fi
 VERSION="$DART_V"
 TAG="v$VERSION"
 
-if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null \
-   || git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1; then
-  echo "FATAL: $TAG already exists. Bump the version first." >&2
+# 2026-09-09: a LOCAL tag and a tag ON ORIGIN used to be the same
+# condition here, and they are not the same fact.
+#
+# `git tag -a` below runs before `git push`. A push that fails — no
+# network, a rejected credential, a hook — leaves the annotated tag
+# sitting in the local repository while origin has nothing: no platform
+# workflow fired, no Release exists, nothing was released. The next run
+# then found that local tag and said "already exists. Bump the version
+# first" — advice that cannot fix anything. Bumping does not push the
+# release that failed; it moves the release to a version whose tag would
+# strand exactly the same way, and it tells the operator to change the
+# BUILD in order to repair a NETWORK failure. Meanwhile the app's
+# UpdateService keeps reading the last Release it can see, so the
+# stranded version reaches nobody and no message says so.
+#
+# Only a tag on origin means released. A local-only tag is the wreckage
+# of a failed push, so this run finishes that push instead of refusing.
+TAG_LOCAL=0
+if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+  TAG_LOCAL=1
+fi
+if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+  echo "FATAL: $TAG is already on origin. Bump the version first." >&2
   exit 1
+fi
+if [[ "$TAG_LOCAL" = "1" ]]; then
+  TAGGED="$(git rev-parse "refs/tags/$TAG^{commit}")"
+  if [[ "$TAGGED" != "$COMMIT" ]]; then
+    echo "FATAL: $TAG exists locally at $(git rev-parse --short "$TAGGED")," >&2
+    echo "  but this run is for $SHORT, and origin has neither. Decide which" >&2
+    echo "  commit carries $VERSION, delete the other tag (git tag -d $TAG)," >&2
+    echo "  and re-run — pushing this one would release the wrong tree." >&2
+    exit 1
+  fi
+  echo "==> $TAG exists locally, origin does not have it: a previous push"
+  echo "    failed. This run pushes THAT tag rather than minting a new one."
 fi
 
 # CI must be green ON THIS COMMIT. The release workflows do not run the
@@ -116,12 +148,31 @@ echo "    triggers  release-{android,ios,linux,macos,windows}.yml"
 
 if [[ "$DRY" = "1" ]]; then
   echo
-  echo "DRY RUN — no tag pushed."
+  if [[ "$TAG_LOCAL" = "1" ]]; then
+    echo "DRY RUN — the stranded local $TAG was NOT pushed."
+  else
+    echo "DRY RUN — no tag pushed."
+  fi
   exit 0
 fi
 
-git tag -a "$TAG" "$COMMIT" -m "$TAG"
-git push origin "$TAG"
+if [[ "$TAG_LOCAL" = "1" ]]; then
+  echo "==> pushing the existing $TAG"
+else
+  git tag -a "$TAG" "$COMMIT" -m "$TAG"
+fi
+# The local tag must not outlive a failed push: that is the state that
+# made the NEXT run refuse with "already exists" and send the operator to
+# bump a version that was never released. Deleting it costs nothing — the
+# tag is reconstructible from $COMMIT — and leaves the next run a clean
+# slate that can simply be re-run.
+if ! git push origin "$TAG"; then
+  git tag -d "$TAG" >/dev/null
+  echo "!!! push of $TAG failed. The local tag was deleted, so re-running" >&2
+  echo "!!! this script once the push works cuts the release as intended;" >&2
+  echo "!!! do NOT bump the version — $VERSION has not been released." >&2
+  exit 1
+fi
 echo
 echo "Pushed $TAG. The five platform workflows are building now; each"
 echo "attaches its asset to the Release when it finishes. Watch with:"
