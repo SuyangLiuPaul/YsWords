@@ -63,14 +63,98 @@ enum UpdateInstallOutcome {
   /// an APK.
   downloadFailed,
 
+  /// The reader pressed Stop. Nothing to report: they know.
+  ///
+  /// 2026-09-09 (review finding 1): its own outcome rather than a
+  /// flavour of [downloadFailed], because the UI's answer to a failure
+  /// is a dialog offering the browser, and somebody who just said
+  /// "stop" should not be asked a second question.
+  cancelled,
+
   /// The platform cannot do this at all. Never returned on Android.
   unsupported,
+}
+
+/// A handle the UI holds to stop a download it started.
+///
+/// 2026-09-09 (review finding 1): before this the progress dialog had
+/// no button at all, so the only way out of it was the Android Back
+/// button — which closed the dialog and left the download running
+/// unseen, and a second "立即更新" then opened a second write stream on
+/// the same `update.apk`. The token is checked between chunks, and
+/// [whenCancelled] is raced against the connect and the read so a
+/// stalled connection cannot delay the reader's Stop by the length of
+/// a timeout.
+class UpdateCancelToken {
+  final Completer<void> _done = Completer<void>();
+
+  bool get isCancelled => _done.isCompleted;
+
+  /// Completes when [cancel] is called; never completes otherwise.
+  Future<void> get whenCancelled => _done.future;
+
+  void cancel() {
+    if (!_done.isCompleted) _done.complete();
+  }
 }
 
 class AppUpdateInstaller {
   AppUpdateInstaller._();
 
   static const MethodChannel _channel = MethodChannel('yswords/apk_installer');
+
+  /// How long a download may go without a single byte before it is
+  /// given up.
+  ///
+  /// 2026-09-09 (review finding 3): a connection that dies after the
+  /// headers — a lift, a tunnel, a wifi hand-off — used to freeze the
+  /// progress dialog forever, and the dialog had nothing on it to
+  /// press. Thirty seconds is long enough for a slow link to breathe
+  /// and short enough that the "didn't download" dialog arrives while
+  /// the reader is still looking at the screen.
+  static const Duration defaultIdleTimeout = Duration(seconds: 30);
+
+  /// How long to wait for the response headers. Same reasoning; this
+  /// is the half that catches a server which accepts the socket and
+  /// then says nothing. (`UpdateService.checkForUpdate` already had
+  /// its own 10-second timeout — the version check was never the half
+  /// that hung.)
+  static const Duration defaultConnectTimeout = Duration(seconds: 30);
+
+  /// How long the trip to the OS switch may take before it is answered
+  /// "not granted" here regardless of what the platform side says.
+  ///
+  /// 2026-09-09 (remediation, review finding 1): [requestPermission]
+  /// awaits a round trip that leaves this process entirely — the reader
+  /// is in Settings, and Android is free to destroy the Activity that
+  /// asked while they are there. `MainActivity` now survives that (the
+  /// pending reply is static and is answered from `onResume`, not only
+  /// from `onActivityResult`), but "the platform side always replies"
+  /// is not a promise Dart should stake a permanently-dead button on:
+  /// a reply that never arrives used to leave `updateInstallInProgress`
+  /// latched true, which silently disabled 「立即更新」 on BOTH surfaces
+  /// for the life of the process, with no way back short of killing the
+  /// app.
+  ///
+  /// Three minutes rather than the download's thirty seconds, and the
+  /// difference is the point: at the other end of this wait is a person
+  /// reading a settings screen, not a socket. Long enough that nobody
+  /// who is actually doing it is cut off; finite, so nothing can hang.
+  /// A timeout resolves to false — the reader is left exactly where
+  /// they were, and 「立即更新」 still works on the next tap.
+  static const Duration defaultPermissionTimeout = Duration(minutes: 3);
+
+  /// The applicationId of the build the release APK actually carries.
+  ///
+  /// 2026-09-09 (remediation): `release-android.yml` builds `--flavor
+  /// intl` and attaches that one APK, whose id is the `defaultConfig`
+  /// one below. The `cn` flavour adds `applicationIdSuffix = ".cn"`, so
+  /// to a `.cn` build the release asset is not an update at all —
+  /// Android treats a different applicationId as a different app and
+  /// would install a SECOND copy beside the one whose 「立即更新」 the
+  /// reader just pressed. [UpdateInfo.hasApk] cannot see this: the
+  /// asset IS an APK, just not this app's.
+  static const String kReleasePackage = 'com.example.yswords';
 
   /// Android only. See the file header for why every other platform
   /// keeps the browser route rather than getting a button.
@@ -102,17 +186,61 @@ class AppUpdateInstaller {
     }
   }
 
-  /// Send the reader to the OS switch for this app.
-  static Future<void> requestPermission() async {
-    if (!isSupported) return;
+  /// Send the reader to the OS switch for this app, and report whether
+  /// they came back with it on.
+  ///
+  /// 2026-09-09 (review finding 4): the platform side now answers only
+  /// once the settings screen has closed (`onActivityResult`), so the
+  /// value here is "granted NOW", after the reader's trip — not "the
+  /// screen opened", which is all the old `void` could have meant. A
+  /// false is either a reader who declined or a ROM without the
+  /// screen, and both leave them exactly where they were.
+  /// 2026-09-09 (remediation, finding 1): and it always answers. See
+  /// [defaultPermissionTimeout] for why a round trip that goes through
+  /// a settings screen and an Activity Android may destroy underneath
+  /// it must not be awaited without a bound.
+  static Future<bool> requestPermission({
+    Duration timeout = defaultPermissionTimeout,
+  }) async {
+    if (!isSupported) return false;
     try {
-      await _channel.invokeMethod<bool>('requestPermission');
+      final granted = await _channel
+          .invokeMethod<bool>('requestPermission')
+          .timeout(timeout, onTimeout: () => false);
+      return granted ?? false;
     } on PlatformException {
-      // Nothing to say: the screen either opened or the ROM does not
-      // have it, and both leave the reader exactly where they were.
+      return false;
     } on MissingPluginException {
-      // ditto
+      return false;
     }
+  }
+
+  /// The applicationId this build is running as, or null when the
+  /// platform cannot say.
+  ///
+  /// Not cached: it is one channel hop, asked at most twice per update
+  /// check, and a cache would need a test-only reset hook to stay
+  /// honest across the suite.
+  static Future<String?> packageName() async {
+    if (!isSupported) return null;
+    try {
+      return await _channel.invokeMethod<String>('packageName');
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
+  /// Whether the APK on the release page is an update to THIS build
+  /// rather than a different app that happens to be an APK.
+  ///
+  /// See [kReleasePackage]. False on a `.cn` build, and false whenever
+  /// the platform side will not say — an unanswerable question about
+  /// which app is about to be installed is answered "don't".
+  static Future<bool> isReleasePackage() async {
+    if (!isSupported) return false;
+    return await packageName() == kReleasePackage;
   }
 
   /// Download [url] into the app's cache and hand it to the installer.
@@ -125,13 +253,31 @@ class AppUpdateInstaller {
   /// The download is streamed rather than buffered. A release APK is
   /// ~90 MB and this runs on a mid-range tablet; `http.get` would hold
   /// the whole thing in memory before a single byte reached disk.
+  ///
+  /// [cancelToken] lets the UI stop it (finding 1); [idleTimeout] and
+  /// [connectTimeout] stop it when the network does not (finding 3).
+  /// Both timeouts come back as [UpdateInstallOutcome.downloadFailed] —
+  /// the reader sees the same "didn't download" dialog, with the
+  /// browser offered as the way out.
   static Future<UpdateInstallOutcome> downloadAndInstall(
     String url, {
     void Function(double? fraction)? onProgress,
     http.Client? client,
+    UpdateCancelToken? cancelToken,
+    Duration idleTimeout = defaultIdleTimeout,
+    Duration connectTimeout = defaultConnectTimeout,
   }) async {
     if (!isSupported) return UpdateInstallOutcome.unsupported;
+    // The second half of the platform gate (remediation): a `.cn` build
+    // must never hand itself the international APK. The UI already
+    // hides the button, and this is the layer that does not depend on
+    // the UI having remembered to — nothing is downloaded before the
+    // question is answered.
+    if (!await isReleasePackage()) return UpdateInstallOutcome.unsupported;
     if (!await canInstall()) return UpdateInstallOutcome.permissionNeeded;
+    if (cancelToken?.isCancelled ?? false) {
+      return UpdateInstallOutcome.cancelled;
+    }
 
     final String dir;
     try {
@@ -145,9 +291,19 @@ class AppUpdateInstaller {
     final http$ = client ?? http.Client();
     File? file;
     try {
-      final response =
-          await http$.send(http.Request('GET', Uri.parse(url)));
-      if (response.statusCode != 200) return UpdateInstallOutcome.downloadFailed;
+      // Raced against the token so a Stop pressed while the server is
+      // still thinking comes back at once, rather than when the connect
+      // timeout eventually fires.
+      final response = await _unlessCancelled(
+        http$
+            .send(http.Request('GET', Uri.parse(url)))
+            .timeout(connectTimeout),
+        cancelToken,
+      );
+      if (response == null) return UpdateInstallOutcome.cancelled;
+      if (response.statusCode != 200) {
+        return UpdateInstallOutcome.downloadFailed;
+      }
       final total = response.contentLength;
 
       // One fixed name, overwritten every time. Keeping a file per
@@ -159,16 +315,41 @@ class AppUpdateInstaller {
       var received = 0;
       var head = <int>[];
       try {
-        await for (final chunk in response.stream) {
-          sink.add(chunk);
-          received += chunk.length;
-          if (head.length < kZipMagic.length) {
-            head = [...head, ...chunk].take(kZipMagic.length).toList();
-          }
-          onProgress?.call(total == null || total == 0 ? null : received / total);
-        }
+        // A subscription rather than `await for`, because a Stop has to
+        // be able to interrupt the READING — `await for` can only look
+        // at the token once the next chunk has arrived, and the chunk
+        // that never arrives is the case Stop exists for. The same
+        // shape gives `.timeout` somewhere to land (finding 3).
+        final done = Completer<void>();
+        final sub = response.stream.timeout(idleTimeout).listen(
+          (chunk) {
+            sink.add(chunk);
+            received += chunk.length;
+            if (head.length < kZipMagic.length) {
+              head = [...head, ...chunk].take(kZipMagic.length).toList();
+            }
+            onProgress
+                ?.call(total == null || total == 0 ? null : received / total);
+          },
+          onError: (Object e, StackTrace st) {
+            if (!done.isCompleted) done.completeError(e, st);
+          },
+          onDone: () {
+            if (!done.isCompleted) done.complete();
+          },
+          cancelOnError: true,
+        );
+        unawaited(cancelToken?.whenCancelled.then((_) {
+          sub.cancel();
+          if (!done.isCompleted) done.complete();
+        }));
+        await done.future;
       } finally {
         await sink.close();
+      }
+      if (cancelToken?.isCancelled ?? false) {
+        await _discard(file);
+        return UpdateInstallOutcome.cancelled;
       }
 
       // Both halves matter and they catch different lies. A truncated
@@ -192,6 +373,17 @@ class AppUpdateInstaller {
     } finally {
       if (owned) http$.close();
     }
+  }
+
+  /// [future]'s value, or null the moment [token] is cancelled first.
+  /// `Future.any` listens to both, so a late error from the abandoned
+  /// future is not an unhandled one.
+  static Future<T?> _unlessCancelled<T>(
+    Future<T> future,
+    UpdateCancelToken? token,
+  ) {
+    if (token == null) return future;
+    return Future.any<T?>([future, token.whenCancelled.then((_) => null)]);
   }
 
   static bool _startsWithZipMagic(List<int> head) {

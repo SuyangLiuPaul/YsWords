@@ -5,11 +5,23 @@
 // Releases. This service asks the GitHub Releases API for the LATEST
 // release, compares its tag (e.g. `v1.3.88`) to the running `kAppVersion`,
 // and — if newer — hands back the download URL of the asset for the
-// current platform (falling back to the release page). The UI
-// (`UpdateCheckTile`) opens that URL via `LinkOpener`; the OS / browser
-// then downloads it and the user installs (Android: tap the .apk;
-// desktop: unzip/run). It is intentionally NOT a silent auto-installer —
-// that needs an app store. Fully free, no developer account.
+// current platform (falling back to the release page).
+//
+// What the UI then does with that URL is no longer one answer, and this
+// paragraph said it was until 2026-09-09:
+//
+//   * **Android**, when the release has an APK for this build — see
+//     [UpdateInfo.hasApk] and `AppUpdateInstaller` — downloads and
+//     installs it in the app. Both surfaces do: the About page's dialog
+//     and the dashboard's daily bar. Android's own "install an update?"
+//     screen still appears; that is the OS's security boundary.
+//   * **Everywhere else**, and on Android in the minutes before the APK
+//     is attached, the URL goes to `LinkOpener` and the OS / browser
+//     downloads it for the reader to install by hand (desktop:
+//     unzip/run; iOS: the web app instead).
+//
+// It is intentionally NOT a silent auto-installer — that needs an app
+// store. Fully free, no developer account.
 //
 // Web returns null: the PWA always serves the latest build on reload, so
 // there is nothing to "update".
@@ -38,6 +50,21 @@ class UpdateInfo {
     required this.downloadUrl,
     required this.releaseUrl,
   });
+
+  /// Whether [downloadUrl] is an APK the app could install itself, or
+  /// only the release page.
+  ///
+  /// 2026-09-09: `release-android.yml` attaches the APK in a step of
+  /// its own, minutes after the release exists, and the `.cn` flavour
+  /// never gets one at all — so there is a real window in which the
+  /// latest release's [downloadUrl] is the release's HTML page, and
+  /// handing THAT to the installer downloads a web page and reports
+  /// "didn't download". Decided here, on the resolved URL, so the
+  /// widgets ask one question instead of each re-parsing the name. The
+  /// path rather than the whole string, so a query string could not
+  /// hide the extension.
+  bool get hasApk =>
+      (Uri.tryParse(downloadUrl)?.path ?? '').toLowerCase().endsWith('.apk');
 }
 
 class UpdateService {

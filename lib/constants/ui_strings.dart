@@ -4150,6 +4150,32 @@ const uiStrings = {
     'zh-Hant': '這個版本沒有隨包的更新記錄。',
     'en': 'No release notes are bundled with this build.',
   },
+  // 2026-09-09 (review finding 4): under 「更新记录」 the notes are
+  // English commit subjects, and nothing on the page said why. One
+  // caption in the two Chinese locales; 'en' is deliberately EMPTY —
+  // the page renders nothing for an empty string, and an English reader
+  // is not owed a note that the English is in English.
+  //
+  // It says the notes are WRITTEN in English, not that they are
+  // untranslated: the generator selects commit subjects and rewrites
+  // nothing, so there is no Chinese original being withheld. Promising
+  // a translation this app does not have would be the worse caption.
+  //
+  // 2026-09-09 (remediation): the first wording was 「更新记录以英文记录。」
+  // and its zh-Hant was 记录→記錄 applied twice — the same glyph for the
+  // NOUN and for the VERB. Taiwan and HK split those: 紀錄 is a record,
+  // 記錄 is to record, and this file already knows it (readingStatsEmpty
+  // 「還沒有紀錄。」, readingStatsClear 「清除閱讀紀錄」). Rather than write
+  // 「更新紀錄以英文記錄。」 and have the caption disagree with the
+  // 「更新記錄」 title two lines above it, the sentence drops the noun:
+  // 撰寫/撰写 is what it actually means — the notes are WRITTEN in
+  // English — and it is idiomatic in both scripts, so neither locale is
+  // carrying the other's vocabulary.
+  'changelogLanguageNote': {
+    'zh-Hans': '更新内容以英文撰写。',
+    'zh-Hant': '更新內容以英文撰寫。',
+    'en': '',
+  },
   'changelogOpen': {
     'zh-Hans': '更新记录',
     'zh-Hant': '更新記錄',
@@ -4182,10 +4208,12 @@ const uiStrings = {
     'zh-Hant': '正在下載更新…',
     'en': 'Downloading update…',
   },
-  // Shown while the length is unknown, which is also the moment the
-  // reader most needs to be told what is about to happen — the next
-  // thing on screen will be an Android system dialog, and an
-  // unexplained one looks like something went wrong.
+  // Shown under the progress bar for the whole download: the next thing
+  // on screen will be an Android system dialog, and an unexplained one
+  // looks like something went wrong. (Until 2026-09-09 — review finding
+  // 6 — it was shown only while the length was unknown, and GitHub
+  // sends Content-Length on every release asset, so no reader ever saw
+  // it.)
   'updateDownloadingHint': {
     'zh-Hans': '下载完成后，安卓会让你确认安装。',
     'zh-Hant': '下載完成後，Android 會讓你確認安裝。',
@@ -4194,19 +4222,35 @@ const uiStrings = {
   // Not phrased as a failure, because it is not one: "install unknown
   // apps" is off by default and granted per app, so this is simply the
   // first time.
+  //
+  // 2026-09-09 (remediation): the zh-Hant said 「允許本應用安裝更新」 —
+  // the Simplified 「本应用」 with the characters swapped — directly above
+  // a body that says 「本應用程式」 twice. One AlertDialog, two words for
+  // the same thing. 應用程式 is the Taiwan/HK term and the one Android's
+  // own zh-TW build uses, so the title moves to it rather than the body
+  // moving back.
   'updatePermissionTitle': {
     'zh-Hans': '允许本应用安装更新',
-    'zh-Hant': '允許本應用安裝更新',
+    'zh-Hant': '允許本應用程式安裝更新',
     'en': 'Allow installing updates',
   },
+  // 2026-09-09 (review finding 4): 「再按一次「立即更新」」 is gone. The
+  // install now carries on by itself once the reader comes back with the
+  // switch on — and the screen they came back to had no 「立即更新」 button
+  // anywhere on it, so the old sentence sent them looking for something
+  // that was not there. Finding 8: the zh-Hant name of the switch is now
+  // the one Android's own zh-TW build uses, 「安裝不明應用程式」. The
+  // previous 「安裝未知應用」 was the Simplified wording with the
+  // characters swapped; a Traditional reader would scan that settings
+  // screen for it and never find a match.
   'updatePermissionBody': {
     'zh-Hans': '安卓对每个应用单独询问一次。请打开本应用的「安装未知应用」'
-        '开关，然后再按一次「立即更新」。',
-    'zh-Hant': 'Android 對每個應用單獨詢問一次。請打開本應用的「安裝未知'
-        '應用」開關，然後再按一次「立即更新」。',
+        '开关，回来后会自动继续更新。',
+    'zh-Hant': 'Android 對每個應用程式單獨詢問一次。請開啟本應用程式的'
+        '「安裝不明應用程式」開關，回來後會自動繼續更新。',
     'en': 'Android asks each app separately before it may install one. '
-        'Turn on "Install unknown apps" for this app, then press Update '
-        'again.',
+        'Turn on "Install unknown apps" for this app; the update '
+        'continues when you come back.',
   },
   'updatePermissionOpen': {
     'zh-Hans': '打开设置',
@@ -8139,9 +8183,16 @@ const uiStrings = {
   // The one-line form, for the launch-time bar. `updateAvailableBody`
   // is the dialog's paragraph and is far too long to read in six
   // seconds.
+  //
+  // 2026-09-09 (remediation): 已發佈, not 已發布. The same sentence is
+  // spelled 「已發佈」 in `updateAvailableBody` and in
+  // `updateAvailableBodyAndroid`, and a reader who sees the bar and then
+  // opens the dialog sees both. 發佈 is the file's own majority and the
+  // Taiwan usage for releasing a thing (as against 發布 for announcing
+  // one), so the odd one out is settled here rather than left to spread.
   'updateAvailableBar': {
     'zh-Hans': '新版本 v{new} 已发布',
-    'zh-Hant': '新版本 v{new} 已發布',
+    'zh-Hant': '新版本 v{new} 已發佈',
     'en': 'Version v{new} is available',
   },
 
@@ -8417,5 +8468,69 @@ const uiStrings = {
     'zh-Hans': '目前没有任何随附译本带有原文编号对照。',
     'zh-Hant': '目前沒有任何隨附譯本帶有原文編號對照。',
     'en': 'No bundled edition carries a Strong\'s alignment.',
+  },
+
+  // ---- In-app update install (Android) --------------------------------
+  // 2026-09-09. Appended as one contiguous block at the end of the file,
+  // per the convention the three blocks above set: several sessions edit
+  // this file at once, and a key dropped into the middle of an 8,000-line
+  // map is a merge conflict with no diff worth reading. These two keys
+  // first landed at lines 4120 and 4205 — 4,000 lines above here — and
+  // were moved down here instead. (The zh-Hant below also gained its
+  // 擊: 「點」 alone is the Simplified register, and the other 30 zh-Hant
+  // values in this file all say 點擊.) The EDITS this patch
+  // makes to `updatePermissionBody`, `updatePermissionTitle` and
+  // `updateAvailableBar` stay where those keys already lived: an edit in
+  // place is a diff a reviewer can read, which is the whole point of the
+  // rule.
+  //
+  // The body an Android reader sees when the in-app route is available.
+  // `updateAvailableBody`, above, still describes the browser trip —
+  // 「從 GitHub 下載後安裝」 — which printed directly over a button that
+  // downloads nothing to the Downloads folder and opens no browser, and
+  // spent two of its three clauses telling somebody holding a phone
+  // about desktops and iOS. This says what 「立即更新」 will actually do,
+  // and warns that the next screen belongs to Android.
+  'updateAvailableBodyAndroid': {
+    'zh-Hans': '新版本 v{new} 已发布（当前 v{cur}）。点「立即更新」会在应用内'
+        '下载并安装，安卓会让你确认一次。',
+    'zh-Hant': '新版本 v{new} 已發佈（目前 v{cur}）。點擊「立即更新」會在'
+        '應用程式內下載並安裝，Android 會請你確認一次。',
+    'en': 'Version v{new} is available (you have v{cur}). "Update now" '
+        'downloads and installs it here; Android will ask you to confirm.',
+  },
+  // The progress dialog's one button. Its own key rather than reusing
+  // 'cancel', because a reader mid-download is stopping something that
+  // is already happening, not declining something they were offered —
+  // and 「取消」 over a half-finished 90 MB download reads as "undo the
+  // update", which is not what it does.
+  'updateCancelDownload': {
+    'zh-Hans': '停止下载',
+    'zh-Hant': '停止下載',
+    'en': 'Stop download',
+  },
+  // 2026-09-09. Appended as its own block at the end, not filed beside
+  // `moreActions`, per this file's convention: several sessions edit it
+  // at once and an interleaved insert is a merge conflict with no diff
+  // worth reading.
+  //
+  // The selection bar's two overflow chevrons used to share one label,
+  // so VoiceOver/TalkBack announced "More" on the control that scrolls
+  // BACK. A sighted reader gets the direction from the glyph; this is
+  // the same information for readers who cannot see it.
+  'moreActionsBack': {
+    'zh-Hans': '前面的操作',
+    'zh-Hant': '前面的操作',
+    'en': 'Previous actions',
+  },
+  // 2026-09-09. English needs a singular; the two Chinese locales do
+  // not (「1 项改动」 is correct as it stands, and a special case there
+  // would be a mistranslation, not a politeness). Appended per this
+  // file's end-of-file convention rather than filed beside
+  // `changelogCount`.
+  'changelogCountOne': {
+    'zh-Hans': '{n} 项改动',
+    'zh-Hant': '{n} 項改動',
+    'en': '{n} change',
   },
 };

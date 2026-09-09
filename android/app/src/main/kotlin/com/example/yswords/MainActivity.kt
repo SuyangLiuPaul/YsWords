@@ -71,6 +71,73 @@ class MainActivity : AudioServiceActivity() {
     private var pendingIconName: String? = null
     private var hasPendingIcon = false
 
+    // 2026-09-09 (review finding 4): the "install unknown apps" request
+    // answers Dart only when the reader comes BACK from the settings
+    // screen, not when it opens. Before this, `success(true)` was sent
+    // the instant `startActivity` returned, so Dart could not tell "the
+    // screen opened" from "they granted it" — and the reader returned
+    // to a dialog telling them to press 「立即更新」 again, a button that
+    // was no longer anywhere on screen. The pending result is held in
+    // the companion object below and completed with the switch's state
+    // at the moment the reader comes back.
+    private val requestUnknownSources = 0x5EEC
+
+    // 2026-09-09 (remediation, finding 1): the parked result MUST NOT
+    // live on the Activity instance, and answering it MUST NOT depend
+    // on `onActivityResult` arriving.
+    //
+    // The Flutter engine outlives this Activity. `AudioServiceActivity`
+    // hands back the engine cached under "audio_service_engine" (see
+    // the class comment above), so when Android destroys MainActivity
+    // while the Settings screen is in front — "Don't keep activities",
+    // or ordinary memory pressure on the owner's Mi Pad, which is the
+    // device this file's header was written about — a NEW MainActivity
+    // is created against the SAME engine, the SAME Dart isolate, and
+    // the SAME pending `invokeMethod` future. An instance field died
+    // with the old instance: the new one's `pendingPermissionResult`
+    // was null, `?.success(...)` replied to nobody, and Dart's
+    // `requestPermission()` never completed — which left
+    // `updateInstallInProgress` latched true and every later "Update
+    // now" a silent no-op for the life of the process.
+    //
+    // Static, so the field's lifetime matches the engine's rather than
+    // the Activity's; and answered from `onResume` as well as from
+    // `onActivityResult`, because the recreated instance never gets the
+    // result callback (it did not start the activity) but is always
+    // resumed when the reader comes back.
+    companion object {
+        private var pendingPermissionResult: MethodChannel.Result? = null
+        private var permissionRequestOutstanding = false
+    }
+
+    /// Answer a permission request that is still waiting, with the
+    /// switch's state right now.
+    ///
+    /// Reads `canRequestPackageInstalls()` rather than any result code:
+    /// the settings screen returns RESULT_CANCELED whether or not the
+    /// switch was touched, so the switch itself is the only honest
+    /// answer — and it is an answer a recreated Activity can give just
+    /// as well as the one that asked.
+    private fun answerPendingPermission() {
+        if (!permissionRequestOutstanding) return
+        permissionRequestOutstanding = false
+        val result = pendingPermissionResult
+        pendingPermissionResult = null
+        val granted =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                packageManager.canRequestPackageInstalls()
+            } else {
+                true
+            }
+        try {
+            result?.success(granted)
+        } catch (e: Exception) {
+            // The engine can be gone (the whole app was killed and this
+            // is a cold start). Nothing to answer, and a crash here
+            // would be a crash on resume.
+        }
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "yswords/android_icon")
@@ -143,17 +210,32 @@ class MainActivity : AudioServiceActivity() {
                     // Deliberately not a general Settings deep-link:
                     // the reader is one tap from the switch that
                     // matters, and lands back here by pressing Back.
+                    //
+                    // The reply is deferred to onActivityResult and says
+                    // whether the switch is on NOW — see
+                    // `pendingPermissionResult`. A second request while
+                    // one is already open is refused rather than
+                    // replacing it, so the first caller still gets its
+                    // answer.
                     "requestPermission" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            if (permissionRequestOutstanding) {
+                                result.success(false)
+                                return@setMethodCallHandler
+                            }
                             try {
-                                startActivity(
+                                pendingPermissionResult = result
+                                permissionRequestOutstanding = true
+                                startActivityForResult(
                                     Intent(
                                         Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                                         Uri.parse("package:$packageName")
-                                    )
+                                    ),
+                                    requestUnknownSources
                                 )
-                                result.success(true)
                             } catch (e: Exception) {
+                                pendingPermissionResult = null
+                                permissionRequestOutstanding = false
                                 result.success(false)
                             }
                         } else {
@@ -213,9 +295,47 @@ class MainActivity : AudioServiceActivity() {
                             result.error("install_failed", e.message, null)
                         }
                     }
+                    // 2026-09-09 (remediation): which app is asking.
+                    //
+                    // `release-android.yml` only ever attaches the
+                    // `intl` APK, whose applicationId is
+                    // `com.example.yswords`. The `cn` flavour runs as
+                    // `com.example.yswords.cn`, so handing it that same
+                    // APK is not an update at all — Android would treat
+                    // a different applicationId as a different app and
+                    // install a SECOND copy beside the one the reader
+                    // pressed "update" in. Dart compares this against
+                    // `AppUpdateInstaller.kReleasePackage` and hides the
+                    // button rather than offering the wrong app.
+                    "packageName" -> result.success(packageName)
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != requestUnknownSources) return
+        // The settings screen's own result code says nothing useful
+        // (it is RESULT_CANCELED whether or not the switch was
+        // touched), so `answerPendingPermission` re-reads the switch —
+        // which is the only fact Dart needs to decide whether to carry
+        // on installing. This is the happy path: the instance that
+        // asked is still alive and gets the callback.
+        answerPendingPermission()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 2026-09-09 (remediation, finding 1): the path the happy one
+        // above cannot cover. If Android destroyed the Activity while
+        // the Settings screen was in front, THIS instance never started
+        // that activity and will never receive its result — but it is
+        // the instance the reader comes back to, and the engine holding
+        // the waiting Dart future is the same one. A no-op whenever
+        // nothing is outstanding, which is every other resume in the
+        // app's life.
+        answerPendingPermission()
     }
 
     override fun onStop() {

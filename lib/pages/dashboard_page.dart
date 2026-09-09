@@ -37,7 +37,6 @@ import 'package:yswords/pages/reading_stats_page.dart';
 import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/sermon_service.dart';
-import 'package:yswords/services/link_opener.dart';
 import 'package:yswords/services/update_check_scheduler.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
@@ -56,6 +55,8 @@ import 'package:yswords/utils/boot_uri.dart';
 import 'package:yswords/widgets/onboarding_dialog.dart';
 import 'package:yswords/widgets/press_scale.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
+import 'package:yswords/widgets/update_check_tile.dart'
+    show buildUpdateAvailableBar;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Personal "home" / dashboard. Shows the signed-in user's reading
@@ -139,29 +140,27 @@ class _DashboardPageState extends State<DashboardPage> {
   /// racing it would land on top of the tour or, worse, on top of a
   /// song sheet a shared link just opened. A bar states the fact,
   /// carries the one action, and dismisses itself — it never takes
-  /// focus from whatever the reader came here to do. Six seconds
-  /// because it has a button, and the default four is not long enough
-  /// to read a sentence and decide.
+  /// focus from whatever the reader came here to do.
+  ///
+  /// 2026-09-09 (review finding 7): the bar itself is now built beside
+  /// the About page's dialog, in `update_check_tile.dart`, so that its
+  /// action on Android is the same in-app install — this surface, the
+  /// one nearly every reader actually meets, was still sending them to
+  /// the browser to hunt for a file while About offered a button. Its
+  /// six-second duration and the reason for it live there too, with the
+  /// button that earns them, rather than being restated here.
   Future<void> _maybeOfferUpdate() async {
     final settings = context.read<AppSettings>();
     final info = await runDailyUpdateCheck(settings);
     if (!mounted || info == null) return;
-    final locale = settings.locale;
-    final label = (uiStrings['updateAvailableBar']?[locale] ??
-            'Version v{new} is available')
-        .replaceAll('{new}', info.latestVersion);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(label),
-        duration: const Duration(seconds: 6),
-        action: LinkOpener.isAvailable
-            ? SnackBarAction(
-                label: uiStrings['updateDownload']?[locale] ?? 'Download',
-                onPressed: () => LinkOpener.open(info.downloadUrl),
-              )
-            : null,
-      ),
-    );
+    // Awaited: which action the bar carries depends on which app this
+    // build is (`.cn` must not be handed the international APK), and
+    // only the platform side can say. `mounted` is re-checked because
+    // that answer arrives after a suspension point.
+    final bar =
+        await buildUpdateAvailableBar(context, info, locale: settings.locale);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(bar);
   }
 
   Future<void> _loadDailyEvidence() async {
