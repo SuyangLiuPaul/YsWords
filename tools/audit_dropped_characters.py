@@ -31,7 +31,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit_inserted_characters import apparatus_mask  # noqa: E402
+from audit_inserted_characters import apparatus_mask, changed_signatures  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 OURS = REPO / "assets/cuvs-yhwh.json"
@@ -165,6 +165,96 @@ EXPLAINED = {
     "058007010": "希伯来书 7:10  missing '中'@31 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
 }
 
+# What each EXPLAINED id's `agreed` list (position, missing-substring pairs)
+# reads as at the moment it was explained — generated from `compute()` at
+# HEAD, not hand-typed. `changed_signatures()` re-derives the SAME id's
+# CURRENT agreed list on every run and compares it against this: EXPLAINED
+# only ever suppressed a hit by its id, so a later defect at that same id
+# (a genuinely new loss, unrelated to the reason it was explained) used to
+# exit 0 silently. See docs/autonomous-queue.md:2512.
+SIGNATURES = {
+    "001039022": ((16, '的'),),
+    "001041030": ((11, '在'),),
+    "002023021": ((30, '他'),),
+    "004032038": ((5, '西比玛'),),
+    "005005005": ((36, '说'),),
+    "005032019": ((17, '说'),),
+    "007006026": ((10, '上'),),
+    "009025001": ((34, '里'),),
+    "010011011": ((33, '的'),),
+    "010011021": ((18, '九章一节'),),
+    "011003004": ((23, '的'),),
+    "011010015": ((19, '的'),),
+    "013002013": ((25, '十六章九节'),),
+    "014004003": ((11, '的'),),
+    "014030003": ((8, '间'),),
+    "016003005": ((25, '担'),),
+    "016006006": ((20, '二章十九节'),),
+    "019009014": ((23, '的'),),
+    "019010010": ((26, '之下'),),
+    "019022020": ((26, '脱离'),),
+    "019051010": ((25, '的'),),
+    "019088004": ((21, '的人'),),
+    "019106028": ((21, '的'),),
+    "019140009": ((30, '自己'),),
+    "023014032": ((13, '的'),),
+    "023016001": ((32, '的山'),),
+    "023022004": ((29, '的'),),
+    "023033004": ((22, '尽禾稼'),),
+    "023041009": ((8, '原文是抓'),),
+    "023048014": ((18, '内中'),),
+    "023049012": ((28, '国'),),
+    "023055011": ((45, '的事上'),),
+    "024005006": ((21, '的'),),
+    "024007014": ((7, '为'),),
+    "024009001": ((32, '中'),),
+    "024030014": ((18, '你'),),
+    "024030017": ((41, '的'),),
+    "024042001": ((31, '四十三章二节'),),
+    "025003034": ((14, '在'),),
+    "026023025": ((41, '的人'),),
+    "026028010": ((26, '的人'),),
+    "026030006": ((41, '二十九章十节'),),
+    "026040003": ((20, '如'),),
+    "026040044": ((31, '在南门旁'),),
+    "026047010": ((30, '之处'),),
+    "027001017": ((22, '上'),),
+    "027003004": ((24, '的人'),),
+    "027008002": ((22, '中'),),
+    "027010013": ((31, '中的'),),
+    "030009013": ((50, '三章十八节'),),
+    "033001013": ((22, '的'),),
+    "034003004": ((34, '原文是卖'),),
+    "036002014": ((11, '的'),),
+    "038008023": ((30, '中'),),
+    "040004005": ((21, '上'),),
+    "040016025": ((18, '的'),),
+    "040017027": ((14, '他们'),),
+    "040024008": ((17, '的起头'),),
+    "042004009": ((23, '上'),),
+    "042009024": ((18, '的'),),
+    "042009054": ((55, '吗'),),
+    "044008027": ((23, '十八章一节'),),
+    "044018024": ((34, '的'),),
+    "046011024": ((25, '的'),),
+    "046011030": ((23, '的'),),
+    "047001020": ((34, '的'),),
+    "047013005": ((40, '心'),),
+    "048003013": ((13, '了'),),
+    "049002021": ((6, '房'),),
+    "053002002": ((32, '到了'),),
+    "054006018": ((29, '人'),),
+    "058004001": ((32, '中间'),),
+    "058007010": ((31, '中'),),
+    "058009005": ((23, '座'),),
+    "060001012": ((21, '的'),),
+    "063001008": ((22, '所做的工'),),
+    "066002027": ((15, '他们'),),
+    "066003002": ((20, '的'),),
+    "066019015": ((30, '他们'),),
+    "066020008": ((15, '的'),),
+}
+
 
 def load(path):
     return {r["id"]: r for r in json.loads(Path(path).read_text(encoding="utf-8"))}
@@ -228,7 +318,7 @@ def gap_is_apparatus(mask, p):
     return mask[p - 1] and mask[p]
 
 
-def main():
+def compute():
     ours = load(OURS)
     a = load(WIT_A)
     b = load_blob(WIT_B_BLOB)
@@ -256,14 +346,21 @@ def main():
             apparatus.append((vid, agreed))
         else:
             running.append((vid, agreed))
+    return ours, a, b, ids, apparatus, running
+
+
+def main():
+    ours, a, b, ids, apparatus, running = compute()
 
     known = EXPLAINED.keys()
     fresh = [h for h in running if h[0] not in known]
+    changed = changed_signatures(known, running, SIGNATURES)
     print(f"verses compared: {len(ids)}")
     print(f"both witnesses read more than we do: {len(apparatus) + len(running)}")
     print(f"  editorial apparatus only: {len(apparatus)}")
     print(f"  in the running text: {len(running)}")
     print(f"    already read and explained: {len(running) - len(fresh)} of {len(EXPLAINED)}")
+    print(f"    content changed at an explained id: {len(changed)}")
     print(f"    NEW, unexamined: {len(fresh)}")
     for vid, agreed in fresh:
         r = ours[vid]
@@ -272,13 +369,18 @@ def main():
         print(f"  ours : {r['text']}")
         print(f"  A    : {a[vid]['text']}")
         print(f"  B    : {b[vid]['text']}")
+    for vid, current in changed:
+        r = ours[vid]
+        missing = " ".join(f"{s!r}@{pos}" for pos, s in current)
+        print(f"\nCHANGED {vid}  {r['book']} {r['chapter']}:{r['verse']}  now missing {missing}"
+              f", not what EXPLAINED recorded: {EXPLAINED[vid]}")
 
     # A known hit that stops appearing is drift too — the text moved under a
     # triage decision that was made by reading it.
     gone = sorted(known - {vid for vid, _ in running})
     for vid in gone:
         print(f"\n{vid} no longer reads short — update EXPLAINED: {EXPLAINED[vid]}")
-    return 1 if fresh or gone else 0
+    return 1 if fresh or gone or changed else 0
 
 
 if __name__ == "__main__":

@@ -2509,22 +2509,25 @@ reported. Work these top-down before P2.
       simulation against `019009014`, not just argued. Filed below as its
       own item rather than expanded here.
 
-- [ ] **Both frozen-corpus audits' EXPLAINED/PENDING checks are keyed by
-      verse id alone, not by the hit's own content — a future defect at
-      an already-explained id is invisible.** Found while re-deriving the
-      figures for the item above, but pre-existing in every entry either
-      file has ever carried, not introduced by that pass. Demonstrated,
-      not just argued: mutating `019009014` (already EXPLAINED for an
-      unrelated note-position reason) to additionally drop 德 from 美德 —
-      a genuine, unrelated new loss — still exits 0, because `fresh = [h
-      for h in running if h[0] not in known]` only checks the id. Fix
-      shape: EXPLAINED/PENDING should record what was explained (e.g. the
-      exact agreed substring/position, the way PENDING's prose already
-      describes but the code never checks) and compare the CURRENT hit's
-      content against it, not just its id — the same way the existing
-      "gone" check already treats a hit's *disappearance* as drift, this
-      would treat a hit's *content changing* the same way. Touches the
-      shared logic of both audits; do it once, not twice.
+- [x] **DONE 2026-09-09: Both frozen-corpus audits' EXPLAINED/PENDING
+      checks now also compare a known hit's CURRENT content against a
+      recorded signature, not just its id.** Shared `signature()` /
+      `changed_signatures()` added to `audit_inserted_characters.py`
+      (imported into the dropped-characters audit alongside
+      `apparatus_mask`, same pattern); both files' main loops factored
+      into a `compute()` each so a generator script could compute every
+      known id's `agreed` list mechanically from HEAD rather than by
+      hand — 80 signatures (dropped) + 125 (inserted: 124 EXPLAINED + 1
+      live PENDING). A missing signature counts as changed too, so a
+      future EXPLAINED/PENDING entry added without one is caught rather
+      than silently passing. Verified: all four baseline numbers (7/80/9/1
+      dropped, 561/11/5 inserted) and the drift audit's 14/6/8 are
+      unchanged; CHANGED is 0 at HEAD; the repro (mutating `019009014` in
+      a throwaway worktree to additionally drop 德 from 美德, tools copied
+      in since git-worktree checks out committed code) now makes the
+      dropped audit print `CHANGED 019009014 ... now missing '德'@10
+      '的'@22`, where it used to exit 0 silently. Does not close `:2436`
+      or `:2529` — only makes them safer to land later.
 
 - [ ] **5 pre-existing `PENDING` entries in `audit_inserted_characters.py`
       already read "no longer reads long" before today's work — found

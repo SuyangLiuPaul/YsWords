@@ -283,6 +283,8 @@ PENDING = {
     # witnesses, which is not enough to delete a character unattended.
     "041006033": "马可福音 6:33  +的  (从各城的步行 / 从各城步行)"
                  "  ungrammatical, and the G3588 tag is an off-by-one",
+    # the four other PENDING ids (016001002, 016002019, 016003003, 025003001)
+    # no longer read long at all — they surface as `gone` below, not here.
     # Three in 尼希米記 1–3, and they are a different case from the 20. The
     # Hebrew HAS a word each could render — עַל twice (H5921), the second
     # אַתֶּם (H859), הֵמָּה (H1992) — so DELETING them would remove a word the
@@ -316,6 +318,141 @@ PENDING = {
     # multiset argument says it cannot. Removing the entry was checked
     # against the pre-repair data, where it comes back as NEW rather than
     # vanishing, so the guard is real.
+}
+
+# What each EXPLAINED/PENDING id's `agreed` list (position, extra-substring
+# pairs) reads as at the moment it was explained — generated from `compute()`
+# at HEAD, not hand-typed. `changed_signatures()` re-derives the SAME id's
+# CURRENT agreed list on every run and compares it against this: EXPLAINED/
+# PENDING only ever suppressed a hit by its id, so a later defect at that
+# same id (a genuinely new addition, unrelated to the reason it was
+# explained) used to exit 0 silently. See docs/autonomous-queue.md:2512.
+SIGNATURES = {
+    "001048017": ((34, '的'),),
+    "004011030": ((17, '了'),),
+    "004021020": ((4, '了'),),
+    "004032038": ((16, '西比玛'),),
+    "005005006": ((0, '说'),),
+    "005032020": ((0, '说'),),
+    "007006026": ((4, '上'),),
+    "009006019": ((11, '的他的原文是耶和华'),),
+    "009025001": ((28, '里'),),
+    "010011011": ((29, '的'),),
+    "011002034": ((30, '里坟墓里'),),
+    "011003004": ((18, '的'),),
+    "013015013": ((28, '我们刑罚'),),
+    "014030003": ((2, '间'),),
+    "015001006": ((18, '帮助他们'),),
+    "016003005": ((19, '担'),),
+    "017006007": ((13, '人'),),
+    "019009014": ((17, '的'),),
+    "019010010": ((17, '之下'),),
+    "019022020": ((16, '脱离'),),
+    "019051010": ((20, '的'),),
+    "019088004": ((13, '的人'),),
+    "019106028": ((16, '的'), (19, '死')),
+    "019140009": ((21, '自己陷害'),),
+    "023014032": ((7, '的'),),
+    "023016001": ((24, '的山城'),),
+    "023022004": ((21, '的众民'),),
+    "023033004": ((14, '尽禾稼吃'),),
+    "023038017": ((18, '灵魂'),),
+    "023041009": ((8, '来的领'),),
+    "023044014": ((9, '树柞树'), (14, '作')),
+    "023048014": ((10, '内中他们'),),
+    "023049012": ((21, '国秦'),),
+    "023055011": ((32, '的事上'),),
+    "024003003": ((7, '雨'),),
+    "024005006": ((14, '的晚上'),),
+    "024006002": ((8, '女子'),),
+    "024006026": ((1, '民'),),
+    "024007014": ((7, '我'),),
+    "024009001": ((21, '中百姓'),),
+    "024030014": ((13, '你'),),
+    "024030017": ((36, '的'),),
+    "025003034": ((8, '在踹'),),
+    "026001016": ((5, '颜色'),),
+    "026014019": ((12, '灭命'),),
+    "026023025": ((31, '的人遗留'),),
+    "026026006": ((6, '居民'),),
+    "026028010": ((14, '的人未受割礼'),),
+    "026033022": ((16, '灵'),),
+    "026040003": ((12, '如颜色'),),
+    "026040044": ((22, '在南门旁'),),
+    "026047010": ((21, '网之处晒网'),),
+    "027001017": ((14, '上'),),
+    "027003004": ((16, '的人'),),
+    "027008002": ((18, '中'),),
+    "027010013": ((19, '中的'),),
+    "030008014": ((7, '牛犊'), (46, '道'), (51, '道')),
+    "033001013": ((15, '的民'),),
+    "033004008": ((9, '城'), (31, '民')),
+    "033004010": ((3, '民'),),
+    "033004013": ((3, '民'),),
+    "033005001": ((3, '民'),),
+    "036002014": ((6, '的'),),
+    "036003010": ((11, '民'),),
+    "038008014": ((27, '我'), (32, '原文有万军之耶和华说的')),
+    "038008023": ((24, '中'),),
+    "039002003": ((18, '在'),),
+    "040004005": ((15, '上'),),
+    "040016025": ((9, '的'),),
+    "040017027": ((5, '他们'),),
+    "040021005": ((5, '居民'),),
+    "040021009": ((10, '和散那'), (39, '耶和华')),
+    "040024008": ((5, '的起头'),),
+    "041006033": ((19, '的'),),
+    "041009005": ((6, '拉比'),),
+    "042004009": ((17, '上'),),
+    "042009024": ((9, '的'),),
+    "042009054": ((14, '耶稣'), (41, '吗')),
+    "043008015": ((3, '以外貌'),),
+    "043019030": ((3, '了尝了'),),
+    "044002026": ((9, '灵'),),
+    "044013018": ((6, '他们容忍'),),
+    "044018024": ((27, '的学问'),),
+    "044023035": ((7, '也'),),
+    "044024002": ((10, '开始控'),),
+    "044024023": ((13, '要'),),
+    "044025022": ((28, '他'),),
+    "044028006": ((21, '看'),),
+    "044028010": ((25, '东西'),),
+    "045007022": ((8, '意思'),),
+    "046011024": ((17, '的舍'),),
+    "046011030": ((18, '的'),),
+    "046015031": ((6, '们'),),
+    "047001020": ((26, '的'),),
+    "047002013": ((4, '我'),),
+    "047006003": ((2, '在'),),
+    "047007014": ((21, '们'),),
+    "047008004": ((11, '服事'),),
+    "047008006": ((3, '们'), (14, '就')),
+    "047008015": ((19, '少'),),
+    "047008023": ((20, '我们'),),
+    "047009011": ((3, '在'),),
+    "047012020": ((8, '发'), (21, '发')),
+    "047013005": ((41, '面'),),
+    "048003013": ((7, '了受'),),
+    "048004006": ((18, '的心你们'),),
+    "048004017": ((15, '离间你们'),),
+    "049002021": ((0, '各房'), (18, '耶和华')),
+    "051001023": ((22, '被引动失去'),),
+    "054003011": ((0, '女执事'),),
+    "054006018": ((22, '人供给'),),
+    "058004001": ((23, '中间我们'),),
+    "058007005": ((40, '中身中'),),
+    "058007010": ((25, '中身'),),
+    "058010038": ((2, '义人'),),
+    "059002007": ((11, '的尊名吗'),),
+    "059004004": ((4, '淫乱的人'),),
+    "060001012": ((13, '的传讲'),),
+    "062001004": ((13, '的喜乐你们的'),),
+    "063001008": ((11, '所做的工你们'),),
+    "066002023": ((7, '党类'),),
+    "066002027": ((7, '他们'),),
+    "066003002": ((13, '的衰微'),),
+    "066019015": ((22, '他们'),),
+    "066020008": ((9, '的方'),),
 }
 
 
@@ -404,7 +541,7 @@ def insertions(ours, theirs):
     return out
 
 
-def main():
+def compute():
     ours = load(OURS)
     a = load(WIT_A)
     b = load_blob(WIT_B_BLOB)
@@ -430,15 +567,53 @@ def main():
             apparatus.append((vid, agreed))
         else:
             running.append((vid, agreed))
+    return ours, a, b, ids, apparatus, running
+
+
+def signature(agreed):
+    """Canonical, comparable form of a hit's `agreed` list — what an
+    EXPLAINED/PENDING entry looked like at the moment it was explained, so a
+    LATER run can tell a still-known id apart from one whose content quietly
+    changed underneath the same id. Shared by both audits (imported into
+    `audit_dropped_characters.py` alongside `apparatus_mask`) so the
+    comparison is defined once, not forked."""
+    return tuple(sorted(agreed))
+
+
+def changed_signatures(known_ids, running, signatures):
+    """Known ids whose CURRENT hit content no longer matches what was
+    recorded when they were explained — a defect at an already-explained id,
+    which `fresh` (keyed by id alone) cannot see.
+
+    A known id with no recorded signature counts as changed too: EXPLAINED/
+    PENDING entries added without a matching `SIGNATURES` entry would
+    otherwise pass this check by omission, reopening the exact hole this
+    function exists to close.
+    """
+    running_by_id = dict(running)
+    changed = []
+    for vid in sorted(known_ids):
+        if vid not in running_by_id:
+            continue
+        current = signature(running_by_id[vid])
+        if signatures.get(vid) != current:
+            changed.append((vid, current))
+    return changed
+
+
+def main():
+    ours, a, b, ids, apparatus, running = compute()
 
     known = EXPLAINED.keys() | PENDING.keys()
     fresh = [h for h in running if h[0] not in known]
+    changed = changed_signatures(known, running, SIGNATURES)
     print(f"verses compared: {len(ids)}")
     print(f"we read more than both witnesses: {len(apparatus) + len(running)}")
     print(f"  editorial apparatus only: {len(apparatus)}")
     print(f"  in the running text: {len(running)}")
     print(f"    read and explained: {sum(1 for h in running if h[0] in EXPLAINED)} of {len(EXPLAINED)}")
     print(f"    awaiting the printed 1919: {sum(1 for h in running if h[0] in PENDING)} of {len(PENDING)}")
+    print(f"    content changed at an explained/pending id: {len(changed)}")
     print(f"    NEW, unexamined: {len(fresh)}")
     for vid, agreed in fresh:
         r = ours[vid]
@@ -447,6 +622,11 @@ def main():
         print(f"  ours : {r['text']}")
         print(f"  A    : {a[vid]['text']}")
         print(f"  B    : {b[vid]['text']}")
+    for vid, current in changed:
+        r = ours[vid]
+        extra = " ".join(f"{s!r}@{pos}" for pos, s in current)
+        print(f"\nCHANGED {vid}  {r['book']} {r['chapter']}:{r['verse']}  now extra {extra}"
+              f", not what was recorded: {EXPLAINED.get(vid) or PENDING[vid]}")
 
     # A known hit that stops appearing is drift too — the text moved under a
     # triage decision that was made by reading it.
@@ -454,7 +634,7 @@ def main():
     for vid in gone:
         print(f"\n{vid} no longer reads long — update EXPLAINED/PENDING: "
               f"{EXPLAINED.get(vid) or PENDING[vid]}")
-    return 1 if fresh or gone else 0
+    return 1 if fresh or gone or changed else 0
 
 
 if __name__ == "__main__":
