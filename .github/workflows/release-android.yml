@@ -134,12 +134,49 @@ jobs:
           APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)"
           echo "Using $APKSIGNER"
           "$APKSIGNER" verify --print-certs "$APK" | tee /tmp/certs.txt
-          got="$(grep -m1 -i 'Signer #1 certificate SHA-256 digest' /tmp/certs.txt | awk '{print $NF}')"
-          echo "signing cert SHA-256: $got"
-          # A debug key is the exact failure mode being guarded against.
-          if "$APKSIGNER" verify --print-certs "$APK" | grep -qi 'CN=Android Debug'; then
+
+          # The label differs by build-tools version: older ones print
+          # "Signer #1 certificate SHA-256 digest:", 37.0.0 prints
+          # "V2 Signer: certificate SHA-256 digest:". Matching on the
+          # part they share is what makes this survive a bump. The
+          # first version of this step matched only the older label,
+          # printed an EMPTY digest for v1.6.272 / v1.5.22, and passed
+          # anyway — a guard that reports nothing and succeeds is worse
+          # than no guard, which is why the empty case is now fatal.
+          got="$(grep -m1 -iE 'certificate SHA-256 digest' /tmp/certs.txt \
+                 | awk '{print $NF}' | tr 'A-Z' 'a-z')"
+          echo "signing cert SHA-256: ${got:-<none>}"
+          if [ -z "$got" ]; then
+            echo "::error::Could not read the signing certificate digest from apksigner. Refusing to publish an APK whose signature was never actually checked."
+            exit 1
+          fi
+
+          # A debug key is the failure this whole step exists for: it
+          # makes the APK refuse to install over any build signed with
+          # the real key (INSTALL_FAILED_UPDATE_INCOMPATIBLE, which
+          # readers see as the useless "App not installed").
+          if grep -qi 'CN=Android Debug' /tmp/certs.txt; then
             echo "::error::This APK is signed with a DEBUG certificate. It cannot update any installed build."
             exit 1
+          fi
+
+          # And the positive check. "Not obviously a debug key" is not
+          # the same as "our key": a keystore secret replaced by mistake
+          # would pass every test above and still ship an APK no reader
+          # could install over theirs. vars.ANDROID_CERT_SHA256 is the
+          # fingerprint recorded in the keystore backup notes; it is
+          # public (it ships inside every APK), so it is a variable
+          # rather than a secret and can be printed on failure.
+          want="$(echo "${{ vars.ANDROID_CERT_SHA256 }}" | tr -d ': ' | tr 'A-Z' 'a-z')"
+          if [ -z "$want" ]; then
+            echo "::warning::vars.ANDROID_CERT_SHA256 is not set, so the digest was not compared against the expected release key."
+          elif [ "$got" != "$want" ]; then
+            echo "::error::Signing certificate is not the expected release key."
+            echo "::error::  got:  $got"
+            echo "::error::  want: $want"
+            exit 1
+          else
+            echo "✓ matches the expected release certificate"
           fi
 
       - name: Resolve tag
