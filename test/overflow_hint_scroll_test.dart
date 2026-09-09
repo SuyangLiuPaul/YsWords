@@ -156,6 +156,46 @@ void main() {
     expect(ourBar, isNot(contains('SingleChildScrollView(')),
         reason: 'the action row must not bypass the hint');
   });
+  testWidgets(
+      'the two chevrons are announced differently, because they do '
+      'opposite things', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 200,
+            child: OverflowHintScroll(
+              fadeColor: const Color(0xFFFFFFFF),
+              minWidth: 200,
+              moreLabel: 'More',
+              backLabel: 'Previous actions',
+              child: Row(
+                children: [
+                  for (var i = 0; i < 8; i++)
+                    const SizedBox(width: 60, height: 40),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Only the forward chevron is showing at rest.
+    expect(find.bySemanticsLabel('More'), findsOneWidget);
+    expect(find.bySemanticsLabel('Previous actions'), findsNothing);
+
+    await tester.drag(find.byType(SingleChildScrollView), const Offset(-120, 0));
+    await tester.pumpAndSettle();
+
+    // Scrolled in: now both are reachable, and a screen reader can tell
+    // them apart. Before this, both said "More" and the back chevron
+    // announced itself as the way to see more.
+    expect(find.bySemanticsLabel('Previous actions'), findsOneWidget,
+        reason: 'the back chevron must not borrow the forward label');
+  });
+
 }
 
 String _read(String path) => io.File(path).readAsStringSync();

@@ -44,6 +44,7 @@ class OverflowHintScroll extends StatefulWidget {
     this.hintWidth = 32,
     this.chevronWidth = 24,
     this.moreLabel,
+    this.backLabel,
   });
 
   final Widget child;
@@ -59,8 +60,17 @@ class OverflowHintScroll extends StatefulWidget {
   /// Width of the tappable/draggable chevron column at the very edge.
   final double chevronWidth;
 
-  /// Accessibility label for the chevrons.
+  /// Accessibility label for the chevron that scrolls FORWARD.
   final String? moreLabel;
+
+  /// Accessibility label for the chevron that scrolls BACK.
+  ///
+  /// Separate from [moreLabel] because the two chevrons do opposite
+  /// things and a screen reader announces only this string: with one
+  /// label for both, a reader hears "More" on the control that takes
+  /// them backwards. Sighted readers get the direction from the glyph;
+  /// this is the same information, for the people who cannot see it.
+  final String? backLabel;
 
   @override
   State<OverflowHintScroll> createState() => _OverflowHintScrollState();
@@ -168,7 +178,7 @@ class _OverflowHintScrollState extends State<OverflowHintScroll> {
               width: widget.hintWidth,
               chevronWidth: widget.chevronWidth,
               color: widget.fadeColor,
-              label: widget.moreLabel,
+              label: widget.backLabel ?? widget.moreLabel,
               onTap: () => _nudge(-1),
               onDragStart: _dragStart,
               onDragUpdate: _dragUpdate,

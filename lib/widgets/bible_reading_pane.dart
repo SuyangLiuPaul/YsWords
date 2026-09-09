@@ -3317,6 +3317,8 @@ class _SelectionActionBar extends StatelessWidget {
                         fadeColor: scheme.surfaceContainerHighest,
                         minWidth: constraints.maxWidth,
                         moreLabel: uiStrings['moreActions']?[settings.locale] ?? 'More',
+                      backLabel: uiStrings['moreActionsBack']?[settings.locale] ??
+                          'Previous actions',
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           mainAxisSize: MainAxisSize.min,
