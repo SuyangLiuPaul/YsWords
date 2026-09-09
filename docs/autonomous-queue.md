@@ -2376,51 +2376,86 @@ reported. Work these top-down before P2.
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
-- [ ] **NEW 2026-09-09 — the `50dcc102` publisher-text adoption (8,566
-      verses, 2026-09-08) introduced witness-confirmed word-level drift;
-      `audit_dropped_characters.py` / `audit_inserted_characters.py` had
-      not been re-run since. This is the omitted/blanked-verse-text
-      carve-out — start here next, ahead of everything else in this
-      tier.** Re-ran both per this hour's audit-drift fallback (queue
-      was otherwise all blocked; see this hour's log). Baseline first:
-      both scripts against `50dcc102^`'s `assets/cuvs-yhwh.json` exit 0,
-      "NEW, unexamined: 0" — clean immediately before the swap. Against
-      HEAD they report **97** new dropped-character hits and **120**
-      new inserted-character hits (both exit 1). Classified all 217 raw
-      hits by comparing the sorted multiset of Han characters in
-      `ours[vid]["text"]` between `50dcc102^` and HEAD for each flagged
-      verse id — independently reproduced by a refuter agent, which got
-      an identical split: **44 unique verses** are a pure footnote-anchor
-      reorder, the `<note: ...>` tag moving from before the word it
-      annotates to after it (e.g. `007006026` 士師記6:26: old `在这磐石
-      <note: 原文是保障>上…`, new `在这磐石上<note: 原文是"保障">…`) — no
-      Han character actually added or removed, so this class is
-      cosmetic, not a text loss; not investigated further here. The
-      remaining **105 unique verses** have a genuinely different Han
-      multiset old vs new, and on these both independent witnesses side
-      with the *pre-adoption* reading (refuter's own stat: OLD matches
-      witness A exactly on 94 of 105; NEW matches on 0 of 105). Two
-      refuter-verified concrete examples — **do not reuse
-      `016001002`/`016003003`**, an earlier draft of this entry cited
-      them and the refuter caught that both are pre-existing PENDING
-      entries the adoption actually *fixed* (both witnesses lack 关于/他们
-      too; moving toward them was correct), not new drift:
-      `007015013` 士師記15:13 — 以坦 (the place name Etam) is present
-      pre-adoption (`将他从以坦磐带上去`) and **absent** post-adoption
-      (`将他从磐带上去`); `007015005` 士師記15:5 — 葡萄园 is **added**
-      post-adoption (`并葡萄园橄榄园尽都烧了`) where neither witness has
-      it. Filed, not fixed: repairing 105 verses correctly needs a
-      verse-by-verse read against the witnesses (never invent the
-      wording), which is a full iteration's work on its own, not
-      something to rush inside an audit-only hour with a concurrent
-      human session already editing this checkout. Reproduce with
-      `python3 tools/audit_dropped_characters.py` /
-      `audit_inserted_characters.py` from repo root against current
-      HEAD (raw lists were only saved to `/tmp`, which is ephemeral).
-      Before repairing, also check whether the printed 1919 or the
-      publisher's own convention agrees with the old or new note-anchor
-      placement — that question was not investigated here, only that it
-      is non-lossy either way.
+- [x] **DONE 2026-09-09 (second pass) — 8 of the 105 flagged verses were
+      genuine omitted-text; repaired.** Built `tools/
+      audit_publisher_adoption_drift.py`, which re-derives the 44/105 split
+      reproducibly from git + the two audits' output (no more ephemeral
+      `/tmp` lists — this was the previous entry's own complaint about
+      itself). Read all 105 by hand rather than trusting the "both
+      witnesses disagree" signal alone, because most of it wasn't an
+      omission at all: **81 of 105** are apparatus-notation reformatting (a
+      `<note:...>` becoming a `〔有古卷在此有...〕`-style wrapper with the
+      identical words inside — confirmed by stripping note/bracket content
+      and comparing the residual Han multiset, which matched for 81);
+      several more are the publisher's own new word ADDITIONS, not
+      omissions (葡萄園 士師記 15:5, 現在 15:18, 我請求 15:2, 大 撒母耳記下
+      21:2) — a real accuracy question but the opposite direction from this
+      hour's carve-out, filed below rather than "fixed" by deleting them;
+      one (042020030/031) is a verse-boundary reallocation with no words
+      lost at all, same shape as the already-documented 申命記 5:5/5:6 case.
+      **8 verses were confirmed genuine omissions** and repaired by
+      `tools/repair_publisher_adoption_omissions.py`, which restores only
+      the missing span from the `50dcc102^` blob via `difflib` insert-only
+      splicing — preserving every one of HEAD's own newer edits (added
+      quotation marks, 吗→么 modernization) rather than reverting the verse:
+      利未記 8:14 +上, 士師記 15:13 +以坦 (Etam), 列王紀上 15:31 +上, 列王紀下
+      13:10 +王, 歷代志下 18:18 +上, 耶利米書 11:2 +的, 以西結書 10:1 +之中,
+      馬可福音 15:12 +樣. Confirmed against the official 和合本 via
+      bible.fhl.net's public JSON API (`/json/qb.php?chineses=<書>&chap=<n>
+      &sec=<v>&version=unv&gb=1` — unauthenticated; the `read.php` HTML
+      endpoint this repo has used before is now login-walled) as well as
+      both independent witnesses: all 8 restored words match all three
+      sources exactly. `test/cuvs_yhwh_frozen_test.dart` re-pinned with a
+      "fourth thaw" paragraph naming the source. **A 9th candidate, 約伯記
+      10:20, was excluded**: a refuter caught that its 30-character gap
+      (an order of magnitude above the other 8) was a stale versification
+      split, not a drop — `50dcc102^` and both witnesses hold the verse's
+      second sentence in 10:20 with a `見上節` placeholder at 10:21; HEAD
+      correctly split it into 10:21 already. Restoring it into 10:20 would
+      have duplicated the sentence across both verses. Re-ran both audits
+      after repair: dropped-character hits 97→89 (exactly the 8 fixed),
+      inserted-character hits unchanged at 120 (none of the 8 were
+      insertion hits). Remaining work, **not done here**:
+        * The ~16 word-ADDITION verses found above (葡萄園/現在/我請求/大
+          and others in the 105 not yet individually named) need their own
+          pass — reading text should not contain words the publisher's
+          own current edition and both witnesses agree are not there
+          either, but deleting them is a different repair shape than this
+          hour's (find the 016/017-style two-witness-agree insertion hits
+          in the 120, cross off the already-EXPLAINED/PENDING ones, and
+          read what's left).
+        * The apparatus-reformatting 81 (+44 pure reorders) are cosmetic
+          and do not need repair, but were not added to either audit's
+          EXPLAINED set, so they will re-report as "NEW" on every future
+          run until someone does that bookkeeping.
+        * This finding is also material to the pending publisher letter
+          (`docs/和合本雅伟版-请教出版方.md`): the publisher's own sync
+          dropped words their own earlier text had, which is exactly the
+          kind of thing that letter exists to raise.
+
+- [ ] **Word-ADDITION verses in 雅偉版 need their own repair pass —
+      opposite direction from the 8-verse omission fix above.** The
+      2026-09-09 read of the 105 flagged verses turned up several where
+      HEAD has a word neither the publisher's own current edition nor
+      either independent witness has: 葡萄園 士師記 15:5, 現在 15:18, 我請求
+      15:2, 大 撒母耳記下 21:2, plus others in the 105 not yet individually
+      named (a count of "~16" was mentioned but is inherited from that
+      pass, not independently reconfirmed here — recount before citing
+      it). Repair shape: find the two-witness-agree insertion hits in the
+      120 (from the drift audit), cross off the already-EXPLAINED/PENDING
+      ones, and read what is left by hand the same way the omissions were
+      read. Same frozen-corpus rules apply: this is a thaw already
+      sanctioned by the owner's 2026-09-08 ruling, not license to touch
+      anything beyond what the witnesses confirm — never invent wording.
+
+- [ ] **Add the apparatus-reformatting 81 + reorder 44 to both audits'
+      EXPLAINED set so they stop re-reporting as "NEW".** Confirmed
+      cosmetic (81 of the 105 are `<note:...>` → `〔有古卷在此有...〕`-style
+      wrapper changes with the identical words inside; the 44 are pure
+      reorders) — no text repair needed, this is pure audit bookkeeping.
+      Without it, `tools/audit_publisher_adoption_drift.py` and the older
+      audit will keep flagging the same 125 items as new drift on every
+      future run, burying any genuinely new defect in noise.
 
 - [x] **FIXED 2026-09-08 — three `audit_*.py` docstrings quote stale
       headline numbers, fixed the prose, not the corpus.** Filed a

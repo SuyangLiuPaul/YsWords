@@ -173,7 +173,46 @@ import 'package:flutter_test/flutter_test.dart';
 /// 1,228 / 1,203 opening and closing quotes as each other, and the
 /// Traditional carries no `“”‘’` at all.
 ///
-/// That the freeze has now been lifted THREE times, every time by the
+/// ## The fourth thaw, 2026-09-09 — 8 words the publisher's own sync dropped
+///
+/// Re-running `tools/audit_dropped_characters.py` /
+/// `audit_inserted_characters.py` after the third thaw (they had not been
+/// re-run since) found 97 + 120 fresh hits versus a clean baseline at
+/// `50dcc102^`, the commit right before it. `tools/
+/// audit_publisher_adoption_drift.py` classifies the 149 distinct verses
+/// behind those hits by comparing the sorted Han-character multiset before
+/// and after: 44 are a pure `<note:...>` anchor reorder (no character lost),
+/// 105 have a genuinely different multiset. Reading those 105 by hand found
+/// most are apparatus reformatting (the same words, re-wrapped) or the
+/// publisher's own new word ADDITIONS (葡萄園 at 士師記 15:5, 現在 at
+/// 15:18, 我請求 at 15:2, 大 at 撒母耳記下 21:2) — a different accuracy
+/// question, filed back to the queue rather than acted on here.
+///
+/// 8 verses were genuine omissions, restored by `tools/
+/// repair_publisher_adoption_omissions.py` from the `50dcc102^` blob, at
+/// exactly the missing position, preserving every one of HEAD's own newer
+/// edits (added quotation marks, 吗→么 modernization) rather than reverting
+/// the verse wholesale: 利未記 8:14 +上, 士師記 15:13 +以坦 (the place
+/// name Etam), 列王紀上 15:31 +上, 列王紀下 13:10 +王, 歷代志下 18:18 +上,
+/// 耶利米書 11:2 +的, 以西結書 10:1 +之中, 馬可福音 15:12 +樣. Confirmed
+/// against the official 和合本 via bible.fhl.net's public JSON API
+/// (`/json/qb.php`, unauthenticated — the `read.php` HTML endpoint used by
+/// earlier passes is login-walled) as well as both independent witnesses:
+/// every restored word matches all three exactly.
+///
+/// **A ninth candidate, 約伯記 10:20, was excluded** after a refuter caught
+/// what looked like the largest, best-attested hit (a 30-character gap, both
+/// witnesses agreeing) actually being a stale versification split: this
+/// edition's own re-versification moved the verse's second sentence into
+/// 10:21, which `50dcc102^` and both witnesses still carry as a placeholder
+/// `見上節` ("see previous verse"). Restoring the "missing" half into 10:20
+/// would have duplicated a sentence HEAD's own 10:21 already holds. Nothing
+/// about a witness or an official source could have caught that — it needed
+/// reading the sibling verse id in this repo's own before/after data, which
+/// the outsized diff length should have flagged before trusting the
+/// witnesses at all.
+///
+/// That the freeze has now been lifted FOUR times, every time by the
 /// person who imposed it and every time toward the publisher rather
 /// than away from them, is still not a precedent for lifting it for an
 /// edit of OURS.
@@ -187,8 +226,15 @@ import 'package:flutter_test/flutter_test.dart';
 /// the publisher's own notation, not an edit to it.
 void main() {
   const frozen = <String, String>{
-    // Re-pinned 2026-09-09 for the FOURTH thaw, which is the third one
-    // finishing rather than a new one. The publisher sync of 2026-09-08
+    // Re-pinned 2026-09-09 (second time same day) for the FOURTH thaw
+    // proper: 8 verses where the 2026-09-08 publisher sync below had
+    // dropped a word entirely, restored from the pre-sync blob at the
+    // exact missing position and confirmed against bible.fhl.net's JSON
+    // API plus both independent witnesses. See the doc comment above.
+    //
+    // Re-pinned earlier the same day for what turned out to be the THIRD
+    // thaw finishing rather than a new one. The publisher sync of
+    // 2026-09-08
     // adopted their current text for 8,566 verses; this pin is that same
     // pass after the repair layer was re-run over the new base and after
     // the defects the repair layer's own tests then caught were fixed
@@ -233,10 +279,12 @@ void main() {
     //   cuvs-yhwh-tr.json  a18a4ab71153ce52be43d85a19b60eb50190fb2322c4f7…
     //   cuvs-yhwh.json     30ba6271f44648d34c6b3ecfa8b68f5d72bcc6374ee1d1…
     //   cuvs-yhwh-tr.json  8e4e85e0d31858484f18d8f345de30055b9ae0114ff0e6…
+    //   cuvs-yhwh.json     a02acd5c4c04d025c5499308ee6c54b4796337c39926959…
+    //   cuvs-yhwh-tr.json  ea33d4a9333adb5273255b38151c8a7ea015a21bcf22cb3…
     'assets/cuvs-yhwh.json':
-        'a02acd5c4c04d025c5499308ee6c54b4796337c39926959a7c67a67f31259735',
+        'bc86c4f89ec4e8c16a6c75f9115699b176f0c44e0cc6bc54c1cd745659217e55',
     'assets/cuvs-yhwh-tr.json':
-        'ea33d4a9333adb5273255b38151c8a7ea015a21bcf22cb3608c2262e2341d735',
+        'bb79163f7312b1e6a52a23b1a16ae772a4a4a2217e314a5f6b8e34bf516e6fcb',
   };
 
   frozen.forEach((path, expected) {
