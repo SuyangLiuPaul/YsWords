@@ -119,7 +119,20 @@ void main() {
     // acquired a doubled 敵 and a transposed 的 respectively. So the
     // ratchet is retightened to what is really there rather than left
     // slack at 223, exactly as the note above says it must be.
-    const known = 184;
+    //
+    // Re-measured 2026-09-09 (second pass): 191, up from 184.
+    // `tools/repair_publisher_adoption_omissions.py` restored 8 words the
+    // publisher's own current sync had dropped relative to the pre-sync
+    // text — 利未記 8:14, 士師記 15:13, 列王紀上 15:31, 列王紀下 13:10,
+    // 歷代志下 18:18, 耶利米書 11:2, 以西結書 10:1, 馬可福音 15:12 — into the
+    // reading asset only. The separate tagged import at
+    // `assets/tagged/cuvs-yhwh/` was not touched by that repair, so 7 of
+    // those 8 verses (all but 馬可福音 15:12, which the tagged side already
+    // carried) now read short against the repaired reading text and enter
+    // this list, the same shape as the 士師記/撒母耳記下 entries above.
+    // Queued: re-sync or re-tag `assets/tagged/cuvs-yhwh/` against the
+    // repaired reading asset (docs/autonomous-queue.md, P0).
+    const known = 191;
 
     final reading = <String, Map<String, String>>{};
     final rows =

@@ -53,6 +53,17 @@ import 'package:yswords/widgets/implied_coverage_line.dart';
 /// grew by 0.13% and nothing else: 223 -> 184 fallen back, 30,879 ->
 /// 30,918 rendered, 364,539 -> 365,102 runs, 22,672 -> 22,692 verses
 /// that gain, 39,534 -> 39,557 pairs over 21,230 -> 21,246 verses.
+///
+/// **2026-09-09 (second pass): every figure moved again, in the other
+/// direction, and again the corpus did not.**
+/// `tools/repair_publisher_adoption_omissions.py` restored 8 words the
+/// publisher's own current sync had dropped — into the reading asset
+/// only, not the separate tagged import. 7 of those 8 verses (all but
+/// 馬可福音 15:12, already covered) now fail `coversVerse` and fall out
+/// of the rendered set: 184 -> 191 fallen back, 30,918 -> 30,911
+/// rendered, 365,102 -> 365,021 runs, 22,692 -> 22,685 verses that gain,
+/// 39,557 -> 39,537 pairs over 21,246 -> 21,240 verses. Proportions still
+/// unmoved (a denominator seven verses smaller out of ~31,000).
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -193,60 +204,53 @@ void main() {
     }
   }
 
-  test('the sheet renders a tagged line on 30,918 verses', () {
+  test('the sheet renders a tagged line on 30,911 verses', () {
     expect(taggedVerses, 31102);
     expect(droppedMarkup, 0,
         reason: 'the markup repair cleared this class; a re-import that '
             'reintroduces `<WH7931s>` would take verses off the line '
             'entirely, and that is a bigger problem than this feature');
-    // 223 -> 184, 30,879 -> 30,918. The corpus is unchanged; the reading
-    // text moved onto the publisher's current text and 39 more verses
-    // net now pass `coversVerse`. Pinned independently, with the verses
-    // that moved the other way named, by tagged_verse_coverage_test.dart.
-    expect(droppedCoverage, 184,
+    // 223 -> 184 -> 191, 30,879 -> 30,918 -> 30,911. The corpus is
+    // unchanged; the reading asset gained 8 restored words the tagged
+    // import does not have, so 7 of the 8 verses drop out of the
+    // rendered set. Pinned independently, with the verses that moved the
+    // other way named, by tagged_verse_coverage_test.dart.
+    expect(droppedCoverage, 191,
         reason: 'pinned independently by tagged_verse_coverage_test.dart');
-    expect(renderedVerses, 30918);
+    expect(renderedVerses, 30911);
   });
 
-  test('22,692 verses gain a line; 305,393 runs gain nothing', () {
+  test('22,685 verses gain a line; 305,332 runs gain nothing', () {
     // All five counts below are the same measurement over a rendered set
-    // that is 39 verses larger — see the file note. `runsThatGain` is the
-    // one that FELL, 59,708 -> 59,706, which it can do because the set
-    // changed in both directions: the verses that LEFT it (士師記 15:2 /
-    // 15:5 / 15:18, 撒母耳記下 21:2, 約伯記 31:36, 歷代志上 21:17) took a
-    // few more chip-bearing runs out than the ones that joined brought
-    // in.
-    // 365,069 for a few hours on 2026-09-08; 365,102 once the last of
-    // the publisher's own defects were repaired against the official
-    // edition — 16 transpositions, the Revelation refrain's ！, two
-    // lost closing quotes, 約伯記 31:36's doubled 敵, 歷代志上 21:17's
-    // displaced 的 — each of which let another verse's tagged line
-    // through.
-    expect(renderedRuns, 365102);
-    expect(runsThatGain, 59709);
-    expect(runsThatGainNothing, 305393);
+    // that is now 7 verses smaller — see the file note.
+    // 365,102 -> 365,021: the 7 verses that fell out of the rendered set
+    // (利未記 8:14, 士師記 15:13, 列王紀上 15:31, 列王紀下 13:10, 歷代志下
+    // 18:18, 耶利米書 11:2, 以西結書 10:1 — 馬可福音 15:12 was the 8th
+    // restoration but stayed rendered, already covered by the tagged
+    // side) took their runs out with them.
+    expect(renderedRuns, 365021);
+    expect(runsThatGain, 59689);
+    expect(runsThatGainNothing, 305332);
     expect(runsThatGain + runsThatGainNothing, renderedRuns,
         reason: 'every rendered run is in exactly one bucket');
-    expect(versesThatGain, 22692);
-    // 73.4% of rendered verses, 16.4% of rendered runs. Both are worth
-    // stating together: the feature reaches most of the corpus and
-    // almost none of the taps. Both proportions are unmoved, which is
-    // the point of keeping them beside the raw counts.
+    expect(versesThatGain, 22685);
+    // 73.4% of rendered verses, 16.4% of rendered runs — unmoved to a
+    // tenth of a percent, same as the last move: a denominator shrinking
+    // by 7 out of ~31,000 does not touch the proportions.
     expect(versesThatGain / renderedVerses, closeTo(0.734, 0.001));
     expect(runsThatGain / renderedRuns, closeTo(0.164, 0.001));
   });
 
-  test('39,557 (verse, number) pairs become reachable, over 21,246 verses', () {
+  test('39,537 (verse, number) pairs become reachable, over 21,240 verses', () {
     // The queue's figures for the same question on the raw corpus are
-    // 39,868 over 21,390. Lower here because 184 verses never render a
+    // 39,868 over 21,390. Lower here because 191 verses never render a
     // tap target and because an `i` that only repeats its run's own `s`
     // is not new reach.
     //
-    // 39,534 -> 39,557 over 21,230 -> 21,246: the same 39 verses again,
-    // bringing their own pairs with them. The queue's gap narrowed
-    // because the count of fallen-back verses did.
-    expect(newlyReachable.length, 39557);
-    expect(versesNewlyReachable.length, 21246);
+    // 39,557 -> 39,537 over 21,246 -> 21,240: the same 7 verses leaving,
+    // taking their pairs with them.
+    expect(newlyReachable.length, 39537);
+    expect(versesNewlyReachable.length, 21240);
     // 約翰福音 3:5, the verse the whole argument was conducted over: the
     // span repair promoted 神 to G2316 θεός and 的国。 to G932 βασιλεία,
     // which left G3588 ὁ reachable nowhere. It is reachable again.
@@ -255,9 +259,9 @@ void main() {
 
   test('a line never has more than 12 chips, and usually has one', () {
     expect(mostChipsOnOneLine, 12);
-    // 6,026 -> 6,030: four more multi-chip runs, carried in by the
-    // verses that rejoined the rendered set. The ceiling did not move.
-    expect(runsWithSeveralChips, 6031);
+    // 6,031 -> 6,028: three fewer multi-chip runs, carried out by the
+    // 7 verses that left the rendered set. The ceiling did not move.
+    expect(runsWithSeveralChips, 6028);
   });
 
   test('no number in the shipped corpus is a dead end', () {

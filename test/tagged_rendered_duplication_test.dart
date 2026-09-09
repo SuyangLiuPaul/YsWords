@@ -167,8 +167,14 @@ void main() {
     // tagged import was already carrying, so 80 of the 102 now match exactly
     // and leave the census; the remaining four left it by failing the guard
     // instead (see the header note on 士師記 15 and 撒母耳記下 21:2).
-    expect(long, 18);
-    // The 8 that remain are apparatus, referent glosses and note wording, and
+    //
+    // 18 -> 17 (second pass, same day): `tools/repair_publisher_adoption_
+    // omissions.py` restored 馬可福音 15:12's 樣, which the tagged import
+    // already carried (那麼樣). The reader's verse now matches the tagged
+    // line exactly, so it drops out of the census the same way the 80
+    // above did — nothing was deleted to get here either.
+    expect(long, 17);
+    // The 7 that remain are apparatus, referent glosses and note wording, and
     // every one has been read:
     //
     //   genesis 18:19, exodus 24:1, 2_chronicles 29:6   the reader's verse
@@ -177,24 +183,22 @@ void main() {
     //   zechariah 10:12   the reader's （原文是"雅伟"） is set in full-width
     //       parentheses, which `noteOurs` does not strip;
     //   2_samuel 2:23   the tagged line reads 槍鐏 against the reader's 槍;
-    //   mark 15:12   the tagged line reads 那麼樣 against the reader's 那麼;
     //   luke 20:30   the tagged line carries the Received-Text
     //       「第三個也娶過她」 the reader's verse does not;
     //   acts 28:28   the tagged line opens 28:29's 〔有古卷在此有 here, which
     //       is the CUV's own way of bracketing a whole-verse variant.
     //
-    // 13 -> 8, by the same movement: the reading text caught up with the
-    // tagged import in five of the thirteen. None of the seven duplications
-    // and none of the four supplied words is here, and nothing new may appear
-    // without a decision — which is why the membership is pinned and not just
-    // the count.
+    // 13 -> 8 -> 7: mark 15:12 left the same way the first five did — the
+    // reading text caught up with the tagged import. None of the seven
+    // duplications and none of the four supplied words is here, and nothing
+    // new may appear without a decision — which is why the membership is
+    // pinned and not just the count.
     expect(onScripture, <String>[
       'genesis 18:19',
       'exodus 24:1',
       '2_samuel 2:23',
       '2_chronicles 29:6',
       'zechariah 10:12',
-      'mark 15:12',
       'luke 20:30',
       'acts 28:28',
     ]);
@@ -208,6 +212,7 @@ void main() {
           'job 31:36',
           'ezekiel 36:1',
           'matthew 9:28',
+          'mark 15:12',
         ]))));
 
     // And the same census on the input production actually uses. It is much
@@ -241,12 +246,19 @@ void main() {
     // 15:2 / 15:5 / 15:18, 撒母耳記下 21:2, 約伯記 31:36, 歷代志上 21:17 —
     // came out of it, because there the reading text moved AWAY from the
     // corpus. Those six are named in the two files that own them.
-    expect(fallback, 184);
+    //
+    // 184 -> 191 (second pass, same day): the 8-word omission repair moved
+    // the reading text away from the tagged import in 7 more verses, same
+    // shape as the six above — named in the two files that own this figure.
+    expect(fallback, 191);
     // 1,149 -> 1,160. This census is dominated by the `<note: …>` / `〔…〕`
     // asymmetry rather than by scripture, so a rise here says the two sides
     // set their apparatus differently in eleven more verses than they did.
     // It is pinned so it cannot drift; the raw census above is the triaged one.
-    expect(production, 1160);
+    //
+    // 1,160 -> 1,159: 馬可福音 15:12 leaving the raw census above (both
+    // sides now read 那麼樣) also leaves this one.
+    expect(production, 1159);
   });
 
   test('馬太福音 9:28 keeps the αὐτοῖς the deleted run would have thrown away',
