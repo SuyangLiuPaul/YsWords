@@ -150,6 +150,118 @@ EXPLAINED = {
     # this file keeps a PENDING list instead of a fix list.
     "017006007": "restored 人; the print reads 王所喜悅尊榮的人",
     "039002003": "restored 在; the print reads 抹在你們的臉上",
+    #
+    # ---- 98 apparatus-reformat hits from the 50dcc102 adoption, 2026-09-09 ----
+    #
+    # Mirrors the batch of the same name in audit_dropped_characters.py: a
+    # `<note:…>` gloss's anchor moved relative to the word it annotates, or
+    # its wording changed, or (042017036 alone) its delimiter changed from
+    # `<note:…>` to `〔…〕` — the case that motivated teaching apparatus_mask
+    # the second spelling, see that function's docstring. Checked against
+    # `docs/autonomous-queue.md:2451`'s method: the text outside the note is
+    # byte-identical between `50dcc102^` and HEAD. Listed by id, not by a
+    # blanket "multiset unchanged" rule — see the dropped-audit comment for
+    # why that rule would swallow six genuine word-order corruptions the
+    # same pass found (009001007, 043012035, 043016004, 045012003,
+    # 049004022, 066002016), none of which appear below.
+    "004032038": "民数记 32:38  extra '西比玛'@16 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "007006026": "士师记 6:26  extra '上'@4 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "009006019": "撒母耳记上 6:19  extra '的他的原文是耶和华'@11 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "009025001": "撒母耳记上 25:1  extra '里'@28 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "010011011": "撒母耳记下 11:11  extra '的'@29 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "011002034": "列王纪上 2:34  extra '里坟墓里'@30 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "011003004": "列王纪上 3:4  extra '的'@18 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "013015013": "历代志上 15:13  extra '我们刑罚'@28 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "014030003": "历代志下 30:3  extra '间'@2 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "015001006": "以斯拉记 1:6  extra '帮助他们'@18 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "016003005": "尼希米记 3:5  extra '担'@19 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "019009014": "诗篇 9:14  extra '的'@17 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "019010010": "诗篇 10:10  extra '之下'@17 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "019022020": "诗篇 22:20  extra '脱离'@16 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "019051010": "诗篇 51:10  extra '的'@20 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "019088004": "诗篇 88:4  extra '的人'@13 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "019106028": "诗篇 106:28  extra '的'@16 '死'@19 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "019140009": "诗篇 140:9  extra '自己陷害'@21 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023014032": "以赛亚书 14:32  extra '的'@7 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023016001": "以赛亚书 16:1  extra '的山城'@24 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023022004": "以赛亚书 22:4  extra '的众民'@21 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023033004": "以赛亚书 33:4  extra '尽禾稼吃'@14 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023038017": "以赛亚书 38:17  extra '灵魂'@18 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023041009": "以赛亚书 41:9  extra '来的领'@8 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023044014": "以赛亚书 44:14  extra '树柞树'@9 '作'@14 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023048014": "以赛亚书 48:14  extra '内中他们'@10 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023049012": "以赛亚书 49:12  extra '国秦'@21 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "023055011": "以赛亚书 55:11  extra '的事上'@32 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "024003003": "耶利米书 3:3  extra '雨'@7 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "024005006": "耶利米书 5:6  extra '的晚上'@14 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "024006002": "耶利米书 6:2  extra '女子'@8 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "024006026": "耶利米书 6:26  extra '民'@1 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "024009001": "耶利米书 9:1  extra '中百姓'@21 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "024030014": "耶利米书 30:14  extra '你'@13 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "024030017": "耶利米书 30:17  extra '的'@36 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "025003034": "耶利米哀歌 3:34  extra '在踹'@8 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026001016": "以西结书 1:16  extra '颜色'@5 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026014019": "以西结书 14:19  extra '灭命'@12 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026023025": "以西结书 23:25  extra '的人遗留'@31 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026026006": "以西结书 26:6  extra '居民'@6 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026028010": "以西结书 28:10  extra '的人未受割礼'@14 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026033022": "以西结书 33:22  extra '灵'@16 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026040003": "以西结书 40:3  extra '如颜色'@12 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026040044": "以西结书 40:44  extra '在南门旁'@22 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "026047010": "以西结书 47:10  extra '网之处晒网'@21 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "027001017": "但以理书 1:17  extra '上'@14 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "027003004": "但以理书 3:4  extra '的人'@16 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "027008002": "但以理书 8:2  extra '中'@18 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "027010013": "但以理书 10:13  extra '中的'@19 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "030008014": "阿摩司书 8:14  extra '牛犊'@7 '道'@46 '道'@51 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "033001013": "弥迦书 1:13  extra '的民'@15 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "033004008": "弥迦书 4:8  extra '城'@9 '民'@31 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "033004010": "弥迦书 4:10  extra '民'@3 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "033004013": "弥迦书 4:13  extra '民'@3 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "033005001": "弥迦书 5:1  extra '民'@3 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "036002014": "西番雅书 2:14  extra '的'@6 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "036003010": "西番雅书 3:10  extra '民'@11 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "038008023": "撒迦利亚书 8:23  extra '中'@24 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "040004005": "马太福音 4:5  extra '上'@15 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "040016025": "马太福音 16:25  extra '的'@9 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "040017027": "马太福音 17:27  extra '他们'@5 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "040021005": "马太福音 21:5  extra '居民'@5 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "040021009": "马太福音 21:9  extra '和散那'@10 '耶和华'@39 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "040024008": "马太福音 24:8  extra '的起头'@5 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "041009005": "马可福音 9:5  extra '拉比'@6 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "042004009": "路加福音 4:9  extra '上'@17 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "042009024": "路加福音 9:24  extra '的'@9 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "042009054": "路加福音 9:54  extra '耶稣'@14 '吗'@41 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "043008015": "约翰福音 8:15  extra '以外貌'@3 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "043019030": "约翰福音 19:30  extra '了尝了'@3 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "044002026": "使徒行传 2:26  extra '灵'@9 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "044013018": "使徒行传 13:18  extra '他们容忍'@6 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "044018024": "使徒行传 18:24  extra '的学问'@27 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "045007022": "罗马书 7:22  extra '意思'@8 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "046011024": "哥林多前书 11:24  extra '的舍'@17 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "046011030": "哥林多前书 11:30  extra '的'@18 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "047001020": "哥林多后书 1:20  extra '的'@26 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "048003013": "加拉太书 3:13  extra '了受'@7 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "048004006": "加拉太书 4:6  extra '的心你们'@18 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "048004017": "加拉太书 4:17  extra '离间你们'@15 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "049002021": "以弗所书 2:21  extra '各房'@0 '耶和华'@18 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "051001023": "歌罗西书 1:23  extra '被引动失去'@22 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "054003011": "提摩太前书 3:11  extra '女执事'@0 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "054006018": "提摩太前书 6:18  extra '人供给'@22 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "058004001": "希伯来书 4:1  extra '中间我们'@23 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "058007005": "希伯来书 7:5  extra '中身中'@40 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "058007010": "希伯来书 7:10  extra '中身'@25 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "058010038": "希伯来书 10:38  extra '义人'@2 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "059002007": "雅各书 2:7  extra '的尊名吗'@11 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "059004004": "雅各书 4:4  extra '淫乱的人'@4 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "060001012": "彼得前书 1:12  extra '的传讲'@13 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "062001004": "约翰一书 1:4  extra '的喜乐你们的'@13 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "063001008": "约翰二书 1:8  extra '所做的工你们'@11 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "066002023": "启示录 2:23  extra '党类'@7 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "066002027": "启示录 2:27  extra '他们'@7 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "066003002": "启示录 3:2  extra '的衰微'@13 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "066019015": "启示录 19:15  extra '他们'@22 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    "066020008": "启示录 20:8  extra '的方'@9 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
 }
 
 # What the printed 1919 did NOT settle. Five of the original 26; the other 21
@@ -240,9 +352,19 @@ def apparatus_mask(text):
     directly. Brackets and parentheses nest independently of note markers
     because this edition uses 「（原文是…）」 inside notes and 「主[雅伟]」
     outside them.
+
+    `〔…〕` is the same apparatus, written as visible brackets instead of a
+    `<note:…>` tag — this edition uses it for verse-merge markers
+    (`〔见上节〕`) and manuscript-variant notes (`〔有古卷在此有36节…〕`), the
+    same content `<note:…>` carries elsewhere. The 50dcc102 publisher-text
+    adoption converted 72 of these from `<note:…>` to `〔…〕` without
+    changing a single character inside; before this, a verse caught in that
+    conversion read as a RUNNING hit (e.g. 042017036) purely because this
+    function didn't know the second spelling, not because anything in the
+    verse actually changed.
     """
     flags = []
-    note = brackets = parens = 0
+    note = brackets = parens = lens = 0
     i = 0
     while i < len(text):
         if text.startswith("<note:", i):
@@ -262,8 +384,12 @@ def apparatus_mask(text):
             parens += 1
         elif ch in "）)":
             parens = max(0, parens - 1)
+        elif ch == "〔":
+            lens += 1
+        elif ch == "〕":
+            lens = max(0, lens - 1)
         elif CJK.match(ch):
-            flags.append(bool(note or brackets or parens))
+            flags.append(bool(note or brackets or parens or lens))
         i += 1
     return flags
 

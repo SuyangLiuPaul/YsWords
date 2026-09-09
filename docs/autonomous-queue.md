@@ -2447,15 +2447,100 @@ reported. Work these top-down before P2.
       read. Same frozen-corpus rules apply: this is a thaw already
       sanctioned by the owner's 2026-09-08 ruling, not license to touch
       anything beyond what the witnesses confirm — never invent wording.
+      **Work list narrowed 2026-09-09 (see the item below):** it is 14
+      ids, not "~16" — 8 real content changes (007015002, 007015005,
+      007015018, 010021002, 018010020, 023037007, 042020030, 042020031)
+      plus 6 the earlier "44 pure reorders" count had filed as cosmetic
+      and were not: 009001007, 043012035, 043016004, 045012003,
+      049004022, 066002016 are genuine word-order transpositions the
+      adoption introduced, not note-anchor placement — both witnesses
+      agree on the pre-adoption order at each, and the post-adoption
+      reading is ungrammatical. All 14 still fail both audits by design.
+      Frozen-asset rule still applies: read and repair with the owner's
+      sign-off, don't guess a fix from the witnesses alone.
 
-- [ ] **Add the apparatus-reformatting 81 + reorder 44 to both audits'
-      EXPLAINED set so they stop re-reporting as "NEW".** Confirmed
-      cosmetic (81 of the 105 are `<note:...>` → `〔有古卷在此有...〕`-style
-      wrapper changes with the identical words inside; the 44 are pure
-      reorders) — no text repair needed, this is pure audit bookkeeping.
-      Without it, `tools/audit_publisher_adoption_drift.py` and the older
-      audit will keep flagging the same 125 items as new drift on every
-      future run, burying any genuinely new defect in noise.
+- [x] **Added the apparatus-reformatting hits to both audits' EXPLAINED
+      set — DONE 2026-09-09, and "81 + 44 = 125" above was wrong.**
+      Re-derived from the tools themselves rather than copied: the true
+      population of fresh hits (union of both audits, before this pass)
+      was **124**, not 125/149/141/130 (several earlier, inconsistent
+      counts floated through this item and a same-day test-file comment —
+      124 is what `python3 tools/audit_dropped_characters.py` /
+      `audit_inserted_characters.py` actually report once each audit's
+      own EXPLAINED/PENDING is subtracted from its own hit list).
+      **110 are apparatus-only** — confirmed per-id, not by a blanket
+      rule, that the verse's running text (everything outside
+      `<note:…>`/`〔…〕`/bracket/paren) is byte-identical between
+      `50dcc102^` and HEAD — and are now in both audits' `EXPLAINED`
+      dicts, keyed by id with the hit's own position/substring recorded.
+      **14 are genuine drift and were deliberately left unexplained**, so
+      both audits keep exiting 1 for them: the 8 real content changes
+      named below `:2436`, plus **6 the earlier "44 pure reorders" claim
+      had wrong** — 撒母耳记上 1:7, 约翰福音 12:35, 16:4, 罗马书 12:3, 以
+      弗所书 4:22, 启示录 2:16 are Han-multiset-unchanged (so they read as
+      cosmetic under a multiset test) but both witnesses agree with the
+      PRE-adoption word order at every one, and the post-adoption reading
+      is ungrammatical (黑里暗行走, 我对你们了说过, 对你各人们说, 私的欲迷
+      惑, 临到那里你) — real transpositions, not reorders. An adversarial
+      review confirmed all six read as mechanical corruption under no
+      plausible parse, and confirmed the 110/14 split has zero
+      misclassifications against the byte-identical test. Folded into
+      `:2436`'s work list, not explained away — see the note there.
+      Also fixed along the way: `apparatus_mask()` (shared by both
+      audits) didn't recognise `〔…〕` as apparatus, only `<note:…>` — the
+      adoption converted 72 notes from the first spelling to the second
+      with identical content, and the blind spot was misclassifying
+      those verses as running-text drift. `audit_dropped_characters.py`
+      now has the same APPARATUS/RUNNING split `audit_inserted_
+      characters.py` already had; a deletion has no character of its own
+      to test, so it tests both neighbours of the gap instead
+      (`gap_is_apparatus`) — a one-sided version of that test was tried
+      first and wrongly absorbed 005005005 (a scriptural parenthetical
+      verse, not a note, that happens to use the same （） this edition
+      also uses for glosses) into the apparatus bucket; requiring both
+      sides fixed it.
+      **A real limitation surfaced by review, not fixed here:** EXPLAINED
+      suppression is keyed by verse id alone, in both audits, and always
+      has been (every entry already in these files before today shares
+      this). A future re-import that mutates an ALREADY-explained id —
+      adding a genuinely new, unrelated loss or insertion at that same
+      verse — would be silently swallowed, because the check is "is this
+      id known" rather than "is this exact hit known." Demonstrated by
+      simulation against `019009014`, not just argued. Filed below as its
+      own item rather than expanded here.
+
+- [ ] **Both frozen-corpus audits' EXPLAINED/PENDING checks are keyed by
+      verse id alone, not by the hit's own content — a future defect at
+      an already-explained id is invisible.** Found while re-deriving the
+      figures for the item above, but pre-existing in every entry either
+      file has ever carried, not introduced by that pass. Demonstrated,
+      not just argued: mutating `019009014` (already EXPLAINED for an
+      unrelated note-position reason) to additionally drop 德 from 美德 —
+      a genuine, unrelated new loss — still exits 0, because `fresh = [h
+      for h in running if h[0] not in known]` only checks the id. Fix
+      shape: EXPLAINED/PENDING should record what was explained (e.g. the
+      exact agreed substring/position, the way PENDING's prose already
+      describes but the code never checks) and compare the CURRENT hit's
+      content against it, not just its id — the same way the existing
+      "gone" check already treats a hit's *disappearance* as drift, this
+      would treat a hit's *content changing* the same way. Touches the
+      shared logic of both audits; do it once, not twice.
+
+- [ ] **5 pre-existing `PENDING` entries in `audit_inserted_characters.py`
+      already read "no longer reads long" before today's work — found
+      while re-running the audits for the item above, not caused by it.**
+      016001002, 016002019, 016003003, 025003001, 064001014 no longer
+      match any current insertion hit at all (`agreed` computes empty),
+      most likely because the 50dcc102 publisher-text adoption changed
+      surrounding punctuation/wording enough to shift the position
+      alignment the same way it did for `030006008` in the dropped audit
+      (removed from EXPLAINED there this same pass, see above — verified
+      that one is genuinely resolved, not just misaligned). These five
+      have NOT been individually re-verified the same way; the PENDING
+      entries may still describe a real, unrepaired question (e.g.
+      025003001's 神/耶和华 divine-name question) that the audit simply
+      can no longer SEE, which is worse than reporting it. Read each
+      against the current text before touching the dict either way.
 
 - [ ] **`assets/tagged/cuvs-yhwh/` is now stale by 7 verses against the
       repaired `assets/cuvs-yhwh.json`.** Landing the 8-verse omission

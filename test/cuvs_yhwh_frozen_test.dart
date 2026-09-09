@@ -188,6 +188,22 @@ import 'package:flutter_test/flutter_test.dart';
 /// 15:18, 我請求 at 15:2, 大 at 撒母耳記下 21:2) — a different accuracy
 /// question, filed back to the queue rather than acted on here.
 ///
+/// **Correction, same day, `:2451`:** "44 are a pure reorder, no character
+/// lost" is not quite right — that is true of the MULTISET, but a multiset
+/// test cannot tell a harmless reorder from a transposition, and 6 of the
+/// 44 are the latter: both witnesses agree on the word order and this
+/// edition's own adoption scrambled it (撒母耳記上 1:7, 約翰福音 12:35,
+/// 16:4, 羅馬書 12:3, 以弗所書 4:22, 啟示錄 2:16 — see
+/// `docs/autonomous-queue.md:2451`). They are real drift, not cosmetic, and
+/// were folded into `:2436`'s work list rather than into either audit's
+/// EXPLAINED set. Of the remaining 38, plus fixing `apparatus_mask` to also
+/// recognise `〔…〕` (not only `<note:…>`, which the adoption used for 72 of
+/// these same notes), 116 verses across both audits turned out to be pure
+/// apparatus reformatting with the running text byte-identical to
+/// `50dcc102^` — more than the 105 first counted, because some of those
+/// 105 "genuinely different multiset" verses were also apparatus-only once
+/// a note's WORDING (not just its position) was allowed to change.
+///
 /// 8 verses were genuine omissions, restored by `tools/
 /// repair_publisher_adoption_omissions.py` from the `50dcc102^` blob, at
 /// exactly the missing position, preserving every one of HEAD's own newer
