@@ -65,21 +65,31 @@ class ChangelogService {
     final cached = _cache;
     if (cached != null) return cached;
     try {
-      final raw = await rootBundle.loadString(assetPath);
-      final decoded = jsonDecode(raw) as Map<String, dynamic>;
-      final entries = (decoded['entries'] as List<dynamic>)
-          .map((e) => e as Map<String, dynamic>)
-          .map((e) => ChangelogEntry(
-                version: e['version'] as String,
-                date: e['date'] as String,
-                notes: (e['notes'] as List<dynamic>).cast<String>(),
-              ))
-          .where((e) => e.notes.isNotEmpty)
-          .toList();
-      return _cache = groupByDay(entries);
+      return _cache = groupByDay(parse(await rootBundle.loadString(assetPath)));
     } catch (_) {
       return _cache = const <ChangelogDay>[];
     }
+  }
+
+  /// The asset's JSON, as entries in the order the generator wrote them.
+  ///
+  /// Public and THROWING, unlike [load] (2026-09-09 review): the
+  /// catch-all above turns any shape mistake in the generated file into
+  /// a silent empty page while the suite stays green, so a test that
+  /// wants to run the real asset through the real parser needs a door
+  /// that lets the exception out. `head` is deliberately not read here
+  /// — it is the generator's receipt, not something the page renders.
+  static List<ChangelogEntry> parse(String raw) {
+    final decoded = jsonDecode(raw) as Map<String, dynamic>;
+    return (decoded['entries'] as List<dynamic>)
+        .map((e) => e as Map<String, dynamic>)
+        .map((e) => ChangelogEntry(
+              version: e['version'] as String,
+              date: e['date'] as String,
+              notes: (e['notes'] as List<dynamic>).cast<String>(),
+            ))
+        .where((e) => e.notes.isNotEmpty)
+        .toList();
   }
 
   /// Group consecutive entries sharing a date.
@@ -103,4 +113,9 @@ class ChangelogService {
 
   /// Test seam: forget the cached parse.
   static void resetForTest() => _cache = null;
+
+  /// Test seam: hand the page a changelog without going through the
+  /// asset, so a layout test can put a day of its own choosing on
+  /// screen (2026-09-09 review, the day-heading overflow).
+  static void setForTest(List<ChangelogDay> days) => _cache = days;
 }

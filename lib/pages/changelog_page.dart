@@ -58,6 +58,18 @@ class _ChangelogPageState extends State<ChangelogPage> {
           }
           final days = snap.data!;
           if (days.isEmpty) return _empty(context, settings);
+          // 2026-09-09 (review finding 4): under a Chinese title the
+          // notes are English commit subjects — the generator selects,
+          // it does not translate, and this app does not invent
+          // translations. One line says so, in the two Chinese locales
+          // only; the English key is deliberately empty, because an
+          // English reader is not owed an explanation for English.
+          // `?? ''` rather than an English fallback for the same
+          // reason. Nothing is rendered when the string is empty, and
+          // no blank row is left where it would have been.
+          final languageNote =
+              uiStrings['changelogLanguageNote']?[locale] ?? '';
+          final lead = languageNote.isEmpty ? 0 : 1;
           return Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 760),
@@ -66,10 +78,16 @@ class _ChangelogPageState extends State<ChangelogPage> {
                 // +1 for the footer, which is part of the honest
                 // answer: this page shows a window, and says where the
                 // rest is.
-                itemCount: days.length + 1,
-                itemBuilder: (context, i) => i == days.length
-                    ? _footer(context, settings)
-                    : _day(context, settings, days[i]),
+                itemCount: lead + days.length + 1,
+                itemBuilder: (context, i) {
+                  if (lead == 1 && i == 0) {
+                    return _languageNote(context, settings, languageNote);
+                  }
+                  final d = i - lead;
+                  return d == days.length
+                      ? _footer(context, settings)
+                      : _day(context, settings, days[d]);
+                },
               ),
             ),
           );
@@ -89,6 +107,18 @@ class _ChangelogPageState extends State<ChangelogPage> {
         color: color,
       );
 
+  Widget _languageNote(BuildContext context, AppSettings s, String text) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text(
+        text,
+        style: _style(s, s.fontSize - 3,
+            height: 1.5, color: scheme.onSurfaceVariant),
+      ),
+    );
+  }
+
   Widget _day(BuildContext context, AppSettings s, ChangelogDay day) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
@@ -96,20 +126,34 @@ class _ChangelogPageState extends State<ChangelogPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
+          // A Wrap, not a Row (2026-09-09 review, finding 3). Both texts
+          // are sized from the reader's own font size AND the OS text
+          // scale, and a Row gives its children no way to yield: at
+          // 360 dp with the reading font at its maximum and the OS at
+          // 200%, the date alone is wider than the screen, so the count
+          // beside it overflowed and every heading on the page wore a
+          // yellow-and-black stripe. With a Wrap the count drops to a
+          // second line instead. Not a maxWidth or a smaller font: a
+          // magic number here would be right for one device and one
+          // text scale, and this page has to survive both being turned
+          // up by a reader who needs them turned up.
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: 10,
             children: [
               Text(
                 day.date,
                 style: _style(s, s.fontSize + 1,
                     weight: FontWeight.w700, color: scheme.primary),
               ),
-              const SizedBox(width: 10),
               // Changes, not versions. How often we deploy is our
               // business; what changed is theirs.
               Text(
-                (uiStrings['changelogCount']?[s.locale] ?? '{n} changes')
+                (day.noteCount == 1
+                        ? (uiStrings['changelogCountOne']?[s.locale] ??
+                            '{n} change')
+                        : (uiStrings['changelogCount']?[s.locale] ??
+                            '{n} changes'))
                     .replaceAll('{n}', '${day.noteCount}'),
                 style: _style(s, s.fontSize - 3,
                     color: scheme.onSurfaceVariant),
@@ -132,7 +176,15 @@ class _ChangelogPageState extends State<ChangelogPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          // Also a Wrap (2026-09-09 review, finding 3). 「你的版本」 is
+          // four Chinese characters wide, and it only ever appears on
+          // the one row the reader most wants to read — so a Row here
+          // meant the badge overflowed exactly when it mattered. The
+          // badge keeps its own shape and moves to the next line.
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
             children: [
               Text(
                 'v${entry.version}',
@@ -142,8 +194,13 @@ class _ChangelogPageState extends State<ChangelogPage> {
               // The reader's own build, marked. This page's second
               // question is "which version was that in", and the
               // useful half of that is "is it in mine".
-              if (running) ...[
-                const SizedBox(width: 8),
+              //
+              // Until 2026-09-09 nobody had ever seen this: the asset
+              // was generated from `release:` commits, which are
+              // written after the build ships, so the running version
+              // was never one of the rows and the condition below was
+              // never true. See finding 1 in tools/build_changelog.py.
+              if (running)
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
@@ -157,7 +214,6 @@ class _ChangelogPageState extends State<ChangelogPage> {
                         color: scheme.onPrimaryContainer),
                   ),
                 ),
-              ],
             ],
           ),
           const SizedBox(height: 4),

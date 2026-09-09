@@ -150,3 +150,33 @@ awk -v rt="$RELEASE_TIME" '
 mv "$TMP" "$APP_VERSION_DART"
 
 echo "✓ pubspec.yaml + app_version.dart now at $NEW (release time: $RELEASE_TIME)"
+
+# 2026-09-09: regenerate the bundled changelog, HERE, because this is
+# the one place the version moves.
+#
+# assets/changelog.json's top entry IS the version being built — its
+# own `release:` commit is not written until after the deploy, so the
+# generator has to be TOLD which version that is (see the "THE BUILD'S
+# OWN VERSION" section of tools/build_changelog.py). The asset records
+# it under `head`, and test/changelog_test.dart pins that to
+# pubspec.yaml. So a bump that does not regenerate ships a stale
+# changelog — 「你的版本」 has no row to render on and the top of the
+# page is one release behind — and turns the suite red on the way.
+#
+# The first wiring put this call in tools/release_web.sh and left two
+# other doors open: `BUMP_VERSION=1 tools/yswords-ios-reinstall.sh`
+# (that script's own bump hook) and a bare `tools/bump_version.sh`.
+# Both moved pubspec without touching the asset. Repeating the call at
+# each door would mean the next door added is wrong again, so it lives
+# at the single place every door already goes through: whoever moves
+# the version regenerates the changelog. That also fixes the other
+# half — `release_web.sh --no-bump` no longer rebuilds the asset from a
+# HEAD that has moved, so prod ships the changelog dev and qat verified.
+#
+# Deliberately NOT tolerant of failure: `set -e` stops here with
+# pubspec already at $NEW, which is the true state and says exactly
+# what to fix. A swallowed error would put the stale asset back.
+if [ -f "$PROJECT/tools/build_changelog.py" ]; then
+  python3 "$PROJECT/tools/build_changelog.py" \
+    --head-version "$NEW" --head-date "$(date +%Y-%m-%d)"
+fi
