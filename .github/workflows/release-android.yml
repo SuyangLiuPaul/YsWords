@@ -8,9 +8,13 @@
 # — the same flavor installed on the user's phones / Mi Pad. The `cn`
 # flavor (applicationIdSuffix .cn) is intentionally not built here.
 #
-# Signing: android/app/build.gradle.kts signs the release build with
-# the DEBUG keystore, so no signing secret is needed — the APK is
-# sideload-installable but is NOT a Play-Store upload artifact.
+# Signing: the real release key, from repository secrets
+# (ANDROID_KEYSTORE_BASE64 / ANDROID_STORE_PASSWORD /
+# ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD), written to
+# android/key.properties before the build. Before 2026-09-09 this
+# job used a per-run debug key, so no release could install over
+# the previous one. There is no debug fallback: if the secret is
+# missing the job fails.
 #
 # Triggers
 #   * push of a version tag  v*   → build, attach the APK to that tag's
@@ -53,7 +57,9 @@ jobs:
           java-version: '17'
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        # Pinned to a commit, not the movable v2 tag: this job now holds the
+        # release signing key, so a compromised tag would be a key leak.
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: '3.44.2'   # keep in step with flutter-ci.yml
           channel: 'stable'
@@ -83,8 +89,58 @@ jobs:
       - name: Clear stale Gradle jniLib merge outputs (flutter/flutter#191801)
         run: tools/clear_stuck_jnilib_merge.sh "$GITHUB_WORKSPACE"
 
+      # SIGNING (2026-09-09). Until today this job fell through to
+      # `signingConfigs.getByName("debug")` in android/app/build.gradle.kts,
+      # and a GitHub runner has no ~/.android/debug.keystore, so the Android
+      # Gradle plugin GENERATED ONE PER RUN. Measured on the shipped assets:
+      # v1.5.20 and v1.5.21 carry different signing
+      # certificates. Android replaces an installed package only when the
+      # new APK is signed by the same certificate, so every release was
+      # un-installable over the one before it — the in-app updater added
+      # today would download ~200 MB and end at "App not installed".
+      # The real release key now comes from repository secrets. There is
+      # deliberately NO fallback: a tag build that cannot sign must FAIL
+      # rather than publish another un-installable APK.
+      - name: Write signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not set. Release APKs must be signed with the real release key; refusing to fall back to a debug key (see the comment above this step)."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+          # Never echo the values; key.properties is written, not printed.
+          {
+            echo "storeFile=$RUNNER_TEMP/release.keystore"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+          echo "Wrote android/key.properties ($(wc -c < "$RUNNER_TEMP/release.keystore") byte keystore)."
+
       - name: Build APK (release, intl flavor)
         run: flutter build apk --release --flavor intl
+
+      # The failure this replaced was invisible for months because nothing
+      # ever looked at the certificate. Now the job does, and prints the
+      # digest so a future release can be compared against this one.
+      - name: Verify the APK is signed with the release key
+        run: |
+          APK="build/app/outputs/flutter-apk/app-intl-release.apk"
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)"
+          echo "Using $APKSIGNER"
+          "$APKSIGNER" verify --print-certs "$APK" | tee /tmp/certs.txt
+          got="$(grep -m1 -i 'Signer #1 certificate SHA-256 digest' /tmp/certs.txt | awk '{print $NF}')"
+          echo "signing cert SHA-256: $got"
+          # A debug key is the exact failure mode being guarded against.
+          if "$APKSIGNER" verify --print-certs "$APK" | grep -qi 'CN=Android Debug'; then
+            echo "::error::This APK is signed with a DEBUG certificate. It cannot update any installed build."
+            exit 1
+          fi
 
       - name: Resolve tag
         id: ver
@@ -121,9 +177,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${{ steps.ver.outputs.tag }}"
-          gh release view "$tag" >/dev/null 2>&1 || \
+          # 2026-09-09 review finding: the old `view || create` ran on BOTH
+          # trigger paths, so a manual run typed with a tag that did not
+          # exist silently minted that tag on the dispatched ref (main HEAD)
+          # plus a Release — and releases/latest, which the in-app
+          # UpdateService polls, then pointed every user at an unreviewed
+          # build. Manual runs may only ATTACH to a release that already
+          # exists; only the tag-push path may create one (there the tag is
+          # already pinned to a reviewed commit by tools/release_github.sh).
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "::error::Release '$tag' does not exist. A manual run only attaches to an existing release; to cut a new one push the tag (tools/release_github.sh) instead. The build is still available above as a workflow artifact."
+              exit 1
+            fi
             gh release create "$tag" \
               --title "$tag" \
-              --notes "Automated Android build (intl flavor, debug-signed APK — sideload only, not a Play Store build). Download the .apk, enable 'Install unknown apps' for your browser/file manager, and open it to install." \
+              --notes "Automated Android build (intl flavor, signed with the project release key — sideload only, not a Play Store build). Download the .apk, enable 'Install unknown apps' for your browser/file manager, and open it to install." \
               || true
+          fi
           gh release upload "$tag" "$PKG" --clobber

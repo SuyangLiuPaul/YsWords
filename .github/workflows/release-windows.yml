@@ -92,8 +92,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${{ steps.ver.outputs.tag }}"
-          gh release view "$tag" >/dev/null 2>&1 || \
+          # A manual (workflow_dispatch) run must never CREATE a release.
+          # `gh release create` also creates the TAG on the dispatched ref,
+          # so a mistyped tag would publish an unreviewed build — and
+          # releases/latest is exactly what the in-app updater polls
+          # (lib/services/update_service.dart). Only the tag-push path may
+          # cut a release; a manual run attaches to one that already exists.
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "::error::Release '$tag' does not exist. A manual run only attaches to an existing release; to cut a new one push the tag (tools/release_github.sh). The build is still available above as a workflow artifact."
+              exit 1
+            fi
             gh release create "$tag" \
               --title "$tag — Windows desktop build" \
               --notes "Automated Windows x64 build. Download the zip, extract, and run \`YsWords\\yswords.exe\`. The exe is unsigned — on first launch click **More info → Run anyway** past Windows SmartScreen."
+          fi
           gh release upload "$tag" "$ZIP" --clobber

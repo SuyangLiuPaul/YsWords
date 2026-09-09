@@ -111,11 +111,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${{ steps.ver.outputs.tag }}"
-          # create-if-missing; `|| true` guards the race where a sibling
-          # platform workflow created the release a moment earlier.
-          gh release view "$tag" >/dev/null 2>&1 || \
+          # A manual (workflow_dispatch) run must never CREATE a release.
+          # `gh release create` also creates the TAG on the dispatched ref,
+          # so a mistyped tag would publish an unreviewed build — and
+          # releases/latest is exactly what the in-app updater polls
+          # (lib/services/update_service.dart). Only the tag-push path may
+          # cut a release; a manual run attaches to one that already exists.
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "::error::Release '$tag' does not exist. A manual run only attaches to an existing release; to cut a new one push the tag (tools/release_github.sh). The build is still available above as a workflow artifact."
+              exit 1
+            fi
+            # create-if-missing; `|| true` guards the race where a
+            # sibling platform workflow created it a moment earlier.
             gh release create "$tag" \
               --title "$tag" \
               --notes "Automated Linux x64 build. Download the tarball, extract (\`tar -xzf YsWords-Linux-x64-${tag}.tar.gz\`), and run \`./yswords\`. Requires GTK3 (\`libgtk-3-0\`) installed on the host." \
               || true
+          fi
           gh release upload "$tag" "$PKG" --clobber

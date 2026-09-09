@@ -103,9 +103,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${{ steps.ver.outputs.tag }}"
-          gh release view "$tag" >/dev/null 2>&1 || \
+          # 2026-09-09 review finding: the old `view || create` ran on BOTH
+          # trigger paths, so a manual run typed with a tag that did not
+          # exist silently minted that tag on the dispatched ref (main HEAD)
+          # plus a Release — and releases/latest, which the in-app
+          # UpdateService polls, then pointed every user at an unreviewed
+          # build. Manual runs may only ATTACH to a release that already
+          # exists; only the tag-push path may create one (there the tag is
+          # already pinned to a reviewed commit by tools/release_github.sh).
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "::error::Release '$tag' does not exist. A manual run only attaches to an existing release; to cut a new one push the tag (tools/release_github.sh) instead. The build is still available above as a workflow artifact."
+              exit 1
+            fi
             gh release create "$tag" \
               --title "$tag" \
               --notes "Automated iOS build — UNSIGNED .ipa, NOT directly installable. Re-sign with your own Apple ID via AltStore / Sideloadly, or use a paid Apple Developer account. Easiest path on iOS is the PWA: open the site in Safari → Share → Add to Home Screen." \
               || true
+          fi
           gh release upload "$tag" "$PKG" --clobber
