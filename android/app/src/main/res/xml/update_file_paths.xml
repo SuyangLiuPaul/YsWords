@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Where the in-app updater is allowed to hand a file to the system
+  installer.
+
+  ONE directory, and it is the cache. The downloaded APK is a
+  disposable copy of something that is public on GitHub — it does not
+  belong in the app's documents, it must not survive an uninstall, and
+  the OS is welcome to reclaim it the moment it is installed. Naming
+  `cache-path` rather than `external-path` also keeps the file out of
+  any place another app can read.
+-->
+<paths>
+    <cache-path name="updates" path="updates/" />
+</paths>

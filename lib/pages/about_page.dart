@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/sermon_credit.dart';
 import 'package:yswords/constants/app_version.dart';
+import 'package:yswords/pages/changelog_page.dart';
+import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/widgets/update_check_tile.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/ui_strings.dart';
@@ -1087,6 +1089,17 @@ class _AppLicenseCard extends StatelessWidget {
             // that button. Same platform gate, so the pair appears and
             // disappears together.
             AutoUpdateCheckToggle(locale: locale),
+            // 2026-09-09: and what changed. NOT behind
+            // `UpdateService.isSupported` like the two above it — the
+            // changelog is bundled, so it reads on the web too, where
+            // it is the only answer to "what changed" the reader has.
+            TextButton.icon(
+              icon: const Icon(Icons.history_rounded, size: 16),
+              label: Text(
+                uiStrings['changelogOpen']?[locale] ?? "What's new",
+              ),
+              onPressed: () => pushPage(const ChangelogPage()),
+            ),
           ],
         ),
       ),

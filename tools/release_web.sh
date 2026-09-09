@@ -23,6 +23,17 @@ PROJECT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FLUTTER="${FLUTTER:-$HOME/flutter/bin/flutter}"
 NETLIFY="${NETLIFY:-$HOME/Documents/CodingProject/SmartHome/node_modules/.bin/netlify}"
 
+# The netlify CLI lives in another project's node_modules, so a cleanup
+# over there can silently disarm releases here (it did, 2026-09-09).
+if [ ! -x "$NETLIFY" ]; then
+  echo "netlify CLI not found or not executable at:" >&2
+  echo "  $NETLIFY" >&2
+  echo "Restore it with:" >&2
+  echo "  (cd ~/Documents/CodingProject/SmartHome && npm install netlify-cli --no-save --legacy-peer-deps)" >&2
+  echo "or point NETLIFY= at another copy." >&2
+  exit 1
+fi
+
 BUMP=1
 INCLUDE_PROD=0
 for arg in "$@"; do

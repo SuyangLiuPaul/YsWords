@@ -164,6 +164,13 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    # 2026-09-09: the changelog the app shows, generated from the
+    # release commits by `tools/build_changelog.py`. Bundled rather
+    # than fetched because every existing GitHub Release body is the
+    # same Linux build boilerplate, so a fetching page would be empty
+    # until enough new releases accumulated — and because a reader on
+    # a tablet with no SIM should still be able to read it.
+    - assets/changelog.json
     - assets/kjv.json
     - assets/leb.json
     - assets/cuvs-yhwh.json

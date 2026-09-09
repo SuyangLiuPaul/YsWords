@@ -39,6 +39,22 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- 2026-09-09: install the update from inside the app.
+         From the owner: 「sword没有按键直接更新的」.
+
+         This does NOT make the update silent, and cannot. Android
+         always shows its own "install an update to this app?" screen —
+         that dialog is the OS's security boundary and no permission
+         removes it. What the permission buys is the trip either side of
+         it: no browser, no Downloads folder, no hunting for a file in a
+         file manager. The reader taps once here and once on Android's
+         own screen.
+
+         It is also a permission the user grants per-app in Settings
+         ("Install unknown apps"), which is why `AppUpdateInstaller`
+         asks `canInstall` first and sends them there rather than
+         failing at the intent. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
@@ -190,6 +206,20 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+        <!-- Hands the downloaded APK to the system installer.
+             `${applicationId}` rather than a literal, so the `.cn`
+             flavour (applicationIdSuffix) gets its own authority
+             instead of colliding with the international build when
+             both are installed on one device. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_file_paths" />
+        </provider>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

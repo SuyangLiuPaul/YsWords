@@ -166,6 +166,7 @@ accept the parameter that would make it so (documented per-row).
 | `FeedbackPage` | `/feedback` | none | — | yes |
 | `ProfilesPage` | `/profiles` | none | — | yes |
 | `AboutPage` | `/about` | none | — | yes |
+| `ChangelogPage` | not addressable — opens the parent `/about` | none | — | yes (via parent) |
 | `SongPlaylistDetailPage` | `/songs/playlists/:id` | `playlistId` (String) | the playlist id itself | yes |
 | `BooksPage` | — | `chapterIdx`, `bookIdx`, `providerOverride` (a live `MainProvider` instance) | — | **no** — this is the split-view secondary reader pane, pushed from inside `bible_reading_pane.dart` with a live provider object that cannot serialize to a URL; recommend leaving split view session-only, same as today |
 | `MapViewerPage` | `/maps/:id` | `map`, `locale`, `relatedMaps` | `BibleMap.id` | yes — map data is a bundled asset |

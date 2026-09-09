@@ -1,10 +1,16 @@
 package com.example.yswords
 
 import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.core.content.FileProvider
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 // 2026-08-24: MUST extend AudioServiceActivity, not FlutterActivity.
 // AudioServiceActivity is a FlutterActivity that hands back the engine
@@ -103,6 +109,109 @@ class MainActivity : AudioServiceActivity() {
                         pendingIconName = name
                         hasPendingIcon = true
                         result.success(true)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        // 2026-09-09: hand a downloaded APK to the system installer,
+        // so "update" is a button in the app instead of a trip through
+        // the browser and the Downloads folder.
+        //
+        // Three methods and no fourth, because there is no fourth
+        // thing this side can honestly do. It cannot install silently
+        // (only a device owner can), it cannot report progress (the
+        // download happens in Dart), and it cannot tell whether the
+        // reader went through with it (the installer is a separate
+        // task and returns nothing to us — the app finds out the way
+        // everyone else does, by being restarted as the new version).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "yswords/apk_installer")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    // Below API 26 the permission is granted at install
+                    // time and there is no per-app switch to check.
+                    "canInstall" -> {
+                        val allowed =
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                packageManager.canRequestPackageInstalls()
+                            } else {
+                                true
+                            }
+                        result.success(allowed)
+                    }
+                    // Opens the OS screen for THIS app specifically.
+                    // Deliberately not a general Settings deep-link:
+                    // the reader is one tap from the switch that
+                    // matters, and lands back here by pressing Back.
+                    "requestPermission" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            try {
+                                startActivity(
+                                    Intent(
+                                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                        Uri.parse("package:$packageName")
+                                    )
+                                )
+                                result.success(true)
+                            } catch (e: Exception) {
+                                result.success(false)
+                            }
+                        } else {
+                            result.success(true)
+                        }
+                    }
+                    // Where Dart should write the download.
+                    //
+                    // Asked of this side rather than resolved with
+                    // path_provider, and that is not dependency
+                    // squeamishness: this directory has to be the one
+                    // `res/xml/update_file_paths.xml` declares, or
+                    // `FileProvider.getUriForFile` throws
+                    // IllegalArgumentException at the last step of an
+                    // update the reader has already waited for. One
+                    // side owns the path; the other asks.
+                    "updateDir" -> {
+                        val dir = File(cacheDir, "updates")
+                        dir.mkdirs()
+                        result.success(dir.absolutePath)
+                    }
+                    "install" -> {
+                        val path = (call.arguments as? Map<*, *>)
+                            ?.get("path") as? String
+                        if (path == null) {
+                            result.error("no_path", "install needs a path", null)
+                            return@setMethodCallHandler
+                        }
+                        val file = File(path)
+                        if (!file.exists()) {
+                            result.error("missing", "no file at $path", null)
+                            return@setMethodCallHandler
+                        }
+                        try {
+                            // A `file://` URI would throw
+                            // FileUriExposedException on API 24+; the
+                            // provider is declared in the manifest
+                            // against `${applicationId}.updates` so the
+                            // `.cn` flavour does not collide with the
+                            // international build on the same device.
+                            val uri = FileProvider.getUriForFile(
+                                this,
+                                "$packageName.updates",
+                                file
+                            )
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                setDataAndType(
+                                    uri,
+                                    "application/vnd.android.package-archive"
+                                )
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            startActivity(intent)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.error("install_failed", e.message, null)
+                        }
                     }
                     else -> result.notImplemented()
                 }

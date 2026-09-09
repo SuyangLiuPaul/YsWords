@@ -4110,10 +4110,119 @@ const uiStrings = {
         'GitHub, then install: Android opens the APK; desktop unzips and '
         'runs. iOS uses the web app.',
   },
+  // 2026-09-09: the changelog page, from 「也要有历史的release note但是
+  // 不要全部的而是足够的不然太多」.
+  //
+  // 「更新记录」 rather than 「更新日志」: this is a record the reader
+  // consults, not a log the app writes. And the count on each day
+  // heading says CHANGES, not versions — how often we deploy is our
+  // business, what changed is theirs, and on this app the two numbers
+  // differ by a factor of five.
+  'changelogTitle': {
+    'zh-Hans': '更新记录',
+    'zh-Hant': '更新記錄',
+    'en': "What's new",
+  },
+  'changelogCount': {
+    'zh-Hans': '{n} 项改动',
+    'zh-Hant': '{n} 項改動',
+    'en': '{n} changes',
+  },
+  'changelogYours': {
+    'zh-Hans': '你的版本',
+    'zh-Hant': '你的版本',
+    'en': 'yours',
+  },
+  // Says "recent", not a number: the window is a generator setting and
+  // a promise of "the last 120" would go stale the day it changes.
+  'changelogWindow': {
+    'zh-Hans': '这里列的是最近的版本，更早的在 GitHub 上。',
+    'zh-Hant': '這裡列的是最近的版本，更早的在 GitHub 上。',
+    'en': 'This page shows recent releases. Older ones are on GitHub.',
+  },
+  'changelogAllOnGitHub': {
+    'zh-Hans': '在 GitHub 上看全部',
+    'zh-Hant': '在 GitHub 上看全部',
+    'en': 'All releases on GitHub',
+  },
+  'changelogEmpty': {
+    'zh-Hans': '这个版本没有随包的更新记录。',
+    'zh-Hant': '這個版本沒有隨包的更新記錄。',
+    'en': 'No release notes are bundled with this build.',
+  },
+  'changelogOpen': {
+    'zh-Hans': '更新记录',
+    'zh-Hant': '更新記錄',
+    'en': "What's new",
+  },
   'updateDownload': {
     'zh-Hans': '下载',
     'zh-Hant': '下載',
     'en': 'Download',
+  },
+  // 2026-09-09: the in-app install, from 「sword没有按键直接更新的」.
+  //
+  // 「立即更新」 rather than 「安装」: the reader is not choosing to
+  // install a file, they are choosing to be on the new version, and
+  // the file is an implementation detail they never see. Android's own
+  // confirmation still appears after this — see
+  // `app_update_installer.dart`, which explains why it cannot not.
+  'updateInstallNow': {
+    'zh-Hans': '立即更新',
+    'zh-Hant': '立即更新',
+    'en': 'Update now',
+  },
+  'updateOpenInBrowser': {
+    'zh-Hans': '用浏览器下载',
+    'zh-Hant': '用瀏覽器下載',
+    'en': 'Open in browser',
+  },
+  'updateDownloading': {
+    'zh-Hans': '正在下载更新…',
+    'zh-Hant': '正在下載更新…',
+    'en': 'Downloading update…',
+  },
+  // Shown while the length is unknown, which is also the moment the
+  // reader most needs to be told what is about to happen — the next
+  // thing on screen will be an Android system dialog, and an
+  // unexplained one looks like something went wrong.
+  'updateDownloadingHint': {
+    'zh-Hans': '下载完成后，安卓会让你确认安装。',
+    'zh-Hant': '下載完成後，Android 會讓你確認安裝。',
+    'en': 'Android will ask you to confirm the install.',
+  },
+  // Not phrased as a failure, because it is not one: "install unknown
+  // apps" is off by default and granted per app, so this is simply the
+  // first time.
+  'updatePermissionTitle': {
+    'zh-Hans': '允许本应用安装更新',
+    'zh-Hant': '允許本應用安裝更新',
+    'en': 'Allow installing updates',
+  },
+  'updatePermissionBody': {
+    'zh-Hans': '安卓对每个应用单独询问一次。请打开本应用的「安装未知应用」'
+        '开关，然后再按一次「立即更新」。',
+    'zh-Hant': 'Android 對每個應用單獨詢問一次。請打開本應用的「安裝未知'
+        '應用」開關，然後再按一次「立即更新」。',
+    'en': 'Android asks each app separately before it may install one. '
+        'Turn on "Install unknown apps" for this app, then press Update '
+        'again.',
+  },
+  'updatePermissionOpen': {
+    'zh-Hans': '打开设置',
+    'zh-Hant': '打開設定',
+    'en': 'Open settings',
+  },
+  'updateFailedTitle': {
+    'zh-Hans': '更新没下载成功',
+    'zh-Hant': '更新沒下載成功',
+    'en': "Couldn't download the update",
+  },
+  'updateFailedBody': {
+    'zh-Hans': '下载没有完成。可以再试一次，也可以到发布页自己下载。',
+    'zh-Hant': '下載沒有完成。可以再試一次，也可以到發佈頁自己下載。',
+    'en': 'The download did not finish. You can try again, or get the '
+        'file from the release page.',
   },
   // 2026-06-18 (v1.3.89): test-notification confirmation. {platform} is
   // filled in with the actual device (iOS/Android/macOS/Windows/Linux/

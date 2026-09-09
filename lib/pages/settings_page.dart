@@ -24,6 +24,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/models/app_style_preset.dart';
 import 'package:yswords/models/dashboard_section.dart';
+import 'package:yswords/services/update_service.dart';
+import 'package:yswords/widgets/update_check_tile.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
@@ -1173,6 +1175,39 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                   ),
                 ),
               ),
+              // 2026-09-09: the update controls, in Settings.
+              //
+              // From the owner: 「word也没有选项每天check更新的」 — and
+              // the switch existed, in the About page, where they had no
+              // reason to look. Sword keeps it in Settings; a reader who
+              // knows one app should not have to re-learn the other. The
+              // About-page copy stays where it is rather than moving:
+              // it sits beside the version number, which is the other
+              // place this question gets asked, and both render the same
+              // widgets over the same setting.
+              //
+              // The pair hides itself on the web, where a build is
+              // whatever the server last served and `WebUpdateChecker`
+              // watches that continuously — a daily switch there would
+              // be a control over nothing.
+              if (UpdateService.isSupported) ...[
+                SizedBox(height: 8 * s),
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16 * s),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        UpdateCheckTile(
+                          locale: settings.locale,
+                          scheme: Theme.of(context).colorScheme,
+                        ),
+                        AutoUpdateCheckToggle(locale: settings.locale),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               // 2026-05-06: Account section moved to TOP of Settings
               // (was after Display/Reading/App). User feedback: tapping
               // a profile chip on the dashboard navigates here, so

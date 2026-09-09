@@ -61,6 +61,55 @@ the `# YsWords export` / `YsWords.json` format markers — an old backup
 must import into the renamed app. AI features say "AI", never the app
 name. On Android the apostrophe must reach values.xml escaped (\').
 
+## 2026-09-09 — the update arrives in the app, and the history is in the app
+
+The owner asked two things in one breath: 「wordssword要跳出去 可以只在app里面吗」
+and 「word也没有选项每天check更新的」, then 「也要有历史的release note但是不要
+全部的而是足够的」.
+
+**Two doors that were only half there.** Words *had* a daily update check
+and a toggle for it — mounted on About, where nobody looking for a setting
+would find it. And "check for updates" could only say a newer build existed
+and hand the reader to a browser. Both controls now sit in **Settings → App**
+behind `UpdateService.isSupported`; About keeps its pair, so the
+`_doors()` test scans both files and fails if either loses them.
+
+**The install without leaving the app (Android).** `app_update_installer.dart`
+streams the APK into the app's own cache and hands it to the system
+installer through a `FileProvider` (`${applicationId}.updates`,
+`res/xml/update_file_paths.xml`). The OS confirm dialog stays — it is not
+ours to remove. Two guards before the installer is ever called: the file
+must open with the zip magic (a captive-portal page is not an APK), and a
+declared `Content-Length` must match what arrived. Progress is a fraction
+only when the server gave a denominator. The browser button stays,
+demoted to a text button, for iOS and web. The `_serving()` test double
+uses `MockClient.streaming` because `http.Response.bytes` computes its own
+`contentLength` and would have made the truncation tests pass against
+nothing. 14 tests.
+
+**The changelog is a build artifact, not a hand-kept file.**
+`tools/build_changelog.py` reads the `release:` commits — the tags are too
+sparse to be a spine — into `assets/changelog.json`, bounded at 120
+versions × 12 notes (81 versions, 22 KB, here). 120 was measured, not
+picked: 30 entries covered three days of history. About → history page
+groups by day and marks the reader's own build. 12 tests, ported from
+Sword against an identical service surface; two convention tests
+(`appbar_convention`, `url_routing_plan_table`) caught the new page
+missing the language switcher and its routing-plan row.
+
+**Held, then released.** The prod cut waited on `edbbfa4`'s red main —
+another session's 8-verse 雅偉版 repair had moved 7 census counts,
+including the `tagged_verse_coverage` ratchet 184 → 191. That session
+documented the cause (the tagged layer was not regenerated; nothing
+mismatched, 6 verses dropped to weaker checks), pinned the new counts,
+and queued the regeneration as P0 (`a0161a97`). Not touched here.
+
+**`tools/release_web.sh` now fails up front if the netlify CLI is missing.**
+It lives in `CodingProject/SmartHome/node_modules`, which a disk cleanup
+removed today; Sword's script printed a deploy it had not made. Words'
+script already checked each deploy's exit status, so this is only the
+earlier, clearer error.
+
 ## 2026-09-09 — the reader's own photograph on a verse card
 
 The owner asked 「很多没有自然的图片或者可爱的图片可以加这个选项吗」 and,
