@@ -7326,6 +7326,31 @@ const uiStrings = {
     'zh-Hans': '分享',
     'zh-Hant': '分享',
   },
+  'shareAsLink': {
+    'en': 'Share link',
+    'zh-Hans': '分享链接',
+    'zh-Hant': '分享連結',
+  },
+  'shareAsLinkHint': {
+    'en': 'Copies the text and a link to paste anywhere',
+    'zh-Hans': '复制经文和链接，到别处粘贴',
+    'zh-Hant': '複製經文和連結，到別處貼上',
+  },
+  'shareAsImage': {
+    'en': 'Share image',
+    'zh-Hans': '分享图片',
+    'zh-Hant': '分享圖片',
+  },
+  'shareAsImageHint': {
+    'en': 'Makes a verse card to save or send',
+    'zh-Hans': '制作一张经文卡片，可保存或发送',
+    'zh-Hant': '製作一張經文卡片，可儲存或傳送',
+  },
+  'moreActions': {
+    'en': 'More',
+    'zh-Hans': '更多',
+    'zh-Hant': '更多',
+  },
   'shareLinkCopied': {
     'en': 'Share link copied',
     'zh-Hans': '分享链接已复制',
