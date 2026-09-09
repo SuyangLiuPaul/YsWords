@@ -14,12 +14,16 @@ import 'package:yswords/services/song_player_service.dart';
 
 /// Downloads song audio for offline listening.
 ///
-/// **Native only.** [isSupported] is false on web and every entry
-/// point no-ops there. A browser has no file system this can manage,
-/// and the catalogue's audio is ~2.5 GB — far past what a tab may
-/// keep. Web offline support is a Service Worker cache instead
-/// (`web/song_media_sw.js`), which is a genuinely different thing with
-/// different guarantees, so it is not pretended to be this one.
+/// **This file is the native half.** The browser is not unsupported —
+/// it has its own full implementation in `song_download_web.dart`,
+/// backed by Cache Storage instead of files, with the same queue,
+/// progress, cancel, delete and space accounting. The split exists
+/// only because this file imports `dart:io`, which does not compile
+/// for web at all.
+///
+/// The two differ in what they can promise, and both say so: files
+/// here are ours until deleted, whereas a browser may evict its cache
+/// under quota pressure.
 ///
 /// Design notes:
 ///
