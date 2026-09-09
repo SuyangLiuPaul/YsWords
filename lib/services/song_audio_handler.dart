@@ -305,8 +305,33 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
 
   Future<void> setRepeat(RepeatMode mode) async {
     _queue = _queue.copyWith(repeat: mode);
+    await _syncLoop();
     _broadcast();
   }
+
+  /// Push repeat-one down into the player, or take it back.
+  ///
+  /// Repeat-one used to live entirely here: wait for the track to end,
+  /// `seek(0)`, `resume()`. That works while the app is on screen and
+  /// fails in the background on iOS, because iOS keeps a backgrounded
+  /// app scheduled only while it is actually producing audio — and the
+  /// end-of-track event, by definition, arrives after the audio has
+  /// stopped. The owner met it in a car with navigation in front:
+  /// 「单曲循环…播完一次就停了」, and the song resumed on reopening the
+  /// app, which is the signature of a suspended page rather than a lost
+  /// one.
+  ///
+  /// Handing the repeat to the player (`<audio loop>` on web,
+  /// ReleaseMode.loop natively) means the audio never stops, so there
+  /// is no gap for the OS to suspend us in, and no event to miss.
+  ///
+  /// **Gated on [_sleepAtEndOfTrack].** Both engines stop reporting
+  /// end-of-track while looping, and "stop at the end of this song" is
+  /// built on exactly that report. Sleep therefore wins, which is the
+  /// precedence [_onTrackFinished] already had for the same reason: a
+  /// reader who asked for the music to stop meant it.
+  Future<void> _syncLoop() =>
+      _player.setLoop(_queue.repeat == RepeatMode.one && !_sleepAtEndOfTrack);
 
   /// Which mix the whole queue plays, changed mid-listen.
   ///
@@ -383,6 +408,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _sleepTimer = null;
     _sleepAt = null;
     _sleepAtEndOfTrack = false;
+    unawaited(_syncLoop());
     if (after == null) {
       _broadcast();
       return;
@@ -403,6 +429,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _sleepTimer = null;
     _sleepAt = null;
     _sleepAtEndOfTrack = on;
+    unawaited(_syncLoop());
     _broadcast();
   }
 
@@ -431,6 +458,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _sleepTimer?.cancel();
     _sleepAt = null;
     _sleepAtEndOfTrack = false;
+    await _syncLoop();
     await _player.stop();
     _playing = false;
     _position = Duration.zero;
@@ -544,6 +572,10 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     final resolved = sourceResolver?.call(item.song, baseUrl) ?? baseUrl;
     final playing = _player.play(resolved);
     _currentAttempt = _player.attempt;
+    // Applied per track, not once: the web element keeps `loop` across
+    // sources, but the native player's release mode is reset by some
+    // platform implementations when a new source is set.
+    unawaited(_syncLoop());
 
     _loading = true;
     _error = null;

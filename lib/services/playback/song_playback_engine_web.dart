@@ -178,6 +178,31 @@ class SongPlaybackEngine {
     _el.volume = volume.clamp(0.0, 1.0);
   }
 
+  /// Repeat-one, done by the browser instead of by us.
+  ///
+  /// This is the whole fix for 「单曲循环…播完一次就停了」 on iPhone,
+  /// reported from a car with the app in the background and navigation
+  /// in front.
+  ///
+  /// The Dart route — wait for `ended`, then `seek(0)` and `play()` —
+  /// cannot work backgrounded on iOS, and the reason is a sequencing
+  /// one rather than a bug anywhere in it. iOS keeps a backgrounded
+  /// page alive **while it is actually producing audio**. `ended` fires
+  /// AFTER the audio has stopped, so by the time the event has crossed
+  /// into Dart, travelled a broadcast stream and come back, the page it
+  /// needs is already suspended. It resumes when the reader next looks
+  /// at their phone — which is exactly the symptom: the song restarts
+  /// the moment you reopen the app.
+  ///
+  /// `loop` is set on the element, so the media stack repeats without
+  /// waking JavaScript at all. Audio never stops, so the page is never
+  /// suspended, so there is no gap to lose. It also means `ended` never
+  /// fires while it is on, which is why the handler gates this on the
+  /// sleep-at-end-of-track flag: that feature needs the event.
+  Future<void> setLoop(bool on) async {
+    _el.loop = on;
+  }
+
   Future<void> dispose() async {
     _el.pause();
     _el.removeAttribute('src');

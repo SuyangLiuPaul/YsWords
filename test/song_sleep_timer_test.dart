@@ -32,6 +32,14 @@ class _FakeEngine implements SongPlaybackEngine {
   @override
   bool get isAvailable => true;
 
+  /// Every value [SongAudioHandler] has pushed down, newest last. The
+  /// handler is expected to keep this in step with repeat-one and the
+  /// sleep-at-end-of-track flag, so a test can read the last entry
+  /// instead of reaching into private state.
+  final List<bool> loopCalls = [];
+  @override
+  Future<void> setLoop(bool on) async => loopCalls.add(on);
+
   final List<String> playCalls = [];
   final List<String> pauseCalls = [];
 

@@ -43,6 +43,14 @@ class FakeSongPlaybackEngine implements SongPlaybackEngine {
   @override
   bool get isAvailable => true;
 
+  /// Every value [SongAudioHandler] has pushed down, newest last. The
+  /// handler is expected to keep this in step with repeat-one and the
+  /// sleep-at-end-of-track flag, so a test can read the last entry
+  /// instead of reaching into private state.
+  final List<bool> loopCalls = [];
+  @override
+  Future<void> setLoop(bool on) async => loopCalls.add(on);
+
   final List<String> playCalls = [];
 
   int _attempt = 0;
@@ -96,6 +104,13 @@ class FakeSongPlaybackEngine implements SongPlaybackEngine {
   /// STALE error for a superseded attempt.
   void emitError(String message, {int? attempt}) =>
       _error.add((attempt ?? _attempt, message));
+  /// A natural end of track — what the real engines report from
+  /// `ended` (web) and `onPlayerComplete` (native). Deliberately not
+  /// emitted by [play] or [stop]: both engines fire it only on a
+  /// natural end, and a fake that fired it on a user-initiated stop
+  /// would let auto-advance bugs pass.
+  void emitComplete() => _complete.add(null);
+
   void emitDuration(Duration d) => _duration.add(d);
   void emitPosition(Duration p) => _position.add(p);
   void emitPlaying(bool v) => _playing.add(v);

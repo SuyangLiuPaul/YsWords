@@ -97,6 +97,29 @@ class SongPlaybackEngine {
   Future<void> setVolume(double volume) =>
       _guard(_attempt, () => _player.setVolume(volume));
 
+  /// Repeat-one, done by the platform player instead of by us.
+  ///
+  /// The web engine's counterpart carries the full reasoning; the same
+  /// sequencing problem exists here on iOS, where audioplayers empties
+  /// the AVPlayer at the end of a track (`replaceCurrentItem(nil)`)
+  /// before Dart is asked what to do next. Looping in the player keeps
+  /// the audio unbroken, which is what keeps a backgrounded app
+  /// scheduled.
+  ///
+  /// [ap.ReleaseMode.loop] suppresses `onPlayerComplete`, so the
+  /// handler only turns this on when nothing is waiting for that event
+  /// — see `_syncLoop` in song_audio_handler.dart. Turning it off
+  /// restores whatever mode the player was built with rather than a
+  /// guessed constant.
+  Future<void> setLoop(bool on) => _guard(
+        _attempt,
+        () => _player.setReleaseMode(on ? ap.ReleaseMode.loop : _bornWith),
+      );
+
+  /// The release mode this player was constructed with, captured so
+  /// [setLoop] can put it back without hardcoding audioplayers' default.
+  late final ap.ReleaseMode _bornWith = _player.releaseMode;
+
   /// Run a player command, turning any failure into an [onError] event
   /// tagged with [id] — the attempt that was current when the command
   /// was issued, not whatever `_attempt` has become by the time it
