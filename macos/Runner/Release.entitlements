@@ -19,5 +19,16 @@
 	<array>
 		<string>$(AppIdentifierPrefix)com.example.yswords</string>
 	</array>
+	<!-- 2026-09-09 (review finding 2): the verse-card photo picker.
+	     image_picker on macOS goes through file_selector_macos, i.e.
+	     NSOpenPanel, and a sandboxed app is only allowed to READ the
+	     file the reader chose in that panel if it holds
+	     user-selected.read-only. Without it the panel still opens and
+	     still returns a path — but readAsBytes on that path is
+	     refused, so the picker looked like it worked and the card
+	     never got the picture. Read-only on purpose: nothing here
+	     writes back to the camera roll. -->
+	<key>com.apple.security.files.user-selected.read-only</key>
+	<true/>
 </dict>
 </plist>

@@ -18,6 +18,7 @@
 // in it and no explanation of how to put one there. The sliders
 // YouVersion hangs off this are still refused; see `verse_card.dart`.
 
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -290,12 +291,28 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
       return;
     }
     final image = MemoryImage(Uint8List.fromList(bytes));
-    try {
-      await precacheImage(image, context);
-    } catch (_) {
+    // 2026-09-09 (review finding 1): `precacheImage` never throws on
+    // a decode failure. It completes normally either way and hands
+    // the error to its `onError` callback — or, with no callback, to
+    // `FlutterError.reportError`. An earlier version wrapped it in
+    // try/catch, which was dead code: an undecodable file sailed
+    // through to the photo style and painted a bare veil, and the
+    // toast below never showed. So the outcome is read off the
+    // callback instead. `onError` fires inside the stream's own error
+    // path, before the returned future's continuation gets to run,
+    // which is why a Completer that either side can settle is used
+    // rather than trusting that ordering.
+    final decoded = Completer<bool>();
+    unawaited(precacheImage(image, context, onError: (_, __) {
+      if (!decoded.isCompleted) decoded.complete(false);
+    }).then((_) {
+      if (!decoded.isCompleted) decoded.complete(true);
+    }));
+    if (!await decoded.future) {
       // A file the picker accepted and the engine cannot decode. Say
       // so instead of switching to a style that would paint a bare
-      // scrim and look like the app had lost the picture.
+      // scrim and look like the app had lost the picture. The card
+      // stays exactly where it was, photograph and style both.
       if (!mounted) return;
       final locale = context.read<AppSettings>().locale;
       setState(() => _picking = false);

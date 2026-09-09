@@ -14,6 +14,7 @@
 // is also why `image_picker_platform_interface` is a declared dev
 // dependency rather than a transitive one.
 
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -399,5 +400,68 @@ void main() {
       expect(card.style, VerseCardStyle.plain);
       expect(find.text(label('verseCardPhotoRemove')), findsNothing);
     });
+
+    testWidgets(
+        'a file the picker accepts and the engine cannot decode leaves the '
+        'card as it was and says so — it does not become a Photo card with '
+        'nothing on it', (tester) async {
+      // 2026-09-09 (review finding 1). `precacheImage` does not throw
+      // on a bad file; it completes and reports through `onError`.
+      // The sheet used to catch an exception that never came, so
+      // these bytes flipped the style and painted a bare veil, and
+      // the failure toast was unreachable. Any non-image bytes will
+      // do; the engine refuses them at codec instantiation.
+      final junk = Uint8List.fromList('not a png'.codeUnits);
+      final picker = _FakePicker(junk);
+      await open(tester, picker);
+      await pickPhoto(tester);
+
+      expect(picker.calls, 1);
+      final card = tester.widget<VerseCard>(find.byType(VerseCard));
+      expect(card.style, VerseCardStyle.plain,
+          reason: 'an undecodable file must not select the photo style');
+      expect(card.photo, isNull);
+      expect(find.text(label('verseCardPhotoRemove')), findsNothing);
+      expect(find.text(label('versePhotoFailed')), findsOneWidget,
+          reason: 'the reader is told, rather than shown an empty card');
+      // The chip is tappable again: a bad file is not a stuck picker.
+      await tester.tap(find.text(label('verseCardStylePhoto')));
+      await tester.pump();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 200)),
+      );
+      await tester.pumpAndSettle();
+      expect(picker.calls, 2);
+      // Let the toasts time out so the binding does not report their
+      // timers as leaked.
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.text(label('versePhotoFailed')), findsNothing);
+    });
+  });
+
+  group('the macOS sandbox lets the picked file be read', () {
+    // 2026-09-09 (review finding 2). image_picker on macOS goes through
+    // file_selector_macos / NSOpenPanel, and a sandboxed app may only
+    // read the file the user chose there if it carries
+    // user-selected.read-only. Without it the panel returns a path
+    // the app cannot open — the picker "works" and the card never gets
+    // the picture. Both entitlement files are checked because the
+    // debug build is what a developer would use to confirm the fix,
+    // and a debug-only entitlement is how a release regresses quietly.
+    const key = 'com.apple.security.files.user-selected.read-only';
+
+    for (final file in const [
+      'macos/Runner/Release.entitlements',
+      'macos/Runner/DebugProfile.entitlements',
+    ]) {
+      test('$file grants $key', () {
+        final plist = File(file).readAsStringSync();
+        final granted = RegExp(
+          '<key>${RegExp.escape(key)}</key>\\s*<true/>',
+        ).hasMatch(plist);
+        expect(granted, isTrue,
+            reason: '$file must contain <key>$key</key> followed by <true/>');
+      });
+    }
   });
 }

@@ -18,5 +18,9 @@
 	<array>
 		<string>$(AppIdentifierPrefix)com.example.yswords</string>
 	</array>
+	<!-- 2026-09-09 (review finding 2): read the photo the reader picks
+	     for a verse card. See Release.entitlements for full rationale. -->
+	<key>com.apple.security.files.user-selected.read-only</key>
+	<true/>
 </dict>
 </plist>
