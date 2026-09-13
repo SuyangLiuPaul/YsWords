@@ -357,6 +357,7 @@ class LiquidGlassButton extends StatefulWidget {
 class _LiquidGlassButtonState extends State<LiquidGlassButton> {
   bool _hover = false;
   bool _pressed = false;
+  bool _focused = false;
 
   @override
   Widget build(BuildContext context) {
@@ -445,6 +446,16 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
         break;
     }
 
+    final onTap = widget.onTap;
+    final pressable = reduceMotion
+        ? surface
+        : AnimatedScale(
+            scale: _pressed ? 0.985 : 1.0,
+            duration: AppMotion.fast,
+            curve: AppMotion.enter,
+            child: surface,
+          );
+
     return Semantics(
       button: true,
       label: widget.semanticLabel,
@@ -454,22 +465,57 @@ class _LiquidGlassButtonState extends State<LiquidGlassButton> {
             : SystemMouseCursors.click,
         onEnter: (_) => setState(() => _hover = true),
         onExit: (_) => setState(() => _hover = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (_) => setState(() => _pressed = true),
-          onTapUp: (_) => setState(() => _pressed = false),
-          onTapCancel: () => setState(() => _pressed = false),
-          onTap: widget.onTap,
-          // 2026-05-08 (v1.1.2): skip the press-scale animation when
-          // the OS signals `prefers-reduced-motion: reduce`.
-          child: reduceMotion
-              ? surface
-              : AnimatedScale(
-                  scale: _pressed ? 0.985 : 1.0,
-                  duration: AppMotion.fast,
-                  curve: AppMotion.enter,
-                  child: surface,
-                ),
+        // 2026-09-14. This widget draws the Dashboard: the hero cards
+        // and all twelve quick-link tiles. Until now Tab reached NONE
+        // of them — a `MouseRegion` over a `GestureDetector` creates no
+        // focus node, so Read Bible, Verse of the Day, Bookmarks,
+        // Notes, Highlights and every tile were unreachable without a
+        // pointer, and Enter/Space activated nothing. The only control
+        // on the screen that took focus was the app-bar gear, because
+        // that one is a real `IconButton`.
+        //
+        // The gap was specific rather than general: this same file
+        // already went to the trouble of honouring hover, reduced
+        // motion and high contrast. Focus was the one state nobody
+        // wired.
+        child: FocusableActionDetector(
+          enabled: onTap != null,
+          mouseCursor: MouseCursor.defer,
+          onShowFocusHighlight: (v) {
+            if (v != _focused) setState(() => _focused = v);
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                onTap?.call();
+                return null;
+              },
+            ),
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (_) => setState(() => _pressed = true),
+            onTapUp: (_) => setState(() => _pressed = false),
+            onTapCancel: () => setState(() => _pressed = false),
+            onTap: widget.onTap,
+            // The ring is a FOREGROUND decoration: painted over the
+            // card rather than added to it, so a focused tile is the
+            // same size as an unfocused one and the dashboard grid does
+            // not reflow as the reader tabs across it. It follows the
+            // card's own corner radius, so it reads as the card's edge
+            // lighting up rather than as a box drawn around it.
+            child: DecoratedBox(
+              position: DecorationPosition.foreground,
+              decoration: _focused
+                  ? BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(widget.borderRadius),
+                      border: Border.all(color: scheme.primary, width: 2),
+                    )
+                  : const BoxDecoration(),
+              child: pressable,
+            ),
+          ),
         ),
       ),
     );
