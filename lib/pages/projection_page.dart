@@ -1367,6 +1367,21 @@ class _ProjectionPageState extends State<ProjectionPage> {
             (cursor.verse + cursor.count).clamp(0, verses.length),
           );
 
+    // The companion can change UNDER the page — Settings is a route
+    // away and this page watches the same AppSettings. When the resident
+    // corpus is no longer the edition the pairing now names, fetch the
+    // right one; compared against the RESOLVED code, so an alias that
+    // resolves to what is already loaded does not loop.
+    if (_second && !_secondLoading && _secondCode != null) {
+      final want = projectionCompanionPick(settings, mp.currentVersion);
+      if (want != null &&
+          projectionSecondVersionFrom(want, mp.currentVersion) != _secondCode) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _reloadSecond(mp);
+        });
+      }
+    }
+
     if (ProjectionBroadcast.isSupported) {
       final frame = _frame(mp, settings, scheme, ground, shown);
       WidgetsBinding.instance.addPostFrameCallback((_) {
