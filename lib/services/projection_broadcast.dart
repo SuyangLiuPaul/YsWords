@@ -26,6 +26,8 @@
 // This is the door `projection_page.dart` said it was leaving open,
 // walked through.
 
+import 'package:yswords/widgets/projection_stage.dart' show ProjectionLayout;
+
 import 'projection_broadcast_stub.dart'
     if (dart.library.js_interop) 'projection_broadcast_web.dart'
     if (dart.library.io) 'projection_broadcast_io.dart';
@@ -47,6 +49,7 @@ class ProjectionFrame {
     required this.radial,
     required this.ink,
     required this.muted,
+    this.layout = ProjectionLayout.standard,
   });
 
   final bool blank;
@@ -76,6 +79,11 @@ class ProjectionFrame {
   final String ink;
   final String muted;
 
+  /// How the passage is set — see `projection_stage.dart`. Sent with
+  /// every frame rather than negotiated once, so a follower that opens
+  /// mid-service paints what the wall is doing now.
+  final ProjectionLayout layout;
+
   Map<String, Object?> toJson() => {
         'v': 1,
         'blank': blank,
@@ -90,6 +98,7 @@ class ProjectionFrame {
         'ground': {'colors': groundColors, 'radial': radial},
         'ink': ink,
         'muted': muted,
+        'layout': layout.toJson(),
       };
 }
 

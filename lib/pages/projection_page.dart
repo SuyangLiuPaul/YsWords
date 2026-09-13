@@ -1375,6 +1375,10 @@ class _ProjectionPageState extends State<ProjectionPage> {
       radial: ground == ProjectionGround.spotlight,
       ink: hex(scheme.onSurface),
       muted: hex(scheme.onSurfaceVariant),
+      // The follower paints the operator's layout, not a default one.
+      // A wall that is set devotionally in the app and numbered in the
+      // window on the projector is two walls.
+      layout: _settings.projectionLayout,
     );
   }
 
@@ -1575,6 +1579,13 @@ class _ProjectionPageState extends State<ProjectionPage> {
         // when the reader returns to the first device.
         secondVersion: _settings.projectionSecondVersion,
         groundName: _ground.name,
+        // The layout too: a preset that restores the size and the
+        // ground and then gives back a numbered, corner-referenced wall
+        // has not restored the operator's setup.
+        alignName: _settings.projectionLayout.align.name,
+        flowName: _settings.projectionLayout.flow.name,
+        numbers: _settings.projectionLayout.numbers,
+        referenceName: _settings.projectionLayout.reference.name,
       );
 
   /// A preset in one line, for the list: size, ground, second edition.
@@ -1614,6 +1625,15 @@ class _ProjectionPageState extends State<ProjectionPage> {
     await settings.setProjectionSecondVersion(
         projectionSecondVersionFrom(preset.secondVersion, mp.currentVersion));
     await settings.setProjectionSecondOn(preset.secondOn);
+    // Each name through its own clamp, so a preset written by a build
+    // with an option this one does not have lands on the default rather
+    // than failing the whole restore.
+    await settings.setProjectionLayout(ProjectionLayout(
+      align: projectionAlignFromName(preset.alignName),
+      flow: projectionFlowFromName(preset.flowName),
+      numbers: preset.numbers,
+      reference: projectionReferencePlaceFromName(preset.referenceName),
+    ));
     if (!mounted) return;
     _reloadSecond(mp);
   }
@@ -1762,6 +1782,7 @@ class _ProjectionPageState extends State<ProjectionPage> {
                     secondCode: _secondCode,
                     secondLoading: _secondLoading,
                     countdownRemaining: _countdownLeft,
+                    layout: _settings.projectionLayout,
                   ),
                 ),
                 // THE CONTROLS SIT AT THE TOP, AND THE REFERENCE AT THE

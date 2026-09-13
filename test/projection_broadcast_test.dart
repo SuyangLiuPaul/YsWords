@@ -46,6 +46,21 @@ void main() {
     expect(j['reference'], '创世纪 1:1–2');
   });
 
+  test('the follower page reads every layout field', () {
+    // 2026-09-13. The wall gained four layout choices; a follower that
+    // ignored them would put a numbered, corner-referenced wall on the
+    // projector while the app showed a devotional one. Two walls.
+    final html = File('web/stage.html').readAsStringSync();
+    expect(html.contains("L.flow === 'continuous'"), isTrue);
+    expect(html.contains("L.align === 'start'"), isTrue);
+    expect(html.contains('L.numbers !== false'), isTrue,
+        reason: 'a frame with no layout means the wall this page has '
+            'always drawn, not numbers off');
+    expect(html.contains("L.reference || 'corner'"), isTrue);
+    expect(html.contains('refunder'), isTrue,
+        reason: 'the reference set under the passage scales with it');
+  });
+
   test('stage.html exists, joins the same channel, and says hello', () {
     final html = File('web/stage.html').readAsStringSync();
     expect(html.contains("BroadcastChannel('yswords-projection')"), isTrue,

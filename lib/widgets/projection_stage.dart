@@ -176,6 +176,141 @@ ColorScheme projectionDarkScheme(Color seed) => ColorScheme.fromSeed(
 /// operator already made.
 enum ProjectionGround { seeded, ink, black, spotlight }
 
+/// Where the passage sits against the measure.
+///
+/// Centred is the default and is what a projected verse has always
+/// been: a short block of scripture reads as a unit, and the room's
+/// eyes are already travelling. Start-aligned exists because a LONG
+/// passage centred is hard work — every line begins in a different
+/// place, and at the back of a hall that costs a beat per line. The
+/// name is `start`, not `left`, because a Hebrew passage starts on the
+/// right.
+enum ProjectionAlign { centre, start }
+
+/// Whether the verses are separate blocks or one paragraph.
+///
+/// Verse by verse is what a preacher working through a passage wants:
+/// each verse is a unit, and the number is beside it. Continuous is
+/// what a reading wants — the same words as the printed page has them,
+/// with nothing between the sentences.
+enum ProjectionFlow { verseByVerse, continuous }
+
+/// Where the reference goes, if anywhere.
+///
+/// The corner is where it has always been, and it is right for a
+/// sermon: the room glances down, finds the place, and looks back up.
+/// Under the passage is the devotional setting. Off is for a wall that
+/// is not a Bible reading at all — a call to worship, a line the
+/// congregation is about to say together.
+enum ProjectionReferencePlace { corner, under, off }
+
+ProjectionAlign projectionAlignFromName(String? name) =>
+    ProjectionAlign.values.firstWhere((v) => v.name == name,
+        orElse: () => ProjectionAlign.centre);
+
+ProjectionFlow projectionFlowFromName(String? name) =>
+    ProjectionFlow.values.firstWhere((v) => v.name == name,
+        orElse: () => ProjectionFlow.verseByVerse);
+
+ProjectionReferencePlace projectionReferencePlaceFromName(String? name) =>
+    ProjectionReferencePlace.values.firstWhere((v) => v.name == name,
+        orElse: () => ProjectionReferencePlace.corner);
+
+/// How the wall is set, as opposed to what colour it is.
+///
+/// Four independent choices rather than a list of named formats. A
+/// "devotional mode" switch would have to decide what happens to the
+/// operator's other three settings when it is turned off, and every
+/// answer to that is wrong for somebody. [devotional] is the
+/// combination people mean by the word, offered as a value the settings
+/// screen can name — not as a mode that overwrites anything.
+///
+/// Persisted as its field NAMES, like [ProjectionGround], so a later
+/// option cannot silently reassign a choice an operator already made.
+@immutable
+class ProjectionLayout {
+  const ProjectionLayout({
+    this.align = ProjectionAlign.centre,
+    this.flow = ProjectionFlow.verseByVerse,
+    this.numbers = true,
+    this.reference = ProjectionReferencePlace.corner,
+  });
+
+  final ProjectionAlign align;
+  final ProjectionFlow flow;
+
+  /// Whether verse numbers are drawn at all.
+  ///
+  /// They have never been drawn for a single verse — the reference
+  /// already names it — and this does not change that. It governs the
+  /// case where there is more than one.
+  final bool numbers;
+
+  final ProjectionReferencePlace reference;
+
+  /// The shipped wall: centred, verse by verse, numbered, reference in
+  /// the corner.
+  static const ProjectionLayout standard = ProjectionLayout();
+
+  /// What people mean by "devotional format": the words as one
+  /// paragraph, no numbers in front of them, and the address centred
+  /// underneath.
+  static const ProjectionLayout devotional = ProjectionLayout(
+    flow: ProjectionFlow.continuous,
+    numbers: false,
+    reference: ProjectionReferencePlace.under,
+  );
+
+  bool get isDevotional =>
+      flow == devotional.flow &&
+      numbers == devotional.numbers &&
+      reference == devotional.reference;
+
+  ProjectionLayout copyWith({
+    ProjectionAlign? align,
+    ProjectionFlow? flow,
+    bool? numbers,
+    ProjectionReferencePlace? reference,
+  }) =>
+      ProjectionLayout(
+        align: align ?? this.align,
+        flow: flow ?? this.flow,
+        numbers: numbers ?? this.numbers,
+        reference: reference ?? this.reference,
+      );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'align': align.name,
+        'flow': flow.name,
+        'numbers': numbers,
+        'reference': reference.name,
+      };
+
+  /// Off disk, so every field falls back rather than throws — a blob
+  /// written by a build that did not have this at all is valid, and it
+  /// means the wall the app shipped with.
+  factory ProjectionLayout.fromJson(Object? raw) {
+    final m = raw is Map ? raw : const <String, dynamic>{};
+    return ProjectionLayout(
+      align: projectionAlignFromName(m['align'] as String?),
+      flow: projectionFlowFromName(m['flow'] as String?),
+      numbers: m['numbers'] is bool ? m['numbers'] as bool : true,
+      reference: projectionReferencePlaceFromName(m['reference'] as String?),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is ProjectionLayout &&
+      other.align == align &&
+      other.flow == flow &&
+      other.numbers == numbers &&
+      other.reference == reference;
+
+  @override
+  int get hashCode => Object.hash(align, flow, numbers, reference);
+}
+
 /// The neutral dark ground: [ProjectionGround.ink].
 ///
 /// Chosen by the two numbers that matter on a wall and nothing else. It
@@ -279,6 +414,25 @@ ProjectionGround projectionGroundAfter(ProjectionGround ground) =>
 String projectionGroundLabel(ProjectionGround ground, String locale) =>
     _s('projectionGround_${ground.name}', ground.name, locale);
 
+/// The layout choices, named for the settings screen. Same key shape as
+/// the grounds above, so one convention covers every projector choice.
+String projectionAlignLabel(ProjectionAlign v, String locale) =>
+    _s('projectionAlign_${v.name}', v.name, locale);
+
+String projectionFlowLabel(ProjectionFlow v, String locale) =>
+    _s('projectionFlow_${v.name}', v.name, locale);
+
+String projectionReferencePlaceLabel(
+        ProjectionReferencePlace v, String locale) =>
+    _s('projectionReference_${v.name}', v.name, locale);
+
+/// One projector string, for a caller outside this file — the settings
+/// screen's hint under the layout controls. The table is keyed the same
+/// way for every projector string; this is the same lookup the labels
+/// above do, with the key spelled by the caller.
+String projectionString(String key, String fallback, String locale) =>
+    _s(key, fallback, locale);
+
 /// The second edition's size, as a fraction of the first's.
 const double kProjectionSecondScale = 0.82;
 
@@ -329,7 +483,14 @@ class ProjectionStage extends StatelessWidget {
     this.secondCode,
     this.secondLoading = false,
     this.countdownRemaining,
+    this.layout = ProjectionLayout.standard,
   });
+
+  /// How the passage is set: centred or start-aligned, verse by verse
+  /// or run together, numbered or plain, and where the reference goes.
+  /// See [ProjectionLayout] — every field is the operator's, and none
+  /// of them is inferred from the passage.
+  final ProjectionLayout layout;
 
   /// The verses on the wall — one, or the block a selection opened.
   /// Empty is the empty state.
@@ -478,12 +639,13 @@ class ProjectionStage extends StatelessWidget {
                   ),
                 ),
               ),
-              Positioned(
-                left: side,
-                right: side,
-                bottom: top * _kReferenceInsetShare,
-                child: _reference(),
-              ),
+              if (layout.reference == ProjectionReferencePlace.corner)
+                Positioned(
+                  left: side,
+                  right: side,
+                  bottom: top * _kReferenceInsetShare,
+                  child: _reference(),
+                ),
             ],
           );
         },
@@ -516,15 +678,83 @@ class ProjectionStage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (var i = 0; i < verses.length; i++)
-            _line(verses[i].text, verses[i].verseLabel, typeSize,
-                scheme.onSurface),
+          ..._firstLines(),
           if (secondOn) ...[
             SizedBox(height: typeSize * _kBlockGapShare),
             ..._secondLines(),
           ],
+          // Under the passage, INSIDE the block the FittedBox scales —
+          // so on a long reading the address shrinks with the words it
+          // belongs to instead of sitting at full size beneath type
+          // that has been wound down to fit.
+          if (layout.reference == ProjectionReferencePlace.under &&
+              verses.isNotEmpty) ...[
+            SizedBox(height: typeSize * _kReferenceUnderGapShare),
+            _referenceText(TextAlign.center),
+          ],
         ],
       );
+
+  /// The gap between the passage and a reference set beneath it. Wider
+  /// than a line and narrower than the gap between editions: it belongs
+  /// to the passage, and it is not part of it.
+  static const double _kReferenceUnderGapShare = 0.5;
+
+  /// The first edition — one block per verse, or the whole passage run
+  /// together as the printed page has it.
+  List<Widget> _firstLines() {
+    if (layout.flow == ProjectionFlow.continuous) {
+      return [
+        _runTogether([for (final v in verses) v.text], typeSize,
+            scheme.onSurface),
+      ];
+    }
+    return [
+      for (var i = 0; i < verses.length; i++)
+        _line(verses[i].text, verses[i].verseLabel, typeSize,
+            scheme.onSurface),
+    ];
+  }
+
+  /// The verses as one paragraph. Numbers, when they are on, sit inline
+  /// in front of each verse exactly as a printed Bible sets them —
+  /// which is the only way a run-together passage can carry them at all.
+  Widget _runTogether(List<String> texts, double size, Color ink) {
+    final numbered = layout.numbers && verses.length > 1;
+    return Text.rich(
+      TextSpan(children: [
+        for (var i = 0; i < texts.length; i++) ...[
+          // The separator goes BEFORE the number, not before the text.
+          // Put it after and the number closes up against the previous
+          // sentence, which no printed Bible does.
+          if (i > 0) const TextSpan(text: ' '),
+          if (numbered)
+            TextSpan(
+              text: '${verses[i].verseLabel} ',
+              style: TextStyle(
+                color: scheme.onSurfaceVariant,
+                fontSize: size * kProjectionReferenceScale * 1.6,
+              ),
+            ),
+          TextSpan(text: texts[i]),
+        ],
+      ]),
+      textAlign: _textAlign,
+      style: TextStyle(
+        color: ink,
+        fontFamilyFallback: kCjkFontFallback,
+        fontSize: size,
+        height: _kLineHeight,
+      ),
+    );
+  }
+
+  /// Centred, or aligned to where the line starts. `TextAlign.start`
+  /// rather than `left` — a Hebrew passage starts on the right, and the
+  /// setting is about the measure, not about a side of the screen.
+  TextAlign get _textAlign => layout.align == ProjectionAlign.start
+      ? TextAlign.start
+      : TextAlign.center;
 
   /// One verse of the wall. With more than one verse up, each carries
   /// its number in the margin colour — small, because the room reads
@@ -532,7 +762,7 @@ class ProjectionStage extends StatelessWidget {
   /// their place in a printed Bible. A single verse carries none; the
   /// reference below already names it.
   Widget _line(String text, String label, double size, Color ink) {
-    final numbered = verses.length > 1;
+    final numbered = layout.numbers && verses.length > 1;
     return Text.rich(
       TextSpan(children: [
         if (numbered)
@@ -545,7 +775,7 @@ class ProjectionStage extends StatelessWidget {
           ),
         TextSpan(text: text),
       ]),
-      textAlign: TextAlign.center,
+      textAlign: _textAlign,
       style: TextStyle(
         color: ink,
         fontFamilyFallback: kCjkFontFallback,
@@ -565,7 +795,7 @@ class ProjectionStage extends StatelessWidget {
       return [
         Text(
           _secondBody(null),
-          textAlign: TextAlign.center,
+          textAlign: _textAlign,
           style: TextStyle(
             color: scheme.onSurfaceVariant,
             fontFamilyFallback: kCjkFontFallback,
@@ -573,6 +803,17 @@ class ProjectionStage extends StatelessWidget {
             height: _kLineHeight,
           ),
         ),
+      ];
+    }
+    if (layout.flow == ProjectionFlow.continuous) {
+      // One paragraph, like the first edition above it. A verse the
+      // companion lacks still takes its place in the line — dropping it
+      // silently would put two different passages on the wall.
+      return [
+        _runTogether([for (final t in texts) _secondBody(t)], size,
+            texts.every((t) => t != null)
+                ? scheme.onSurface
+                : scheme.onSurfaceVariant),
       ];
     }
     return [
@@ -612,12 +853,20 @@ class ProjectionStage extends StatelessWidget {
   /// tell which translation is which is worse than one edition.
   Widget _reference() {
     if (verses.isEmpty) return const SizedBox.shrink();
+    return _referenceText(TextAlign.start);
+  }
+
+  /// The reference itself, wherever it is being put. One builder, so
+  /// the corner and the devotional placement can never start naming
+  /// different editions.
+  Widget _referenceText(TextAlign align) {
     final tags = <String>[
       shortBibleVersionLabel(versionCode),
       if (secondOn && secondCode != null) shortBibleVersionLabel(secondCode!),
     ];
     return Text(
       '$reference · ${tags.join(" · ")}',
+      textAlign: align,
       style: TextStyle(
         color: scheme.onSurfaceVariant,
         fontFamilyFallback: kCjkFontFallback,

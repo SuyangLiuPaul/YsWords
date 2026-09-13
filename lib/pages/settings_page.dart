@@ -845,8 +845,12 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                 settings: settings,
                 mainProvider: mainProvider,
                 s: s,
-                previewVerse:
-                    versesInChapter.isEmpty ? null : versesInChapter.first,
+                // TWO verses when the chapter has them. Three of the
+                // four layout choices — run-together, verse numbers, and
+                // what alignment does to a second line — are invisible
+                // on a single verse, and a preview that cannot show
+                // what a control does is not a preview.
+                previewVerses: versesInChapter.take(2).toList(),
               ),
               SizedBox(height: 16 * s),
               KeyedSubtree(
@@ -1944,13 +1948,15 @@ class _ProjectorCard extends StatelessWidget {
     required this.settings,
     required this.mainProvider,
     required this.s,
-    required this.previewVerse,
+    required this.previewVerses,
   });
 
   final AppSettings settings;
   final MainProvider mainProvider;
   final double s;
-  final Verse? previewVerse;
+  /// What the preview draws: the first verses of the open chapter, or
+  /// empty when no chapter is open.
+  final List<Verse> previewVerses;
 
   @override
   Widget build(BuildContext context) {
@@ -2051,6 +2057,94 @@ class _ProjectorCard extends StatelessWidget {
               ),
             ),
             row(
+              'projectorAlign',
+              'Alignment',
+              DropdownButton<ProjectionAlign>(
+                value: settings.projectionLayout.align,
+                onChanged: (v) {
+                  if (v != null) {
+                    settings.setProjectionLayout(
+                        settings.projectionLayout.copyWith(align: v));
+                  }
+                },
+                items: [
+                  for (final v in ProjectionAlign.values)
+                    DropdownMenuItem(
+                      value: v,
+                      child: Text(projectionAlignLabel(v, locale),
+                          style: label()),
+                    ),
+                ],
+              ),
+            ),
+            row(
+              'projectorFlow',
+              'Verses',
+              DropdownButton<ProjectionFlow>(
+                value: settings.projectionLayout.flow,
+                onChanged: (v) {
+                  if (v != null) {
+                    settings.setProjectionLayout(
+                        settings.projectionLayout.copyWith(flow: v));
+                  }
+                },
+                items: [
+                  for (final v in ProjectionFlow.values)
+                    DropdownMenuItem(
+                      value: v,
+                      child: Text(projectionFlowLabel(v, locale),
+                          style: label()),
+                    ),
+                ],
+              ),
+            ),
+            row(
+              'projectorNumbers',
+              'Verse numbers',
+              Switch.adaptive(
+                value: settings.projectionLayout.numbers,
+                onChanged: (v) => settings.setProjectionLayout(
+                    settings.projectionLayout.copyWith(numbers: v)),
+              ),
+            ),
+            row(
+              'projectorReferencePlace',
+              'Reference',
+              DropdownButton<ProjectionReferencePlace>(
+                value: settings.projectionLayout.reference,
+                onChanged: (v) {
+                  if (v != null) {
+                    settings.setProjectionLayout(
+                        settings.projectionLayout.copyWith(reference: v));
+                  }
+                },
+                items: [
+                  for (final v in ProjectionReferencePlace.values)
+                    DropdownMenuItem(
+                      value: v,
+                      child: Text(projectionReferencePlaceLabel(v, locale),
+                          style: label()),
+                    ),
+                ],
+              ),
+            ),
+            // Says what the three above ADD UP TO, rather than offering
+            // a mode switch that would have to decide what happens to
+            // the operator's other choices when it is turned off.
+            Padding(
+              padding: EdgeInsets.only(top: 4 * s),
+              child: Text(
+                projectionString(
+                    settings.projectionLayout.isDevotional
+                        ? 'projectionLayoutDevotionalOn'
+                        : 'projectionLayoutDevotionalHint',
+                    '',
+                    locale),
+                style: label(weight: FontWeight.w400, scale: 0.8)
+                    .copyWith(color: scheme.onSurfaceVariant),
+              ),
+            ),
+            row(
               'projectorSecondOn',
               'Show a companion edition',
               Switch.adaptive(
@@ -2087,7 +2181,7 @@ class _ProjectorCard extends StatelessWidget {
                 items: items(chinese),
               ),
             ),
-            if (previewVerse != null) ...[
+            if (previewVerses.isNotEmpty) ...[
               SizedBox(height: 12 * s),
               Text(t('projectorPreview', 'Preview'), style: label()),
               SizedBox(height: 8 * s),
@@ -2099,9 +2193,15 @@ class _ProjectorCard extends StatelessWidget {
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: ProjectionStage(
-                    verses: [previewVerse!],
-                    reference:
-                        '${previewVerse!.book} ${previewVerse!.chapter}:${previewVerse!.verseLabel}',
+                    verses: previewVerses,
+                    reference: previewVerses.length > 1
+                        ? '${previewVerses.first.book} '
+                            '${previewVerses.first.chapter}:'
+                            '${previewVerses.first.verseLabel}–'
+                            '${previewVerses.last.verseLabel}'
+                        : '${previewVerses.first.book} '
+                            '${previewVerses.first.chapter}:'
+                            '${previewVerses.first.verseLabel}',
                     versionCode: mainProvider.currentVersion,
                     typeSize: kProjectionTypeSteps[settings.projectionTypeStep
                         .clamp(0, kProjectionTypeSteps.length - 1)],
@@ -2113,6 +2213,7 @@ class _ProjectorCard extends StatelessWidget {
                     secondTexts: null,
                     secondCode: null,
                     secondLoading: false,
+                    layout: settings.projectionLayout,
                   ),
                 ),
               ),

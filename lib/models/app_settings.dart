@@ -11,6 +11,7 @@ import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/models/notification_category.dart';
 import 'package:yswords/models/projection_preset.dart';
+import 'package:yswords/widgets/projection_stage.dart' show ProjectionLayout;
 import 'package:yswords/services/app_icon_service.dart';
 import 'package:yswords/services/notification_catchup.dart';
 import 'package:yswords/services/notification_scheduler.dart'
@@ -184,6 +185,7 @@ const _kProjectionTypeStep = 'projectionTypeStep';
 const _kProjectionSecondOn = 'projectionSecondOn';
 const _kProjectionSecondVersion = 'projectionSecondVersion';
 const _kProjectionGround = 'projectionGround';
+const _kProjectionLayout = 'projectionLayout';
 // One key for the whole list, as JSON — the same shape
 // `_kNotificationCategories` uses. A key per preset would need a
 // separate index key to enumerate them, which is two things that can
@@ -235,6 +237,18 @@ Map<String, String> decodeProjectionCompanions(String? raw) {
 const _kDashboardSectionOrder = 'dashboard_section_order';
 String _kDashboardVisible(DashboardSection s) =>
     'dashboard_section_visible_${s.name}';
+
+/// The wall's layout off disk. A blob written by a build that did not
+/// have the setting, or one that is corrupt, means the wall the app
+/// shipped with rather than a crash on the first frame.
+ProjectionLayout _decodeStoredLayout(String? raw) {
+  if (raw == null || raw.isEmpty) return ProjectionLayout.standard;
+  try {
+    return ProjectionLayout.fromJson(jsonDecode(raw));
+  } catch (_) {
+    return ProjectionLayout.standard;
+  }
+}
 
 class AppSettings extends ChangeNotifier {
   /// User's selected font key — what gets persisted in
@@ -334,6 +348,7 @@ class AppSettings extends ChangeNotifier {
   final Map<String, String> _projectionCompanions = <String, String>{};
   List<AgendaItem> _projectionAgenda = const [];
   String _projectionGround = 'seeded';
+  ProjectionLayout _projectionLayout = ProjectionLayout.standard;
   List<ProjectionPreset> _projectionPresets = const <ProjectionPreset>[];
 
   /// Render section / paragraph headings (e.g. "The Sermon on the
@@ -626,6 +641,21 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kProjectionGround, ground);
+  }
+
+  /// How the passage is set on the wall — see [ProjectionLayout].
+  ///
+  /// One value rather than four preferences: a caller that remembers
+  /// three of them and forgets the fourth writes a wall the operator
+  /// did not ask for.
+  ProjectionLayout get projectionLayout => _projectionLayout;
+
+  Future<void> setProjectionLayout(ProjectionLayout layout) async {
+    if (_projectionLayout == layout) return;
+    _projectionLayout = layout;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kProjectionLayout, jsonEncode(layout.toJson()));
   }
 
   /// The operator's saved setups, in the order they were first saved.
@@ -1246,6 +1276,7 @@ class AppSettings extends ChangeNotifier {
       _kProjectionCompanions,
       _kProjectionAgenda,
       _kProjectionGround,
+      _kProjectionLayout,
       _kProjectionPresets,
       _kAutoExpandFirstRef,
       _kShowBibleEvidence,
@@ -1469,6 +1500,7 @@ class AppSettings extends ChangeNotifier {
           prefs.getString(_kProjectionCompanions)));
     _projectionAgenda = _decodeStoredAgenda(prefs.getString(_kProjectionAgenda));
     _projectionGround = prefs.getString(_kProjectionGround) ?? 'seeded';
+    _projectionLayout = _decodeStoredLayout(prefs.getString(_kProjectionLayout));
     // A corrupt blob loses the presets, not the launch. Rows that are
     // not presets are dropped individually (ProjectionPreset.fromJson
     // returns null), so one bad row cannot take the rest with it.

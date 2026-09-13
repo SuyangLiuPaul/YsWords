@@ -33,6 +33,9 @@
     cursor: none;
   }
   #wall { position: absolute; inset: 0; display: grid; place-items: center; }
+  /* The reference set beneath the passage — the devotional placement.
+     Sized against the passage so it scales with it. */
+  .refunder { margin-top: 0.5em; font-size: 0.26em; }
   /* Margins match the app's stage: 7% each side, 11% top and bottom. */
   #passage {
     box-sizing: border-box;
@@ -143,28 +146,56 @@
       ref.classList.add('hidden');
       return;
     }
-    var numbered = f.verses.length > 1;
-    var html = '';
-    f.verses.forEach(function (v) {
-      html += '<div>' + (numbered ? '<span class="num" style="' + mutedCss + '">' + esc(v.label) + '</span>' : '')
-        + esc(v.text) + '</div>';
-    });
+    // The operator's layout, defaulted field by field: a frame from a
+    // build that predates the setting is a frame that means the wall
+    // this page has always drawn.
+    var L = f.layout || {};
+    var numbered = (L.numbers !== false) && f.verses.length > 1;
+    var continuous = L.flow === 'continuous';
+    var refPlace = L.reference || 'corner';
+    passage.style.textAlign = L.align === 'start' ? 'start' : 'center';
+
+    // One block per verse, or the whole passage run together as the
+    // printed page has it — with the numbers inline, which is the only
+    // way a paragraph can carry them.
+    function block(rows, cls) {
+      var inner = '';
+      if (continuous) {
+        rows.forEach(function (v, i) {
+          inner += (numbered ? '<span class="num" style="' + mutedCss + '">' + esc(v.label) + '</span>' : '')
+            + (i ? ' ' : '') + esc(v.text);
+        });
+        return '<div' + (cls ? ' class="' + cls + '"' : '') + '>' + inner + '</div>';
+      }
+      rows.forEach(function (v) {
+        inner += '<div>' + (numbered ? '<span class="num" style="' + mutedCss + '">' + esc(v.label) + '</span>' : '')
+          + esc(v.text) + '</div>';
+      });
+      return cls ? '<div class="' + cls + '">' + inner + '</div>' : inner;
+    }
+
+    var html = block(f.verses, '');
     if (f.secondNote) {
       html += '<div class="second note" style="' + mutedCss + '">' + esc(f.secondNote) + '</div>';
     } else if (f.second) {
-      html += '<div class="second">';
-      f.second.forEach(function (v) {
-        var missing = v.text == null;
-        html += '<div' + (missing ? ' class="note" style="' + mutedCss + '"' : '') + '>'
-          + (numbered ? '<span class="num" style="' + mutedCss + '">' + esc(v.label) + '</span>' : '')
-          + esc(missing ? '—' : v.text) + '</div>';
-      });
-      html += '</div>';
+      html += block(f.second.map(function (v) {
+        return {label: v.label, text: v.text == null ? '—' : v.text};
+      }), 'second');
+    }
+    var refText = f.reference + (f.tags && f.tags.length ? ' · ' + f.tags.join(' · ') : '');
+    // Under the passage the reference is INSIDE the block that gets
+    // scaled to fit, so it shrinks with the words it belongs to.
+    if (refPlace === 'under') {
+      html += '<div class="refunder" style="' + mutedCss + '">' + esc(refText) + '</div>';
     }
     passage.innerHTML = html;
     passage.classList.remove('hidden');
-    ref.textContent = f.reference + (f.tags && f.tags.length ? ' · ' + f.tags.join(' · ') : '');
-    ref.classList.remove('hidden');
+    if (refPlace === 'corner') {
+      ref.textContent = refText;
+      ref.classList.remove('hidden');
+    } else {
+      ref.classList.add('hidden');
+    }
     fit(f.typeSize || 76);
   }
 

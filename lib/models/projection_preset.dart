@@ -45,6 +45,10 @@ class ProjectionPreset {
     required this.secondOn,
     required this.secondVersion,
     required this.groundName,
+    this.alignName = '',
+    this.flowName = '',
+    this.numbers = true,
+    this.referenceName = '',
   });
 
   /// What the operator called it. Also its identity: saving under an
@@ -70,12 +74,29 @@ class ProjectionPreset {
   /// parse the whole preset.
   final String groundName;
 
+  /// How the wall is laid out, as four primitives rather than the
+  /// `ProjectionLayout` the stage uses.
+  ///
+  /// Same reason [groundName] is a string: this model stays clear of
+  /// the widget layer, and a name that a later build renames or
+  /// withdraws degrades to the default instead of failing to parse the
+  /// whole preset. Empty means "whatever the app ships with", which is
+  /// exactly what a preset saved before this existed meant.
+  final String alignName;
+  final String flowName;
+  final bool numbers;
+  final String referenceName;
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         'name': name,
         'typeStep': typeStep,
         'secondOn': secondOn,
         'secondVersion': secondVersion,
         'groundName': groundName,
+        'alignName': alignName,
+        'flowName': flowName,
+        'numbers': numbers,
+        'referenceName': referenceName,
       };
 
   /// One row of the stored list, or null when the row is not a preset.
@@ -99,6 +120,11 @@ class ProjectionPreset {
           : '',
       groundName:
           m['groundName'] is String ? m['groundName'] as String : '',
+      alignName: m['alignName'] is String ? m['alignName'] as String : '',
+      flowName: m['flowName'] is String ? m['flowName'] as String : '',
+      numbers: m['numbers'] is bool ? m['numbers'] as bool : true,
+      referenceName:
+          m['referenceName'] is String ? m['referenceName'] as String : '',
     );
   }
 
@@ -109,11 +135,16 @@ class ProjectionPreset {
       other.typeStep == typeStep &&
       other.secondOn == secondOn &&
       other.secondVersion == secondVersion &&
-      other.groundName == groundName;
+      other.groundName == groundName &&
+      other.alignName == alignName &&
+      other.flowName == flowName &&
+      other.numbers == numbers &&
+      other.referenceName == referenceName;
 
   @override
   int get hashCode =>
-      Object.hash(name, typeStep, secondOn, secondVersion, groundName);
+      Object.hash(name, typeStep, secondOn, secondVersion, groundName,
+          alignName, flowName, numbers, referenceName);
 
   @override
   String toString() => 'ProjectionPreset($name, step $typeStep, '
