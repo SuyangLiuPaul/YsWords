@@ -498,14 +498,31 @@ void main() {
         'platform gate — the asset is bundled, so the web can read it too',
         () {
       final about = File('lib/pages/about_page.dart').readAsStringSync();
-      expect(about.contains('ChangelogPage()'), isTrue,
+      // Comment lines are dropped first: a commented-out push would
+      // satisfy a plain `contains` and the door would be painted shut.
+      final live = about
+          .split('\n')
+          .where((l) => !l.trimLeft().startsWith('//'))
+          .join('\n');
+      final at = live.indexOf('ChangelogPage()');
+      expect(at, greaterThanOrEqualTo(0),
           reason: 'a page nothing pushes is a page nobody sees');
+      final before = live.substring((at - 400).clamp(0, at), at);
+      expect(before.contains('AppUpdateInstaller.isSupported'), isFalse,
+          reason: 'the changelog is not an installer feature');
+      expect(RegExp(r'if \(!?kIsWeb').hasMatch(before), isFalse,
+          reason: 'the web can read a bundled asset too');
     });
 
     test('the asset is declared in pubspec, or it is not in the build at all',
         () {
       final pubspec = File('pubspec.yaml').readAsStringSync();
-      expect(pubspec.contains('assets/changelog.json'), isTrue);
+      final live = pubspec
+          .split('\n')
+          .where((l) => !l.trimLeft().startsWith('#'))
+          .join('\n');
+      expect(live.contains('assets/changelog.json'), isTrue,
+          reason: 'a commented-out asset line is no asset');
     });
 
     // Review finding 5 (2026-09-09): the generator shipped and NOTHING

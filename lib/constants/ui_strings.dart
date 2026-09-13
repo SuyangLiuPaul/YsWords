@@ -8578,4 +8578,11 @@ const uiStrings = {
     'en': 'Beside an English passage, show',
   },
   'projectorPreview': {'zh-Hans': '预览', 'zh-Hant': '預覽', 'en': 'Preview'},
+  // 2026-09-13. Shown under a version whose notes the generator's cap
+  // truncated. Appended per this file's convention.
+  'changelogOmitted': {
+    'zh-Hans': '还有 {n} 项未列出',
+    'zh-Hant': '還有 {n} 項未列出',
+    'en': '{n} more not listed',
+  },
 };

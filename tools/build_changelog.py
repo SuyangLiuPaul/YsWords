@@ -3,9 +3,9 @@
 
 WHY THIS EXISTS. On 2026-09-09 the owner asked for release notes in
 the app — 「也要有历史的release note但是不要全部的」. The finding was
-that there were none to show: all 270 GitHub Releases carry the same
+that there were none to show: all 88 GitHub Releases carry the same
 body, `Automated Linux x64 build. Download the tarball...`, written by
-the Linux job of `release-android.yml`. That is build instructions for
+the Linux job of `release-linux.yml`. That is build instructions for
 one platform, not a note, and it is identical on every release.
 
 The notes were in the commit subjects the whole time. This app writes
@@ -25,9 +25,9 @@ the reader can see:
   * `chore:` / `ci:` / `test:` — the same, one level down.
 
 WHY THE SPINE IS THE `release:` COMMITS AND NOT THE TAGS. Tags were
-the obvious choice and are wrong here: `tag_release.sh` only started
-pushing them on 2026-09-08, so the repository holds **12** tags for
-270 versions. Built on tags, the oldest entry swallowed the entire
+the obvious choice and are wrong here: `release_github.sh` only started
+pushing them on 2026-09-08, so the repository holds **68** tags for
+88 versions. Built on tags, the oldest entry swallowed the entire
 history back to the initial commit — 719 notes in one row, 51 KB.
 Every released version does have a `release: vX.Y.Z …` commit (older
 ones read `chore(release): vX.Y.Z`), all the way back, so those are
@@ -306,7 +306,11 @@ def released_versions(
     exact failure the tag-based first draft had.
     """
     out = git(
-        'log', '--format=%H\x1f%cs\x1f%s', '--no-merges', '--all',
+        # HEAD, not --all: the build is cut from HEAD, and a `release:`
+        # commit on an unmerged branch or a stray worktree is not this
+        # build's history. With --all such an anchor became a shipped
+        # row — reproduced by review with a throwaway branch.
+        'log', '--format=%H\x1f%cs\x1f%s', '--no-merges', 'HEAD',
         repo=repo,
     ).splitlines()
     found: list[tuple[str, str, str]] = []
@@ -403,6 +407,9 @@ def build(
                 'version': head_version,
                 'date': head['date'],
                 'notes': notes[:MAX_NOTES_PER_VERSION],
+                # What the cap dropped, so the page can SAY so instead of a
+                # version quietly looking smaller than it was.
+                'omitted': max(0, len(notes) - MAX_NOTES_PER_VERSION),
             })
         else:
             # A data-only or tooling-only release. Recorded under
@@ -430,6 +437,9 @@ def build(
             'version': version,
             'date': date,
             'notes': notes[:MAX_NOTES_PER_VERSION],
+            # What the cap dropped, so the page can SAY so instead of a
+            # version quietly looking smaller than it was.
+            'omitted': max(0, len(notes) - MAX_NOTES_PER_VERSION),
         })
     data: dict = {'entries': entries}
     if head is not None:

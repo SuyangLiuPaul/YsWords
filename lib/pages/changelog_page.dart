@@ -240,6 +240,17 @@ class _ChangelogPageState extends State<ChangelogPage> {
                 ],
               ),
             ),
+          if (entry.omitted > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 2),
+              child: Text(
+                (uiStrings['changelogOmitted']?[s.locale] ??
+                        '{n} more not listed')
+                    .replaceAll('{n}', '${entry.omitted}'),
+                style: _style(s, s.fontSize - 2,
+                    color: scheme.onSurfaceVariant),
+              ),
+            ),
         ],
       ),
     );

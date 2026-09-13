@@ -447,6 +447,12 @@ class Bound(WithRepo):
         # The count under `head` is the true number, before the cap:
         # that is what says "a lot happened", which the cap hides.
         self.assertEqual(data['head']['notes'], n)
+        # 2026-09-13: and the entry itself says what the cap dropped, so
+        # the page can say "5 more not listed" instead of a version
+        # quietly looking smaller than it was.
+        self.assertEqual(top['omitted'], 5)
+        self.assertEqual(data['entries'][1]['omitted'], 0,
+                         'a version under the cap omits nothing')
 
     def test_the_anchored_path_is_capped_too(self):
         self.repo.commit('release: v0.9.0')
@@ -457,6 +463,22 @@ class Bound(WithRepo):
         self.assertEqual(data['entries'][0]['version'], '1.0.0')
         self.assertEqual(len(data['entries'][0]['notes']),
                          bc.MAX_NOTES_PER_VERSION)
+        self.assertEqual(data['entries'][0]['omitted'], 3)
+
+    def test_a_release_commit_on_an_unmerged_branch_is_not_a_version(self):
+        # 2026-09-13. The anchor walk used `git log --all`, so a `release:`
+        # commit on any local branch or worktree became a shipped row —
+        # reproduced by review with exactly this shape. The build is cut
+        # from HEAD; HEAD's history is the only history it has.
+        self.repo.commit('release: v1.0.0')
+        self.repo.commit('picker: on main')
+        git = ['git', '-C', str(self.repo.path)]
+        subprocess.run([*git, 'checkout', '-q', '-b', 'stray'], check=True)
+        self.repo.commit('release: v9.9.9')
+        subprocess.run([*git, 'checkout', '-q', 'main'], check=True)
+        data = bc.build(10, head_version='1.0.1', repo=self.repo.path)
+        versions = [e['version'] for e in data['entries']]
+        self.assertNotIn('9.9.9', versions, versions)
 
 
 class PubspecVersion(unittest.TestCase):
