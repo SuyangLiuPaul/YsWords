@@ -2174,9 +2174,9 @@
 // fixed for APP_RELEASE_TIME by moving it to a source constant.
 const String _envAppVersion = String.fromEnvironment(
   'APP_VERSION',
-  defaultValue: '1.5.23',
+  defaultValue: '1.5.24',
 );
-const String kAppVersion = _envAppVersion == '' ? '1.5.23' : _envAppVersion;
+const String kAppVersion = _envAppVersion == '' ? '1.5.24' : _envAppVersion;
 
 /// 2026-05-10 (v1.2.20): paired with `kAppVersion` so the About
 /// footer's "Last updated …" stamp moves in lockstep with every
@@ -2215,7 +2215,7 @@ const String kAppVersion = _envAppVersion == '' ? '1.5.23' : _envAppVersion;
 /// for the build, which in practice means dev workflow only.
 const String kAppReleaseTime = String.fromEnvironment(
   'APP_RELEASE_TIME',
-  defaultValue: '2026-09-09T10:10:25Z',
+  defaultValue: '2026-09-13T05:49:31Z',
 );
 
 /// Returns a user-locale-formatted release time string. Parses
