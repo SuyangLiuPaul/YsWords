@@ -12,7 +12,6 @@ import 'package:audioplayers/audioplayers.dart' as ap;
 class SongPlaybackEngine {
   SongPlaybackEngine() {
     _wire(_a);
-    _wire(_b);
 
     // Start listening to the player's start-up before it can fail.
     //
@@ -38,10 +37,37 @@ class SongPlaybackEngine {
   /// Two players, so the next track can be buffered while this one is
   /// still sounding — see [preload]. [_player] is whichever one the
   /// listener is hearing; they swap at the hand-off.
+  ///
+  /// The second one is built on FIRST PRELOAD, not in the constructor.
+  /// Wiring a player subscribes to audioplayers' global event channel,
+  /// and an app that only ever constructs the engine — every widget test
+  /// that puts a screen on screen, and a device where audio is never
+  /// started — should touch the platform side exactly as often as it did
+  /// when there was one player. Building it eagerly cost four test files
+  /// a `MissingPluginException` on `audioplayers.global/events`.
   final ap.AudioPlayer _a = ap.AudioPlayer();
-  final ap.AudioPlayer _b = ap.AudioPlayer();
+  ap.AudioPlayer? _b;
   late ap.AudioPlayer _player = _a;
-  ap.AudioPlayer get _standby => identical(_player, _a) ? _b : _a;
+
+  /// The player that is NOT sounding, built the first time one is asked
+  /// for. Never called before [preload], and after a hand-off both exist.
+  ap.AudioPlayer get _standby {
+    if (!identical(_player, _a)) return _a;
+    final made = _b ??= ap.AudioPlayer();
+    if (!_wired.contains(made)) {
+      _wire(made);
+      // The same start-up probe the constructor runs on `_a`, for the
+      // same reason: an unawaited hand-shake failure takes down the zone.
+      made.setVolume(1.0).catchError((Object e) {
+        _unavailable = true;
+        _error.add((0, 'audio engine unavailable: $e'));
+      });
+    }
+    return made;
+  }
+
+  /// Which players [_wire] has already been run on.
+  final Set<ap.AudioPlayer> _wired = <ap.AudioPlayer>{};
 
   /// What [_standby] has been prepared with, as the caller spelled it.
   String? _standbyUrl;
@@ -51,6 +77,7 @@ class SongPlaybackEngine {
   /// state change — while the listener is still hearing the other one,
   /// and none of that is news about the song they are on.
   void _wire(ap.AudioPlayer p) {
+    _wired.add(p);
     p.onPositionChanged.listen((d) {
       if (identical(p, _player)) _position.add(d);
     });
@@ -224,7 +251,7 @@ class SongPlaybackEngine {
     // it otherwise: a player that will not release in three seconds is
     // being torn down with the process anyway.
     if (!_unavailable) {
-      for (final p in [_a, _b]) {
+      for (final p in <ap.AudioPlayer>[_a, if (_b != null) _b!]) {
         try {
           await p.dispose().timeout(const Duration(seconds: 3));
         } catch (_) {
