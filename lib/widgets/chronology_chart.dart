@@ -1623,12 +1623,15 @@ class _ChronologyChartState extends State<ChronologyChart> {
       plotWidth: plotWidth,
       minWidth: _scaler.scale(34),
     );
+    final clusters = chronologyLabelClusters(lefts: lefts, plan: plan)
+        .where((g) => g.length > 1)
+        .toList();
 
     final labels = <Widget>[];
-    // Where each drawn label actually sits, so a tap can open the one
-    // the reader touched rather than the one nearest in x. See the
-    // hit test below for why this list has to exist.
-    final labelHits = <(Rect, ChronologyMarker)>[];
+    // Where each drawn label — or cluster chip — actually sits, so a tap
+    // can open the one the reader touched rather than the one nearest in
+    // x. See the hit test below for why this list has to exist.
+    final labelHits = <(Rect, VoidCallback)>[];
     for (final c in plan) {
       labelHits.add((
         Rect.fromLTWH(
@@ -1637,7 +1640,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
           c.width + 1,
           pitch,
         ),
-        candidates[c.index],
+        () => _showEventSheet(context, candidates[c.index]),
       ));
       if (c.row > 0) {
         labels.add(Positioned(
@@ -1688,6 +1691,64 @@ class _ChronologyChartState extends State<ChronologyChart> {
       ));
     }
 
+    // A same-year tie the packer had to drop, in whole or in part — see
+    // [chronologyLabelClusters]. Drawn in the tick strip above the label
+    // rows, never inside them: everything in a tie shares one x, so by
+    // the time the packer gives up on it every row already has SOME
+    // other label's box passing through that x, and there is nowhere in
+    // the rows themselves left to put a chip without covering one up.
+    for (final bucket in clusters) {
+      final x = lefts[bucket.first];
+      final n = bucket.length;
+      final chipLabel =
+          _s('chronologyMoreEvents', '+{n}').replaceAll('{n}', '$n');
+      labels.add(Positioned(
+        left: x,
+        top: 0,
+        height: 13,
+        child: Semantics(
+          label: chipLabel,
+          button: true,
+          excludeSemantics: true,
+          onTap: () => _showClusterSheet(
+            context,
+            [for (final i in bucket) candidates[i]],
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              // The dimmed idiom the fold chip already uses in the name
+              // column — present but not what you are looking at — and
+              // no new hue: colour on this lane is already spent on the
+              // descent lines and the era bands.
+              color: scheme.onSurface.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Text(
+                chipLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: TextStyle(
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w700,
+                  color: scheme.onSurface.withValues(alpha: 0.75),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+      labelHits.add((
+        Rect.fromLTWH(x, 0, _scaler.scale(18), 13),
+        () => _showClusterSheet(
+          context,
+          [for (final i in bucket) candidates[i]],
+        ),
+      ));
+    }
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       // Details on demand, in two stages.
@@ -1711,9 +1772,9 @@ class _ChronologyChartState extends State<ChronologyChart> {
       // fall back to the nearest tick by x.
       onTapDown: (d) {
         final p = d.localPosition;
-        for (final (rect, marker) in labelHits) {
+        for (final (rect, onTap) in labelHits) {
           if (rect.inflate(2).contains(p)) {
-            _showEventSheet(context, marker);
+            onTap();
             return;
           }
         }
@@ -2237,6 +2298,74 @@ class _ChronologyChartState extends State<ChronologyChart> {
     });
   }
 
+  /// The "+N" chip's tap target: a same-year tie has no single answer, so
+  /// this names every event in it and lets the reader pick, routing the
+  /// choice into [_showEventSheet] — the same detail sheet a single label
+  /// opens, so a chosen event reads exactly like any other.
+  void _showClusterSheet(BuildContext context, List<ChronologyMarker> ms) {
+    final scheme = Theme.of(context).colorScheme;
+    final active = widget.data.activeScheme;
+    final locale = widget.locale;
+    final title = _s('chronologyMoreEventsSheetTitle', '{n} events the same '
+            'year')
+        .replaceAll('{n}', '${ms.length}');
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.8,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontSize: 17, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  formatChronologyYear(ms.first.am, active, locale),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurface.withValues(alpha: 0.9),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final m in ms)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: _BasisGlyph(
+                              computed: m.isComputed, scheme: scheme),
+                          title: Text(m.localizedTitle(locale)),
+                          onTap: () {
+                            Navigator.of(ctx).pop();
+                            _showEventSheet(context, m);
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ── Legend + scope ──────────────────────────────────────────────
 
   Widget _legend(BuildContext context, ColorScheme scheme) {
@@ -2589,6 +2718,35 @@ List<ChronologyLabelSlot> chronologyLabelPlan({
     ));
   }
   return out;
+}
+
+/// Which candidates [chronologyLabelPlan] left out, grouped by the ones
+/// that share an x with each other.
+///
+/// Two candidates land on the exact same [lefts] value only when they
+/// share a year: `_x` is a deterministic function of `am`, so a tie here
+/// is a same-year tie, not a rounding coincidence. That is the case no
+/// zoom level can fix — every row starts fresh at each x, so packing
+/// harder only ever seats one more of them, never all.
+///
+/// Total, not just the clusters: a dropped candidate that shares its x
+/// with nobody still comes back, as a group of one. That candidate was
+/// the wrong thing to draw a "+N" chip for — it never leaves the axis'
+/// edge or the crowd of some OTHER year — so the caller filters those
+/// out; this function's job is only to make sure nothing it was handed
+/// goes missing from the count.
+@visibleForTesting
+List<List<int>> chronologyLabelClusters({
+  required List<double> lefts,
+  required List<ChronologyLabelSlot> plan,
+}) {
+  final placed = {for (final s in plan) s.index};
+  final byLeft = <double, List<int>>{};
+  for (var i = 0; i < lefts.length; i++) {
+    if (placed.contains(i)) continue;
+    byLeft.putIfAbsent(lefts[i], () => <int>[]).add(i);
+  }
+  return byLeft.values.toList();
 }
 
 /// The one glyph that separates a counted year from a placed one:

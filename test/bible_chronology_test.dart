@@ -607,6 +607,51 @@ void main() {
       );
     });
 
+    testWidgets('a same-year cluster the packer cannot fully seat draws a '
+        '"+N" chip, and the chip opens a list naming more than one event',
+        (tester) async {
+      // AM 4036 — measured directly from assets/bible_chronology.json,
+      // not assumed — carries six of the Gospel-era events at the exact
+      // same year: Triumphal Entry, Last Supper, Crucifixion,
+      // Resurrection, Ascension, Pentecost. They tie on x, so no row the
+      // packer tries can ever seat more than one of the six, and at this
+      // viewport the surrounding Gospel titles are dense enough that
+      // none of the six get a label of their own at all — confirmed by
+      // instrumenting `chronologyLabelPlan`'s own drop list before this
+      // test was written, at this exact `viewAt` call, rather than
+      // assumed from the layout.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: const Size(402, 874));
+      await viewAt(tester, 4036, years: 100);
+
+      // Other, smaller ties sit within the same 100-year window (AM
+      // 4000, 4029, 4038 each carry a pair) — `+6` picks out the one
+      // this test is actually about, not just any chip.
+      final chip = find.bySemanticsLabel(RegExp(r'^\+6$'));
+      expect(chip, findsOneWidget,
+          reason: 'no "+6" cluster chip drawn at the AM 4036 tie');
+
+      await tester.tap(chip, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      const cluster = {
+        'Triumphal Entry',
+        'Last Supper',
+        'Crucifixion of Jesus',
+        'Resurrection',
+        'Ascension',
+        'Pentecost: Holy Spirit Poured Out',
+      };
+      final namedInSheet = cluster.where((t) => find
+          .descendant(of: find.byType(BottomSheet), matching: find.text(t))
+          .evaluate()
+          .isNotEmpty);
+      expect(namedInSheet.length, greaterThan(1),
+          reason: 'the cluster sheet should name more than one event — '
+              'found: $namedInSheet');
+      handle.dispose();
+    });
+
     testWidgets('every drawn event label is its own accessibility node, '
         'not one merged utterance for the whole lane', (tester) async {
       // 2026-09-09, residual #2 of the "left open, deliberately" note on
@@ -1393,6 +1438,53 @@ void main() {
           }
         }
       }
+    });
+
+    test('every dropped candidate ends up in the plan or in exactly one '
+        'cluster bucket', () {
+      // Six candidates share one x — a six-event year no zoom can pull
+      // apart, since every row starts fresh at each x and packing harder
+      // only ever seats one more of the six. A seventh, unrelated
+      // candidate sits right at the plot's edge, so it is dropped too,
+      // by the OTHER path (`left + minWidth > plotWidth`) — the
+      // partition has to cover both without double-counting or losing
+      // either.
+      const plotWidth = 200.0;
+      final lefts = [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 60.0, plotWidth - 5];
+      final wants = [for (var i = 0; i < 8; i++) 40.0];
+      final plan = chronologyLabelPlan(
+        lefts: lefts,
+        wants: wants,
+        rows: 1,
+        plotWidth: plotWidth,
+      );
+      final buckets = chronologyLabelClusters(lefts: lefts, plan: plan);
+
+      final placed = {for (final s in plan) s.index};
+      final bucketed = <int>{};
+      for (final bucket in buckets) {
+        for (final i in bucket) {
+          expect(bucketed.add(i), isTrue,
+              reason: 'candidate $i counted in more than one bucket');
+        }
+      }
+      for (var i = 0; i < lefts.length; i++) {
+        expect(placed.contains(i) || bucketed.contains(i), isTrue,
+            reason: 'candidate $i is in neither the plan nor a bucket — '
+                'it vanished');
+      }
+      expect(placed.intersection(bucketed), isEmpty,
+          reason: 'a candidate the packer placed was also bucketed');
+
+      // The six-way tie comes back as ONE bucket, not six singletons —
+      // that is the whole point: it is discoverable as a group.
+      final tie = buckets.where((b) => lefts[b.first] == 10.0);
+      expect(tie.length, 1);
+      expect(tie.first, hasLength(5));
+      // The lone edge-of-axis drop is its own bucket of one.
+      final edge = buckets.where((b) => lefts[b.first] == plotWidth - 5);
+      expect(edge.length, 1);
+      expect(edge.first, hasLength(1));
     });
 
     testWidgets('an event label on screen is not ellipsised — the '

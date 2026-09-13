@@ -7364,6 +7364,16 @@ const uiStrings = {
     'zh-Hans': '创造 → 启示录，共 {years} 年，与「事件」列表同一跨度。',
     'zh-Hant': '創造 → 啟示錄，共 {years} 年，與「事件」列表同一跨度。',
   },
+  'chronologyMoreEvents': {
+    'en': '+{n}',
+    'zh-Hans': '+{n}',
+    'zh-Hant': '+{n}',
+  },
+  'chronologyMoreEventsSheetTitle': {
+    'en': '{n} events the same year',
+    'zh-Hans': '同一年内的 {n} 个事件',
+    'zh-Hant': '同一年內的 {n} 個事件',
+  },
   // Share-link toasts (sermons + bible verses)
   'shareLink': {
     'en': 'Share',

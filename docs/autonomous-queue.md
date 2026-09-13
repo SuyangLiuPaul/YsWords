@@ -13272,6 +13272,43 @@ has never seen this repo.
       portrait, deepest zoom); it is real but viewport-dependent — do
       not restate it as a fixed count.
 
+      **2026-09-14 — the "Left open, deliberately" gap gets a chip, not
+      more zoom.** `chronologyLabelClusters` (`chronology_chart.dart`,
+      beside `chronologyLabelPlan`) is a pure partition of everything
+      the packer dropped, grouped by the exact `left` value — a tie
+      there is a same-year tie, since `_x` is a deterministic function
+      of `am`. Groups of one (an edge-of-axis drop, or a lone label
+      genuinely out of room) are returned too, so the invariant test can
+      assert nothing the packer rejected goes uncounted; the lane only
+      draws a chip for groups of two or more, which is the actual
+      same-year case this note named.
+      The chip draws in the tick strip (y 0–13, above the label rows,
+      the fold-chip's dimmed alpha, no new hue) because by the time a
+      whole tie is dropped, every label row already has some OTHER,
+      unrelated title's box passing through that x — there is nowhere
+      inside the rows themselves left to put it. Tap opens a list of
+      every marker in the tie, routed into the same `_showEventSheet`
+      a single label opens.
+      Verified against the real corpus, not synthesized: AM 4036
+      (measured off `assets/bible_chronology.json`, not assumed) carries
+      six Passion-week events tied on one x — Triumphal Entry, Last
+      Supper, Crucifixion, Resurrection, Ascension, Pentecost — and at a
+      100-year window on a 402 pt phone all six are dropped by the
+      packer at once; the widget test drives that exact viewport,
+      finds the "+6" chip by its own semantics label, taps it, and
+      checks the sheet names more than one of the six. A pure test
+      separately confirms the partition: a synthetic six-way tie plus
+      one unrelated edge-of-axis drop, asserting every dropped index
+      lands in the plan or in exactly one bucket and never both.
+      The chip fires on a PARTIAL drop too (some of a tie placed, some
+      not), not only a total one — it lives in its own y band, so it
+      never needs a free label row. Left open: a partly-placed tie's
+      chip can sit against the thin connector guide a placed label at
+      that same x draws from `:1645`, since both occupy the same x in
+      the top few pixels. Not reached by the two real ties checked
+      (AM 2558 and AM 4036 both drop in full at the viewports tested),
+      so not chased on a guess.
+
 - [x] **A sermon that would not play left its Listen button dead, because
       only songs caught `PlaybackBlockedException`.** Reported from a live
       iPhone on 2026-09-03, `/sermons/421`, web, and mailed to the crash
