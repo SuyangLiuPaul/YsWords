@@ -1217,6 +1217,8 @@ PODS:
     - Firebase/Firestore (~> 12.12.0)
     - firebase_core
     - FlutterMacOS
+  - file_selector_macos (0.0.1):
+    - FlutterMacOS
   - Firebase/Auth (12.12.1):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 12.12.0)
@@ -1457,6 +1459,7 @@ DEPENDENCIES:
   - audio_session (from `Flutter/ephemeral/.symlinks/plugins/audio_session/macos`)
   - audioplayers_darwin (from `Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin`)
   - cloud_firestore (from `Flutter/ephemeral/.symlinks/plugins/cloud_firestore/macos`)
+  - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - firebase_auth (from `Flutter/ephemeral/.symlinks/plugins/firebase_auth/macos`)
   - firebase_core (from `Flutter/ephemeral/.symlinks/plugins/firebase_core/macos`)
   - firebase_database (from `Flutter/ephemeral/.symlinks/plugins/firebase_database/macos`)
@@ -1507,6 +1510,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin
   cloud_firestore:
     :path: Flutter/ephemeral/.symlinks/plugins/cloud_firestore/macos
+  file_selector_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
   firebase_auth:
     :path: Flutter/ephemeral/.symlinks/plugins/firebase_auth/macos
   firebase_core:
@@ -1543,6 +1548,7 @@ SPEC CHECKSUMS:
   audioplayers_darwin: 835ced6edd4c9fc8ebb0a7cc9e294a91d99917d5
   BoringSSL-GRPC: dded2a44897e45f28f08ae87a55ee4bcd19bc508
   cloud_firestore: c4b153f1a3eefe42401233198b0bf83d29fe86ff
+  file_selector_macos: 9e9e068e90ebee155097d00e89ae91edb2374db7
   Firebase: 14f11e91129d246a8a6166b4c1c2ea61b56806ec
   firebase_auth: 889d00265b2789b54ad2bd7cefb62d9d4aec024a
   firebase_core: 8022171e82601bac2c79cfa04d69977f12595682
