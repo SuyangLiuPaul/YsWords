@@ -1,0 +1,171 @@
+<!doctype html>
+<!--
+  The projector's second screen. See lib/services/projection_broadcast.dart.
+
+  A few kilobytes, no framework: the app (in another window of the same
+  origin) posts a frame on a BroadcastChannel and this page paints it.
+  It never loads a Bible or a Flutter engine, which is why it opens
+  instantly where a second app window would show a splash for seconds.
+
+  Drag this window onto the projector's display and make it full screen
+  (F11 / ⌃⌘F). Drive the wall from the app on the laptop.
+-->
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>投影 · YsWords</title>
+<style>
+  /* The bundled CJK face, from the same asset the app ships — a Flutter
+     web build serves assets under assets/assets/. */
+  @font-face {
+    font-family: 'NotoSansSC-YsWords';
+    src: url('assets/assets/fonts/NotoSansSC-YsWords.otf') format('opentype');
+    font-display: swap;
+  }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background: #000;
+    color: #fff;
+    font-family: -apple-system, 'Segoe UI', Roboto, 'NotoSansSC-YsWords',
+      'PingFang SC', 'Microsoft YaHei', sans-serif;
+    cursor: none;
+  }
+  #wall { position: absolute; inset: 0; display: grid; place-items: center; }
+  /* Margins match the app's stage: 7% each side, 11% top and bottom. */
+  #passage {
+    box-sizing: border-box;
+    width: 86vw;
+    max-height: 78vh;
+    padding: 0;
+    text-align: center;
+    line-height: 1.45;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: normal;
+  }
+  #passage .num { opacity: .75; font-size: .42em; margin-right: .25em; }
+  #passage .second { margin-top: .6em; font-size: .82em; }
+  #passage .note { opacity: .75; }
+  #ref {
+    position: absolute; left: 7vw; right: 7vw; bottom: calc(11vh * .35);
+    text-align: left; opacity: .85;
+  }
+  #hint {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    color: #9aa7b8; font-size: 3vmin; text-align: center; padding: 0 10vw;
+    line-height: 1.6;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+  <div id="wall">
+    <div id="passage" class="hidden"></div>
+    <div id="ref" class="hidden"></div>
+    <div id="hint">
+      等待投影……<br>
+      把这个窗口拖到投影仪的屏幕上，按 F11 / ⌃⌘F 全屏；在应用里驱动。<br>
+      <span style="font-size:.8em">Waiting for the app. Drag this window to the projector display and go full screen.</span>
+    </div>
+  </div>
+<script>
+(function () {
+  'use strict';
+  var passage = document.getElementById('passage');
+  var ref = document.getElementById('ref');
+  var hint = document.getElementById('hint');
+  var wall = document.getElementById('wall');
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function ground(g) {
+    var colors = (g && g.colors && g.colors.length) ? g.colors : ['#000'];
+    if (g && g.radial && colors.length > 1) {
+      document.body.style.background =
+        'radial-gradient(circle at center, ' + colors.join(', ') + ')';
+    } else {
+      document.body.style.background = colors[colors.length - 1];
+    }
+  }
+
+  // The app's stage draws the passage at the asked size and shrinks the
+  // whole block only when it would not fit the wall. Same rule here:
+  // start at typeSize (in CSS px on a 1280-wide wall, scaled to this
+  // window's width), then step down until the block fits its box.
+  function fit(sizePx) {
+    var scale = window.innerWidth / 1280;
+    var size = Math.max(12, sizePx * scale);
+    passage.style.fontSize = size + 'px';
+    var guard = 0;
+    while (passage.scrollHeight > passage.clientHeight + 1 && size > 12 && guard++ < 60) {
+      size *= 0.94;
+      passage.style.fontSize = size + 'px';
+    }
+    ref.style.fontSize = Math.max(26 * scale, size * 0.26) + 'px';
+  }
+
+  var last = null;
+
+  function paint(f) {
+    last = f;
+    hint.classList.add('hidden');
+    ground(f.ground);
+    passage.style.color = f.ink || '#fff';
+    ref.style.color = f.muted || '#9aa7b8';
+    var mutedCss = 'color:' + (f.muted || '#9aa7b8');
+
+    if (f.blank || !f.verses || !f.verses.length) {
+      passage.classList.add('hidden');
+      ref.classList.add('hidden');
+      return;
+    }
+    var numbered = f.verses.length > 1;
+    var html = '';
+    f.verses.forEach(function (v) {
+      html += '<div>' + (numbered ? '<span class="num" style="' + mutedCss + '">' + esc(v.label) + '</span>' : '')
+        + esc(v.text) + '</div>';
+    });
+    if (f.secondNote) {
+      html += '<div class="second note" style="' + mutedCss + '">' + esc(f.secondNote) + '</div>';
+    } else if (f.second) {
+      html += '<div class="second">';
+      f.second.forEach(function (v) {
+        var missing = v.text == null;
+        html += '<div' + (missing ? ' class="note" style="' + mutedCss + '"' : '') + '>'
+          + (numbered ? '<span class="num" style="' + mutedCss + '">' + esc(v.label) + '</span>' : '')
+          + esc(missing ? '—' : v.text) + '</div>';
+      });
+      html += '</div>';
+    }
+    passage.innerHTML = html;
+    passage.classList.remove('hidden');
+    ref.textContent = f.reference + (f.tags && f.tags.length ? ' · ' + f.tags.join(' · ') : '');
+    ref.classList.remove('hidden');
+    fit(f.typeSize || 76);
+  }
+
+  var channel = new BroadcastChannel('yswords-projection');
+  channel.onmessage = function (e) {
+    var f = e.data;
+    if (typeof f === 'string') { try { f = JSON.parse(f); } catch (_) { return; } }
+    if (!f || f.v !== 1) return;
+    paint(f);
+  };
+  // A follower opened after the wall was already up asks for it.
+  channel.postMessage('hello');
+
+  window.addEventListener('resize', function () { if (last) paint(last); });
+  // Any click toggles full screen; the cursor is hidden regardless.
+  wall.addEventListener('click', function () {
+    if (document.fullscreenElement) { document.exitFullscreen(); }
+    else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+  });
+})();
+</script>
+</body>
+</html>

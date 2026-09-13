@@ -223,4 +223,10 @@ const projectionStrings = <String, Map<String, String>>{
     'zh-Hant': '單窗口：請把本視窗拖到投影螢幕上。',
     'en': 'One window: put this window on the projector display.',
   },
+  // 2026-09-13: the follower window. Web only.
+  'projectionOpenStage': {
+    'zh-Hans': '打开投影窗口（拖到投影仪屏幕上）',
+    'zh-Hant': '開啟投影視窗（拖到投影機螢幕上）',
+    'en': 'Open the projector window (drag it to the projector display)',
+  },
 };

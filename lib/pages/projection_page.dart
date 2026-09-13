@@ -194,6 +194,7 @@ import 'package:yswords/constants/book_names.dart' show bookNameToEnglish;
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/services/projection_broadcast.dart';
 import 'package:yswords/models/projection_preset.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
@@ -328,6 +329,11 @@ enum ProjectionCommand {
   /// Open the saved setups.
   presets,
 
+  /// Open the follower window — `web/stage.html` on a BroadcastChannel.
+  /// Web only; the button and the key are absent elsewhere. See
+  /// `projection_broadcast.dart`.
+  openStage,
+
   /// Leave, and put the operator back where they were.
   leave,
 }
@@ -400,6 +406,12 @@ ProjectionCommand? projectionCommandFor(LogicalKeyboardKey key) {
   }
   if (key == LogicalKeyboardKey.keyV) {
     return ProjectionCommand.chooseSecondVersion;
+  }
+  // D for display. Not a browser chord (those are C V X F P S T W N L K
+  // R); a bare letter the operator can hit once, at the start, to put
+  // the wall up on the second screen.
+  if (key == LogicalKeyboardKey.keyD) {
+    return ProjectionCommand.openStage;
   }
   if (key == LogicalKeyboardKey.keyS) {
     return ProjectionCommand.presets;
@@ -714,6 +726,7 @@ class _ProjectionPageState extends State<ProjectionPage> {
   @override
   void dispose() {
     _controlsTimer?.cancel();
+    ProjectionBroadcast.close();
     _focus.dispose();
     super.dispose();
   }
@@ -817,6 +830,8 @@ class _ProjectionPageState extends State<ProjectionPage> {
         _chooseSecondVersion(mp);
       case ProjectionCommand.presets:
         _showPresets(mp);
+      case ProjectionCommand.openStage:
+        if (ProjectionBroadcast.isSupported) ProjectionBroadcast.openStage();
       case ProjectionCommand.leave:
         Navigator.of(context).maybePop();
     }
@@ -976,6 +991,52 @@ class _ProjectionPageState extends State<ProjectionPage> {
   /// EDITION prints: where a publisher merges two references into one
   /// block it reads `1-2`, and a room told `1` would be looking for a
   /// verse that is not separately printed in front of them.
+  /// What the follower window paints — the same things the stage does,
+  /// already resolved, so the follower needs no corpus and no Flutter.
+  ProjectionFrame _frame(MainProvider mp, AppSettings settings,
+      ColorScheme scheme, ProjectionGround ground, List<Verse> shown) {
+    String hex(Color c) =>
+        '#${c.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
+    final texts = _secondTextsFor(shown);
+    final secondOn = _second && shown.isNotEmpty;
+    String? note;
+    if (secondOn) {
+      if (_secondLoading) {
+        note = _s('projectionSecondVersionLoading',
+            'Loading the second edition', settings.locale);
+      } else if (texts == null || texts.every((t) => t == null)) {
+        note = _s('projectionSecondVersionMissing',
+            'This edition has no text here', settings.locale);
+      }
+    }
+    return ProjectionFrame(
+      blank: _blank,
+      typeSize: kProjectionTypeSteps[_typeStep],
+      reference: _referenceFor(shown),
+      tags: [
+        shortBibleVersionLabel(mp.currentVersion),
+        if (secondOn && _secondCode != null)
+          shortBibleVersionLabel(_secondCode!),
+      ],
+      verses: [
+        for (final v in shown) {'label': v.verseLabel, 'text': v.text},
+      ],
+      second: secondOn && note == null && texts != null
+          ? [
+              for (var i = 0; i < shown.length; i++)
+                {'label': shown[i].verseLabel, 'text': texts[i]},
+            ]
+          : null,
+      secondNote: note,
+      groundColors: [
+        for (final c in projectionGroundColors(ground, scheme)) hex(c),
+      ],
+      radial: ground == ProjectionGround.spotlight,
+      ink: hex(scheme.onSurface),
+      muted: hex(scheme.onSurfaceVariant),
+    );
+  }
+
   /// `创世纪 1:1`, or `创世纪 1:1–3` for a block. The range is spelled
   /// with the labels, not the numbers, so a merged verse keeps its
   /// `4-5` and the reference cannot claim a verse the wall is not
@@ -1306,6 +1367,13 @@ class _ProjectionPageState extends State<ProjectionPage> {
             (cursor.verse + cursor.count).clamp(0, verses.length),
           );
 
+    if (ProjectionBroadcast.isSupported) {
+      final frame = _frame(mp, settings, scheme, ground, shown);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ProjectionBroadcast.post(frame);
+      });
+    }
+
     return Scaffold(
       // The Scaffold under the stage carries the chosen ground's own
       // darkest value rather than `scheme.surface`, so the one frame
@@ -1546,6 +1614,15 @@ class _ProjectionPageState extends State<ProjectionPage> {
                           locale,
                           ProjectionCommand.presets,
                           mp),
+                      if (ProjectionBroadcast.isSupported)
+                        _button(
+                            scheme,
+                            Icons.open_in_new,
+                            'projectionOpenStage',
+                            'Open the projector window',
+                            locale,
+                            ProjectionCommand.openStage,
+                            mp),
                       _divider(scheme),
                       _button(
                           scheme,
