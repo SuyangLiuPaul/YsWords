@@ -11,15 +11,8 @@ import 'package:audioplayers/audioplayers.dart' as ap;
 /// `song_playback_engine.dart`.
 class SongPlaybackEngine {
   SongPlaybackEngine() {
-    _player.onPositionChanged.listen(_position.add);
-    _player.onDurationChanged.listen(_duration.add);
-    _player.onPlayerStateChanged.listen((s) {
-      _playing.add(s == ap.PlayerState.playing);
-    });
-    // Fires only on a natural end — not on stop() or pause() — so a
-    // caller can use it for auto-advance without looping on
-    // user-initiated stops.
-    _player.onPlayerComplete.listen(_complete.add);
+    _wire(_a);
+    _wire(_b);
 
     // Start listening to the player's start-up before it can fail.
     //
@@ -36,13 +29,48 @@ class SongPlaybackEngine {
     // crash an app whose other twenty features are fine, so it is
     // latched and reported like any other playback failure and every
     // command below then no-ops instead of throwing.
-    _player.setVolume(1.0).catchError((Object e) {
+    _a.setVolume(1.0).catchError((Object e) {
       _unavailable = true;
       _error.add((0, 'audio engine unavailable: $e'));
     });
   }
 
-  final ap.AudioPlayer _player = ap.AudioPlayer();
+  /// Two players, so the next track can be buffered while this one is
+  /// still sounding — see [preload]. [_player] is whichever one the
+  /// listener is hearing; they swap at the hand-off.
+  final ap.AudioPlayer _a = ap.AudioPlayer();
+  final ap.AudioPlayer _b = ap.AudioPlayer();
+  late ap.AudioPlayer _player = _a;
+  ap.AudioPlayer get _standby => identical(_player, _a) ? _b : _a;
+
+  /// What [_standby] has been prepared with, as the caller spelled it.
+  String? _standbyUrl;
+
+  /// Attach the stream plumbing to [p], reporting only while [p] is the
+  /// LIVE player: the standby buffers — and reports a duration, and a
+  /// state change — while the listener is still hearing the other one,
+  /// and none of that is news about the song they are on.
+  void _wire(ap.AudioPlayer p) {
+    p.onPositionChanged.listen((d) {
+      if (identical(p, _player)) _position.add(d);
+    });
+    p.onDurationChanged.listen((d) {
+      if (identical(p, _player)) _duration.add(d);
+    });
+    p.onPlayerStateChanged.listen((st) {
+      if (identical(p, _player)) _playing.add(st == ap.PlayerState.playing);
+    });
+    // Fires only on a natural end — not on stop() or pause() — so a
+    // caller can use it for auto-advance without looping on
+    // user-initiated stops.
+    p.onPlayerComplete.listen((e) {
+      if (identical(p, _player)) _complete.add(e);
+    });
+  }
+
+  ap.Source _sourceFor(String url) => url.startsWith('/')
+      ? ap.DeviceFileSource(url)
+      : ap.UrlSource(url) as ap.Source;
 
   /// Set once the platform side is known to be missing. Latched rather
   /// than re-checked: it never recovers within a process.
@@ -84,10 +112,20 @@ class SongPlaybackEngine {
   /// the offline downloads.
   Future<void> play(String url) async {
     final id = ++_attempt;
-    final source = url.startsWith('/')
-        ? ap.DeviceFileSource(url)
-        : ap.UrlSource(url) as ap.Source;
-    await _guard(id, () => _player.play(source));
+    // The hand-off. If the standby was prepared with this very track it
+    // is already buffered, so the two swap roles and the new live player
+    // only has to start — no fetch, and so no silence for iOS to suspend
+    // us in. The old one is stopped AFTER, not before: stopping first is
+    // the gap this exists to close.
+    if (_standbyUrl == url) {
+      final old = _player;
+      _player = _standby;
+      _standbyUrl = null;
+      await _guard(id, _player.resume);
+      unawaited(_guard(id, old.stop));
+      return;
+    }
+    await _guard(id, () => _player.play(_sourceFor(url)));
   }
 
   Future<void> resume() => _guard(_attempt, _player.resume);
@@ -107,7 +145,30 @@ class SongPlaybackEngine {
   /// asked what plays next — and closing that needs a second player
   /// and a background task, which is a separate change. Until then this
   /// returns immediately so the handler can call it unconditionally.
-  Future<void> preload(String url) async {}
+  /// Prepare the NEXT track on the other player, so the hand-off in
+  /// [play] has nothing to fetch.
+  ///
+  /// The other half of the iPhone background story, and the half the
+  /// web engine's counterpart explains in full: iOS keeps a backgrounded
+  /// app scheduled only while it is actually producing audio, so a fetch
+  /// that starts when a track ends never finishes. `setSource` buffers
+  /// without sounding, which is exactly what is wanted — the listener
+  /// hears one player while the other fills.
+  ///
+  /// Idempotent per URL: the handler calls this on every position tick
+  /// inside the lead window, and re-setting the source would restart the
+  /// buffering it already did.
+  Future<void> preload(String url) async {
+    if (_unavailable || _standbyUrl == url) return;
+    _standbyUrl = url;
+    try {
+      await _standby.setSource(_sourceFor(url));
+    } catch (_) {
+      // A track that will not prepare is not an error here: the play
+      // that follows takes the ordinary path and reports it properly.
+      _standbyUrl = null;
+    }
+  }
 
   /// Repeat-one, done by the platform player instead of by us.
   ///
@@ -130,7 +191,7 @@ class SongPlaybackEngine {
 
   /// The release mode this player was constructed with, captured so
   /// [setLoop] can put it back without hardcoding audioplayers' default.
-  late final ap.ReleaseMode _bornWith = _player.releaseMode;
+  late final ap.ReleaseMode _bornWith = _a.releaseMode;
 
   /// Run a player command, turning any failure into an [onError] event
   /// tagged with [id] — the attempt that was current when the command
@@ -163,10 +224,12 @@ class SongPlaybackEngine {
     // it otherwise: a player that will not release in three seconds is
     // being torn down with the process anyway.
     if (!_unavailable) {
-      try {
-        await _player.dispose().timeout(const Duration(seconds: 3));
-      } catch (_) {
-        // Disposing a player that never started is not worth reporting.
+      for (final p in [_a, _b]) {
+        try {
+          await p.dispose().timeout(const Duration(seconds: 3));
+        } catch (_) {
+          // Disposing a player that never started is not worth reporting.
+        }
       }
     }
     await _position.close();

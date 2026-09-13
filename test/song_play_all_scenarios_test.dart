@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -111,6 +112,52 @@ void main() {
             reason: 'shuffling must never cut off the current track');
       }
       unawaited(handler.stop());
+    });
+  });
+
+  group('both engines really warm the next track', () {
+    // The handler's half is driven with a fake below; the engines' own
+    // halves need a browser or a device, so what is pinned here is that
+    // each one HAS a real implementation. `preload` began life as a
+    // no-op on native, and a no-op that satisfies the interface is
+    // exactly the shape that would leave the iPhone bug half-fixed
+    // while every test above stayed green.
+    test('the web engine buffers into a second <audio> element', () {
+      final src = File('lib/services/playback/song_playback_engine_web.dart')
+          .readAsStringSync();
+      expect(src.contains('Future<void> preload(String url) async {'), isTrue);
+      expect(src.contains('_standby.src = url'), isTrue,
+          reason: 'a second element, not the one that is sounding');
+      expect(src.contains('_standby.load()'), isTrue);
+      expect(src.contains('if (_standbySrc == url) return;'), isTrue,
+          reason: 'idempotent — the handler asks on every tick in the '
+              'lead window');
+    });
+
+    test('the native engine buffers into a second AudioPlayer', () {
+      final src = File('lib/services/playback/song_playback_engine_native.dart')
+          .readAsStringSync();
+      expect(src.contains('await _standby.setSource('), isTrue,
+          reason: 'setSource buffers without sounding');
+      expect(RegExp(r'Future<void> preload\(String url\) async \{\s*\}')
+              .hasMatch(src),
+          isFalse,
+          reason: 'preload must not be a no-op on native any more');
+      expect(src.contains('if (_unavailable || _standbyUrl == url) return;'),
+          isTrue, reason: 'idempotent, and silent when there is no engine');
+    });
+
+    test('and both hand over without stopping first', () {
+      for (final f in [
+        'lib/services/playback/song_playback_engine_web.dart',
+        'lib/services/playback/song_playback_engine_native.dart',
+      ]) {
+        final src = File(f).readAsStringSync();
+        expect(src.contains('_standbySrc == url') || src.contains('_standbyUrl == url'),
+            isTrue,
+            reason: '$f must take the buffered standby when it holds this '
+                'very track — stopping first is the gap this closes');
+      }
     });
   });
 
