@@ -597,17 +597,7 @@ class _LoadingPageState extends State<LoadingPage> {
                   // text below. loading.png is a single-
                   // hue silhouette (mostly #295E8C with alpha edges), so a
                   // srcIn tint recolours it cleanly without losing the mark.
-                  ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Theme.of(context).colorScheme.primary,
-                      BlendMode.srcIn,
-                    ),
-                    child: Image.asset(
-                      'assets/loading.png',
-                      width: logoSize,
-                      height: logoSize,
-                    ),
-                  ),
+                  _logo(context, logoSize),
                   SizedBox(height: 24 * s),
                   Column(
                     children: [
@@ -814,17 +804,7 @@ class _LoadingPageState extends State<LoadingPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                Theme.of(context).colorScheme.primary,
-                BlendMode.srcIn,
-              ),
-              child: Image.asset(
-                'assets/loading.png',
-                width: logoSize,
-                height: logoSize,
-              ),
-            ),
+            _logo(context, logoSize),
             SizedBox(height: 24 * s),
             // Same single localized name as the other splash path above —
             // see the comment there for why this stopped being two Texts.
@@ -1101,4 +1081,43 @@ class _LoadingPageState extends State<LoadingPage> {
     if (!kIsWeb) return;
     clearCacheAndReload();
   }
+}
+
+/// The splash mark, sized for the slot it is drawn into and safe to
+/// fail.
+///
+/// 2026-09-13, from an iPhone SE (320×568, DPR 2) on yswords-dev
+/// v1.5.25: `ImageCodecException: Failed to create image from
+/// Image.decode`, reported during boot on `/`. On the web that
+/// exception comes from `createCkImageFromImageElement` — CanvasKit
+/// could not make a texture out of the decoded `<img>` — and both
+/// halves of why it reached a crash report were here:
+///
+///   * **No decode cap.** `assets/loading.png` is 1024×1024 and 1.2 MB,
+///     drawn into a logo slot a fraction of that. Every other
+///     `Image.asset` in this app already passes `cacheWidth` /
+///     `cacheHeight` (`songs_page.dart`, `illustration_image.dart`);
+///     the splash — the one screen that runs on every launch, at the
+///     tightest moment for memory, on the smallest phone — did not.
+///   * **No `errorBuilder`.** Without one the image stream has no
+///     listener to swallow the failure, so it goes to
+///     `FlutterError.reportError` and arrives as a crash. A logo that
+///     will not paint is not a crash: the app name is right underneath
+///     it and the boot carries on.
+Widget _logo(BuildContext context, double size) {
+  final px = (size * MediaQuery.of(context).devicePixelRatio).round();
+  return ColorFiltered(
+    colorFilter: ColorFilter.mode(
+      Theme.of(context).colorScheme.primary,
+      BlendMode.srcIn,
+    ),
+    child: Image.asset(
+      'assets/loading.png',
+      width: size,
+      height: size,
+      cacheWidth: px,
+      cacheHeight: px,
+      errorBuilder: (_, __, ___) => SizedBox(width: size, height: size),
+    ),
+  );
 }
