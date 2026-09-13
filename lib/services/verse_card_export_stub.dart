@@ -51,6 +51,15 @@ String? _lastSavedPath;
 
 String? get lastSavedPath => _lastSavedPath;
 
+/// Native has one route, so "save" and "deliver" are the same act.
+/// Present so the façade can offer the action on every platform
+/// without the sheet asking which one it is on.
+Future<VerseCardDelivery> saveImage({
+  required Uint8List png,
+  required String fileName,
+}) =>
+    deliverImage(png: png, fileName: fileName, shareText: '');
+
 Future<VerseCardDelivery> deliverImage({
   required Uint8List png,
   required String fileName,

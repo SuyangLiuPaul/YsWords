@@ -262,6 +262,22 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+            // "Share" and "keep a copy" are two different wants, and a
+            // reader with the second one should not have to go looking
+            // for it inside somebody else's share sheet. Only where
+            // sharing is the primary action — otherwise the button
+            // above already says Save and this would be the same thing
+            // twice.
+            if (VerseCardExport.canShare)
+              TextButton.icon(
+                onPressed: _busy ? null : () => _export(saveOnly: true),
+                icon: const Icon(Icons.download_rounded, size: 18),
+                label: Text(
+                  uiStrings['verseCardSave']?[locale] ?? 'Save image',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
           ],
         ),
       ),
@@ -348,7 +364,10 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
     }));
   }
 
-  Future<void> _export() async {
+  /// The reader asked to KEEP a copy rather than to hand it to
+  /// somebody. Same picture, same capture; it just never opens a share
+  /// sheet — see `VerseCardExport.save`.
+  Future<void> _export({bool saveOnly = false}) async {
     final locale = context.read<AppSettings>().locale;
     // Capture BEFORE the busy state goes up, and this ordering is
     // load-bearing rather than tidy. `setState` rebuilds the card
@@ -365,11 +384,14 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
       return;
     }
     setState(() => _busy = true);
-    final outcome = await VerseCardExport.deliver(
-      png: png,
-      fileName: verseCardFileName(widget.reference),
-      shareText: widget.shareText,
-    );
+    final fileName = verseCardFileName(widget.reference);
+    final outcome = saveOnly
+        ? await VerseCardExport.save(png: png, fileName: fileName)
+        : await VerseCardExport.deliver(
+            png: png,
+            fileName: fileName,
+            shareText: widget.shareText,
+          );
     if (!mounted) return;
     setState(() => _busy = false);
     _report(locale, outcome);
@@ -381,6 +403,10 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
     if (outcome == VerseCardDelivery.shared ||
         outcome == VerseCardDelivery.downloaded ||
         outcome == VerseCardDelivery.savedToFile) {
+      // `openedInTab` is deliberately NOT here: the reader still has to
+      // long-press the picture in the tab that just opened, and closing
+      // this sheet would take away the card they may want to try again
+      // from.
       if (mounted) Navigator.of(context).maybePop();
     }
   }
@@ -396,6 +422,11 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
       case VerseCardDelivery.downloaded:
         message =
             uiStrings['verseCardDownloaded']?[locale] ?? 'Image downloaded';
+      case VerseCardDelivery.openedInTab:
+        message = uiStrings['verseCardOpenedInTab']?[locale] ??
+            'Opened in a new tab — press and hold the picture to save it.';
+        icon = Icons.info_outline_rounded;
+        background = scheme.inverseSurface;
       case VerseCardDelivery.savedToFile:
         final path = VerseCardExport.lastSavedPath ?? '';
         message = (uiStrings['verseCardSavedTo']?[locale] ?? 'Saved to {path}')

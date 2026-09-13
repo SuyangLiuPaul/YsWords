@@ -46,11 +46,26 @@ abstract class VerseCardExport {
   /// Null on every other outcome.
   static String? get lastSavedPath => impl.lastSavedPath;
 
+  /// Put [png] on the device, without going through a share sheet.
+  ///
+  /// The sheet offers this BESIDE the share button on platforms that
+  /// have both, because "share" and "keep a copy" are two different
+  /// wants and a reader who has the second one should not have to go
+  /// hunting for it inside somebody else's share sheet.
+  static Future<VerseCardDelivery> save({
+    required Uint8List png,
+    required String fileName,
+  }) async =>
+      impl.saveImage(png: png, fileName: fileName);
+
   /// Deliver [png] to the reader by the best route this platform has.
   ///
-  /// [shareText] rides along on the share-sheet route only — several
-  /// targets (Mail, Messages) show it beside the image, and the ones
-  /// that do not simply ignore it. It is never written to disk.
+  /// [shareText] is used by the NATIVE route only. The web route
+  /// deliberately shares the file on its own: iOS treats a share
+  /// carrying both a file and text as a text share with an attachment
+  /// and withholds its image actions, which is how a reader ends up
+  /// with a share sheet that cannot save the picture. Nothing is lost
+  /// — the verse and its reference are rendered into the card.
   static Future<VerseCardDelivery> deliver({
     required Uint8List png,
     required String fileName,

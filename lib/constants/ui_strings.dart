@@ -8626,4 +8626,12 @@ const uiStrings = {
     'zh-Hant': '沒有儲存成功，請稍後再試。',
     'en': 'Could not save it. Try again in a moment.',
   },
+  // 2026-09-13: iOS Safari ignores `download` on a blob URL and opens
+  // the image instead. Saying "Image downloaded" there sends the reader
+  // to look in Files for a file that is not on the device.
+  'verseCardOpenedInTab': {
+    'zh-Hans': '已在新分页打开——长按图片即可存到相册。',
+    'zh-Hant': '已在新分頁開啟——長按圖片即可存到相簿。',
+    'en': 'Opened in a new tab — press and hold the picture to save it.',
+  },
 };

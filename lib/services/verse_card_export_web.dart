@@ -65,6 +65,15 @@ String? _lastSavedPath;
 /// its own wording.
 String? get lastSavedPath => _lastSavedPath;
 
+/// The download route on its own, for the sheet's explicit "save"
+/// action. Kept separate from [deliverImage] because a reader who asks
+/// to SAVE must not be handed a share sheet instead.
+VerseCardDelivery saveImage({
+  required Uint8List png,
+  required String fileName,
+}) =>
+    _download(png, fileName);
+
 Future<VerseCardDelivery> deliverImage({
   required Uint8List png,
   required String fileName,
@@ -77,8 +86,20 @@ Future<VerseCardDelivery> deliverImage({
         fileName,
         web.FilePropertyBag(type: 'image/png'),
       );
+      // The FILE ALONE — no `text` beside it.
+      //
+      // 2026-09-13, owner-reported: the share sheet came up and had no
+      // way to keep the picture. iOS treats a share carrying both a
+      // file and text as a TEXT share with an attachment, and its
+      // image actions — 存储图像 / Save Image / Add to Photos — are not
+      // offered for one. Sharing the file on its own gets the image
+      // sheet, which has them.
+      //
+      // Nothing is lost by dropping it: the verse, its reference and
+      // its edition are all rendered INTO the card. The text was a
+      // second copy of what the reader is already looking at.
       await web.window.navigator
-          .share(web.ShareData(files: <web.File>[file].toJS, text: shareText))
+          .share(web.ShareData(files: <web.File>[file].toJS))
           .toDart;
       return VerseCardDelivery.shared;
     } catch (error) {
@@ -92,6 +113,28 @@ Future<VerseCardDelivery> deliverImage({
     }
   }
   return _download(png, fileName);
+}
+
+/// iOS Safari, and every iPadOS browser — they are all WebKit, and
+/// they all behave the same way about `<a download>`.
+///
+/// User-agent sniffing, which is normally the wrong tool. There is no
+/// feature to detect here: the anchor click succeeds on both platforms
+/// and the difference is what the browser then DOES with it, which is
+/// not observable from the page. The alternative is to describe the
+/// outcome wrongly on one platform or the other.
+bool _isIosSafari() {
+  try {
+    final nav = web.window.navigator;
+    final ua = nav.userAgent;
+    final ios = ua.contains('iPhone') || ua.contains('iPad');
+    // iPadOS 13+ reports a desktop Mac UA; the touch points give it
+    // away, since no real Mac has any.
+    final iPadOsDesktop = ua.contains('Macintosh') && nav.maxTouchPoints > 0;
+    return ios || iPadOsDesktop;
+  } catch (_) {
+    return false;
+  }
 }
 
 bool _isAbort(Object? error) {
@@ -123,7 +166,14 @@ VerseCardDelivery _download(Uint8List png, String fileName) {
       // no element left behind if anything below throws.
       ..style.display = 'none';
     anchor.click();
-    return VerseCardDelivery.downloaded;
+    // iOS Safari ignores `download` on a blob URL and OPENS the image
+    // instead. That is still a route to keeping it — long-press the
+    // picture — but it is not a download, and saying "Image
+    // downloaded" would send the reader to look in Files for a file
+    // that is not there.
+    return _isIosSafari()
+        ? VerseCardDelivery.openedInTab
+        : VerseCardDelivery.downloaded;
   } catch (_) {
     return VerseCardDelivery.failed;
   } finally {

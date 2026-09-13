@@ -23,6 +23,16 @@ enum VerseCardDelivery {
   /// Downloaded through the browser.
   downloaded,
 
+  /// Opened in a new tab instead of being written to Downloads.
+  ///
+  /// iOS Safari's answer to `<a download>` on a blob URL: it shows the
+  /// PNG rather than saving it, and the reader saves it from there with
+  /// a long press. Telling them "Image downloaded" on that platform is
+  /// a lie they will act on — they would go looking in Files for
+  /// something that is not there — so it is its own outcome with its
+  /// own wording.
+  openedInTab,
+
   /// Written to a real path on disk. `VerseCardExport.lastSavedPath`
   /// holds it.
   savedToFile,
