@@ -61,6 +61,15 @@ the `# YsWords export` / `YsWords.json` format markers — an old backup
 must import into the renamed app. AI features say "AI", never the app
 name. On Android the apostrophe must reach values.xml escaped (\').
 
+## 2026-09-13 — the projector opens on a selection; play-all warms the next song; copy can drop the CUV's notes
+
+Dev + qat **1.5.24** (`176bba96`); prod stays on 1.5.22 pending the owner's word.
+
+- **Projector.** A Project button on the reader's selection bar puts one verse or a contiguous block on the wall; the cursor carries a count and "next" continues from the block's end. A Settings card beside Copy sets type size, ground, the companion switch, and — the pairing the owner asked for — which English edition sits beside a Chinese passage and which Chinese beside an English one (`projectionCompanions`, one JSON key per language family; the page resolves through it, then the last edition chosen at the wall, then the split-view seed). A real `ProjectionStage` in a 16:9 box is the preview. The setup persists; `blank` does not. Review defects closed: a superseded second-edition load commits nothing (request id); chords fall through to the browser; `OverflowHintScroll` derives its chevron from the colour it fades into.
+- **Player, from the car.** 「播放全部…第一个歌完了不会自动播放下一首」: the handler asks the engine to warm the next track 20 s before the end; the web engine loads it into a second `<audio>` element (unlocked on the first gesture play) and swaps it in at `ended`, so nothing is fetched while iOS has the page suspended. Native `preload` is an honest no-op. 「随机播放第一首总是第一首歌」: shuffle pins the current item only while something is actually playing or a row was tapped. The now-playing bar drops the title it could not show (「正…」).
+- **Copy.** A switch beside the copy format leaves out the full-width-parenthesis translators' notes (1,215 CUV verses); every copy path and the preview honour it; ASCII parentheses stay, since they are scripture in the English editions.
+- **Not yet, and on the owner:** register the release cert SHA-1 `5fd008e7…` in Firebase — the Mi Pad's Google Sign-In fails until then ("error while trying to get your package certificate hash"); uninstall the pre-2026-09-09 build once before installing a GitHub build.
+
 ## 2026-09-09 — the update arrives in the app, and the history is in the app
 
 The owner asked two things in one breath: 「wordssword要跳出去 可以只在app里面吗」
@@ -242,9 +251,9 @@ direction it defends.
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.12** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.12** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn`, **`yahwehword.com`** | **1.5.12** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.24** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.24** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn`, **`yahwehword.com`** | **1.5.22** | ⛔ never without explicit permission **in the current turn** |
 
 `yahwehword.com` is not a fourth tier — it is a custom domain on the
 prod site, so it moves when prod moves and serves the same `version.json`.
