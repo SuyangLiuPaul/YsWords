@@ -652,6 +652,69 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('tapping the AM 4038 "+2" chip opens its own sheet, not '
+        "the AM 4036 tie's", (tester) async {
+      // AM 4036 (a "+6" chip) and AM 4038 (a "+2" chip) are two years
+      // apart, which is 8 pt of separation at this viewport's density —
+      // narrower than either chip's own drawn width. Before the chips
+      // were packed, both were drawn content-sized with no collision
+      // check, and the AM 4036 chip's fixed 18 pt hit box (unrelated to
+      // its actual drawn width) reached well into the AM 4038 chip's
+      // visible pixels, so a tap that looked like it landed on "+2"
+      // resolved to the AM 4036 tie instead.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: const Size(402, 874));
+      await viewAt(tester, 4036, years: 100);
+
+      final sixChip = find.bySemanticsLabel(RegExp(r'^\+6$'));
+      expect(sixChip, findsOneWidget);
+      final sixX = tester.getCenter(sixChip).dx;
+
+      // AM 4000, 4029 and 4038 each carry a pair — three "+2" chips in
+      // this window. AM 4038 is the only one of the three AFTER AM 4036
+      // (4000 and 4029 both precede it), so it is uniquely identifiable
+      // as whichever "+2" chip sits closest to the right of "+6",
+      // without relying on any particular packing implementation.
+      final twoChips = find.bySemanticsLabel(RegExp(r'^\+2$'));
+      expect(twoChips, findsNWidgets(3),
+          reason: 'AM 4000, 4029 and 4038 each carry a pair');
+      Finder? target;
+      var bestDx = double.infinity;
+      for (var i = 0; i < 3; i++) {
+        final f = twoChips.at(i);
+        final dx = tester.getCenter(f).dx - sixX;
+        if (dx > 0 && dx < bestDx) {
+          bestDx = dx;
+          target = f;
+        }
+      }
+      expect(target, isNotNull,
+          reason: 'no "+2" chip sits to the right of the AM 4036 "+6" chip '
+              '— AM 4038 should be there');
+
+      await tester.tap(target!, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text("Paul's Conversion on Damascus Road"),
+        ),
+        findsOneWidget,
+        reason: 'tapping the AM 4038 chip should open the AM 4038 sheet',
+      );
+      expect(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('Triumphal Entry'),
+        ),
+        findsNothing,
+        reason: 'the AM 4036 sheet must not open when the AM 4038 chip is '
+            'tapped',
+      );
+      handle.dispose();
+    });
+
     testWidgets('every drawn event label is its own accessibility node, '
         'not one merged utterance for the whole lane', (tester) async {
       // 2026-09-09, residual #2 of the "left open, deliberately" note on
@@ -1485,6 +1548,74 @@ void main() {
       final edge = buckets.where((b) => lefts[b.first] == plotWidth - 5);
       expect(edge.length, 1);
       expect(edge.first, hasLength(1));
+    });
+
+    test('the chip packer never lets two "+N" chips overlap', () {
+      // Measured off the real corpus, not synthesized: AM 4036 (a "+6"
+      // chip) and AM 4038 (a "+2" chip) are two years apart, which is
+      // 8 pt of anchor separation at this lane's default zoom — well
+      // inside the width of either chip. Reproduced with the same
+      // numbers the widget test below exercises live.
+      const gap = 2.0;
+      const lefts = [0.0, 8.0];
+      const widths = [22.0, 16.0]; // "+6" then "+2", padded
+      final plan = chronologyChipPlan(
+        lefts: lefts,
+        widths: widths,
+        plotWidth: 400,
+      );
+      expect(plan, hasLength(2));
+      expect(plan[0].left, lefts[0], reason: 'the leftmost chip never moves');
+      expect(plan[1].left, greaterThanOrEqualTo(plan[0].left + plan[0].width),
+          reason: 'the second chip must clear the first, not sit under it');
+      expect(plan[1].left - lefts[1], greaterThanOrEqualTo(0),
+          reason: 'a chip is only ever pushed right, never left of its own '
+              'anchor');
+      // And a comfortable gap survives the push, not just zero overlap.
+      expect(plan[1].left, plan[0].left + plan[0].width + gap);
+    });
+
+    test('the chip packer never reorders ties, never overlaps two chips, '
+        'and never pushes a chip left of its own anchor', () {
+      final rnd = <double>[
+        for (var i = 0; i < 40; i++) i * 11.0 + (i % 5) * 3,
+      ];
+      final widths = <double>[
+        for (var i = 0; i < 40; i++) 14.0 + (i % 4) * 6,
+      ];
+      final plan = chronologyChipPlan(
+        lefts: rnd,
+        widths: widths,
+        plotWidth: 900,
+      );
+      // Order along x is preserved: the plan comes back sorted by the
+      // original anchor, and a later tie is never pushed ahead of an
+      // earlier one.
+      for (var i = 1; i < plan.length; i++) {
+        expect(rnd[plan[i].cluster], greaterThanOrEqualTo(rnd[plan[i - 1].cluster]));
+      }
+      // No two placed chips overlap.
+      for (var i = 1; i < plan.length; i++) {
+        expect(plan[i].left, greaterThanOrEqualTo(plan[i - 1].left + plan[i - 1].width - 0.01));
+      }
+      // A chip is never pushed left of its own anchor.
+      for (final s in plan) {
+        expect(s.left, greaterThanOrEqualTo(rnd[s.cluster] - 0.01));
+      }
+    });
+
+    test('the chip packer shrinks, but still places, a chip that runs off '
+        'the plot rather than dropping it silently', () {
+      final plan = chronologyChipPlan(
+        lefts: const [390.0],
+        widths: const [30.0],
+        plotWidth: 400,
+      );
+      expect(plan, hasLength(1),
+          reason: 'a same-year tie the reader cannot tap is worse than one '
+              'drawn a little narrow — it must still be placed');
+      expect(plan.first.width, lessThan(30.0));
+      expect(plan.first.left + plan.first.width, lessThanOrEqualTo(400.0));
     });
 
     testWidgets('an event label on screen is not ellipsised — the '

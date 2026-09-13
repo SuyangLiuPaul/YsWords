@@ -126,6 +126,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
   static const double _foldFontSize = 10;
   static const double _rulerFontSize = 10;
   static const double _eraFontSize = 10;
+  static const double _chipFontSize = 8.5;
 
   /// A folded run of lifeline rows: 8 pt of padding plus 1.8 pt per bar
   /// it stands in for, so the band's HEIGHT still reports how many rows
@@ -1632,6 +1633,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
     // can open the one the reader touched rather than the one nearest in
     // x. See the hit test below for why this list has to exist.
     final labelHits = <(Rect, VoidCallback)>[];
+    // Chip hits are collected separately and prepended below, not
+    // appended here: a chip is painted OVER any label whose inflated hit
+    // box reaches into its band (see the chip loop's tail), and hit
+    // priority has to match paint priority or a tap on visible chip
+    // pixels can resolve to the label hiding under them.
+    final chipHits = <(Rect, VoidCallback)>[];
     for (final c in plan) {
       labelHits.add((
         Rect.fromLTWH(
@@ -1697,23 +1704,51 @@ class _ChronologyChartState extends State<ChronologyChart> {
     // the time the packer gives up on it every row already has SOME
     // other label's box passing through that x, and there is nowhere in
     // the rows themselves left to put a chip without covering one up.
-    for (final bucket in clusters) {
-      final x = lefts[bucket.first];
-      final n = bucket.length;
-      final chipLabel =
-          _s('chronologyMoreEvents', '+{n}').replaceAll('{n}', '$n');
+    //
+    // Each chip anchors to its tie's own x, content-sized — but two ties
+    // can anchor close enough together (two years apart is 8 pt at this
+    // lane's default zoom) that their unsized boxes paint on top of each
+    // other, and the reader loses whichever one lands underneath. So the
+    // strip gets the same treatment the label rows already have: measure
+    // every chip's real drawn width first, then hand the anchors and
+    // widths to [chronologyChipPlan], a one-row packer that nudges a
+    // chip right only as far as clearing its left neighbour requires.
+    final chipTexts = [
+      for (final bucket in clusters)
+        _s('chronologyMoreEvents', '+{n}').replaceAll('{n}', '${bucket.length}'),
+    ];
+    const chipStyle = TextStyle(
+      fontSize: _chipFontSize,
+      fontWeight: FontWeight.w700,
+    );
+    const chipPadding = 4.0; // EdgeInsets.symmetric(horizontal: 2), both sides
+    final chipWants = [
+      for (final t in chipTexts) _measure(t, chipStyle) + chipPadding,
+    ];
+    final chipLefts = [for (final bucket in clusters) lefts[bucket.first]];
+    final chipPlan = chronologyChipPlan(
+      lefts: chipLefts,
+      widths: chipWants,
+      plotWidth: plotWidth,
+    );
+    for (final slot in chipPlan) {
+      final bucket = clusters[slot.cluster];
+      final chipLabel = chipTexts[slot.cluster];
+      void onTapChip() => _showClusterSheet(
+            context,
+            [for (final i in bucket) candidates[i]],
+          );
       labels.add(Positioned(
-        left: x,
+        key: ValueKey('chronoClusterChip_${candidates[bucket.first].am}'),
+        left: slot.left,
         top: 0,
+        width: slot.width,
         height: 13,
         child: Semantics(
           label: chipLabel,
           button: true,
           excludeSemantics: true,
-          onTap: () => _showClusterSheet(
-            context,
-            [for (final i in bucket) candidates[i]],
-          ),
+          onTap: onTapChip,
           child: DecoratedBox(
             decoration: BoxDecoration(
               // The dimmed idiom the fold chip already uses in the name
@@ -1730,9 +1765,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 softWrap: false,
-                style: TextStyle(
-                  fontSize: 8.5,
-                  fontWeight: FontWeight.w700,
+                style: chipStyle.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.75),
                 ),
               ),
@@ -1740,14 +1773,33 @@ class _ChronologyChartState extends State<ChronologyChart> {
           ),
         ),
       ));
-      labelHits.add((
-        Rect.fromLTWH(x, 0, _scaler.scale(18), 13),
-        () => _showClusterSheet(
-          context,
-          [for (final i in bucket) candidates[i]],
-        ),
+      // The chip's own real box — final packed x, actual drawn width —
+      // not the old fixed `_scaler.scale(18)`, which was already wrong
+      // for a "+10"-and-up label and, worse, had nothing to do with
+      // where the packer just decided to put this one.
+      chipHits.add((
+        Rect.fromLTWH(slot.left, 0, slot.width, 13),
+        onTapChip,
       ));
     }
+    // Chips are checked before per-label hits, matching paint order
+    // (chip widgets are appended to `labels` after the per-label ones,
+    // so they draw on top of anything they overlap). Without this, a
+    // same-x PARTIAL tie — one candidate seated at row 0, the rest
+    // folded into a chip — sends a tap on the chip's own bottom 2 pt to
+    // the row-0 label instead: that label's hit rect starts at y 13 and
+    // is inflated by 2 for a comfortable touch target, so its top edge
+    // reaches y 11, into the chip's y 0–13 band at the same x. (The
+    // connector guide below (`if (c.row > 0)`) was cleared of the same
+    // suspicion by measurement, not guesswork — it sits at `left - 3`,
+    // width 0.8, so it never shares an x with the chip's box at all; the
+    // two are merely adjacent, not overlapping.) Not reachable by either
+    // real tie checked in the test file (AM 2558 and AM 4036 both drop in
+    // full, never partially, at the viewports tested), so this is a
+    // defence for a shape of tie no current viewport produces — cheap
+    // enough, and provably correct by paint order, to fix outright
+    // rather than leave open a second time.
+    labelHits.insertAll(0, chipHits);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -2747,6 +2799,64 @@ List<List<int>> chronologyLabelClusters({
     byLeft.putIfAbsent(lefts[i], () => <int>[]).add(i);
   }
   return byLeft.values.toList();
+}
+
+/// One "+N" chip [chronologyChipPlan] has decided to draw, and where.
+///
+/// [cluster] is the index of the bucket this slot came from in the list
+/// of clusters the caller passed in — not an index into any candidate
+/// list, since a cluster already stands for several candidates at once.
+@visibleForTesting
+class ChronologyChipSlot {
+  final int cluster;
+  final double left;
+  final double width;
+
+  const ChronologyChipSlot({
+    required this.cluster,
+    required this.left,
+    required this.width,
+  });
+}
+
+/// Packs the tick strip's "+N" chips into one row, left to right.
+///
+/// Each chip wants to sit at its tie's own x — that is what tells the
+/// reader which year it summarises — but two ties close enough together
+/// anchor their content-sized boxes close enough to overlap: at this
+/// lane's default zoom, two years apart is 8 pt, well inside the width
+/// of even a two-digit chip. A chip is pushed right only as far as
+/// clearing the chip immediately to its left requires, and never past
+/// where it started — so a lone chip, or the leftmost of a crowd, never
+/// moves. Order along x is preserved throughout: nothing here reorders
+/// a later tie ahead of an earlier one.
+///
+/// A chip that still has nowhere to go once it reaches the right edge
+/// of the plot is shrunk to whatever room is left, the same way
+/// [chronologyLabelPlan] shrinks an end-of-axis label — cut by the axis,
+/// not by a neighbour, and never simply dropped: a same-year tie the
+/// reader cannot tap is worse than one drawn a little narrow.
+@visibleForTesting
+List<ChronologyChipSlot> chronologyChipPlan({
+  required List<double> lefts,
+  required List<double> widths,
+  required double plotWidth,
+  double gap = 2,
+}) {
+  final order = List<int>.generate(lefts.length, (i) => i)
+    ..sort((a, b) => lefts[a].compareTo(lefts[b]));
+  final out = <ChronologyChipSlot>[];
+  var lastRight = double.negativeInfinity;
+  for (final i in order) {
+    final desired = lefts[i];
+    final left = desired < lastRight + gap ? lastRight + gap : desired;
+    if (left >= plotWidth) break; // this and everything after it is off
+    final room = (plotWidth - left).clamp(1.0, double.infinity);
+    final width = widths[i] < room ? widths[i] : room;
+    out.add(ChronologyChipSlot(cluster: i, left: left, width: width));
+    lastRight = left + width;
+  }
+  return out;
 }
 
 /// The one glyph that separates a counted year from a placed one:

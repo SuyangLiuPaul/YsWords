@@ -11479,6 +11479,14 @@ has never seen this repo.
       `GetMaterialApp` → `.router` migration branch, or close this as
       "won't fix"?
 
+      **Deferred a twelfth consecutive iteration, 2026-09-14** — this
+      hour's NEXT_TASK.md picked the chronology chart's "+N" chip-overlap
+      fix instead (`queue:13090`, P2, hour-sized). Still branch-scale,
+      still unattended-unsafe, still the only fully open P2 checkbox, and
+      the question above to the user is still unanswered: start the
+      `GetMaterialApp` → `.router` migration branch, or close this as
+      "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -13333,6 +13341,76 @@ has never seen this repo.
       the top few pixels. Not reached by the two real ties checked
       (AM 2558 and AM 4036 both drop in full at the viewports tested),
       so not chased on a guess.
+
+      **2026-09-14 — the "+N" chips themselves could overlap each
+      other, and the connector note above turned out to name the wrong
+      geometry.** Two DIFFERENT same-year ties close enough together in
+      time anchor their chips close enough in x to collide: AM 4036 (a
+      "+6" chip, six Passion-week events) and AM 4038 (a "+2" chip,
+      Stephen's martyrdom and Paul's conversion) are two years apart,
+      which is only 8 pt of separation at this lane's default zoom —
+      narrower than either chip's own drawn width. The chip loop did no
+      packing at all across buckets: each was `Positioned(left:
+      lefts[bucket.first], top: 0, height: 13)` with no explicit width
+      (content-sized) and no collision check, so the later chip painted
+      over the earlier one, and the tap went to the wrong sheet — the
+      chip hit rect was a hard-coded `_scaler.scale(18)`, unrelated to
+      the chip's actual drawn width, and `labelHits` was scanned
+      first-match-wins with entries in ascending-`am` order, so a tap on
+      the visible AM 4038 "+2" could be claimed by AM 4036's oversized
+      rect. Reproduced red before fixed: a widget test taps whichever
+      "+2" chip sits to the right of "+6" (geometry-based, not relying
+      on any particular packing) and asserted the AM 4038 sheet opened —
+      it failed against the pre-fix code (0 matches for "Paul's
+      Conversion on Damascus Road", the AM 4036 sheet opened instead)
+      and passes now. A refuter checked this account, plus the
+      corrected `_maxDensity` figure below, against the source directly
+      and confirmed all of it.
+      Fixed by packing, not nudging: `chronologyChipPlan`
+      (`chronology_chart.dart`, beside `chronologyLabelClusters`) is a
+      pure, `@visibleForTesting`, one-row left-to-right packer — a chip
+      keeps its own anchor unless an earlier chip's box would run into
+      it, in which case it is pushed just clear, never reordered past
+      it, and never moved left of its own anchor. A chip that still has
+      nowhere to go at the plot's right edge is shrunk to the room left,
+      the same way `chronologyLabelPlan` handles an end-of-axis label,
+      rather than silently dropped. Both the draw and the hit rect now
+      come from the same plan output, so the hit box is always the
+      chip's real packed x and real drawn width.
+      **The "left open" connector note above was chasing the wrong
+      geometry, and this pass measured rather than guessed a second
+      time.** The connector (`left - 3`, width 0.8) and a same-x chip
+      (`left`, width ≥ 0) genuinely cannot overlap in x — confirmed by
+      the refuter independently. The real partial-tie hazard is a
+      hit-test one, unrelated to the connector: a row-0 label's hit rect
+      starts at y 13, and `onTapDown`'s `.inflate(2)` pulls its top edge
+      up to y 11 — into the chip's own y 0–13 band at the same x, when a
+      tie is placed in part and dropped in part. Row ≥ 1 can't reach
+      back that far (`_labelRowPitch` floors at 12, so its inflated top
+      is always ≥ 23). Fixed by checking chip hit rects before per-label
+      ones — matching paint order, since chips are appended to the
+      widget list after labels and so already draw on top of them — so
+      a tap on a chip's own pixels can no longer resolve to a label
+      hiding underneath. Not reachable by either real tie checked (AM
+      2558 and AM 4036 both still drop in full, never partially, at the
+      viewports this file tests), so this is a defence for a tie shape
+      no current viewport produces, closed by construction rather than
+      by a new regression test.
+      Also corrected in passing: the note that motivated this pass
+      called 4 pt/yr "the chart's deepest zoom." That was true once but
+      is stale — `_maxDensity` was deliberately raised from 4 to 16 in
+      an earlier round (documented at its own definition), specifically
+      because 4 pt/yr was too shallow to separate the New Testament's
+      crowded years. 4 pt/yr is merely the density the existing AM-4036
+      widget test happens to land on for a 100-year window on a 402 pt
+      phone, not any kind of ceiling. Recorded here since a stale
+      "ceiling" figure is exactly the kind of thing that would get
+      restated as fact in a later pass.
+      Tests: `test/bible_chronology_test.dart` gained three pure tests
+      for `chronologyChipPlan` (no overlap, order/anchor invariants
+      preserved, an off-the-edge chip is shrunk rather than dropped) and
+      one widget test for the AM 4036/4038 wrong-sheet case.
+      `flutter analyze` clean; full suite passed.
 
 - [x] **A sermon that would not play left its Listen button dead, because
       only songs caught `PlaybackBlockedException`.** Reported from a live
