@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "461522287670-ca52ao4gc494vr2abtch770ahdbt9gob.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.yswords",
+            "certificate_hash": "5fd008e7883ee6fe2c77e0cea7aaa78a5b66b12f"
+          }
+        },
+        {
           "client_id": "461522287670-cfu84qu501pdpgrvoj07gg6s7m7cb3lo.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
