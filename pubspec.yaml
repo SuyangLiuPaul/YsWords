@@ -197,6 +197,9 @@ flutter:
     - assets/app_icon.png
     - assets/loading.png
     - assets/fonts/
+    # Served to the projector's follower window on desktop — the same
+    # file the web build publishes. See projection_broadcast_io.dart.
+    - web/stage.html
     - assets/maps/
     - assets/maps_index.json
     - assets/cross_references.json

@@ -168,15 +168,36 @@
     fit(f.typeSize || 76);
   }
 
-  var channel = new BroadcastChannel('yswords-projection');
-  channel.onmessage = function (e) {
-    var f = e.data;
+  function onFrame(data) {
+    var f = data;
     if (typeof f === 'string') { try { f = JSON.parse(f); } catch (_) { return; } }
     if (!f || f.v !== 1) return;
     paint(f);
-  };
-  // A follower opened after the wall was already up asks for it.
-  channel.postMessage('hello');
+  }
+
+  // Two wires, one painter. On the web the app is another window of this
+  // same origin, so a BroadcastChannel needs no handle and no server. A
+  // native desktop has no such window — so the app serves this page from
+  // a loopback socket and names its WebSocket in ?ws=. Which wire is in
+  // use is decided by how the page was opened, never guessed.
+  var wsPath = new URLSearchParams(location.search).get('ws');
+  if (wsPath) {
+    var url = new URL(wsPath, location.href).href.replace(/^http/, 'ws');
+    (function connect() {
+      var sock = new WebSocket(url);
+      sock.onmessage = function (e) { onFrame(e.data); };
+      // The app is still up when a reload or a sleep drops this socket,
+      // and the operator is forty feet from the laptop. Reconnect rather
+      // than leave the wall frozen on the last frame.
+      sock.onclose = function () { setTimeout(connect, 1000); };
+    })();
+  } else {
+    var channel = new BroadcastChannel('yswords-projection');
+    channel.onmessage = function (e) { onFrame(e.data); };
+    // A follower opened after the wall was already up asks for it. The
+    // socket's own connect is the same handshake.
+    channel.postMessage('hello');
+  }
 
   window.addEventListener('resize', function () { if (last) paint(last); });
   // Any click toggles full screen; the cursor is hidden regardless.

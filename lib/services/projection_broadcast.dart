@@ -16,15 +16,19 @@
 // paints it. When a follower opens it says hello and the last frame is
 // re-sent, so opening the window late costs nothing.
 //
-// Web only. Native desktops keep the one-window design — the OS lets
-// the operator drag the window onto the projector, and nothing here is
-// needed. The stub keeps the symbols resolvable on every platform.
+// Native desktops get the same follower by a different wire: the app
+// serves that very page from a loopback socket and pushes the same
+// frames down a WebSocket — see `projection_broadcast_io.dart`, which
+// also says why a second Flutter window is not the answer there either.
+// Mobile keeps the one-window design, and the stub keeps the symbols
+// resolvable wherever neither half applies.
 //
 // This is the door `projection_page.dart` said it was leaving open,
 // walked through.
 
 import 'projection_broadcast_stub.dart'
-    if (dart.library.js_interop) 'projection_broadcast_web.dart';
+    if (dart.library.js_interop) 'projection_broadcast_web.dart'
+    if (dart.library.io) 'projection_broadcast_io.dart';
 
 /// What the follower paints. Plain data so it serialises as JSON and so
 /// a test can assert on it without a browser.

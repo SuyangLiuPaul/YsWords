@@ -52,6 +52,12 @@ void main() {
         reason: 'one channel name on both ends');
     expect(html.contains("postMessage('hello')"), isTrue,
         reason: 'a follower opened late asks for the current wall');
+    // The desktop wire, in the same file: one painter, two transports.
+    expect(html.contains('new WebSocket('), isTrue,
+        reason: 'a desktop has no second window to broadcast to');
+    expect(html.contains("get('ws')"), isTrue,
+        reason: 'which wire is in use is decided by how the page was '
+            'opened, never guessed');
     for (final key in ['verses', 'second', 'secondNote', 'ground', 'blank',
         'typeSize', 'reference', 'tags', 'ink', 'muted']) {
       expect(html.contains(key), isTrue, reason: 'stage.html reads $key');
@@ -68,10 +74,18 @@ void main() {
     expect(page.contains('ProjectionCommand.openStage'), isTrue);
   });
 
-  test('off the web, nothing is supported and nothing throws', () {
-    expect(ProjectionBroadcast.isSupported, isFalse,
-        reason: 'flutter test runs on the VM, which takes the stub');
-    ProjectionBroadcast.openStage();
+  test('off the web, a DESKTOP is supported and a phone is not', () {
+    // 2026-09-13: this used to read "nothing is supported off the web",
+    // which was true while the native half was a stub. A desktop now
+    // serves the same follower page over loopback — see
+    // `projection_broadcast_io.dart` and its own test — so what is
+    // asserted here is the rule, not the answer on this machine: a
+    // second display is a desktop's, and a phone has none to drag a
+    // window onto.
+    expect(
+      ProjectionBroadcast.isSupported,
+      Platform.isMacOS || Platform.isWindows || Platform.isLinux,
+    );
     ProjectionBroadcast.close();
   });
 }
