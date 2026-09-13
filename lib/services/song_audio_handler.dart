@@ -543,6 +543,10 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _loading = false;
     _broadcast();
     _publishMediaItem();
+    // The OS track list too. CarPlay and Android Auto read this one,
+    // and a dismissed player that still offers a list to jump around
+    // in is the same defect the metadata had.
+    unawaited(_publishQueue());
     notifyUi();
   }
 
@@ -783,7 +787,19 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
 
   void _publishMediaItem() {
     final item = _queue.current;
-    if (item == null) return;
+    // An empty queue publishes NULL, it does not return early.
+    //
+    // 2026-09-13, from the owner's iPhone lock screen: 「正在播放不是
+    // 不用了吗放在那里」 — a card for 良善的神, paused at 0:00, still
+    // sitting there after the player had been put away. `dismiss()`
+    // empties the queue and calls this, and this returned without
+    // touching `mediaItem`, so the OS kept the last metadata it was
+    // given. `playbackState` was already reporting `idle`; metadata is
+    // the half that draws the card, and nothing ever took it back.
+    if (item == null) {
+      mediaItem.add(null);
+      return;
+    }
     mediaItem.add(_toMediaItem(item));
   }
 
