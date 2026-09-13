@@ -177,7 +177,19 @@ void main() {
     // instead. That makes the tagged import agree with the reading text
     // in this verse for the first time, so it now qualifies for this
     // exact check.
-    expect(verified, 27307);
+    //
+    // 27,307 -> 27,311 (2026-09-13, fifth thaw): `tools/repair_by_
+    // official_cuv.py` fixed six word-order transpositions in
+    // `assets/cuvs-yhwh.json` (see `implied_coverage_census_test.dart`'s
+    // file header for the names and the mechanism). Five of the six now
+    // read in the order `assets/tagged/cuvs-yhwh/` already carried, so
+    // `joined(src[entry.key])` equals the Simplified reading text for the
+    // first time and they qualify for this check. The sixth, 撒母耳記上
+    // 1:7, only had its reading text repaired — the tagged import's own
+    // run still carries the pre-repair order — so the two now disagree
+    // and it drops out. Net +4, measured verse by verse rather than
+    // assumed from the count of verses touched.
+    expect(verified, 27311);
   });
 
   test('only the characters changed — every run boundary, number, implied '

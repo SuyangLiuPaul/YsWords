@@ -151,7 +151,17 @@ void main() {
     // corpus already uses for translator-supplied text with no
     // source-language counterpart (docs/autonomous-queue.md :2548,
     // closed). Retightened rather than left slack.
-    const known = 184;
+    //
+    // Re-measured 2026-09-13 (fifth thaw): 180, down from 184.
+    // `tools/repair_by_official_cuv.py` fixed six word-order
+    // transpositions in the reading asset (see
+    // `implied_coverage_census_test.dart`'s file header for the names).
+    // Five now read in the order the tagged import already carried and
+    // leave this list; 撒母耳記上 1:7 moves the other way — only the
+    // reading side was repaired, so its tagged run's own pre-repair order
+    // now disagrees with it — and enters. Net -4. Retightened rather than
+    // left slack, same as every prior pass.
+    const known = 180;
 
     final reading = <String, Map<String, String>>{};
     final rows =

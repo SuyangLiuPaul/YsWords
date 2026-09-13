@@ -19,21 +19,21 @@ import 'package:yswords/widgets/implied_coverage_line.dart';
 /// itself which numbers it would print:
 ///
 ///   * a verse whose tagged runs do not cover the reader's verse falls
-///     back to plain text and has no tap targets at all — 184 verses;
+///     back to plain text and has no tap targets at all — 180 verses;
 ///   * a run whose `i` only repeats its own `s`, names `H0`/`G0`, or
 ///     names something the lexicon cannot answer prints nothing;
 ///   * one tap shows one line, so the unit of gain is a RUN, not a pair.
 ///
 /// The answer is that the line is worth having and is also mostly
-/// silent: **22,692 of 30,918 rendered verses (73.4%)** hold at least
-/// one run that can print it, but **305,393 of 365,102 rendered runs
+/// silent: **22,696 of 30,922 rendered verses (73.4%)** hold at least
+/// one run that can print it, but **305,457 of 365,189 rendered runs
 /// (83.6%) gain nothing** — tapping those is exactly what it was
 /// before.
 ///
 /// Restricted to numbers the verse's own original really contains and
 /// that no run of the verse shows as `s` — the queue's question, asked
-/// on production's input — the gain is **39,557 pairs over 21,246
-/// verses**, against the queue's 39,868 / 21,390. The gap is the 184
+/// on production's input — the gain is **39,568 pairs over 21,249
+/// verses**, against the queue's 39,868 / 21,390. The gap is the 180
 /// fallen-back verses, the `i` entries that only repeat their run's own
 /// `s`, and the 7 untagged runs that carry an `i` and no tap target.
 /// Quote whichever figure you like, but say which one.
@@ -64,6 +64,27 @@ import 'package:yswords/widgets/implied_coverage_line.dart';
 /// rendered, 365,102 -> 365,021 runs, 22,692 -> 22,685 verses that gain,
 /// 39,557 -> 39,537 pairs over 21,246 -> 21,240 verses. Proportions still
 /// unmoved (a denominator seven verses smaller out of ~31,000).
+///
+/// **2026-09-13 (fifth thaw): net four fewer fallen back, and not in one
+/// direction.** `tools/repair_by_official_cuv.py` fixed six word-order
+/// transpositions in `assets/cuvs-yhwh.json` (撒母耳記上 1:7, 約翰福音
+/// 12:35, 約翰福音 16:4, 羅馬書 12:3, 以弗所書 4:22, 啟示錄 2:16) — see
+/// commit 91fb0538. Measured, not assumed, by diffing `coversVerse`
+/// verse by verse against the pre-thaw reading text: five of the six now
+/// read in the order the tagged corpus's `w` fields already carried, so
+/// `coversVerse` passes for them for the first time and all five enter
+/// the rendered set (97 runs). The sixth, 撒母耳記上 1:7, moves the other
+/// way — only the reading asset was repaired, and its tagged run's own
+/// `w` field still reads the PRE-repair order (`双分给哈拿以`) verbatim,
+/// so the two now disagree and the verse falls OUT of the rendered set
+/// (11 runs). Net: 184 -> 180 fallen back, 30,918 -> 30,922 rendered,
+/// 365,103 -> 365,189 runs (97 in, 11 out), 22,692 -> 22,696 verses that
+/// gain, 39,557 -> 39,568 pairs over 21,246 -> 21,249 verses. Proportions
+/// unmoved, same as every prior pass. 撒母耳記上 1:7's tagged run
+/// carrying the stale word order is a separate, real, and as of this
+/// writing UNFIXED defect in `assets/tagged/cuvs-yhwh/` — not opened as
+/// its own queue item yet, only mentioned in this fifth-thaw writeup;
+/// this file only measures what ships.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -204,7 +225,7 @@ void main() {
     }
   }
 
-  test('the sheet renders a tagged line on 30,911 verses', () {
+  test('the sheet renders a tagged line on 30,922 verses', () {
     expect(taggedVerses, 31102);
     expect(droppedMarkup, 0,
         reason: 'the markup repair cleared this class; a re-import that '
@@ -230,12 +251,19 @@ void main() {
     // Hebrew does not have. It went in as an untagged `"s": ""` run
     // instead, which makes `coversVerse` pass for the verse: the last of
     // the seven, and the item that closes docs/autonomous-queue.md :2548.
-    expect(droppedCoverage, 184,
+    //
+    // 184 -> 180 (2026-09-13, fifth thaw): see the file header. Five
+    // word-order repairs (約翰福音 12:35, 約翰福音 16:4, 羅馬書 12:3, 以弗所書
+    // 4:22, 啟示錄 2:16) newly match the tagged corpus's existing order and
+    // enter the rendered set; 撒母耳記上 1:7 leaves it, because its tagged
+    // run still carries the pre-repair order the reading asset no longer
+    // has.
+    expect(droppedCoverage, 180,
         reason: 'pinned independently by tagged_verse_coverage_test.dart');
-    expect(renderedVerses, 30918);
+    expect(renderedVerses, 30922);
   });
 
-  test('22,685 verses gain a line; 305,332 runs gain nothing', () {
+  test('22,696 verses gain a line; 305,457 runs gain nothing', () {
     // All five counts below are the same measurement over a rendered set
     // that is now 7 verses smaller — see the file note.
     // 365,102 -> 365,021: the 7 verses that fell out of the rendered set
@@ -251,12 +279,19 @@ void main() {
     // by 1 and runsThatGainNothing by 15 — measured, not assumed, because
     // most of the verse's runs already had an `i` that only repeats their
     // own `s`.
-    expect(renderedRuns, 365103);
-    expect(runsThatGain, 59709);
-    expect(runsThatGainNothing, 305394);
+    //
+    // 365,103 -> 365,189 (2026-09-13, fifth thaw): see the file header —
+    // 97 runs in from the five verses that entered the rendered set, 11
+    // out with 撒母耳記上 1:7. runsThatGain moves 59,709 -> 59,732 (+23)
+    // and runsThatGainNothing 305,394 -> 305,457 (+63); 23 + 63 = 86 = the
+    // net run change, measured over the actual rendered set rather than
+    // assumed from the verse count.
+    expect(renderedRuns, 365189);
+    expect(runsThatGain, 59732);
+    expect(runsThatGainNothing, 305457);
     expect(runsThatGain + runsThatGainNothing, renderedRuns,
         reason: 'every rendered run is in exactly one bucket');
-    expect(versesThatGain, 22692);
+    expect(versesThatGain, 22696);
     // 73.4% of rendered verses, 16.4% of rendered runs — unmoved to a
     // tenth of a percent, same as the last move: a denominator growing
     // by 1 out of ~31,000 does not touch the proportions.
@@ -264,7 +299,7 @@ void main() {
     expect(runsThatGain / renderedRuns, closeTo(0.164, 0.001));
   });
 
-  test('39,537 (verse, number) pairs become reachable, over 21,240 verses', () {
+  test('39,568 (verse, number) pairs become reachable, over 21,249 verses', () {
     // The queue's figures for the same question on the raw corpus are
     // 39,868 over 21,390. Lower here because 191 verses never render a
     // tap target and because an `i` that only repeats its run's own `s`
@@ -274,12 +309,18 @@ void main() {
     // taking their pairs with them. 39,537 -> 39,557 over 21,240 -> 21,246
     // (2026-09-09): 6 of the 7 came back.
     //
-    // Unmoved at 39,557 / 21,246 (2026-09-13), even though 士師記 15:13
-    // renders again: the new run is untagged (`"s": ""`) with no `i`, so
-    // it opens no new (verse, number) pair — it only lets the verse's
-    // other, already-tagged runs reach the screen again.
-    expect(newlyReachable.length, 39557);
-    expect(versesNewlyReachable.length, 21246);
+    // Unmoved at 39,557 / 21,246 (2026-09-13, 士師記 15:13's own repair),
+    // even though 士師記 15:13 renders again: the new run is untagged
+    // (`"s": ""`) with no `i`, so it opens no new (verse, number) pair —
+    // it only lets the verse's other, already-tagged runs reach the
+    // screen again.
+    //
+    // 39,557 -> 39,568 over 21,246 -> 21,249 (2026-09-13, fifth thaw):
+    // see the file header. The five newly-rendered verses bring their own
+    // (verse, number) pairs with them; 撒母耳記上 1:7 leaving takes its
+    // pairs out.
+    expect(newlyReachable.length, 39568);
+    expect(versesNewlyReachable.length, 21249);
     // 約翰福音 3:5, the verse the whole argument was conducted over: the
     // span repair promoted 神 to G2316 θεός and 的国。 to G932 βασιλεία,
     // which left G3588 ὁ reachable nowhere. It is reachable again.
@@ -292,7 +333,11 @@ void main() {
     // 7 verses that left the rendered set. 6,028 -> 6,031 (2026-09-09):
     // the three came back with the 6 restored verses. The ceiling did
     // not move either time.
-    expect(runsWithSeveralChips, 6031);
+    //
+    // 6,031 -> 6,032 (2026-09-13, fifth thaw): one more multi-chip run,
+    // net, among the 86 that moved with the six repaired verses. The
+    // ceiling still did not move.
+    expect(runsWithSeveralChips, 6032);
   });
 
   test('no number in the shipped corpus is a dead end', () {

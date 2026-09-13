@@ -266,7 +266,15 @@ void main() {
     // verse, matching `tagged_verse_coverage_test.dart`'s `known` and
     // `implied_coverage_census_test.dart`'s `droppedCoverage`, both
     // re-pinned the same way in the same commit.
-    expect(fallback, 184);
+    //
+    // 184 -> 180 (2026-09-13, fifth thaw): see `implied_coverage_census_
+    // test.dart`'s file header for the six word-order repairs and the
+    // mechanism. Five newly match the tagged import's order and pass the
+    // guard for the first time; 撒母耳記上 1:7 moves the other way — its
+    // tagged run still carries the pre-repair order the reading asset no
+    // longer has — and starts failing it. Net -4, same figure and same
+    // cause as `droppedCoverage` above.
+    expect(fallback, 180);
     // 1,149 -> 1,160. This census is dominated by the `<note: …>` / `〔…〕`
     // asymmetry rather than by scripture, so a rise here says the two sides
     // set their apparatus differently in eleven more verses than they did.
