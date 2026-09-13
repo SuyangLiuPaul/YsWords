@@ -81,10 +81,19 @@ import 'package:yswords/widgets/implied_coverage_line.dart';
 /// 365,103 -> 365,189 runs (97 in, 11 out), 22,692 -> 22,696 verses that
 /// gain, 39,557 -> 39,568 pairs over 21,246 -> 21,249 verses. Proportions
 /// unmoved, same as every prior pass. 撒母耳記上 1:7's tagged run
-/// carrying the stale word order is a separate, real, and as of this
-/// writing UNFIXED defect in `assets/tagged/cuvs-yhwh/` — not opened as
-/// its own queue item yet, only mentioned in this fifth-thaw writeup;
-/// this file only measures what ships.
+/// carrying the stale word order was a separate, real defect in
+/// `assets/tagged/cuvs-yhwh/` — filed as P1 (docs/autonomous-queue.md)
+/// and fixed the next day.
+///
+/// **2026-09-14: the 撒母耳記上 1:7 defect above is fixed.** The tagged
+/// run's `w` field was rewritten to `以利加拿都以雙分給哈拿` — the same
+/// characters, reordered to match the reading asset the fifth thaw
+/// already repaired; `s`/`i`/`g` untouched. `coversVerse` passes again,
+/// so the verse re-enters the rendered set: 180 -> 179 fallen back,
+/// 30,922 -> 30,923 rendered, 365,189 -> 365,200 runs (+11), 22,696 ->
+/// 22,697 verses that gain, 39,568 -> 39,569 (verse, number) pairs over
+/// 21,249 -> 21,250 verses. Proportions unmoved, same as every prior
+/// pass.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -258,9 +267,12 @@ void main() {
     // enter the rendered set; 撒母耳記上 1:7 leaves it, because its tagged
     // run still carries the pre-repair order the reading asset no longer
     // has.
-    expect(droppedCoverage, 180,
+    //
+    // 180 -> 179 (2026-09-14): 撒母耳記上 1:7's tagged run is corrected —
+    // see the file header — and the verse re-enters the rendered set.
+    expect(droppedCoverage, 179,
         reason: 'pinned independently by tagged_verse_coverage_test.dart');
-    expect(renderedVerses, 30922);
+    expect(renderedVerses, 30923);
   });
 
   test('22,696 verses gain a line; 305,457 runs gain nothing', () {
@@ -286,12 +298,17 @@ void main() {
     // and runsThatGainNothing 305,394 -> 305,457 (+63); 23 + 63 = 86 = the
     // net run change, measured over the actual rendered set rather than
     // assumed from the verse count.
-    expect(renderedRuns, 365189);
-    expect(runsThatGain, 59732);
-    expect(runsThatGainNothing, 305457);
+    //
+    // 365,189 -> 365,200 (2026-09-14): 撒母耳記上 1:7's 11 runs come back
+    // with the verse. runsThatGain moves 59,732 -> 59,733 (+1) and
+    // runsThatGainNothing 305,457 -> 305,467 (+10); 1 + 10 = 11, measured
+    // over the actual rendered set.
+    expect(renderedRuns, 365200);
+    expect(runsThatGain, 59733);
+    expect(runsThatGainNothing, 305467);
     expect(runsThatGain + runsThatGainNothing, renderedRuns,
         reason: 'every rendered run is in exactly one bucket');
-    expect(versesThatGain, 22696);
+    expect(versesThatGain, 22697);
     // 73.4% of rendered verses, 16.4% of rendered runs — unmoved to a
     // tenth of a percent, same as the last move: a denominator growing
     // by 1 out of ~31,000 does not touch the proportions.
@@ -319,8 +336,11 @@ void main() {
     // see the file header. The five newly-rendered verses bring their own
     // (verse, number) pairs with them; 撒母耳記上 1:7 leaving takes its
     // pairs out.
-    expect(newlyReachable.length, 39568);
-    expect(versesNewlyReachable.length, 21249);
+    //
+    // 39,568 -> 39,569 over 21,249 -> 21,250 (2026-09-14): 撒母耳記上 1:7
+    // re-enters and brings its pairs back.
+    expect(newlyReachable.length, 39569);
+    expect(versesNewlyReachable.length, 21250);
     // 約翰福音 3:5, the verse the whole argument was conducted over: the
     // span repair promoted 神 to G2316 θεός and 的国。 to G932 βασιλεία,
     // which left G3588 ὁ reachable nowhere. It is reachable again.

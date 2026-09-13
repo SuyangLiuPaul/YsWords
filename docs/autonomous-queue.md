@@ -8316,6 +8316,31 @@ has never seen this repo.
       opening the wrong chapter and tap targets are not shipping without the
       same verification the verse alignment got.
 
+- [x] **A thaw that repairs the reading asset must re-check the tagged
+      layer — second occurrence, 撒母耳記上 1:7, fixed 2026-09-14.**
+      Filed and closed in the same commit: the fifth thaw (91fb0538)
+      repaired `assets/cuvs-yhwh.json`'s word order for six verses but
+      only checked the tagged corpus (`assets/tagged/cuvs-yhwh/`)
+      against five of them; 撒母耳記上 1:7's tagged run kept the
+      pre-repair order (`双分给哈拿以`), so `coversVerse` failed and the
+      verse fell out of the rendered set, taking its 11 runs and the
+      reader's Strong's-tap line with it. Rewrote the one run's `w` to
+      `以利加拿都以双分给哈拿。` (`s`/`i`/`g` untouched, no run split or
+      added), regenerated `assets/tagged/cuvs-yhwh-tr/1_samuel.json` via
+      `tools/derive_tagged_traditional.py`, and re-pinned every test the
+      move touched to the suite's own measured output.
+      **This is the second time this class has shipped** — 士師記 15:13
+      (`40664abe`, the fourth thaw) was the first, a dropped word rather
+      than a reordering, but the same root cause: a reading-asset repair
+      that never re-ran against the separate tagged import. **The class
+      itself is still open** — nothing in `tools/repair_by_official_cuv.py`
+      or its siblings re-checks the tagged corpus after touching the
+      reading asset, so a sixth thaw can reintroduce a third instance.
+      Worth a guard (the repair script itself asserting `coversVerse`
+      still holds, or a standing test that diffs tagged-corpus word
+      order against the reading text for every verse the two share)
+      rather than catching each instance by hand.
+
 ## P2 — features the user asked for
 
 - [x] **The 福音电台 sermon library UI is dead code, still bundled.**

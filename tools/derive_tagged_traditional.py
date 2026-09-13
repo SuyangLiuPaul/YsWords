@@ -160,7 +160,11 @@ EXPECTED = {
     # tagged source as an untagged run (queue:2548) — the source layer
     # now agrees with the reading text character for character, so this
     # verse newly qualifies for the exact check.
-    'verified_exact': 27307,
+    # 27,312 once 撒母耳記上 1:7's word order was corrected in the
+    # Simplified tagged source (以利加拿都双分给哈拿以 -> 以利加拿都以双分
+    # 给哈拿) to match the fifth thaw's repair of the reading text — same
+    # class of bug as 士師記 15:13, second occurrence.
+    'verified_exact': 27312,
     # Characters resolved by step 3 above — in no table, passed through.
     'passthrough_chars': 29,
 }

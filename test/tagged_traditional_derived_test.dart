@@ -189,7 +189,12 @@ void main() {
     // run still carries the pre-repair order — so the two now disagree
     // and it drops out. Net +4, measured verse by verse rather than
     // assumed from the count of verses touched.
-    expect(verified, 27311);
+    //
+    // 27,311 -> 27,312 (2026-09-14): 撒母耳記上 1:7's tagged run is
+    // rewritten to `以利加拿都以雙分給哈拿` — the reading asset's own word
+    // order, same characters, `s`/`i`/`g` untouched — so the two agree
+    // again and the verse re-qualifies for this check.
+    expect(verified, 27312);
   });
 
   test('only the characters changed — every run boundary, number, implied '

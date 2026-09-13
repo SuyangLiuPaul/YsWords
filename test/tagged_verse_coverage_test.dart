@@ -161,7 +161,12 @@ void main() {
     // reading side was repaired, so its tagged run's own pre-repair order
     // now disagrees with it — and enters. Net -4. Retightened rather than
     // left slack, same as every prior pass.
-    const known = 180;
+    //
+    // Re-measured 2026-09-14: 179, down from 180. 撒母耳記上 1:7's tagged
+    // run was itself corrected to the repaired reading text's word order
+    // (以利加拿都以雙分給哈拿), so it leaves this list — same class of
+    // regression as 士師記 15:13, second occurrence. Retightened.
+    const known = 179;
 
     final reading = <String, Map<String, String>>{};
     final rows =

@@ -274,7 +274,10 @@ void main() {
     // tagged run still carries the pre-repair order the reading asset no
     // longer has — and starts failing it. Net -4, same figure and same
     // cause as `droppedCoverage` above.
-    expect(fallback, 180);
+    //
+    // 180 -> 179 (2026-09-14): 撒母耳記上 1:7's tagged run is corrected to
+    // match the reading asset's word order and passes the guard again.
+    expect(fallback, 179);
     // 1,149 -> 1,160. This census is dominated by the `<note: …>` / `〔…〕`
     // asymmetry rather than by scripture, so a rise here says the two sides
     // set their apparatus differently in eleven more verses than they did.
