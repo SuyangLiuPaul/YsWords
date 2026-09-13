@@ -982,6 +982,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
   String _formattedSelectedVerses({required List<Verse> verses}) {
     if (verses.isEmpty) return '';
     final settings = context.read<AppSettings>();
+    final strip = settings.copyStripParentheticals;
 
     int bookOrder(String book) {
       final en = toEnglish(book) ?? book;
@@ -1014,7 +1015,7 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       case 'withRef':
         return sorted
             .map((v) =>
-                '[${v.book} ${v.chapter}:${v.verseLabel}] ${sanitizeForCopy(v.text)}')
+                '[${v.book} ${v.chapter}:${v.verseLabel}] ${sanitizeForCopy(v.text, stripParentheticals: strip)}')
             .join('\n');
       case 'devotional':
         // 2026-05-17 (v1.2.48): join with a single space, not '\n'.
@@ -1023,13 +1024,13 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
         // "灵修模式不是一节一行而是全部都一起的". Settings preview
         // mirrors this in getDevotionalFormattedText().
         final versesText =
-            sorted.map((v) => sanitizeForCopy(v.text)).join(' ');
+            sorted.map((v) => sanitizeForCopy(v.text, stripParentheticals: strip)).join(' ');
         final range = formatVerseRangeLabels(sorted);
         return '$versesText\n(${first.book} ${first.chapter}:$range)';
       case 'plain':
       default:
         final body = sorted
-            .map((v) => '${v.verseLabel} ${sanitizeForCopy(v.text)}')
+            .map((v) => '${v.verseLabel} ${sanitizeForCopy(v.text, stripParentheticals: strip)}')
             .join('\n');
         return '${first.book} ${first.chapter}\n$body';
     }
@@ -1236,7 +1237,11 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
       context,
       reference:
           '${first.book} ${first.chapter}:${formatVerseRangeLabels(verses)}',
-      body: verses.map((v) => sanitizeForCopy(v.text)).join(' '),
+      body: verses
+          .map((v) => sanitizeForCopy(v.text,
+              stripParentheticals:
+                  context.read<AppSettings>().copyStripParentheticals))
+          .join(' '),
       version: version,
       versionLabel: shortBibleVersionLabel(version),
       shareText: _formattedSelectedVerses(verses: verses),
@@ -2477,6 +2482,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 mainProvider: mainProvider,
                                 settings: settings,
                               ),
+                              onProject: () => pushPage(ProjectionPage(
+                                  verses: mainProvider.selectedVerses.toList())),
                               onClear: mainProvider.clearSelectedVerses,
                               onHighlight: (color) {
                                 mainProvider.setHighlightsForVerses(
@@ -2957,6 +2964,9 @@ class _SelectionActionBar extends StatelessWidget {
   final VoidCallback onAiExplain;
   final VoidCallback onNote;
   final VoidCallback onBookmark;
+
+  /// Put the selection on the wall — see `ProjectionPage.verses`.
+  final VoidCallback onProject;
   /// True when at least one of the currently-selected verses is
   /// already bookmarked — so the star icon can render filled.
   final bool anyBookmarked;
@@ -2982,6 +2992,7 @@ class _SelectionActionBar extends StatelessWidget {
     required this.onAiExplain,
     required this.onNote,
     required this.onBookmark,
+    required this.onProject,
     required this.anyBookmarked,
     required this.anyNoted,
     required this.deviceClass,
@@ -3186,6 +3197,17 @@ class _SelectionActionBar extends StatelessWidget {
             uiStrings['verseCardAction']?[settings.locale] ?? 'Verse image',
         onPressed: onImage,
         icon: const Icon(Icons.image_outlined),
+        visualDensity: VisualDensity.standard,
+      ),
+      // 2026-09-13: 「按了verse之后有一个按键for projector 可以按一个或者
+      // 多个 然后就project」. Opens the projection ON the selection: one
+      // verse, or a contiguous block. Last in the row rather than first
+      // because most selections are copied or shared, and a room with a
+      // projector is the rarer place to be.
+      IconButton(
+        tooltip: uiStrings['projectSelection']?[settings.locale] ?? 'Project',
+        onPressed: onProject,
+        icon: const Icon(Icons.cast_outlined),
         visualDensity: VisualDensity.standard,
       ),
     ];
@@ -8341,7 +8363,10 @@ class _CrossRefsSheetBodyState extends State<_CrossRefsSheetBody> {
   /// not [_previewFor]'s output — the preview is sanitised for SEARCH,
   /// and the clipboard needs the copy sanitiser instead.
   String _copyTextFor(Iterable<BibleReference> refs, String locale) =>
-      formatRefListForCopy([
+      formatRefListForCopy(
+          stripParentheticals:
+              context.read<AppSettings>().copyStripParentheticals,
+          [
         for (final r in refs)
           (
             label: r.toString().replaceFirst(

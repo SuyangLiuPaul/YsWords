@@ -30,12 +30,16 @@ import 'package:yswords/constants/text_patterns.dart';
 /// verse index, and a bare reference is still worth pasting — dropping
 /// the row entirely would silently shorten the list instead.
 String formatRefListForCopy(
-  Iterable<({String label, String? rawText})> rows,
-) {
+  Iterable<({String label, String? rawText})> rows, {
+  bool stripParentheticals = false,
+}) {
   final out = <String>[];
   for (final row in rows) {
     final raw = row.rawText;
-    final clean = raw == null ? '' : sanitizeForCopy(raw).trim();
+    final clean = raw == null
+        ? ''
+        : sanitizeForCopy(raw, stripParentheticals: stripParentheticals)
+            .trim();
     out.add(clean.isEmpty ? '[${row.label}]' : '[${row.label}] $clean');
   }
   return out.join('\n');

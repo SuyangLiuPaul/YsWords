@@ -8533,4 +8533,49 @@ const uiStrings = {
     'zh-Hant': '{n} 項改動',
     'en': '{n} change',
   },
+  // 2026-09-13. Appended at the end per this file's convention. The copy
+  // toggle for the CUV's full-width-parenthesis translators' notes —
+  // filed here rather than beside `copyFormat` for the same reason every
+  // block below the first appended one is: several sessions edit this
+  // file at once.
+  'copyStripNotes': {
+    'zh-Hans': '复制时去掉括号里的译注',
+    'zh-Hant': '複製時去掉括號裡的譯註',
+    'en': "Leave out translators' notes",
+  },
+  'copyStripNotesHint': {
+    'zh-Hans': '和合本「（原文作…）」这类括号内的译注不会复制进去。',
+    'zh-Hant': '和合本「（原文作…）」這類括號內的譯註不會複製進去。',
+    'en': 'Notes in full-width parentheses, like （原文作…）, are not copied.',
+  },
+  // 2026-09-13. The projector, as the owner asked for it: a button on the
+  // selection bar, and a Settings card that decides how the wall looks
+  // and which edition keeps the passage company — 「像copy风格一样在
+  // setting里面」. Appended at the end per this file's convention.
+  'projectSelection': {'zh-Hans': '投影', 'zh-Hant': '投影', 'en': 'Project'},
+  'projectorSettings': {'zh-Hans': '投影', 'zh-Hant': '投影', 'en': 'Projector'},
+  'projectorSettingsHint': {
+    'zh-Hans': '在阅读页选中一节或多节经文，点「投影」就上墙。这里决定墙上是什么样子。',
+    'zh-Hant': '在閱讀頁選取一節或多節經文，點「投影」就上牆。這裡決定牆上是什麼樣子。',
+    'en': 'Select one or more verses in the reader and tap Project. '
+        'This is what the wall will look like.',
+  },
+  'projectorTypeSize': {'zh-Hans': '字号', 'zh-Hant': '字級', 'en': 'Type size'},
+  'projectorGround': {'zh-Hans': '背景', 'zh-Hant': '背景', 'en': 'Background'},
+  'projectorSecondOn': {
+    'zh-Hans': '同时显示对照版本',
+    'zh-Hant': '同時顯示對照版本',
+    'en': 'Show a companion edition',
+  },
+  'projectorCompanionForZh': {
+    'zh-Hans': '中文经文旁边显示',
+    'zh-Hant': '中文經文旁邊顯示',
+    'en': 'Beside a Chinese passage, show',
+  },
+  'projectorCompanionForEn': {
+    'zh-Hans': '英文经文旁边显示',
+    'zh-Hant': '英文經文旁邊顯示',
+    'en': 'Beside an English passage, show',
+  },
+  'projectorPreview': {'zh-Hans': '预览', 'zh-Hant': '預覽', 'en': 'Preview'},
 };

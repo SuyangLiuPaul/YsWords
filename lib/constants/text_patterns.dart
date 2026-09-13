@@ -112,6 +112,30 @@ String _normalizeDivineNames(String text) {
   return out;
 }
 
+/// 2026-09-13: the translators' notes the CUV sets in FULL-WIDTH
+/// parentheses — `（原文作活泼的）`, `（比拉就是琐珥）`, `（幔利就是希伯崙）`.
+///
+/// 1,215 verses of the Simplified CUV carry one. They are the edition's
+/// apparatus, not the verse: a note about what the Hebrew literally
+/// says, or which later name a place went by. On the page they help.
+/// Pasted into a sermon outline or a message they read as if the
+/// preacher wrote them, which is what the owner met — 「好像这里面有
+/// 原文（）」 — and asked to be able to leave out.
+///
+/// Full-width only, on purpose. ASCII parentheses are real text in the
+/// English editions (NASB and CSB both set clauses in them), and a
+/// Chinese edition never uses the ASCII pair for a note. Matching both
+/// would delete scripture to remove apparatus.
+///
+/// A behaviour, not a default: the reader chooses in Settings, beside
+/// the copy format, and the default keeps what every copy has always
+/// produced. `_collapsePostStripDuplicates` runs after this in both
+/// sanitisers, so `，（…）。` does not leave `，。` behind.
+final RegExp parentheticalNotePattern = RegExp(r'（[^（）]*）');
+
+String stripParentheticalNotes(String text) =>
+    text.replaceAll(parentheticalNotePattern, '');
+
 /// Strips popup-only annotation markup from verse text, returning
 /// clean readable text suitable for clipboard copy. Preserves the
 /// inner content of `{clarification}` and `[supplied]` brackets
@@ -128,7 +152,8 @@ String _normalizeDivineNames(String text) {
 /// most copy paths) now keep the inner phrase. `<note: …>` continues
 /// to be fully stripped because it's a separate popup, not inline
 /// verse text.
-String sanitizeVerseText(String text) {
+String sanitizeVerseText(String text, {bool stripParentheticals = false}) {
+  if (stripParentheticals) text = stripParentheticalNotes(text);
   return _collapsePostStripDuplicates(_normalizeDivineNames(text
           .replaceAll('\n', '')
           .replaceAll(notePattern, '')
@@ -165,7 +190,8 @@ String sanitizeForSearch(String text) {
 /// number-tap copy is even more strictly "one line"). `sanitizeForSearch`
 /// keeps `\n` (search indexes / library previews where line breaks
 /// are inert).
-String sanitizeForCopy(String text) {
+String sanitizeForCopy(String text, {bool stripParentheticals = false}) {
+  if (stripParentheticals) text = stripParentheticalNotes(text);
   return _collapsePostStripDuplicates(_normalizeDivineNames(text
           .replaceAll(notePattern, '')
           .replaceAllMapped(bracePattern, (m) => m.group(1) ?? '')

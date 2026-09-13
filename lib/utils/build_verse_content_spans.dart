@@ -91,7 +91,7 @@ List<InlineSpan> buildVerseContentSpans({
           onTextTap();
           return;
         }
-        final toCopy = '${verse.verseLabel} ${sanitizeVerseText(verse.text)}';
+        final toCopy = '${verse.verseLabel} ${sanitizeVerseText(verse.text, stripParentheticals: settings.copyStripParentheticals)}';
         final ok = await ClipboardHelper.copyText(toCopy);
         if (!context.mounted) return;
         final msg = ok
