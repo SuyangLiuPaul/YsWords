@@ -14209,6 +14209,38 @@ so the bundle-size answer stays on the record.
       `run.sh`/`prompt.md` under `~/Library/Application Support/
       yswords-loop/`, not here.
 
+      **Ninth recurrence, 2026-09-13 15:33:45–15:49:55.** Same `rc=0`
+      shape as the fifth/sixth/seventh: `run.log` records stage 2 ending
+      with *"Waiting for the full test suite to complete before
+      proceeding to commit,"* real work done (士師記 15:13's 以坦 spliced
+      into both tagged `judges.json` files, `tools/
+      derive_tagged_traditional.py` and three Dart tests re-pinned) and
+      nothing committed. **New aggravating factor, not present in the
+      7th or 8th:** this stage also ticked `docs/autonomous-queue.md
+      :2548` `[x] DONE` *in the same uncommitted edit* — so unlike every
+      prior recurrence, the orphan was invisible as backlog. A sweep of
+      the queue alone would have read the item as closed while the app
+      kept dropping 以坦 on screen, which is worse than an untouched
+      `[ ]` item: the untouched form at least surfaces for the next pass
+      to pick up. Landed 2026-09-13 16:54–17:1x: verified the splice
+      character-for-character against both reading assets, ran the three
+      named test files plus `test/test_stale_known_ids.py` to completion
+      in the foreground, refuted the factual claims (all held; one wrong
+      causal aside about *why* a Traditional-witness diff comes out empty
+      was fixed in a code comment, the conclusion itself was right), and
+      committed Group B (`d0e4b6c8`) and the separate Group A orphan
+      (`de8ad429`) from the same planning pass. CI then caught two more
+      ratchets this hour's own verification had not re-run —
+      `tools/audit_strongs_tagging.py`'s pinned `total_runs` and
+      `test/tagged_rendered_duplication_test.dart`'s `fallback` — both
+      measure the same corpus and both moved by the same one new run;
+      fixed and re-pushed (`0267427a`) once CI, not the local `flutter
+      test` invocation, surfaced them. Still true for all nine: the
+      actual fix for the `rc=0`-with-real-work-uncommitted pattern is
+      outside this repo's reach, in `run.sh`/`prompt.md` under
+      `~/Library/Application Support/yswords-loop/`, which this loop's
+      own guard rails say not to edit unattended.
+
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
       `nfp_[A-Za-z0-9]{20,}` pattern registered. The two broad AWS
