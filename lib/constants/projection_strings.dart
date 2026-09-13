@@ -229,4 +229,35 @@ const projectionStrings = <String, Map<String, String>>{
     'zh-Hant': '開啟投影視窗（拖到投影機螢幕上）',
     'en': 'Open the projector window (drag it to the projector display)',
   },
+  // 2026-09-13: the order of service. 程序 is what a Chinese-speaking
+  // church prints on the sheet; VideoPsalm calls the same thing an
+  // agenda.
+  'projectionAgenda': {
+    'zh-Hans': '程序（聚会顺序）',
+    'zh-Hant': '程序（聚會順序）',
+    'en': 'Order of service',
+  },
+  'projectionAgendaEmpty': {
+    'zh-Hans': '把墙上的经文按聚会的顺序加进来，聚会时用 ] 和 [ 一步步走。',
+    'zh-Hant': '把牆上的經文按聚會的順序加進來，聚會時用 ] 和 [ 一步步走。',
+    'en': 'Add the passage on the wall, in the order you need it. '
+        'During the service, ] and [ step through it.',
+  },
+  'projectionAgendaAddCurrent': {
+    'zh-Hans': '加入墙上这段',
+    'zh-Hant': '加入牆上這段',
+    'en': 'Add what is on the wall',
+  },
+  'projectionAgendaAddBlank': {
+    'zh-Hans': '加一个黑屏',
+    'zh-Hant': '加一個黑屏',
+    'en': 'Add a blank',
+  },
+  'projectionAgendaUp': {'zh-Hans': '上移', 'zh-Hant': '上移', 'en': 'Move up'},
+  'projectionAgendaRemove': {'zh-Hans': '移除', 'zh-Hant': '移除', 'en': 'Remove'},
+  'projectionAgendaClear': {
+    'zh-Hans': '清空程序',
+    'zh-Hant': '清空程序',
+    'en': 'Clear the order',
+  },
 };

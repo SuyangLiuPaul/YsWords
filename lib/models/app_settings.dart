@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:yswords/models/projection_agenda.dart';
 
 import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
 import 'package:yswords/models/dashboard_section.dart';
@@ -193,6 +196,21 @@ const _kProjectionPresets = 'projectionPresets';
 // {language family → edition code}; `projectionSecondVersion` above
 // stays as the last edition actually chosen, and the fallback.
 const _kProjectionCompanions = 'projectionCompanions';
+// 2026-09-13: the order of service — what goes on the wall, in order,
+// prepared before the room fills. See `projection_agenda.dart`.
+const _kProjectionAgenda = 'projectionAgenda';
+
+/// Tolerant of anything but a JSON list: a corrupt blob costs the
+/// operator their order of service, so it yields an empty one rather
+/// than throwing at startup.
+List<AgendaItem> _decodeStoredAgenda(String? raw) {
+  if (raw == null || raw.isEmpty) return const [];
+  try {
+    return decodeAgenda(jsonDecode(raw));
+  } catch (_) {
+    return const [];
+  }
+}
 
 /// Tolerant of anything but a JSON object of strings: a corrupt or
 /// foreign blob yields no pairings rather than a crash at startup.
@@ -314,6 +332,7 @@ class AppSettings extends ChangeNotifier {
   bool _projectionSecondOn = false;
   String _projectionSecondVersion = '';
   final Map<String, String> _projectionCompanions = <String, String>{};
+  List<AgendaItem> _projectionAgenda = const [];
   String _projectionGround = 'seeded';
   List<ProjectionPreset> _projectionPresets = const <ProjectionPreset>[];
 
@@ -558,6 +577,20 @@ class AppSettings extends ChangeNotifier {
   /// `zh-Hant`, `en`, …), or null when the operator has not set one for
   /// that language. The projection page resolves through this first and
   /// falls back to [projectionSecondVersion].
+  /// The order of service, in order. Empty is the ordinary case — a
+  /// projection that simply follows the reader.
+  List<AgendaItem> get projectionAgenda =>
+      List.unmodifiable(_projectionAgenda);
+
+  Future<void> setProjectionAgenda(List<AgendaItem> items) async {
+    if (listEquals(_projectionAgenda, items)) return;
+    _projectionAgenda = List.unmodifiable(items);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kProjectionAgenda,
+        jsonEncode([for (final i in _projectionAgenda) i.toJson()]));
+  }
+
   String? projectionCompanionFor(String language) =>
       _projectionCompanions[language];
 
@@ -1211,6 +1244,7 @@ class AppSettings extends ChangeNotifier {
       _kProjectionSecondOn,
       _kProjectionSecondVersion,
       _kProjectionCompanions,
+      _kProjectionAgenda,
       _kProjectionGround,
       _kProjectionPresets,
       _kAutoExpandFirstRef,
@@ -1433,6 +1467,7 @@ class AppSettings extends ChangeNotifier {
       ..clear()
       ..addAll(decodeProjectionCompanions(
           prefs.getString(_kProjectionCompanions)));
+    _projectionAgenda = _decodeStoredAgenda(prefs.getString(_kProjectionAgenda));
     _projectionGround = prefs.getString(_kProjectionGround) ?? 'seeded';
     // A corrupt blob loses the presets, not the launch. Rows that are
     // not presets are dropped individually (ProjectionPreset.fromJson

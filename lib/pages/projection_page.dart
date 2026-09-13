@@ -194,6 +194,7 @@ import 'package:yswords/constants/book_names.dart' show bookNameToEnglish;
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/projection_agenda.dart';
 import 'package:yswords/services/projection_broadcast.dart';
 import 'package:yswords/models/projection_preset.dart';
 import 'package:yswords/models/verse.dart';
@@ -329,6 +330,15 @@ enum ProjectionCommand {
   /// Open the saved setups.
   presets,
 
+  /// Open (or close) the order of service.
+  agenda,
+
+  /// Put the NEXT agenda item on the wall.
+  agendaNext,
+
+  /// Put the PREVIOUS agenda item on the wall.
+  agendaPrevious,
+
   /// Open the follower window — `web/stage.html` on a BroadcastChannel.
   /// Web only; the button and the key are absent elsewhere. See
   /// `projection_broadcast.dart`.
@@ -406,6 +416,18 @@ ProjectionCommand? projectionCommandFor(LogicalKeyboardKey key) {
   }
   if (key == LogicalKeyboardKey.keyV) {
     return ProjectionCommand.chooseSecondVersion;
+  }
+  // The order of service: A opens it, and the two brackets step it —
+  // the same pair a presentation tool uses for "previous / next slide"
+  // and neither of them a browser chord.
+  if (key == LogicalKeyboardKey.keyA) {
+    return ProjectionCommand.agenda;
+  }
+  if (key == LogicalKeyboardKey.bracketRight) {
+    return ProjectionCommand.agendaNext;
+  }
+  if (key == LogicalKeyboardKey.bracketLeft) {
+    return ProjectionCommand.agendaPrevious;
   }
   // D for display. Not a browser chord (those are C V X F P S T W N L K
   // R); a bare letter the operator can hit once, at the start, to put
@@ -830,6 +852,12 @@ class _ProjectionPageState extends State<ProjectionPage> {
         _chooseSecondVersion(mp);
       case ProjectionCommand.presets:
         _showPresets(mp);
+      case ProjectionCommand.agenda:
+        _showAgenda(mp);
+      case ProjectionCommand.agendaNext:
+        _stepAgenda(mp, 1);
+      case ProjectionCommand.agendaPrevious:
+        _stepAgenda(mp, -1);
       case ProjectionCommand.openStage:
         if (ProjectionBroadcast.isSupported) ProjectionBroadcast.openStage();
       case ProjectionCommand.leave:
@@ -991,6 +1019,182 @@ class _ProjectionPageState extends State<ProjectionPage> {
   /// EDITION prints: where a publisher merges two references into one
   /// block it reads `1-2`, and a room told `1` would be looking for a
   /// verse that is not separately printed in front of them.
+  // ── the order of service ──────────────────────────────────────────
+  //
+  // A list of references prepared before the room fills, stepped with
+  // `[` and `]`. See `projection_agenda.dart` for why the rows are
+  // references and not copies of the text, and why there is no per-item
+  // styling.
+
+  /// Where in the agenda the wall is, or null when it is simply
+  /// following the reader. Not persisted: an order of service survives
+  /// the week, but the place you had reached in it is this morning's.
+  int? _agendaAt;
+
+  /// Put agenda row [index] on the wall.
+  ///
+  /// A row whose book the loaded edition does not have — an agenda
+  /// built in 和合本 opened under an English-only edition, say — moves
+  /// the cursor nowhere and leaves the wall as it was. Silently: the
+  /// operator is mid-service and an error dialog on the projector is
+  /// worse than a passage that did not change.
+  void _showAgendaItem(MainProvider mp, int index) {
+    final items = _settings.projectionAgenda;
+    if (index < 0 || index >= items.length) return;
+    final item = items[index];
+    setState(() => _agendaAt = index);
+    if (item.kind == AgendaKind.blank) {
+      setState(() => _blank = true);
+      return;
+    }
+    final chapter = mp.findChapterIndex(item.book, item.chapter);
+    if (chapter == null) return;
+    final verses = _versesAt(mp, chapter);
+    // By printed number, not by position: an edition that merges 4-5
+    // into one row would otherwise put a different verse on the wall
+    // than the one the agenda names.
+    final at = verses.indexWhere((v) => v.verse == item.verse);
+    if (at < 0) return;
+    setState(() {
+      _blank = false;
+      _cursor = ProjectionCursor(chapter, at, count: item.count);
+    });
+  }
+
+  /// `]` and `[`. From nowhere, `]` starts at the top — which is what an
+  /// operator pressing it at the start of a service means.
+  void _stepAgenda(MainProvider mp, int delta) {
+    final items = _settings.projectionAgenda;
+    if (items.isEmpty) return;
+    final at = _agendaAt;
+    final next = at == null ? (delta > 0 ? 0 : items.length - 1) : at + delta;
+    if (next < 0 || next >= items.length) return;
+    _showAgendaItem(mp, next);
+  }
+
+  /// The passage on the wall right now, as an agenda row.
+  AgendaItem? _currentAsAgendaItem(MainProvider mp) {
+    final cursor = _cursor ?? _readerCursor(mp);
+    if (cursor == null) return null;
+    final verses = _versesAt(mp, cursor.chapter);
+    if (cursor.verse >= verses.length) return null;
+    final v = verses[cursor.verse];
+    return AgendaItem(
+      kind: AgendaKind.passage,
+      book: v.book,
+      chapter: v.chapter,
+      verse: v.verse,
+      count: cursor.count,
+    );
+  }
+
+  Future<void> _showAgenda(MainProvider mp) async {
+    final settings = _settings;
+    final locale = settings.locale;
+    final scheme = projectionDarkScheme(settings.primaryColor);
+    await _wallDialog<void>(
+      scheme: scheme,
+      locale: locale,
+      title: _s('projectionAgenda', 'Order of service', locale),
+      body: (dialogContext, setDialogState) {
+        final items = [...settings.projectionAgenda];
+        Future<void> commit(List<AgendaItem> next) async {
+          await settings.setProjectionAgenda(next);
+          setDialogState(() {});
+        }
+
+        return [
+          if (items.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                _s('projectionAgendaEmpty',
+                    'Add the passage on the wall, in the order you need it.',
+                    locale),
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            ),
+          for (var i = 0; i < items.length; i++)
+            ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: Text('${i + 1}',
+                  style: TextStyle(color: scheme.onSurfaceVariant)),
+              title: Text(items[i].label,
+                  style: TextStyle(
+                      color: i == _agendaAt ? scheme.primary : scheme.onSurface,
+                      fontWeight:
+                          i == _agendaAt ? FontWeight.w700 : FontWeight.w400)),
+              onTap: () {
+                Navigator.of(dialogContext).pop();
+                _showAgendaItem(mp, i);
+              },
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: _s('projectionAgendaUp', 'Move up', locale),
+                    icon: const Icon(Icons.arrow_upward, size: 18),
+                    onPressed: i == 0
+                        ? null
+                        : () {
+                            final next = [...items];
+                            next.insert(i - 1, next.removeAt(i));
+                            if (_agendaAt == i) _agendaAt = i - 1;
+                            commit(next);
+                          },
+                  ),
+                  IconButton(
+                    tooltip: _s('projectionAgendaRemove', 'Remove', locale),
+                    icon: const Icon(Icons.close, size: 18),
+                    onPressed: () {
+                      final next = [...items]..removeAt(i);
+                      // The place in the list moves with the list, or
+                      // goes away with it.
+                      if (_agendaAt != null) {
+                        if (_agendaAt == i) {
+                          _agendaAt = null;
+                        } else if (_agendaAt! > i) {
+                          _agendaAt = _agendaAt! - 1;
+                        }
+                      }
+                      commit(next);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          const Divider(),
+          TextButton.icon(
+            icon: const Icon(Icons.add, size: 18),
+            label: Text(_s('projectionAgendaAddCurrent',
+                'Add what is on the wall', locale)),
+            onPressed: () {
+              final item = _currentAsAgendaItem(mp);
+              if (item == null) return;
+              commit([...items, item]);
+            },
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.visibility_off_outlined, size: 18),
+            label: Text(_s('projectionAgendaAddBlank', 'Add a blank', locale)),
+            onPressed: () => commit([...items, const AgendaItem.blank()]),
+          ),
+          if (items.isNotEmpty)
+            TextButton.icon(
+              icon: const Icon(Icons.delete_outline, size: 18),
+              label: Text(
+                  _s('projectionAgendaClear', 'Clear the order', locale)),
+              onPressed: () {
+                _agendaAt = null;
+                commit(const []);
+              },
+            ),
+        ];
+      },
+    );
+  }
+
   /// What the follower window paints — the same things the stage does,
   /// already resolved, so the follower needs no corpus and no Flutter.
   ProjectionFrame _frame(MainProvider mp, AppSettings settings,
@@ -1628,6 +1832,14 @@ class _ProjectionPageState extends State<ProjectionPage> {
                           'Presets',
                           locale,
                           ProjectionCommand.presets,
+                          mp),
+                      _button(
+                          scheme,
+                          Icons.list_alt_outlined,
+                          'projectionAgenda',
+                          'Order of service',
+                          locale,
+                          ProjectionCommand.agenda,
                           mp),
                       if (ProjectionBroadcast.isSupported)
                         _button(
