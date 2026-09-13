@@ -231,7 +231,6 @@ class _EdgeHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final edge = alignLeft ? Alignment.centerLeft : Alignment.centerRight;
     return Positioned(
       top: 0,
@@ -279,7 +278,20 @@ class _EdgeHint extends StatelessWidget {
                         ? Icons.chevron_left_rounded
                         : Icons.chevron_right_rounded,
                     size: 22,
-                    color: scheme.onSurface.withValues(alpha: 0.75),
+                    // Painted against [color] — the ground this hint
+                    // fades INTO — and not against the ambient theme.
+                    // The two can come from different palettes: the
+                    // projection page hard-codes a dark strip while the
+                    // app may be in light mode, and the ambient
+                    // `onSurface` was then near-black on near-black,
+                    // measured at 1.10:1. Deriving from the same colour
+                    // the fade uses makes that impossible for any
+                    // caller, which is where the fix belongs.
+                    color: (ThemeData.estimateBrightnessForColor(color) ==
+                                Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withValues(alpha: 0.75),
                   ),
                 ),
               ),

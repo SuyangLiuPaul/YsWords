@@ -98,18 +98,121 @@ const projectionStrings = <String, Map<String, String>>{
     'zh-Hant': '只顯示一個譯本',
     'en': 'One edition only',
   },
+  'projectionSecondVersionChoose': {
+    'zh-Hans': '选择第二个译本',
+    'zh-Hant': '選擇第二個譯本',
+    'en': 'Choose the second edition',
+  },
   'projectionLeave': {
     'zh-Hans': '退出投影',
     'zh-Hant': '退出投影',
     'en': 'Leave projection',
   },
 
+  // ── the ground ────────────────────────────────────────────────────
+  // Every one of these is a DARK ground; see `projection_stage.dart`'s
+  // library doc for why there is no light one and why there will not
+  // be. The labels say what the operator will see on the wall rather
+  // than naming the mechanism — 「主题深色」 and not 「seeded scheme」.
+  'projectionGround': {
+    'zh-Hans': '背景',
+    'zh-Hant': '背景',
+    'en': 'Background',
+  },
+  // Keys are composed as `projectionGround_<ProjectionGround.name>` by
+  // `projectionGroundLabel`, so a ground added without a label here
+  // falls back to its own enum name rather than to a blank row.
+  'projectionGround_seeded': {
+    'zh-Hans': '主题深色',
+    'zh-Hant': '主題深色',
+    'en': 'Theme dark',
+  },
+  'projectionGround_ink': {
+    'zh-Hans': '中性墨黑',
+    'zh-Hant': '中性墨黑',
+    'en': 'Neutral ink',
+  },
+  'projectionGround_black': {
+    'zh-Hans': '纯黑',
+    'zh-Hant': '純黑',
+    'en': 'Pure black',
+  },
+  'projectionGround_spotlight': {
+    'zh-Hans': '聚光',
+    'zh-Hant': '聚光',
+    'en': 'Spotlight',
+  },
+
+  // ── the presets ───────────────────────────────────────────────────
+  'projectionPresets': {
+    'zh-Hans': '预设',
+    'zh-Hant': '預設',
+    'en': 'Presets',
+  },
+  'projectionPresetSave': {
+    'zh-Hans': '保存当前设置',
+    'zh-Hant': '儲存目前設定',
+    'en': 'Save the current setup',
+  },
+  'projectionPresetName': {
+    'zh-Hans': '预设名称',
+    'zh-Hant': '預設名稱',
+    'en': 'Preset name',
+  },
+  // An example rather than an instruction: what the operator needs is
+  // permission to write 「主日崇拜」 rather than a rule about naming.
+  'projectionPresetNameHint': {
+    'zh-Hans': '例如：主日崇拜',
+    'zh-Hant': '例如：主日崇拜',
+    'en': 'e.g. Morning service',
+  },
+  'projectionPresetDelete': {
+    'zh-Hans': '删除预设',
+    'zh-Hant': '刪除預設',
+    'en': 'Delete preset',
+  },
+  'projectionPresetsEmpty': {
+    'zh-Hans': '还没有保存过设置',
+    'zh-Hant': '還沒有儲存過設定',
+    'en': 'Nothing saved yet',
+  },
+  'projectionClose': {
+    'zh-Hans': '关闭',
+    'zh-Hant': '關閉',
+    'en': 'Close',
+  },
+
+  // ── the control strip's own scroll hints ──────────────────────────
+  // The strip is a horizontal scroller (`OverflowHintScroll`) on a
+  // window too narrow for every button, and these are what a screen
+  // reader announces on its two chevrons.
+  'projectionMoreControls': {
+    'zh-Hans': '更多控制',
+    'zh-Hant': '更多控制',
+    'en': 'More controls',
+  },
+  'projectionBackControls': {
+    'zh-Hans': '前面的控制',
+    'zh-Hant': '前面的控制',
+    'en': 'Previous controls',
+  },
+
   // ── the two lines under the bar ───────────────────────────────────
+  // 2026-09-09: this line grew by three keys when the setup controls
+  // arrived. It was already the longest string the congregation can
+  // see, and lengthening it was still right: a binding nobody is told
+  // about is a binding that does not exist, and the alternative — a
+  // second hint line — puts MORE chrome on the wall, not less. The
+  // setup keys are grouped after the movement keys so an operator
+  // scanning for the arrow keys mid-service still finds them first.
   'projectionKeysHint': {
-    'zh-Hans': '方向键换节 · PageUp/PageDown 换章 · B 黑屏 · +/- 字号 · Esc 退出',
-    'zh-Hant': '方向鍵換節 · PageUp/PageDown 換章 · B 黑屏 · +/- 字號 · Esc 退出',
+    'zh-Hans': '方向键换节 · PageUp/PageDown 换章 · B 黑屏 · +/- 字号 · '
+        'G 背景 · V 第二译本 · S 预设 · Esc 退出',
+    'zh-Hant': '方向鍵換節 · PageUp/PageDown 換章 · B 黑屏 · +/- 字號 · '
+        'G 背景 · V 第二譯本 · S 預設 · Esc 退出',
     'en': 'Arrows change verse · PageUp/PageDown change chapter · '
-        'B blanks · +/- resize · Esc leaves',
+        'B blanks · +/- resize · G background · V second edition · '
+        'S presets · Esc leaves',
   },
   // The answer to the question the operator is about to ask, said
   // before they ask it. See `projection_page.dart`'s library doc for

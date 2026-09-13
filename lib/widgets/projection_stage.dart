@@ -39,6 +39,67 @@
 /// paragraph that has been interrupted, and the room needs to know at a
 /// glance which one is the sermon's text.
 ///
+/// ## THE GROUND IS THE OPERATOR'S TO CHOOSE, AND EVERY CHOICE IS DARK
+///
+/// 2026-09-09, from the owner: 「背景也不能set」. The ground was one
+/// fixed scheme. It is now four, and the argument [projectionDarkScheme]
+/// makes is not weakened by that — it is the constraint the whole set is
+/// built inside, so it is worth restating in the form the set has to
+/// satisfy:
+///
+/// **A projector ADDS light.** White pixels wash a room; dark pixels are
+/// the closest thing a projector has to "off". So the blank key is only
+/// honest when blanking lands on the SAME ground the passage was already
+/// sitting on — blanking a light page to black is a flash across the
+/// whole wall, and blanking a dark page to a different dark is a smaller
+/// version of the same flash.
+///
+/// Two rules fall out of that, and both are pinned by tests rather than
+/// left to a future reader's judgement:
+///
+///   1. **No ground may be brighter, anywhere, than the ground this page
+///      already shipped with.** [ProjectionGround.seeded] is therefore
+///      the ceiling as well as the default: every colour any other
+///      ground paints is at or below its luminance, and every one of
+///      them is under [kProjectionGroundMaxLuminance] outright. A light
+///      ground is not offered, and should not be added — the room's
+///      light comes from the projector, so a light ground is the lamp at
+///      full power for the whole service.
+///   2. **Blanking paints the ground, whatever the ground is.** The
+///      blank branch below and the normal branch call the same
+///      [projectionGroundDecoration]. That is what makes the gradient
+///      ground legal: `spotlight` blanks to `spotlight`, not to black,
+///      so pressing B changes exactly one thing — whether there is text.
+///
+/// The four, and why each earns a row in a picker an operator reads in
+/// the dark:
+///
+///   * **[ProjectionGround.seeded]** — the dark surface this page has
+///     always painted, from the reader's own theme colour. Default, so
+///     an operator who never opens the picker sees no change at all.
+///   * **[ProjectionGround.ink]** — the same darkness with the hue taken
+///     out. `seeded` is tinted by the READER's accent choice, and at
+///     three hundred inches a tint stops being a tint and becomes a
+///     coloured wall. That is the same category error the type scale
+///     already refuses to make (see `projection_page.dart`: the room's
+///     scale is not the reader's), and until now the ground was making
+///     it. It is also the ground a projectionist reaches for when pure
+///     black rings: on a bright lamp, white type on absolute black
+///     haloes, and lifting the ground a few points fixes it.
+///   * **[ProjectionGround.black]** — `#000000`, which is what a
+///     projector's "off" actually is, and the only ground an OLED or an
+///     LED wall can render by switching pixels off rather than by
+///     lighting them dark. On those two display types every other ground
+///     here is emitted light and this one is not.
+///   * **[ProjectionGround.spotlight]** — `seeded` at the centre falling
+///     to black at the corners. Its brightest pixel is exactly the
+///     default ground, so it adds nothing anywhere, and the falloff buys
+///     two things a flat field cannot: the eye is carried to the middle,
+///     where the verse is, and a projector that overshoots the screen
+///     onto the wall beside it — which is most of them, in most rooms,
+///     as [kProjectionSideMargin] already concedes — spills near-black
+///     instead of a full-value rectangle.
+///
 /// ## EVERY STYLE HERE PINS `kCjkFontFallback`
 ///
 /// `main.dart`'s two themes already carry `NotoSansSC-YsWords` in their
@@ -76,6 +137,14 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 /// already sitting on. Blanking a light page to black is a flash across
 /// the whole wall.
 ///
+/// 2026-09-09: this is now the source of the DEFAULT ground rather than
+/// of the only one — see [ProjectionGround] and the library doc's ground
+/// section. It still supplies every colour the stage draws ON whichever
+/// ground is chosen (the type, the reference, the apparatus line), which
+/// is why the argument above did not have to be weakened to make room
+/// for the other three: all four grounds are dark, so the text colours
+/// that were picked against a dark ground still land on one.
+///
 /// It is still YsWords' own palette and introduces no new colour: this
 /// is the exact expression `main.dart` builds its `seededDark` with —
 /// same seed (the reader's chosen theme colour), same
@@ -92,6 +161,123 @@ ColorScheme projectionDarkScheme(Color seed) => ColorScheme.fromSeed(
       brightness: Brightness.dark,
       dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
     );
+
+/// The grounds the operator can put the passage on.
+///
+/// All four are dark, deliberately and permanently — see the library
+/// doc's ground section for the argument and for what each one is for.
+/// The order here is the order they appear in the picker and the order
+/// [projectionGroundAfter] steps through, so it runs from "what you
+/// already had" to "as close to off as this display gets" and then to
+/// the one that is doing something.
+///
+/// Persisted by NAME (`ProjectionGround.name`), never by index, so
+/// inserting a fifth ground later cannot silently reassign the choice an
+/// operator already made.
+enum ProjectionGround { seeded, ink, black, spotlight }
+
+/// The neutral dark ground: [ProjectionGround.ink].
+///
+/// Chosen by the two numbers that matter on a wall and nothing else. It
+/// is neutral — R, G and B within two points, so no accent hue survives
+/// into a three-hundred-inch field — and it is lifted just far enough
+/// off absolute black to stop white type haloing on a bright lamp, while
+/// staying an order of magnitude under
+/// [kProjectionGroundMaxLuminance].
+const Color kProjectionInk = Color(0xFF0F0F11);
+
+/// Absolute black: [ProjectionGround.black]. Spelled out rather than
+/// `Colors.black` because what this constant means is the exact value
+/// that switches an OLED or LED pixel off, not "the app's black".
+const Color kProjectionTrueBlack = Color(0xFF000000);
+
+/// How far out [ProjectionGround.spotlight] reaches before it is fully
+/// black, as a share of the shorter viewport axis.
+///
+/// Larger than 1 on purpose: at 1.0 the corners of a 16:9 frame are far
+/// past the end of the gradient and sit in flat black, which reads as a
+/// dark rectangle inside a dark rectangle. Reaching past the frame keeps
+/// the falloff continuous all the way into the corners.
+const double kProjectionSpotlightRadius = 1.15;
+
+/// The ceiling every ground has to stay under.
+///
+/// Relative luminance, the same 0–1 quantity `Color.computeLuminance`
+/// returns. 0.05 is not a perceptual threshold, it is a budget: the
+/// default ground sits around 0.006, so this leaves a future ground an
+/// order of magnitude of room and still fails anything that could be
+/// called light. `projection_setup_test.dart` holds every ground to it,
+/// and to the stricter rule that nothing may exceed the default ground.
+const double kProjectionGroundMaxLuminance = 0.05;
+
+/// What [ground] paints, given the scheme the rest of the stage is
+/// drawn in.
+///
+/// One function for both the passage's ground and the blank one, which
+/// is the mechanism behind the second rule in the library doc: there is
+/// no second place for blanking's colour to be decided, so it cannot
+/// drift away from the ground the verse was on.
+BoxDecoration projectionGroundDecoration(
+  ProjectionGround ground,
+  ColorScheme scheme,
+) {
+  switch (ground) {
+    case ProjectionGround.seeded:
+      return BoxDecoration(color: scheme.surface);
+    case ProjectionGround.ink:
+      return const BoxDecoration(color: kProjectionInk);
+    case ProjectionGround.black:
+      return const BoxDecoration(color: kProjectionTrueBlack);
+    case ProjectionGround.spotlight:
+      return BoxDecoration(
+        gradient: RadialGradient(
+          radius: kProjectionSpotlightRadius,
+          colors: <Color>[scheme.surface, kProjectionTrueBlack],
+        ),
+      );
+  }
+}
+
+/// Every colour [ground] can put on the wall.
+///
+/// Exists so the luminance rule can be checked as a property of the SET
+/// rather than restated per ground in a test — a fifth ground added
+/// without a matching test still has to pass it.
+List<Color> projectionGroundColors(
+  ProjectionGround ground,
+  ColorScheme scheme,
+) {
+  final decoration = projectionGroundDecoration(ground, scheme);
+  return decoration.gradient?.colors ??
+      <Color>[decoration.color ?? kProjectionTrueBlack];
+}
+
+/// The ground a stored name means, defaulting to the one that was
+/// always there.
+///
+/// The clamp lives here, at the READ, rather than at the write — the
+/// same choice `_kInterlinearVersion` documents in `app_settings.dart`.
+/// A name this build does not know (a ground withdrawn, a preset written
+/// by a newer version) shows the default rather than an empty wall.
+ProjectionGround projectionGroundFromName(String? name) =>
+    ProjectionGround.values.firstWhere(
+      (g) => g.name == name,
+      orElse: () => ProjectionGround.seeded,
+    );
+
+/// The next ground round the ring — what the `G` key does.
+///
+/// A cycle key as well as a picker because the picker is a dialog, and a
+/// dialog is a thing the congregation can see and the operator has to
+/// aim at. Stepping the ring is one keystroke with the hands where they
+/// already are.
+ProjectionGround projectionGroundAfter(ProjectionGround ground) =>
+    ProjectionGround.values[
+        (ground.index + 1) % ProjectionGround.values.length];
+
+/// The picker's label for [ground], in the operator's language.
+String projectionGroundLabel(ProjectionGround ground, String locale) =>
+    _s('projectionGround_${ground.name}', ground.name, locale);
 
 /// The second edition's size, as a fraction of the first's.
 const double kProjectionSecondScale = 0.82;
@@ -130,21 +316,24 @@ const double kProjectionVerticalMargin = 0.11;
 class ProjectionStage extends StatelessWidget {
   const ProjectionStage({
     super.key,
-    required this.verse,
+    required this.verses,
     required this.reference,
     required this.versionCode,
     required this.typeSize,
     required this.blank,
     required this.locale,
     required this.scheme,
+    this.ground = ProjectionGround.seeded,
     this.secondOn = false,
-    this.secondText,
+    this.secondTexts,
     this.secondCode,
     this.secondLoading = false,
   });
 
   /// The verse on the wall, or null when the corpus has not arrived.
-  final Verse? verse;
+  /// The verses on the wall — one, or the block a selection opened.
+  /// Empty is the empty state.
+  final List<Verse> verses;
 
   /// Book, chapter and verse as the room reads it — built by the page,
   /// because the reference and the text must name the same edition.
@@ -155,10 +344,15 @@ class ProjectionStage extends StatelessWidget {
   /// The size the operator asked for. A ceiling — see the library doc.
   final double typeSize;
 
-  /// The blank key. The wall goes to the ground colour and stays there:
-  /// the passage is not merely hidden, the whole stage is, reference
+  /// The blank key. The wall goes to the ground and stays there: the
+  /// passage is not merely hidden, the whole stage is, reference
   /// included. A "blank" screen that still names a verse tells the room
   /// where the sermon is while the preacher is somewhere else.
+  ///
+  /// "The ground" means [ground] — the one the operator chose, not a
+  /// black this widget picks for itself. Both branches of [build] paint
+  /// through [projectionGroundDecoration], so blanking can only ever
+  /// change whether there is text.
   final bool blank;
 
   final String locale;
@@ -169,17 +363,33 @@ class ProjectionStage extends StatelessWidget {
   /// render the wall without a `MaterialApp` theme at all.
   final ColorScheme scheme;
 
+  /// Which dark ground the passage sits on. Defaults to the one this
+  /// page always had, so a caller that does not care about grounds —
+  /// every existing one — is unchanged.
+  final ProjectionGround ground;
+
   final bool secondOn;
-  final String? secondText;
+  /// The second edition's text per verse in [verses], by position;
+  /// null when the block is off or not loaded.
+  final List<String?>? secondTexts;
   final String? secondCode;
   final bool secondLoading;
 
+  /// The chosen ground, as one widget, used by BOTH branches of [build].
+  ///
+  /// A single call site for the blank wall and the lit one is the whole
+  /// of rule 2 in the library doc: there is nowhere for a second opinion
+  /// about what "blank" looks like to live.
+  Widget _ground({Widget? child}) => DecoratedBox(
+        decoration: projectionGroundDecoration(ground, scheme),
+        child: child,
+      );
+
   @override
   Widget build(BuildContext context) {
-    if (blank) return ColoredBox(color: scheme.surface);
+    if (blank) return _ground(child: const SizedBox.expand());
 
-    return ColoredBox(
-      color: scheme.surface,
+    return _ground(
       child: LayoutBuilder(
         builder: (context, box) {
           final side = box.maxWidth * kProjectionSideMargin;
@@ -192,7 +402,7 @@ class ProjectionStage extends StatelessWidget {
                   padding:
                       EdgeInsets.symmetric(horizontal: side, vertical: top),
                   child: Center(
-                    child: verse == null
+                    child: verses.isEmpty
                         ? _emptyState()
                         : FittedBox(
                             fit: BoxFit.scaleDown,
@@ -242,36 +452,71 @@ class ProjectionStage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            verse!.text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: scheme.onSurface,
-              fontFamilyFallback: kCjkFontFallback,
-              fontSize: typeSize,
-              height: _kLineHeight,
-            ),
-          ),
+          for (var i = 0; i < verses.length; i++)
+            _line(verses[i].text, verses[i].verseLabel, typeSize,
+                scheme.onSurface),
           if (secondOn) ...[
             SizedBox(height: typeSize * _kBlockGapShare),
-            Text(
-              _secondBody(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                // A missing or still-loading second edition is
-                // apparatus, not scripture, and must not be mistaken
-                // for the verse.
-                color: secondText == null
-                    ? scheme.onSurfaceVariant
-                    : scheme.onSurface,
-                fontFamilyFallback: kCjkFontFallback,
-                fontSize: typeSize * kProjectionSecondScale,
-                height: _kLineHeight,
-              ),
-            ),
+            ..._secondLines(),
           ],
         ],
       );
+
+  /// One verse of the wall. With more than one verse up, each carries
+  /// its number in the margin colour — small, because the room reads
+  /// the words and the number is only there so a listener can find
+  /// their place in a printed Bible. A single verse carries none; the
+  /// reference below already names it.
+  Widget _line(String text, String label, double size, Color ink) {
+    final numbered = verses.length > 1;
+    return Text.rich(
+      TextSpan(children: [
+        if (numbered)
+          TextSpan(
+            text: '$label ',
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
+              fontSize: size * kProjectionReferenceScale * 1.6,
+            ),
+          ),
+        TextSpan(text: text),
+      ]),
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: ink,
+        fontFamilyFallback: kCjkFontFallback,
+        fontSize: size,
+        height: _kLineHeight,
+      ),
+    );
+  }
+
+  /// The second edition, verse for verse under the first — or one line
+  /// of apparatus when it has nothing to show, in the apparatus colour
+  /// so it cannot be mistaken for scripture.
+  List<Widget> _secondLines() {
+    final texts = secondTexts;
+    final size = typeSize * kProjectionSecondScale;
+    if (secondLoading || texts == null || texts.every((t) => t == null)) {
+      return [
+        Text(
+          _secondBody(null),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: scheme.onSurfaceVariant,
+            fontFamilyFallback: kCjkFontFallback,
+            fontSize: size,
+            height: _kLineHeight,
+          ),
+        ),
+      ];
+    }
+    return [
+      for (var i = 0; i < verses.length; i++)
+        _line(_secondBody(texts[i]), verses[i].verseLabel, size,
+            texts[i] == null ? scheme.onSurfaceVariant : scheme.onSurface),
+    ];
+  }
 
   /// Looser than the reading pane's own leading, because the eye that
   /// has to find the next line is at the back of a hall rather than a
@@ -285,12 +530,12 @@ class ProjectionStage extends StatelessWidget {
   /// at 184 px and swallowing the wall at 40.
   static const double _kBlockGapShare = 0.6;
 
-  String _secondBody() {
+  String _secondBody(String? text) {
     if (secondLoading) {
       return _s('projectionSecondVersionLoading',
           'Loading the second edition', locale);
     }
-    return secondText ??
+    return text ??
         _s('projectionSecondVersionMissing',
             'This edition has no text here', locale);
   }
@@ -302,7 +547,7 @@ class ProjectionStage extends StatelessWidget {
   /// in what?* — and because a second edition on the wall with no way to
   /// tell which translation is which is worse than one edition.
   Widget _reference() {
-    if (verse == null) return const SizedBox.shrink();
+    if (verses.isEmpty) return const SizedBox.shrink();
     final tags = <String>[
       shortBibleVersionLabel(versionCode),
       if (secondOn && secondCode != null) shortBibleVersionLabel(secondCode!),

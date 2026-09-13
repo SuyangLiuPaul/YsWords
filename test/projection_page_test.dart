@@ -267,8 +267,8 @@ void main() {
     // degraded reading, it is no reading at all.
     await tester.pumpWidget(MaterialApp(
       home: ProjectionStage(
-        verse: const Verse(
-            book: '创世记', chapter: 1, verse: 1, text: '起初，神创造天地。'),
+        verses: const [Verse(
+            book: '创世记', chapter: 1, verse: 1, text: '起初，神创造天地。')],
         reference: '创世记 1:1',
         versionCode: 'cuvs-yhwh',
         typeSize: 76,
@@ -279,7 +279,7 @@ void main() {
         // are in the tree too — it is the block most likely to be the
         // Chinese one when the reading edition is English.
         secondOn: true,
-        secondText: 'In the beginning God created.',
+        secondTexts: ['In the beginning God created.'],
         secondCode: 'kjv',
       ),
     ));
@@ -304,8 +304,8 @@ void main() {
     // translations up with no way to tell them apart is worse than one.
     await tester.pumpWidget(MaterialApp(
       home: ProjectionStage(
-        verse: const Verse(
-            book: '创世记', chapter: 1, verse: 1, text: '起初，神创造天地。'),
+        verses: const [Verse(
+            book: '创世记', chapter: 1, verse: 1, text: '起初，神创造天地。')],
         reference: '创世记 1:1',
         versionCode: 'cuvs-yhwh',
         typeSize: 76,
@@ -313,7 +313,7 @@ void main() {
         locale: 'zh-Hans',
         scheme: projectionDarkScheme(Colors.lightBlue),
         secondOn: true,
-        secondText: 'In the beginning God created.',
+        secondTexts: ['In the beginning God created.'],
         secondCode: 'kjv',
       ),
     ));
@@ -343,8 +343,8 @@ void main() {
     // verse.
     await tester.pumpWidget(MaterialApp(
       home: ProjectionStage(
-        verse: const Verse(
-            book: 'Genesis', chapter: 1, verse: 1, text: 'In the beginning.'),
+        verses: const [Verse(
+            book: 'Genesis', chapter: 1, verse: 1, text: 'In the beginning.')],
         reference: 'Genesis 1:1',
         versionCode: 'kjv',
         typeSize: 76,
@@ -352,7 +352,7 @@ void main() {
         locale: 'en',
         scheme: projectionDarkScheme(Colors.lightBlue),
         secondOn: true,
-        secondText: null,
+        secondTexts: null,
         secondCode: 'biblexg-v2',
       ),
     ));
