@@ -31,7 +31,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit_inserted_characters import apparatus_mask, changed_signatures  # noqa: E402
+from audit_inserted_characters import apparatus_mask, changed_signatures, stale_known_ids  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 OURS = REPO / "assets/cuvs-yhwh.json"
@@ -376,10 +376,18 @@ def main():
               f", not what EXPLAINED recorded: {EXPLAINED[vid]}")
 
     # A known hit that stops appearing is drift too — the text moved under a
-    # triage decision that was made by reading it.
-    gone = sorted(known - {vid for vid, _ in running})
+    # triage decision that was made by reading it. But a known id that moved
+    # from `running` into `apparatus` (apparatus_mask learned to recognise
+    # the marker around it) still reads short; it just isn't a RUNNING hit
+    # any more, and that is not the same fact as the text having been
+    # repaired. See tools/audit_inserted_characters.py's 064001014 for why
+    # this distinction is load-bearing, not hypothetical.
+    gone, moved = stale_known_ids(known, running, apparatus)
     for vid in gone:
         print(f"\n{vid} no longer reads short — update EXPLAINED: {EXPLAINED[vid]}")
+    for vid in moved:
+        print(f"\n{vid} moved from running text to editorial apparatus — "
+              f"still reads short, EXPLAINED entry stands: {EXPLAINED[vid]}")
     return 1 if fresh or gone or changed else 0
 
 

@@ -161,6 +161,14 @@ jobs:
       - name: P0 audit gate unit tests
         run: python3 test/test_audit_p0_check.py
 
+      # Same reasoning as the step above: pure-function fixtures, no assets,
+      # safe unconditionally. Pins the 2026-09-09 fix where an EXPLAINED/
+      # PENDING id moving from `running` into `apparatus` (apparatus_mask
+      # learning a new marker spelling) got misreported as "no longer reads
+      # long" by both audit_inserted_characters.py and audit_dropped_characters.py.
+      - name: inserted/dropped-character audit unit tests
+        run: python3 test/test_stale_known_ids.py
+
       # Strong's-tagging census (tools/audit_strongs_tagging.py), read-only.
       # Filed 2026-09-08: the tool backs docs/autonomous-queue.md:7553's P1
       # tick, but nothing pinned its totals, so 38 corpus edits drifted the

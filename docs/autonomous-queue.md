@@ -2529,21 +2529,37 @@ reported. Work these top-down before P2.
       '的'@22`, where it used to exit 0 silently. Does not close `:2436`
       or `:2529` — only makes them safer to land later.
 
-- [ ] **5 pre-existing `PENDING` entries in `audit_inserted_characters.py`
-      already read "no longer reads long" before today's work — found
-      while re-running the audits for the item above, not caused by it.**
-      016001002, 016002019, 016003003, 025003001, 064001014 no longer
-      match any current insertion hit at all (`agreed` computes empty),
-      most likely because the 50dcc102 publisher-text adoption changed
-      surrounding punctuation/wording enough to shift the position
-      alignment the same way it did for `030006008` in the dropped audit
-      (removed from EXPLAINED there this same pass, see above — verified
-      that one is genuinely resolved, not just misaligned). These five
-      have NOT been individually re-verified the same way; the PENDING
-      entries may still describe a real, unrepaired question (e.g.
-      025003001's 神/耶和华 divine-name question) that the audit simply
-      can no longer SEE, which is worse than reporting it. Read each
-      against the current text before touching the dict either way.
+- [x] **DONE 2026-09-13 — the 5 pre-existing `PENDING` entries that read
+      "no longer reads long" were individually re-verified, not just
+      removed on the audit's say-so.** 4 of the 5 — `016001002` (尼希米記
+      1:2), `016003003` (尼希米記 3:3), `025003001` (耶利米哀歌 3:1),
+      `016002019` (尼希米記 2:19) — are genuinely resolved and removed
+      from `PENDING`: `016001002` and `016003003` are now byte-identical
+      to at least one witness (`016003003` to both), `025003001`'s extra
+      神 is gone (byte-identical to both witnesses once the corpus's own
+      雅伟/耶和华 equivalence is applied — not literal bytes), and
+      `016002019`'s extra 你们 is gone, though it is NOT byte-identical to
+      either witness (a punctuation-only residual differs by witness and
+      by Traditional/Simplified conversion path — recorded verbatim as a
+      caveat in the tool rather than rounded off to "matches").
+      `064001014` is the different case this item worried about: it still
+      reads long — `apparatus_mask` learned to recognise the `〔…〕` note
+      marker around it and the hit moved from `running` into `apparatus`,
+      which is not the same fact as the text being repaired, and the old
+      `gone = known - running` computation could not tell the two apart.
+      Fixed with a new `stale_known_ids()` (shared by both audit scripts)
+      that checks `apparatus` too and reports `064001014` as "moved …
+      still reads long, entry stands" rather than silently treating it as
+      resolved. Regression-tested hermetically in
+      `test/test_stale_known_ids.py` (4 cases, no live corpus read) and
+      wired into CI. An adversarial refuter checked all four byte-identity
+      claims and the `064001014` moved/gone split directly against the
+      tool's own comparison functions before this landed; the only thing
+      it found wrong was this entry's own causal aside about *why*
+      `016002019`'s Traditional-witness diff comes out empty (blamed a
+      亚/亞 substitution; the actual absorbing opcode is a 聽/聽見-见 pair
+      elsewhere in the verse) — fixed in the tool's comment, the
+      byte-identity conclusion itself was never wrong.
 
 - [x] **DONE 2026-09-13 — `assets/tagged/cuvs-yhwh/` is no longer stale
       against `assets/cuvs-yhwh.json`.** 2026-09-09: 6 of the 7 were

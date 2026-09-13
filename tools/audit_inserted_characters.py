@@ -283,32 +283,42 @@ PENDING = {
     # witnesses, which is not enough to delete a character unattended.
     "041006033": "马可福音 6:33  +的  (从各城的步行 / 从各城步行)"
                  "  ungrammatical, and the G3588 tag is an off-by-one",
-    # the four other PENDING ids (016001002, 016002019, 016003003, 025003001)
-    # no longer read long at all — they surface as `gone` below, not here.
-    # Three in 尼希米記 1–3, and they are a different case from the 20. The
-    # Hebrew HAS a word each could render — עַל twice (H5921), the second
-    # אַתֶּם (H859), הֵמָּה (H1992) — so DELETING them would remove a word the
-    # Hebrew has. But our own tagged corpus does not carry any of the three,
-    # so they rest on our reading text's lineage alone: four lines of evidence
-    # lack them, one has them. Not deletable, not corroborated.
-    "016001002": "尼希米记 1:2  +关于 +关于  (我问他们关于那些… / 我问他们那些…)"
-                 "  the Hebrew has עַל twice, but 关于 is a HAPAX — 1 verse in "
-                 "31,102 — so contamination fits better than a revision",
-    "016002019": "尼希米记 2:19  +你们  (你们要背叛王吗 / 要背叛王么)"
-                 "  the Hebrew has a second אַתֶּם; our tagged corpus lacks it",
-    "016003003": "尼希米记 3:3  +他们  (建立鱼门，他们架横梁 / 建立鱼门，架横梁)"
-                 "  הֵמָּה is in the Hebrew, but our tagged corpus lists H1992 "
-                 "among the UNTRANSLATED words — its own tagging says this "
-                 "edition does not render it",
-    # The one hit nothing supports. Ours reads 我是因雅偉神忿怒的杖; the print
-    # and both witnesses read 耶和華 alone, our tagged corpus reads 雅偉 alone
-    # and tags it H0 — supplied, no Strong's number — because the Hebrew
-    # אֲנִי הַגֶּבֶר רָאָה עֳנִי בְּשֵׁבֶט עֶבְרָתוֹ has NO divine name at
-    # all: "the rod of HIS wrath". So both readings are supplied, and the
-    # extra 神 is supported by nothing. It is also a divine-name decision in
-    # a divine-name edition, which is not an unattended call. Queued.
-    "025003001": "耶利米哀歌 3:1  +神  (因雅伟神忿怒的杖 / 因耶和华忿怒的杖)"
-                 "  the Hebrew has no divine name here at all",
+    # 016001002, 016002019, 016003003, 025003001 (尼希米記 1:2, 2:19, 3:3;
+    # 耶利米哀歌 3:1) were REMOVED from here 2026-09-09: none of the four
+    # reads long any more. The CJK-only comparison this audit runs
+    # (insertions() over han()-filtered text) returns [] against BOTH
+    # witnesses for all four, which is why `main()` started reporting them
+    # under "no longer reads long" instead of surfacing them here. None of
+    # the four was ever in SIGNATURES — an id only gets one once it reaches
+    # `running`, and these left `running` before that happened — so there
+    # was nothing to remove there.
+    #
+    # This lines up with the 50dcc102 publisher-text adoption fixing them,
+    # since three of the four are now byte-identical to a witness and that
+    # commit is what the sibling item at :2529 predicted would do this; it
+    # was not re-diffed against that commit, so treat "fixed by 50dcc102" as
+    # inference from timing and content, not a bisect.
+    #
+    #   016001002 我问他们那些被掳归回…       byte-identical to A (not B: 著/着)
+    #   016003003 建立鱼门，架横梁、安门扇      byte-identical to A and B
+    #   025003001 我是因雅伟忿怒的杖           神 is gone; byte-identical to A and B
+    #   016002019 …说：“要背叛王么？”          +你们 is gone, but NOT
+    #             byte-identical to either witness — see caveat, do not round
+    #             this off.
+    #
+    # CAVEAT on 016002019. Against witness A (already Simplified, no
+    # conversion needed) the RAW text still differs by punctuation only:
+    # insertions(ours, A) = [(25, '，'), (41, '“'), (55, '”')]. Against
+    # witness B (folded to Simplified via opencc) the raw comparison is
+    # [(25, '，')] — one comma, not empty. Comparing against B's UNCONVERTED
+    # Traditional text instead gives [] again — checked with SequenceMatcher
+    # directly rather than assumed: the comma sits inside a `replace '聽見'
+    # -> '，听见'` opcode (a Traditional/Simplified character-pair swap
+    # elsewhere in the verse, not related to any 亚/亞 substitution), which
+    # absorbs it into a `replace` rather than a standalone `insert`.
+    # The Han-character question this entry was filed for (+你们) is
+    # resolved either way; the verse is not byte-identical to either
+    # witness, so don't describe it as fully matching either one.
     # 使徒行傳 26:16 was listed here and is GONE, repaired 2026-08-19 by
     # `tools/repair_transposed_characters.py`: 特意向你我顯現 → 我特意向你顯現.
     # It was a TRANSPOSITION rather than an insertion, and it reached this
@@ -601,6 +611,25 @@ def changed_signatures(known_ids, running, signatures):
     return changed
 
 
+def stale_known_ids(known_ids, running, apparatus):
+    """Split a known (EXPLAINED/PENDING) id set into ids that genuinely no
+    longer read long anywhere (`gone` — the EXPLAINED/PENDING entry is
+    stale, update it) and ids that merely moved from `running` into
+    `apparatus` (`moved` — still reads long, `apparatus_mask` just started
+    recognising the marker around it, so it's not drift).
+
+    Both `running` and `apparatus` are `[(id, agreed), ...]` pairs as
+    `compute()` returns them; only the ids are used here. A known id that
+    is in NEITHER collection is `gone`; one that is in `apparatus` but not
+    `running` is `moved`; one still in `running` is neither and is left
+    alone (it is what `changed_signatures` checks instead)."""
+    running_ids = {vid for vid, _ in running}
+    apparatus_ids = {vid for vid, _ in apparatus}
+    gone = sorted(known_ids - running_ids - apparatus_ids)
+    moved = sorted((known_ids & apparatus_ids) - running_ids)
+    return gone, moved
+
+
 def main():
     ours, a, b, ids, apparatus, running = compute()
 
@@ -629,10 +658,17 @@ def main():
               f", not what was recorded: {EXPLAINED.get(vid) or PENDING[vid]}")
 
     # A known hit that stops appearing is drift too — the text moved under a
-    # triage decision that was made by reading it.
-    gone = sorted(known - {vid for vid, _ in running})
+    # triage decision that was made by reading it. But a known id that moved
+    # from `running` into `apparatus` (apparatus_mask learned to recognise
+    # the marker around it) still reads long; it just isn't a RUNNING hit any
+    # more, and that is not the same fact as the text having been repaired.
+    gone, moved = stale_known_ids(known, running, apparatus)
     for vid in gone:
         print(f"\n{vid} no longer reads long — update EXPLAINED/PENDING: "
+              f"{EXPLAINED.get(vid) or PENDING[vid]}")
+    for vid in moved:
+        print(f"\n{vid} moved from running text to editorial apparatus — "
+              f"still reads long, EXPLAINED/PENDING entry stands: "
               f"{EXPLAINED.get(vid) or PENDING[vid]}")
     return 1 if fresh or gone or changed else 0
 
