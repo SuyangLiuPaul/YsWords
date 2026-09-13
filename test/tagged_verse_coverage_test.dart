@@ -140,7 +140,18 @@ void main() {
     // existing run it belongs under — so they read whole against the
     // reading text again and leave this list. Retightened rather than
     // left slack, same as the two passes above.
-    const known = 185;
+    //
+    // Re-measured 2026-09-13: 184, down from 185. 士師記 15:13's 以坦 was
+    // the last of the 7 — it did NOT need a new Strong's run after all.
+    // `assets/originals/judges.json` shows 15:8 and 15:11 both carry
+    // עֵיטָם (H5862) but 15:13 has no עֵיטָם at all, so 以坦 in the reading
+    // text is a translator supply with no Hebrew counterpart in this
+    // verse; tagging it H5862 would assert a word the source does not
+    // have. It went back in as an untagged run (`"s": ""`), the shape the
+    // corpus already uses for translator-supplied text with no
+    // source-language counterpart (docs/autonomous-queue.md :2548,
+    // closed). Retightened rather than left slack.
+    const known = 184;
 
     final reading = <String, Map<String, String>>{};
     final rows =

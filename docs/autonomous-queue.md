@@ -2545,8 +2545,8 @@ reported. Work these top-down before P2.
       can no longer SEE, which is worse than reporting it. Read each
       against the current text before touching the dict either way.
 
-- [ ] **`assets/tagged/cuvs-yhwh/` is now stale by 1 verse (was 7) against
-      the repaired `assets/cuvs-yhwh.json`.** 2026-09-09: 6 of the 7 were
+- [x] **DONE 2026-09-13 — `assets/tagged/cuvs-yhwh/` is no longer stale
+      against `assets/cuvs-yhwh.json`.** 2026-09-09: 6 of the 7 were
       landed — each restored word spliced into the existing Strong's run
       it belongs under, verified against corpus precedent (e.g.
       "作以色列王"/H5921/i:[H3478] already occurs verbatim 8 times
@@ -2557,14 +2557,40 @@ reported. Work these top-down before P2.
       耶利米書 11:2. `assets/tagged/cuvs-yhwh-tr/` was regenerated from the
       repaired source (see the item below, now closed) and every affected
       test re-pinned to the measured (not arithmetic) result.
-      **士師記 15:13's 以坦 (Etam) is still open** — restoring it needs a
-      brand-new run and a fresh Strong's number (plausibly H5862) rather
-      than a splice into an existing run, which is a fresh tagging
-      assertion this hour's mandate excluded ("a filed verse beats a
-      guessed number"). Whoever takes this next: the existing run to
-      split is `{"w": "参孙，将他从", "s": "H4480"}` /
-      `{"w": "磐", "s": "H5553"}` in `assets/tagged/cuvs-yhwh/judges.json`
-      `15:13` — 以坦 sits between them.
+      **士師記 15:13's 以坦 (Etam) — the 7th and last — is now closed too,
+      and NOT with a fresh Strong's number.** The earlier note above
+      guessed H5862 (the number used for עֵיטָם at 15:8/15:11) "plausibly"
+      applied here too; it does not. Checked directly against
+      `assets/originals/judges.json`: 15:8 and 15:11 both carry
+      `{"w":"עֵיטָ֣ם/עֵיטָֽם","s":"H5862"}`, but 15:13 ends
+      `{"w":"מִן","s":"H4480"},{"w":"הַסָּֽלַע","s":"H5553"}` with **no**
+      עֵיטָם anywhere in the verse — confirmed independently against
+      BibleHub's Hebrew interlinear by an adversarial refuter before
+      committing, which also checked KJV/NASB/ESV/NIV/NKJV render no
+      "Etam" in v13 (only the Amplified Bible's bracketed `[of Etam]` and
+      the Vulgate-based Douay-Rheims do, both editorial/translation
+      choices, not Hebrew text). So 以坦 in the Chinese v13 is a
+      translator's carry-over from context with no Hebrew counterpart of
+      its own in this verse, and tagging it H5862 would assert a word the
+      source text does not contain. It went back in as an untagged run,
+      `{"w":"以坦","s":""}`, spliced between the two runs the earlier note
+      named — `{"w":"参孙，将他从","s":"H4480"}` /
+      `{"w":"磐","s":"H5553"}` in `assets/tagged/cuvs-yhwh/judges.json`
+      `15:13` — rather than folded into the H5553 run, which would have
+      put a word-tap on 以坦 open 磐/"rock" instead. An empty-`s` run is
+      an established shape in this corpus for text with no source-word
+      counterpart, though the refuter's own count found most of the
+      corpus's ~6,600 empty-`s` runs are clause-final punctuation
+      fragments rather than content words like this one — a real but
+      narrower precedent than "established for content words broadly",
+      and said so rather than overstating it.
+      `assets/tagged/cuvs-yhwh-tr/judges.json` regenerated from the
+      repaired source in the same commit (`verified_exact`: 27306 ->
+      27307, measured, not assumed); `tagged_verse_coverage_test.dart`'s
+      ratchet retightened 185 -> 184; `implied_coverage_census_test.dart`
+      and `tagged_traditional_derived_test.dart` re-pinned to their
+      measured results. `assets/tagged/cuvs-yhwh/` now agrees with
+      `assets/cuvs-yhwh.json` on every one of the original 8 words.
 
 - [x] **DONE 2026-09-09 — `assets/tagged/cuvs-yhwh-tr/` regenerated from
       the repaired `cuvs-yhwh.json`/`cuvs-yhwh-tr.json`.** This item's own

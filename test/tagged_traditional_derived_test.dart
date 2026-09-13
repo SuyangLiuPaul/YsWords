@@ -161,11 +161,23 @@ void main() {
     // restored into `assets/cuvs-yhwh.json`/`cuvs-yhwh-tr.json` were spliced
     // into `assets/tagged/cuvs-yhwh/` (2026-09-09, docs/autonomous-queue.md
     // :2548) and `assets/tagged/cuvs-yhwh-tr/` regenerated from it, bringing
-    // this back up 27300 -> 27306. The 7th (以坦, 士師記 15:13) is filed back:
-    // it needs a brand-new Strong's run, not a splice into an existing one,
-    // so it stays open. The 8th (马可福音 15:12) was never down — the tagged
-    // side already had that word.
-    expect(verified, 27306);
+    // this back up 27300 -> 27306. The 8th (马可福音 15:12) was never down —
+    // the tagged side already had that word.
+    //
+    // 27,306 -> 27,307 (2026-09-13): the 7th and last, 以坦 at 士師記
+    // 15:13, is filed back too. `assets/originals/judges.json` shows 15:8
+    // and 15:11 both carry עֵיטָם (H5862) but 15:13 ends `מִן הַסָּלַע`
+    // (H4480, H5553) with no עֵיטָם at all — so 以坦 there is a
+    // translator supply with no Hebrew counterpart in its own verse, and
+    // tagging it H5862 would assert a word the source text does not
+    // contain. It went back in as an untagged run (`"s": ""`), the shape
+    // the corpus already uses elsewhere for translator-supplied text with
+    // no source-language counterpart — not folded into the neighbouring
+    // H5553 run, which would have put a word-tap on 以坦 open 磐/"rock"
+    // instead. That makes the tagged import agree with the reading text
+    // in this verse for the first time, so it now qualifies for this
+    // exact check.
+    expect(verified, 27307);
   });
 
   test('only the characters changed — every run boundary, number, implied '
@@ -198,7 +210,12 @@ void main() {
     // verse that rejoined the derived layer above. No boundary inside
     // any other verse moved — every one of them is asserted equal to
     // the source layer's own, one run at a time, in the loop above.
-    expect(runs, 366687);
+    //
+    // 366,687 -> 366,688 (2026-09-13): the one extra run is the untagged
+    // 以坦 spliced into 士師記 15:13's Simplified source (queue:2548,
+    // closed); it derives through unchanged (`s` stays `''`), and the
+    // loop above asserts every other boundary in the verse held.
+    expect(runs, 366688);
   });
 
   test('the 60 skipped verses are exactly the ones with no positional '

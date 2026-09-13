@@ -156,8 +156,11 @@ EXPECTED = {
     # publisher's own defects were repaired against the official edition
     # (16 transpositions, the Revelation refrain's ！, two lost closing
     # quotes, 約伯記 31:36's doubled 敵 and 歷代志上 21:17's displaced 的).
-    # Each of those made one more verse agree with the tagged import.
-    'verified_exact': 27306,
+    # 27,307 once 士師記 15:13's 以坦 was spliced back into the Simplified
+    # tagged source as an untagged run (queue:2548) — the source layer
+    # now agrees with the reading text character for character, so this
+    # verse newly qualifies for the exact check.
+    'verified_exact': 27307,
     # Characters resolved by step 3 above — in no table, passed through.
     'passthrough_chars': 29,
 }

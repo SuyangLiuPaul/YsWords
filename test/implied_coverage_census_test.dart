@@ -220,10 +220,19 @@ void main() {
     // words were spliced into the existing Strong's run they belong under
     // in `assets/tagged/cuvs-yhwh/` (docs/autonomous-queue.md :2548), so
     // `coversVerse` passes again for those 6 verses. 士師記 15:13's 以坦
-    // stays out — it needs a new run, filed back rather than guessed.
-    expect(droppedCoverage, 185,
+    // stayed out at the time — the queue's own text still asked for a new
+    // Strong's run.
+    //
+    // 185 -> 184, 30,917 -> 30,918 (2026-09-13): 士師記 15:13's 以坦 is
+    // filed back too, and not as a new Strong's run — `assets/originals/
+    // judges.json` shows 15:8 and 15:11 both carry עֵיטָם (H5862) but
+    // 15:13 has none, so a Strong's number there would assert a word the
+    // Hebrew does not have. It went in as an untagged `"s": ""` run
+    // instead, which makes `coversVerse` pass for the verse: the last of
+    // the seven, and the item that closes docs/autonomous-queue.md :2548.
+    expect(droppedCoverage, 184,
         reason: 'pinned independently by tagged_verse_coverage_test.dart');
-    expect(renderedVerses, 30917);
+    expect(renderedVerses, 30918);
   });
 
   test('22,685 verses gain a line; 305,332 runs gain nothing', () {
@@ -236,15 +245,21 @@ void main() {
     // side) took their runs out with them.
     // 365,021 -> 365,087 (2026-09-09): the 6 verses that came back into
     // the rendered set (see above) brought their 66 runs back with them.
-    expect(renderedRuns, 365087);
-    expect(runsThatGain, 59708);
-    expect(runsThatGainNothing, 305379);
+    // 365,087 -> 365,103 (2026-09-13): 士師記 15:13 rendering again brings
+    // its 16 runs back (15 original + the new untagged 以坦 run). Of
+    // those 16, 1 gains a chip and 15 gain nothing, so runsThatGain moves
+    // by 1 and runsThatGainNothing by 15 — measured, not assumed, because
+    // most of the verse's runs already had an `i` that only repeats their
+    // own `s`.
+    expect(renderedRuns, 365103);
+    expect(runsThatGain, 59709);
+    expect(runsThatGainNothing, 305394);
     expect(runsThatGain + runsThatGainNothing, renderedRuns,
         reason: 'every rendered run is in exactly one bucket');
-    expect(versesThatGain, 22691);
+    expect(versesThatGain, 22692);
     // 73.4% of rendered verses, 16.4% of rendered runs — unmoved to a
     // tenth of a percent, same as the last move: a denominator growing
-    // by 6 out of ~31,000 does not touch the proportions.
+    // by 1 out of ~31,000 does not touch the proportions.
     expect(versesThatGain / renderedVerses, closeTo(0.734, 0.001));
     expect(runsThatGain / renderedRuns, closeTo(0.164, 0.001));
   });
@@ -258,6 +273,11 @@ void main() {
     // 39,557 -> 39,537 over 21,246 -> 21,240: the same 7 verses leaving,
     // taking their pairs with them. 39,537 -> 39,557 over 21,240 -> 21,246
     // (2026-09-09): 6 of the 7 came back.
+    //
+    // Unmoved at 39,557 / 21,246 (2026-09-13), even though 士師記 15:13
+    // renders again: the new run is untagged (`"s": ""`) with no `i`, so
+    // it opens no new (verse, number) pair — it only lets the verse's
+    // other, already-tagged runs reach the screen again.
     expect(newlyReachable.length, 39557);
     expect(versesNewlyReachable.length, 21246);
     // 約翰福音 3:5, the verse the whole argument was conducted over: the
