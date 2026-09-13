@@ -51,6 +51,7 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     _player.onPosition.listen((p) {
       if (p > Duration.zero) _cancelStallWatchdog();
       _position = p;
+      _maybePreloadNext(p);
       _broadcast();
     });
     // Auto-advance. Fires only on a natural end — not on stop() or
@@ -182,6 +183,50 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   String? _error;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
+
+  /// The URL the engine has been asked to warm for the upcoming track,
+  /// so the ask is made once per track and not on every `timeupdate`.
+  /// Cleared whenever a track starts, because "next" has moved.
+  String? _preloadedUrl;
+
+  /// How far before the end of a track the next one is fetched.
+  ///
+  /// Long enough for a song-length file to arrive over a phone
+  /// connection in a moving car; short enough that a listener who skips
+  /// around a track does not have every neighbour fetched. Twenty
+  /// seconds of a 3–4 minute song.
+  static const Duration kPreloadLead = Duration(seconds: 20);
+
+  /// Where a track's audio actually comes from, after the proxy fallback
+  /// and the source resolver have had their say — one answer for
+  /// [_playCurrent] and [_maybePreloadNext], so the warmed URL is the
+  /// one that will be asked for.
+  String _resolvedUrl(QueueItem item) {
+    final baseUrl = _proxyUrlFor[item.song.id] ?? item.url;
+    return sourceResolver?.call(item.song, baseUrl) ?? baseUrl;
+  }
+
+  /// Ask the engine to warm the next track once we are inside the lead
+  /// window. See `SongPlaybackEngine.preload` (web) for why this exists.
+  ///
+  /// "Next" is what [_onTrackFinished] will actually play: nothing under
+  /// repeat-one (the element loops — there is no next), the wrap-around
+  /// under repeat-all, and nothing at the end of the queue otherwise. A
+  /// track the queue has marked failed is skipped the same way
+  /// [_skipPastFailure] would skip it.
+  void _maybePreloadNext(Duration position) {
+    final d = _duration;
+    if (d <= Duration.zero || d - position > kPreloadLead) return;
+    if (_queue.repeat == RepeatMode.one || _sleepAtEndOfTrack) return;
+    final next = _queue.nextIndex();
+    if (next == null || next == _queue.index) return;
+    final item = _queue.items[next];
+    if (_failed.contains(item.song.id)) return;
+    final url = _resolvedUrl(item);
+    if (_preloadedUrl == url) return;
+    _preloadedUrl = url;
+    unawaited(_player.preload(url));
+  }
   Timer? _sleepTimer;
   DateTime? _sleepAt;
   /// "Pause when the current track ends" — no DateTime, because
@@ -255,7 +300,12 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   Future<void> setShuffle(bool on) async {
-    _queue = _queue.withShuffle(on);
+    // Keep the current track first only if it is actually being heard.
+    // A queue opened with autoPlay:false is sitting on row one because
+    // that is where the index starts, not because anyone chose it, and
+    // a shuffle pressed then should be free to start anywhere.
+    _queue = _queue.withShuffle(on,
+        keepCurrent: _playing || _position > Duration.zero);
     await _publishQueue();
     _broadcast();
   }
@@ -568,8 +618,8 @@ class SongAudioHandler extends BaseAudioHandler with SeekHandler {
     // So the play call is issued FIRST, synchronously, before any
     // state updates or notifications — and the future is awaited
     // afterwards. Everything below this line used to happen before it.
-    final baseUrl = _proxyUrlFor[item.song.id] ?? item.url;
-    final resolved = sourceResolver?.call(item.song, baseUrl) ?? baseUrl;
+    final resolved = _resolvedUrl(item);
+    _preloadedUrl = null;
     final playing = _player.play(resolved);
     _currentAttempt = _player.attempt;
     // Applied per track, not once: the web element keeps `loop` across

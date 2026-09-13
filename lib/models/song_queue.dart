@@ -118,7 +118,19 @@ class SongQueue {
       repeat: repeat,
       sourceLabel: sourceLabel,
     );
-    if (shuffled) queue = queue.withShuffle(true, random: random);
+    // "Play all, shuffled" must not always open on row one. Pinning the
+    // current item to the front is right when something is PLAYING —
+    // shuffling must not cut off the song in your ears — but here
+    // nothing is, and the only reason `current` is row one is that the
+    // index defaulted to zero. So the item is kept only when the caller
+    // actually chose one. Reported on iPhone: 「随机播放第一首总是第一首歌」.
+    if (shuffled) {
+      queue = queue.withShuffle(
+        true,
+        random: random,
+        keepCurrent: startSongId != null || startIndex != 0,
+      );
+    }
     return queue;
   }
 
@@ -266,9 +278,14 @@ class SongQueue {
   /// picking a random track on every advance. That is what makes
   /// "previous" meaningful — with per-advance randomness, going back
   /// lands somewhere you have never been, which reads as a bug.
-  SongQueue withShuffle(bool on, {Random? random}) {
+  ///
+  /// [keepCurrent] is whether the item at [index] is something the
+  /// listener is hearing (or chose) and must therefore stay first. Pass
+  /// false when nothing has started, so the first track is as random as
+  /// the rest — see [fromSongs] and `SongAudioHandler.setShuffle`.
+  SongQueue withShuffle(bool on, {Random? random, bool keepCurrent = true}) {
     if (items.isEmpty) return copyWith(shuffled: on);
-    final playing = current;
+    final playing = keepCurrent ? current : null;
 
     if (!on) {
       // Restore catalogue order. Sorting by the song id is stable and

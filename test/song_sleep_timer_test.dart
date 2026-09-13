@@ -40,6 +40,13 @@ class _FakeEngine implements SongPlaybackEngine {
   @override
   Future<void> setLoop(bool on) async => loopCalls.add(on);
 
+  /// Every URL the handler asked to be warmed ahead of the hand-off,
+  /// in order. The handler is expected to ask exactly once per upcoming
+  /// track, only inside the lead window, and never for repeat-one.
+  final List<String> preloadCalls = [];
+  @override
+  Future<void> preload(String url) async => preloadCalls.add(url);
+
   final List<String> playCalls = [];
   final List<String> pauseCalls = [];
 

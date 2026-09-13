@@ -97,6 +97,18 @@ class SongPlaybackEngine {
   Future<void> setVolume(double volume) =>
       _guard(_attempt, () => _player.setVolume(volume));
 
+  /// Warm the NEXT track so the hand-off has nothing to fetch.
+  ///
+  /// A no-op here, said plainly rather than faked. audioplayers holds
+  /// one platform player and offers no second source to prime, and the
+  /// gap this exists to close was reported on the web build. The native
+  /// iOS build has its own version of the same gap — audioplayers
+  /// empties the AVPlayer (`replaceCurrentItem(nil)`) before Dart is
+  /// asked what plays next — and closing that needs a second player
+  /// and a background task, which is a separate change. Until then this
+  /// returns immediately so the handler can call it unconditionally.
+  Future<void> preload(String url) async {}
+
   /// Repeat-one, done by the platform player instead of by us.
   ///
   /// The web engine's counterpart carries the full reasoning; the same
