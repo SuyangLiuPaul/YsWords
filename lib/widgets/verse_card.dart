@@ -181,6 +181,26 @@ TextStyle verseCardBodyStyle({
     );
 
 /// Resolved colours for one [VerseCardStyle] against one [ColorScheme].
+/// The veil alpha that gets the card's type to a 4.5:1 contrast over a
+/// photograph of mean relative luminance [luminance], floored at the
+/// 0.32 the design shipped with and capped at 0.85.
+///
+/// Dark veil, white type (contrast (1.05)/(L_bg+0.05)): the ground must
+/// reach L_bg ≤ 0.183, and a black veil of alpha a over luminance L
+/// leaves L·(1−a), so a = 1 − 0.183/L. Light veil, near-black type
+/// (L ≈ 0.007): the ground must reach L_bg ≥ 0.2065, and a white veil
+/// leaves L + a·(1−L), so a = (0.2065 − L)/(1 − L). Null luminance —
+/// the picture did not decode for measuring — keeps the floor.
+double photoScrimAlpha(double? luminance, {required bool dark}) {
+  const floor = 0.32, cap = 0.85;
+  if (luminance == null) return floor;
+  final l = luminance.clamp(0.0, 1.0);
+  final needed = dark
+      ? (l <= 0 ? 0.0 : 1 - 0.183 / l)
+      : (l >= 1 ? 0.0 : (0.2065 - l) / (1 - l));
+  return needed.clamp(floor, cap);
+}
+
 @immutable
 class VerseCardPalette {
   final Gradient? gradient;
@@ -229,7 +249,11 @@ class VerseCardPalette {
     this.shadows,
   });
 
-  factory VerseCardPalette.of(VerseCardStyle style, ColorScheme s) {
+  /// [photoLuminance] is the photograph's mean relative luminance (see
+  /// `versePhotoLuminance`), used only by [VerseCardStyle.photo] to set
+  /// the veil; null keeps the fixed veil.
+  factory VerseCardPalette.of(VerseCardStyle style, ColorScheme s,
+      {double? photoLuminance}) {
     switch (style) {
       case VerseCardStyle.plain:
         return VerseCardPalette(
@@ -274,12 +298,22 @@ class VerseCardPalette {
         // one suits the picture is the reader's eye, not ours.
         final dark = s.brightness == Brightness.dark;
         final ink = dark ? Colors.white : const Color(0xFF16181C);
+        // 2026-09-13: the veil used to be a fixed 0.32, which reads over
+        // a dark photograph and measured 2.2:1 for white type over a
+        // bright one — below what anyone reads at a glance. The veil is
+        // now the LEAST that gets the type to 4.5:1 against the
+        // photograph's mean luminance, never less than the 0.32 the
+        // design was tuned at, never more than 0.85 (past that the
+        // picture is gone and the reader might as well have chosen a
+        // flat card). Photographs that were fine keep exactly the veil
+        // they had; only bright ones get more.
+        final veil = photoScrimAlpha(photoLuminance, dark: dark);
         return VerseCardPalette(
           // Painted underneath the photograph, so it is what shows
           // while the image decodes and all that shows if the picker
           // handed back something that will not decode at all.
           background: dark ? const Color(0xFF16181C) : Colors.white,
-          scrim: (dark ? Colors.black : Colors.white).withValues(alpha: 0.32),
+          scrim: (dark ? Colors.black : Colors.white).withValues(alpha: veil),
           foreground: ink,
           accent: ink,
           muted: ink.withValues(alpha: 0.78),
@@ -338,6 +372,9 @@ class VerseCard extends StatelessWidget {
   /// style — because `RenderRepaintBoundary.toImage` captures the
   /// last painted frame and a still-decoding photograph is not in it.
   final ImageProvider? photo;
+  
+  /// See [VerseCardPalette.of]. Only [VerseCardStyle.photo] reads it.
+  final double? photoLuminance;
 
   const VerseCard({
     super.key,
@@ -350,11 +387,13 @@ class VerseCard extends StatelessWidget {
     this.style = VerseCardStyle.plain,
     this.fontFamily,
     this.photo,
+    this.photoLuminance,
   });
 
   @override
   Widget build(BuildContext context) {
-    final palette = VerseCardPalette.of(style, scheme);
+    final palette =
+        VerseCardPalette.of(style, scheme, photoLuminance: photoLuminance);
     return Container(
       width: kVerseCardWidth,
       constraints: const BoxConstraints(minHeight: kVerseCardMinHeight),

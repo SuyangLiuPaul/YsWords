@@ -123,6 +123,7 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
   /// the life of this sheet and no longer. Null until they pick one,
   /// and back to null if they clear it.
   MemoryImage? _photo;
+  double? _photoLuminance;
 
   /// True while the camera roll is open. Separate from [_busy], which
   /// disables the export button: picking does not block the export of
@@ -193,6 +194,7 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
                     style: _style,
                     fontFamily: settings.fontFamily,
                     photo: _photo,
+                    photoLuminance: _photoLuminance,
                   ),
                 ),
               ),
@@ -207,6 +209,7 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
               onPickPhoto: _pickPhoto,
               onClearPhoto: () => setState(() {
                 _photo = null;
+                _photoLuminance = null;
                 _style = VerseCardStyle.plain;
               }),
             ),
@@ -329,9 +332,20 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
     if (!mounted) return;
     setState(() {
       _photo = image;
+      _photoLuminance = null;
       _style = VerseCardStyle.photo;
       _picking = false;
     });
+    // Measured AFTER the photograph is up, not before: a 32-pixel decode
+    // is quick but it is an engine round trip, and the reader should not
+    // wait on it to see their picture. The veil starts at the fixed
+    // floor and settles a moment later; a bright photograph gets its
+    // heavier veil within a frame or two.
+    unawaited(versePhotoLuminance(bytes).then((l) {
+      if (mounted && identical(_photo, image)) {
+        setState(() => _photoLuminance = l);
+      }
+    }));
   }
 
   Future<void> _export() async {

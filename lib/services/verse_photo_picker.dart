@@ -16,9 +16,12 @@
 // which is a promise this app has not made to anyone. Picking again is
 // two taps.
 
+import 'dart:math' as math;
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:image_picker/image_picker.dart';
 
 import 'package:yswords/services/verse_photo_temp_stub.dart'
@@ -64,7 +67,19 @@ Future<Uint8List?> pickVersePhoto() async {
       imageQuality: kIsWeb ? null : 88,
     );
     if (picked == null) return null;
-    final bytes = await picked.readAsBytes();
+    var bytes = await picked.readAsBytes();
+    // 2026-09-13: `maxWidth` / `maxHeight` above are honoured on iOS,
+    // Android and the web, and silently ignored on macOS, Windows and
+    // Linux, where image_picker is file_selector in a coat. So on the
+    // desktops a 50-megapixel photograph came back at 50 megapixels —
+    // the memory case kVersePhotoMaxEdge exists to prevent — and the
+    // downscale is done here instead, by the engine.
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.macOS ||
+            defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux)) {
+      bytes = await downscaleVersePhoto(bytes);
+    }
     // The plugin handed us a COPY it made in the app's own cache, not
     // the reader's original. Now that the bytes are in memory, that
     // copy is a photograph of theirs sitting in our storage — which is
@@ -78,5 +93,81 @@ Future<Uint8List?> pickVersePhoto() async {
     return bytes;
   } catch (_) {
     return null;
+  }
+}
+
+/// Re-encode [bytes] so the longer edge is at most [kVersePhotoMaxEdge].
+///
+/// Returns the input untouched when it is already small enough, or when
+/// it cannot be decoded at all — the caller's own decode is what decides
+/// whether a file is usable, and this must not pre-empt that with a
+/// different answer. PNG out rather than JPEG because the engine has no
+/// JPEG encoder; at 1920 px the size is fine for a card that is shared,
+/// not stored.
+Future<Uint8List> downscaleVersePhoto(Uint8List bytes) async {
+  ui.Codec probe;
+  try {
+    probe = await ui.instantiateImageCodec(bytes);
+  } catch (_) {
+    return bytes;
+  }
+  final first = await probe.getNextFrame();
+  final w = first.image.width;
+  final h = first.image.height;
+  first.image.dispose();
+  probe.dispose();
+  final longest = w > h ? w : h;
+  if (longest <= kVersePhotoMaxEdge) return bytes;
+  final scale = kVersePhotoMaxEdge / longest;
+  final codec = await ui.instantiateImageCodec(
+    bytes,
+    targetWidth: (w * scale).round(),
+    targetHeight: (h * scale).round(),
+  );
+  final frame = await codec.getNextFrame();
+  try {
+    final png = await frame.image.toByteData(format: ui.ImageByteFormat.png);
+    return png == null ? bytes : png.buffer.asUint8List();
+  } finally {
+    frame.image.dispose();
+    codec.dispose();
+  }
+}
+
+/// The photograph's mean relative luminance, 0 (black) to 1 (white),
+/// from a 32-pixel-wide decode — a few hundred pixels are plenty for a
+/// mean, and the full image is never held for this.
+///
+/// Feeds the photo card's scrim: a fixed veil that reads over a dark
+/// photograph is 2.2:1 over a bright one, which is below what anyone
+/// can read at a glance. See `VerseCardPalette.of`. Null when the bytes
+/// do not decode, in which case the card keeps its fixed veil.
+Future<double?> versePhotoLuminance(Uint8List bytes) async {
+  ui.Codec codec;
+  try {
+    codec = await ui.instantiateImageCodec(bytes, targetWidth: 32);
+  } catch (_) {
+    return null;
+  }
+  final frame = await codec.getNextFrame();
+  try {
+    final data =
+        await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    if (data == null) return null;
+    final px = data.buffer.asUint8List();
+    if (px.length < 4) return null;
+    double lin(int c) {
+      final v = c / 255.0;
+      return v <= 0.03928 ? v / 12.92 : math.pow((v + 0.055) / 1.055, 2.4).toDouble();
+    }
+    var sum = 0.0;
+    final n = px.length ~/ 4;
+    for (var i = 0; i < px.length; i += 4) {
+      sum += 0.2126 * lin(px[i]) + 0.7152 * lin(px[i + 1]) + 0.0722 * lin(px[i + 2]);
+    }
+    return sum / n;
+  } finally {
+    frame.image.dispose();
+    codec.dispose();
   }
 }
