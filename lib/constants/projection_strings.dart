@@ -283,4 +283,15 @@ const projectionStrings = <String, Map<String, String>>{
     'zh-Hant': '就要開始了',
     'en': 'We are beginning',
   },
+  // 2026-09-13: what `]` will put up next, for the person driving.
+  'projectionAgendaNext': {
+    'zh-Hans': '下一个：{item}',
+    'zh-Hant': '下一個：{item}',
+    'en': 'Next: {item}',
+  },
+  'projectionAgendaEnd': {
+    'zh-Hans': '程序到此为止',
+    'zh-Hant': '程序到此為止',
+    'en': 'end of the order',
+  },
 };

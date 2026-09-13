@@ -117,6 +117,25 @@ void main() {
     });
   });
 
+  group('the operator reads one ahead', () {
+    // VideoPsalm calls its version a stage view. The cheap honest form
+    // here is the control strip saying what `]` will do — before this,
+    // the only way to find out was to press it in front of everybody.
+    test('the strip names the next row, and says when there is not one',
+        () {
+      final page = File('lib/pages/projection_page.dart').readAsStringSync();
+      expect(page.contains("String? _nextAgendaLabel(String locale)"), isTrue);
+      expect(page.contains("'projectionAgendaEnd'"), isTrue,
+          reason: 'the last row must not look like a missing one');
+      // From nowhere `]` starts at the top, so the hint must name the
+      // FIRST row — it describes the key, not the list.
+      expect(page.contains('final next = at == null ? 0 : at + 1;'), isTrue);
+      // And nothing is shown when there is no order of service, so an
+      // ordinary projection is unchanged.
+      expect(page.contains("if (_nextAgendaLabel(locale) != null)"), isTrue);
+    });
+  });
+
   group('the wiring', () {
     test('the page steps with the bracket keys and never on a chord', () {
       final page = File('lib/pages/projection_page.dart').readAsStringSync();

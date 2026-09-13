@@ -1039,6 +1039,23 @@ class _ProjectionPageState extends State<ProjectionPage> {
   /// EDITION prints: where a publisher merges two references into one
   /// block it reads `1-2`, and a room told `1` would be looking for a
   /// verse that is not separately printed in front of them.
+  /// The label of the row `]` would put up next, or null when there is
+  /// no order of service or the wall is already on its last row.
+  ///
+  /// From nowhere it names the FIRST row, because that is what `]`
+  /// does from nowhere — the hint has to describe the key, not the
+  /// list.
+  String? _nextAgendaLabel(String locale) {
+    final items = _settings.projectionAgenda;
+    if (items.isEmpty) return null;
+    final at = _agendaAt;
+    final next = at == null ? 0 : at + 1;
+    if (next >= items.length) {
+      return _s('projectionAgendaEnd', 'end of the order', locale);
+    }
+    return items[next].label;
+  }
+
   // ── the countdown ─────────────────────────────────────────────────
 
   /// Start a countdown of [minutes], or take one down.
@@ -2003,6 +2020,16 @@ class _ProjectionPageState extends State<ProjectionPage> {
         // one-window line is the answer to the question the operator is
         // about to ask, said before they ask it rather than in a release
         // note nobody reads.
+        // What is coming, for the person driving. A projector operator
+        // is reading ahead of the room by one item; before this the only
+        // way to know what `]` would do was to press it and find out in
+        // front of everybody. Shown only when there IS an order of
+        // service, so an ordinary projection is unchanged.
+        if (_nextAgendaLabel(locale) != null)
+          _hint(
+              scheme,
+              (_s('projectionAgendaNext', 'Next: {item}', locale))
+                  .replaceAll('{item}', _nextAgendaLabel(locale)!)),
         _hint(scheme, _s('projectionKeysHint', 'Arrows change verse', locale)),
         _hint(
             scheme,
