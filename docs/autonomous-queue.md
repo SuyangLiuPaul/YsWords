@@ -2433,8 +2433,9 @@ reported. Work these top-down before P2.
           dropped words their own earlier text had, which is exactly the
           kind of thing that letter exists to raise.
 
-- [ ] **Word-ADDITION verses in 雅偉版 need their own repair pass —
-      opposite direction from the 8-verse omission fix above.** The
+- [x] **Word-ADDITION verses in 雅偉版 need their own repair pass —
+      opposite direction from the 8-verse omission fix above. FIFTH
+      THAW landed 2026-09-13: 6 repaired, 8 left alone.** The
       2026-09-09 read of the 105 flagged verses turned up several where
       HEAD has a word neither the publisher's own current edition nor
       either independent witness has: 葡萄園 士師記 15:5, 現在 15:18, 我請求
@@ -2458,6 +2459,27 @@ reported. Work these top-down before P2.
       reading is ungrammatical. All 14 still fail both audits by design.
       Frozen-asset rule still applies: read and repair with the owner's
       sign-off, don't guess a fix from the witnesses alone.
+
+      **Outcome, 2026-09-13 (fifth thaw, see
+      `test/cuvs_yhwh_frozen_test.dart`'s doc comment for the full
+      writeup):** of the 14, **6 repaired** — 009001007, 043012035,
+      043016004, 045012003, 049004022, 066002016 — each a single Han
+      character transposed into an ungrammatical position, confirmed
+      this session against both the publisher's own live
+      `bsapp_bible_cuvs` (still reads the pre-repair, scrambled order —
+      genuinely theirs, not an importer artifact) and the independent
+      witness `cuvs-plus.json` (reads the repaired order). Fixed via
+      `tools/repair_by_official_cuv.py`'s `CORRECTIONS` list, same
+      mechanism as 約伯記 31:36 / 列王紀上 14:5 already in that file.
+      **8 left alone** — 007015002 (士師記 15:2, +我請求), 007015005
+      (15:5, +葡萄園), 007015018 (15:18, +現在), 010021002 (撒母耳記下
+      21:2, +大), 018010020 (約伯記 10:20), 023037007 (以賽亞書 37:7),
+      042020030 and 042020031 (路加福音 20:30/20:31) — the first four
+      are grammatical, meaningful extra words with no compensating drop
+      elsewhere in the verse (not a dittography or scribal duplication);
+      the last three are versification/note-boundary differences, not
+      wording differences. Both audits' EXPLAINED/PENDING sets record
+      all 8 so they stop re-reporting as NEW.
 
 - [x] **Added the apparatus-reformatting hits to both audits' EXPLAINED
       set — DONE 2026-09-09, and "81 + 44 = 125" above was wrong.**
@@ -14240,6 +14262,23 @@ so the bundle-size answer stays on the record.
       outside this repo's reach, in `run.sh`/`prompt.md` under
       `~/Library/Application Support/yswords-loop/`, which this loop's
       own guard rails say not to edit unattended.
+
+      **Tenth recurrence, 2026-09-13, three stages in a row.** The
+      20:00–20:33 execution stage did the fifth-thaw repair work itself
+      (6 of 14 `:2436` word-order ids, `repair_by_official_cuv.py` +
+      the re-pinned hashes) and ended without committing. The
+      21:36–21:47 stage was assigned landing it and ended `rc=0` saying
+      only *"I'll pause here and wait for the background process
+      notification when the full test suite completes"* — the same
+      diff orphaned a second time in the same hour. Landed 2026-09-13
+      22:53 by this stage: verified the two asset hashes match the
+      pins already in the tree, spot-checked the publisher's live
+      `bsapp_bible_cuvs` (confirms all 6 are genuinely theirs, not an
+      import artifact) and the independent witness `cuvs-plus.json`
+      (confirms the repaired reading) for all 6 ids, softened one
+      overclaim in the doc comment (an unverified bible.fhl.net
+      cross-check), and committed. Same conclusion as recurrences
+      5–9: the fix is in `run.sh`/`prompt.md`, not here.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an

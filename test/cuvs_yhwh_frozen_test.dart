@@ -228,7 +228,68 @@ import 'package:flutter_test/flutter_test.dart';
 /// the outsized diff length should have flagged before trusting the
 /// witnesses at all.
 ///
-/// That the freeze has now been lifted FOUR times, every time by the
+/// ## The fifth thaw, 2026-09-13 — 6 of the 14 word-ADDITION ids, and 8 left alone
+///
+/// The fourth thaw's leftover work (`docs/autonomous-queue.md:2436`) was 14
+/// verse ids where HEAD reads differently from `50dcc102^`, narrowed on
+/// 2026-09-09 but never checked against the one witness that could settle
+/// it: the publisher's own CURRENT text. Read at Yahwehdehua's
+/// `app/build/bible.db`, `verses` table `version='cuvs'` — a compiled
+/// snapshot of MySQL `bsapp_bible_cuvs`, the SAME live table the
+/// publisher's own `bsapp` CMS edits this edition through
+/// (`bsapp/app/Model/Bible/BibleCuvs.php`), independent of anything in
+/// this repo — all 14 read byte-identical to HEAD. Every one of the 14 IS
+/// the publisher's genuine current text, not an artifact `50dcc102`'s
+/// merge introduced.
+///
+/// That settles which of the two contradictory 2026-09-09 queue entries
+/// was right (one called these "the publisher's own new word ADDITIONS",
+/// the other speculated HEAD might hold a word "neither the publisher's
+/// own current edition nor either independent witness has") — it was the
+/// first — but it does not settle whether to touch them. Two adversarial
+/// review rounds argued this from both directions before anything was
+/// written, per the loop's own refuter rule. Split, on what survived:
+///
+///   * **6 REPAIRED** — 撒母耳記上 1:7, 約翰福音 12:35, 約翰福音 16:4,
+///     羅馬書 12:3, 以弗所書 4:22, 啟示錄 2:16. Each is a single Han
+///     character sitting in the wrong place in an otherwise intact,
+///     ungrammatical sentence — multiset-preserving, so nothing is added
+///     or dropped, only moved. `50dcc102^` and the independent witness
+///     (`cuvs-plus.json`) agree with each other on where it belongs; this
+///     session re-confirmed both offline for all 6 — the publisher's own
+///     live `bsapp_bible_cuvs` (Yahwehdehua's `bible.db`) still reads the
+///     pre-repair, scrambled order, so these are genuinely the
+///     publisher's text and not an importer artifact, and `cuvs-plus.json`
+///     independently reads the repaired order. The bible.fhl.net
+///     cross-check an earlier pass reported was not re-verified this
+///     session — the query did not return a usable response. This is the
+///     exact class the 2026-09-08 ruling
+///     (「参考和合本繁體官方的去决定」) already covers and
+///     `tools/repair_by_official_cuv.py` already repairs elsewhere in this
+///     same file (約伯記 31:36, 列王紀上 14:5) — including, at 約伯記
+///     31:36, a defect "verified present verbatim in the publisher's own
+///     `bsapp_bible_cuvs` row" being fixed anyway, because being genuinely
+///     theirs does not exempt a mechanical scrambling error. Fixed by
+///     six new entries in that same file's `CORRECTIONS` list.
+///   * **8 LEFT ALONE** — 士師記 15:2 (+我請求), 15:5 (+葡萄園), 15:18
+///     (+現在), 撒母耳記下 21:2 (+大), 約伯記 10:20, 以賽亞書 37:7, 路加
+///     福音 20:30/20:31. None of these is a mechanical scramble: the
+///     first four are grammatical, meaningful extra words, not a
+///     duplication and not nonsense (the first refuter round argued 大
+///     — 猶大人大發熱心 — visually resembles 敵我敵者's dittography; it
+///     does not survive a closer read, because 敵我敵者 repeats one WORD
+///     with no separate sense for either copy, while the two 大 here
+///     belong to two distinct words, the proper noun 猶大 and the idiom
+///     大發熱心, and the multiset audit confirms a pure insertion with no
+///     compensating drop elsewhere in the verse). The last three are
+///     versification/note-boundary differences, not wording differences,
+///     the same shape as the already-settled 申命記 5:5/5:6 boundary case.
+///     No repair in this file has ever deleted a valid extra word or moved
+///     a verse boundary on witness-agreement alone, and none does here.
+///     Both audit scripts' EXPLAINED/PENDING sets record all 8 by id so
+///     they stop re-reporting as NEW.
+///
+/// That the freeze has now been lifted FIVE times, every time by the
 /// person who imposed it and every time toward the publisher rather
 /// than away from them, is still not a precedent for lifting it for an
 /// edit of OURS.
@@ -242,6 +303,12 @@ import 'package:flutter_test/flutter_test.dart';
 /// the publisher's own notation, not an edit to it.
 void main() {
   const frozen = <String, String>{
+    // Re-pinned 2026-09-13 for the FIFTH thaw: six single-character
+    // transpositions repaired via `repair_by_official_cuv.py`'s
+    // CORRECTIONS list (撒母耳記上 1:7, 約翰福音 12:35, 約翰福音 16:4,
+    // 羅馬書 12:3, 以弗所書 4:22, 啟示錄 2:16). The other 8 of the 14
+    // candidate ids were read and left alone. See the doc comment above.
+    //
     // Re-pinned 2026-09-09 (second time same day) for the FOURTH thaw
     // proper: 8 verses where the 2026-09-08 publisher sync below had
     // dropped a word entirely, restored from the pre-sync blob at the
@@ -297,10 +364,12 @@ void main() {
     //   cuvs-yhwh-tr.json  8e4e85e0d31858484f18d8f345de30055b9ae0114ff0e6…
     //   cuvs-yhwh.json     a02acd5c4c04d025c5499308ee6c54b4796337c39926959…
     //   cuvs-yhwh-tr.json  ea33d4a9333adb5273255b38151c8a7ea015a21bcf22cb3…
+    //   cuvs-yhwh.json     bc86c4f89ec4e8c16a6c75f9115699b176f0c44e0cc6bc5…
+    //   cuvs-yhwh-tr.json  bb79163f7312b1e6a52a23b1a16ae772a4a4a2217e314a5…
     'assets/cuvs-yhwh.json':
-        'bc86c4f89ec4e8c16a6c75f9115699b176f0c44e0cc6bc54c1cd745659217e55',
+        '75af94dc37cf0a26636bcd0969757a9832a4bc4b72a4b687cb995c6767a4f6c7',
     'assets/cuvs-yhwh-tr.json':
-        'bb79163f7312b1e6a52a23b1a16ae772a4a4a2217e314a5f6b8e34bf516e6fcb',
+        'cd677042b09ac0d71dc0faeb90805a2f4ac4ae7a7bf0f586bcc72ac0cfb41fee',
   };
 
   frozen.forEach((path, expected) {

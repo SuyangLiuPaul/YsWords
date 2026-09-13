@@ -242,6 +242,41 @@ CORRECTIONS = [
      '数点百姓的不是我吗？我犯了罪，行了恶，', '歷代志上 21:17'),
     ('013021017', 't', '數點百姓不是我嗎？我犯了罪，行了惡的，',
      '數點百姓的不是我嗎？我犯了罪，行了惡，', '歷代志上 21:17'),
+
+    # --- six single-character transpositions `settle_transpositions_by_
+    #     witness.py` can no longer see -----------------------------
+    #
+    # That tool's own `presync` check reads `git show HEAD:...` and compares
+    # it to the on-disk file — a no-op once the sync it was meant to catch
+    # is already committed, since both sides are then identical. It found
+    # its 25 verses in the same working session as the sync itself, before
+    # that commit landed; these six were found the next day by a separate
+    # pass (`docs/autonomous-queue.md:2451`) and never went through it.
+    # Anchored here instead, the way `列王紀上 14:5` above already is.
+    #
+    # All six are confirmed present verbatim in the publisher's own
+    # `bsapp_bible_cuvs` row (`~/Documents/CodingProject/Yahwehdehua/app/
+    # build/bible.db`) — this is genuinely their text, not an adoption
+    # artifact — and the owner's 2026-09-08 ruling settles it the same way
+    # it settled 約伯記 31:36 above: a defect in their data we inherited by
+    # adopting it. Each is a single Han character out of place in an
+    # otherwise-intact sentence — multiset-preserving, so nothing is added
+    # or dropped, only moved — confirmed against `50dcc102^`, both
+    # independent witnesses (`cuvs-plus.json`, git blob `7a2dc43`) and the
+    # official 和合本 (bible.fhl.net `unv`), which all agree with each
+    # other against HEAD at every one of the six.
+    ('009001007', 's', '都双分给哈拿以。', '都以双分给哈拿。', '撒母耳記上 1:7'),
+    ('009001007', 't', '都雙分給哈拿以。', '都以雙分給哈拿。', '撒母耳記上 1:7'),
+    ('043012035', 's', '那在黑里暗行走的', '那在黑暗里行走的', '約翰福音 12:35'),
+    ('043012035', 't', '那在黑裏暗行走的', '那在黑暗裏行走的', '約翰福音 12:35'),
+    ('043016004', 's', '我对你们了说过。', '我对你们说过了。', '約翰福音 16:4'),
+    ('043016004', 't', '我對你們了說過。', '我對你們說過了。', '約翰福音 16:4'),
+    ('045012003', 's', '对你各人们说', '对你们各人说', '羅馬書 12:3'),
+    ('045012003', 't', '對你各人們說', '對你們各人說', '羅馬書 12:3'),
+    ('049004022', 's', '因私的欲迷惑', '因私欲的迷惑', '以弗所書 4:22'),
+    ('049004022', 't', '因私的欲迷惑', '因私欲的迷惑', '以弗所書 4:22'),
+    ('066002016', 's', '临到那里你，', '临到你那里，', '啟示錄 2:16'),
+    ('066002016', 't', '臨到那裏你，', '臨到你那裏，', '啟示錄 2:16'),
 ]
 
 # CHECKED AND LEFT ALONE

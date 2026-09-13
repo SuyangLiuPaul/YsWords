@@ -84,9 +84,11 @@ EXPLAINED = {
     # says, moved. Listed by id, not by a blanket "multiset unchanged" rule,
     # because that rule is not safe here: six OTHER verses this same pass
     # found (009001007, 043012035, 043016004, 045012003, 049004022,
-    # 066002016) are ALSO multiset-unchanged and are genuine word-order
-    # corruptions the adoption introduced, not apparatus. They are correctly
-    # NOT in this list and must keep failing the run — see :2436.
+    # 066002016) were ALSO multiset-unchanged and were genuine word-order
+    # corruptions the adoption introduced, not apparatus — correctly NOT in
+    # this list. Repaired 2026-09-13 via `repair_by_official_cuv.py` (see
+    # its own comment); they no longer appear as hits in either audit at
+    # all, so they are not re-listed as EXPLAINED here either — see :2436.
     "002023021": "出埃及记 23:21  missing '他'@30 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
     "004032038": "民数记 32:38  missing '西比玛'@5 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
     "007006026": "士师记 6:26  missing '上'@10 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
@@ -163,6 +165,33 @@ EXPLAINED = {
     "042009054": "路加福音 9:54  missing '吗'@55 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
     "054006018": "提摩太前书 6:18  missing '人'@29 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
     "058007010": "希伯来书 7:10  missing '中'@31 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    #
+    # ---- 3 of the 14 word-ADDITION/reallocation ids from :2436, closed 2026-09-13 ----
+    #
+    # Read against the DECISIVE witness :2436 itself named and this file's
+    # comment above had not yet consulted: Yahwehdehua's `app/build/
+    # bible.db`, `verses` table `version='cuvs'` — a compiled snapshot of
+    # MySQL `bsapp_bible_cuvs`, the SAME live table the publisher's own
+    # `bsapp` CMS edits this edition through (`bsapp/app/Model/Bible/
+    # BibleCuvs.php`), independent of anything in this repo. All 3 read
+    # byte-identical to HEAD there — this is genuinely the publisher's
+    # current text, not a `50dcc102` merge artifact. Unlike the six
+    # transpositions above (now fixed via `repair_by_official_cuv.py`,
+    # confirmed as mechanical Han-swaps the 2026-09-08 owner ruling
+    # already covers), these 3 are structural/versification differences,
+    # not wording the official 和合本 could arbitrate: 018010020 is the
+    # already-documented stale versification split (the "missing" second
+    # sentence is correctly in HEAD's own 10:21, not lost); 023037007 is
+    # this edition's `<note: "word"...>` anchor-citation convention
+    # (attested in 322 other verses of this same asset), restructuring
+    # where 進入 sits between running text and note rather than losing it;
+    # 042020030/042020031 (see the inserted-characters audit) moves
+    # 「第三個也娶過她」 from v30 to v31 — a verse-boundary choice, same
+    # shape as the already-EXPLAINED 申命記 5:5/5:6 「說」 boundary above,
+    # not a text loss. Left alone; see docs/autonomous-queue.md:2436.
+    "018010020": "约伯记 10:20  missing text is a stale versification split, not an omission — HEAD's own 10:21 already carries it",
+    "023037007": "以赛亚书 37:7  note/running-text boundary moved (322-verse citation convention), not a loss — publisher's current bsapp_bible_cuvs matches HEAD",
+    "042020030": "路加福音 20:30  verse-boundary reallocation to 20:31, same shape as 申命记 5:5/5:6 — publisher's current bsapp_bible_cuvs matches HEAD",
 }
 
 # What each EXPLAINED id's `agreed` list (position, missing-substring pairs)
@@ -253,6 +282,9 @@ SIGNATURES = {
     "066003002": ((20, '的'),),
     "066019015": ((30, '他们'),),
     "066020008": ((15, '的'),),
+    "018010020": ((16, '叫我在往而不返之先就是往黑暗和死荫之地以先可以稍得畅快'),),
+    "023037007": ((16, '进入他的心'),),
+    "042020030": ((3, '第三个也娶过她'),),
 }
 
 

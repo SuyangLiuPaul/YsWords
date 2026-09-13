@@ -161,9 +161,10 @@ EXPLAINED = {
     # `docs/autonomous-queue.md:2451`'s method: the text outside the note is
     # byte-identical between `50dcc102^` and HEAD. Listed by id, not by a
     # blanket "multiset unchanged" rule — see the dropped-audit comment for
-    # why that rule would swallow six genuine word-order corruptions the
-    # same pass found (009001007, 043012035, 043016004, 045012003,
-    # 049004022, 066002016), none of which appear below.
+    # why that rule would have swallowed six genuine word-order corruptions
+    # the same pass found (009001007, 043012035, 043016004, 045012003,
+    # 049004022, 066002016). Repaired 2026-09-13; none of the six appears
+    # below or anywhere else in this file any more.
     "004032038": "民数记 32:38  extra '西比玛'@16 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
     "007006026": "士师记 6:26  extra '上'@4 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
     "009006019": "撒母耳记上 6:19  extra '的他的原文是耶和华'@11 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
@@ -262,6 +263,48 @@ EXPLAINED = {
     "066003002": "启示录 3:2  extra '的衰微'@13 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
     "066019015": "启示录 19:15  extra '他们'@22 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
     "066020008": "启示录 20:8  extra '的方'@9 — apparatus reformat (50dcc102 adoption, :2451), running text unchanged",
+    #
+    # ---- 6 of the 14 word-ADDITION/reallocation ids from :2436, closed 2026-09-13 ----
+    #
+    # Checked against the decisive witness :2436 asked for and this file
+    # had not yet consulted: Yahwehdehua's `app/build/bible.db`, `verses`
+    # table `version='cuvs'` — a compiled snapshot of MySQL
+    # `bsapp_bible_cuvs`, the SAME live table the publisher's own `bsapp`
+    # CMS edits this edition through (`bsapp/app/Model/Bible/
+    # BibleCuvs.php`), independent of anything in this repo. All 6 read
+    # byte-identical to HEAD there — this is the publisher's own current
+    # text, not a `50dcc102` merge artifact.
+    #
+    # Unlike the six pure single-character transpositions that WERE
+    # repaired (`repair_by_official_cuv.py`, per the 2026-09-08 owner
+    # ruling on mechanical Han-swaps — see `audit_dropped_characters.py`'s
+    # matching comment), three of these six are genuine, grammatical,
+    # meaningful extra words — 士師記 15:2 我請求, 15:5 葡萄園, 15:18 現在
+    # — not a duplication and not nonsense. The repo's own established
+    # distinction throughout THIS file's own EXPLAINED list above (every
+    # "supplies a word the witnesses lack, and it reads as real content"
+    # case) is that this is a legitimate editorial/translation difference,
+    # not a defect the official 和合本 arbitrates; no shipped repair in
+    # this repo has ever deleted a valid extra word on witness-agreement
+    # alone. 撒母耳記下 21:2's extra 大 (犹大人大发热心) was checked
+    # against exactly this question — it visually resembles the ALREADY-
+    # repaired 約伯記 31:36 敵我敵者 dittography, but does not have that
+    # shape: 敵我敵者 duplicates one WORD with no separate sense for
+    # either copy, while 大 here belongs to two distinct words (the
+    # proper noun 猶大 and the idiom 大發熱心) and the multiset audit
+    # confirms it as a pure insertion, not a compensating swap. Left with
+    # the other three rather than moved to the repaired set.
+    # 以賽亞書 37:7 and 路加福音 20:30/31 are the mirror image of the
+    # dropped-characters audit's matching three entries — see that file's
+    # comment for the reasoning (a note/running-text boundary and a
+    # verse-boundary reallocation, not text gained or lost). All six left
+    # alone; see docs/autonomous-queue.md:2436.
+    "007015002": "士师记 15:2  extra '我请求' is a genuine, grammatical reading — publisher's current bsapp_bible_cuvs matches HEAD, not a defect",
+    "007015005": "士师记 15:5  extra '葡萄园' is a genuine, grammatical reading — publisher's current bsapp_bible_cuvs matches HEAD, not a defect",
+    "007015018": "士师记 15:18  extra '现在' is a genuine, grammatical reading — publisher's current bsapp_bible_cuvs matches HEAD, not a defect",
+    "010021002": "撒母耳记下 21:2  extra '大' (犹大人大发热心) is a pure insertion, not a 敌我敌者-style dittography — publisher's current bsapp_bible_cuvs matches HEAD",
+    "023037007": "以赛亚书 37:7  note/running-text boundary moved (322-verse citation convention), not a gain — publisher's current bsapp_bible_cuvs matches HEAD",
+    "042020031": "路加福音 20:31  verse-boundary reallocation from 20:30, same shape as 申命记 5:5/5:6 — publisher's current bsapp_bible_cuvs matches HEAD",
 }
 
 # What the printed 1919 did NOT settle. Five of the original 26; the other 21
@@ -463,6 +506,12 @@ SIGNATURES = {
     "066003002": ((13, '的衰微'),),
     "066019015": ((22, '他们'),),
     "066020008": ((9, '的方'),),
+    "007015002": ((33, '我请求'),),
+    "007015005": ((32, '葡萄园'),),
+    "007015018": ((28, '现在'),),
+    "010021002": ((49, '大'),),
+    "023037007": ((2, '惊动进入他的心'),),
+    "042020031": ((0, '第三个也娶过她'),),
 }
 
 
