@@ -248,7 +248,13 @@ void main() {
             what: 'the install intent after returning from settings');
         expect(count('requestPermission'), 1);
         await pending.timeout(const Duration(seconds: 5));
-        await tester.pump(const Duration(milliseconds: 400));
+        // Waited FOR rather than waited OUT. This was a single
+        // `pump(400ms)`, which is a bet that the banner clears inside
+        // one arbitrary window; it held locally and lost on CI on
+        // 2026-09-13. The claim is unchanged — the banner goes — but a
+        // slower machine is allowed to take longer to get there.
+        await _until(tester, () => find.text(_downloading).evaluate().isEmpty,
+            what: 'the downloading banner to clear');
         expect(find.text(_downloading), findsNothing);
         expect(find.text(_failed), findsNothing);
       });
