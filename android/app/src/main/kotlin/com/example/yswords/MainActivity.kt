@@ -192,6 +192,59 @@ class MainActivity : AudioServiceActivity() {
         // reader went through with it (the installer is a separate
         // task and returns nothing to us — the app finds out the way
         // everyone else does, by being restarted as the new version).
+        // 2026-09-13: "save this song / score as a file". On Android the
+        // place a reader expects a download to land is the public
+        // Downloads folder, which since API 29 is reachable without any
+        // permission through MediaStore — but only from native code. Dart
+        // writes the bytes to a temp file and hands the path over; this
+        // side inserts a row in the Downloads collection and streams the
+        // file into it. Below API 29 the collection does not exist and
+        // the answer is null, so Dart falls back to the app's own folder
+        // and says so.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "yswords/downloads")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "saveToDownloads" -> {
+                        val path = call.argument<String>("path")
+                        val name = call.argument<String>("name")
+                        val mime = call.argument<String>("mime") ?: "application/octet-stream"
+                        if (path == null || name == null) {
+                            result.error("args", "path and name are required", null)
+                            return@setMethodCallHandler
+                        }
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                            result.success(null)
+                            return@setMethodCallHandler
+                        }
+                        try {
+                            val values = android.content.ContentValues().apply {
+                                put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, name)
+                                put(android.provider.MediaStore.MediaColumns.MIME_TYPE, mime)
+                                put(
+                                    android.provider.MediaStore.MediaColumns.RELATIVE_PATH,
+                                    android.os.Environment.DIRECTORY_DOWNLOADS
+                                )
+                            }
+                            val resolver = contentResolver
+                            val uri = resolver.insert(
+                                android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
+                            )
+                            if (uri == null) {
+                                result.success(null)
+                                return@setMethodCallHandler
+                            }
+                            resolver.openOutputStream(uri).use { out ->
+                                File(path).inputStream().use { it.copyTo(out!!) }
+                            }
+                            result.success("Download/$name")
+                        } catch (e: Exception) {
+                            result.error("save_failed", e.message, null)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "yswords/apk_installer")
             .setMethodCallHandler { call, result ->
                 when (call.method) {

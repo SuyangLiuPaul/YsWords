@@ -8585,4 +8585,35 @@ const uiStrings = {
     'zh-Hant': '還有 {n} 項未列出',
     'en': '{n} more not listed',
   },
+  // 2026-09-13. Saving a song's audio or score as a file the reader can
+  // find — Downloads, the Files app, the desktop. Appended per this
+  // file's convention.
+  'songsSaveFile': {'zh-Hans': '保存文件', 'zh-Hant': '儲存檔案', 'en': 'Save file'},
+  'songsSaveFileTitle': {
+    'zh-Hans': '保存到设备',
+    'zh-Hant': '儲存到裝置',
+    'en': 'Save to this device',
+  },
+  'songsSaveScore': {'zh-Hans': '乐谱（PDF）', 'zh-Hant': '樂譜（PDF）', 'en': 'Score (PDF)'},
+  'songsSaving': {'zh-Hans': '正在保存…', 'zh-Hant': '正在儲存…', 'en': 'Saving…'},
+  'songsSavedTo': {
+    'zh-Hans': '已保存到 {where}',
+    'zh-Hant': '已儲存到 {where}',
+    'en': 'Saved to {where}',
+  },
+  'songsSavedToFilesApp': {
+    'zh-Hans': '已保存。在「文件」App → 我的 iPhone → 雅伟之言 里找。',
+    'zh-Hant': '已儲存。在「檔案」App → 我的 iPhone → 雅偉之言 裡找。',
+    'en': 'Saved. Find it in Files → On My iPhone → 雅伟之言.',
+  },
+  'songsSavedByBrowser': {
+    'zh-Hans': '浏览器已开始下载。',
+    'zh-Hant': '瀏覽器已開始下載。',
+    'en': 'Your browser is downloading it.',
+  },
+  'songsSaveFailed': {
+    'zh-Hans': '没保存成功，请稍后再试。',
+    'zh-Hant': '沒有儲存成功，請稍後再試。',
+    'en': 'Could not save it. Try again in a moment.',
+  },
 };

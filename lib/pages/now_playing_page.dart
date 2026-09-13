@@ -67,6 +67,11 @@ class NowPlayingPage extends StatelessWidget {
             // and lived only on the songs list's detail sheet, which is
             // not where anyone is when they decide to pass a song on.
             SongShareButton(song: player.current!, locale: locale),
+            // 2026-09-13: 「可以iPhone Android win mac都可以下载吗」— the
+            // file itself, to Downloads / the Files app / the desktop,
+            // as distinct from the offline copy the app keeps for its
+            // own playback.
+            SongSaveButton(song: player.current!, locale: locale),
             IconButton(
               icon: const Icon(Icons.playlist_add_rounded, size: 22),
               tooltip: uiStrings['songsAddToPlaylist']?[locale],

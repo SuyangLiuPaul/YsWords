@@ -140,6 +140,14 @@
 	     not actually use is a common App Store rejection. Paired with
 	     audio_service, which owns the AVAudioSession and publishes the
 	     now-playing info the lock screen and CarPlay read. -->
+	<!-- 2026-09-13: a song or score saved as a file lands in this app's
+	     Documents folder, and these two keys are what make that folder
+	     visible in the Files app (On My iPhone → 雅伟之言) and openable in
+	     place. Without them a saved file exists and cannot be reached. -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

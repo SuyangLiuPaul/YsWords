@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/song.dart';
 import 'package:yswords/services/song_playlist_service.dart';
+import 'package:yswords/services/song_file_saver.dart';
+import 'package:yswords/services/song_player_service.dart' show SongPlayerService;
+import 'package:yswords/utils/floating_toast.dart';
+
 import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/utils/route_paths.dart' show songShareUrl;
 
@@ -181,4 +185,190 @@ void showAddToPlaylistSheet(BuildContext context, Song song, String locale) {
       ),
     ),
   );
+}
+
+/// One file the reader can save from a song: its label key, the URL as
+/// the player would fetch it, and the name and type it lands as.
+class SongSaveOption {
+  const SongSaveOption({
+    required this.labelKey,
+    required this.fallback,
+    required this.url,
+    required this.fileName,
+    required this.mime,
+  });
+  final String labelKey;
+  final String fallback;
+  final String url;
+  final String fileName;
+  final String mime;
+}
+
+/// Everything [song] offers as a file, in the order the player's own
+/// chips use — the sung track, the sing-along, the instrumental, then
+/// the score. A song with no audio and no score offers nothing, and the
+/// button for it is not drawn.
+List<SongSaveOption> songSaveOptions(Song song) {
+  String ext(String url) {
+    final path = Uri.tryParse(url)?.path ?? url;
+    final m = RegExp(r'\.([A-Za-z0-9]{2,4})$').firstMatch(path);
+    final e = m?.group(1)?.toLowerCase();
+    return (e == null || e.isEmpty) ? 'mp3' : e;
+  }
+
+  String mimeOf(String e) => switch (e) {
+        'mp3' => 'audio/mpeg',
+        'm4a' || 'mp4' => 'audio/mp4',
+        'aac' => 'audio/aac',
+        'wav' => 'audio/wav',
+        'ogg' || 'oga' => 'audio/ogg',
+        'pdf' => 'application/pdf',
+        _ => 'application/octet-stream',
+      };
+
+  SongSaveOption? audio(String key, String fallback, String? url,
+      String suffix) {
+    if (url == null || url.isEmpty) return null;
+    final e = ext(url);
+    return SongSaveOption(
+      labelKey: key,
+      fallback: fallback,
+      url: SongPlayerService.resolvePlaybackUrl(url),
+      fileName: safeFileName('${song.title}$suffix', extension: e),
+      mime: mimeOf(e),
+    );
+  }
+
+  final vocalUrl = song.audioUrl ??
+      (song.audioTracks.isNotEmpty ? song.audioTracks.first.url : null);
+  // Not `?element`: that is Dart 3.8, and this project pins lower.
+  final out = <SongSaveOption>[
+    for (final o in [
+      audio('songsTrackVocal', 'Song', vocalUrl, ''),
+      audio('songsTrackAccompaniment', 'Sing-along', song.accompanimentUrl,
+          ' (伴唱)'),
+      audio('songsTrackInstrumental', 'Instrumental', song.instrumentalUrl,
+          ' (伴奏)'),
+    ])
+      if (o != null) o,
+  ];
+  final score = song.scoreUrl;
+  if (score != null && score.isNotEmpty) {
+    out.add(SongSaveOption(
+      labelKey: 'songsSaveScore',
+      fallback: 'Score (PDF)',
+      url: SongPlayerService.resolvePlaybackUrl(score),
+      fileName: safeFileName(song.title, extension: 'pdf'),
+      mime: 'application/pdf',
+    ));
+  }
+  return out;
+}
+
+/// 「保存文件」: the song's audio or score, saved where the reader can
+/// find it — see `song_file_saver.dart` for where that is per platform.
+/// Absent when the build cannot save files or the song offers none.
+class SongSaveButton extends StatelessWidget {
+  const SongSaveButton({
+    super.key,
+    required this.song,
+    required this.locale,
+    this.size = 20,
+  });
+
+  final Song song;
+  final String locale;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!SongFileSaver.isSupported) return const SizedBox.shrink();
+    final options = songSaveOptions(song);
+    if (options.isEmpty) return const SizedBox.shrink();
+    return IconButton(
+      icon: Icon(Icons.download_outlined, size: size),
+      tooltip: uiStrings['songsSaveFile']?[locale] ?? 'Save file',
+      onPressed: () => showSongSaveSheet(context, song, locale, options),
+    );
+  }
+}
+
+void showSongSaveSheet(
+    BuildContext context, Song song, String locale, List<SongSaveOption> options) {
+  showModalBottomSheet<void>(
+    useSafeArea: true,
+    context: context,
+    builder: (sheetCtx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: Text(
+              uiStrings['songsSaveFileTitle']?[locale] ?? 'Save to this device',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+          for (final o in options)
+            ListTile(
+              leading: Icon(o.mime == 'application/pdf'
+                  ? Icons.picture_as_pdf_outlined
+                  : Icons.audiotrack_outlined),
+              title: Text(uiStrings[o.labelKey]?[locale] ?? o.fallback),
+              subtitle: Text(o.fileName,
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                _saveWithFeedback(context, o, locale);
+              },
+            ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _saveWithFeedback(
+    BuildContext context, SongSaveOption o, String locale) async {
+  final scheme = Theme.of(context).colorScheme;
+  showFloatingToast(
+    context,
+    message: uiStrings['songsSaving']?[locale] ?? 'Saving…',
+    icon: Icons.downloading_outlined,
+    background: scheme.inverseSurface,
+    duration: const Duration(milliseconds: 1200),
+  );
+  final outcome =
+      await SongFileSaver.save(url: o.url, fileName: o.fileName, mime: o.mime);
+  if (!context.mounted) return;
+  switch (outcome) {
+    case SaveSaved(location: 'browser'):
+      showFloatingToast(context,
+          message: uiStrings['songsSavedByBrowser']?[locale] ??
+              'Your browser is downloading it.',
+          icon: Icons.check_circle_outline,
+          background: scheme.inverseSurface);
+    case SaveSaved(location: 'files-app'):
+      showFloatingToast(context,
+          message: uiStrings['songsSavedToFilesApp']?[locale] ??
+              'Saved. Find it in Files → On My iPhone → 雅伟之言.',
+          icon: Icons.check_circle_outline,
+          background: scheme.inverseSurface,
+          duration: const Duration(milliseconds: 3200));
+    case SaveSaved(:final location):
+      showFloatingToast(context,
+          message: (uiStrings['songsSavedTo']?[locale] ?? 'Saved to {where}')
+              .replaceAll('{where}', location),
+          icon: Icons.check_circle_outline,
+          background: scheme.inverseSurface,
+          duration: const Duration(milliseconds: 3200));
+    case SaveFailed(:final reason):
+      debugPrint('[SongSaveButton] save failed: $reason');
+      showFloatingToast(context,
+          message: uiStrings['songsSaveFailed']?[locale] ??
+              'Could not save it. Try again in a moment.',
+          icon: Icons.error_outline,
+          background: scheme.error);
+  }
 }
