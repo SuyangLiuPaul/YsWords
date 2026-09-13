@@ -43,7 +43,13 @@ class NowPlayingPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const LocalizedBackButton(),
-        title: Text(uiStrings['songsNowPlaying']?[locale] ?? 'Now playing'),
+        // No title. Six actions sit on this bar and on a phone the title
+        // had two characters of room — the owner's screenshot showed
+        // 「正…」, which names nothing. The song's own name is the first
+        // large text under the artwork, so the bar has nothing to add;
+        // the actions are what it is for.
+        title: const SizedBox.shrink(),
+        centerTitle: false,
         // Saving lives here too. This is the screen you are on when you
         // decide you like a song, and until now keeping it meant going
         // back to the list to find it again.
