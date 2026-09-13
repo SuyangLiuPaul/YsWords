@@ -294,6 +294,14 @@ const int kProjectionTypeDefaultStep = 4;
 /// controls that answer the pointer and then get out of the way. Four
 /// seconds is long enough to move from one button to the next and short
 /// enough that a bar left on the wall is measured in seconds.
+/// The countdown lengths offered, in minutes.
+///
+/// A short list rather than a picker: the operator is choosing before a
+/// service, not scheduling, and five values cover what a church
+/// actually counts down — the last song, the last few minutes, and the
+/// quarter hour a hall takes to fill.
+const List<int> kProjectionCountdownMinutes = <int>[1, 3, 5, 10, 15];
+
 const Duration kProjectionControlsLinger = Duration(seconds: 4);
 
 /// One thing the operator can ask the projection to do.
@@ -329,6 +337,9 @@ enum ProjectionCommand {
 
   /// Open the saved setups.
   presets,
+
+  /// Start, extend or take down the countdown before the service.
+  countdown,
 
   /// Open (or close) the order of service.
   agenda,
@@ -416,6 +427,12 @@ ProjectionCommand? projectionCommandFor(LogicalKeyboardKey key) {
   }
   if (key == LogicalKeyboardKey.keyV) {
     return ProjectionCommand.chooseSecondVersion;
+  }
+  // C for countdown. Bare, so it never fights Cmd+C — which
+  // kBrowserOwnedChords names, and which the modifier guard in _onKey
+  // already lets through.
+  if (key == LogicalKeyboardKey.keyC) {
+    return ProjectionCommand.countdown;
   }
   // The order of service: A opens it, and the two brackets step it —
   // the same pair a presentation tool uses for "previous / next slide"
@@ -748,6 +765,7 @@ class _ProjectionPageState extends State<ProjectionPage> {
   @override
   void dispose() {
     _controlsTimer?.cancel();
+    _countdownTicker?.cancel();
     ProjectionBroadcast.close();
     _focus.dispose();
     super.dispose();
@@ -852,6 +870,8 @@ class _ProjectionPageState extends State<ProjectionPage> {
         _chooseSecondVersion(mp);
       case ProjectionCommand.presets:
         _showPresets(mp);
+      case ProjectionCommand.countdown:
+        _showCountdown();
       case ProjectionCommand.agenda:
         _showAgenda(mp);
       case ProjectionCommand.agendaNext:
@@ -1019,12 +1039,102 @@ class _ProjectionPageState extends State<ProjectionPage> {
   /// EDITION prints: where a publisher merges two references into one
   /// block it reads `1-2`, and a room told `1` would be looking for a
   /// verse that is not separately printed in front of them.
+  // ── the countdown ─────────────────────────────────────────────────
+
+  /// Start a countdown of [minutes], or take one down.
+  ///
+  /// The ticker only exists to repaint: the number itself is computed
+  /// from [_countdownEnd] on every build, so a dropped tick or a
+  /// throttled timer shows a stale frame at worst and never a wrong
+  /// time. It stops itself once the clock reaches zero — the wall keeps
+  /// saying 「就要开始了」 until the operator takes it down, which is the
+  /// state the room is actually in.
+  void _startCountdown(int minutes) {
+    _countdownTicker?.cancel();
+    setState(() {
+      _blank = false;
+      _countdownEnd = DateTime.now().add(Duration(minutes: minutes));
+    });
+    _countdownTicker = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      if (_countdownLeft == Duration.zero) t.cancel();
+      setState(() {});
+    });
+  }
+
+  void _stopCountdown() {
+    _countdownTicker?.cancel();
+    _countdownTicker = null;
+    setState(() => _countdownEnd = null);
+  }
+
+  Future<void> _showCountdown() async {
+    // A countdown that is already up: the button takes it down rather
+    // than asking how long again. One key, both directions — which is
+    // what an operator with their eyes on the room needs.
+    if (_countdownEnd != null) {
+      _stopCountdown();
+      return;
+    }
+    final settings = _settings;
+    final locale = settings.locale;
+    final scheme = projectionDarkScheme(settings.primaryColor);
+    await _wallDialog<void>(
+      scheme: scheme,
+      locale: locale,
+      title: _s('projectionCountdown', 'Countdown', locale),
+      body: (dialogContext, _) => [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            _s('projectionCountdownHint',
+                'The wall shows the time left, and nothing else.', locale),
+            style: TextStyle(color: scheme.onSurfaceVariant),
+          ),
+        ),
+        for (final m in kProjectionCountdownMinutes)
+          ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.timer_outlined, color: scheme.onSurfaceVariant),
+            title: Text(
+              (_s('projectionCountdownMinutes', '{n} minutes', locale))
+                  .replaceAll('{n}', '$m'),
+              style: TextStyle(color: scheme.onSurface),
+            ),
+            onTap: () {
+              Navigator.of(dialogContext).pop();
+              _startCountdown(m);
+            },
+          ),
+      ],
+    );
+  }
+
   // ── the order of service ──────────────────────────────────────────
   //
   // A list of references prepared before the room fills, stepped with
   // `[` and `]`. See `projection_agenda.dart` for why the rows are
   // references and not copies of the text, and why there is no per-item
   // styling.
+
+  /// When the countdown runs out, or null when none is running. An
+  /// END TIME rather than a remaining duration: a timer that ticks a
+  /// number down drifts, and one that is paused by a suspended tab
+  /// comes back wrong. Wall-clock arithmetic on every frame cannot.
+  DateTime? _countdownEnd;
+  Timer? _countdownTicker;
+
+  /// Time left, floored at zero, or null when nothing is counting.
+  Duration? get _countdownLeft {
+    final end = _countdownEnd;
+    if (end == null) return null;
+    final left = end.difference(DateTime.now());
+    return left.isNegative ? Duration.zero : left;
+  }
 
   /// Where in the agenda the wall is, or null when it is simply
   /// following the reader. Not persisted: an order of service survives
@@ -1213,8 +1323,18 @@ class _ProjectionPageState extends State<ProjectionPage> {
             'This edition has no text here', settings.locale);
       }
     }
+    final left = _countdownLeft;
     return ProjectionFrame(
       blank: _blank,
+      countdown: left == null ? null : formatProjectionCountdown(left),
+      countdownLabel: left == null
+          ? null
+          : _s(
+              left == Duration.zero
+                  ? 'projectionCountdownNow'
+                  : 'projectionCountdownSoon',
+              left == Duration.zero ? 'We are beginning' : 'The service begins in',
+              settings.locale),
       typeSize: kProjectionTypeSteps[_typeStep],
       reference: _referenceFor(shown),
       tags: [
@@ -1624,6 +1744,7 @@ class _ProjectionPageState extends State<ProjectionPage> {
                     secondTexts: _secondTextsFor(shown),
                     secondCode: _secondCode,
                     secondLoading: _secondLoading,
+                    countdownRemaining: _countdownLeft,
                   ),
                 ),
                 // THE CONTROLS SIT AT THE TOP, AND THE REFERENCE AT THE
@@ -1832,6 +1953,16 @@ class _ProjectionPageState extends State<ProjectionPage> {
                           'Presets',
                           locale,
                           ProjectionCommand.presets,
+                          mp),
+                      _button(
+                          scheme,
+                          _countdownEnd == null
+                              ? Icons.timer_outlined
+                              : Icons.timer_off_outlined,
+                          'projectionCountdown',
+                          'Countdown',
+                          locale,
+                          ProjectionCommand.countdown,
                           mp),
                       _button(
                           scheme,

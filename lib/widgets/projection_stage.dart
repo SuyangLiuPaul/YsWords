@@ -328,12 +328,22 @@ class ProjectionStage extends StatelessWidget {
     this.secondTexts,
     this.secondCode,
     this.secondLoading = false,
+    this.countdownRemaining,
   });
 
-  /// The verse on the wall, or null when the corpus has not arrived.
   /// The verses on the wall — one, or the block a selection opened.
   /// Empty is the empty state.
   final List<Verse> verses;
+
+  /// Time left before the service starts, or null when no countdown is
+  /// running. While it is running it REPLACES the passage: a room that
+  /// is filling is being told when to sit down, and a verse behind a
+  /// clock is neither.
+  ///
+  /// `Duration.zero` is a real state — 「就要开始了」 — and not the same
+  /// as null. A countdown that vanishes at zero takes the wall back to
+  /// whatever was behind it at the exact moment everyone is looking.
+  final Duration? countdownRemaining;
 
   /// Book, chapter and verse as the room reads it — built by the page,
   /// because the reference and the text must name the same edition.
@@ -388,6 +398,60 @@ class ProjectionStage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (blank) return _ground(child: const SizedBox.expand());
+
+    final left = countdownRemaining;
+    if (left != null) {
+      return _ground(
+        child: Center(
+          // The same scaleDown rule the passage gets: the clock is
+          // drawn at the size the operator asked for and shrunk only if
+          // the wall is narrower than it needs.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: 24, vertical: typeSize * 0.4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    formatProjectionCountdown(left),
+                    style: TextStyle(
+                      color: scheme.onSurface,
+                      fontFamilyFallback: kCjkFontFallback,
+                      // Bigger than a verse: it is two or three glyphs
+                      // seen from the back of a hall, and it is the only
+                      // thing on the wall.
+                      fontSize: typeSize * 2.2,
+                      height: 1.1,
+                      fontWeight: FontWeight.w300,
+                      // Digits that do not jostle as the seconds tick.
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  SizedBox(height: typeSize * 0.3),
+                  Text(
+                    _s(
+                        left == Duration.zero
+                            ? 'projectionCountdownNow'
+                            : 'projectionCountdownSoon',
+                        left == Duration.zero
+                            ? 'We are beginning'
+                            : 'The service begins in',
+                        locale),
+                    style: TextStyle(
+                      color: scheme.onSurfaceVariant,
+                      fontFamilyFallback: kCjkFontFallback,
+                      fontSize: _referenceSize,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return _ground(
       child: LayoutBuilder(
@@ -561,6 +625,20 @@ class ProjectionStage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// `5:00`, `12:34`, `1:02:03` — minutes and seconds, hours only when
+/// there are some. Never negative: a countdown that has run out reads
+/// `0:00` until the operator takes it down, which is the state the
+/// room is actually in.
+String formatProjectionCountdown(Duration left) {
+  final total = left.isNegative ? 0 : left.inSeconds;
+  final h = total ~/ 3600;
+  final m = (total % 3600) ~/ 60;
+  final sec = total % 60;
+  final two = sec.toString().padLeft(2, '0');
+  if (h > 0) return '$h:${m.toString().padLeft(2, '0')}:$two';
+  return '$m:$two';
 }
 
 /// `projectionStrings`, with English as the fallback locale before the

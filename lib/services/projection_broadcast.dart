@@ -37,6 +37,8 @@ class ProjectionFrame {
     required this.verses,
     required this.second,
     required this.secondNote,
+    this.countdown,
+    this.countdownLabel,
     required this.groundColors,
     required this.radial,
     required this.ink,
@@ -57,6 +59,13 @@ class ProjectionFrame {
   /// One line of apparatus in place of [second] — loading, or missing.
   final String? secondNote;
 
+  /// The countdown, already formatted (`5:00`), when one is running —
+  /// the follower shows it INSTEAD of the passage, as the wall does.
+  final String? countdown;
+
+  /// The line under it: 「聚会还有」 or 「就要开始了」.
+  final String? countdownLabel;
+
   /// One colour for a flat ground; more for a gradient, centre first.
   final List<String> groundColors;
   final bool radial;
@@ -68,6 +77,8 @@ class ProjectionFrame {
         'blank': blank,
         'typeSize': typeSize,
         'reference': reference,
+        'countdown': countdown,
+        'countdownLabel': countdownLabel,
         'tags': tags,
         'verses': verses,
         'second': second,

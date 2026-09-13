@@ -46,6 +46,9 @@
     word-break: normal;
   }
   #passage .num { opacity: .75; font-size: .42em; margin-right: .25em; }
+  #passage .clock { font-size: 2.2em; font-weight: 300; line-height: 1.1;
+    font-variant-numeric: tabular-nums; }
+  #passage .clocklabel { font-size: .26em; opacity: .8; margin-top: .3em; }
   #passage .second { margin-top: .6em; font-size: .82em; }
   #passage .note { opacity: .75; }
   #ref {
@@ -119,7 +122,23 @@
     ref.style.color = f.muted || '#9aa7b8';
     var mutedCss = 'color:' + (f.muted || '#9aa7b8');
 
-    if (f.blank || !f.verses || !f.verses.length) {
+    if (f.blank) {
+      passage.classList.add('hidden');
+      ref.classList.add('hidden');
+      return;
+    }
+    // A countdown replaces the passage, exactly as it does on the wall:
+    // a room that is filling is being told when to sit down.
+    if (f.countdown) {
+      passage.innerHTML = '<div class="clock">' + esc(f.countdown) + '</div>'
+        + '<div class="clocklabel" style="' + mutedCss + '">'
+        + esc(f.countdownLabel || '') + '</div>';
+      passage.classList.remove('hidden');
+      ref.classList.add('hidden');
+      fit(f.typeSize || 76);
+      return;
+    }
+    if (!f.verses || !f.verses.length) {
       passage.classList.add('hidden');
       ref.classList.add('hidden');
       return;

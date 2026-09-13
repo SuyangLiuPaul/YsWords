@@ -260,4 +260,27 @@ const projectionStrings = <String, Map<String, String>>{
     'zh-Hant': '清空程序',
     'en': 'Clear the order',
   },
+  // 2026-09-13: the countdown before a service starts.
+  'projectionCountdown': {'zh-Hans': '倒计时', 'zh-Hant': '倒數計時', 'en': 'Countdown'},
+  'projectionCountdownHint': {
+    'zh-Hans': '墙上只显示还有多久，别的都不显示。再按一次就撤下。',
+    'zh-Hant': '牆上只顯示還有多久，別的都不顯示。再按一次就撤下。',
+    'en': 'The wall shows the time left, and nothing else. '
+        'Press again to take it down.',
+  },
+  'projectionCountdownMinutes': {
+    'zh-Hans': '{n} 分钟',
+    'zh-Hant': '{n} 分鐘',
+    'en': '{n} minutes',
+  },
+  'projectionCountdownSoon': {
+    'zh-Hans': '聚会还有',
+    'zh-Hant': '聚會還有',
+    'en': 'The service begins in',
+  },
+  'projectionCountdownNow': {
+    'zh-Hans': '就要开始了',
+    'zh-Hant': '就要開始了',
+    'en': 'We are beginning',
+  },
 };
