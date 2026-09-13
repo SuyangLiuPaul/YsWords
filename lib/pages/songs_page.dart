@@ -1552,7 +1552,7 @@ class _SongTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             color:
-                                scheme.onSurface.withValues(alpha: 0.55),
+                                scheme.onSurfaceVariant,
                           ),
                         ),
                         if (song.creditLine != null)
@@ -1560,8 +1560,7 @@ class _SongTile extends StatelessWidget {
                             '· ${song.creditLine}',
                             style: TextStyle(
                               fontSize: 11,
-                              color: scheme.onSurface
-                                  .withValues(alpha: 0.55),
+                              color: scheme.onSurfaceVariant,
                             ),
                           ),
                         if (song.durationLabel != null)
@@ -1569,8 +1568,7 @@ class _SongTile extends StatelessWidget {
                             '· ${song.durationLabel}',
                             style: TextStyle(
                               fontSize: 11,
-                              color: scheme.onSurface
-                                  .withValues(alpha: 0.55),
+                              color: scheme.onSurfaceVariant,
                               fontFeatures: const [
                                 FontFeature.tabularFigures()
                               ],

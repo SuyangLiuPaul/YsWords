@@ -637,10 +637,17 @@ class _LoadingPageState extends State<LoadingPage> {
                         'v$kAppVersion',
                         style: TextStyle(
                           fontSize: settings.fontSize * 0.65,
+                          // `onSurfaceVariant`, not a 55% `primary`:
+                          // that measured 2.49:1 at 13 px, the worst
+                          // contrast in the app, on the first screen it
+                          // ever draws. And it had no floor — the ratio
+                          // moved with whatever theme colour the reader
+                          // chose, so a pale seed made it worse and
+                          // nothing noticed. This role is exactly what
+                          // the secondary ink is derived FOR.
                           color: Theme.of(context)
                               .colorScheme
-                              .primary
-                              .withValues(alpha: 0.55),
+                              .onSurfaceVariant,
                         ),
                       ),
                     ],

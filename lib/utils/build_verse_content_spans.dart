@@ -60,14 +60,22 @@ List<InlineSpan> buildVerseContentSpans({
   final spans = <InlineSpan>[];
   // Verse number span — uses the theme primary color in both modes
   // so the user's chosen color tints all reading-surface chrome
-  // consistently. Paragraph-mode superscript variant is rendered at
-  // 80% alpha so it stays subtle next to continuous prose;
-  // verse-by-verse uses full primary so it reads like a clear label.
+  // consistently. Both modes now use the FULL primary.
+  //
+  // Paragraph mode used to reduce it to 80% alpha "so it stays subtle
+  // next to continuous prose", which measured 4.07:1 at 13 px against
+  // the default surface — under the 4.5 bar for text that size. The
+  // subtlety it was buying is already carried by the size and the
+  // superscript baseline; the alpha was buying a second helping of it
+  // with legibility.
+  //
+  // Worth naming the shape of the bug rather than just the number: an
+  // alpha reduction of `primary` has NO lower bound, because `primary`
+  // is whatever theme colour the reader picked in Settings. A pale seed
+  // makes it worse and nothing in the app notices.
   final verseNumColor = isSelected
       ? Theme.of(context).colorScheme.onPrimaryContainer
-      : (superscriptVerseNum
-          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.80)
-          : Theme.of(context).colorScheme.primary);
+      : Theme.of(context).colorScheme.primary;
 
   final verseNumStyle = TextStyle(
     fontSize:
