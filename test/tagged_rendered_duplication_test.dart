@@ -255,9 +255,18 @@ void main() {
     // 歷代志下 18:18, 以西結書 10:1, 列王紀下 13:10, 耶利米書 11:2 — were
     // spliced into the existing Strong's run each restored word belongs
     // under (docs/autonomous-queue.md :2548). The 7th, 士師記 15:13's 以坦
-    // (Etam), needs a brand-new run/Strong's number rather than a splice
-    // into an existing one, so it stays in fallback and stays open.
-    expect(fallback, 185);
+    // (Etam), stayed in fallback at the time — the queue's own text still
+    // asked for a new Strong's run.
+    //
+    // 185 -> 184 (2026-09-13): 以坦 is filed back too, as an untagged
+    // `"s": ""` run rather than a new Strong's number — `assets/originals/
+    // judges.json` has no עֵיטָם anywhere in 15:13 (unlike 15:8/15:11,
+    // which both carry H5862), so a Strong's number there would assert a
+    // word the Hebrew doesn't have. `coversVerse` now passes for this
+    // verse, matching `tagged_verse_coverage_test.dart`'s `known` and
+    // `implied_coverage_census_test.dart`'s `droppedCoverage`, both
+    // re-pinned the same way in the same commit.
+    expect(fallback, 184);
     // 1,149 -> 1,160. This census is dominated by the `<note: …>` / `〔…〕`
     // asymmetry rather than by scripture, so a rise here says the two sides
     // set their apparatus differently in eleven more verses than they did.

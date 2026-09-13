@@ -272,16 +272,23 @@ def audit(version: str, verbose: bool, tail: int, versify: bool) -> int:
 # example) rather than widening the check to tolerate drift. A raw
 # total that could silently move is exactly what let this one drift
 # unnoticed from the true 2026-08-12 baseline for four weeks.
+#
+# 367572 -> 367573 (2026-09-13): 士師記 15:13's 以坦 was spliced back into
+# `assets/tagged/cuvs-yhwh/judges.json` as a new untagged run
+# (docs/autonomous-queue.md :2548) — one more run, in both directions
+# since the run count does not depend on `--no-versification`.
+# `total_tagged` is unchanged because the new run carries no Strong's
+# number.
 PINNED = {
     True: {  # versify=True — the figure the queue quotes
-        "total_runs": 367572,
+        "total_runs": 367573,
         "total_tagged": 360929,
         "left_to_read": 1991,
         "left_to_read_distinct": 682,
         "orphan_occurrences": 9761,
     },
     False: {  # --no-versification — the pre-2026-08 raw figure
-        "total_runs": 367572,
+        "total_runs": 367573,
         "total_tagged": 360929,
         "orphan_occurrences": 25133,
     },
