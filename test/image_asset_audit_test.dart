@@ -13,8 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// On the web that comes from `createCkImageFromImageElement`:
 /// CanvasKit could not make a texture out of the decoded `<img>`. The
-/// image was `assets/loading.png` — 1024×1024, 1.2 MB — drawn into the
-/// splash's small logo slot with no decode cap, on the smallest phone
+/// image was `assets/loading.png` — 1024×1024, so ≈4 MB once decoded
+/// whatever the file compresses to — drawn into the splash's small logo
+/// slot with no decode cap, on the smallest phone
 /// the app ships to, at the tightest moment for memory it has. And with
 /// no `errorBuilder` the image stream had no listener to swallow the
 /// failure, so it went to `FlutterError.reportError` and arrived as a
@@ -101,13 +102,31 @@ void main() {
     }
   });
 
-  test('the splash mark is still the big asset this was written for', () {
-    // If loading.png is ever shrunk, the cap above stops mattering and
-    // someone should be told rather than left guessing why it is there.
-    final png = File('assets/loading.png');
-    expect(png.existsSync(), isTrue);
-    expect(png.lengthSync(), greaterThan(500 * 1024),
-        reason: 'still worth capping at 1.2 MB; if it has been shrunk, '
-            'say so here rather than deleting the rule');
+  test('the splash mark is still big enough to need the cap', () {
+    // The cap is about PIXELS, not bytes. `loading.png` is 1.2 MB on
+    // disk, but what the decoder allocates is 1024 × 1024 × 4 ≈ 4 MB
+    // whatever the file compresses to — which is why the same rule
+    // applies to SeekSparks' splash mark, a 67 KB file of exactly the
+    // same dimensions. If this asset is ever redrawn small enough to
+    // draw uncapped, say so here rather than deleting the rule.
+    final bytes = File('assets/loading.png').readAsBytesSync();
+    // PNG: 8-byte signature, then the IHDR chunk — 4 length, 4 type,
+    // then width and height as big-endian uint32.
+    int be32(int at) =>
+        (bytes[at] << 24) | (bytes[at + 1] << 16) | (bytes[at + 2] << 8) |
+        bytes[at + 3];
+    expect(String.fromCharCodes(bytes.sublist(12, 16)), 'IHDR');
+    final width = be32(16);
+    final height = be32(20);
+    // 480 = the largest slot the splash ever draws into (240pt on a
+    // TV, `ResponsiveBreakpoints.loadingLogoSize`) at DPR 2. The mark
+    // is at least that, and a mini-phone's slot is 100pt — so
+    // uncapped, the smallest device decodes the most pixels it will
+    // never use. That is the asymmetry the cap exists for, and it is
+    // why SeekSparks' 512×512 themed marks are capped too despite
+    // being a quarter of this one.
+    expect(width * height, greaterThanOrEqualTo(480 * 480),
+        reason: 'decoded at $width×$height ≈ '
+            '${(width * height * 4) ~/ (1024 * 1024)} MB uncapped');
   });
 }
