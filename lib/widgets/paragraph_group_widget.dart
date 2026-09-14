@@ -12,6 +12,7 @@ import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
 import 'package:yswords/widgets/block_note_card.dart';
 import 'package:yswords/widgets/superscription_line.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/utils/haptics.dart';
 
 /// Renders a group of consecutive verses as one flowing paragraph (RichText).
 /// Used in paragraph mode. Eliminates per-verse line breaks so verses read
@@ -220,7 +221,18 @@ class ParagraphGroupWidget extends StatelessWidget {
             locale: locale,
             isSelected: isSelected || isHighlighted,
             superscriptVerseNum: true,
-            onTextTap: () => mainProvider.toggleVerse(verse: verse),
+            // 2026-09-14: the haptic joins paragraph mode. Both modes
+            // run the same toggle through the same callback, and only
+            // `verse_widget.dart` — the verse-per-line mode — buzzed;
+            // paragraph mode is the DEFAULT, so the mode most readers
+            // use was the one giving no confirmation that a tap landed.
+            // That matters more here than in the other mode: in prose
+            // there is no row to see highlight, just a background tint
+            // behind running text.
+            onTextTap: () {
+              hapticSelect();
+              mainProvider.toggleVerse(verse: verse);
+            },
             spanBgColor: bgColor,
             // See verse_widget.dart — renderedVersion, and pane-scoped.
             // Paragraph mode is the DEFAULT reading mode, so this is the

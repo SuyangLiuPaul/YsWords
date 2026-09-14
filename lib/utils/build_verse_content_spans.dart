@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
@@ -87,51 +86,64 @@ List<InlineSpan> buildVerseContentSpans({
     color: verseNumColor,
   );
 
+  // 2026-09-14: the number does what the verse does, and nothing else.
+  //
+  // It used to fall back to "copy this verse to the clipboard" whenever
+  // [onTextTap] was null — twenty lines of clipboard-and-snackbar that
+  // NO caller could reach: both widgets that show a verse number pass
+  // [onTextTap], and the third caller (a psalm superscription) passes
+  // `showVerseNumber: false`. Dead, but not harmless, because of where
+  // it sat: any future caller that forgot the callback would have had
+  // its readers silently overwrite the clipboard by tapping a number
+  // that looks exactly like the text around it. A fallback that
+  // diverges from the live path is worse than no fallback.
+  //
+  // Worth being plain about the target size, since this is the smallest
+  // one in the reading pane: in paragraph mode the number is
+  // `fontSize * 0.65` — about 11 px at the default — which is nowhere
+  // near the 24 px of WCAG 2.5.8. It is not a violation and it is not
+  // worth padding. 2.5.8's inline exception covers a target sized by
+  // the line height of the text it sits in, and more to the point the
+  // number is not a separate target at all: it does the same thing as
+  // the several lines of verse wrapped around it, so a miss costs the
+  // reader nothing. Padding it to 24 px would push prose apart on every
+  // line of every chapter to fix a miss that has no consequence.
+  final verseNumChild = Padding(
+    // Slight right gap so number doesn't glue onto the first character.
+    // Superscript needs less right-pad because it's smaller.
+    padding: EdgeInsets.only(
+      right: superscriptVerseNum ? 3 : 4,
+      // Lift superscript a touch so it sits visually above the baseline.
+      top: superscriptVerseNum ? settings.fontSize * 0.05 : 0,
+    ),
+    // 2026-06-18 (v1.3.90): softWrap:false + maxLines:1 so a 2-digit
+    // verse number (e.g. "10") never character-breaks into "1"/"0" on
+    // two lines when the WidgetSpan child is handed a tight width
+    // constraint in a narrow pane (reported on iPad split view,
+    // paragraph mode). The number is always a few chars, so disabling
+    // wrap can't cause visible overflow.
+    child: Text(
+      verse.verseLabel,
+      style: verseNumStyle,
+      softWrap: false,
+      maxLines: 1,
+    ),
+  );
+
   final verseNumSpan = WidgetSpan(
     alignment: superscriptVerseNum
         ? PlaceholderAlignment.top
         : PlaceholderAlignment.baseline,
     baseline: TextBaseline.alphabetic,
-    child: GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () async {
-        if (onTextTap != null) {
-          onTextTap();
-          return;
-        }
-        final toCopy = '${verse.verseLabel} ${sanitizeVerseText(verse.text, stripParentheticals: settings.copyStripParentheticals)}';
-        final ok = await ClipboardHelper.copyText(toCopy);
-        if (!context.mounted) return;
-        final msg = ok
-            ? (uiStrings['copiedVerse']?[locale] ?? 'Copied verse {verse}')
-                .replaceAll('{verse}', verse.verseLabel)
-            : (uiStrings['shareLinkFailed']?[locale] ??
-                'Copy failed — clipboard unavailable');
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg)));
-      },
-      child: Padding(
-        // Slight right gap so number doesn't glue onto the first character.
-        // Superscript needs less right-pad because it's smaller.
-        padding: EdgeInsets.only(
-          right: superscriptVerseNum ? 3 : 4,
-          // Lift superscript a touch so it sits visually above the baseline.
-          top: superscriptVerseNum ? settings.fontSize * 0.05 : 0,
-        ),
-        // 2026-06-18 (v1.3.90): softWrap:false + maxLines:1 so a 2-digit
-        // verse number (e.g. "10") never character-breaks into "1"/"0" on
-        // two lines when the WidgetSpan child is handed a tight width
-        // constraint in a narrow pane (reported on iPad split view,
-        // paragraph mode). The number is always a few chars, so disabling
-        // wrap can't cause visible overflow.
-        child: Text(
-          verse.verseLabel,
-          style: verseNumStyle,
-          softWrap: false,
-          maxLines: 1,
-        ),
-      ),
-    ),
+    // No callback, no gesture detector: an opaque hit region that does
+    // nothing still swallows the tap meant for the text underneath it.
+    child: onTextTap == null
+        ? verseNumChild
+        : GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTextTap,
+            child: verseNumChild,
+          ),
   );
   if (showVerseNumber) spans.add(verseNumSpan);
 

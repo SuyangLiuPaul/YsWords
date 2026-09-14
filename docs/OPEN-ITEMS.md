@@ -798,6 +798,25 @@ app Yahweh's World three versions; there it was fixed by declaring
   (`:6315`), and the remaining 86 Simplified wording differences
   (`:6361`), with the Traditional rebuild (`:6387`) waiting behind them.
   `[carried forward]`
+- **Whether `assets/leb.json` gets the 2 Cor 13:13 repair its 梁家鏗
+  sibling got.** The LEB has the same numbering defect the LJK edition
+  had — the grace benediction under 13:13 where the English tradition
+  numbers it 13:14, so a reader who looks up the verse everyone quotes
+  finds the wrong words. `tools/repair_verse_numbering.py` fixed it in
+  the Sword repo's LEB long ago, and on 2026-09-14 a run of that script
+  here repaired this one too — as a SIDE EFFECT of a 梁家鏗 update,
+  because the script's specs were not scoped to the edition it was asked
+  about. That was reverted (`git checkout -- assets/leb.json`) and the
+  script now drops every spec outside the named edition. The defect is
+  still there, and fixing it is a deliberate act on a licensed text, not
+  a by-product of someone else's pipeline run. `[verified 2026-09-14]`
+- **Whether the offline pack should download editions the picker hides.**
+  Resolved for now by deriving `_bibleUrls` from `availableVersions`, so
+  it no longer fetches `nasb` (whose asset prod deletes — a guaranteed
+  404) or the two hidden Greek texts (15.3 MB). Recorded here because the
+  reverse call is the owner's: if a hidden edition should still be
+  pre-cached for the day it comes back, the derivation is the wrong
+  shape. `[verified 2026-09-14]`
 - **Whether `assets/sermons/zh-TW/` follows the lexicon into the other
   Traditional orthography** — `docs/autonomous-queue.md:3788`.
   `[carried forward]`

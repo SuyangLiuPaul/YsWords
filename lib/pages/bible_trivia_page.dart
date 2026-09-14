@@ -20,6 +20,7 @@ import 'package:yswords/widgets/language_switcher_button.dart';
 import 'package:yswords/widgets/localized_back_button.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yswords/constants/motion.dart';
 
 /// Curated catalogue of "Bible trivia" / 冷知识 — patterns and
 /// hidden structures most readers don't notice unless someone
@@ -935,7 +936,8 @@ class _TriviaTileState extends State<_TriviaTile> {
                     ),
                   AnimatedRotation(
                     turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 220),
+                    duration: AppMotion.duration(
+                        context, const Duration(milliseconds: 220)),
                     child: Icon(
                       Icons.expand_more_rounded,
                       color: scheme.onSurface.withValues(alpha: 0.55),

@@ -78,16 +78,30 @@ void main() {
     // scattered across four files and a future one that forgets the
     // flag would leave the toggle half-true, which is worse than
     // missing. The thing being pinned is the WIRING.
-    test('the reading pane, the number tap, the popup sheet, the preview',
-        () {
+    // 2026-09-14: "the number tap" left this list, and the reason is
+    // worth keeping. `build_verse_content_spans.dart` copied the verse
+    // when its `onTextTap` was null — and no caller reached that branch:
+    // the two widgets that render a verse number both pass the callback,
+    // and the third suppresses the number. It has been a copy path in
+    // this test's title and in nobody's app since it was written. The
+    // branch is deleted, so the assertion that it passes the setting
+    // would now be pinning the absence of a feature.
+    //
+    // The remaining three are all reachable, and the guard below still
+    // does what it was written for.
+    test('the reading pane, the popup sheet, the preview', () {
       final pane =
           File('lib/widgets/bible_reading_pane.dart').readAsStringSync();
       expect(pane.contains('stripParentheticals: strip'), isTrue,
           reason: 'the three copy formats must pass the setting');
+      // And the deleted path stays deleted: a number tap that copies is
+      // a clipboard write the reader did not ask for, indistinguishable
+      // from tapping the text beside it.
       final spans =
           File('lib/utils/build_verse_content_spans.dart').readAsStringSync();
-      expect(spans.contains('stripParentheticals: settings.copyStripParentheticals'),
-          isTrue, reason: 'the single-verse number-tap copy');
+      expect(spans.contains('ClipboardHelper'), isFalse,
+          reason: 'the verse number does what the verse does — see '
+              'test/verse_number_tap_test.dart');
       final sheet =
           File('lib/widgets/verse_popup_sheet.dart').readAsStringSync();
       expect(sheet.contains('stripParentheticals: strip'), isTrue,

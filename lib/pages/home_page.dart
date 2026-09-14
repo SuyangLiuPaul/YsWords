@@ -212,7 +212,10 @@ class _HomePageState extends State<HomePage> {
         // Main reading pane fills the screen; we use AnimatedPadding
         // so it slides right when the sidebar opens.
         AnimatedPadding(
-          duration: AppMotion.standard,
+          // The whole reading column travels sideways here, which is the
+          // largest movement on the screen — zero it for a reader who
+          // asked for less motion (2026-09-14).
+          duration: AppMotion.duration(context, AppMotion.standard),
           curve: AppMotion.symmetric,
           padding: EdgeInsets.only(left: sidebarW),
           child: Center(
@@ -225,7 +228,7 @@ class _HomePageState extends State<HomePage> {
         // Sidebar — Positioned with top:0/bottom:0 guarantees full
         // screen height; animated width handles open/close transition.
         AnimatedPositioned(
-          duration: AppMotion.standard,
+          duration: AppMotion.duration(context, AppMotion.standard),
           curve: AppMotion.symmetric,
           left: 0,
           top: 0,

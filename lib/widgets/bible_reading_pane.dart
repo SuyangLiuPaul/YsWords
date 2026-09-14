@@ -7053,7 +7053,12 @@ class _BibleReaderBottomBar extends StatelessWidget {
           // A slower, symmetric ease feels considerably less abrupt
           // than the previous 200 ms easeOutCubic — both bars now
           // ease in/out at the same pace.
-          duration: AppMotion.slow,
+          //
+          // 2026-09-14: and no travel at all for a reader who asked for
+          // less motion. This is the biggest movement in the app — a
+          // full bar covering 1.4x its own height, twice, every time the
+          // reader taps to hide the chrome.
+          duration: AppMotion.duration(context, AppMotion.slow),
           curve: AppMotion.symmetric,
           child: _GlassSurface(
             // Top-rounded only + opaque so the surface fills all the
@@ -7327,8 +7332,9 @@ class _FloatingHeader extends StatelessWidget {
         child: AnimatedSlide(
           offset: chromeVisible ? Offset.zero : const Offset(0, -1.4),
           // 2026-05-22 (v1.2.71): smoother chrome animation — matches
-          // the bottom bar's timing.
-          duration: AppMotion.slow,
+          // the bottom bar's timing. Reduced motion too — see the bottom
+          // bar.
+          duration: AppMotion.duration(context, AppMotion.slow),
           curve: AppMotion.symmetric,
           // 2026-05-22 (v1.2.71): single edge-to-edge surface that
           // matches the bottom bar's pattern — opaque background,
@@ -8986,7 +8992,7 @@ class _SectionHeadingState extends State<_SectionHeading> {
         ),
         if (hasContext)
           AnimatedSize(
-            duration: AppMotion.fast,
+            duration: AppMotion.duration(context, AppMotion.fast),
             curve: AppMotion.enter,
             alignment: Alignment.topLeft,
             child: _expanded
@@ -9159,7 +9165,7 @@ class _BookIntroCardState extends State<_BookIntroCard> {
             // passage. AnimatedSize gives a soft expand/collapse
             // motion without dropping into the verse layout.
             AnimatedSize(
-              duration: AppMotion.standard,
+              duration: AppMotion.duration(context, AppMotion.standard),
               curve: AppMotion.enter,
               alignment: Alignment.topLeft,
               child: _expanded
