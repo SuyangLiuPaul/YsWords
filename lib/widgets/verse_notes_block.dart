@@ -87,15 +87,39 @@ const List<String> _superscripts = [
   '⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹',
 ];
 
-/// `12` → `¹²`. Shared with the inline markers so a superscript in the
-/// verse and a superscript in the block are the same glyphs.
+/// `3` → `③`. The note marker, in the verse and in the block.
+///
+/// 2026-09-15: 「这个看起来很confuse 你可能右上角 圈圈数字」. A bare
+/// superscript was the wrong glyph for this, and the photograph showed
+/// exactly why: the verse numbers in this reader are ALSO small raised
+/// numbers, so `…蒙召的人。⁴⁵⁶⁷⁸ ²⁹因為神…` is two different numbering
+/// systems in one run of characters with nothing to tell them apart. A
+/// reader cannot see where the notes end and verse 29 begins.
+///
+/// Circled digits are one codepoint each (U+2460 ①, U+3251 ㉑, U+32B1
+/// ㊱) and reach 50, which covers 梁家鏗's worst verse — 約翰福音 1:1
+/// carries twenty-six. Past 50 it falls back to the superscript, which
+/// no edition in either app reaches.
 String superscriptNumber(int n) {
+  if (n >= 1 && n <= 20) return String.fromCharCode(0x2460 + n - 1);
+  if (n >= 21 && n <= 35) return String.fromCharCode(0x3251 + n - 21);
+  if (n >= 36 && n <= 50) return String.fromCharCode(0x32B1 + n - 36);
   final b = StringBuffer();
   for (final code in n.toString().codeUnits) {
     b.write(_superscripts[code - 0x30]);
   }
   return b.toString();
 }
+
+/// Whether [text] is entirely note-marker glyphs — used to spot a run of
+/// markers that should collapse into a range.
+bool isNoteMarkerText(String text) =>
+    text.isNotEmpty &&
+    text.runes.every((r) =>
+        (r >= 0x2460 && r <= 0x2473) ||
+        (r >= 0x3251 && r <= 0x325F) ||
+        (r >= 0x32B1 && r <= 0x32BF) ||
+        '⁰¹²³⁴⁵⁶⁷⁸⁹⁻\u2060'.runes.contains(r));
 
 class _VerseNotesBlockState extends State<VerseNotesBlock> {
   bool _expanded = false;

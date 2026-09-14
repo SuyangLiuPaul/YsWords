@@ -63,7 +63,7 @@ String _rendered(WidgetTester tester) {
   for (final t in tester.widgetList<Text>(find.byType(Text))) {
     final s = t.data ?? t.textSpan?.toPlainText() ?? '';
     if (s.isEmpty || s.contains('译者注')) continue;
-    if (s.runes.every((r) => '⁰¹²³⁴⁵⁶⁷⁸⁹'.runes.contains(r))) {
+    if (isNoteMarkerText(s)) {
       number = s;
       continue;
     }
@@ -82,19 +82,27 @@ void main() {
       (tester) async {
     await tester.pumpWidget(_host([_short, _second], settings));
     final text = _rendered(tester);
-    expect(text, startsWith('¹'), reason: 'the first note is numbered ¹');
-    expect(text, contains('\n²'),
-        reason: 'the second starts a line of its own, numbered ² — run '
+    expect(text, startsWith('①'), reason: 'the first note is numbered ①');
+    expect(text, contains('\n②'),
+        reason: 'the second starts a line of its own, numbered ② — run '
             'together they are a wall with nothing to say where one ends');
   });
 
-  testWidgets('the numbers keep counting past nine, in superscript',
+  testWidgets('the numbers are CIRCLED, and keep counting past nine',
       (tester) async {
-    // 梁家鏗's 約翰福音 1:1 carries twenty-six. `¹²` and not `12`.
+    // 2026-09-15: 「这个看起来很confuse 你可能右上角 圈圈数字」. A bare
+    // superscript was the wrong glyph: the verse numbers in this reader
+    // are also small raised numbers, so a run of note markers sitting
+    // before a verse number was two numbering systems in one string
+    // with nothing to tell them apart.
     await tester.pumpWidget(_host(
         [for (var i = 1; i <= 12; i++) 'note $i'], settings));
-    expect(_rendered(tester), contains('¹²'));
-    expect(superscriptNumber(26), '²⁶');
+    expect(_rendered(tester), contains('⑫'));
+    // 26 is 梁家鏗's worst verse; the circled range reaches 50, and
+    // past that it falls back rather than printing a box.
+    expect(superscriptNumber(26), '㉖');
+    expect(superscriptNumber(50), '㊿');
+    expect(superscriptNumber(51), '⁵¹');
   });
 
   testWidgets('「不好按」 — the control is a pill, and it is the only one',
@@ -163,7 +171,7 @@ void main() {
     // that folded everything would make the reader work for 參4.6、16.
     await tester.pumpWidget(_host([_short], settings));
     final text = _rendered(tester);
-    expect(text, '¹ $_short');
+    expect(text, '① $_short');
     expect(text, isNot(contains('展开')));
   });
 

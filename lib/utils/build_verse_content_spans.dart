@@ -5,7 +5,7 @@ import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/widgets/verse_notes_block.dart'
-    show superscriptNumber;
+    show superscriptNumber, isNoteMarkerText;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Builds InlineSpan list for a single verse (number + text with annotations).
@@ -417,7 +417,7 @@ List<InlineSpan> buildVerseContentSpans({
         final previous = spans.isEmpty ? null : spans.last;
         if (previous is TextSpan &&
             previous.text != null &&
-            _isNoteMarker(previous.text!)) {
+            isNoteMarkerText(previous.text!)) {
           spans[spans.length - 1] = TextSpan(
             text: '${_markerStart(previous.text!)}\u2060⁻\u2060'
                 '${superscriptNumber(noteSink.length)}',
@@ -521,12 +521,6 @@ List<InlineSpan> buildVerseContentSpans({
 
   return spans;
 }
-
-/// Whether a span's text is one of this file's own note markers — a run
-/// of superscript digits, optionally already a range.
-bool _isNoteMarker(String text) =>
-    text.isNotEmpty &&
-    text.runes.every((r) => '⁰¹²³⁴⁵⁶⁷⁸⁹⁻\u2060'.runes.contains(r));
 
 /// The first number of a marker that may already be a range.
 String _markerStart(String text) => text.split('\u2060').first;

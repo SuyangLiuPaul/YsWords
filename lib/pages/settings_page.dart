@@ -1988,15 +1988,38 @@ class _ProjectorCard extends StatelessWidget {
             DropdownMenuItem(
                 value: v.value, child: Text(v.menuLabel, style: label())),
         ];
-    Widget row(String key, String fallback, Widget control) => Padding(
+    // 2026-09-15: `stack` puts the control on its own line under the
+    // label, at full width.
+    //
+    // Reported from a phone — 「中文经文旁边显示」 came out one character
+    // per line down the left edge with the dropdown empty beside it.
+    // The label is `Expanded` and the control is not, so a
+    // DropdownButton — which asks for the width of its widest item, and
+    // here that is a version name — takes what it wants and the
+    // Expanded gets the remainder. A switch is a fixed 50-odd pixels
+    // and can share a row with anything; a dropdown cannot, and the two
+    // companion pickers are the ones whose items are long.
+    Widget row(String key, String fallback, Widget control,
+            {bool stack = false}) =>
+        Padding(
           padding: EdgeInsets.only(top: 10 * s),
-          child: Row(
-            children: [
-              Expanded(child: Text(t(key, fallback), style: label())),
-              const SizedBox(width: 12),
-              control,
-            ],
-          ),
+          child: stack
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(t(key, fallback), style: label()),
+                    const SizedBox(height: 2),
+                    control,
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: Text(t(key, fallback), style: label())),
+                    const SizedBox(width: 12),
+                    control,
+                  ],
+                ),
         );
 
     // The stored name, clamped to a ground this build has — the same
@@ -2157,6 +2180,7 @@ class _ProjectorCard extends StatelessWidget {
               'projectorCompanionForZh',
               'Beside a Chinese passage, show',
               DropdownButton<String>(
+                isExpanded: true,
                 value:
                     inList(settings.projectionCompanionFor('zh-Hans'), english),
                 hint: Text('—', style: label()),
@@ -2169,11 +2193,13 @@ class _ProjectorCard extends StatelessWidget {
                 },
                 items: items(english),
               ),
+              stack: true,
             ),
             row(
               'projectorCompanionForEn',
               'Beside an English passage, show',
               DropdownButton<String>(
+                isExpanded: true,
                 value: inList(settings.projectionCompanionFor('en'), chinese),
                 hint: Text('—', style: label()),
                 onChanged: (code) {
@@ -2181,6 +2207,7 @@ class _ProjectorCard extends StatelessWidget {
                 },
                 items: items(chinese),
               ),
+              stack: true,
             ),
             if (previewVerses.isNotEmpty) ...[
               SizedBox(height: 12 * s),
