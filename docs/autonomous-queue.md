@@ -13801,6 +13801,96 @@ has never seen this repo.
       as opposed to more rows within the existing cap, remains
       unbuilt.
 
+      **2026-09-15 — closed the chip/edge-cutoff gap the note above
+      named.** `chronologyLabelClusters` (`chronology_chart.dart`, doc at
+      ~2910) excluded a dropped candidate outright whenever
+      `left + chipMinWidth > plotWidth`, on the reasoning that "not even
+      the narrowest real chip has room." That reasoning only ever
+      considered a chip drawn at its own unshrunk width at its own x —
+      it never accounted for what its own sibling function,
+      `chronologyChipPlan`, already does with a chip that runs out of
+      room: shrink it to whatever's left, and once even that's gone,
+      fold every remaining bucket into one terminal chip sharing the
+      same sliver. Excluding the candidate here meant it never reached
+      that machinery at all — no bucket, no `chipLefts` entry, nothing
+      for the fold to find. Same shape of bug `859c0e4e`/`962c9570`
+      already fixed for row-exhaustion drops, just for the edge case.
+      Concretely, the tick lane builds `lefts[i] = _x(t.am, plotWidth) +
+      3`, so the corpus's own last events sit at `left ≈ plotWidth + 3`
+      and hit this exclusion at every zoom level — the AD-end events
+      behind the user's own repeated 「chronology chart为什么不能一直往右边
+      一直到今天」.
+
+      **The fix**: deleted the exclusion condition and, with it, the now-
+      dead `plotWidth`/`chipMinWidth` parameters of
+      `chronologyLabelClusters` (all three call sites — one production,
+      two test — updated to match; `chronologyChipPlan` itself is
+      untouched). Every unplaced candidate is bucketed now; which of
+      full-width, shrunk, or terminal-folded it ends up as is entirely
+      `chronologyChipPlan`'s call, same as it already was for row-
+      exhaustion drops.
+
+      **Refuted before committing**, three claims: (1) "the old code's
+      terminal fold could never receive an edge candidate" — SURVIVED,
+      traced end to end: `chipLefts`/`chipWants` are built only from
+      `clusters`, so an excluded index provably never reached
+      `chronologyChipPlan`'s input. (2) "every candidate within
+      `chipMinWidth` of `plotWidth` ends up reachable" — survives in the
+      literal sense the acceptance criteria asked (nonzero width, a real
+      hit rect, opens the right sheet), but the refuter found a sharper
+      caveat worth recording plainly rather than smoothing over: a
+      candidate whose `left` is already `>= plotWidth` (not just close
+      to it — the corpus's actual last-tick case, `plotWidth + 3`) hits
+      `chronologyChipPlan`'s fold branch directly, where
+      `tailLeft = plotWidth - 1.0` unconditionally whenever that branch
+      fires, so `room` clamps to exactly `1.0` regardless of how far past
+      the edge the candidate sits. That candidate gets a real, tappable
+      1pt-wide chip — reachable by the letter of the fix, but not
+      legible. This is pre-existing, unmodified `chronologyChipPlan`
+      arithmetic, not something this fix introduced (before this fix
+      that same candidate was 100% excluded, i.e. 0pt — strictly worse),
+      and touching `chronologyChipPlan` is out of this item's scope. Left
+      as a follow-up below rather than expanded into here. (3) "removing
+      the two parameters is behavior-neutral for every other caller" —
+      survived: `plotWidth`/`chipMinWidth` had no other use inside the
+      function body, and no test relied on the exclusion for anything
+      unrelated to the edge case.
+
+      **Tests**: rewrote the two existing tests whose assertions encoded
+      the excluded-edge-candidate behavior (the "not even a '+N' chip has
+      room 5pt from the edge" case, and the composed
+      labelPlan→labelClusters→chipPlan pipeline's `plotWidth - 3` case) to
+      assert reachability instead, plus a width-shrink pin on the latter.
+      Confirmed red first: since removing `plotWidth`/`chipMinWidth`
+      changes the function's *signature*, a plain `git stash` of the lib
+      file only produces a compile error against the rewritten test
+      calls — a valid but uninformative kind of red. To get a genuine
+      behavioral red, temporarily restored the OLD exclusion condition
+      and OLD signature (matching call sites) with the NEW test bodies,
+      and both rewritten tests failed with `candidate 7 is in neither the
+      plan nor a bucket — it vanished` / `... vanished across the
+      composed ... pipeline`, exactly the defect being fixed. Then
+      restored the clean fix and reran: all 98 tests in
+      `bible_chronology_test.dart` pass, `flutter analyze` clean, full
+      suite (3238 tests) passed in the foreground. Also updated the
+      comment on the "tick lane earns rows by demand" widget test
+      (~2404) that had documented this exact gap in prose, so it no
+      longer contradicts the new behavior.
+
+      **Also corrected, per this hour's brief**: the "remains unbuilt"
+      line just above (tap-to-expand cluster/callout list) is stale —
+      checked, not assumed. `_showClusterSheet`
+      (`chronology_chart.dart:2479`), the `chronologyMoreEventsSheetTitle`
+      / `...Range` strings (`ui_strings.dart`), and tappable chips with
+      real hit rects (`chipHits`, same file) all already exist and are
+      wired to the chip tap handler. Whatever gap remains in that
+      framing was already closed by an earlier pass; don't rebuild it.
+
+      Code-only, no asset/version/dependency change, no deploy per this
+      item's own guard rail — a chip-legibility change on an
+      already-frozen zoom band, not worth a China+intl deploy cycle on
+      its own.
+
 - [x] **`chronologyChipPlan` no longer drops chips it can't seat — it folds
       the tail into one terminal "+N" chip instead.** Fixed 2026-09-14.
 

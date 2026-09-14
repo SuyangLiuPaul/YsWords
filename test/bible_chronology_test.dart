@@ -1752,9 +1752,10 @@ void main() {
       }
     });
 
-    test('every row-exhaustion drop ends up in the plan or a cluster '
-        'bucket; a candidate too close to the edge for even a chip ends '
-        'up in neither, but one with room for a chip (not a label) does',
+    test('every row-exhaustion AND edge drop ends up bucketed — '
+        'chronologyLabelClusters no longer excludes a candidate close to '
+        'the plot edge, because chronologyChipPlan already shrinks or '
+        'folds a chip that has nowhere to go rather than dropping it',
         () {
       // Six candidates share one x — a six-event year no zoom can pull
       // apart, since every row starts fresh at each x and packing harder
@@ -1762,25 +1763,24 @@ void main() {
       //
       // Two more sit near the plot's right edge, both too close for
       // their LABEL to ever have been drawn (`left + labelMinWidth(34) >
-      // plotWidth`), but only one of them is truly unreachable:
+      // plotWidth`):
       //  - index 7 at `plotWidth - 5` has 5 pt of room, less than even a
-      //    single-digit "+N" chip needs (measured ~21 pt at 100% text —
-      //    see chronologyLabelClusters's doc) — genuinely nothing can be
-      //    drawn there, so it must stay excluded.
+      //    single-digit "+N" chip's own unshrunk width (measured ~21 pt
+      //    at 100% text — see chronologyLabelClusters's doc). Until
+      //    2026-09-15 this function excluded it outright; it no longer
+      //    does, because [chronologyChipPlan] shrinks or folds a chip
+      //    that has nowhere to go rather than dropping it — the bucket
+      //    only has to get the candidate there, not size it.
       //  - index 8 at `plotWidth - 25` has 25 pt of room: still not
-      //    enough for a label, but more than enough for a chip. Before
-      //    2026-09-14 chronologyLabelClusters used the label's own
-      //    minWidth for this edge check too, so this candidate was
-      //    excluded right alongside index 7 — silently unreachable, with
-      //    no label AND no chip. It must now come back as its own
-      //    bucket.
+      //    enough for a label, but more than enough for an unshrunk
+      //    chip — the band a 2026-09-14 fix already opened up.
       const plotWidth = 200.0;
       final lefts = [
         10.0, 10.0, 10.0, 10.0, 10.0, 10.0, // the six-way tie
         60.0, // an ordinary row-exhaustion drop, placed in the packer's
         // one free slot after the tie, so it should NOT be dropped
-        plotWidth - 5, // index 7: unreachable even by a chip
-        plotWidth - 25, // index 8: unreachable by a label, reachable by a chip
+        plotWidth - 5, // index 7: 5 pt of room
+        plotWidth - 25, // index 8: 25 pt of room
       ];
       final wants = [for (var i = 0; i < lefts.length; i++) 40.0];
       final plan = chronologyLabelPlan(
@@ -1792,7 +1792,6 @@ void main() {
       final buckets = chronologyLabelClusters(
         lefts: lefts,
         plan: plan,
-        plotWidth: plotWidth,
       );
 
       final placed = {for (final s in plan) s.index};
@@ -1803,15 +1802,9 @@ void main() {
               reason: 'candidate $i counted in more than one bucket');
         }
       }
-      const unreachableIndex = 7; // lefts[7] == plotWidth - 5
-      const chipOnlyIndex = 8; // lefts[8] == plotWidth - 25
+      // Nobody is excluded any more: every unplaced candidate, edge or
+      // not, is in exactly one bucket.
       for (var i = 0; i < lefts.length; i++) {
-        if (i == unreachableIndex) {
-          expect(placed.contains(i) || bucketed.contains(i), isFalse,
-              reason: 'not even a "+N" chip has room 5 pt from the edge; '
-                  'this candidate must stay excluded');
-          continue;
-        }
         expect(placed.contains(i) || bucketed.contains(i), isTrue,
             reason: 'candidate $i is in neither the plan nor a bucket — '
                 'it vanished');
@@ -1824,14 +1817,12 @@ void main() {
       final tie = buckets.where((b) => lefts[b.first] == 10.0);
       expect(tie.length, 1);
       expect(tie.first, hasLength(5));
-      // The band candidate is its own bucket — nobody else is close
-      // enough (in x) to merge into it.
-      final band = buckets.where((b) => b.contains(chipOnlyIndex));
-      expect(band.length, 1);
-      expect(band.first, [chipOnlyIndex]);
-      // Nothing else is left to bucket: index 6 was placed, the
-      // unreachable index is excluded, the other two buckets account for
-      // everyone else.
+      // Indices 7 and 8 are 20 pt apart — exactly this call's default
+      // mergeDistance — so they chain into ONE bucket, rather than
+      // index 7 being excluded outright the way it used to be.
+      final edgeBucket = buckets.where((b) => b.contains(7));
+      expect(edgeBucket.length, 1);
+      expect(edgeBucket.first, unorderedEquals([7, 8]));
       expect(buckets, hasLength(2));
     });
 
@@ -1860,7 +1851,6 @@ void main() {
       final buckets = chronologyLabelClusters(
         lefts: lefts,
         plan: plan,
-        plotWidth: plotWidth,
         mergeDistance: 20,
       );
       // Candidate 1, at x 500, is 500 pt from the only other candidate —
@@ -1975,17 +1965,22 @@ void main() {
     });
 
     test('composed labelPlan → labelClusters → chipPlan: every candidate '
-        'is placed, chipped, or in the one genuinely unreachable spot — '
-        'never silently lost across all three stages together', () {
+        'ends up placed or chipped — nothing is silently lost across all '
+        'three stages together, not even a candidate with 3 pt of room '
+        'right at the plot edge', () {
       const plotWidth = 500.0;
       final lefts = <double>[
         20.0, 20.0, 20.0, // a three-way tie; the packer seats one
         100.0, // placed, ends the first row
         115.0, 130.0, // row-exhaustion singles, close enough to chain
         250.0, // placed in the row's remaining room
-        plotWidth - 3, // 3 pt of room: not even a chip fits here
-        plotWidth - 25, // 25 pt: no label (needs 34), but a chip (needs
-        // ~21) fits — the band this change opened up
+        plotWidth - 3, // 3 pt of room: less than an unshrunk chip needs,
+        // but chronologyChipPlan shrinks a chip that has nowhere to go
+        // rather than dropping it (fixed 2026-09-15 — this used to be
+        // excluded by chronologyLabelClusters before it ever reached
+        // that machinery)
+        plotWidth - 25, // 25 pt: no label (needs 34), but an unshrunk
+        // chip (needs ~21) fits — the band the 2026-09-14 fix opened up
       ];
       final wants = List<double>.filled(lefts.length, 40.0);
       final plan = chronologyLabelPlan(
@@ -1997,7 +1992,6 @@ void main() {
       final clusters = chronologyLabelClusters(
         lefts: lefts,
         plan: plan,
-        plotWidth: plotWidth,
         mergeDistance: 20,
       );
       final chipLefts = [for (final c in clusters) lefts[c.first]];
@@ -2018,25 +2012,31 @@ void main() {
       expect(placed.intersection(chipCovered), isEmpty,
           reason: 'a candidate the packer placed was also chipped');
 
-      const unreachable = 7; // lefts[7] == plotWidth - 3
       for (var i = 0; i < lefts.length; i++) {
-        if (i == unreachable) {
-          expect(placed.contains(i) || chipCovered.contains(i), isFalse,
-              reason: 'candidate $i has 3 pt of room — nothing, not even '
-                  'a chip, should have been drawn there');
-        } else {
-          expect(placed.contains(i) || chipCovered.contains(i), isTrue,
-              reason: 'candidate $i vanished across the composed '
-                  'labelPlan → labelClusters → chipPlan pipeline');
-        }
+        expect(placed.contains(i) || chipCovered.contains(i), isTrue,
+            reason: 'candidate $i vanished across the composed '
+                'labelPlan → labelClusters → chipPlan pipeline');
       }
-      // And specifically: the label-can't-but-chip-can candidate (8) is
-      // the whole point of this change, so pin it by index, not just by
-      // membership in the general sweep above.
+      // And specifically: the two candidates too tight for a label are
+      // the whole point of this change, so pin them by index, not just
+      // by membership in the general sweep above.
       expect(placed.contains(8), isFalse);
       expect(chipCovered.contains(8), isTrue,
           reason: '25 pt of room is not enough for a 34 pt label but is '
-              'enough for a chip; it must not vanish');
+              'enough for an unshrunk chip; it must not vanish');
+      expect(placed.contains(7), isFalse);
+      expect(chipCovered.contains(7), isTrue,
+          reason: '3 pt of room used to make this candidate vanish '
+              'outright — chronologyChipPlan now shrinks its chip to fit '
+              'instead');
+      // Pin the shrink itself, not just reachability: candidate 7's slot
+      // must be narrower than the 20 pt it asked for, or this is really
+      // testing the ordinary unshrunk-chip path by coincidence.
+      final slot7 = chipPlan.firstWhere((s) =>
+          [s.cluster, ...s.extraClusters].any((ci) => clusters[ci].contains(7)));
+      expect(slot7.width, lessThan(20.0),
+          reason: 'candidate 7 has only 3 pt of room; its chip must be '
+              'shrunk, not drawn at the full requested width');
     });
 
     testWidgets('an event label on screen is not ellipsised — the '
@@ -2404,11 +2404,15 @@ void main() {
       // (from "Abraham dies" through Revelation) still get no INLINE
       // label at fit view even with this fix — the row cap the packer
       // is built to respect is exhausted by the earlier six before it
-      // reaches them. Most still surface as a "+N" chip (tap to reach
-      // them, same as before this fix); the ones right at the axis edge
-      // do not even get that. That gap is a chip/edge-cutoff limit, not
-      // a row-count one, and this fix does not touch it — see
-      // docs/autonomous-queue.md for the follow-up.
+      // reaches them. They surface as a "+N" chip instead (tap to reach
+      // them, same as before this fix) — including the ones right at
+      // the axis edge: chronologyLabelClusters used to exclude a
+      // candidate too close to the plot's edge for an unshrunk chip, so
+      // that band got neither a label nor a chip. Fixed 2026-09-15 —
+      // chronologyChipPlan's existing shrink/terminal-fold now reaches
+      // them too; see the chronologyLabelClusters/chronologyChipPlan
+      // tests above and docs/autonomous-queue.md for the item this
+      // closed.
       await pumpChart(tester, size: tall);
       await wholeSpan(tester);
       final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));

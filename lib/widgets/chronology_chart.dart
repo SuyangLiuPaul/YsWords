@@ -1710,24 +1710,15 @@ class _ChronologyChartState extends State<ChronologyChart> {
     // to be how an edge-of-axis drop's bucket-of-one got discarded, but
     // it also discarded a row-exhaustion drop with nobody else nearby,
     // which is exactly the label that vanishes with no chip and no way
-    // to tap it. [chronologyLabelClusters] now excludes edge drops
-    // itself, so every bucket returned here is one a chip can help, a
-    // bucket of one included — see the tap handler below for what a
-    // bucket of one opens.
-    //
-    // The edge cutoff is the narrowest a "+N" chip is ever drawn at —
-    // one digit, e.g. "+1" — not the label's own (much wider) minWidth:
-    // see [chronologyLabelClusters]'s doc for why reusing the label's
-    // figure here used to strand a real, measured band of candidates
-    // that a chip already had room for.
-    final chipMinWidth =
-        _measure(_s('chronologyMoreEvents', '+{n}').replaceAll('{n}', '1'), chipStyle) +
-            chipPadding;
+    // to tap it. [chronologyLabelClusters] no longer excludes edge drops
+    // either (2026-09-15: that exclusion pre-empted the very rescue
+    // [chronologyChipPlan]'s shrink/terminal-fold already provides), so
+    // every bucket returned here is one the chip packer can place, size
+    // down, or fold — a bucket of one included; see the tap handler
+    // below for what a bucket of one opens.
     final clusters = chronologyLabelClusters(
       lefts: lefts,
       plan: plan,
-      plotWidth: plotWidth,
-      chipMinWidth: chipMinWidth,
       mergeDistance: _scaler.scale(20),
     );
 
@@ -2917,35 +2908,33 @@ List<ChronologyLabelSlot> chronologyLabelPlan({
 }
 
 /// Which candidates [chronologyLabelPlan] left out, grouped for a "+N"
-/// chip — but only the ones a chip can actually help.
+/// chip.
 ///
-/// [chronologyLabelPlan] drops a candidate for one of two unrelated
-/// reasons, and this function has to tell them apart because only one of
-/// them is fixable by a chip:
+/// Every dropped candidate comes back bucketed now — none are excluded
+/// here. Until 2026-09-15 this function also excluded a candidate whose
+/// `left + chipMinWidth > plotWidth` ("not even the narrowest real chip
+/// has room"), but that reasoning only ever considered a chip sized to
+/// its own unshrunk width at its own x. [chronologyChipPlan] needs
+/// neither: past its own room it shrinks a chip down to whatever sliver
+/// of `plotWidth` is left, and once even that runs out it folds every
+/// remaining bucket into one terminal chip sharing that same sliver —
+/// exactly the rescue the old exclusion pre-empted. Excluding the
+/// candidate here meant it never reached that machinery at all: no
+/// bucket, no chip-lefts entry, nothing for the fold to find. It
+/// repeated the same shape of bug `859c0e4e`/`962c9570` already fixed
+/// for row-exhaustion drops — a candidate a later stage could have
+/// rescued, discarded one stage too early — just for the edge case
+/// instead of the crowded-row one.
 ///
-///  * **Edge** — `left + chipMinWidth > plotWidth`. Not even the
-///    narrowest real chip has room; these are excluded outright, not
-///    returned as buckets of one. [chipMinWidth] is deliberately a
-///    chip's own floor, not a label's: a "+N" chip is far narrower than
-///    any label (measured, at this lane's default 8.5 pt chip font: 21
-///    pt at 100% text, 38 pt at 200%, against a label's 34/68 pt
-///    `minWidth`). Until 2026-09-14 this cutoff reused the label's own
-///    `minWidth` (added in `859c0e4e`, replacing an even blunter
-///    `.where((g) => g.length > 1)` at the call site), which excluded a
-///    band of candidates — real, 12–30 pt wide depending on text scale —
-///    that a full, unshrunk chip already fits in. That was true from the
-///    moment `859c0e4e` landed: [chronologyChipPlan]'s own shrink-to-fit
-///    predates it (`4c72fe3f`), so the mismatch was not introduced by
-///    the later `962c9570` terminal-fold work, which fixed a different
-///    hole (a crowded row dropping chips, not an edge candidate never
-///    entering the pipeline at all) — it just never got re-examined
-///    until now.
-///  * **Row exhaustion** — every row already has some other label's box
-///    passing through this x. A chip drawn in the band above the label
-///    rows has nowhere else to compete for, so this is the case a chip
-///    fixes, and every candidate dropped this way comes back in exactly
-///    one bucket — never silently missing, whatever the caller does with
-///    a bucket afterwards.
+/// What is left is a single reason [chronologyLabelPlan] drops a
+/// candidate that this function still has to regroup for a chip: **row
+/// exhaustion** — every row already has some other label's box passing
+/// through this x. A chip drawn in the band above the label rows has
+/// nowhere else to compete for, so every candidate dropped this way
+/// comes back in exactly one bucket — never silently missing, whatever
+/// the caller does with a bucket afterwards. A candidate at, or past,
+/// the plot's own right edge is just one more member of that same set
+/// now; nothing here treats it specially any more.
 ///
 /// Row-exhaustion drops are grouped in two passes, because "shares a
 /// chip" and "shares a year" are different claims and only the first one
@@ -2980,8 +2969,6 @@ List<ChronologyLabelSlot> chronologyLabelPlan({
 List<List<int>> chronologyLabelClusters({
   required List<double> lefts,
   required List<ChronologyLabelSlot> plan,
-  required double plotWidth,
-  double chipMinWidth = 21,
   double mergeDistance = 20,
   double? maxSpan,
 }) {
@@ -2989,7 +2976,7 @@ List<List<int>> chronologyLabelClusters({
   final placed = {for (final s in plan) s.index};
   final dropped = <int>[
     for (var i = 0; i < lefts.length; i++)
-      if (!placed.contains(i) && lefts[i] + chipMinWidth <= plotWidth) i,
+      if (!placed.contains(i)) i,
   ]..sort((a, b) => lefts[a].compareTo(lefts[b]));
 
   final xCounts = <double, int>{};
