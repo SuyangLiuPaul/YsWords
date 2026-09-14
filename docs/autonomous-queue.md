@@ -13467,6 +13467,59 @@ has never seen this repo.
       (fourteen events in ten years) still cannot label every tick —
       that needs a different device than more zoom.
 
+      **2026-09-14 — a proximity-bucketing attempt at the densest-decade
+      gap above was drafted and left orphaned (`rc=0`-orphan item's
+      twelfth recurrence), then found broken when the next hour actually
+      ran the full suite it was waiting on.** `chronologyLabelClusters`
+      was rewritten to bucket dropped candidates by x-*proximity*
+      (chained: each new candidate merges into the current bucket if it
+      is within `mergeDistance` of the PREVIOUS member added, not of the
+      bucket's first member) instead of only exact-x equality, so that a
+      lone row-exhaustion drop with no same-year partner still surfaces
+      as a "+1" chip rather than vanishing under the old
+      `.where((g) => g.length > 1)` filter — a real gap: a painted tick
+      with nothing to tap. It also added a range-title branch
+      (`chronologyMoreEventsSheetTitleRange`, `formatChronologyYearRange`
+      in `lib/models/chronology.dart`) for a bucket whose members don't
+      all share one year.
+      **The chaining is single-linkage and transitive across an entire
+      run, so it doesn't stop at the edge of an exact same-year tie: at
+      the AM 4036 window (the existing "+6" test's own viewport,
+      `Size(402, 874)`, `viewAt(4036, years: 100)`) the six-way Passion-
+      week tie sits only a few points from the AM 4029 pair on one side
+      and the AM 4030–4033 row-exhaustion singles and the AM 4038 pair
+      on the other, and every consecutive gap in that nine-year run is
+      inside `mergeDistance = _scaler.scale(20)`.** The result is ONE
+      "+14" chip (2+1+1+1+1+6+2, hand-verified against
+      `assets/bible_chronology.json` and matching a debug print of every
+      rendered chip's text) instead of the six separate ties/singles a
+      reader would recognise — the well-tested "+6" chip is simply gone.
+      Confirmed by running the actual (uncommitted) diff, not inferred:
+      `flutter test test/bible_chronology_test.dart` failed 3 of the
+      file's tests, all three asserting a "+6" chip exists at that exact
+      viewport — the diff's author never ran the full pre-existing suite
+      against their own change (that's the unresolved background job
+      recurrence 12 above names). A refuter independently re-derived the
+      same trace from the source and confirmed the mechanism and the
+      count.
+      This also breaks the new sheet-title logic on its own terms: the
+      "+14" bucket is not a same-year tie, so it would show the new
+      *range* title (some "14 events, {span}" wording) for what a reader
+      would read as six things that happened at once plus some unrelated
+      ones — exactly the "reads plausibly and is wrong" failure this
+      file's own standing rule warns about, not just a broken test.
+      **Left uncommitted on purpose** — `lib/widgets/chronology_chart.dart`,
+      `lib/models/chronology.dart`, `lib/constants/ui_strings.dart`,
+      `test/bible_chronology_test.dart` are still sitting modified/
+      untracked in the tree. The row-exhaustion-drop half of the idea
+      (never silently dropping a bucket of one) is sound and the new
+      pure tests for it pass; only the merge-distance chaining needs a
+      real fix, not the tests' claims weakened — e.g. stop a merge from
+      crossing into or out of an exact-x tie's own bucket, or bound the
+      total span a chain may cover, rather than only bounding each link.
+      Whoever picks this up next should diff against this note's
+      description before re-deriving it.
+
 - [x] **A sermon that would not play left its Listen button dead, because
       only songs caught `PlaybackBlockedException`.** Reported from a live
       iPhone on 2026-09-03, `/sermons/421`, web, and mailed to the crash
@@ -14516,6 +14569,19 @@ so the bundle-size answer stays on the record.
       and committed as `Release v1.5.28`. Same conclusion as recurrences
       5–10: the fix is in `run.sh`/`prompt.md` under `~/Library/
       Application Support/yswords-loop/`, not here.
+
+      **Twelfth recurrence, 2026-09-14 12:54:30–13:06:28.** Same shape:
+      the stage did the assigned chronology-chart slice
+      (`queue:13106`'s proximity-bucketing pass, below) and ended `rc=0`
+      saying only that the full suite was "running in the background;
+      I'll resume once it completes rather than continue polling."
+      Nothing was committed. **Different outcome from recurrences 1–11:
+      landing it was attempted the following hour and did NOT succeed,
+      not because of the orphan pattern itself but because the orphaned
+      diff turned out to be broken** — see `queue:13106` for the defect
+      the full-suite run this stage never waited for would have caught.
+      The diff is still sitting uncommitted in the tree; whoever picks
+      it up next should fix the design, not re-land it as-is.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
