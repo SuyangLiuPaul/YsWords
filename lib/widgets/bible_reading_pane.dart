@@ -13,6 +13,7 @@ import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/utils/chrome_scale.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/route_paths.dart' show evidencePath;
 import 'package:yswords/utils/verse_citation.dart';
@@ -7033,8 +7034,13 @@ class _BibleReaderBottomBar extends StatelessWidget {
             surfaceContainerHighest: _PaperTheme.surface,
           )
         : baseScheme;
+    // 2026-09-14: capped by width, like the header — six fixed-size
+    // buttons across a 320px screen overflowed this `Row` by 64px at the
+    // top of the Menu Size slider. `chrome_scale.dart` carries the rule.
+    final chromeScale = chromeScaleFor(
+        MediaQuery.of(context).size.width, settings.menuScale);
     final iconSize =
-        (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale)
+        (settings.fontSize.clamp(16.0, 28.0) * chromeScale)
             .toDouble();
     final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
     // Bottom bar goes edge-to-edge horizontally so the surface meets
@@ -7082,8 +7088,8 @@ class _BibleReaderBottomBar extends StatelessWidget {
                   constraints: const BoxConstraints(maxWidth: 560),
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal: 4 * settings.menuScale,
-                        vertical: 4 * settings.menuScale),
+                        horizontal: 4 * chromeScale,
+                        vertical: 4 * chromeScale),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -7309,10 +7315,15 @@ class _FloatingHeader extends StatelessWidget {
             surfaceContainerHighest: _PaperTheme.surface,
           )
         : baseScheme;
+    // 2026-09-14: the Menu Size slider, capped by the width there is to
+    // spend it on — see `chrome_scale.dart`, which carries the reasoning
+    // and the four reports behind it.
+    final chromeScale = chromeScaleFor(
+        MediaQuery.of(context).size.width, settings.menuScale);
     final fontSize =
-        (settings.fontSize.clamp(12.0, 19.0) * settings.menuScale).toDouble();
+        (settings.fontSize.clamp(12.0, 19.0) * chromeScale).toDouble();
     final iconSize =
-        (settings.fontSize.clamp(16.0, 28.0) * settings.menuScale)
+        (settings.fontSize.clamp(16.0, 28.0) * chromeScale)
             .toDouble();
     final iconPad = (iconSize * 0.45).clamp(6.0, 10.0);
     // 2026-05-22 (v1.2.71): no more horizontal inset — header is now
@@ -7484,7 +7495,21 @@ class _FloatingHeader extends StatelessWidget {
                               child: Builder(builder: (ctx) {
                                 final screenW =
                                     MediaQuery.of(ctx).size.width;
-                                final useShort = screenW < 390;
+                                // 2026-09-14: scaled by `menuScale`.
+                                // The 390 was measured at 1.0x, and the
+                                // reader who raises the Menu Size
+                                // slider raises this label AND the icon
+                                // clusters either side of it, so the
+                                // width at which the formal name stops
+                                // fitting moves with the slider. Left
+                                // fixed, a reader at 1.5x on an iPhone
+                                // 12 got 「帖撒罗尼迦后书 3」 clipped by
+                                // 18px and the version pill beside it
+                                // cut to 「雅…」 — the same report the
+                                // pills have now been fixed for four
+                                // times, arriving by a different route.
+                                final useShort =
+                                    screenW < 390 * chromeScale;
                                 return Text(
                                   useShort
                                       ? '${shortBookName(book, locale)} $chapter'

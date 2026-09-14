@@ -1034,3 +1034,72 @@ carries 教會里 ×~120, 神里面 ×29 and the like, where `opencc -c s2t` rea
 (fy-ws04's 「有些卡里面夾著金錢」). The genuine 里 — 公里, 英里, 克里特,
 糊里糊塗 — must survive any repair, so this needs the same
 reading-then-sweeping the other glyph classes got, not a blanket rule.
+
+---
+
+### The version pill, a fourth time — and this time it was the Menu Size slider `[FIXED 2026-09-14]`
+
+Asked whether the iPhone 12 report was really closed, and what happens on
+something smaller. It was not closed, and the answer to "smaller" turned
+out to be less interesting than the answer to "larger interface".
+
+The three previous fixes all went at the label:
+
+| | what changed | still wrong |
+|---|---|---|
+| v1.3.160 | `narrowLabel`: 「和合本雅伟版」 → 「雅伟版」 below 390px | the pill only ever gets a slice of the row, so no width threshold is wide enough |
+| v1.3.161 | show the short label on **every** screen | the book chip's flex share starved it anyway |
+| 2026-09-08 | book chip takes intrinsic width, version chip takes the rest | all three were measured at menu scale **1.0** |
+
+`setMenuScale` goes to **1.5x**, and it multiplies the header type AND
+the icon clusters either side of it. Measured, at the top of it:
+
+| screen | what the reader was shown |
+|---|---|
+| 390x844 (the reported iPhone 12) | 「雅…」 — the version pill short by 38.9px — and 「帖撒罗尼迦后书 3」 short by 17.7px |
+| 430x932 | 「雅…」, short by 16.6px |
+| 320 / 360 | short by 14.2px, and **a 64-pixel `RenderFlex` overflow** in the bottom bar |
+
+So two defects, one cause. The pill deleted words silently; the bottom
+bar's six fixed-size buttons overflowed visibly — the yellow-and-black
+band, on the screen a reader spends every minute on.
+
+**The fix is `lib/utils/chrome_scale.dart`**, one rule both bars now take
+their scale from: 1.0x is what the narrowest supported screen (320px, the
+iPhone 4 / original SE viewport) can afford, every further 320px of width
+buys another 1.0x, capped at the 1.5x the slider itself stops at. A reader
+below the cap keeps exactly the scale they chose, and **`fontSize` — the
+scripture — is untouched**, which is what someone reaching for Menu Size
+mostly wanted anyway. What is capped is chrome. The book-name fold at 390
+now scales with it too, for the same reason the threshold existed.
+
+**Why nothing caught any of the four:** an ellipsis is not an overflow.
+`responsive_overflow_smoke_test.dart` lays this page out at 320 and 390
+and passes, because `TextOverflow.ellipsis` IS the layout succeeding —
+quietly, by deleting words. Two new guards, both mutation-checked against
+the uncapped rule (9 failures and 1 respectively):
+
+* `test/header_pill_truncation_test.dart` — the pills' render subtree, at
+  six real device widths x two menu scales x two book names, laid-out
+  width against the width each label wants on one line. It loads the
+  bundled Noto under `-apple-system`, because the test font gives every
+  glyph the same advance and would otherwise let three Han characters
+  pass as three Latin ones.
+* `test/responsive_overflow_smoke_test.dart` — gained a paired
+  scale/font-size axis (`1.0x / 20pt`, `1.5x / 40pt`). Paired, not
+  crossed: the chrome clamp only saturates at the top of the *font*
+  slider, which is why the overflow needed both sliders up and why the
+  file had never seen it.
+* `test/chrome_scale_test.dart` — the rule itself, including that 320px
+  affords exactly 1.0x and not a hair less.
+
+An earlier draft of the first file varied reader font size 12/20/40 and
+passed everywhere. Its own vacuity guard is what revealed that the header
+clamps the reader's size at 19, so all three cases had measured identical
+pixels — and that `AppSettings.loadSettings()` is called by `main.dart`
+and never by the constructor, so the seeded preference had reached
+nothing. Both are now written down in the file.
+
+A whole-page sweep for silently-ellipsised labels at that same worst
+corner (320px, both sliders at maximum) finds **none** left on the
+reading page.

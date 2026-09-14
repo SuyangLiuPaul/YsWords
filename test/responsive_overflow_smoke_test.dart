@@ -68,10 +68,15 @@ void main() {
   Future<void> pumpAt(
     WidgetTester tester,
     Widget page,
-    Size logicalSize,
-  ) async {
+    Size logicalSize, {
+    double menuScale = 1.0,
+    double fontSize = 20.0,
+  }) async {
     tester.view.devicePixelRatio = 1.0;
     tester.view.physicalSize = logicalSize;
+    final settings = AppSettings();
+    await settings.setMenuScale(menuScale);
+    await settings.setFontSize(fontSize);
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -93,7 +98,7 @@ void main() {
                   chapters: [Chapter(title: 3, verses: seed)]),
             ])
             ..setVerses(seed)),
-          ChangeNotifierProvider(create: (_) => AppSettings()),
+          ChangeNotifierProvider<AppSettings>.value(value: settings),
         ],
         child: MaterialApp(home: page),
       ),
@@ -105,26 +110,58 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
   }
 
+  // 2026-09-14: the second axis, and the one that was missing.
+  //
+  // Every case here ran at menu scale 1.0, and the Menu Size slider goes
+  // to 1.5. At the top of it, on a 320px screen, the reading page's
+  // bottom bar — six fixed-size icon buttons in a plain `Row` —
+  // overflowed by 64 pixels: the striped band a reader reads as the app
+  // being broken. It had presumably been there since the sixth button
+  // was added, and this file laid that very page out at that very width
+  // without seeing it, because it only ever asked at 1.0x.
+  //
+  // A reader who needs a larger interface is disproportionately likely
+  // to be holding a small phone, so the two ends of the grid that look
+  // least likely are the pair most worth testing together.
+  // Paired rather than crossed, and both numbers matter: the chrome
+  // takes its icon size from `fontSize.clamp(16, 28) * menuScale`, so
+  // the clamp is only saturated at the top of the FONT slider and the
+  // overflow above needed both sliders up. 1.0x/20pt is what the app
+  // ships as; 1.5x/40pt is both sliders at their maximum, which is the
+  // only corner where the chrome is as large as it can get. The two
+  // mixed combinations sit between them.
+  const configs = <String, (double, double)>{
+    'default 1.0x / 20pt': (1.0, 20.0),
+    'largest 1.5x / 40pt': (1.5, 40.0),
+  };
+
   for (final pageEntry in pages.entries) {
     for (final sizeEntry in sizes.entries) {
-      testWidgets('${pageEntry.key} lays out at ${sizeEntry.key} '
-          'without overflow', (tester) async {
-        SharedPreferences.setMockInitialValues(<String, Object>{});
-        addTearDown(tester.view.reset);
+      for (final config in configs.entries) {
+        final (menuScale, fontSize) = config.value;
+        testWidgets('${pageEntry.key} lays out at ${sizeEntry.key} '
+            'at ${config.key} without overflow', (tester) async {
+          SharedPreferences.setMockInitialValues(<String, Object>{});
+          addTearDown(tester.view.reset);
 
-        await pumpAt(tester, pageEntry.value(), sizeEntry.value);
-        expect(
-          tester.takeException(),
-          isNull,
-          reason: '${pageEntry.key} threw during layout at '
-              '${sizeEntry.key}',
-        );
+          await pumpAt(tester, pageEntry.value(), sizeEntry.value,
+              menuScale: menuScale, fontSize: fontSize);
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '${pageEntry.key} threw during layout at '
+                '${sizeEntry.key} at ${config.key}',
+          );
 
-        // Dispose the page so timers/listeners registered in initState
-        // are cancelled before the test ends (pending-timer guard).
-        await tester.pumpWidget(const SizedBox.shrink());
-        await tester.pump(const Duration(milliseconds: 50));
-      });
+          // Dispose the page so timers/listeners registered in initState
+          // are cancelled before the test ends (pending-timer guard).
+          // The 700ms drains `AppSettings`' own notify debounce, which
+          // `setMenuScale` starts and the widget tree outlives.
+          await tester.pump(const Duration(milliseconds: 700));
+          await tester.pumpWidget(const SizedBox.shrink());
+          await tester.pump(const Duration(milliseconds: 700));
+        });
+      }
     }
   }
 
@@ -154,7 +191,8 @@ void main() {
             'tests above are laying out a page with a header and no '
             'scripture');
 
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 700));
   });
 }
