@@ -8635,10 +8635,36 @@ const uiStrings = {
     'zh-Hant': '複製時去掉括號裡的譯註',
     'en': "Leave out translators' notes",
   },
+  // 2026-09-15. The hint used to name 「（原文作…）」, a form this
+  // edition does not contain a single instance of, and its wording was
+  // close enough to the ① notes' own 「原文是"雅伟"」 that a reader
+  // turned the switch on, copied 出埃及记 19:21, and asked why nothing
+  // had changed — 「这个开了为什么复制后还是这样」. Nothing had changed
+  // because ① notes are never copied whatever this switch says.
+  //
+  // So the hint now names what the edition actually holds （细拉 and the
+  // psalm superscriptions are 82 of the 343）, gives a reference the
+  // reader can check for themselves, and says out loud what the switch
+  // does NOT govern.
   'copyStripNotesHint': {
-    'zh-Hans': '和合本「（原文作…）」这类括号内的译注不会复制进去。',
-    'zh-Hant': '和合本「（原文作…）」這類括號內的譯註不會複製進去。',
-    'en': 'Notes in full-width parentheses, like （原文作…）, are not copied.',
+    'zh-Hans': '和合本把「（细拉）」「（俄梅珥就是伊法十分之一。）」'
+        '这类说明写在经文里面。开了就不复制进去（可看出埃及记 30:13）。'
+        '① ② ③ 那种译注本来就不会复制，和这个开关无关。',
+    'zh-Hant': '和合本把「（細拉）」「（俄梅珥就是伊法十分之一。）」'
+        '這類說明寫在經文裡面。開了就不複製進去（可看出埃及記 30:13）。'
+        '① ② ③ 那種譯註本來就不會複製，和這個開關無關。',
+    'en': 'The CUV writes notes like （细拉） and （俄梅珥就是伊法十分之一。） '
+        'into the verse itself. Turn this on and they are left out of a '
+        'copy — Exodus 30:13 is one. The ① ② ③ notes are never copied '
+        'either way; this switch has nothing to do with them.',
+  },
+  // 2026-09-15. Shown under the switch when it is ON and the chapter
+  // the preview is drawn from contains nothing it would remove — which
+  // is most chapters, and is why the switch read as broken.
+  'copyStripNotesNothingHere': {
+    'zh-Hans': '这一章没有这类括号说明，所以开不开都一样。',
+    'zh-Hant': '這一章沒有這類括號說明，所以開不開都一樣。',
+    'en': 'This chapter has none, so the switch changes nothing here.',
   },
   // 2026-09-13. The projector, as the owner asked for it: a button on the
   // selection bar, and a Settings card that decides how the wall looks

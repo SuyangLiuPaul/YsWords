@@ -456,6 +456,27 @@ const double kProjectionReferenceScale = 0.26;
 /// scripture would read as a mistake rather than as restraint.
 const double kProjectionReferenceFloor = 26.0;
 
+/// The wall the type ladder is calibrated against.
+///
+/// [kProjectionTypeSteps] are absolute logical pixels — 76 px, 184 px —
+/// and they only mean anything relative to a screen. Almost every
+/// projector and television a church owns is 1080p, so that is the
+/// screen they are quoted against.
+///
+/// This exists for the PREVIEW. A 343 px box showing 76 px type is not
+/// showing a small wall, it is showing a wall five times closer, and
+/// that is what made the Settings preview unrecognisable: the passage
+/// filled half the box where it fills a fifth of the wall.
+const double kProjectionReferenceWallWidth = 1920.0;
+
+/// The type size a preview box [boxWidth] wide should draw at to stand
+/// in for a wall set at [typeSize].
+///
+/// Both boxes are 16:9, so matching the width matches everything: the
+/// preview becomes the wall, at a distance.
+double projectionPreviewTypeSize(double boxWidth, double typeSize) =>
+    typeSize * (boxWidth / kProjectionReferenceWallWidth);
+
 /// The share of the viewport left as margin on each side, and top and
 /// bottom.
 ///
@@ -620,38 +641,120 @@ class ProjectionStage extends StatelessWidget {
           final side = box.maxWidth * kProjectionSideMargin;
           final top = box.maxHeight * kProjectionVerticalMargin;
           final usable = math.max(box.maxWidth - side * 2, 1.0);
-          return Stack(
-            children: [
-              Positioned.fill(
-                child: Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: side, vertical: top),
-                  child: Center(
-                    child: verses.isEmpty
-                        ? _emptyState()
-                        : FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: SizedBox(
-                              width: usable,
-                              child: _passage(),
-                            ),
-                          ),
-                  ),
+          final corner = layout.reference == ProjectionReferencePlace.corner &&
+              verses.isNotEmpty;
+          return Padding(
+            // The corner reference keeps the inset it always had. What
+            // changed is that it is now a ROW of this column rather
+            // than a `Positioned` floating over the passage, so the
+            // space it takes is space the passage was never offered.
+            padding: EdgeInsets.fromLTRB(
+                side, top, side, corner ? top * _kReferenceInsetShare : top),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: LayoutBuilder(builder: (context, room) {
+                    if (verses.isEmpty) {
+                      return Center(child: _emptyState());
+                    }
+                    final size = _solvedSize(
+                      usable,
+                      room.maxHeight,
+                      MediaQuery.textScalerOf(context),
+                      Directionality.of(context),
+                    );
+                    return Center(
+                      // `scaleDown` is a no-op once the size is solved —
+                      // it stays as the last line of defence, so a
+                      // measurement that is a pixel out degrades into a
+                      // hair of shrinkage rather than a red overflow
+                      // band across the wall.
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: SizedBox(
+                          width: usable,
+                          child: _passage(size),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
-              ),
-              if (layout.reference == ProjectionReferencePlace.corner)
-                Positioned(
-                  left: side,
-                  right: side,
-                  bottom: top * _kReferenceInsetShare,
-                  child: _reference(),
-                ),
-            ],
+                if (corner) ...[
+                  SizedBox(height: top * _kReferenceGapShare),
+                  _reference(),
+                ],
+              ],
+            ),
           );
         },
       ),
     );
   }
+
+  /// The largest size at or below [typeSize] whose passage fits
+  /// [height] when laid out across the full [width].
+  ///
+  /// The height of a passage falls as its type does, so a bisection
+  /// finds the answer in a dozen measurements. Twelve halvings of a
+  /// 180 px range settle to under a twentieth of a pixel, which is far
+  /// finer than anything the eye or the renderer can act on.
+  double _solvedSize(
+      double width, double height, TextScaler scaler, TextDirection dir) {
+    if (_heightAt(typeSize, width, scaler, dir) <= height) return typeSize;
+    if (_heightAt(_kMinPassageSize, width, scaler, dir) > height) {
+      // Even the floor does not fit — a very long selection in a very
+      // short box. Draw it at the floor and let `scaleDown` above take
+      // the rest; below this size the words stop being words.
+      return _kMinPassageSize;
+    }
+    var lo = _kMinPassageSize;
+    var hi = typeSize;
+    for (var i = 0; i < 12; i++) {
+      final mid = (lo + hi) / 2;
+      if (_heightAt(mid, width, scaler, dir) <= height) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    return lo;
+  }
+
+  /// What the passage measures at [size], across [width].
+  ///
+  /// Measured from the SAME pieces the column is built from, so the fit
+  /// can never be solved against a block that differs from the one
+  /// drawn.
+  double _heightAt(
+      double size, double width, TextScaler scaler, TextDirection dir) {
+    var total = 0.0;
+    for (final piece in _pieces(size)) {
+      final span = piece.span;
+      if (span == null) {
+        total += piece.gap;
+        continue;
+      }
+      final painter = TextPainter(
+        text: span,
+        textAlign: _textAlign,
+        textDirection: dir,
+        textScaler: scaler,
+      )..layout(maxWidth: width);
+      total += painter.height;
+      painter.dispose();
+    }
+    return total;
+  }
+
+  /// The floor the solver will not go below. Below this the passage is
+  /// no longer being read by a room, and shrinking further only makes
+  /// the failure quieter.
+  static const double _kMinPassageSize = 10.0;
+
+  /// The breathing room between the passage and a corner reference, as
+  /// a share of the vertical margin.
+  static const double _kReferenceGapShare = 0.5;
 
   /// How far up from the bottom edge the reference sits, as a share of
   /// the vertical margin — inside the margin the passage respects, so it
@@ -674,26 +777,41 @@ class ProjectionStage extends StatelessWidget {
         ),
       );
 
-  Widget _passage() => Column(
+  Widget _passage(double size) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ..._firstLines(),
-          if (secondOn) ...[
-            SizedBox(height: typeSize * _kBlockGapShare),
-            ..._secondLines(),
-          ],
-          // Under the passage, INSIDE the block the FittedBox scales —
-          // so on a long reading the address shrinks with the words it
-          // belongs to instead of sitting at full size beneath type
-          // that has been wound down to fit.
-          if (layout.reference == ProjectionReferencePlace.under &&
-              verses.isNotEmpty) ...[
-            SizedBox(height: typeSize * _kReferenceUnderGapShare),
-            _referenceText(TextAlign.center),
-          ],
+          for (final piece in _pieces(size))
+            if (piece.span == null)
+              SizedBox(height: piece.gap)
+            else
+              piece.toWidget(_textAlign),
         ],
       );
+
+  /// The block, as an ordered list of spans and the gaps between them.
+  ///
+  /// 2026-09-15. This list exists because the block has to be MEASURED
+  /// before it is drawn, and a measurement of a different block than
+  /// the one drawn is worse than no measurement at all. Everything the
+  /// column puts on the wall comes from here, and so does every number
+  /// the solver adds up.
+  List<_StagePiece> _pieces(double size) => [
+        ..._firstSpans(size),
+        if (secondOn) ...[
+          _StagePiece.gap(size * _kBlockGapShare),
+          ..._secondSpans(size * kProjectionSecondScale),
+        ],
+        // Under the passage, INSIDE the block the solver sizes — so on
+        // a long reading the address comes down with the words it
+        // belongs to instead of sitting at full size beneath type that
+        // has been wound down to fit.
+        if (layout.reference == ProjectionReferencePlace.under &&
+            verses.isNotEmpty) ...[
+          _StagePiece.gap(size * _kReferenceUnderGapShare),
+          _StagePiece(_referenceSpan(_referenceSizeFor(size))),
+        ],
+      ];
 
   /// The gap between the passage and a reference set beneath it. Wider
   /// than a line and narrower than the gap between editions: it belongs
@@ -702,27 +820,33 @@ class ProjectionStage extends StatelessWidget {
 
   /// The first edition — one block per verse, or the whole passage run
   /// together as the printed page has it.
-  List<Widget> _firstLines() {
+  List<_StagePiece> _firstSpans(double size) {
     if (layout.flow == ProjectionFlow.continuous) {
       return [
-        _runTogether([for (final v in verses) v.text], typeSize,
-            scheme.onSurface),
+        _StagePiece(_runTogetherSpan(
+            [for (final v in verses) v.text], size, scheme.onSurface)),
       ];
     }
     return [
       for (var i = 0; i < verses.length; i++)
-        _line(verses[i].text, verses[i].verseLabel, typeSize,
-            scheme.onSurface),
+        _StagePiece(_lineSpan(
+            verses[i].text, verses[i].verseLabel, size, scheme.onSurface)),
     ];
   }
 
   /// The verses as one paragraph. Numbers, when they are on, sit inline
   /// in front of each verse exactly as a printed Bible sets them —
   /// which is the only way a run-together passage can carry them at all.
-  Widget _runTogether(List<String> texts, double size, Color ink) {
+  TextSpan _runTogetherSpan(List<String> texts, double size, Color ink) {
     final numbered = layout.numbers && verses.length > 1;
-    return Text.rich(
-      TextSpan(children: [
+    return TextSpan(
+      style: TextStyle(
+        color: ink,
+        fontFamilyFallback: kCjkFontFallback,
+        fontSize: size,
+        height: _kLineHeight,
+      ),
+      children: [
         for (var i = 0; i < texts.length; i++) ...[
           // The separator goes BEFORE the number, not before the text.
           // Put it after and the number closes up against the previous
@@ -738,14 +862,7 @@ class ProjectionStage extends StatelessWidget {
             ),
           TextSpan(text: texts[i]),
         ],
-      ]),
-      textAlign: _textAlign,
-      style: TextStyle(
-        color: ink,
-        fontFamilyFallback: kCjkFontFallback,
-        fontSize: size,
-        height: _kLineHeight,
-      ),
+      ],
     );
   }
 
@@ -761,10 +878,16 @@ class ProjectionStage extends StatelessWidget {
   /// the words and the number is only there so a listener can find
   /// their place in a printed Bible. A single verse carries none; the
   /// reference below already names it.
-  Widget _line(String text, String label, double size, Color ink) {
+  TextSpan _lineSpan(String text, String label, double size, Color ink) {
     final numbered = layout.numbers && verses.length > 1;
-    return Text.rich(
-      TextSpan(children: [
+    return TextSpan(
+      style: TextStyle(
+        color: ink,
+        fontFamilyFallback: kCjkFontFallback,
+        fontSize: size,
+        height: _kLineHeight,
+      ),
+      children: [
         if (numbered)
           TextSpan(
             text: '$label ',
@@ -774,35 +897,26 @@ class ProjectionStage extends StatelessWidget {
             ),
           ),
         TextSpan(text: text),
-      ]),
-      textAlign: _textAlign,
-      style: TextStyle(
-        color: ink,
-        fontFamilyFallback: kCjkFontFallback,
-        fontSize: size,
-        height: _kLineHeight,
-      ),
+      ],
     );
   }
 
   /// The second edition, verse for verse under the first — or one line
   /// of apparatus when it has nothing to show, in the apparatus colour
   /// so it cannot be mistaken for scripture.
-  List<Widget> _secondLines() {
+  List<_StagePiece> _secondSpans(double size) {
     final texts = secondTexts;
-    final size = typeSize * kProjectionSecondScale;
     if (secondLoading || texts == null || texts.every((t) => t == null)) {
       return [
-        Text(
-          _secondBody(null),
-          textAlign: _textAlign,
+        _StagePiece(TextSpan(
+          text: _secondBody(null),
           style: TextStyle(
             color: scheme.onSurfaceVariant,
             fontFamilyFallback: kCjkFontFallback,
             fontSize: size,
             height: _kLineHeight,
           ),
-        ),
+        )),
       ];
     }
     if (layout.flow == ProjectionFlow.continuous) {
@@ -810,16 +924,19 @@ class ProjectionStage extends StatelessWidget {
       // companion lacks still takes its place in the line — dropping it
       // silently would put two different passages on the wall.
       return [
-        _runTogether([for (final t in texts) _secondBody(t)], size,
+        _StagePiece(_runTogetherSpan(
+            [for (final t in texts) _secondBody(t)],
+            size,
             texts.every((t) => t != null)
                 ? scheme.onSurface
-                : scheme.onSurfaceVariant),
+                : scheme.onSurfaceVariant)),
       ];
     }
     return [
       for (var i = 0; i < verses.length; i++)
-        _line(_secondBody(texts[i]), verses[i].verseLabel, size,
-            texts[i] == null ? scheme.onSurfaceVariant : scheme.onSurface),
+        _StagePiece(_lineSpan(
+            _secondBody(texts[i]), verses[i].verseLabel, size,
+            texts[i] == null ? scheme.onSurfaceVariant : scheme.onSurface)),
     ];
   }
 
@@ -853,27 +970,71 @@ class ProjectionStage extends StatelessWidget {
   /// tell which translation is which is worse than one edition.
   Widget _reference() {
     if (verses.isEmpty) return const SizedBox.shrink();
-    return _referenceText(TextAlign.start);
+    // The corner reference is chrome, not part of the block: it keeps
+    // the size the operator's choice gives it however far the passage
+    // has had to come down. Its job — letting a listener find the place
+    // in their own Bible — does not get smaller because the verse did.
+    return _StagePiece(_referenceSpan(_referenceSize))
+        .toWidget(TextAlign.start);
   }
 
   /// The reference itself, wherever it is being put. One builder, so
   /// the corner and the devotional placement can never start naming
   /// different editions.
-  Widget _referenceText(TextAlign align) {
+  TextSpan _referenceSpan(double size) {
     final tags = <String>[
       shortBibleVersionLabel(versionCode),
       if (secondOn && secondCode != null) shortBibleVersionLabel(secondCode!),
     ];
-    return Text(
-      '$reference · ${tags.join(" · ")}',
-      textAlign: align,
+    return TextSpan(
+      text: '$reference · ${tags.join(" · ")}',
       style: TextStyle(
         color: scheme.onSurfaceVariant,
         fontFamilyFallback: kCjkFontFallback,
-        fontSize: _referenceSize,
+        fontSize: size,
       ),
     );
   }
+
+  /// The size of a reference set UNDER the passage, at a solved
+  /// passage size.
+  ///
+  /// The ratio and the floor are the corner reference's rules. The
+  /// third clause is this placement's own: a reference printed beneath
+  /// scripture must never be set larger than the scripture, which the
+  /// 26 px floor would otherwise do the moment a long reading pushes
+  /// the passage below it.
+  double _referenceSizeFor(double size) => math.min(
+        math.max(size * kProjectionReferenceScale, kProjectionReferenceFloor),
+        size,
+      );
+}
+
+/// One row of the projected block: a span to draw, or a gap to leave.
+///
+/// Deliberately not two classes. The solver walks this list adding
+/// heights, and a gap that is not in the same list as the spans is a
+/// gap the solver forgets — which is exactly how a block that measured
+/// as fitting ends up not fitting.
+class _StagePiece {
+  final TextSpan? span;
+  final double gap;
+  const _StagePiece(TextSpan this.span) : gap = 0;
+  const _StagePiece.gap(this.gap) : span = null;
+
+  /// The span as a widget, with its root style on the `Text` rather
+  /// than inside the span.
+  ///
+  /// Measuring needs the style INSIDE the span — a `TextPainter` has
+  /// nowhere else to take it from — while everything that reads the
+  /// wall, tests included, asks a `Text` for `style.fontSize`. Splitting
+  /// it here is the one place that difference has to be handled, and
+  /// the two are the same style either way.
+  Widget toWidget(TextAlign align) => Text.rich(
+        TextSpan(text: span!.text, children: span!.children),
+        style: span!.style,
+        textAlign: align,
+      );
 }
 
 /// `5:00`, `12:34`, `1:02:03` — minutes and seconds, hours only when

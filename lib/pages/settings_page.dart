@@ -17,7 +17,8 @@ import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/constants/fuzzy_search_strings.dart';
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForCopy;
+import 'package:yswords/constants/text_patterns.dart'
+    show sanitizeForCopy, parentheticalNotePattern;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +28,7 @@ import 'package:yswords/models/dashboard_section.dart';
 import 'package:yswords/services/update_service.dart';
 import 'package:yswords/widgets/update_check_tile.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/widgets/projection_stage.dart';
 import 'package:yswords/pages/projection_page.dart' show kProjectionTypeSteps;
 import 'package:yswords/models/verse.dart';
@@ -590,6 +592,35 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
+                                // 2026-09-15. 「这个开了为什么复制后还是
+                                // 这样」. The switch was on, the copy was
+                                // unchanged, and both were correct: 出埃及记
+                                // 19 has nothing in full-width parentheses,
+                                // and most chapters do not. A switch that
+                                // demonstrably does nothing reads as broken,
+                                // so it says when it has nothing to do.
+                                if (settings.copyStripParentheticals &&
+                                    !verseSamples.any((v) =>
+                                        parentheticalNotePattern
+                                            .hasMatch(v['text'] as String)))
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 4 * s),
+                                    child: Text(
+                                      uiStrings['copyStripNotesNothingHere']
+                                              ?[settings.locale] ??
+                                          'This chapter has none, so the '
+                                              'switch changes nothing here.',
+                                      style: TextStyle(
+                                        fontFamily: settings.fontFamily,
+                                        fontFamilyFallback: kCjkFontFallback,
+                                        fontSize: settings.fontSize * 0.85,
+                                        fontStyle: FontStyle.italic,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
@@ -1970,8 +2001,22 @@ class _ProjectorCard extends StatelessWidget {
           fontSize: settings.fontSize * scale,
           fontWeight: weight,
         );
+    // 2026-09-15, from a phone screenshot of this very card with four
+    // rows circled: 「这里语言没有跟app语言一起变」 — 「对齐」「经文排法」
+    // 「显示节号」「经文出处」 stayed in English among Chinese siblings.
+    //
+    // The translations existed the whole time. They live in
+    // `projectionStrings`, because the wall itself needs them, and this
+    // card asked `uiStrings` for them under invented `projector*` names
+    // that were never added anywhere. `t` silently answers a missing
+    // key with its English fallback, which is what a fallback is for
+    // and is also why nothing complained for two days.
+    //
+    // So `t` now reads BOTH tables — the projector card is the one
+    // place in the app that legitimately draws on both — and the four
+    // rows ask for the keys that exist.
     String t(String key, String fallback) =>
-        uiStrings[key]?[locale] ?? fallback;
+        uiStrings[key]?[locale] ?? projectionStrings[key]?[locale] ?? fallback;
 
     // The companion dropdowns show only what THIS build can load, and a
     // stored code that is not in the list shows as unset rather than
@@ -2081,7 +2126,7 @@ class _ProjectorCard extends StatelessWidget {
               ),
             ),
             row(
-              'projectorAlign',
+              'projectionAlign',
               'Alignment',
               DropdownButton<ProjectionAlign>(
                 value: settings.projectionLayout.align,
@@ -2102,7 +2147,7 @@ class _ProjectorCard extends StatelessWidget {
               ),
             ),
             row(
-              'projectorFlow',
+              'projectionFlow',
               'Verses',
               DropdownButton<ProjectionFlow>(
                 value: settings.projectionLayout.flow,
@@ -2123,7 +2168,7 @@ class _ProjectorCard extends StatelessWidget {
               ),
             ),
             row(
-              'projectorNumbers',
+              'projectionNumbers',
               'Verse numbers',
               Switch.adaptive(
                 value: settings.projectionLayout.numbers,
@@ -2132,7 +2177,7 @@ class _ProjectorCard extends StatelessWidget {
               ),
             ),
             row(
-              'projectorReferencePlace',
+              'projectionReferencePlace',
               'Reference',
               DropdownButton<ProjectionReferencePlace>(
                 value: settings.projectionLayout.reference,
@@ -2213,14 +2258,24 @@ class _ProjectorCard extends StatelessWidget {
               SizedBox(height: 12 * s),
               Text(t('projectorPreview', 'Preview'), style: label()),
               SizedBox(height: 8 * s),
-              // The real stage, in a 16:9 box. Its FittedBox scales the
-              // wall-sized type down to fit, so what the reader sees is
-              // the wall's proportions, not a mock of them.
+              // The real stage, in a 16:9 box.
+              //
+              // 2026-09-15: 「预览为什么这样很难看」. The box was handed
+              // the operator's absolute type size — 76 px — and 76 px
+              // in a 343 px box is not a small wall, it is a wall five
+              // times closer. The passage filled the box top to bottom
+              // in a ribbon four characters wide, with the reference
+              // printed across it.
+              //
+              // Both boxes are 16:9, so quoting the size against the
+              // preview's own width instead of the wall's makes this a
+              // picture of the wall rather than a different layout at
+              // the same numbers.
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: ProjectionStage(
+                  child: LayoutBuilder(builder: (context, box) => ProjectionStage(
                     verses: previewVerses,
                     reference: previewVerses.length > 1
                         ? '${previewVerses.first.book} '
@@ -2231,8 +2286,10 @@ class _ProjectorCard extends StatelessWidget {
                             '${previewVerses.first.chapter}:'
                             '${previewVerses.first.verseLabel}',
                     versionCode: mainProvider.currentVersion,
-                    typeSize: kProjectionTypeSteps[settings.projectionTypeStep
-                        .clamp(0, kProjectionTypeSteps.length - 1)],
+                    typeSize: projectionPreviewTypeSize(
+                        box.maxWidth,
+                        kProjectionTypeSteps[settings.projectionTypeStep
+                            .clamp(0, kProjectionTypeSteps.length - 1)]),
                     blank: false,
                     locale: locale,
                     scheme: projectionDarkScheme(settings.primaryColor),
@@ -2242,7 +2299,7 @@ class _ProjectorCard extends StatelessWidget {
                     secondCode: null,
                     secondLoading: false,
                     layout: settings.projectionLayout,
-                  ),
+                  )),
                 ),
               ),
             ],
