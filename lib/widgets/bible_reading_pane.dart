@@ -6431,9 +6431,21 @@ class _MiniReaderHeader extends StatelessWidget {
         child: Row(
           children: [
             // Left: where you are (book + chapter).
+            //
+            // 2026-09-14: folded to the short name below 390px, the same
+            // width the reading header and the resume card already fold
+            // at. The centring below costs this label half the row — the
+            // trailing `Expanded(SizedBox())` exists to keep the version
+            // dead centre — so on a 320px screen it had about 99px for a
+            // name that wants 120, and 「帖撒罗尼迦后书 3」 was drawn 21px
+            // short. Nothing here scales with either slider, which means
+            // this one was clipping at default settings, on the band a
+            // reader sees whenever they hide the chrome to read.
             Expanded(
               child: Text(
-                '$book $chapter',
+                MediaQuery.of(context).size.width < 390
+                    ? '${shortBookName(book, locale)} $chapter'
+                    : '$book $chapter',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: bookStyle,

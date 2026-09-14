@@ -8194,17 +8194,57 @@ const uiStrings = {
   // Native builds only. These strings sit beside the manual "Check for
   // updates" button on the About page and never render on the web,
   // where WebUpdateChecker owns the question instead.
+  //
+  // 2026-09-14: neither line says "daily" any more. They said so because
+  // daily was compiled into `updateCheckDueAt`; the interval is the
+  // reader's now, and a switch labelled 每天自动检查更新 sitting above a
+  // 每周 selection is the interface lying to them.
   'autoCheckUpdates': {
-    'zh-Hans': '每天自动检查更新',
-    'zh-Hant': '每天自動檢查更新',
-    'en': 'Check for updates daily',
+    'zh-Hans': '自动检查更新',
+    'zh-Hant': '自動檢查更新',
+    'en': 'Check for updates automatically',
   },
   'autoCheckUpdatesHint': {
-    'zh-Hans': '每天最多向 GitHub 查询一次是否有新版本；有新版才会提示。',
-    'zh-Hant': '每天最多向 GitHub 查詢一次是否有新版本；有新版才會提示。',
+    'zh-Hans': '按下面的频率向 GitHub 查询是否有新版本；有新版才会提示。',
+    'zh-Hant': '按下面的頻率向 GitHub 查詢是否有新版本；有新版才會提示。',
     'en':
-        'Asks GitHub at most once a day whether a newer release exists. '
-            'You only hear about it when there is one.',
+        'Asks GitHub at the interval below whether a newer release '
+            'exists. You only hear about it when there is one.',
+  },
+  // The interval itself, directly under the switch and disabled when it
+  // is off.
+  'updateFrequency': {
+    'zh-Hans': '检查频率',
+    'zh-Hant': '檢查頻率',
+    'en': 'How often',
+  },
+  'updateFreqEveryLaunch': {
+    'zh-Hans': '每次启动',
+    'zh-Hant': '每次啟動',
+    'en': 'Every launch',
+  },
+  'updateFreqDaily': {
+    'zh-Hans': '每天',
+    'zh-Hant': '每天',
+    'en': 'Daily',
+  },
+  'updateFreqWeekly': {
+    'zh-Hans': '每周',
+    'zh-Hant': '每週',
+    'en': 'Weekly',
+  },
+  'updateFreqMonthly': {
+    'zh-Hans': '每月',
+    'zh-Hant': '每月',
+    'en': 'Monthly',
+  },
+  // The home banner's own dismiss. 暂不 rather than 忽略: it comes back
+  // when a NEWER build appears, so "not now" is the truth and "never
+  // again" is not.
+  'updateBannerLater': {
+    'zh-Hans': '暂不',
+    'zh-Hant': '暫不',
+    'en': 'Not now',
   },
   // The one-line form, for the launch-time bar. `updateAvailableBody`
   // is the dialog's paragraph and is far too long to read in six

@@ -1272,6 +1272,7 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                           scheme: Theme.of(context).colorScheme,
                         ),
                         AutoUpdateCheckToggle(locale: settings.locale),
+                        UpdateFrequencySelector(locale: settings.locale),
                       ],
                     ),
                   ),

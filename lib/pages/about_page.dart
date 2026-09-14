@@ -1089,6 +1089,7 @@ class _AppLicenseCard extends StatelessWidget {
             // that button. Same platform gate, so the pair appears and
             // disappears together.
             AutoUpdateCheckToggle(locale: locale),
+            UpdateFrequencySelector(locale: locale),
             // 2026-09-09: and what changed. NOT behind
             // `UpdateService.isSupported` like the two above it — the
             // changelog is bundled, so it reads on the web too, where

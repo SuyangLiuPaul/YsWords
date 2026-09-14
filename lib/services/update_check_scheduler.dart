@@ -1,4 +1,6 @@
-// 2026-09-08: the once-a-day update check.
+// 2026-09-08: the periodic update check. Once a day until 2026-09-14,
+// when the interval became the reader's — see `UpdateCheckFrequency` and
+// `AppSettings.updateCheckDueAt`. Daily is still the default.
 //
 // `UpdateService` has been able to answer "is this build stale?" since
 // v1.3.88, but only when asked — the one caller is `UpdateCheckTile`,
@@ -15,10 +17,11 @@
 //   1. **Never blocks.** Fired and forgotten; nothing on screen waits
 //      for it and a failure is silent. Somebody opened the app to read
 //      a verse, not to be shown a spinner about a version number.
-//   2. **Once a day, whatever the answer.** The timestamp is stamped
-//      even when the check FAILS — a device that is offline every
+//   2. **Once per interval, whatever the answer.** The timestamp is
+//      stamped even when the check FAILS — a device that is offline every
 //      morning would otherwise retry on every launch all day, which is
-//      the opposite of what "daily" means.
+//      the opposite of what "daily" means. (A reader may of course ASK
+//      for every launch, and then there is no gap to consume.)
 //   3. **Says nothing when there is nothing to say.** Up to date is
 //      silent. The reader hears from this code only when a newer build
 //      actually exists.
@@ -36,7 +39,7 @@ library;
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/update_service.dart';
 
-/// Runs the daily check if it is due, and reports a newer release.
+/// Runs the check if it is due, and reports a newer release.
 ///
 /// Returns null when the check did not run, could not run, failed, or
 /// found nothing — the caller has exactly one thing to do with a
@@ -45,7 +48,7 @@ import 'package:yswords/services/update_service.dart';
 /// [now], [supported] and [check] are injectable so the whole decision
 /// — due / not due / disabled / unsupported — is testable without a
 /// clock, a platform or a network.
-Future<UpdateInfo?> runDailyUpdateCheck(
+Future<UpdateInfo?> runScheduledUpdateCheck(
   AppSettings settings, {
   DateTime? now,
   bool? supported,
@@ -70,6 +73,35 @@ Future<UpdateInfo?> runDailyUpdateCheck(
   // answer never arrives.
   await settings.markUpdateChecked(at);
 
+  final info = await (check ?? UpdateService.checkForUpdate)();
+  if (info == null || !info.updateAvailable) return null;
+  return info;
+}
+
+/// The same check, asked for rather than scheduled.
+///
+/// 2026-09-14: pulling the home screen down asks now. Two differences
+/// from [runScheduledUpdateCheck], and both follow from "the reader
+/// asked":
+///
+///   * **The interval is skipped.** Somebody who pulled the screen down
+///     four minutes after the last check meant it.
+///   * **The switch is not consulted.** 「自动检查更新」 is about the
+///     AUTOMATIC request — turning it off is turning off the app asking
+///     on its own, not refusing to answer when asked.
+///
+/// What is the same: the platform gate (there is no out-of-date web
+/// install, so there is nothing to ask GitHub), the timestamp being
+/// stamped whatever the answer, and the silence when there is nothing to
+/// say.
+Future<UpdateInfo?> runManualUpdateCheck(
+  AppSettings settings, {
+  DateTime? now,
+  bool? supported,
+  Future<UpdateInfo?> Function()? check,
+}) async {
+  if (!(supported ?? UpdateService.isSupported)) return null;
+  await settings.markUpdateChecked(now ?? DateTime.now());
   final info = await (check ?? UpdateService.checkForUpdate)();
   if (info == null || !info.updateAvailable) return null;
   return info;

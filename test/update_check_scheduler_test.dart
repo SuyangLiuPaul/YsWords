@@ -17,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/constants/update_check_frequency.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/profile_service.dart';
 import 'package:yswords/services/update_check_scheduler.dart';
@@ -37,10 +38,12 @@ void main() {
   Future<AppSettings> settings({
     bool auto = true,
     DateTime? lastChecked,
+    UpdateCheckFrequency? every,
   }) async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final s = AppSettings();
     await s.setAutoCheckUpdates(auto);
+    if (every != null) await s.setUpdateCheckFrequency(every);
     if (lastChecked != null) await s.markUpdateChecked(lastChecked);
     return s;
   }
@@ -51,7 +54,7 @@ void main() {
     test('a day after the last check it runs and reports the newer build',
         () async {
       var calls = 0;
-      final info = await runDailyUpdateCheck(
+      final info = await runScheduledUpdateCheck(
         await settings(lastChecked: now.subtract(const Duration(days: 1))),
         now: now,
         supported: true,
@@ -67,7 +70,7 @@ void main() {
     test('an hour after the last check it does not touch the network',
         () async {
       var calls = 0;
-      final info = await runDailyUpdateCheck(
+      final info = await runScheduledUpdateCheck(
         await settings(lastChecked: now.subtract(const Duration(hours: 1))),
         now: now,
         supported: true,
@@ -83,7 +86,7 @@ void main() {
     test('a reader who has never checked is due on their first launch',
         () async {
       var calls = 0;
-      await runDailyUpdateCheck(
+      await runScheduledUpdateCheck(
         await settings(),
         now: now,
         supported: true,
@@ -97,7 +100,7 @@ void main() {
     });
 
     test('an up-to-date answer is reported as nothing to say', () async {
-      final info = await runDailyUpdateCheck(
+      final info = await runScheduledUpdateCheck(
         await settings(),
         now: now,
         supported: true,
@@ -112,7 +115,7 @@ void main() {
         () async {
       var calls = 0;
       final s = await settings(auto: false);
-      await runDailyUpdateCheck(s, now: now, supported: true, check: () async {
+      await runScheduledUpdateCheck(s, now: now, supported: true, check: () async {
         calls++;
         return _info(available: true);
       });
@@ -131,7 +134,7 @@ void main() {
       // would still read the check as due and fire a second request.
       final s = await settings();
       late bool dueDuringCall;
-      await runDailyUpdateCheck(
+      await runScheduledUpdateCheck(
         s,
         now: now,
         supported: true,
@@ -155,8 +158,8 @@ void main() {
       }
 
       await Future.wait([
-        runDailyUpdateCheck(s, now: now, supported: true, check: slowCheck),
-        runDailyUpdateCheck(s, now: now, supported: true, check: slowCheck),
+        runScheduledUpdateCheck(s, now: now, supported: true, check: slowCheck),
+        runScheduledUpdateCheck(s, now: now, supported: true, check: slowCheck),
       ]);
       expect(calls, 1);
     });
@@ -175,9 +178,9 @@ void main() {
       }
 
       final first =
-          await runDailyUpdateCheck(s, now: now, supported: true, check: failing);
+          await runScheduledUpdateCheck(s, now: now, supported: true, check: failing);
       final later = now.add(const Duration(minutes: 1));
-      final second = await runDailyUpdateCheck(s,
+      final second = await runScheduledUpdateCheck(s,
           now: later, supported: true, check: failing);
 
       expect(first, isNull);
@@ -200,7 +203,7 @@ void main() {
       // gets its own first check.
       var calls = 0;
       final s = await settings();
-      final info = await runDailyUpdateCheck(s,
+      final info = await runScheduledUpdateCheck(s,
           now: now,
           supported: false,
           check: () async {
@@ -214,7 +217,7 @@ void main() {
 
     test('UpdateService still refuses to answer on the web', () {
       // The gate above is only honest if the thing it defaults to is.
-      // `isSupported` is what `runDailyUpdateCheck` reads when no
+      // `isSupported` is what `runScheduledUpdateCheck` reads when no
       // override is passed, and the web arm of it is the whole reason
       // the daily check is not duplicated on top of WebUpdateChecker.
       expect(UpdateService.isSupported, isTrue,
@@ -308,6 +311,134 @@ void main() {
           reason: 'a `profile.<id>.` prefix is what the RTDB sync layer '
               'walks; keeping these out of it is what stops a phone check '
               "from silencing a desktop's for the day");
+    });
+  });
+
+  // 2026-09-14: the gap was a compiled `Duration(days: 1)` and is now the
+  // reader's choice. These are about what the four choices mean, and about
+  // the one that has no gap at all.
+  group("the interval is the reader's", () {
+    final anHourAgo = now.subtract(const Duration(hours: 1));
+
+    Future<int> callsAt(UpdateCheckFrequency every, DateTime last) async {
+      var calls = 0;
+      await runScheduledUpdateCheck(
+        await settings(every: every, lastChecked: last),
+        now: now,
+        supported: true,
+        check: () async {
+          calls++;
+          return _info(available: true);
+        },
+      );
+      return calls;
+    }
+
+    test('every launch means every launch, an hour later included',
+        () async {
+      expect(await callsAt(UpdateCheckFrequency.everyLaunch, anHourAgo), 1);
+    });
+
+    test('daily, weekly and monthly all decline an hour later', () async {
+      for (final every in const [
+        UpdateCheckFrequency.daily,
+        UpdateCheckFrequency.weekly,
+        UpdateCheckFrequency.monthly,
+      ]) {
+        expect(await callsAt(every, anHourAgo), 0, reason: every.prefValue);
+      }
+    });
+
+    test('each one fires once its own gap has passed, and not before',
+        () async {
+      // The whole table rather than one example: a wrong `gap` on any
+      // value shows up here as the adjacent row's answer.
+      for (final every in UpdateCheckFrequency.values) {
+        final gap = every.gap;
+        if (gap > Duration.zero) {
+          expect(
+              await callsAt(
+                  every, now.subtract(gap - const Duration(minutes: 1))),
+              0,
+              reason: '${every.prefValue} fired a minute early');
+        }
+        expect(await callsAt(every, now.subtract(gap)), 1,
+            reason: '${every.prefValue} did not fire on its own gap');
+      }
+    });
+
+    test('a weekly reader is not asked daily, which is the whole point',
+        () async {
+      final s = await settings(every: UpdateCheckFrequency.weekly);
+      var calls = 0;
+      Future<UpdateInfo?> check() async {
+        calls++;
+        return _info(available: true);
+      }
+
+      await runScheduledUpdateCheck(s,
+          now: now, supported: true, check: check);
+      expect(calls, 1, reason: 'never checked is longer ago than any gap');
+      for (var day = 1; day < 7; day++) {
+        await runScheduledUpdateCheck(s,
+            now: now.add(Duration(days: day)), supported: true, check: check);
+      }
+      expect(calls, 1,
+          reason: 'six more launches inside the week asked again');
+      await runScheduledUpdateCheck(s,
+          now: now.add(const Duration(days: 7)),
+          supported: true,
+          check: check);
+      expect(calls, 2);
+    });
+
+    test('the switch still wins over any interval', () async {
+      expect(await callsAt(UpdateCheckFrequency.everyLaunch, DateTime(2020)),
+          1);
+      var calls = 0;
+      await runScheduledUpdateCheck(
+        await settings(
+            auto: false,
+            every: UpdateCheckFrequency.everyLaunch,
+            lastChecked: DateTime(2020)),
+        now: now,
+        supported: true,
+        check: () async {
+          calls++;
+          return _info(available: true);
+        },
+      );
+      expect(calls, 0,
+          reason: 'off means no request, whatever the frequency says');
+    });
+
+    test('the choice survives a reload, and an unknown value reads as '
+        'daily', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final a = AppSettings();
+      await a.setUpdateCheckFrequency(UpdateCheckFrequency.monthly);
+
+      final b = AppSettings();
+      await b.loadSettings();
+      expect(b.updateCheckFrequency, UpdateCheckFrequency.monthly);
+
+      // A value from a newer build, or a key left over from a rename.
+      // Defaulting to the documented default is the only answer that
+      // cannot surprise anybody.
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'updateCheckFrequency': 'fortnightly',
+      });
+      final c = AppSettings();
+      await c.loadSettings();
+      expect(c.updateCheckFrequency, UpdateCheckFrequency.daily);
+    });
+
+    test('the default is daily, and nothing has to be stored to get it',
+        () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final s = AppSettings();
+      expect(s.updateCheckFrequency, UpdateCheckFrequency.daily);
+      expect(s.autoCheckUpdates, isTrue);
     });
   });
 }

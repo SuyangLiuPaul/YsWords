@@ -9,7 +9,6 @@ import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/song_service.dart';
 import 'package:yswords/widgets/global_mini_player.dart';
-import 'package:yswords/widgets/update_banner.dart';
 
 /// `No Overlay widget found`, reported twice.
 ///
@@ -28,8 +27,10 @@ import 'package:yswords/widgets/update_banner.dart';
 /// app-wide playback strip on screen.
 ///
 /// **The mechanism.** `main.dart` mounts the strip through
-/// `MaterialApp.builder`: `UpdateBanner(child: GlobalMiniPlayer(child:
-/// child))`. `child` there IS the Navigator, so everything the builder
+/// `MaterialApp.builder`, as `GlobalMiniPlayer(child: child)`. (Until
+/// 2026-09-14 an `UpdateBanner` wrapped it; the update notice moved to
+/// the dashboard and `update_available_banner_test.dart` covers it
+/// there.) `child` there IS the Navigator, so everything the builder
 /// adds around it sits ABOVE the Navigator — and the Navigator's
 /// `Overlay` is the app's only one. A `Tooltip` is an `OverlayPortal`:
 /// `RawTooltipState.build` asserts `debugCheckHasOverlay` on every
@@ -54,7 +55,7 @@ void main() {
         ],
         child: MaterialApp(
           builder: (context, child) =>
-              UpdateBanner(child: GlobalMiniPlayer(child: child!)),
+              GlobalMiniPlayer(child: child!),
           home: home,
         ),
       );
@@ -117,7 +118,7 @@ void main() {
       child: MaterialApp(
         navigatorKey: nav,
         builder: (context, child) =>
-            UpdateBanner(child: GlobalMiniPlayer(child: child!)),
+            GlobalMiniPlayer(child: child!),
         home: const Scaffold(body: Center(child: Text('home'))),
       ),
     ));

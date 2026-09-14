@@ -38,6 +38,8 @@ import 'package:yswords/pages/stats_page.dart';
 import 'package:yswords/services/bible_evidence_service.dart';
 import 'package:yswords/services/sermon_service.dart';
 import 'package:yswords/services/update_check_scheduler.dart';
+import 'package:yswords/services/web_update_checker.dart';
+import 'package:yswords/services/cloud_sync_service.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/services/cloud_auth_service.dart';
 import 'package:yswords/services/realtime_db_sync_service.dart';
@@ -56,7 +58,9 @@ import 'package:yswords/widgets/onboarding_dialog.dart';
 import 'package:yswords/widgets/press_scale.dart';
 import 'package:yswords/widgets/profile_avatar.dart';
 import 'package:yswords/widgets/update_check_tile.dart'
-    show buildUpdateAvailableBar;
+    show canInstallInApp;
+import 'package:yswords/widgets/update_available_banner.dart';
+import 'package:yswords/services/update_service.dart' show UpdateInfo;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Personal "home" / dashboard. Shows the signed-in user's reading
@@ -123,7 +127,7 @@ class _DashboardPageState extends State<DashboardPage> {
     // 2026-09-08: the daily update check. After the first frame, never
     // before it — this is a network call about a version number and the
     // reader opened the app to read scripture. Nothing on screen waits
-    // for it, and every path through `runDailyUpdateCheck` that is not
+    // for it, and every path through `runScheduledUpdateCheck` that is not
     // "there is a newer build" returns null and says nothing at all
     // (including the whole web/PWA channel, where it never runs).
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -132,15 +136,21 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  /// Offer a newer release, once a day, if there is one.
+  /// Offer a newer release, at the reader's chosen interval, if there is
+  /// one.
   ///
-  /// A SnackBar rather than a dialog, and this is the part that must
-  /// not regress: the dashboard already has one thing that can take
-  /// the screen on launch (`_maybeShowOnboarding`), and a second modal
-  /// racing it would land on top of the tour or, worse, on top of a
-  /// song sheet a shared link just opened. A bar states the fact,
-  /// carries the one action, and dismisses itself — it never takes
-  /// focus from whatever the reader came here to do.
+  /// Not a dialog, and this is the part that must not regress: the
+  /// dashboard already has one thing that can take the screen on launch
+  /// (`_maybeShowOnboarding`), and a second modal racing it would land on
+  /// top of the tour or, worse, on top of a song sheet a shared link just
+  /// opened. Nothing here takes focus from whatever the reader came for.
+  ///
+  /// 2026-09-14: and no longer a SnackBar either. It stated the fact at
+  /// the foot of the screen for six seconds and then took it away again,
+  /// leaving nothing to come back to but a tile on the About page; the
+  /// owner asked for it on the home screen instead. What this sets is
+  /// state, and `UpdateAvailableBanner` at the head of the dashboard
+  /// renders it until the reader acts on it or waves it away.
   ///
   /// 2026-09-09 (review finding 7): the bar itself is now built beside
   /// the About page's dialog, in `update_check_tile.dart`, so that its
@@ -149,18 +159,29 @@ class _DashboardPageState extends State<DashboardPage> {
   /// the browser to hunt for a file while About offered a button. Its
   /// six-second duration and the reason for it live there too, with the
   /// button that earns them, rather than being restated here.
+  /// The newer release the periodic check found, and whether it can be
+  /// installed without leaving the app. Both feed the banner at the head
+  /// of the list; null means there is nothing to say, which is the
+  /// overwhelmingly common case.
+  UpdateInfo? _update;
+  bool _updateInstallsInApp = false;
+
   Future<void> _maybeOfferUpdate() async {
     final settings = context.read<AppSettings>();
-    final info = await runDailyUpdateCheck(settings);
+    final info = await runScheduledUpdateCheck(settings);
     if (!mounted || info == null) return;
-    // Awaited: which action the bar carries depends on which app this
+    // Awaited: which action the banner carries depends on which app this
     // build is (`.cn` must not be handed the international APK), and
-    // only the platform side can say. `mounted` is re-checked because
-    // that answer arrives after a suspension point.
-    final bar =
-        await buildUpdateAvailableBar(context, info, locale: settings.locale);
+    // only the platform side can say. Resolved here rather than in the
+    // banner's `build`, so the button never changes under the reader's
+    // finger. `mounted` is re-checked because the answer arrives after a
+    // suspension point.
+    final inApp = await canInstallInApp(info);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(bar);
+    setState(() {
+      _update = info;
+      _updateInstallsInApp = inApp;
+    });
   }
 
   Future<void> _loadDailyEvidence() async {
@@ -523,8 +544,22 @@ class _DashboardPageState extends State<DashboardPage> {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxW),
-          // 2026-08-16: pull-to-refresh REMOVED (was a RefreshIndicator
-          // around this ListView). User: "往下滑的时候，感觉并没有用，
+          // 2026-08-16 pull-to-refresh was REMOVED from around this
+          // ListView, and 2026-09-14 it is back, because the reason it
+          // went is no longer true. The note it went with is kept below
+          // in full, because it is right about the gesture it had and is
+          // the standard the new one has to meet.
+          //
+          // What it does now: signed in, it pushes the local snapshot to
+          // Firestore and waits for the round trip; on any build, it asks
+          // whether a newer version exists — which the app would
+          // otherwise not do until the reader's chosen interval came
+          // round, and which on the web means asking the server whether
+          // this tab is running yesterday's build. Signed out, the sync
+          // half is simply absent: 「如果没有登陆就没sync功能」.
+          //
+          // ── the 2026-08-16 note, unchanged ──
+          // User: "往下滑的时候，感觉并没有用，
           // 而且那个转转的也并不自然，你这方面考虑了吗，好好想想" — right
           // on both counts. Every block on this page is either
           // live-reactive (counts / recent bookmarks watch MainProvider;
@@ -541,9 +576,25 @@ class _DashboardPageState extends State<DashboardPage> {
           // nicer spinner. `AlwaysScrollableScrollPhysics` went with
           // it: it existed only so the pull worked when the content
           // fit on screen.
-          child: ListView(
+          child: RefreshIndicator(
+            onRefresh: _pullToRefresh,
+            child: ListView(
+            // Needed for the pull to work at all when the content fits
+            // on screen, which on a tablet it does.
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             children: [
+              // Above everything the reader arranged: this is the one
+              // item on the page that is about the app rather than about
+              // scripture, and the one that stops appearing the moment it
+              // is acted on. It renders nothing at all when there is no
+              // newer version — which is nearly always — so it costs the
+              // layout below it nothing.
+              UpdateAvailableBanner(
+                locale: locale,
+                release: _update,
+                releaseInstallsInApp: _updateInstallsInApp,
+              ),
               // ── DASHBOARD SECTIONS (customizable order + visibility) ──
               // The user controls both the render order and which blocks
               // are visible via Settings → "Dashboard layout" (round 55).
@@ -563,9 +614,72 @@ class _DashboardPageState extends State<DashboardPage> {
               _HomeFooter(locale: locale, scheme: scheme),
             ],
           ),
+          ),
         ),
       ),
     );
+  }
+
+  /// Pull down to sync, and to ask whether there is a newer version.
+  ///
+  /// 2026-09-14, at the owner's request: 「如果我往下拉 所有devices和webapp
+  /// 之类的 就会等于manual sync一下 并且自动检查最新更新。当然如果没有登陆
+  /// 就没sync功能」.
+  ///
+  /// Three pieces, and each is something the reader cannot otherwise
+  /// make happen from this screen:
+  ///
+  ///   * **Sync**, if they are signed in. `syncNow` pushes the local
+  ///     snapshot and waits for the round trip, so the spinner is
+  ///     actually waiting for something. Signed out it is skipped
+  ///     entirely — there is no account to sync with, and a spinner that
+  ///     pretends otherwise is the exact complaint this gesture was
+  ///     removed over in August.
+  ///   * **The release check**, skipping the reader's interval and the
+  ///     automatic-check switch, because both are about the app asking
+  ///     ON ITS OWN. A newer build raises the banner at the top of this
+  ///     page; nothing is said when there is none.
+  ///   * **The web build check**, which is the same question on the
+  ///     channel where `UpdateService` has no answer: whether this tab is
+  ///     running yesterday's deploy.
+  ///
+  /// Every failure is swallowed. A pull that ends in a red bar because
+  /// the phone is on a train is worse than a pull that quietly changes
+  /// nothing, and the sync service surfaces its own state in Settings.
+  Future<void> _pullToRefresh() async {
+    final settings = context.read<AppSettings>();
+    await Future.wait<void>([
+      if (CloudAuthService.instance.isSignedIn)
+        CloudSyncService.instance.syncNow().catchError((_) => false),
+      WebUpdateChecker.instance.checkNow().catchError((_) {}),
+      _checkForUpdateNow(settings),
+    ]);
+    if (!mounted) return;
+    // The page's own content last, and on the same frame: the counts and
+    // the resume card are live-reactive, but the daily pick and the
+    // evidence are read once at initState and a reader who just synced a
+    // new device would otherwise see the old ones until they came back.
+    _loadDailyEvidence();
+    _loadResumeSermon();
+  }
+
+  /// The release half of [_pullToRefresh], kept separate so its `mounted`
+  /// check sits with the `setState` it guards rather than three awaits
+  /// away from it.
+  Future<void> _checkForUpdateNow(AppSettings settings) async {
+    try {
+      final info = await runManualUpdateCheck(settings);
+      if (!mounted || info == null) return;
+      final inApp = await canInstallInApp(info);
+      if (!mounted) return;
+      setState(() {
+        _update = info;
+        _updateInstallsInApp = inApp;
+      });
+    } catch (_) {
+      // Offline, rate-limited, or GitHub is having a day. Silence is the
+      // right answer to a question nobody has to have answered.
+    }
   }
 
   /// Walk the user's [DashboardSection] order, build each visible

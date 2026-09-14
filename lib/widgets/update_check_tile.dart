@@ -28,6 +28,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/constants/update_check_frequency.dart';
 import 'package:yswords/services/app_update_installer.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/services/link_opener.dart';
@@ -398,59 +399,6 @@ Future<void> showUpdateAvailableDialog(
     ),
   );
 }
-
-/// The daily check's bar, with the one action that fits this build.
-///
-/// A SnackBar rather than a dialog: see `_maybeOfferUpdate` in
-/// `dashboard_page.dart`, which shows it and explains why the dashboard
-/// must not raise a second modal on launch. 2026-09-09 (review finding
-/// 7): on Android with an APK the action is now the in-app install —
-/// the same [installUpdateInApp] the About page runs — where it used to
-/// hand the URL to the browser, so the one surface most readers
-/// actually meet was the one still asking them to go and find a file.
-Future<SnackBar> buildUpdateAvailableBar(
-  BuildContext context,
-  UpdateInfo info, {
-  required String locale,
-  @visibleForTesting http.Client? client,
-  @visibleForTesting
-  Duration permissionTimeout = AppUpdateInstaller.defaultPermissionTimeout,
-}) async {
-  // Awaited (remediation): which of the two actions is honest depends
-  // on which app this build is — see [canInstallInApp]. Resolved here,
-  // before the bar exists, so the caller shows a finished SnackBar and
-  // the action never has to change under the reader.
-  final inApp = await canInstallInApp(info);
-  final label =
-      _s(locale, 'updateAvailableBar', 'Version v{new} is available')
-          .replaceAll('{new}', info.latestVersion);
-  final SnackBarAction? action;
-  if (inApp) {
-    action = SnackBarAction(
-      label: _s(locale, 'updateInstallNow', 'Update now'),
-      onPressed: () => unawaited(installUpdateInApp(context, info,
-          locale: locale,
-          client: client,
-          permissionTimeout: permissionTimeout)),
-    );
-  } else if (LinkOpener.isAvailable) {
-    action = SnackBarAction(
-      label: _s(locale, 'updateDownload', 'Download'),
-      onPressed: () => LinkOpener.openOrWarn(context, info.downloadUrl,
-          locale: locale),
-    );
-  } else {
-    action = null;
-  }
-  // Six seconds because it has a button, and the default four is not
-  // long enough to read a sentence and decide.
-  return SnackBar(
-    content: Text(label),
-    duration: const Duration(seconds: 6),
-    action: action,
-  );
-}
-
 class UpdateCheckTile extends StatefulWidget {
   final String locale;
   final ColorScheme scheme;
@@ -553,12 +501,88 @@ class AutoUpdateCheckToggle extends StatelessWidget {
       ),
       subtitle: Text(
         uiStrings['autoCheckUpdatesHint']?[locale] ??
-            'Asks GitHub at most once a day whether a newer release '
+            'Asks GitHub at the interval below whether a newer release '
                 'exists. You only hear about it when there is one.',
         style: TextStyle(
           fontSize: 11,
           color: scheme.onSurface.withValues(alpha: 0.7),
         ),
+      ),
+    );
+  }
+}
+
+/// The interval, directly under [AutoUpdateCheckToggle].
+///
+/// 2026-09-14, at the owner's request. It was a `Duration(days: 1)`
+/// compiled into `AppSettings.updateCheckDueAt` and the only control
+/// over it was the switch above. Daily is still the default and still
+/// what the switch turns on; what changes is that a reader who wants to
+/// hear sooner, or less often, can say so.
+///
+/// Disabled with the switch rather than hidden by it: a frequency for a
+/// check that is off has nothing to do, and greying it says so, where
+/// removing it leaves a reader who turned the switch off wondering where
+/// their choice went. It shares the switch's platform gate, so on the web
+/// the pair vanishes together — there is no such thing as an out-of-date
+/// web install.
+class UpdateFrequencySelector extends StatelessWidget {
+  final String locale;
+  const UpdateFrequencySelector({super.key, required this.locale});
+
+  /// A switch rather than a key computed from `name`: a computed key ties
+  /// a translation to a Dart identifier, and this way adding a value does
+  /// not compile until somebody has written the words it needs.
+  static String labelKey(UpdateCheckFrequency f) {
+    switch (f) {
+      case UpdateCheckFrequency.everyLaunch:
+        return 'updateFreqEveryLaunch';
+      case UpdateCheckFrequency.daily:
+        return 'updateFreqDaily';
+      case UpdateCheckFrequency.weekly:
+        return 'updateFreqWeekly';
+      case UpdateCheckFrequency.monthly:
+        return 'updateFreqMonthly';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!UpdateService.isSupported) return const SizedBox.shrink();
+    final settings = context.watch<AppSettings>();
+    final on = settings.autoCheckUpdates;
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      enabled: on,
+      title: Text(
+        uiStrings['updateFrequency']?[locale] ?? 'How often',
+        style: TextStyle(
+          fontSize: 13,
+          color: on
+              ? scheme.onSurface
+              : scheme.onSurface.withValues(alpha: 0.4),
+        ),
+      ),
+      trailing: DropdownButton<UpdateCheckFrequency>(
+        value: settings.updateCheckFrequency,
+        underline: const SizedBox.shrink(),
+        onChanged: on
+            ? (f) {
+                if (f != null) settings.setUpdateCheckFrequency(f);
+              }
+            : null,
+        items: [
+          for (final f in UpdateCheckFrequency.values)
+            DropdownMenuItem(
+              value: f,
+              child: Text(
+                uiStrings[labelKey(f)]?[locale] ?? f.prefValue,
+                style: const TextStyle(fontSize: 13),
+              ),
+            ),
+        ],
       ),
     );
   }

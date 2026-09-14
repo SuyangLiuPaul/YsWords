@@ -62,7 +62,6 @@ import 'package:yswords/services/book_intro_service.dart';
 import 'package:yswords/services/section_title_service.dart';
 import 'package:yswords/services/song_download_service.dart';
 import 'package:yswords/widgets/global_mini_player.dart';
-import 'package:yswords/widgets/update_banner.dart';
 import 'package:yswords/services/song_audio_handler.dart';
 import 'package:yswords/services/song_player_service.dart';
 import 'package:yswords/services/url_sync_service.dart';
@@ -1273,13 +1272,20 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               // stopped audio look identical from the outside.
               // Wrapping here means a page added later cannot forget
               // it. Renders nothing when nothing is playing.
-              // 2026-08-31: the "new version available" strip lives
-              // here for the same reason the player does — app-wide, so
-              // no page can forget it. Outside the mini-player so the
-              // two stack rather than fight for the bottom edge.
-              // Renders nothing off the web, and nothing on the web
-              // until the server actually moves.
-              child: UpdateBanner(child: GlobalMiniPlayer(child: child!)),
+              // 2026-08-31 a "new version available" strip lived here
+              // too, app-wide, along the bottom edge above the player.
+              // 2026-09-14 the owner asked for that notice on the home
+              // screen instead of at the foot of it, and both channels —
+              // a newer web build and a newer GitHub release — now meet
+              // in `UpdateAvailableBanner` at the head of the dashboard.
+              // What the reader loses is the strip following them onto
+              // every page; what they get is a notice that does not
+              // compete with the player for the one place a thumb rests,
+              // and that is still there when they come back to it. The
+              // web channel's own resume-time reload is untouched, so a
+              // reader who never returns to the dashboard still ends up
+              // on the new build.
+              child: GlobalMiniPlayer(child: child!),
             );
           },
           // 2026-05-24 (v1.3.21): BreadcrumbObserver auto-records

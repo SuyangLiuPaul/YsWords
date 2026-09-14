@@ -1103,3 +1103,97 @@ nothing. Both are now written down in the file.
 A whole-page sweep for silently-ellipsised labels at that same worst
 corner (320px, both sliders at maximum) finds **none** left on the
 reading page.
+
+---
+
+### The update notice was at the foot of the screen, twice over `[FIXED 2026-09-14]`
+
+「如果有 upgrade available 应该在 home page 显示而不是最下面 popup」, with
+雅伟的话 named as the reference. This app had two of those, one per
+channel, and both along the bottom edge:
+
+* a `SnackBar` on launch for a newer GitHub release — six seconds, and
+  then the fact was gone, leaving only a tile on the About page;
+* an app-wide strip for a newer web build, which stacked above the
+  mini-player and competed with it for the one place a thumb rests.
+
+`UpdateAvailableBanner`, at the head of the dashboard, replaces both. One
+row, the version, one action, and a 暂不 that means "not this build" so the
+next release still gets through. **Which channel wins when both speak: the
+release**, because a web build is one reload away whenever the reader gets
+to it and an APK is not — pinned in a test rather than left to whichever
+Flutter laid out first, even though `UpdateService.isSupported` and
+`WebUpdateChecker` mean the two never actually coincide.
+
+What the reader loses is the strip following them onto every page. The web
+channel's own resume-time reload is untouched, so somebody who never
+returns to the dashboard still ends up on the new build.
+
+`canInstallInApp` is resolved by the dashboard, before the banner exists,
+for the reason the SnackBar resolved it before the bar existed: it needs a
+platform round trip to know whether the attached APK is an update to THIS
+build (the `cn` flavour runs under its own package id), and an action that
+settles a frame later is an action that changes under the reader's finger.
+
+#### The interval is the reader's now
+
+`updateCheckDueAt` compared against a compiled `const Duration(days: 1)`
+and the only control over it was a switch. `UpdateCheckFrequency` — every
+launch / daily / weekly / monthly — is stored as a written-out
+`prefValue`, not an index (which breaks when a value is inserted) and not
+`name` (which ties a stored preference to a Dart identifier). Anything
+unrecognised reads as daily, which is still the default and still what the
+switch turns on; both `autoCheckUpdates` strings stopped saying 每天,
+because a switch promising daily above a 每周 selection is the interface
+lying, and a test now forbids the word in either of them.
+
+`runDailyUpdateCheck` is `runScheduledUpdateCheck`. The name was accurate
+and stopped being so.
+
+`update_banner_test.dart` is `update_available_banner_test.dart`: every
+claim the old strip's file made is still asserted — costs nothing while
+current, names the version, 暂不 does not silence the next one, goes away
+if the server comes back into line — against the surface that replaced it,
+plus the two-channel cases that are new.
+
+#### Pulling the home screen down means something again `[2026-09-14]`
+
+「如果我往下拉 所有devices和webapp之类的 就会等于manual sync一下 并且自动
+检查最新更新。当然如果没有登陆就没sync功能」.
+
+This gesture was on this page and was **removed on 2026-08-16**, in the
+reader's own words: 「往下滑的时候，感觉并没有用，而且那个转转的也并不
+自然」. That was right, and the note recording it is kept in
+`dashboard_page.dart` unchanged, because it is the standard the new one
+has to meet: every block on the dashboard is either live-reactive or a
+deterministic-by-date pick from a bundled asset, so the old pull re-read
+two warm caches and the spinner collapsed having changed nothing.
+
+It carries three things now, and each is something this screen cannot
+otherwise make happen:
+
+| | what it does | when |
+|---|---|---|
+| sync | `syncNow` pushes the local snapshot and **waits for the round trip** | signed in only |
+| release check | `runManualUpdateCheck` — a newer build raises the banner | native builds |
+| web build check | `WebUpdateChecker.checkNow` — is this tab running yesterday's deploy | web |
+
+`runManualUpdateCheck` skips both gates the scheduled path honours — the
+reader's interval **and** the automatic-check switch — because both are
+about the app asking on its own; 「自动检查更新」 off means no unprompted
+request, not a refusal to answer when asked. It still stamps the
+timestamp, so asking by hand spends the period.
+
+Signed out, the sync half is **absent rather than attempted**: guarded at
+the call site, not inside `syncNow`, which would return false and set an
+error status — a spinner waiting on a call known to fail is the August
+complaint with extra steps. Every failure is swallowed for the same
+reason; a red bar because the phone is on a train is worse than a pull
+that quietly changes nothing.
+
+`test/pull_to_refresh_test.dart` holds both halves: the scheduled path
+declining a check four minutes after the last one where the manual path
+answers, and source-level assertions that the indicator is mounted, that
+`AlwaysScrollableScrollPhysics` is set (without it the pull does nothing
+on any screen tall enough to hold the page), and that all three pieces of
+work are attached.

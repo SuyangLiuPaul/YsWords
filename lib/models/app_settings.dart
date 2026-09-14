@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:yswords/constants/update_check_frequency.dart';
 import 'package:yswords/models/projection_agenda.dart';
 
 import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
@@ -95,6 +96,11 @@ const _kAutoCheckUpdates = 'autoCheckUpdates';
 // PER-DEVICE, and deliberately NOT profile-scoped and NOT in the
 // `userPrefs` sync blob — see the note on [lastUpdateCheck].
 const _kLastUpdateCheck = 'lastUpdateCheckMs';
+
+// How often that check runs — `UpdateCheckFrequency.prefValue`, not an
+// index or an enum name. 2026-09-14, at the owner's request: daily was
+// compiled in and is now the default rather than the rule.
+const _kUpdateCheckFrequency = 'updateCheckFrequency';
 // User-supplied Gemini API key (BYOK). When non-empty, AI calls are
 // routed through the user's own AI Studio key — gives them their own
 // quota (15 RPM / 1500 RPD on the free tier) and keeps the app
@@ -363,6 +369,7 @@ class AppSettings extends ChangeNotifier {
   bool _showBookIntro = true;
 
   bool _autoCheckUpdates = true;
+  UpdateCheckFrequency _updateCheckFrequency = UpdateCheckFrequency.daily;
   int _lastUpdateCheckMs = 0;
 
   /// When ON, picking a chapter from the book/chapter sidebar shows
@@ -463,12 +470,25 @@ class AppSettings extends ChangeNotifier {
   DateTime get lastUpdateCheck =>
       DateTime.fromMillisecondsSinceEpoch(_lastUpdateCheckMs);
 
-  /// True when the switch is on AND a day has passed. The caller still
-  /// has to decide whether the PLATFORM supports updating at all —
-  /// that is `UpdateService.isSupported`, and it is not a setting.
+  /// How often the automatic check runs. Daily unless the reader said
+  /// otherwise; see [UpdateCheckFrequency].
+  UpdateCheckFrequency get updateCheckFrequency => _updateCheckFrequency;
+
+  /// True when the switch is on AND the reader's chosen gap has passed.
+  /// The caller still has to decide whether the PLATFORM supports
+  /// updating at all — that is `UpdateService.isSupported`, and it is
+  /// not a setting.
   bool updateCheckDueAt(DateTime now) =>
       _autoCheckUpdates &&
-      now.difference(lastUpdateCheck) >= const Duration(days: 1);
+      now.difference(lastUpdateCheck) >= _updateCheckFrequency.gap;
+
+  Future<void> setUpdateCheckFrequency(UpdateCheckFrequency value) async {
+    if (_updateCheckFrequency == value) return;
+    _updateCheckFrequency = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kUpdateCheckFrequency, value.prefValue);
+  }
 
   Future<void> setAutoCheckUpdates(bool enabled) async {
     if (_autoCheckUpdates == enabled) return;
@@ -1239,6 +1259,7 @@ class AppSettings extends ChangeNotifier {
     _showBookIntro = true;
     _pickVerseAfterChapter = false;
     _autoCheckUpdates = true;
+    _updateCheckFrequency = UpdateCheckFrequency.daily;
     _lastUpdateCheckMs = 0;
     _dashboardSectionOrder = List.of(defaultDashboardOrder);
     _dashboardVisibility
@@ -1288,6 +1309,7 @@ class AppSettings extends ChangeNotifier {
       // timestamp would silently skip the first day back on.
       _kAutoCheckUpdates,
       _kLastUpdateCheck,
+      _kUpdateCheckFrequency,
       _kDashboardSectionOrder,
       for (final s in DashboardSection.values) _kDashboardVisible(s),
       // Re-show the onboarding tour after a reset so the user can
@@ -1458,6 +1480,8 @@ class AppSettings extends ChangeNotifier {
         prefs.getBool(_kPickVerseAfterChapter) ?? false;
     // Unscoped reads: this pair is per-device (see [lastUpdateCheck]).
     _autoCheckUpdates = prefs.getBool(_kAutoCheckUpdates) ?? true;
+    _updateCheckFrequency = UpdateCheckFrequency.fromPref(
+        prefs.getString(_kUpdateCheckFrequency));
     _lastUpdateCheckMs = prefs.getInt(_kLastUpdateCheck) ?? 0;
     _geminiApiKey = prefs.getString(_kGeminiApiKey) ?? '';
     // 2026-05-10 (v1.2.26): restore aiModel from prefs. Allowlist
