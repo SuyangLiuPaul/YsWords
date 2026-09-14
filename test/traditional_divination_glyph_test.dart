@@ -83,8 +83,13 @@ void main() {
     // of the 26 占卜 was touched. That split is the whole argument for
     // reading positions rather than counting a class: a class verdict in
     // either direction would have printed either 佔卜 or 占領.
-    expect(count('占'), 28);
-    expect(count('佔'), 28);
+    // 28/28 -> 26/30 on 2026-09-14: 路加福音 13:7 「何必白佔地土呢」 and
+    // 哥林多後書 12:17 「佔過你們的便宜」 had both been out of reach of
+    // the verdict — the first behind a stray importer space, the second
+    // behind a wording difference from the publisher's text — and both
+    // were then applied against the 和合本 by name.
+    expect(count('占'), 26);
+    expect(count('佔'), 30);
     expect(count('占卜'), 26);
     expect(count('佔卜'), 0);
   });

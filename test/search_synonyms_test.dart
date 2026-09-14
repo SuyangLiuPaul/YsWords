@@ -67,8 +67,8 @@ void main() {
       expect(mismatches, 0);
     });
 
-    test('60 pairs need the spaces out first, so a raw length comparison '
-        'would silently throw them away', () {
+    test('the spaces are gone, and the 3 pairs still unequal are unequal '
+        'for a reason in the text', () {
       // The reason the alignment is space-blind rather than raw. Those
       // 60 differ in nothing but a stray space beside a `<note:>` or a
       // closing quote — 民数记 10:29 and 士师记 1:16 among them — and
@@ -83,6 +83,21 @@ void main() {
       // closing quote, and a note opener with no note behind it. The
       // publisher sync closed both, so that pair is now the same length
       // raw and never needed the space strip. No pair was ADDED.
+      //
+      // 2026-09-14: 60 → 0, and this is the pin doing the job it was
+      // put here for. All 64 remaining stray spaces were removed
+      // (`tools/repair_cuv_stray_spaces.py`) once it turned out they
+      // were not merely cosmetic: the derived Traditional tagged layer
+      // needs the two scripts to be the same length, so 57 verses had
+      // been falling back to plain text in the Exegesis sheet purely
+      // because of a space. Neither the publisher nor SeekSparks had
+      // one. The assertion stays at 0 rather than being deleted — the
+      // space-blind comparison below is still the right way to compare
+      // and must not quietly start depending on there being no spaces.
+      // What is left is 3 pairs that differ in something real —
+      // 民數記 10:29, 士師記 1:16 and 4:11 — which is why this number is
+      // 3 and not 0: it counts every unequal pair, not only the ones a
+      // space made unequal.
       final s = load('assets/cuvs-yhwh.json');
       final t = load('assets/cuvs-yhwh-tr.json');
       var raw = 0;
@@ -92,7 +107,7 @@ void main() {
           raw++;
         }
       }
-      expect(raw, 60);
+      expect(raw, 3);
     });
 
     test('the shipped table is exactly the correspondence the text shows',

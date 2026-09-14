@@ -66,6 +66,17 @@ VERSE = [
      '有人制造雅偉所憎惡的偶像',
      '有人製造雅偉所憎惡的偶像',
      '申命記 27:15 繁'),
+    # 哥林多後書 12:17. The 占/佔 verdict for this position could not be
+    # applied positionally: this edition reads 「我藉着他們一個人」 where
+    # the publisher's reads 「他」, so the three-way alignment is one
+    # character short and skips the verse. The 和合本 settles the
+    # character anyway — 「我藉著他們一個人佔過你們的便宜嗎？」 — and
+    # incidentally agrees with THIS text's 他們 rather than the
+    # publisher's 他, which is a wording question and is left alone.
+    ('cuvs-yhwh-tr.json', '047012017',
+     '一個人占過你們的便宜',
+     '一個人佔過你們的便宜',
+     '哥林多後書 12:17 繁'),
 ]
 
 

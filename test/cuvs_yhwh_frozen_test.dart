@@ -367,8 +367,27 @@ void main() {
     //   cuvs-yhwh.json     bc86c4f89ec4e8c16a6c75f9115699b176f0c44e0cc6bc5…
     //   cuvs-yhwh-tr.json  bb79163f7312b1e6a52a23b1a16ae772a4a4a2217e314a5…
     //   cuvs-yhwh-tr.json  8ede5132015e351b05033bb3ca6ed23920444c5a33416407…
+    //   cuvs-yhwh.json     75af94dc37cf0a26636bcd0969757a9832a4bc4b72a4b687…
+    //   cuvs-yhwh-tr.json  df855f73aecd9a4c053d3de6c59622b56edb843c89005fa3…
+    // 2026-09-14, the SEVENTH thaw, and the smallest thing in it is the
+    // reason it happened: 64 ASCII spaces. This repo's importer had put
+    // them between two punctuation marks — `。 ’`, `’ ”`, `” 他` — in
+    // 57 Simplified verses. The publisher's text has none; SeekSparks'
+    // copy of the same two assets has none; and deleting the space
+    // makes 41 of the 57 byte-for-byte identical to SeekSparks'.
+    //
+    // They were not cosmetic. `derive_tagged_traditional.py` reads the
+    // Traditional character standing at each position of the Simplified
+    // tagged layer, so it needs the two scripts to be the same length —
+    // and a space is a character. 57 verses had been dropping out of
+    // the derived layer and falling back to plain text in the Exegesis
+    // sheet for that alone: 60 skipped became 3, and the 3 that remain
+    // differ for a reason that is in the text (民數記 10:29, 士師記 1:16,
+    // 4:11). Three verified 和合本 corrections had also been unreachable
+    // behind the same blockage — 撒迦利亞書 1:21 擡→抬, 撒迦利亞書 13:3
+    // 托→託, 路加福音 13:7 占→佔 — and went in with them.
     'assets/cuvs-yhwh.json':
-        '75af94dc37cf0a26636bcd0969757a9832a4bc4b72a4b687cb995c6767a4f6c7',
+        '5f4ea1c5a3f6690d54658889f042801e9f05e8e001f851679bc6d7475840712d',
     // 2026-09-14 — five over-conversions undone, against the published
     // Traditional 和合本 at 信望愛 (bible.fhl.net, VERSION4=unv).
     //
@@ -447,8 +466,17 @@ void main() {
     // 34:20 against 藉 everywhere else. A class verdict in either
     // direction breaks every one of those, and this file holds them
     // all as they are printed.
+    //
+    // 2026-09-14, the seventh thaw: the three corrections the stray
+    // spaces had been hiding (撒迦利亞書 1:21, 13:3, 路加福音 13:7) plus
+    // 哥林多後書 12:17's 占→佔, which was blocked by a different thing —
+    // this edition reads 「藉着他們一個人」 where the publisher's reads
+    // 「他」, so the three-way alignment is a character short and skips
+    // the verse. The 和合本 settles the character anyway, and
+    // incidentally agrees with THIS text's 他們; the wording difference
+    // is left alone.
     'assets/cuvs-yhwh-tr.json':
-        'df855f73aecd9a4c053d3de6c59622b56edb843c89005fa36a769739f33560b8',
+        'edf763a57594aeb3179a33ea0f7168f70bf94e3f1c01624e7d5af920af21627a',
   };
 
   frozen.forEach((path, expected) {

@@ -140,8 +140,16 @@ void main() {
     // different lengths and left the verse with no position to derive
     // from. The publisher's current text does not have it, so the pair
     // is aligned again and the verse is back in the derived layer.
-    expect(derived, 31042,
-        reason: '31,102 verses less the 60 with no positional '
+    // 31,042 -> 31,099 on 2026-09-14, and the 57 came back for the
+    // price of 64 ASCII spaces. This repo's importer had put them
+    // between two punctuation marks in 57 Simplified verses; the
+    // publisher has none and SeekSparks has none, and removing them
+    // makes 41 of the 57 byte-identical to SeekSparks'. A space is a
+    // character, so those pairs were a character apart and had no
+    // position to derive from — 57 verses were falling back to plain
+    // text in the Exegesis sheet for that alone.
+    expect(derived, 31099,
+        reason: '31,102 verses less the 3 with no positional '
             'correspondence');
     // Not a floor. This number moving means the two imports of this
     // edition agree in a different number of places than they did, which
@@ -232,10 +240,14 @@ void main() {
     // 以坦 spliced into 士師記 15:13's Simplified source (queue:2548,
     // closed); it derives through unchanged (`s` stays `''`), and the
     // loop above asserts every other boundary in the verse held.
-    expect(runs, 366688);
+    // 366,688 -> 367,514 on 2026-09-14: the 57 verses the stray spaces
+    // had been excluding bring their own 826 tagged runs back with them.
+    // This is the source layer's run count over the derived verses, so
+    // it moves with the verse count and not on its own.
+    expect(runs, 367514);
   });
 
-  test('the 60 skipped verses are exactly the ones with no positional '
+  test('the 3 skipped verses are exactly the ones with no positional '
       'correspondence to derive from', () {
     final skipped = <String>[];
     for (var i = 0; i < zhBooks.length; i++) {
@@ -257,7 +269,12 @@ void main() {
     // 61 -> 60. 路加福音 23:16's stranded 「〔有古卷在此有：」 is gone from
     // the publisher's current Simplified text, so its two scripts are
     // the same length and the verse has a position to derive from.
-    expect(skipped, hasLength(60));
+    //
+    // 60 -> 3 on 2026-09-14, with the 64 stray importer spaces gone.
+    // What is left is the real residue: 民數記 10:29, 士師記 1:16 and
+    // 4:11, where the two scripts differ in length for a reason that is
+    // in the text rather than in the whitespace.
+    expect(skipped, hasLength(3));
   });
 
   test('no derived verse still reads in the Simplified script where the '

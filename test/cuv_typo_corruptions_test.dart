@@ -225,8 +225,14 @@ void main() {
     // print 擡, which is why 擡 stays here with its count pinned rather
     // than merely non-zero.
     expect(count(trBlob, '沈'), 0);
-    expect(count(trBlob, '擡'), 2);
-    expect(count(trBlob, '抬'), 150);
+    // 2 -> 1 on 2026-09-14. 撒迦利亞書 1:21 had been out of reach of the
+    // 擡/抬 verdict because a stray importer space made its two scripts
+    // different lengths; with the space gone the verse aligned and took
+    // 抬, which is what the 和合本 prints there. The one that remains is
+    // inside a publisher's note at 民數記 1:50 (「"擡"或作…」), where the
+    // word being glossed IS 擡 and changing it would break the gloss.
+    expect(count(trBlob, '擡'), 1);
+    expect(count(trBlob, '抬'), 151);
     // 輥 left this list on 2026-09-09. It was 8 occurrences against the
     // witness's 滾 and it was pinned as edition preference; the
     // publisher's current text has adopted 滾 at all eight — 約書亞記

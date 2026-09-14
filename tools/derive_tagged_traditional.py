@@ -145,10 +145,21 @@ OUT_DIR = os.path.join(ASSETS, 'tagged', 'cuvs-yhwh-tr')
 #       variant (蹧, 繸, 鐏, 辊, 杴, 镟, 嗐) or already Traditional
 #       (偉, 眾), so passing them through is right; there are simply
 #       more of them in the newer text.
+# 2026-09-14: 60 -> 3 skipped, 31,042 -> 31,099 derived, and the cause
+# was 64 ASCII spaces. This repo's importer had wedged them between two
+# punctuation marks — `。 ’`, `’ ”`, `” 他` — in 57 Simplified verses.
+# Neither the publisher's text nor SeekSparks' copy of the same two
+# assets has a single one, and deleting the space makes 41 of the 57
+# byte-for-byte identical to SeekSparks'. A space is a character, so the
+# pair was a character apart and there was no position to derive from;
+# 57 verses had been falling back to plain text in the Exegesis sheet
+# for that reason alone. `tools/repair_cuv_stray_spaces.py` removed
+# them. The 3 that remain are real: 民數記 10:29, 士師記 1:16 and 4:11,
+# where the two scripts genuinely differ in length.
 EXPECTED = {
     'source_verses': 31102,
-    'skipped_unaligned': 60,
-    'derived_verses': 31042,
+    'skipped_unaligned': 3,
+    'derived_verses': 31099,
     # Verses where the tagged import and the reading asset agree
     # character for character, and where the derived line is therefore
     # checked against the shipped Traditional text with no allowance.
