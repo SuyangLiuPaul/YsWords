@@ -155,8 +155,7 @@ def main():
     if write and applied:
         for path, data in touched.items():
             with open(path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-                f.write('\n')
+                json.dump(data, f, ensure_ascii=False, separators=(',', ':'))
         print('WROTE %d files' % len(touched))
     elif not write:
         print('(dry run; pass --write)')

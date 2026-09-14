@@ -42,6 +42,7 @@ void main() {
     '007012007': ['作以色列的士师六年', '作以色列的士師六年'],
     '010005017': ['非利士众人就上来寻索', '非利士眾人就上來尋索'],
     '023023001': ['因为推罗变为荒场', '因為推羅變為荒場'],
+    // 2026-09-14: 悅 → 悦 with the move to Hong Kong forms.
     '017006007': ['王所喜悦尊荣的人', '王所喜悦尊榮的人'],
     // 2026-09-09: the publisher's current text sets a pause mark between
     // the two clauses — 「又把你們犧牲的糞，抹在你們的臉上」 — so a literal
@@ -117,6 +118,12 @@ void main() {
     expect(zhHant['023023001'],
         contains('他施的船隻都要哀號；因為推羅變為荒場'));
     expect(zhHant['010005017'],
+        // 2026-09-14: 大衛 → 大衞. The Traditional edition moved to Hong
+        // Kong forms on the owner's ruling, and 衛 → 衞 is one of the
+        // eighteen — which makes David's own name the most visible
+        // character in the change, 1,248 places of it. It is the form
+        // the Hong Kong 和合本 prints, and `opencc -c s2hk` produces it
+        // from 卫.
         contains('非利士人聽見人膏大衞作以色列王，非利士眾人就上來尋索大衞'));
   });
 }
