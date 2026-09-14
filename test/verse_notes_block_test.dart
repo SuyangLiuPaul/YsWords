@@ -1,0 +1,158 @@
+// A verse's notes: one numbered block, folded, with the control at the
+// end of the text rather than on a row of its own.
+//
+// 2026-09-14. This replaces TWO tests written earlier the same day —
+// `note_expands_in_place_test.dart`, for a design where tapping a
+// marker opened that one note inside the sentence, and
+// `block_note_collapses_test.dart`, for a chevron row. Both were
+// answers to 「当注释很多可以expand close这样」 and both were wrong
+// about how. The owner opened the 雅偉的話 app and said so:
+//
+//   「yahwehdehua app apk的 close和expand连在一起的其实设计得非常合理
+//    而sword 看到的是根本不行的 要用adopt yahwehdehua这个设计」
+//
+// and named three separate faults with what this app had:
+//
+//   「根本看不清」        the notes had no structure
+//   「para mode不好按」   the tap target was an icon a few px wide
+//   「你就截开几段用起来很难受」  opening one cut the verse into pieces
+//
+// So the assertions below are those three complaints, one test each,
+// plus the detail the owner singled out — the label is IN the paragraph,
+// immediately after the truncated text.
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/widgets/verse_notes_block.dart';
+
+const _short = '參4.6、16';
+const _long = '26-27节注：“灵也在我们的软弱中帮助我们……但灵亲自替我们代求'
+    '……明了灵强烈的诉求”。其中“灵”皆译自 τὸ πνεῦμα，原文并无“圣”字，'
+    '和合本加插了“圣”字来指圣灵。当原文只写 πνεῦμα 一个字而没有明指'
+    '“圣灵”时，本译本一律译作“灵”。参上文2节注。';
+const _second = '在新约圣经中，和合本将“灵”译作了“圣灵”的所有经文列举如下：'
+    '约14.17，15.26，16.13，罗8.4-6、11、13、16、23、26-27。';
+
+Widget _host(List<String> notes, AppSettings settings, {int? preview}) =>
+    MaterialApp(
+      home: Scaffold(
+        body: SizedBox(
+          width: 360,
+          child: VerseNotesBlock(
+            notes: notes,
+            settings: settings,
+            locale: 'zh-Hans',
+            preview: preview ?? kNotePreviewChars,
+          ),
+        ),
+      ),
+    );
+
+/// The one Text.rich the block renders, as plain characters.
+String _rendered(WidgetTester tester) {
+  final rich = tester.widget<Text>(find.byType(Text));
+  return rich.textSpan!.toPlainText();
+}
+
+void main() {
+  late AppSettings settings;
+
+  setUp(() => settings = AppSettings());
+
+  testWidgets('「根本看不清」 — every note is numbered, one to a line',
+      (tester) async {
+    await tester.pumpWidget(_host([_short, _second], settings));
+    final text = _rendered(tester);
+    expect(text, startsWith('¹'), reason: 'the first note is numbered ¹');
+    expect(text, contains('\n²'),
+        reason: 'the second starts a line of its own, numbered ² — run '
+            'together they are a wall with nothing to say where one ends');
+  });
+
+  testWidgets('the numbers keep counting past nine, in superscript',
+      (tester) async {
+    // 梁家鏗's 約翰福音 1:1 carries twenty-six. `¹²` and not `12`.
+    await tester.pumpWidget(_host(
+        [for (var i = 1; i <= 12; i++) 'note $i'], settings));
+    expect(_rendered(tester), contains('¹²'));
+    expect(superscriptNumber(26), '²⁶');
+  });
+
+  testWidgets('「不好按」 — the control is words wide, and it is the only one',
+      (tester) async {
+    await tester.pumpWidget(_host([_long, _second], settings));
+    // No icon, no chevron, no button: one tappable run of text.
+    expect(find.byType(IconButton), findsNothing);
+    expect(find.byType(Icon), findsNothing);
+    expect(_rendered(tester), contains('展开全部译者注'));
+  });
+
+  testWidgets('「close和expand连在一起」 — the label follows the text in the '
+      'same paragraph', (tester) async {
+    await tester.pumpWidget(_host([_long, _second], settings));
+    final text = _rendered(tester);
+    // The ellipsis is the seam, and the label is immediately after it.
+    // A design with the control on its own row would have a newline
+    // here, and that is exactly what was rejected.
+    expect(text, contains('… 展开全部译者注'));
+    expect(text.endsWith('展开全部译者注'), isTrue);
+  });
+
+  testWidgets('folded by default, and folded means shorter', (tester) async {
+    // Six notes, not two: the ratio is the assertion, and 梁家鏗's real
+    // verses carry six and twenty-six. With two the fold saves a third
+    // of the height and the test could pass on a block that barely
+    // folded at all.
+    await tester.pumpWidget(
+        _host([_long, _second, _long, _second, _long, _second], settings));
+    final folded = tester.getSize(find.byType(VerseNotesBlock)).height;
+
+    // Tap the LABEL, not the paragraph. The two are spans of one
+    // Text.rich and only the label carries the recognizer — which is
+    // the design, and worth asserting by tapping it the way a finger
+    // would rather than by calling the callback.
+    await tester.tapOnText(find.textRange.ofSubstring('展开全部译者注'));
+    await tester.pumpAndSettle();
+    final open = tester.getSize(find.byType(VerseNotesBlock)).height;
+
+    expect(open, greaterThan(folded * 2),
+        reason: 'folded $folded px, open $open px — if these are close, '
+            'nothing was actually folded');
+    expect(_rendered(tester), contains(_second),
+        reason: 'the second note is only reachable once open');
+    expect(_rendered(tester), contains('收起译者注'));
+  });
+
+  testWidgets('a note short enough to read whole is never folded',
+      (tester) async {
+    // The preview is 160 characters precisely so that the common case —
+    // a cross-reference, a one-line gloss — is simply shown. A block
+    // that folded everything would make the reader work for 參4.6、16.
+    await tester.pumpWidget(_host([_short], settings));
+    final text = _rendered(tester);
+    expect(text, '¹ $_short');
+    expect(text, isNot(contains('展开')));
+  });
+
+  testWidgets('no notes, no block — a caller can place it unconditionally',
+      (tester) async {
+    await tester.pumpWidget(_host(const [], settings));
+    expect(find.byType(Text), findsNothing);
+    // Zero HEIGHT: the width is whatever the caller's column gives it.
+    expect(tester.getSize(find.byType(VerseNotesBlock)).height, 0);
+  });
+
+  testWidgets('a different verse in the same slot folds again',
+      (tester) async {
+    await tester.pumpWidget(_host([_long, _second], settings));
+    await tester.tapOnText(find.textRange.ofSubstring('展开全部译者注'));
+    await tester.pumpAndSettle();
+    expect(_rendered(tester), contains('收起译者注'));
+
+    await tester.pumpWidget(_host([_second, _long], settings));
+    await tester.pumpAndSettle();
+    expect(_rendered(tester), contains('展开全部译者注'),
+        reason: 'scrolling to another verse must not inherit the last '
+            'one\'s open state');
+  });
+}

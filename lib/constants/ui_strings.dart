@@ -5571,6 +5571,19 @@ const uiStrings = {
     'zh-Hant': '註釋',
     'en': 'Note',
   },
+  // 2026-09-14: the 雅偉的話 app's own two strings, taken verbatim from
+  // its `.arb` files, because the three apps now render notes the same
+  // way and a reader who uses more than one should meet the same words.
+  'notesShowAll': {
+    'zh-Hans': '展开全部译者注',
+    'zh-Hant': '展開全部譯者註',
+    'en': 'Show all notes',
+  },
+  'notesShowLess': {
+    'zh-Hans': '收起译者注',
+    'zh-Hant': '收起譯者註',
+    'en': 'Show fewer notes',
+  },
   'close': {
     'zh-Hans': '关闭',
     'zh-Hant': '關閉',

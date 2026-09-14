@@ -8,7 +8,7 @@ import 'package:yswords/utils/build_verse_content_spans.dart';
 import 'package:yswords/utils/haptics.dart';
 import 'package:yswords/utils/responsive.dart';
 import 'package:yswords/widgets/bible_reading_pane.dart' show showNoteEditor;
-import 'package:yswords/widgets/block_note_card.dart';
+import 'package:yswords/widgets/verse_notes_block.dart';
 import 'package:yswords/widgets/superscription_line.dart';
 
 /// Renders a single verse. Used by:
@@ -45,16 +45,10 @@ class _VerseWidgetState extends State<VerseWidget> {
   /// each one keeps its own set. That is the property a modal cannot
   /// have and the reason 雅伟的话 moved off one: 「译者注：可同时展开多条」.
   ///
-  /// Keyed by the note's text rather than an index: the spans are rebuilt
-  /// from scratch on every paint, and an index would reopen whatever
-  /// happened to land in that position.
-  final Set<String> _openNotes = <String>{};
-
-  void _toggleNote(String note) {
-    setState(() {
-      if (!_openNotes.remove(note)) _openNotes.add(note);
-    });
-  }
+  /// Filled by `buildVerseContentSpans` as it walks the verse, then
+  /// handed to [VerseNotesBlock] under it — the inline notes in reading
+  /// order, followed by the edition's block apparatus.
+  final List<String> _noteSink = <String>[];
 
   Verse get verse => widget.verse;
   int get index => widget.index;
@@ -107,7 +101,7 @@ class _VerseWidgetState extends State<VerseWidget> {
         // them, not just the ones read here. With 50+ alive VerseWidgets
         // per chapter, any unrelated settings change rebuilt all of
         // them. Select only the fields this builder (and
-        // buildVerseContentSpans / BlockNoteCard, which it calls)
+        // buildVerseContentSpans / VerseNotesBlock, which it calls)
         // actually read — same pattern as paragraph_group_widget.dart.
         context.select<AppSettings,
             (String, bool, double, String, double, bool)>((s) => (
@@ -140,6 +134,9 @@ class _VerseWidgetState extends State<VerseWidget> {
         final highlightAlpha = isDark ? 0.7 : 0.5;
 
         final spans = <InlineSpan>[];
+        // Refilled on every build: state only so the block under the
+        // verse can read what the span walk found.
+        _noteSink.clear();
 
         // First-line indent (paragraph mode, paragraph-start, non-reference)
         if (inParagraphMode &&
@@ -151,8 +148,7 @@ class _VerseWidgetState extends State<VerseWidget> {
         }
 
         spans.addAll(buildVerseContentSpans(
-          openNotes: _openNotes,
-          onNoteToggle: _toggleNote,
+          noteSink: _noteSink,
           verse: verse,
           context: context,
           settings: settings,
@@ -339,8 +335,14 @@ class _VerseWidgetState extends State<VerseWidget> {
                 // (e.g. LJK2 "16节注：…"). Verse-by-verse mode renders
                 // them right after this verse's Container; paragraph
                 // mode does the same via paragraph_group_widget.
-                for (final note in verse.blockNotes)
-                  BlockNoteCard(note: note, settings: settings),
+                // 2026-09-14: one numbered block for the whole verse,
+                // the 雅偉的話 shape. Was a boxed card per note, always
+                // open, which is what 「根本看不清」 was about.
+                VerseNotesBlock(
+                  notes: [..._noteSink, ...verse.blockNotes],
+                  settings: settings,
+                  locale: locale,
+                ),
               ],
             ),
           ),

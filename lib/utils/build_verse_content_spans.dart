@@ -4,6 +4,8 @@ import 'package:yswords/models/verse.dart';
 import 'package:yswords/models/app_settings.dart';
 import 'package:yswords/constants/text_patterns.dart';
 import 'package:yswords/constants/ui_strings.dart';
+import 'package:yswords/widgets/verse_notes_block.dart'
+    show superscriptNumber;
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Builds InlineSpan list for a single verse (number + text with annotations).
@@ -20,8 +22,7 @@ List<InlineSpan> buildVerseContentSpans({
   /// The footnotes this line currently has open, and the way to toggle
   /// one. Given both, a note opens UNDER the line; given neither, it
   /// opens in a dialog as it always has.
-  Set<String>? openNotes,
-  void Function(String note)? onNoteToggle,
+  List<String>? noteSink,
   // False only for a psalm superscription, which has no verse number to
   // show. Everything else about the line — `[insert]` brackets and
   // `<note: …>` markers — renders exactly as it does in verse text.
@@ -396,29 +397,39 @@ List<InlineSpan> buildVerseContentSpans({
             part.trim().endsWith('>') &&
             (lastPart?.trim().endsWith('}') ?? false))) {
       final note = notePattern.firstMatch(part)!.group(1)!;
-      final isOpen = onNoteToggle != null &&
-          (openNotes?.contains(note) ?? false);
+      if (noteSink != null) {
+        // 2026-09-14: the 雅偉的話 shape, adopted whole on the owner's
+        // instruction. The marker is a superscript NUMBER and the note
+        // goes to the caller, which sets every note of the verse as one
+        // numbered block underneath — see `lib/widgets/verse_notes_block.dart`
+        // for why each part of it is the way it is.
+        //
+        // 「根本看不清」 / 「para mode不好按」 / 「你就截开几段用起来很
+        // 难受」: the notes had no structure, the tap target was a glyph
+        // a few pixels wide mid-prose, and opening one cut the verse
+        // into pieces. One shape caused all three.
+        noteSink.add(note.trim());
+        spans.add(TextSpan(
+          text: superscriptNumber(noteSink.length),
+          style: TextStyle(
+            fontSize: settings.fontSize * 0.75,
+            fontFamily: settings.fontFamily,
+            fontFamilyFallback: kCjkFontFallback,
+            color: isSelected
+                ? Theme.of(context).colorScheme.onPrimaryContainer
+                : Theme.of(context).colorScheme.primary,
+            backgroundColor: spanBgColor,
+          ),
+        ));
+        lastPart = part;
+        continue;
+      }
+      // No sink: a caller with nowhere to put a block still answers a
+      // tap, with the dialog this used to open everywhere.
       spans.add(WidgetSpan(
         alignment: PlaceholderAlignment.bottom,
         child: GestureDetector(
           onTap: () {
-            // 2026-09-14: opens UNDER the line, not over it.
-            //
-            // The sibling 雅伟的话 app's `note_sheet.dart` records the
-            // same move and the reason: it used to be a modal, and a
-            // modal "shows one note and covers the verse it is about;
-            // two notes could never be read against each other".
-            //
-            // The data made it pressing. 梁家鏗's own apparatus arrived
-            // the same day — 1,132 footnotes became 2,209, several of
-            // them paragraphs.
-            //
-            // The dialog stays as the fallback for any caller with
-            // nowhere to put an open note.
-            if (onNoteToggle != null) {
-              onNoteToggle(note);
-              return;
-            }
             showDialog(
               context: context,
               builder: (_) => AlertDialog(
@@ -426,7 +437,8 @@ List<InlineSpan> buildVerseContentSpans({
                   uiStrings['note']?[locale] ?? 'Note',
                   style: TextStyle(
                     fontSize: settings.fontSize + 2,
-                    fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                    fontFamily: settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -438,7 +450,8 @@ List<InlineSpan> buildVerseContentSpans({
                       uiStrings['ok']?[locale] ?? 'OK',
                       style: TextStyle(
                         fontSize: settings.fontSize,
-                        fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
+                        fontFamily: settings.fontFamily,
+                        fontFamilyFallback: kCjkFontFallback,
                       ),
                     ),
                   )
@@ -449,19 +462,8 @@ List<InlineSpan> buildVerseContentSpans({
           child: Padding(
             padding: const EdgeInsets.only(right: 4.0, left: 2.0, bottom: 5.0),
             child: Icon(
-              // 2026-05-19 (v1.2.55): note-marker glyph + size tuned.
-              // The book icon at fontSize * 1.2 used to dominate the
-              // line — especially in paragraph mode where notes
-              // appear mid-prose. Switched to the smaller
-              // `Icons.notes_rounded` at fontSize * 0.9, which reads
-              // as a discoverable footnote marker without breaking
-              // the prose flow. biblexg-v2 (~1,133 notes across NT)
-              // and LEB (~23k) both render this way.
               Icons.notes_rounded,
               size: settings.fontSize * 0.9,
-              // 2026-06-30: accent colour (was a faint onSurfaceVariant grey)
-              // so the footnote marker reads clearly as a tappable notation,
-              // matching the coloured [...] insertions above.
               color: isSelected
                   ? Theme.of(context).colorScheme.onPrimaryContainer
                   : Theme.of(context).colorScheme.primary,
@@ -469,52 +471,6 @@ List<InlineSpan> buildVerseContentSpans({
           ),
         ),
       ));
-      if (isOpen) {
-        // The note itself, on its own line under the words it is about.
-        //
-        // A `WidgetSpan` inside the same paragraph rather than a widget
-        // beneath it: the marker sits mid-sentence, so this is the only
-        // place the note can open without the caller having to know
-        // where in the line it was. The `\n` breaks the line; the left
-        // rule and the indent say which marker it belongs to.
-        //
-        // Several can be open at once, which is the point.
-        final scheme = Theme.of(context).colorScheme;
-        spans.add(const TextSpan(text: '\n'));
-        spans.add(WidgetSpan(
-          child: Container(
-            width: double.infinity,
-            margin: EdgeInsets.only(
-                top: settings.fontSize * 0.2,
-                bottom: settings.fontSize * 0.25),
-            padding: EdgeInsets.fromLTRB(
-                settings.fontSize * 0.55,
-                settings.fontSize * 0.3,
-                settings.fontSize * 0.4,
-                settings.fontSize * 0.3),
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(color: scheme.primary, width: 2),
-              ),
-              color: scheme.primary.withValues(alpha: 0.06),
-            ),
-            child: Text(
-              // Trimmed: the marker is written `<note: …>` in some
-              // editions and `<note:…>` in others, and the capture keeps
-              // whichever space the asset had. On its own line that
-              // space is a visible indent on the first line only.
-              note.trim(),
-              style: TextStyle(
-                fontSize: settings.fontSize * 0.82,
-                height: settings.lineSpacing,
-                fontFamily: settings.fontFamily,
-                fontFamilyFallback: kCjkFontFallback,
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ));
-      }
       lastPart = part;
       continue;
     }
