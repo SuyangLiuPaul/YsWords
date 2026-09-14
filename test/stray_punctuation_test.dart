@@ -153,7 +153,7 @@ void main() {
         // ones. So the claim is made the way it was always meant —
         // 說 is followed by a colon, and NOT by the stray ！ this file
         // is named after.
-        expect(textOf(edition, '025004015'), contains('喊著說：'.chars(edition)));
+        expect(textOf(edition, '025004015'), contains('喊着説：'.chars(edition)));
         expect(textOf(edition, '025004015'), isNot(contains('：！')));
         // 2026-09-08: was 作預兆的）。我必使. The publisher's current text
         // puts the full stop inside the parenthesis — （他們是作預兆的。）
@@ -163,9 +163,9 @@ void main() {
         // is exactly one of them, which there still is.
         expect(textOf(edition, '038003008'),
             contains('作預兆的。）我必使'.chars(edition)));
-        expect(textOf(edition, '030006010'), contains('又說：'.chars(edition)));
+        expect(textOf(edition, '030006010'), contains('又説：'.chars(edition)));
         expect(textOf(edition, '030006010'), isNot(contains('：！')));
-        expect(textOf(edition, '030006014'), contains('說：'.chars(edition)));
+        expect(textOf(edition, '030006014'), contains('説：'.chars(edition)));
         expect(textOf(edition, '030006014'), isNot(contains('：！')));
         expect(textOf(edition, '030006014'),
             contains('以色列家啊'.chars(edition)));
@@ -224,8 +224,8 @@ extension on String {
       '連': '连',
       '記': '记',
       '喊': '喊',
-      '著': '着',
-      '說': '说',
+      '着': '着',
+      '説': '说',
       '潔': '洁',
       '淨': '净',
       '預': '预',

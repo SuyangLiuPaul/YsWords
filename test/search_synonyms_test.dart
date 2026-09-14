@@ -138,8 +138,28 @@ void main() {
       // form, so the pair count falls by one and the distinct count by
       // two. Both are pinned rather than derived so that a table which
       // silently COLLAPSES cannot pass by agreeing with itself.
-      expect(kCuvSimplifiedChars.length, 1115);
-      expect(counts.length, 1110);
+      //
+      // 2026-09-14: 1,115 pairs over 1,110 characters → 1,144 over
+      // 1,121, and this is the table GAINING entries. Two passes of the
+      // same method did it, both reading the published 和合本 verse by
+      // verse rather than counting our own conversions against each
+      // other:
+      //
+      //   * The 128 open classes, settled per occurrence — 924
+      //     characters in 848 verses, plus 36 more this repo's own
+      //     lineage had that SeekSparks did not. 迹 had stood opposite
+      //     跡 only and now also stands opposite 蹟, 饥 opposite 饑 and
+      //     now also 飢, 系 opposite 繫 and now also 係.
+      //   * The five-pair over-conversion revert, re-read at all 638 of
+      //     its positions. 借 → 藉 at 150 of them: 「耶和華藉摩西吩咐」
+      //     had been rewritten to 「雅偉借摩西吩咐」 because the class
+      //     verdict was taken from 出埃及記 22:14, the law about
+      //     BORROWING.
+      //
+      // Pinned rather than derived, so that a table which silently
+      // COLLAPSES cannot pass by agreeing with itself.
+      expect(kCuvSimplifiedChars.length, 1144);
+      expect(counts.length, 1121);
     });
 
     test('no Traditional character stands opposite two Simplified ones, so '
@@ -153,7 +173,7 @@ void main() {
       expect(back.values.where((v) => v.length > 1), isEmpty);
     });
 
-    test('the five Simplified characters with two Traditional forms list '
+    test('a Simplified character with more than one Traditional form lists '
         'the commoner one first', () {
       // 发 → 發 1,287 times and 髮 88. Whichever way that is broken
       // decides what `simplifiedToTraditional` produces, so it is
@@ -172,18 +192,35 @@ void main() {
         firstSeen.putIfAbsent(
             kCuvSimplifiedChars[i], () => kCuvTraditionalChars[i]);
       }
-      expect(firstSeen['发'], '發');
+      // 2026-09-14: five became twenty-two, because reading the 和合本
+      // per occurrence is exactly what produces second forms — a class
+      // verdict can only ever produce one. The four below are the close
+      // calls, where the majority is small enough that a re-derivation
+      // could flip it and `simplifiedToTraditional` would change answer.
+      expect(firstSeen['发'], '發');   // 發 1,286 / 髮 88
+      expect(firstSeen['锈'], '鏽');   // 鏽 5 / 銹 4
+      expect(firstSeen['系'], '繫');   // 繫 12 / 係 5
+      expect(firstSeen['饥'], '饑');   // 饑 99 / 飢 58
+      expect(firstSeen['鉴'], '鑒');   // 鑒 24 / 鑑 4
       expect(firstSeen['坛'], '壇');
       expect(firstSeen['干'], '乾');
       expect(firstSeen['须'], '須');
       expect(firstSeen['复'], '復');
-      // And the count itself, so a sixth has to be looked at.
+      // 复 is the only one with three forms: 復 234, 覆 29, 複 1.
+      expect(
+          [for (var i = 0; i < kCuvSimplifiedChars.length; i++)
+            if (kCuvSimplifiedChars[i] == '复') kCuvTraditionalChars[i]],
+          ['復', '覆', '複']);
+      // And the roster itself, so a twenty-third has to be looked at.
       final twoForms = <String>{};
       final seen = <String>{};
       for (final c in kCuvSimplifiedChars.split('')) {
         if (!seen.add(c)) twoForms.add(c);
       }
-      expect(twoForms, {'发', '坛', '干', '须', '复'});
+      expect(twoForms, {
+        '冲', '凄', '发', '叹', '坛', '复', '尽', '干', '并', '毁', '签',
+        '系', '脏', '苏', '荡', '迹', '鉴', '链', '锈', '闲', '须', '饥',
+      });
     });
 
     test('this edition makes the semantic splits a one-to-one conversion '
@@ -202,9 +239,19 @@ void main() {
         expect(pairs, contains(p), reason: p);
       }
       // And the variant forms this edition swept out stay out.
-      for (final p in const ['么麼', '众衆', '吃喫', '症癥', '墙墻']) {
+      //
+      // 么麼 left this list on 2026-09-14 and is asserted PRESENT below.
+      // It was here on the reasoning that 麽 was the edition's own
+      // spelling; it is not a spelling anything produces. OpenCC's base
+      // STCharacters maps 么 → 麼 outright and neither HKVariants nor
+      // TWVariants introduces 麽, so no profile, Hong Kong or Taiwan,
+      // could have written the 1,241 this edition carried. The 和合本
+      // prints 甚麼 (創世記 2:19).
+      for (final p in const ['众衆', '吃喫', '症癥', '墙墻']) {
         expect(pairs, isNot(contains(p)), reason: p);
       }
+      expect(pairs, contains('么麼'), reason: '麽 is not a conversion output');
+      expect(pairs, isNot(contains('么麽')));
     });
   });
 

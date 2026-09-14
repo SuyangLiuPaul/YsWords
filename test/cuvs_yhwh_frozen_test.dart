@@ -366,10 +366,89 @@ void main() {
     //   cuvs-yhwh-tr.json  ea33d4a9333adb5273255b38151c8a7ea015a21bcf22cb3…
     //   cuvs-yhwh.json     bc86c4f89ec4e8c16a6c75f9115699b176f0c44e0cc6bc5…
     //   cuvs-yhwh-tr.json  bb79163f7312b1e6a52a23b1a16ae772a4a4a2217e314a5…
+    //   cuvs-yhwh-tr.json  8ede5132015e351b05033bb3ca6ed23920444c5a33416407…
     'assets/cuvs-yhwh.json':
         '75af94dc37cf0a26636bcd0969757a9832a4bc4b72a4b687cb995c6767a4f6c7',
+    // 2026-09-14 — five over-conversions undone, against the published
+    // Traditional 和合本 at 信望愛 (bible.fhl.net, VERSION4=unv).
+    //
+    // 和合本雅偉版 is the 和合本 with the divine name restored, so where
+    // this repo's conversion disagrees with the published Traditional
+    // text the published text settles it — it is the same sentence.
+    // Checked one verse each: 出埃及記 22:14 「向鄰舍借甚麼」 (the law
+    // about BORROWING, where this file had 藉), 創世記 44:5 占卜 (蔔 is
+    // the radish of 蘿蔔), 創世記 4:7 制伏 (製 is to manufacture),
+    // 創世記 2:21 沉睡, 士師記 19:25 凌辱.
+    //
+    // Three witnesses have to agree before a character moves — our own
+    // Simplified, the official Traditional, and that list.
+    //
+    // **That paragraph was wrong, and the correction is below under
+    // 2026-09-14 (the re-audit).** The third witness is not a witness:
+    // the official Traditional is a conversion like ours, and where it
+    // is wrong the rule inherits its error. It kept 藉著 — because the
+    // official converts 著 too, so the position never matched — and it
+    // did NOT keep bare 藉, which is 151 positions of 「耶和華藉摩西」.
+    // It also lost 製造 at 申命記 27:15, the one place the official's
+    // own conversion writes 制造.
+    //
+    // 2026-09-14, later: and then the glyph forms WERE touched, the
+    // other way, on the owner's ruling 「按照香港和合本的繁体字吧」.
+    //
+    // The line above said "ours are right" on the evidence of the
+    // Taiwan-published 和合本, which is the wrong witness for a regional
+    // question. The publisher's own conversion README settles it:
+    // "Hong Kong, at the church's request: 裏, 牀, 着 — not Taiwan's 裡,
+    // 床, 著". This file had been down the Taiwan path except for 裏.
+    //
+    // Eighteen characters, 15,108 positions — 說→説 9,539 of them —
+    // each pair established by running the same Simplified text through
+    // the installed opencc under s2hk and s2tw and comparing, not from
+    // a list anyone typed. Four candidates were dropped because both
+    // profiles agree on them, which makes them word choices rather than
+    // regional forms: 梁/樑, 痴/癡, 灶/竈, 麵/麪.
+    //
+    // NOT a re-conversion: running s2hk over the whole file would undo
+    // this repo's own repairs too — 乾瘦 at 創世記 41, 准許, 指證, and
+    // the five over-conversions above. Only the eighteen move.
+    // See docs/和合本雅偉版-繁體字裁決.md.
+    //
+    // 2026-09-14, the SIXTH thaw, and the largest: the 128 open
+    // character classes settled, and the over-conversion revert above
+    // re-audited. Both are the same method and the same authority —
+    // the published 和合本 read verse by verse at 信望愛, one position
+    // at a time, never a class at a time. 和合本雅偉版 is the 和合本
+    // with the divine name restored, so the printed text is the same
+    // sentence and settles a disagreement between two conversions
+    // neither of which is a master. The owner lifted the freeze for it
+    // in as many words: 「雅伟和合本可以change」.
+    //
+    //   * **The 128 classes.** 2,046 positions adjudicated over 922
+    //     chapters, plus 72 more this repo has and SeekSparks does not
+    //     (the two have separate repair lineages). 924 + 36 characters
+    //     moved, in 883 verses. Seven positions where 和合本 prints a
+    //     THIRD form (柺, 矇, 甘) were recorded and left rather than
+    //     invented, and 使徒行傳 27:33 is a wording difference with no
+    //     counterpart position.
+    //   * **The re-audit.** All 638 positions of the five reverted
+    //     pairs, re-read: 486 對, 152 錯, and 151 of the 152 are 借
+    //     where the 和合本 prints 藉. The 152nd is this edition's
+    //     single 沈 (馬太福音 14:30). 蔔/卜, 製/制, 沈/沉 and 淩/凌 are
+    //     correct at all 486 of their positions.
+    //   * **麽 → 麼**, 1,241 positions. Not a preference: OpenCC's base
+    //     STCharacters maps 么 → 麼 outright and neither HKVariants nor
+    //     TWVariants introduces 麽, so no profile could have produced
+    //     the form this file carried. 和合本 prints 甚麼 (創世記 2:19).
+    //   * **申命記 27:15** back to 製造, named against the verse.
+    //
+    // Per occurrence is the whole of it. 和合本 writes 槓 at 出埃及記
+    // 25:13 and 杆 at 27:10 for the same poles; 茍合 then 苟合 inside
+    // 以西結書 23:44; instrumental 借 at 撒母耳記下 12:9 and 約伯記
+    // 34:20 against 藉 everywhere else. A class verdict in either
+    // direction breaks every one of those, and this file holds them
+    // all as they are printed.
     'assets/cuvs-yhwh-tr.json':
-        'cd677042b09ac0d71dc0faeb90805a2f4ac4ae7a7bf0f586bcc72ac0cfb41fee',
+        'df855f73aecd9a4c053d3de6c59622b56edb843c89005fa36a769739f33560b8',
   };
 
   frozen.forEach((path, expected) {

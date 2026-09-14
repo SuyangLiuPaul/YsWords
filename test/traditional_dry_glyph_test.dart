@@ -108,7 +108,7 @@ void main() {
     expect(textOf('出埃及記', '25', '31'), contains('燈臺的座和幹與杯'));
     expect(textOf('出埃及記', '37', '17'), contains('這燈臺的座和幹'));
     expect(textOf('約伯記', '14', '8'), contains('幹也死在土中'));
-    expect(textOf('馬太福音', '25', '15'), contains('按著各人的才幹'));
+    expect(textOf('馬太福音', '25', '15'), contains('按着各人的才幹'));
     expect(count('枝幹'), 5);
   });
 

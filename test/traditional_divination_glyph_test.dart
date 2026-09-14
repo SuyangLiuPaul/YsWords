@@ -75,12 +75,18 @@ void main() {
     expect(textOf('尼希米記', '3', '16'), contains('押卜的兒子尼希米'));
   });
 
-  test('占 was not dragged along — 佔/占 is a separate, still-open class', () {
-    // 占 is correct in 占卜, so this instalment had to run before 佔/占 and had
-    // to leave 占 alone. The witness has 30 佔 where ours writes 占; that is
-    // the next instalment, not this one.
-    expect(count('占'), 56);
-    expect(count('佔'), 0);
+  test('佔/占 was the next instalment, and it kept every 占卜', () {
+    // 占 is correct in 占卜 and wrong in 佔領/佔去, which is why this
+    // instalment had to run first and leave 占 alone: 56 占, 0 佔. The
+    // 佔/占 class was settled on 2026-09-14 against the published 和合本,
+    // position by position — 28 moved to 佔 and 28 stayed 占, and not one
+    // of the 26 占卜 was touched. That split is the whole argument for
+    // reading positions rather than counting a class: a class verdict in
+    // either direction would have printed either 佔卜 or 占領.
+    expect(count('占'), 28);
+    expect(count('佔'), 28);
+    expect(count('占卜'), 26);
+    expect(count('佔卜'), 0);
   });
 
   test('the Simplified editions are untouched — 卜 is right for both there',

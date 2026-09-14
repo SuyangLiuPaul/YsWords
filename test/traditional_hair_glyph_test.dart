@@ -85,7 +85,7 @@ void main() {
     expect(textOf('箴言', '16', '31'), contains('白髮是榮耀的冠冕'));
     expect(textOf('士師記', '16', '17'), contains('剃了我的頭髮'));
     expect(textOf('民數記', '6', '5'), contains('髮綹'));
-    expect(textOf('雅歌', '4', '1'), contains('你的頭髮如同山羊群'));
+    expect(textOf('雅歌', '4', '1'), contains('你的頭髮如同山羊羣'));
     expect(textOf('但以理書', '7', '9'), contains('頭髮如純淨的羊毛'));
     expect(textOf('以賽亞書', '3', '18'), contains('髮網'));
     expect(textOf('士師記', '20', '16'), contains('毫髮不差'));

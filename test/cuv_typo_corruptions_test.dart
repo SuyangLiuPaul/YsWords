@@ -216,8 +216,17 @@ void main() {
       () {
     expect(count(trBlob, '豫備'), greaterThan(0)); // witness: 預備
     expect(count(trBlob, '儆醒'), greaterThan(0)); // witness: 警醒
-    expect(count(trBlob, '沈'), greaterThan(0)); // witness: 沉
-    expect(count(trBlob, '擡'), greaterThan(0)); // witness: 抬
+    // 沈 left this list on 2026-09-14, and 擡 nearly did. Both were
+    // pinned here as edition preference against a disagreeing witness;
+    // the published 和合本 was then read at every one of their
+    // positions, and it prints 沉 at the single 沈 (馬太福音 14:30,
+    // 將要沉下去) and 抬 at 150 of the 152 擡. So the "preference" was a
+    // conversion artefact — except at the two the 和合本 really does
+    // print 擡, which is why 擡 stays here with its count pinned rather
+    // than merely non-zero.
+    expect(count(trBlob, '沈'), 0);
+    expect(count(trBlob, '擡'), 2);
+    expect(count(trBlob, '抬'), 150);
     // 輥 left this list on 2026-09-09. It was 8 occurrences against the
     // witness's 滾 and it was pinned as edition preference; the
     // publisher's current text has adopted 滾 at all eight — 約書亞記

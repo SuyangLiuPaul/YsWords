@@ -130,7 +130,10 @@ void main() {
 /// Distributive counting, or emphatic doubling of a verb.
 const _reduplication = <String>{
   '如此',
-  '一个', '一個', '一对', '一對', '一群', '一排', '一班', '一家', '一间', '一間',
+  // 一羣 is the Hong Kong form of 一群, adopted by the Traditional
+  // edition on 2026-09-14; 王上 10:28 and 代下 1:16 print it doubled,
+  // as the 和合本 does (「一群一群按著定價買來的」).
+  '一个', '一個', '一对', '一對', '一群', '一羣', '一排', '一班', '一家', '一间', '一間',
   '一块', '一塊', '一帮', '一幫', '两个', '兩個',
   '歇息', '察看', '去吧', '修筑', '修築', '审问', '審問', '羞辱', '恩惠',
   '辨别', '辨別', '戏耍', '戲耍', '查点', '查點', '某处', '某處',

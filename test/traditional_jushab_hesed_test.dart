@@ -114,8 +114,8 @@ void main() {
     // a re-import which puts 關於 back has to come past this test.
     expect(
         textOf('016001002'),
-        '那時，有我一個弟兄哈拿尼，同著幾個人從猶大來。'
-            '我問他們那些被擄歸回、剩下逃脫的猶大人和耶路撒冷的光景。');
+        '那時，有我一個弟兄哈拿尼，同着幾個人從猶大來。'
+            '我問他們那些被擄歸回、剩下逃脱的猶大人和耶路撒冷的光景。');
     expect(textOf('016001002'), isNot(contains('於')));
     expect(textOf('016001002'), isNot(contains('于')));
   });

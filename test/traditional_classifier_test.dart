@@ -85,9 +85,9 @@ void main() {
             '${v['chapter']}' == chapter &&
             '${v['verse']}' == verse)['text'] as String;
 
-    expect(textOf('詩篇', '17', '14'), contains('脫離那只在今生'));
+    expect(textOf('詩篇', '17', '14'), contains('脱離那只在今生'));
     expect(textOf('以賽亞書', '29', '17'), contains('不是只有一點點'));
     expect(textOf('以賽亞書', '2', '16'), contains('他施的船隻'));
-    expect(textOf('民數記', '15', '12'), contains('按著隻數'));
+    expect(textOf('民數記', '15', '12'), contains('按着隻數'));
   });
 }

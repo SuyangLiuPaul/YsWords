@@ -55,20 +55,42 @@ void main() {
       .where((p) => p.trim().isNotEmpty)
       .length;
 
-  test('the reference itself is unanimous — this is what the rule rests on',
+  test('three of the five still rest on the reference, and two no longer do',
       () {
+    // 2026-09-14: the Traditional Bible moved to **Hong Kong** forms on the
+    // owner's ruling (「按照香港和合本的繁体字吧」). The sermon corpus did
+    // not, and must not: those are transcribed spoken messages, normalised
+    // once at conversion time, and nothing here licenses rewriting a
+    // preacher's words to match a decision about scripture typography.
+    //
+    // So this test says what is actually true of each pair rather than
+    // claiming a unanimity that has stopped holding. 爲/為, 裡/裏 and 纔/才
+    // the two corpora still agree on, and the 和合本 is the witness. 着/著
+    // and 啓/啟 they now spell oppositely — the sermon rule for those two
+    // rests on the corpus's own normalisation, which is a weaker claim and
+    // is stated as one.
     for (final pair in const [
       ['爲', '為'],
       ['裡', '裏'],
-      ['着', '著'],
       ['纔', '才'],
-      ['啓', '啟'],
     ]) {
       expect(count(cuvTraditional, pair[0]), 0,
           reason: '和合本 does not use ${pair[0]}');
       expect(count(cuvTraditional, pair[1]), greaterThan(200),
           reason: '和合本 uses ${pair[1]} throughout');
     }
+    // The two that parted. Asserted in the direction they actually run, so
+    // that a future change to either corpus has to come back through here.
+    expect(count(cuvTraditional, '着'), greaterThan(2000),
+        reason: 'the Bible is Hong Kong: 着, not 著');
+    expect(count(cuvTraditional, '著'), 0);
+    expect(count(cuvTraditional, '啓'), 21,
+        reason: 'the Bible is Hong Kong: 啓, not 啟');
+    // The 404 remaining 啟 are all the book name 啟示錄, one per verse of
+    // Revelation, in the `book` field rather than in scripture. Book names
+    // were not part of the ruling and did not move.
+    expect(count(cuvTraditional, '啟'), 404);
+    expect(count(cuvTraditional, '啟示錄'), 404);
   });
 
   test('the variant spellings are gone from every sermon', () {

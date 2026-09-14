@@ -66,7 +66,7 @@ void main() {
 
   test('the verses a reader would notice read correctly', () {
     expect(textOf('彌迦書', '5', '2'), contains('伯利恆、以法他啊'));
-    expect(textOf('路加福音', '2', '4'), contains('大衛的城，名叫伯利恆'));
+    expect(textOf('路加福音', '2', '4'), contains('大衞的城，名叫伯利恆'));
     expect(textOf('馬太福音', '2', '1'), contains('猶太的伯利恆'));
     expect(textOf('路得記', '1', '22'), contains('到伯利恆'));
     expect(textOf('箴言', '11', '19'), startsWith('恆心為義的'));

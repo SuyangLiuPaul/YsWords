@@ -32,8 +32,8 @@ void main() {
 
   /// id → (Simplified, Traditional). Every one fails on the pre-fix data.
   const scoped = <String, List<String>>{
-    '040001023': ['说：“必有童女怀孕生子；人要称', '說：「必有童女懷孕生子；人要稱'],
-    '040016014': ['说：“有人说是施洗的约翰；', '說：「有人說是施洗的約翰；'],
+    '040001023': ['说：“必有童女怀孕生子；人要称', '説：「必有童女懷孕生子；人要稱'],
+    '040016014': ['说：“有人说是施洗的约翰；', '説：「有人説是施洗的約翰；'],
     '045008036': ['如经上所记：“我们为你的缘故', '如經上所記：「我們為你的緣故'],
   };
 
@@ -96,7 +96,7 @@ void main() {
     // how that claim is checked, so the literal has to be the verse as
     // it now stands.
     expect(zhHant['040016014']!.replaceAll('「', '').replaceAll('」', ''),
-        '他們說：有人說是施洗的約翰；有人說是以利亞；又有人說是耶利米，或是先知裏的一位。');
+        '他們説：有人説是施洗的約翰；有人説是以利亞；又有人説是耶利米，或是先知裏的一位。');
   });
 
   test('所記： is followed by an opening quote wherever the verse quotes', () {

@@ -46,11 +46,11 @@ void main() {
     // therefore a quotation mark now, and it is a different one in
     // each script, so the probe stops at the mark this test is about.
     // It still fails on the pre-fix data, which read 對米該雅說；眾先知.
-    '011022013': ['对米该雅说：', '對米該雅說：'],
-    '042013002': ['耶稣说：“你们以为', '耶穌說：「你們以為'],
-    '043007045': ['对差役说：“你们为什么', '對差役說：「你們為什麽'],
-    '043009009': ['又有人说：“不是', '又有人說：「不是'],
-    '058003011': ['起誓说：‘他们断不可', '起誓說：『他們斷不可'],
+    '011022013': ['对米该雅说：', '對米該雅説：'],
+    '042013002': ['耶稣说：“你们以为', '耶穌説：「你們以為'],
+    '043007045': ['对差役说：“你们为什么', '對差役説：「你們為什麼'],
+    '043009009': ['又有人说：“不是', '又有人説：「不是'],
+    '058003011': ['起誓说：‘他们断不可', '起誓説：『他們斷不可'],
   };
 
   /// The ten legitimate semicolons, nine of them still after 說. Each is a
@@ -58,7 +58,7 @@ void main() {
   /// carries an opening quotation mark in the tagged corpus either. Two sit
   /// inside a translator's note.
   const keepSemicolon = <String, List<String>>{
-    '001032019': ['也要这样对他说；', '也要這樣對他說；'],
+    '001032019': ['也要这样对他说；', '也要這樣對他説；'],
     // 2026-09-09: this probe was 是指本国人说；下同 / 是指本國人說；下同.
     // The publisher rewrote the note itself. Their current notes name
     // the word they annotate instead of trailing 說 — 322 of them do
@@ -69,19 +69,19 @@ void main() {
     // which is the claim, so the probe is now the part that is still
     // being asserted. The official prints （弟兄是指本國人說；下同）.
     '003025025': ['是指"本国人"；下同', '是指"本國人"；下同'],
-    '007008008': ['也是这样说；', '也是這樣說；'],
-    '011002019': ['要为亚多尼雅提说；', '要為亞多尼雅提說；'],
-    '018028027': ['而且述说；', '而且述說；'],
-    '018029022': ['他们就不再说；', '他們就不再說；'],
-    '018033033': ['你就听我说；', '你就聽我說；'],
-    '018037019': ['我们愚昧不能陈说；', '我們愚昧不能陳說；'],
+    '007008008': ['也是这样说；', '也是這樣説；'],
+    '011002019': ['要为亚多尼雅提说；', '要為亞多尼雅提説；'],
+    '018028027': ['而且述说；', '而且述説；'],
+    '018029022': ['他们就不再说；', '他們就不再説；'],
+    '018033033': ['你就听我说；', '你就聽我説；'],
+    '018037019': ['我们愚昧不能陈说；', '我們愚昧不能陳説；'],
     // 2026-09-09: was 原文有“万军之雅伟说；” / 原文有「萬軍之雅偉說；」.
     // Same note rewrite as 利未記 25:25 above — the publisher's current
     // notes quote with the straight mark in both scripts, so the pair
     // that used to differ by script no longer does. The semicolon, and
     // the 說 in front of it, are untouched.
-    '037002009': ['原文有"万军之雅伟说；"', '原文有"萬軍之雅偉說；"'],
-    '048002002': ['对弟兄们陈说；', '對弟兄們陳說；'],
+    '037002009': ['原文有"万军之雅伟说；"', '原文有"萬軍之雅偉説；"'],
+    '048002002': ['对弟兄们陈说；', '對弟兄們陳説；'],
   };
 
   Map<String, String> load(String path) => {
@@ -158,7 +158,7 @@ void main() {
     // Only the SECOND 說 was repaired. Ours reads 「是他；」 where the witness
     // reads 「是他」； — that MOVES a mark rather than substituting one, so it
     // is filed for the user, not swept in here.
-    expect(zhHant['043009009'], contains('有人說：「是他；」又有人說：「不是'));
+    expect(zhHant['043009009'], contains('有人説：「是他；」又有人説：「不是'));
     expect(zhHans['043009009'], contains('有人说：“是他；”又有人说：“不是'));
   });
 }

@@ -28,11 +28,11 @@ void main() {
 
   /// id → (Simplified, Traditional). Every one fails on the pre-fix data.
   const openers = <String, List<String>>{
-    '066002001': ['说：‘那右手拿着七星', '說：『那右手拿著七星'],
-    '066002008': ['说：‘那首先的', '說：『那首先的'],
-    '066002012': ['说：‘那有两刃利剑的', '說：『那有兩刃利劍的'],
-    '066002018': ['说：‘那眼目如火焰', '說：『那眼目如火焰'],
-    '066003001': ['说：‘那有神的七灵', '說：『那有神的七靈'],
+    '066002001': ['说：‘那右手拿着七星', '説：『那右手拿着七星'],
+    '066002008': ['说：‘那首先的', '説：『那首先的'],
+    '066002012': ['说：‘那有两刃利剑的', '説：『那有兩刃利劍的'],
+    '066002018': ['说：‘那眼目如火焰', '説：『那眼目如火焰'],
+    '066003001': ['说：‘那有神的七灵', '説：『那有神的七靈'],
   };
 
   Map<String, String> load(String path) => {
@@ -151,8 +151,8 @@ void main() {
     // 3:7 and 3:14 leave the level-2 speech after 說： unmarked altogether.
     // That happens in 331 verses where the witness marks it, so these two are
     // ordinary members of a house-style class.
-    expect(zhHant['066003007'], contains('說：那聖潔、真實'));
-    expect(zhHant['066003014'], contains('說：那為阿們的'));
+    expect(zhHant['066003007'], contains('説：那聖潔、真實'));
+    expect(zhHant['066003014'], contains('説：那為阿們的'));
 
     // 2:13's leading 「 is a paragraph reopener — 144 verses where ours opens
     // and the witness begins with an ordinary character, five of them in

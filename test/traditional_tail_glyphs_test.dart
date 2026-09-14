@@ -136,18 +136,26 @@ void main() {
     expect(hant.contains('侄'), isFalse);
   });
 
-  test('跡 and 鏈 carry the same signature and are deliberately NOT swept', () {
-    // Pinned so a later sweep does not "finish the tail" on the strength of
-    // the partition alone. Ours reads 103 跡 / 0 蹟 and 60 鏈 / 0 鍊 where both
-    // witnesses read 8/95 and 1/62 — a collapsed distinction, genuinely the
-    // same converter behaviour. It is left alone because 跡 and 鏈 are standard
-    // Traditional spellings that read correctly, so nothing false is printed;
-    // restoring 神蹟 and 金鍊 is an improvement for the user to ask for, not a
-    // scripture defect to fix unattended. If this test starts failing, someone
-    // has swept them — check that it was asked for.
-    expect(count('蹟'), 0);
-    expect(count('鍊'), 0);
-    expect(count('跡'), 103);
-    expect(count('鏈'), 60);
+  test('跡 and 鏈 were swept on 2026-09-14, per occurrence and not as a class',
+      () {
+    // This test used to pin 103 跡 / 0 蹟 and 60 鏈 / 0 鍊 as deliberately NOT
+    // swept, on the grounds that both are standard Traditional spellings that
+    // read correctly, so nothing false was printed and restoring 神蹟 and 金鍊
+    // was "an improvement for the user to ask for". It was asked for
+    // (「雅伟和合本可以change」), and the sweep it warned about is not what
+    // happened: every one of these positions was read in the published 和合本
+    // at its own verse, and only the ones 和合本 spells differently moved.
+    //
+    // What survives is the check that this was positional. Nine 跡 remain,
+    // and they are the nine the 和合本 also writes with 跡 — 痕跡 ×3, 蹤跡 ×2,
+    // 異跡, 火跡, 實跡, 筆跡 — while 神蹟 and the rest took 蹟. A class-level
+    // verdict would have left none.
+    expect(count('蹟'), 94);
+    expect(count('跡'), 9);
+    expect(count('鍊'), 10);
+    expect(count('鏈'), 50);
+    for (final word in ['痕跡', '蹤跡', '筆跡']) {
+      expect(blob, contains(word), reason: '$word is the 和合本 spelling');
+    }
   });
 }

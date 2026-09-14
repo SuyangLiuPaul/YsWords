@@ -40,8 +40,8 @@ void main() {
     // said, This is the house of the LORD God".
     expect(versesIn(tr, '013021'), 30);
     expect(versesIn(tr, '013022'), 19);
-    expect(tr['013022001'], startsWith('大衛說'));
-    expect(tr['013022002'], startsWith('大衛吩咐聚集'));
+    expect(tr['013022001'], startsWith('大衞説'));
+    expect(tr['013022002'], startsWith('大衞吩咐聚集'));
 
     final kjv = load('assets/kjv.json');
     expect(versesIn(kjv, '013021'), 30);

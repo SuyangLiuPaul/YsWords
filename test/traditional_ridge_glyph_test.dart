@@ -90,7 +90,7 @@ void main() {
     expect(textOf('創世紀', '13', '18'), contains('來到希伯崙幔利的橡樹'));
     expect(textOf('創世紀', '23', '2'), contains('就是希伯崙'));
     expect(textOf('創世紀', '23', '19'), contains('（幔利就是希伯崙）'));
-    expect(textOf('撒母耳記下', '2', '11'), contains('大衛在希伯崙作猶大家的王'));
+    expect(textOf('撒母耳記下', '2', '11'), contains('大衞在希伯崙作猶大家的王'));
     expect(textOf('民數記', '13', '22'), contains('原來希伯崙城被建造'));
     expect(textOf('雅歌', '2', '1'), contains('我是沙崙的玫瑰花'));
     expect(textOf('申命記', '33', '26'), contains('耶書崙哪'));

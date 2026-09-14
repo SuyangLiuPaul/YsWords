@@ -69,7 +69,7 @@ void main() {
   });
 
   test('the verses a reader would notice read correctly', () {
-    expect(textOf('加拉太書', '5', '23'), startsWith('溫柔、節制。'));
+    expect(textOf('加拉太書', '5', '23'), startsWith('温柔、節制。'));
     expect(textOf('創世紀', '4', '7'), contains('你卻要制伏它'));
     expect(textOf('彼得後書', '1', '6'), contains('加上節制；有了節制'));
     expect(textOf('哥林多前書', '9', '25'), contains('諸事都有節制'));

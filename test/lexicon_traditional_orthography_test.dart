@@ -136,11 +136,32 @@ void main() {
     expect(count(sc, '着'), 374);
   });
 
-  test('the Bible text is unaffected and unswept', () {
-    for (final ch in ['爲', '羣', '衆', '着', '喫', '牀']) {
+  test('the Bible text is unaffected by the LEXICON sweep', () {
+    // 2026-09-14: this test used to demand that the Bible hold none of
+    // 爲 羣 衆 着 喫 牀, as a floor under the lexicon repair beside it.
+    // Four of those six are now the Bible's own spelling, because the
+    // owner ruled the Traditional edition to **Hong Kong** forms
+    // (「按照香港和合本的繁体字吧」) and 羣 着 牀 are exactly what that
+    // means. The floor has to be rewritten around what it was for: the
+    // lexicon repair must not have reached the Bible, and the Bible's
+    // ruling must not have reached the lexicon.
+    //
+    // 爲 and 衆 stay at zero on both sides — neither profile produces
+    // them, so they can only arrive by accident.
+    for (final ch in ['爲', '衆', '喫']) {
       expect(count(bible, ch), 0,
           reason: 'the Traditional Bible gained $ch');
+      expect(count(tw, ch), 0, reason: 'the lexicon gained $ch');
     }
+    // The Hong Kong forms are the Bible's and ONLY the Bible's: the
+    // lexicon is a separate module in the Taiwan orthography, and a
+    // sweep that crossed from one to the other would show up here.
+    for (final ch in ['羣', '着', '牀']) {
+      expect(count(bible, ch), greaterThan(0),
+          reason: 'the Bible lost the Hong Kong form $ch');
+    }
+    expect(count(tw, '羣'), 0, reason: 'the lexicon is not Hong Kong');
+    expect(count(tw, '牀'), 0, reason: 'the lexicon is not Hong Kong');
     // 2026-09-09, the publisher sync. Three of the six moved and 為 /
     // 群 / 床 did not shift by a character. None of the three is an
     // orthography choice — this test's floor still holds, and the sweep
@@ -163,13 +184,17 @@ void main() {
     //   吃 1,043 → 1,044. 以賽亞書 33:4's note was reworded to quote the
     //   word it glosses (「"吃"原文是"斂"」); the running text is
     //   unchanged. +1.
+    //   2026-09-14, the Hong Kong ruling: 群 → 羣 at all 323, 床 → 牀 at
+    //   all 80, 著 → 着 at all 2,648. 為, 眾 and 吃 are the same in both
+    //   orthographies and did not move a character, which is what keeps
+    //   them useful here.
     const edition = <String, int>{
       '為': 7952,
-      '群': 323,
+      '羣': 323,
       '眾': 1896,
-      '著': 2648,
+      '着': 2648,
       '吃': 1044,
-      '床': 80,
+      '牀': 80,
     };
     edition.forEach((ch, expected) {
       expect(count(bible, ch), expected, reason: 'Bible $ch count moved');
