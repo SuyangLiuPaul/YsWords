@@ -1197,3 +1197,34 @@ answers, and source-level assertions that the indicator is mounted, that
 `AlwaysScrollableScrollPhysics` is set (without it the pull does nothing
 on any screen tall enough to hold the page), and that all three pieces of
 work are attached.
+
+### 梁家鏗's footnotes adopted; 和合本雅偉版 measured and left alone `[2026-09-14]`
+
+**梁 was never behind on text** — it is fetched from the translator's own
+site (`mattwhatsup.github.io/ljk-nt-bible-webapp`) through the pipeline in
+the Sword repo's `docs/LJK-UPDATE.md`, re-fetched today. Its **apparatus**
+was: he publishes 2,209 footnotes, these assets carried 1,132, and 644
+verses had a note on his side and none here. Adopted with **no scripture
+touched** — `tools/adopt_official_ljk.py` refuses any wording change by
+default, so the nine verses where the two sides split differently (馬太
+21:44, 路加 23:34a, 哥林多後書 13:14 …) are questions, not updates, and are
+listed in `docs/梁家鏗譯本-繁體字檢查.md` for the translator.
+
+That document is the 繁體 check to send him: 11 Simplified survivors and 4
+舊字形 repaired by the file's own majority, and **211 positions reported
+and deliberately untouched**, because 約旦, 走一里路, 放在斗底下 and 與我何干
+are correct Traditional. Two earlier drafts of the audit were sweeps and
+both "repaired" exactly those four — the rule is
+`repair_biblexg_v2_tr.py`'s: named characters, never a sweep.
+
+**和合本雅偉版 is NOT adopted, and the tools say why.**
+`tools/adopt_official_cuv.py` works and is committed; running it in full
+turned ~110 tests red here. The official 繁體 is OpenCC output (their own
+`export-app-db.py` records it) and reverts about fifty glyph decisions
+this repo checked one at a time against the Hebrew — 創世紀 41's lean cows
+are 乾瘦 here and 幹瘦 there — while its Simplified reverts name spellings
+（朵多, 帖土羅）and six OCR corruptions. Measured: 355 Simplified verses
+behind, ~14,900 Traditional (almost all the 「」→“” convention). The
+finished pass needs the same repair re-application the tool already does
+for markers and OCR damage, extended to the typo census, plus a font
+subset rebuild — 衞 敍 綵 鋭 and three more are not in the bundled subset.
