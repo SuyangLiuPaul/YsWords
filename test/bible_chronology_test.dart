@@ -1858,6 +1858,42 @@ void main() {
       expect(plan.first.left + plan.first.width, lessThanOrEqualTo(400.0));
     });
 
+    test('a crowded row folds what will not fit into one terminal chip '
+        'instead of dropping it — the clusters=43 placed=40 shape', () {
+      // 43 anchors 3 pt apart, each wanting a 20 pt chip: every chip
+      // after the first is pushed by its neighbour's width+gap (22 pt),
+      // not by its own 3 pt of anchor spacing, so the row runs out of
+      // plotWidth long before all 43 are seated at their own x — the
+      // same cumulative-push shape that silently dropped 3 of 43 chips
+      // before this fix (`clusters=43 placed=40`, measured off the real
+      // corpus in `bible_chronology_test.dart` before this change).
+      final lefts = [for (var i = 0; i < 43; i++) i * 3.0];
+      final widths = List<double>.filled(43, 20.0);
+      final plan = chronologyChipPlan(
+        lefts: lefts,
+        widths: widths,
+        plotWidth: 300,
+      );
+      final reachable = plan.fold<int>(
+          0, (sum, slot) => sum + 1 + slot.extraClusters.length);
+      expect(reachable, 43,
+          reason: 'every one of the 43 same-year ties must end up either '
+              'with its own chip or inside the terminal chip\'s merged '
+              'cluster list — none may simply vanish');
+      // The clusters a terminal chip folded in must not also show up as
+      // their own separate slot elsewhere in the plan.
+      final seen = <int>{};
+      for (final slot in plan) {
+        seen.add(slot.cluster);
+        seen.addAll(slot.extraClusters);
+      }
+      expect(seen, hasLength(43));
+      // The plan still fits inside the plot the caller asked for.
+      for (final slot in plan) {
+        expect(slot.left + slot.width, lessThanOrEqualTo(300.0));
+      }
+    });
+
     testWidgets('an event label on screen is not ellipsised — the '
         'measurement uses the font the chart actually draws',
         (tester) async {

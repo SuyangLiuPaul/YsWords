@@ -1753,10 +1753,26 @@ class _ChronologyChartState extends State<ChronologyChart> {
       lefts: chipLefts,
       widths: chipWants,
       plotWidth: plotWidth,
+      measureMergedWidth: (mergedClusters) {
+        final n = [for (final ci in mergedClusters) clusters[ci].length]
+            .fold<int>(0, (a, b) => a + b);
+        final label =
+            _s('chronologyMoreEvents', '+{n}').replaceAll('{n}', '$n');
+        return _measure(label, chipStyle) + chipPadding;
+      },
     );
     for (final slot in chipPlan) {
-      final bucket = clusters[slot.cluster];
-      final chipLabel = chipTexts[slot.cluster];
+      final mergedIndices = [slot.cluster, ...slot.extraClusters];
+      // Usually just the one bucket this slot came from — but when the
+      // row ran out of room, [chronologyChipPlan] folds however many
+      // trailing buckets it had to into this same slot, and the tap
+      // target has to cover every event in all of them, not just the
+      // first.
+      final bucket = [for (final ci in mergedIndices) ...clusters[ci]];
+      final chipLabel = mergedIndices.length == 1
+          ? chipTexts[slot.cluster]
+          : _s('chronologyMoreEvents', '+{n}')
+              .replaceAll('{n}', '${bucket.length}');
       // A bucket of one is a row-exhaustion drop with nobody nearby to
       // merge into — see [chronologyLabelClusters]. It still needs a
       // way to be tapped, but a list naming one event is a detour: send
@@ -2925,14 +2941,19 @@ List<List<int>> chronologyLabelClusters({
 /// [cluster] is the index of the bucket this slot came from in the list
 /// of clusters the caller passed in — not an index into any candidate
 /// list, since a cluster already stands for several candidates at once.
+/// [extraClusters] holds any further bucket indices folded into this
+/// same slot when the row ran out of room for them individually — see
+/// [chronologyChipPlan]'s doc. Empty for an ordinary, unmerged chip.
 @visibleForTesting
 class ChronologyChipSlot {
   final int cluster;
+  final List<int> extraClusters;
   final double left;
   final double width;
 
   const ChronologyChipSlot({
     required this.cluster,
+    this.extraClusters = const [],
     required this.left,
     required this.width,
   });
@@ -2953,23 +2974,54 @@ class ChronologyChipSlot {
 /// A chip that still has nowhere to go once it reaches the right edge
 /// of the plot is shrunk to whatever room is left, the same way
 /// [chronologyLabelPlan] shrinks an end-of-axis label — cut by the axis,
-/// not by a neighbour, and never simply dropped: a same-year tie the
-/// reader cannot tap is worse than one drawn a little narrow.
+/// not by a neighbour.
+///
+/// Once even a shrunk chip has nowhere left to go, it — and every chip
+/// still waiting behind it in x order — is folded into ONE terminal
+/// chip in that same last sliver of room, returned as a single
+/// [ChronologyChipSlot] whose [ChronologyChipSlot.extraClusters] names
+/// the rest of what it absorbed. Nothing is ever silently dropped: a
+/// same-year tie the reader cannot tap is worse than one folded into a
+/// wider bucket. [measureMergedWidth], given the original cluster
+/// indices being folded together, returns how wide the caller's own
+/// merged "+N" text draws; without it the merged chip just takes
+/// whatever room is left, same as the single-chip shrink case.
 @visibleForTesting
 List<ChronologyChipSlot> chronologyChipPlan({
   required List<double> lefts,
   required List<double> widths,
   required double plotWidth,
   double gap = 2,
+  double Function(List<int> mergedClusters)? measureMergedWidth,
 }) {
   final order = List<int>.generate(lefts.length, (i) => i)
     ..sort((a, b) => lefts[a].compareTo(lefts[b]));
   final out = <ChronologyChipSlot>[];
   var lastRight = double.negativeInfinity;
-  for (final i in order) {
+  for (var idx = 0; idx < order.length; idx++) {
+    final i = order[idx];
     final desired = lefts[i];
     final left = desired < lastRight + gap ? lastRight + gap : desired;
-    if (left >= plotWidth) break; // this and everything after it is off
+    if (left >= plotWidth) {
+      // Nobody from here on has room at their own x. Rather than drop
+      // them — a same-year tie the reader cannot tap at all — fold the
+      // rest of the row into one terminal chip and give it whatever
+      // sliver is left before the plot's right edge, the same
+      // shrink-not-drop the single-chip case below already gets.
+      final tail = order.sublist(idx);
+      final tailLeft = left > plotWidth - 1.0 ? plotWidth - 1.0 : left;
+      final room = (plotWidth - tailLeft).clamp(1.0, double.infinity);
+      final tailWidth = measureMergedWidth != null
+          ? measureMergedWidth(tail).clamp(1.0, room)
+          : room;
+      out.add(ChronologyChipSlot(
+        cluster: tail.first,
+        extraClusters: tail.sublist(1),
+        left: tailLeft,
+        width: tailWidth,
+      ));
+      break;
+    }
     final room = (plotWidth - left).clamp(1.0, double.infinity);
     final width = widths[i] < room ? widths[i] : room;
     out.add(ChronologyChipSlot(cluster: i, left: left, width: width));

@@ -11495,6 +11495,15 @@ has never seen this repo.
       still unanswered: start the `GetMaterialApp` → `.router` migration
       branch, or close this as "won't fix"?
 
+      **Deferred a fourteenth consecutive iteration, 2026-09-14** — this
+      hour's NEXT_TASK.md picked the chronology chart's chip-row silent-
+      drop fix instead (`queue:13594`, P2, the next concrete step of the
+      merge-distance slice, hour-sized). Still branch-scale, still
+      unattended-unsafe, still the only fully open P2 checkbox, and the
+      question above to the user is still unanswered: start the
+      `GetMaterialApp` → `.router` migration branch, or close this as
+      "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -13591,34 +13600,49 @@ has never seen this repo.
       measurably drop chips in some (transient, not-currently-asserted)
       render frames.
 
-- [ ] **`chronologyChipPlan`'s "+N" chip row silently drops chips when
-      there are enough of them — its own docstring says it never
-      does.** Found 2026-09-14 landing `queue:13106`'s merge-distance
-      fix, above: that fix restores same-year ties as their own chips
-      instead of swallowing them into one oversized bucket, which
-      roughly doubles the global chip count, and `chronologyChipPlan`
-      (`lib/widgets/chronology_chart.dart:~2965`) packs every chip
-      across the WHOLE plot into one row with `if (left >= plotWidth)
-      break;` — the same silent-drop shape `chronologyLabelClusters`
-      itself used to have, that this whole slice of work exists to fix
-      for labels.
-      Measured, not assumed: a temporary debug print (removed before
-      commit) of `clusters.length` vs the packer's own output length at
-      every rebuild across the full `bible_chronology_test.dart` suite
-      showed 175 of 693 render frames diverge, worst case 3 of 43 chips
-      dropped (`clusters=43 placed=40`). Every settled viewport any
-      current test actually asserts against matched (0 divergence), so
-      nothing in the suite currently catches this — it is a real,
-      reachable gap for a reader who scrolls to the right window, not a
-      hypothetical.
-      Not fixed here — out of scope for the hour that was already spent
-      landing the merge-distance fix, and the right device needs
-      thinking about rather than a quick patch: multiple rows for
-      chips the way labels already get multiple rows, or wrapping, or
-      shrinking every chip on the row proportionally rather than only
-      the last one that doesn't fit. Whoever picks this up should
-      re-measure first — the numbers above are from this session's
-      code, not a floor.
+- [x] **`chronologyChipPlan` no longer drops chips it can't seat — it folds
+      the tail into one terminal "+N" chip instead.** Fixed 2026-09-14.
+
+      **Re-measured first, as asked.** Re-ran the same temporary-print
+      instrument this item's own note used, against *this session's*
+      code (not the stale numbers above): 176 of 696 `chronologyChipPlan`
+      calls across the full `bible_chronology_test.dart` suite diverged
+      from full placement, collapsing to 10 distinct `(clusters, placed)`
+      shapes (four shapes account for 154 of the 176 — the same layouts
+      rebuilt across multiple pumps, not 176 independent scenarios). The
+      actual worst case in this run is **`clusters=40 placed=36`, 4
+      chips dropped** — worse than this item's own `43→40`/3-dropped
+      figure, which a refuter call caught before commit.
+
+      **The fix**, in `chronologyChipPlan`
+      (`lib/widgets/chronology_chart.dart:~2958`): once a chip's push-right
+      position reaches the plot's right edge, the old code `break`s and
+      silently drops it and everything still queued behind it. The new
+      code instead folds that chip and the rest of the row into ONE
+      terminal slot, pinned to the last sliver of room before the edge.
+      `ChronologyChipSlot` gained `extraClusters` (the bucket indices the
+      terminal slot absorbed, beyond its own `cluster`) so the caller's
+      tap handler and label can cover all of them, not just the first.
+      The caller now passes `measureMergedWidth`, a callback that sums
+      the absorbed buckets' real event counts and measures the actual
+      "+N" text the merged chip draws — the same real-`_measure`
+      discipline every other chip on this lane already gets, not a
+      guessed floor.
+
+      New test at `test/bible_chronology_test.dart` (crowded-row shape,
+      43 anchors 3pt apart wanting 20pt chips in a 300pt plot) asserts
+      every one of the 43 original cluster indices ends up in exactly one
+      slot's `cluster`/`extraClusters` — reproduces the drop against the
+      old `break` and passes against the new fold. The three pre-existing
+      chip-packer tests (never-overlap, never-reorder/never-left-of-anchor,
+      shrink-not-drop) pass unchanged. `flutter analyze` clean (whole
+      project). `flutter test test/bible_chronology_test.dart` — 93/93
+      pass, run in the foreground.
+
+      Not done: no version bump, no deploy — the checkout has a second
+      session's uncommitted work in flight this hour (see the top of this
+      file's contention note), so this lands as a plain commit for the
+      next clean iteration to ship.
 
 - [x] **A sermon that would not play left its Listen button dead, because
       only songs caught `PlaybackBlockedException`.** Reported from a live
