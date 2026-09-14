@@ -13644,6 +13644,12 @@ has never seen this repo.
       file's contention note), so this lands as a plain commit for the
       next clean iteration to ship.
 
+      Pushed as `962c9570`. Its CI run (`34830019245`) was still
+      `in_progress` after a ~7-minute foreground watch and this iteration
+      stopped there rather than wait longer — **the next iteration's
+      step 0 should check `34830019245`'s conclusion before picking
+      anything new**, and fix it in that iteration if it came back red.
+
 - [x] **A sermon that would not play left its Listen button dead, because
       only songs caught `PlaybackBlockedException`.** Reported from a live
       iPhone on 2026-09-03, `/sermons/421`, web, and mailed to the crash
