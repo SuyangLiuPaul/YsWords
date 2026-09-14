@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yswords/constants/bible_versions.dart';
 
 import 'support/mini_xml.dart';
 
@@ -205,17 +206,16 @@ void main() {
     // (「应该叫做7 versions吧不然以为7个语言」). Both halves are pinned
     // here, because marketing copy is exactly the kind of text that
     // nothing else in the build ever re-reads.
-    final src = File('lib/constants/bible_versions.dart').readAsStringSync();
-    final list = src.substring(
-      src.indexOf('const bibleVersions ='),
-      src.indexOf('\n];', src.indexOf('const bibleVersions =')),
-    );
-    // Comments out first: this file carries long ones, several of which
-    // quote `value:` while explaining a past change.
-    final entries = RegExp(r"value:\s*'([^']+)'")
-        .allMatches(list.replaceAll(RegExp(r'//[^\n]*'), ''))
-        .map((m) => m.group(1)!)
-        .toList();
+    // 2026-09-14: `availableVersions`, imported, replaces a regex over
+    // the catalog source — and that is a correctness fix, not a tidy-up.
+    // The old scrape counted every `value:` in `bibleVersions`, INCLUDING
+    // the rows in `disabledVersions`, while this group's own test is
+    // named "matches what the picker actually offers". It counted 12 when
+    // the picker offered 9: `nasb`, `wh` and `lxx` had each been hidden
+    // without the number moving, because the number could not see them.
+    // Three editions of overclaim, in copy whose entire reason for being
+    // pinned is that nothing else re-reads it.
+    final entries = availableVersions.map((v) => v.value).toList();
     // Python `#` comments come out for the same reason the HTML and JS
     // ones do: make_og_card.py documents this very decision by QUOTING
     // the wording that was rejected. Stripping is per-language on
@@ -254,7 +254,15 @@ void main() {
       // Both places this pins are hand-written marketing copy, which is
       // exactly why it is pinned: the count is not derived at build
       // time anywhere.
-      expect(entries.length, 12,
+      //
+      // 2026-09-14: 12 -> 9, and the drop is a CORRECTION rather than a
+      // removal — nothing left the app on this date. The Greek pair and
+      // the NASB were hidden earlier (`test/greek_hidden_test.dart`,
+      // `disabledVersions`) and the copy went on counting them because
+      // the count was scraped off the catalog instead of off the picker.
+      // The 9: 和合本雅伟版 简/繁, 梁家铿译本 简/繁, KJV, CSB, LEB,
+      // BSB (Yahweh), ASV (Yahweh).
+      expect(entries.length, 9,
           reason: 'the version list changed — the share card and the '
               'JSON-LD featureList both advertise a count and neither '
               'is derived at build time');
@@ -279,6 +287,49 @@ void main() {
                   'and this copy was not updated with them.');
         }
       });
+    });
+
+    test('never advertises a language the picker has no tab for', () {
+      // 2026-09-14. The count was not the only thing this copy had wrong:
+      // `onboardWelcomeBody` promised 英文／简体／繁体／希腊文 for five
+      // days after both Greek editions were hidden, because every guard
+      // in this group counted editions and none of them read the
+      // LANGUAGES the sentence lists. A reader who opened the app on the
+      // strength of that sentence found three tabs.
+      //
+      // Scoped to the LINES that claim a count, which is where a language
+      // enumeration lives in all four of these files. A blanket search
+      // would be wrong, not merely noisy: index.html's featureList also
+      // says "Original Greek and Hebrew with Strong's numbers", which is
+      // true and has nothing to do with the picker — the Strong's tagging
+      // and the interlinear are there whether or not a Greek EDITION is
+      // offered. The overclaim is "the app offers Greek to read", and it
+      // is only ever made in the sentence that counts the editions.
+      const names = {
+        'el': ['希腊文', '希臘文', 'Greek'],
+        'en': ['英文', 'English'],
+        'zh-Hant': ['繁体', '繁體'],
+        'zh-Hans': ['简体', '簡體'],
+      };
+      final counting = RegExp(r'[^\n]*(?:\d+\s*versions|\d+\s*个\s*版本'
+          r'|\d+\s*個\s*版本)[^\n]*');
+      for (final lang in names.keys.where((l) => !bibleLanguageOrder.contains(l))) {
+        for (final entry in {
+          'tools/make_og_card.py': card,
+          'web/index.html': markup,
+          ...appCopy,
+        }.entries) {
+          for (final line in counting.allMatches(entry.value)) {
+            for (final word in names[lang]!) {
+              expect(line.group(0), isNot(contains(word)),
+                  reason: '${entry.key} advertises "$word" alongside the '
+                      'edition count, but no $lang edition is available, '
+                      'so the picker shows no such tab. Either un-hide '
+                      'the edition or drop the claim.');
+            }
+          }
+        }
+      }
     });
 
     test('says "versions", never "N translations"', () {

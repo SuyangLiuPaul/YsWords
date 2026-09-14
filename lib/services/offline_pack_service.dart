@@ -4,6 +4,7 @@ import 'dart:convert';
 // the conditional-export helper. Web build still uses
 // `fetch(url)`; native build skips with a debug log (the
 // offline-pack UI is web-only anyway).
+import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/services/tagged_text_service.dart';
 import 'package:yswords/utils/fetch_helper.dart';
 
@@ -23,10 +24,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// categories give the user explicit control over those (large)
 /// downloads.
 enum OfflinePackCategory {
-  /// Every bundled Bible text `_bibleUrls` enumerates — 12 files,
-  /// ~69 MB on disk, measured 2026-09-08 with the four 雅伟的话 texts.
-  /// (The doc said "7 translations (~40 MB)" until then; it had been
-  /// wrong since the CSB landed the day before.)
+  /// Every Bible text `_bibleUrls` enumerates — 9 files, ~51 MB on disk,
+  /// measured 2026-09-14. (The doc said "7 translations (~40 MB)" until
+  /// 2026-09-08, wrong since the CSB landed the day before; then 12
+  /// files / 69 MB until the list stopped being hand-maintained and the
+  /// three unopenable editions came out of it.)
   bibles,
 
   /// `sermonCount` (`lib/constants/sermon_credit.dart`) sermons × up to
@@ -269,30 +271,44 @@ class OfflinePackService extends ChangeNotifier {
     return urls.toSet().toList();
   }
 
-  static const List<String> _bibleUrls = [
-    'assets/kjv.json',
-    'assets/leb.json',
-    'assets/nasb.json',
-    'assets/csb.json',
-    // 'assets/niv.json' removed 2026-05 — NIV asset bundle removed
-    // along with its picker entry (see bible_versions.dart).
-    // 'assets/cuv.json', 'assets/cuv-tr.json', 'assets/cnv.json',
-    // 'assets/cnv-tr.json', 'assets/biblexg.json',
-    // 'assets/biblexg-tr.json' removed 2026-08 — CUV, CNV, and LJK1
-    // were deleted outright (see bible_versions.dart).
-    'assets/cuvs-yhwh.json',
-    'assets/cuvs-yhwh-tr.json',
-    'assets/biblexg-v2.json',
-    'assets/biblexg-v2-tr.json',
-    // 2026-09-08: the four texts imported from the 雅伟的话 export.
-    // `assets/lxx.json` and a second CSB are absent from this list
-    // because they are absent from the build — see
-    // lib/constants/bible_versions.dart for why neither ships.
-    'assets/bsb-yhwh.json',
-    'assets/asv-yhwh.json',
-    'assets/wh.json',
-    'assets/lxx.json',
-  ];
+  /// The Bible texts the pack fetches: exactly the editions the picker
+  /// offers, derived rather than listed.
+  ///
+  /// 2026-09-14 — this was a hand-maintained `const` of 12 URLs, and it
+  /// had drifted into two separate defects that a list can drift into and
+  /// a derivation cannot:
+  ///
+  ///   * **`assets/nasb.json` 404s on prod.** `tools/release_web.sh`
+  ///     deletes it out of `build/web` after every build
+  ///     (`WEB_RESTRICTED_ASSETS`), and the offline-pack UI is web-only,
+  ///     so every reader who tapped "Bibles" took a guaranteed failed
+  ///     fetch — counted in `_failed` and surfaced as a partial download,
+  ///     for a file the build intentionally does not serve.
+  ///   * **`wh` and `lxx` were pre-downloaded but cannot be opened.**
+  ///     Both are in `disabledVersions` since 2026-09-09; the picker has
+  ///     no Greek tab at all. 15.3 MB of the 69, fetched so it could sit
+  ///     in a cache no screen reads from.
+  ///
+  /// Neither is a judgement about which editions should be offered — that
+  /// is the owner's, and this reads it off `availableVersions` rather than
+  /// restating it. Hiding an edition now removes it from the pack in the
+  /// same commit, which is what the note on [kWebRestrictedVersions]
+  /// already argues for in the other direction: shipping the file of an
+  /// edition the picker will not open "would be theatre".
+  ///
+  /// Every available edition's text lives at `assets/<value>.json`;
+  /// `test/offline_pack_counts_test.dart` checks each derived path
+  /// against `pubspec.yaml`, so a future edition whose asset is named
+  /// differently fails there instead of 404-ing silently in a reader's
+  /// browser.
+  ///
+  /// Removed outright, and so gone from `availableVersions` too, rather
+  /// than filtered here: NIV in 2026-05 (Biblica/Zondervan), and CUV,
+  /// CUV-tr, CNV, CNV-tr and the LJK1 pair in 2026-08. The 雅伟的话
+  /// export's Septuagint and its second CSB never shipped at all — see
+  /// lib/constants/bible_versions.dart.
+  static List<String> get _bibleUrls =>
+      availableVersions.map((v) => 'assets/${v.value}.json').toList();
 
   static const List<String> _toolsUrls = [
     'assets/family_tree.json',
@@ -460,21 +476,22 @@ class OfflinePackService extends ChangeNotifier {
   int approximateMbFor(OfflinePackCategory c) {
     switch (c) {
       case OfflinePackCategory.bibles:
-        // 69 MB for 12 versions (was 46/8 before the four 雅伟的话 texts
-        // landed 2026-09-08: 68.87 MB on disk across the 12 files
-        // _bibleUrls enumerates, re-measured rather than added to the
-        // old figure — the 8 had already drifted to 48.0 MB).
+        // 51 MB for 9 versions, measured 2026-09-14 by summing the
+        // on-disk bytes of the assets `_bibleUrls` now derives (50.6 MB).
+        // Was 69 MB for 12 — that figure was right for what the pack
+        // fetched and wrong about what a reader got: 15.3 MB of it was
+        // the NASB (404 on prod) plus the two hidden Greek texts.
         //
         // **This is the biggest single number on the offline-pack
         // screen and it is a raw-bytes number, deliberately.** Every
         // other category here states on-disk size too, so the five stay
         // comparable to each other; a reader on a metered connection
         // downloads far less, because Netlify gzips the JSON and these
-        // twelve compress to about 15 MB in total. Stating the smaller
+        // nine compress to about 11 MB in total. Stating the smaller
         // number for this one category alone would make the Bibles look
         // cheaper than the maps, which are 29 MB of already-compressed
         // JPEG and do not shrink at all.
-        return 69;
+        return 51;
       case OfflinePackCategory.sermons:
         // Measured 2026-09-07 by summing the on-disk bytes of every
         // .txt _sermonUrls() actually enumerates (1147 files: 289 en +

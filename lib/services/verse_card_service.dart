@@ -122,6 +122,8 @@ String? verseCardLicence(String version, String locale) {
     'cuvs-yhwh-tr': 'aboutLicenseCuvsYhwh',
     'biblexg-v2': 'aboutLicenseLjk',
     'biblexg-v2-tr': 'aboutLicenseLjk',
+    'biblexg-v3': 'aboutLicenseLjk',
+    'biblexg-v3-tr': 'aboutLicenseLjk',
     // 2026-09-08. All four are imageable and none joins
     // [kVerseImageRestrictedVersions]: the concern that set records is
     // an edition whose permission the app cannot point at, and each of

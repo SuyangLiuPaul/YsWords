@@ -275,6 +275,33 @@ const bibleVersions = <BibleVersionInfo>[
     language: 'zh-Hant',
     narrowLabel: '梁繁',
   ),
+  // 2026-09-14: the September re-fetch of the same translation, from
+  // the same publisher, by `tools/import_ljk2.py`. The two rows above
+  // are the May snapshot and are now in [disabledVersions] —
+  // 「现有的也留着但是隐藏」. They keep their labels because a hidden row
+  // is still named wherever a stored preference or an old link is being
+  // resolved; these two carry the names a reader sees.
+  //
+  // The publisher revises the text, so this is a LIVE source, not a
+  // one-off import. `docs/LJK-UPDATE.md` in the Sword repo is the
+  // procedure; the five-step pipeline is the same here, with one
+  // difference recorded there: this app models 路加福音 23:34a as its
+  // own row, so step 2 runs with `--sub-verses` and
+  // `tools/repair_biblexg_luke_23_34a.py` builds it.
+  BibleVersionInfo(
+    value: 'biblexg-v3',
+    shortLabel: '梁家铿(简)',
+    menuLabel: '梁家铿译本(简体)',
+    language: 'zh-Hans',
+    narrowLabel: '梁简',
+  ),
+  BibleVersionInfo(
+    value: 'biblexg-v3-tr',
+    shortLabel: '梁家鏗(繁)',
+    menuLabel: '梁家鏗譯本(繁體)',
+    language: 'zh-Hant',
+    narrowLabel: '梁繁',
+  ),
 ];
 
 /// Versions hidden from the picker on EVERY platform (CUV, CNV, and
@@ -348,7 +375,32 @@ const bibleVersions = <BibleVersionInfo>[
 /// database and of us. The publisher rebuilt the module the same
 /// morning; the edition was re-imported and is offered again.
 /// `test/asv_yhwh_none_regression_test.dart` keeps it that way.
-const disabledVersions = <String>{'nasb', 'wh', 'lxx'};
+/// 2026-09-14: `biblexg-v2` / `-v2-tr` join, on 「现有的也留着但是隐藏」.
+/// Unlike the other three this is not one text superseding another — it
+/// is the SAME translation re-fetched, shipping as `biblexg-v3`. The old
+/// pair stays in the bundle so a stored preference and a shared link
+/// still resolve; [_kSupersededBy] is what sends them to the new rows
+/// instead of to an unrelated edition.
+const disabledVersions = <String>{
+  'nasb',
+  'wh',
+  'lxx',
+  'biblexg-v2',
+  'biblexg-v2-tr',
+};
+
+/// A hidden edition that has a direct replacement, and what it is.
+///
+/// [resolvableVersionFrom] otherwise falls back to the first available
+/// edition in the same LANGUAGE, which is right when an edition is
+/// withdrawn and wrong when it has been replaced: a reader who chose the
+/// 梁家鏗譯本 and reopens the app would land on 和合本雅伟版 — a different
+/// translation — rather than on the September fetch of the one they
+/// picked. There was no such case before this one.
+const Map<String, String> _kSupersededBy = <String, String>{
+  'biblexg-v2': 'biblexg-v3',
+  'biblexg-v2-tr': 'biblexg-v3-tr',
+};
 
 /// 2026-09-02: editions we may not redistribute as a fetchable file, and
 /// therefore do not ship in the WEB bundle.
@@ -462,6 +514,12 @@ String resolvableVersionFrom(
   List<BibleVersionInfo> available,
 ) {
   if (available.any((v) => v.value == version)) return version;
+  // A named replacement beats the language fallback, and only if the
+  // replacement is itself loadable in this build.
+  final successor = _kSupersededBy[version];
+  if (successor != null && available.any((v) => v.value == successor)) {
+    return successor;
+  }
   final lang = bibleVersionLanguage(version);
   for (final v in available) {
     if (v.language == lang) return v.value;

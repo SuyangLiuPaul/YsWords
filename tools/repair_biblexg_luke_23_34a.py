@@ -69,6 +69,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EDITIONS = [
     ('assets/biblexg-v2.json', '路加福音'),
     ('assets/biblexg-v2-tr.json', '路加福音'),
+    # 2026-09-14: the September re-fetch of the same translation. The
+    # rebuild this file's docstring anticipated actually happened, and
+    # this is the line that made it a re-run instead of a hand edit.
+    ('assets/biblexg-v3.json', '路加福音'),
+    ('assets/biblexg-v3-tr.json', '路加福音'),
 ]
 CHAPTER = '23'
 AFFIX = '34a'

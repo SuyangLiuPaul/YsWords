@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/services/offline_pack_service.dart';
 
 /// Guards two facts about the offline-download Settings screen:
@@ -25,7 +26,7 @@ import 'package:yswords/services/offline_pack_service.dart';
 /// offline pack was silently attempting 1137 dead `assets/maps/<file>`
 /// fetches every time.
 ///
-/// `bibles` / `tools` / `originals` are built from `static const`
+/// `tools` / `originals` are built from `static const`
 /// lists — their URLs are extracted from the real source text of
 /// `offline_pack_service.dart` rather than copied here, so a change to
 /// those lists can't silently drift out of sync with this test (the
@@ -154,8 +155,6 @@ void main() {
     });
   }
 
-  final bibleUrls =
-      extractBetween('static const List<String> _bibleUrls = [', '];');
   final toolsUrls =
       extractBetween('static const List<String> _toolsUrls = [', '];');
   final lexiconUrls = extractBetween('const lexicon = <String>[', '];');
@@ -175,18 +174,29 @@ void main() {
       for (final b in bookNames) 'assets/tagged/$v/$b.json',
   ];
 
+  late List<String> bibleUrls;
   late List<String> mapUrls;
   late List<String> sermonUrls;
 
   setUpAll(() async {
     final service = OfflinePackService.instance;
+    // 2026-09-14: `bibles` joins maps and sermons on the runtime path.
+    // `_bibleUrls` stopped being a `static const` list and became a
+    // derivation over `availableVersions`, so there is no literal left to
+    // extract — and the reason it changed is the reason this test should
+    // go through the service anyway: the hand-kept list had drifted to
+    // include `assets/nasb.json`, which prod deletes from `build/web`,
+    // and the two hidden Greek editions. This test would not have caught
+    // either (both files exist on a dev machine, and 69 MB was an honest
+    // measurement of the wrong set), but from here on it measures
+    // whatever the app would really fetch.
+    bibleUrls = await service.debugUrlsFor(OfflinePackCategory.bibles);
     mapUrls = await service.debugUrlsFor(OfflinePackCategory.maps);
     sermonUrls = await service.debugUrlsFor(OfflinePackCategory.sermons);
   });
 
   test('the extracted static lists are non-empty (extraction sanity check)',
       () {
-    expect(bibleUrls, isNotEmpty);
     expect(toolsUrls, isNotEmpty);
     // 4 -> 6 on 2026-09-08 with the Chinese BDB and Thayer.
     expect(lexiconUrls, hasLength(6));
@@ -210,6 +220,22 @@ void main() {
 
   test('debugUrlsFor(sermons) is non-empty', () {
     expect(sermonUrls, isNotEmpty);
+  });
+
+  test('debugUrlsFor(bibles) fetches exactly the editions the picker offers',
+      () {
+    // The whole point of the derivation: hide an edition and the pack
+    // stops fetching it in the same commit. Asserted as a set equality
+    // rather than a count, because the count was what went unnoticed for
+    // five days — 12 files is 12 files whether or not three of them are
+    // unopenable.
+    expect(bibleUrls.toSet(),
+        availableVersions.map((v) => 'assets/${v.value}.json').toSet());
+    for (final hidden in disabledVersions) {
+      expect(bibleUrls, isNot(contains('assets/$hidden.json')),
+          reason: '$hidden is hidden from the picker but the offline pack '
+              'still downloads it');
+    }
   });
 
   checkCategory('bibles', 'bibles', () => bibleUrls);

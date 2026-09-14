@@ -57,10 +57,19 @@ void main() {
     });
 
     test('梁家铿 narrows to 梁简 / 梁繁, not 梁家…', () {
+      // 2026-09-14: the v3 rows carry the same two labels, and that is
+      // the point — the reader who picked 梁简 before the re-fetch sees
+      // the same pill afterwards. Both pairs are pinned because both
+      // are still resolved: v2 wherever a stored preference or an old
+      // link names it, v3 everywhere the picker is involved.
+      expect(narrowBibleVersionLabel('biblexg-v3'), '梁简');
+      expect(narrowBibleVersionLabel('biblexg-v3-tr'), '梁繁');
       expect(narrowBibleVersionLabel('biblexg-v2'), '梁简');
       expect(narrowBibleVersionLabel('biblexg-v2-tr'), '梁繁');
       // The wide labels are deliberately unchanged — they are correct
       // when there is room for them.
+      expect(shortBibleVersionLabel('biblexg-v3'), '梁家铿(简)');
+      expect(shortBibleVersionLabel('biblexg-v3-tr'), '梁家鏗(繁)');
       expect(shortBibleVersionLabel('biblexg-v2'), '梁家铿(简)');
       expect(shortBibleVersionLabel('biblexg-v2-tr'), '梁家鏗(繁)');
     });
@@ -142,10 +151,21 @@ void main() {
         containsAll(<String>['kjv', 'leb']));
     expect(versionsForLanguage('en').map((v) => v.value),
         isNot(contains('nasb')));
+    // 2026-09-14: `biblexg-v2` -> `biblexg-v3`, and the v2 pair is
+    // asserted ABSENT rather than just dropped from the list. Hiding an
+    // edition that has a replacement is a different act from hiding one
+    // that does not: the tab must stop offering the old fetch AND must
+    // still offer the translation, or a reader who had chosen it loses it
+    // silently. `_kSupersededBy` in bible_versions.dart carries the other
+    // half — where a stored `biblexg-v2` preference lands.
     expect(versionsForLanguage('zh-Hans').map((v) => v.value),
-        containsAll(<String>['cuvs-yhwh', 'biblexg-v2']));
+        containsAll(<String>['cuvs-yhwh', 'biblexg-v3']));
+    expect(versionsForLanguage('zh-Hans').map((v) => v.value),
+        isNot(contains('biblexg-v2')));
     expect(versionsForLanguage('zh-Hant').map((v) => v.value),
-        containsAll(<String>['cuvs-yhwh-tr', 'biblexg-v2-tr']));
+        containsAll(<String>['cuvs-yhwh-tr', 'biblexg-v3-tr']));
+    expect(versionsForLanguage('zh-Hant').map((v) => v.value),
+        isNot(contains('biblexg-v2-tr')));
     // 2026-09-08: the three new English editions, and the Greek tab
     // that holds exactly one row.
     expect(versionsForLanguage('en').map((v) => v.value),

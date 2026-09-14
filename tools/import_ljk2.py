@@ -37,6 +37,7 @@ Run:
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
@@ -80,20 +81,32 @@ BOOKS = [
 ]
 
 
-def fetch(lang: str, abbr: str) -> list[dict]:
-    """Return parsed source data for `lang-abbr`. Caches in /tmp."""
+def fetch(lang: str, abbr: str, *, use_cache: bool = False) -> list[dict]:
+    """Return parsed source data for `lang-abbr`.
+
+    RE-DOWNLOADS by default. The cache in /tmp used to be checked
+    first and never refreshed, so the second run of this tool — the
+    one that exists to pick up an upstream revision — silently rebuilt
+    the assets from whatever had been downloaded months earlier, and
+    reported success. An update tool whose default is "use the old
+    copy" is an update tool that does not update.
+
+    `--cache` is for a debugging loop, where hammering someone else's
+    GitHub Pages twenty times in a row is the rude thing to do.
+    """
     fname = f'{lang}-{abbr}.json'
     cached = os.path.join(CACHE_DIR, fname)
-    if not os.path.exists(cached):
-        os.makedirs(CACHE_DIR, exist_ok=True)
-        url = f'{SRC_BASE}/{fname}'
-        print(f'  fetch {url}')
-        with urllib.request.urlopen(url, timeout=30) as r:
-            data = r.read()
-        with open(cached, 'wb') as f:
-            f.write(data)
-    with open(cached, encoding='utf-8') as f:
-        return json.load(f)
+    if use_cache and os.path.exists(cached):
+        with open(cached, encoding='utf-8') as f:
+            return json.load(f)
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    url = f'{SRC_BASE}/{fname}'
+    print(f'  fetch {url}')
+    with urllib.request.urlopen(url, timeout=30) as r:
+        data = r.read()
+    with open(cached, 'wb') as f:
+        f.write(data)
+    return json.loads(data)
 
 
 # ── HTML → plain text helpers ────────────────────────────────────────
@@ -102,6 +115,15 @@ _CITE_RE = re.compile(r'<cite>(.*?)</cite>', re.S)
 _HEBREW_RE = re.compile(r'<mark[^>]*class="hebrew"[^>]*>(.*?)</mark>', re.S)
 _ANY_TAG_RE = re.compile(r'<[^>]+>')
 _WHITESPACE_LINES = re.compile(r'\s*\n\s*')
+
+
+_INVISIBLE = {ord(c): None for c in (
+    '\u00ad',   # SOFT HYPHEN
+    '\u200b',   # ZERO WIDTH SPACE
+    '\u200c',   # ZERO WIDTH NON-JOINER
+    '\u200d',   # ZERO WIDTH JOINER
+    '\ufeff',   # ZERO WIDTH NO-BREAK SPACE / BOM
+)}
 
 
 def html_to_inline(html: str) -> str:
@@ -121,6 +143,23 @@ def html_to_inline(html: str) -> str:
     if not html:
         return ''
     s = html
+    # A comment PARAGRAPH inside a verse's contents is a note, and it
+    # has to become one before the tag stripper runs.
+    #
+    # 2026-09-14. Upstream usually gives a translator's note its own
+    # `comment` NODE, which `build_book_verses` turns into `blockNotes`.
+    # In nine places across five files the markup collapsed instead and
+    # the note — sometimes with whole verses after it — was dumped into
+    # the previous verse's `contents` as raw HTML. Stripping the tags
+    # then poured 「9節註：“唱起一首新歌”，參詩33，40，96，144.9…」 into
+    # the middle of 啟示錄 5:10 as if it were scripture, digits and all.
+    #
+    # Marked as a note here so it renders as one, and so the boundary
+    # test's "no bare number inside verse text" rule keeps its teeth:
+    # that rule skips `<note:…>`, and every number in this sentence is
+    # a reference inside a note.
+    s = re.sub(r'<p[^>]*class="comment"[^>]*>(.*?)(?:</p>|$)',
+               lambda m: '<cite>' + m.group(1) + '</cite>', s, flags=re.S)
     # Pull the Hebrew / Greek content out of <mark>, keep the chars,
     # drop the wrapping element. Inline marks are sentence-level so a
     # leading + trailing space keeps them off adjacent CJK chars.
@@ -138,63 +177,38 @@ def html_to_inline(html: str) -> str:
     s = _ANY_TAG_RE.sub('', s)
     # Restore the sentinel → real <note:…> tag.
     s = s.replace('\x00NOTE\x02', '<note:').replace('\x01', '>')
+    # Invisible characters the upstream HTML carries.
+    #
+    # 2026-08-10 (#304) found three U+00AD SOFT HYPHENs in the v2
+    # assets — 启示录 20:2 read 「他捉住龙<AD>，」 — and they were
+    # stripped by hand, in the asset. The importer never learned, so
+    # this run put all three back, in the same three verses.
+    # `data_integrity_test.dart` caught it both times; the strip
+    # belongs here, where a re-import cannot lose it again.
+    #
+    # SOFT HYPHEN renders as nothing and cannot be typed, so an exact
+    # phrase search fails on text the reader can plainly see. The zero
+    # widths and the BOM are the same defect in other codepoints; none
+    # of the five carries meaning in Chinese scripture.
+    s = s.translate(_INVISIBLE)
     s = _WHITESPACE_LINES.sub(' ', s)
     # Trim only the absolute leading / trailing whitespace; keep one
     # space at boundaries so adjacent fragments don't glue together.
     return s.strip()
 
 
-def split_block_comment(segments) -> tuple[str, str]:
-    """Separate an editor's footnote from scripture the publisher misfiled.
-
-    A comment node's `contents` holds items of two different kinds, and
-    they are not the same thing:
-
-      * plain HTML strings  → the editor's footnote ("31节注：…")
-      * `{lineBreak, content}` dicts → BODY TEXT of the preceding verse
-
-    Reading the dicts as part of the footnote — as this did — buried two
-    sentences of scripture in a note card: 約翰福音 12:36b
-    「耶穌說完了這些話，便離開他們，隱藏起來了。」 and 約翰一書 4:16b
-    「神就是愛，那住在愛裡的…」. Three independent authorities say they are
-    body: the printed 註釋本 sets both as body text before the next verse
-    number, the `tw` source files carry 4:16b in the verse itself, and
-    the dicts arrive with `lineBreak` — the key the publisher uses for
-    verse content and never for a footnote string.
-
-    Returns `(footnote, body)`; either may be empty.
-    """
-    note_parts: list[str] = []
-    body_parts: list[dict] = []
-    for seg in segments:
-        if isinstance(seg, dict):
-            body_parts.append(seg)
-        else:
-            note_parts.append(str(seg))
-    return clean_block_comment(note_parts), assemble_verse_text(body_parts)
-
-
-_LI_RE = re.compile(r'<li[^>]*>(.*?)</li>', re.S)
-
-
-def clean_comment_list(segments, ordered: bool) -> str:
-    """Render a `comment-list` / `ul-comment-list` node as one blockNotes
-    string: one `<li>` per line, numbered (comment-list) or bulleted
-    (ul-comment-list). Each item goes through `clean_block_comment` —
-    same tag handling as an ordinary block note, so `<cite>` / `<mark>`
-    read identically whether the source text sits in a list or not.
-    """
-    raw = ' '.join(str(s) for s in segments)
-    items = [clean_block_comment([it]) for it in _LI_RE.findall(raw)]
-    items = [it for it in items if it]
-    if ordered:
-        return '\n'.join(f'{i}. {it}' for i, it in enumerate(items, 1))
-    return '\n'.join(f'• {it}' for it in items)
-
-
 def clean_block_comment(segments) -> str:
-    """Join + clean the plain-string parts of a block comment."""
-    parts: list[str] = [str(s) for s in segments]
+    """Block comments arrive as a list whose items are EITHER plain
+    HTML strings OR dicts of shape `{lineBreak, content}` (the latter
+    used by 1jo / 2jo etc. when the comment quotes another verse).
+    Join + clean either form.
+    """
+    parts: list[str] = []
+    for seg in segments:
+        if isinstance(seg, str):
+            parts.append(seg)
+        elif isinstance(seg, dict):
+            parts.append(str(seg.get('content', '')))
     raw = ' '.join(parts)
     # Hebrew + Greek inline marks: keep the content, drop the tag.
     s = re.sub(r'<mark[^>]*class="(?:hebrew|greek)"[^>]*>(.*?)</mark>',
@@ -237,9 +251,101 @@ def assemble_verse_text(contents: list[dict]) -> str:
     return out.strip()
 
 
+
+# ── Upstream numbering defects, repaired by hand and counted ────────
+#
+# 2026-09-14. Before importing a revision, the whole source was checked
+# against canonical versification. Two kinds of discrepancy came back
+# and they must not be treated alike:
+#
+# **The translation's own editorial choice — LEFT ALONE.** Mt 17:21,
+# 18:11, 23:14; Mk 11:26, 15:28; Lk 17:36, 22:43-44, 23:17; Jn 5:4;
+# Acts 8:37, 15:34, 24:7, 28:29 are absent from the running text, and
+# 3 John 15 and Rev 12:18 are present. That is exactly the critical
+# text (NA28/UBS5), applied consistently, with the manuscript variants
+# explained in the notes. A "repair" that filled those gaps would be
+# overruling the translator.
+#
+# **Numbering defects — repaired.** Four places where the markup, not
+# the translation, is wrong. Each was read against the text before
+# being written down; none is a guess, and none invents or drops a
+# word of scripture.
+#
+# One thing is NOT repaired because it cannot be: `cn-mk.json` is
+# MISSING Mark 6:8-11 outright — four verses of scripture that the
+# traditional file has and the simplified one does not. There is
+# nothing to renumber; the text is not in the file. Inventing it from
+# the traditional text would be a conversion presented as a source, so
+# the gap stands and `main()` reports it every run.
+# The verses this translation deliberately does NOT print, because it
+# follows the critical text (NA28/UBS5) and explains each in a note.
+# Keyed by our own verse id, BBCCCVVV.
+#
+# They are listed so that CARRY-FORWARD can skip them. The May snapshot
+# of the upstream still had them, so filling every id the new import
+# lacks would quietly put them back — which is not restoring a lost
+# verse, it is overruling the translator.
+# Checked one by one against the source rather than assumed from the
+# list of "verses the critical text omits". THE LIST IS NOT THAT LIST:
+# Lk 22:43-44, 23:17, Jn 5:4 and Acts 15:34 are PRESENT upstream —
+# printed inside the preceding verse with their numbers inline, e.g.
+# Luke 22:42's text ends 「…成就你的旨意。”43有一位使者從天上向他顯現…」.
+# `tools/repair_biblexg.py` splits those back out; treating them as
+# omissions here would have carried the May snapshot's copies forward on
+# top of the split ones, or worse, left them out entirely.
+CRITICAL_TEXT_OMISSIONS = {
+    '40017021', '40018011', '40023014',   # Mt 17:21, 18:11, 23:14
+    '41011026', '41015028',               # Mk 11:26, 15:28
+    '42017036',                           # Lk 17:36
+    '44008037',                           # Acts 8:37 — in a note, not the text
+    '44024007', '44028029',               # Acts 24:7, 28:29
+    '47013014',                           # 2 Cor 13:14 (NA28 ends at 13)
+}
+
+# Boundary repairs are NOT done here. `tools/repair_biblexg.py` already
+# holds eight of them, each written up with what a reader loses if it is
+# wrong, and `test/biblexg_verse_boundary_test.dart` pins its answers.
+# This importer briefly grew its own set and got one of them different —
+# it put 「如經上所記：」 at the end of Acts 15:15 on the Greek's
+# versification, where the shipped edition (and the publisher's own
+# numbering, which labels both halves 16) puts it at the start of 15:16.
+# Two layers repairing the same file is how those answers drift apart.
+# Run the repair script after this one; see the header.
+REPAIRS: dict[tuple[str, str, int], str] = {}
+
+
+def repair_chapter(lang: str, abbr: str, chapter: int,
+                   nodes: list[dict], log: list[str]) -> list[dict]:
+    """A no-op, deliberately.
+
+    This function used to drop empty verse nodes and fix four numbering
+    defects. Both jobs belong to `tools/repair_biblexg.py`, and doing
+    them here BROKE that script: its first repair identifies Matthew
+    16:13 by the pair the converter leaves behind — an empty record `1`
+    and a record `3` carrying the text — and this importer had already
+    thrown the empty one away, so the repair could not recognise the
+    pair and refused to write the file at all.
+
+    The importer's job is a faithful conversion. The repairs are a
+    separate, reviewed pass with its own tests. Kept as a hook, and as
+    the record of why it is empty.
+    """
+    return nodes
+
+
+def verse_text_of(node: dict) -> str:
+    """Just the words, for the empty-node check above."""
+    parts = []
+    for c in node.get('contents') or []:
+        if isinstance(c, dict):
+            parts.append(_ANY_TAG_RE.sub('', c.get('content', '') or ''))
+    return ''.join(parts)
+
+
 def build_book_verses(book_data: list[dict], book_id: int,
                       book_name_cn: str, book_name_tr: str,
-                      use_tr: bool) -> list[dict]:
+                      use_tr: bool, *, lang: str = '', abbr: str = '',
+                      log: list[str] | None = None) -> list[dict]:
     """Walk one upstream-book file, return our verse-format list.
 
     Comments encountered between verses are attached to the
@@ -253,7 +359,14 @@ def build_book_verses(book_data: list[dict], book_id: int,
     chapter = 0
     pending_comments: list[str] = []
     for ch_data in book_data:
-        for n in ch_data.get('nodeData', []):
+        nodes = ch_data.get('nodeData', [])
+        # Which chapter this block is, BEFORE walking it — the repairs
+        # below are addressed to a chapter by number.
+        ch_no = next((int(n.get('chapterIndex', '0'))
+                      for n in nodes if n.get('type') == 'chapter'), 0)
+        nodes = repair_chapter(lang, abbr, ch_no, list(nodes),
+                               log if log is not None else [])
+        for n in nodes:
             t = n.get('type')
             if t == 'chapter':
                 chapter = int(n.get('chapterIndex', '0'))
@@ -293,22 +406,10 @@ def build_book_verses(book_data: list[dict], book_id: int,
                 out.append(v)
             elif t == 'comment':
                 contents = n.get('contents', [])
-                if not isinstance(contents, list):
-                    contents = [str(contents)]
-                cleaned, body = split_block_comment(contents)
-                if body and out:
-                    out[-1]['text'] = f"{out[-1]['text']}{body}"
-                if not cleaned:
-                    continue
-                if out:
-                    out[-1].setdefault('blockNotes', []).append(cleaned)
+                if isinstance(contents, list):
+                    cleaned = clean_block_comment(contents)
                 else:
-                    pending_comments.append(cleaned)
-            elif t in ('comment-list', 'ul-comment-list'):
-                contents = n.get('contents', [])
-                if not isinstance(contents, list):
-                    contents = [str(contents)]
-                cleaned = clean_comment_list(contents, ordered=t == 'comment-list')
+                    cleaned = clean_block_comment([str(contents)])
                 if not cleaned:
                     continue
                 if out:
@@ -319,16 +420,39 @@ def build_book_verses(book_data: list[dict], book_id: int,
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--code', default='biblexg-v3',
+                    help='version code to write: assets/<code>.json and '
+                         'assets/<code>-tr.json (default: biblexg-v3)')
+    ap.add_argument('--cache', action='store_true',
+                    help='reuse the /tmp copy instead of re-downloading — '
+                         'for a debugging loop, never for an update')
+    ap.add_argument('--force', action='store_true',
+                    help='overwrite assets that already exist')
+    args = ap.parse_args()
+
+    cn_path = os.path.join(REPO_ROOT, 'assets', f'{args.code}.json')
+    tr_path = os.path.join(REPO_ROOT, 'assets', f'{args.code}-tr.json')
+    # A previous edition is EVIDENCE, not a scratch file: the app keeps
+    # the one it replaced so old links and old readers still resolve.
+    for path in (cn_path, tr_path):
+        if os.path.exists(path) and not args.force:
+            print(f'REFUSING: {os.path.relpath(path, REPO_ROOT)} exists. '
+                  f'Pass --code for a new edition, or --force to replace '
+                  f'this one in place.', file=sys.stderr)
+            return 1
+
     cn_all: list[dict] = []
     tr_all: list[dict] = []
+    repair_log: list[str] = []
     for abbr, en, cn, tr, bid in BOOKS:
-        cn_data = fetch('cn', abbr)
-        tr_data = fetch('tw', abbr)
-        cn_all.extend(build_book_verses(cn_data, bid, cn, tr, use_tr=False))
-        tr_all.extend(build_book_verses(tr_data, bid, cn, tr, use_tr=True))
+        cn_data = fetch('cn', abbr, use_cache=args.cache)
+        tr_data = fetch('tw', abbr, use_cache=args.cache)
+        cn_all.extend(build_book_verses(cn_data, bid, cn, tr, use_tr=False,
+                                        lang='cn', abbr=abbr, log=repair_log))
+        tr_all.extend(build_book_verses(tr_data, bid, cn, tr, use_tr=True,
+                                        lang='tw', abbr=abbr, log=repair_log))
 
-    cn_path = os.path.join(REPO_ROOT, 'assets', 'biblexg-v2.json')
-    tr_path = os.path.join(REPO_ROOT, 'assets', 'biblexg-v2-tr.json')
     with open(cn_path, 'w', encoding='utf-8') as f:
         json.dump(cn_all, f, ensure_ascii=False, separators=(',', ':'))
     with open(tr_path, 'w', encoding='utf-8') as f:
@@ -345,6 +469,55 @@ def main():
           f'{cn_with_newlines} with line breaks, {cn_with_notes} with '
           f'inline <note:> cross-refs')
 
+    # Every repair, every run. A silent repair is a fork of the source
+    # that nobody can audit later.
+    print()
+    print(f'  repairs applied here ({len(repair_log)}) — boundary repairs '
+          f'are a separate pass, see below:')
+    for line in repair_log:
+        print(line)
+
+    print()
+    print('  NEXT, in this order:')
+    print(f'    tools/repair_biblexg.py --code {args.code} --write')
+    print(f'    tools/repair_verse_numbering.py --code {args.code}')
+    print(f'    tools/repair_biblexg_v2_tr.py --code {args.code}-tr')
+    print(f'    tools/carry_forward_ljk.py --code {args.code} '
+          f'--from biblexg-v2 --write')
+    print('  Order matters, and each step is here because leaving it out'
+          ' shipped a defect:')
+    print('    2. repair_biblexg SPLITS verses the converter merged into'
+          ' one row.')
+    print('    3. repair_verse_numbering RE-KEYS rows numbered by the'
+          " edition's own versification rather than by the English"
+          ' reference the app looks up by. Skipped once on the v3 run:'
+          ' the grace benediction went back to answering 2 Corinthians'
+          ' 13:13, and Acts 8:41 — a reference no English tradition has,'
+          ' so nothing in the app can reach it — came back.')
+    print('    4. repair_biblexg_v2_tr fixes the 30 characters the'
+          " publisher's own 繁體 conversion got wrong — 會堂里 for 會堂裡,"
+          ' 準許 for 准許, 顫斗 for 顫抖. Every site is named; a site the'
+          ' publisher has since fixed retires itself, and a site that'
+          ' moved fails loudly.')
+    print('    5. carry_forward runs LAST and fills only what is STILL'
+          ' missing, or it fills it with the older snapshot\'s wording'
+          ' instead of the text this run just fetched.')
+
+    # And the one thing that cannot be repaired, said every time so it
+    # cannot rot into folklore: the SIMPLIFIED upstream file is missing
+    # Mark 6:8-11. The traditional file has them. Nothing here invents
+    # them — a simplified rendering generated from the traditional text
+    # would be a conversion presented as a source.
+    cn_mk6 = {v['verseLabel'] for v in cn_all
+              if v['id'][:5] == '41006'}
+    absent = [n for n in ('8', '9', '10', '11') if n not in cn_mk6]
+    if absent:
+        print()
+        print(f'  !! UPSTREAM GAP: cn-mk.json has no Mark 6:{",".join(absent)}'
+              f' — present in tw-mk.json. Report it upstream; do not'
+              f' fabricate it here.')
+    return 0
+
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

@@ -1,3 +1,11 @@
+// 2026-09-14: every `biblexg-v2` in this file became `biblexg-v3`. The
+// 梁家鏗譯本 was re-fetched from the publisher and the v2 pair went into
+// `disabledVersions` — the labels these tests tap are unchanged, but the
+// row behind them is now the September edition. Both rows still carry the
+// same menuLabel, deliberately (a hidden row is still named wherever a
+// stored preference resolves), so the tap itself could not tell us which
+// one it hit; the returned value is the only thing that can, which is why
+// these tests failed rather than silently passing on the wrong edition.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
@@ -104,8 +112,8 @@ void main() {
 
     // 2. The reader taps 梁家铿译本. `currentVersion` moves NOW; the
     //    verses will not arrive for another 1-3 s (longer on a slow link).
-    mp.setVersion('biblexg-v2');
-    expect(mp.currentVersion, 'biblexg-v2');
+    mp.setVersion('biblexg-v3');
+    expect(mp.currentVersion, 'biblexg-v3');
     expect(mp.renderedVersion, 'cuvs-yhwh',
         reason: 'the verses on screen are still the old translation — this '
             'gap is the whole bug and the test is meaningless without it');
@@ -117,7 +125,7 @@ void main() {
 
     // 4. The 梁家铿译本 verses land.
     mp.setVerses(ljkJohn3());
-    expect(mp.renderedVersion, 'biblexg-v2');
+    expect(mp.renderedVersion, 'biblexg-v3');
 
     // 5. The next build looks the grouping up. Whatever comes back must
     //    be the text that is actually on screen. Before the fix this
@@ -138,7 +146,7 @@ void main() {
   test('switching back does not resurrect the other version\'s grouping',
       () {
     final mp = MainProvider(storagePrefix: 'test');
-    mp.currentVersion = 'biblexg-v2';
+    mp.currentVersion = 'biblexg-v3';
     mp.setVerses(ljkJohn3());
     cacheGroupingOf(mp, ljkJohn3());
     // Non-vacuity: without this the test below passes for the useless

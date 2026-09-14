@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/ui_strings.dart';
 
 /// Guards the two counts the offline-pack settings screen states about
@@ -18,16 +19,19 @@ import 'package:yswords/constants/ui_strings.dart';
 /// on word order, so it can't miss a count regardless of how the
 /// sentence is phrased.
 void main() {
-  final versionsSrc =
-      File('lib/constants/bible_versions.dart').readAsStringSync();
-  final list = versionsSrc.substring(
-    versionsSrc.indexOf('const bibleVersions ='),
-    versionsSrc.indexOf('\n];', versionsSrc.indexOf('const bibleVersions =')),
-  );
-  final versionCount = RegExp(r"value:\s*'([^']+)'")
-      .allMatches(list.replaceAll(RegExp(r'//[^\n]*'), ''))
-      .length;
-
+  // 2026-09-14: counted off the editions the picker offers, NOT off the
+  // catalog in `bible_versions.dart`. The catalog has 14 rows, 5 of them
+  // in `disabledVersions`; scraping `value:` counted all 14 and so
+  // measured neither the pack nor the picker. It agreed with the copy
+  // only while the catalog happened to hold as many rows as the pack held
+  // files, which stopped being true when the 梁家鏗譯本 v3 rows joined and
+  // the v2 pair was hidden rather than removed.
+  //
+  // Those are now one number by construction: `_bibleUrls` in the service
+  // derives from `availableVersions` (see the doc comment there — it
+  // records the 404 and the two unopenable editions that a hand-kept list
+  // had drifted into).
+  final versionCount = availableVersions.length;
   final sermons =
       json.decode(File('assets/sermons/index.json').readAsStringSync())
           as List;
@@ -65,6 +69,25 @@ void main() {
         [versionCount],
         reason: 'offlinePackBibles/$locale',
       );
+    }
+  });
+
+  test('every edition the pack derives is really a declared asset', () {
+    // `_bibleUrls` builds `assets/<value>.json` from each available
+    // edition's code. That holds for all nine today and is a CONVENTION,
+    // not a guarantee: an edition whose asset is named anything else
+    // would make the pack request a path Flutter never bundled, and the
+    // symptom — one more failed fetch inside a 9-file download, on web
+    // only — is exactly the kind nobody notices. This is the check that
+    // moved the risk out of a reader's browser and into `flutter test`.
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    for (final v in availableVersions) {
+      expect(pubspec, contains('- assets/${v.value}.json'),
+          reason: '${v.value} is offered in the picker, so the offline '
+              'pack will fetch assets/${v.value}.json — which pubspec.yaml '
+              'does not declare. Either the asset is named differently '
+              '(then _bibleUrls needs a real mapping, not the convention) '
+              'or the edition ships no text at all.');
     }
   });
 }

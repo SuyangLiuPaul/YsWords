@@ -1674,14 +1674,23 @@ const uiStrings = {
   // the one the user rejected the same day (「应该叫做7 versions吧不然
   // 以为7个语言」): 7 versions is 5 translations, because 和合本雅伟版
   // and 梁家铿译本 each ship 简体 and 繁體 of the same work.
-  // test/seo_meta_test.dart derives the 7 from bible_versions.dart and
-  // now checks this file too — it previously covered only the share
+  // test/seo_meta_test.dart derives the count from bible_versions.dart
+  // and now checks this file too — it previously covered only the share
   // card and index.html, which is how this survived.
+  //
+  // 2026-09-14: 12 -> 9, and 希腊文 / "Greek" comes out of the language
+  // list. Both were stale in the same way and neither was a removal made
+  // today. The count had been scraped off the catalog, which counts
+  // hidden rows; the LANGUAGE claim went stale on 2026-09-09, when both
+  // `el` rows were hidden on the owner's word 「words 其实希腊语可以
+  // hidden 的」 — `bibleLanguageOrder` dropped the Greek pill that day
+  // and this sentence, the first one a new reader sees, went on
+  // promising a language the picker has no tab for.
   'onboardWelcomeBody': {
-    'zh-Hans': '双语圣经阅读应用，12 个版本（英文／简体／繁体／希腊文）。主页的「读经」卡片会带你回到上次离开的位置。',
-    'zh-Hant': '雙語聖經閱讀應用，12 個版本（英文／簡體／繁體／希臘文）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
+    'zh-Hans': '双语圣经阅读应用，9 个版本（英文／简体／繁体）。主页的「读经」卡片会带你回到上次离开的位置。',
+    'zh-Hant': '雙語聖經閱讀應用，9 個版本（英文／簡體／繁體）。主頁的「讀經」卡片會帶你回到上次離開的位置。',
     'en':
-        'A bilingual Bible reader with 12 versions across English, Chinese and Greek. The "Read Bible" card on Home picks up exactly where you left off.',
+        'A bilingual Bible reader with 9 versions across English and Chinese. The "Read Bible" card on Home picks up exactly where you left off.',
   },
   'onboardReadTitle': {
     'zh-Hans': '阅读、高亮、研经',
@@ -1902,10 +1911,17 @@ const uiStrings = {
   // a stale count here has to be corrected where it lives.
   // `test/offline_pack_counts_test.dart` derives the number from
   // `bible_versions.dart` and fails on any of the three locales.
+  // 2026-09-14: 12 -> 9. The pack used to fetch three editions beyond
+  // the nine the picker offers — the NASB, whose asset prod deletes, and
+  // the two hidden Greek texts — so this count was accurate about the
+  // download and misleading about what the reader would then be able to
+  // read. `_bibleUrls` derives from `availableVersions` now, and
+  // test/offline_pack_counts_test.dart counts THAT list rather than the
+  // catalog, so this string and the pack cannot drift apart again.
   'offlinePackBibles': {
-    'zh-Hans': '圣经版本（共 12 个）',
-    'zh-Hant': '聖經版本（共 12 個）',
-    'en': 'Bibles (12 versions)',
+    'zh-Hans': '圣经版本（共 9 个）',
+    'zh-Hant': '聖經版本（共 9 個）',
+    'en': 'Bibles (9 versions)',
   },
   // {name} is filled from sermon_credit.dart — the single source for
   // the preacher's name. The count was 587, which was the sum of every

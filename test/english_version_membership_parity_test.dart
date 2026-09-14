@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/bible_versions.dart' show bibleVersions;
+import 'package:yswords/constants/bible_versions.dart'
+    show availableVersions, bibleVersions, disabledVersions;
+import 'package:yswords/services/offline_pack_service.dart';
 import 'package:yswords/constants/section_title_map.dart'
     show sectionTitleSetByVersion;
 
@@ -41,19 +43,6 @@ Set<String> _englishVersionCodesFromSource() {
   return {for (final m in RegExp(r"'([^']+)'").allMatches(body)) m.group(1)!};
 }
 
-Set<String> _bibleUrlAssetsFromSource() {
-  final src = File('lib/services/offline_pack_service.dart').readAsStringSync();
-  final block = RegExp(r'_bibleUrls = \[(.*?)\n  \];', dotAll: true)
-      .firstMatch(src);
-  if (block == null) {
-    throw StateError('the _bibleUrls block moved or changed shape');
-  }
-  final body = block.group(1)!.replaceAll(RegExp(r'//[^\n]*'), '');
-  return {
-    for (final m in RegExp(r"'assets/([^']+)\.json'").allMatches(body))
-      m.group(1)!,
-  };
-}
 
 void main() {
   final englishVersions = bibleVersions
@@ -83,14 +72,45 @@ void main() {
     }
   });
 
-  test('every English version is in offline pack _bibleUrls', () {
-    final assets = _bibleUrlAssetsFromSource();
-    for (final v in englishVersions) {
+  test('every OFFERED English version is in the offline pack', () async {
+    // 2026-09-14. Two things changed here and they pull in opposite
+    // directions, so both are spelled out.
+    //
+    // The source-text parse is gone: `_bibleUrls` is no longer a literal
+    // to parse but a derivation over `availableVersions`, so this asks the
+    // service what it would fetch. That is strictly better — the old
+    // parse would have gone on passing if `_bibleUrls` had been correct in
+    // source and wrong at runtime.
+    //
+    // And the subject narrowed from "every English version" to every
+    // English version the picker OFFERS. `nasb` is language:"en" and in
+    // `disabledVersions`, and it was the reason this test now reads this
+    // way: the old assertion demanded the pack fetch it, the pack did,
+    // and `tools/release_web.sh` deletes `assets/nasb.json` out of
+    // `build/web` — so the test was enforcing a guaranteed 404 on every
+    // reader who downloaded the Bibles pack. The other two lists below
+    // still cover ALL English editions, hidden included, and correctly:
+    // a hidden edition is still resolved by name, so its book names and
+    // section titles must still work.
+    final assets = {
+      for (final url in await OfflinePackService.instance
+          .debugUrlsFor(OfflinePackCategory.bibles))
+        url.replaceFirst('assets/', '').replaceFirst('.json', ''),
+    };
+    for (final v in englishVersions.where(
+        (v) => availableVersions.any((a) => a.value == v))) {
       expect(assets, contains(v),
           reason:
-              '"$v" is language:"en" in bibleVersions but '
-              'assets/$v.json is missing from offline_pack_service.dart\'s '
-              '_bibleUrls — the offline pack will silently skip it');
+              '"$v" is an offered English edition but assets/$v.json is '
+              'not in what the offline pack fetches — the pack will '
+              'silently skip it');
+    }
+    for (final v in englishVersions.where(disabledVersions.contains)) {
+      expect(assets, isNot(contains(v)),
+          reason:
+              '"$v" is hidden from the picker, so the pack must not '
+              'download it — for `nasb` the fetch cannot even succeed, '
+              'because release_web.sh strips the asset from prod');
     }
   });
 }

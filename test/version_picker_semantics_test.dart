@@ -1,3 +1,11 @@
+// 2026-09-14: every `biblexg-v2` in this file became `biblexg-v3`. The
+// 梁家鏗譯本 was re-fetched from the publisher and the v2 pair went into
+// `disabledVersions` — the labels these tests tap are unchanged, but the
+// row behind them is now the September edition. Both rows still carry the
+// same menuLabel, deliberately (a hidden row is still named wherever a
+// stored preference resolves), so the tap itself could not tell us which
+// one it hit; the returned value is the only thing that can, which is why
+// these tests failed rather than silently passing on the wrong edition.
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -129,7 +137,7 @@ void main() {
     picker.semanticTap('梁家铿译本(简体)');
     await tester.pumpAndSettle();
     expect(picker.closed, isTrue, reason: 'the menu did not close');
-    expect(picker.picked, 'biblexg-v2');
+    expect(picker.picked, 'biblexg-v3');
     handle.dispose();
   });
 
@@ -186,7 +194,7 @@ void main() {
     picker.semanticTap('梁家鏗譯本(繁體)');
     await tester.pumpAndSettle();
     expect(picker.closed, isTrue);
-    expect(picker.picked, 'biblexg-v2-tr');
+    expect(picker.picked, 'biblexg-v3-tr');
     handle.dispose();
   });
 

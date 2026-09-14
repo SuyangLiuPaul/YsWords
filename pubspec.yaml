@@ -177,6 +177,12 @@ flutter:
     - assets/cuvs-yhwh-tr.json
     - assets/biblexg-v2.json
     - assets/biblexg-v2-tr.json
+    # 2026-09-14: the September re-fetch of the same translation. The v2
+    # pair above stays in the bundle although it is hidden — see
+    # `disabledVersions` — because a stored preference and a shared link
+    # both have to resolve to something real.
+    - assets/biblexg-v3.json
+    - assets/biblexg-v3-tr.json
     - assets/nasb.json
     - assets/csb.json
     # 2026-09-08, from the 雅伟的话 export via tools/import_ydh_texts.py.

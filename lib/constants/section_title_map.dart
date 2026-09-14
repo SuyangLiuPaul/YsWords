@@ -40,6 +40,8 @@ const sectionTitleSetByVersion = <String, String>{
   // LJK2 (梁家铿译本 第二版) uses CUV titles.
   'biblexg-v2': 'cuv',
   'biblexg-v2-tr': 'cuv-tr',
+  'biblexg-v3': 'cuv',
+  'biblexg-v3-tr': 'cuv-tr',
 };
 
 /// When a primary title set has no entry for a given chapter, the

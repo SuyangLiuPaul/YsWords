@@ -43,8 +43,8 @@ Future<void> eagerPreloadAllVersions(
     // Traditional Chinese variant.
     'cuvs-yhwh-tr',
     // LJK2 — NT-only specialty translation.
-    'biblexg-v2',
-    'biblexg-v2-tr',
+    'biblexg-v3',
+    'biblexg-v3-tr',
     // 2026-09-08: BSB, BSB (Yahweh), ASV (Yahweh) and the Westcott-Hort
     // are deliberately NOT here, and this list being hand-picked rather
     // than derived from `availableVersions` is what keeps that a

@@ -157,9 +157,13 @@ def main():
     # "translations" reads as "seven LANGUAGES", which would be a real
     # overclaim; "versions" is both true and the standard word in Bible
     # software (the V in KJV; 中文界面叫版本).
-    # test/seo_meta_test.dart derives the 7 from
+    # test/seo_meta_test.dart derives the count from
     # lib/constants/bible_versions.dart and fails if this line drifts.
-    tag_en = 'Bilingual Bible · 12 versions · original languages'
+    # 2026-09-14: it derives it from `availableVersions` now, not from
+    # a regex over every catalog row — which is why this reads 9 and
+    # not 12. The hidden NASB and the two hidden Greek texts had been
+    # counted here since the day each was hidden.
+    tag_en = 'Bilingual Bible · 9 versions · original languages'
     tag_zh = '双语圣经 · 和合本雅伟版 · 原文对照与释经注'
     domain = 'yahwehword.com'
 

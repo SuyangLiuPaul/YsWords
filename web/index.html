@@ -148,7 +148,16 @@
           "priceCurrency": "USD"
         },
         "featureList": [
-          "12 versions: 和合本雅伟版 (简/繁), 梁家铿译本 (简/繁), KJV, CSB, NASB, LEB, BSB (Yahweh), ASV (Yahweh), Westcott-Hort Greek NT, Septuagint",
+        <!-- 2026-09-14: 12 -> 9, and three NAMES came out with the
+             number: NASB, the Westcott-Hort Greek NT and the Septuagint.
+             All three are in `disabledVersions`, so this list was naming
+             editions no visitor can open — worse than a stale count,
+             because a search engine reads it as what the site serves.
+             They were hidden at different times and this line moved
+             neither time; test/seo_meta_test.dart now counts
+             `availableVersions` instead of catalog rows, so it cannot
+             drift past a hiding again. -->
+          "9 versions: 和合本雅伟版 (简/繁), 梁家铿译本 (简/繁), KJV, CSB, LEB, BSB (Yahweh), ASV (Yahweh)",
           "Side-by-side bilingual reading",
           "Original Greek and Hebrew with Strong's numbers",
           "Cross-references and exegesis notes",
