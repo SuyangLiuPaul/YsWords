@@ -42,7 +42,7 @@ void main() {
     '007012007': ['作以色列的士师六年', '作以色列的士師六年'],
     '010005017': ['非利士众人就上来寻索', '非利士眾人就上來尋索'],
     '023023001': ['因为推罗变为荒场', '因為推羅變為荒場'],
-    '017006007': ['王所喜悦尊荣的人', '王所喜悅尊榮的人'],
+    '017006007': ['王所喜悦尊荣的人', '王所喜悦尊榮的人'],
     // 2026-09-09: the publisher's current text sets a pause mark between
     // the two clauses — 「又把你們犧牲的糞，抹在你們的臉上」 — so a literal
     // that spans the 糞 cannot match any more. What this row is for is
@@ -117,6 +117,6 @@ void main() {
     expect(zhHant['023023001'],
         contains('他施的船隻都要哀號；因為推羅變為荒場'));
     expect(zhHant['010005017'],
-        contains('非利士人聽見人膏大衛作以色列王，非利士眾人就上來尋索大衛'));
+        contains('非利士人聽見人膏大衞作以色列王，非利士眾人就上來尋索大衞'));
   });
 }
