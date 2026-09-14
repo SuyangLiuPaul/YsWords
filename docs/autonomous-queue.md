@@ -14363,6 +14363,32 @@ so the bundle-size answer stays on the record.
       which paths a stage touched, and never blanket-restoring paths it
       didn't write) belongs in `run.sh`/`prompt.md`, outside the repo.
 
+      **A sharper version of the same hazard, 2026-09-14, mid-release:**
+      the collision this time was not two separate files but ONE shared
+      file with an interleaved diff — `pubspec.yaml`'s version line
+      (this iteration's own `1.5.28→1.5.29` bump) and, ten-odd lines
+      away, a concurrent human session's addition of two new
+      `biblexg-v3*.json` asset entries, both landing in the working tree
+      before either was committed. `git add pubspec.yaml` would have
+      swept both hunks into this iteration's release commit, attributing
+      someone else's asset registration to a version-bump commit message
+      and (worse) risking that commit landing before the actual
+      `biblexg-v3*.json` files it references were ever added. Caught by
+      `ls -lT` against the four Netlify `listSiteDeploys` `created_at`
+      timestamps first — confirming the two flutter builds this
+      iteration's own `release_web.sh` run produced had already finished
+      and uploaded *before* the concurrent session's edits landed on
+      disk, so the deployed bundles were clean of their WIP — then split
+      by hand: `git diff pubspec.yaml` isolated the version-line hunk,
+      written out as a standalone patch and applied with `git apply
+      --cached`, leaving the asset-list hunk in the working tree
+      untouched for that session to commit itself. `git add -p` would
+      have done the same split interactively; the hand-written patch was
+      only needed because this loop runs non-interactively. Worth
+      recording as a technique, not just a near-miss: the existing
+      guidance ("stage only your own files by explicit path") assumes
+      collisions are file-granular, and this one was not.
+
       **Fifth and sixth recurrence, 2026-09-08.** Two consecutive execution
       stages ended `rc=0` with real work uncommitted: 17:12:28-17:35:25
       ("Waiting for the background test task to complete — will resume once
