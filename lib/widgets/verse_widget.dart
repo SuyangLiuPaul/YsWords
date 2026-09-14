@@ -15,7 +15,7 @@ import 'package:yswords/widgets/superscription_line.dart';
 ///   - Verse-by-verse mode for every verse
 ///   - Paragraph mode when a paragraph happens to contain exactly one verse
 ///     (e.g. an isolated reference line)
-class VerseWidget extends StatelessWidget {
+class VerseWidget extends StatefulWidget {
   final Verse verse;
   final int index;
   final bool hasParagraphData;
@@ -30,6 +30,36 @@ class VerseWidget extends StatelessWidget {
     this.hasParagraphData = false,
     this.isFirst = false,
   });
+
+  @override
+  State<VerseWidget> createState() => _VerseWidgetState();
+}
+
+class _VerseWidgetState extends State<VerseWidget> {
+  /// The footnotes open on this line, by their own text.
+  ///
+  /// 2026-09-14: stateful for this and nothing else. A note used to open
+  /// in an `AlertDialog`; it opens under the line now, so somebody has to
+  /// remember which ones are open, and this widget is the smallest thing
+  /// that can — which also means several notes stay open together, since
+  /// each one keeps its own set. That is the property a modal cannot
+  /// have and the reason 雅伟的话 moved off one: 「译者注：可同时展开多条」.
+  ///
+  /// Keyed by the note's text rather than an index: the spans are rebuilt
+  /// from scratch on every paint, and an index would reopen whatever
+  /// happened to land in that position.
+  final Set<String> _openNotes = <String>{};
+
+  void _toggleNote(String note) {
+    setState(() {
+      if (!_openNotes.remove(note)) _openNotes.add(note);
+    });
+  }
+
+  Verse get verse => widget.verse;
+  int get index => widget.index;
+  bool get hasParagraphData => widget.hasParagraphData;
+  bool get isFirst => widget.isFirst;
 
   @override
   Widget build(BuildContext context) {
@@ -121,6 +151,8 @@ class VerseWidget extends StatelessWidget {
         }
 
         spans.addAll(buildVerseContentSpans(
+          openNotes: _openNotes,
+          onNoteToggle: _toggleNote,
           verse: verse,
           context: context,
           settings: settings,

@@ -17,7 +17,7 @@ import 'package:yswords/utils/haptics.dart';
 /// Renders a group of consecutive verses as one flowing paragraph (RichText).
 /// Used in paragraph mode. Eliminates per-verse line breaks so verses read
 /// as continuous prose, similar to printed Bibles or WeDevote (微读圣经).
-class ParagraphGroupWidget extends StatelessWidget {
+class ParagraphGroupWidget extends StatefulWidget {
   final List<Verse> group;
   final int startVerseIndex;
 
@@ -31,6 +31,35 @@ class ParagraphGroupWidget extends StatelessWidget {
     required this.startVerseIndex,
     this.isFirst = false,
   });
+
+  @override
+  State<ParagraphGroupWidget> createState() => _ParagraphGroupWidgetState();
+}
+
+class _ParagraphGroupWidgetState extends State<ParagraphGroupWidget> {
+  /// The footnotes open on this line, by their own text.
+  ///
+  /// 2026-09-14: stateful for this and nothing else. A note used to open
+  /// in an `AlertDialog`; it opens under the line now, so somebody has to
+  /// remember which ones are open, and this widget is the smallest thing
+  /// that can — which also means several notes stay open together, since
+  /// each one keeps its own set. That is the property a modal cannot
+  /// have and the reason 雅伟的话 moved off one: 「译者注：可同时展开多条」.
+  ///
+  /// Keyed by the note's text rather than an index: the spans are rebuilt
+  /// from scratch on every paint, and an index would reopen whatever
+  /// happened to land in that position.
+  final Set<String> _openNotes = <String>{};
+
+  void _toggleNote(String note) {
+    setState(() {
+      if (!_openNotes.remove(note)) _openNotes.add(note);
+    });
+  }
+
+  List<Verse> get group => widget.group;
+  int get startVerseIndex => widget.startVerseIndex;
+  bool get isFirst => widget.isFirst;
 
   @override
   Widget build(BuildContext context) {
@@ -215,6 +244,8 @@ class ParagraphGroupWidget extends StatelessWidget {
           }
 
           allSpans.addAll(buildVerseContentSpans(
+            openNotes: _openNotes,
+            onNoteToggle: _toggleNote,
             verse: verse,
             context: context,
             settings: settings,

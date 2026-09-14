@@ -17,6 +17,11 @@ List<InlineSpan> buildVerseContentSpans({
   bool superscriptVerseNum = false,
   VoidCallback? onTextTap,
   Color? spanBgColor,
+  /// The footnotes this line currently has open, and the way to toggle
+  /// one. Given both, a note opens UNDER the line; given neither, it
+  /// opens in a dialog as it always has.
+  Set<String>? openNotes,
+  void Function(String note)? onNoteToggle,
   // False only for a psalm superscription, which has no verse number to
   // show. Everything else about the line — `[insert]` brackets and
   // `<note: …>` markers — renders exactly as it does in verse text.
@@ -391,10 +396,29 @@ List<InlineSpan> buildVerseContentSpans({
             part.trim().endsWith('>') &&
             (lastPart?.trim().endsWith('}') ?? false))) {
       final note = notePattern.firstMatch(part)!.group(1)!;
+      final isOpen = onNoteToggle != null &&
+          (openNotes?.contains(note) ?? false);
       spans.add(WidgetSpan(
         alignment: PlaceholderAlignment.bottom,
         child: GestureDetector(
           onTap: () {
+            // 2026-09-14: opens UNDER the line, not over it.
+            //
+            // The sibling 雅伟的话 app's `note_sheet.dart` records the
+            // same move and the reason: it used to be a modal, and a
+            // modal "shows one note and covers the verse it is about;
+            // two notes could never be read against each other".
+            //
+            // The data made it pressing. 梁家鏗's own apparatus arrived
+            // the same day — 1,132 footnotes became 2,209, several of
+            // them paragraphs.
+            //
+            // The dialog stays as the fallback for any caller with
+            // nowhere to put an open note.
+            if (onNoteToggle != null) {
+              onNoteToggle(note);
+              return;
+            }
             showDialog(
               context: context,
               builder: (_) => AlertDialog(
@@ -445,6 +469,52 @@ List<InlineSpan> buildVerseContentSpans({
           ),
         ),
       ));
+      if (isOpen) {
+        // The note itself, on its own line under the words it is about.
+        //
+        // A `WidgetSpan` inside the same paragraph rather than a widget
+        // beneath it: the marker sits mid-sentence, so this is the only
+        // place the note can open without the caller having to know
+        // where in the line it was. The `\n` breaks the line; the left
+        // rule and the indent say which marker it belongs to.
+        //
+        // Several can be open at once, which is the point.
+        final scheme = Theme.of(context).colorScheme;
+        spans.add(const TextSpan(text: '\n'));
+        spans.add(WidgetSpan(
+          child: Container(
+            width: double.infinity,
+            margin: EdgeInsets.only(
+                top: settings.fontSize * 0.2,
+                bottom: settings.fontSize * 0.25),
+            padding: EdgeInsets.fromLTRB(
+                settings.fontSize * 0.55,
+                settings.fontSize * 0.3,
+                settings.fontSize * 0.4,
+                settings.fontSize * 0.3),
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(color: scheme.primary, width: 2),
+              ),
+              color: scheme.primary.withValues(alpha: 0.06),
+            ),
+            child: Text(
+              // Trimmed: the marker is written `<note: …>` in some
+              // editions and `<note:…>` in others, and the capture keeps
+              // whichever space the asset had. On its own line that
+              // space is a visible indent on the first line only.
+              note.trim(),
+              style: TextStyle(
+                fontSize: settings.fontSize * 0.82,
+                height: settings.lineSpacing,
+                fontFamily: settings.fontFamily,
+                fontFamilyFallback: kCjkFontFallback,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ));
+      }
       lastPart = part;
       continue;
     }
