@@ -7,6 +7,7 @@ import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/utils/app_nav.dart';
 import 'package:yswords/utils/short_book_name.dart' show shortBookName;
+import 'package:yswords/widgets/fitted_line.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
 import 'package:yswords/constants/ui_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -1985,13 +1986,21 @@ class _ContinueReadingHero extends StatelessWidget {
     // user feedback on round 49: "cuv-yhwh this doesn't look good".
     //
     // 2026-05-07 user follow-up: at < 390 px the long form
-    // "创世纪 1 · 和合本雅伟版(简体)" overflows and gets ellipsized.
-    // Below the threshold we fold both the book (帖前 / 创 / 1Th)
-    // and version (雅伟版(简)) to their short labels, which still
-    // identify the location unambiguously.
-    final screenW = MediaQuery.of(context).size.width;
-    final useShort = screenW < 390;
-    String? versionLabel;
+    // "创世纪 1 · 和合本雅伟版(简体)" overflows and gets ellipsized, so
+    // below the threshold both the book (帖前 / 创 / 1Th) and the
+    // version (雅伟版(简)) folded to their short labels.
+    //
+    // 2026-09-15: that threshold was a guess about a number nobody can
+    // guess. The line's width is the FONT SIZE (a reader setting), the
+    // TEXT SCALER (an OS setting), the book name and the edition name
+    // — 「出埃及记 18」 is half again as wide as 「创 1」 — and a 412 px
+    // phone still clipped 「和合本雅伟版(…」 because 412 is not < 390.
+    // So nothing is guessed any more: the candidates below are complete
+    // lines in order of how much they say, and `FittedLine` measures
+    // and shows the first that fits. A fact is dropped whole rather
+    // than cut in half; the ellipsis is gone.
+    String? menuLabel;
+    String? shortLabel;
     if (currentVersion != null && currentVersion!.isNotEmpty) {
       final info = bibleVersions.firstWhere(
         (v) => v.value == currentVersion,
@@ -2002,14 +2011,27 @@ class _ContinueReadingHero extends StatelessWidget {
           language: 'zh-Hans',
         ),
       );
-      versionLabel = useShort ? info.shortLabel : info.menuLabel;
+      menuLabel = info.menuLabel;
+      shortLabel = info.shortLabel;
     }
-    final displayBook =
-        (book != null && useShort) ? shortBookName(book!, locale) : book;
-    final positionLine = hasPosition
-        ? '$displayBook $chapter${versionLabel != null ? "  ·  $versionLabel" : ""}'
-        : (uiStrings['continueReadingHint']?[locale] ??
-            'Open the Bible from the beginning.');
+    final shortBook =
+        book != null ? shortBookName(book!, locale) : null;
+    // Most informative first. The edition is context and goes before
+    // the position does; the position is what the card is FOR, so the
+    // last two candidates keep it and say nothing about the edition
+    // rather than the other way round.
+    final positionCandidates = hasPosition
+        ? <String>[
+            if (menuLabel != null) '$book $chapter  ·  $menuLabel',
+            if (shortLabel != null) '$book $chapter  ·  $shortLabel',
+            if (shortLabel != null) '$shortBook $chapter  ·  $shortLabel',
+            '$book $chapter',
+            '$shortBook $chapter',
+          ]
+        : <String>[
+            uiStrings['continueReadingHint']?[locale] ??
+                'Open the Bible from the beginning.',
+          ];
 
     // 2026-08-02 (round 60, craft pass): the flat single-colour fill
     // read as generic chrome rather than the app's flagship CTA.
@@ -2088,10 +2110,8 @@ class _ContinueReadingHero extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              positionLine,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            FittedLine(
+                              candidates: positionCandidates,
                               style: TextStyle(
                                 fontFamily: settings.fontFamily, fontFamilyFallback: kCjkFontFallback,
                                 fontSize: (fs - 2).clamp(11.0, 16.0).toDouble(),
