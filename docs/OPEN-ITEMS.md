@@ -810,13 +810,23 @@ app Yahweh's World three versions; there it was fixed by declaring
   script now drops every spec outside the named edition. The defect is
   still there, and fixing it is a deliberate act on a licensed text, not
   a by-product of someone else's pipeline run. `[verified 2026-09-14]`
-- **Whether the offline pack should download editions the picker hides.**
-  Resolved for now by deriving `_bibleUrls` from `availableVersions`, so
-  it no longer fetches `nasb` (whose asset prod deletes — a guaranteed
-  404) or the two hidden Greek texts (15.3 MB). Recorded here because the
-  reverse call is the owner's: if a hidden edition should still be
-  pre-cached for the day it comes back, the derivation is the wrong
-  shape. `[verified 2026-09-14]`
+- ~~**Whether the offline pack should download editions the picker
+  hides.**~~ `[CLOSED 2026-09-14 — the owner's answer: it should not]`
+  `_bibleUrls` derives from `availableVersions`, so hiding an edition
+  removes it from the pack in the same commit. What it stopped fetching:
+  `nasb`, whose asset `tools/release_web.sh` deletes out of `build/web`,
+  so every reader who tapped "Bibles" — the pack is web-only — took a
+  guaranteed failed fetch; and the two Greek texts hidden on 2026-09-09,
+  15.3 MB of a 69 MB download that no screen would open. The pack is 9
+  files and 51 MB now, measured.
+  The reverse reading was real and is what made this a question rather
+  than a bug: a hidden edition might be worth pre-caching for the day it
+  returns. It is not, on this app's own stated principle — the note on
+  `kWebRestrictedVersions` already argues that shipping the file of an
+  edition the picker will not open "would be theatre" — and a reader on a
+  metered connection pays for the theatre. Pinned by
+  `test/offline_pack_size_test.dart`, which fails if the pack and the
+  picker ever disagree.
 - **Whether `assets/sermons/zh-TW/` follows the lexicon into the other
   Traditional orthography** — `docs/autonomous-queue.md:3788`.
   `[carried forward]`

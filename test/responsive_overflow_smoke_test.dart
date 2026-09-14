@@ -3,10 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yswords/models/app_settings.dart';
+import 'package:yswords/models/book.dart';
+import 'package:yswords/models/chapter.dart';
 import 'package:yswords/pages/about_page.dart';
 import 'package:yswords/pages/dashboard_page.dart';
+import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/pages/library_page.dart';
 import 'package:yswords/pages/settings_page.dart';
+import 'package:yswords/models/verse.dart';
 import 'package:yswords/providers/main_provider.dart';
 
 /// 2026-06-11 audit: responsive overflow smoke tests.
@@ -18,11 +22,23 @@ import 'package:yswords/providers/main_provider.dart';
 /// "RIGHT OVERFLOWED BY N PIXELS" regression on these pages fails CI
 /// instead of shipping.
 ///
-/// Pages covered: About, Settings, Library, Dashboard. The reading
-/// pane needs loaded bible data and is covered by the on-device
-/// flows. Each page is pumped with fresh providers and empty
-/// SharedPreferences (the cold-install state, which is also the state
-/// most likely to show placeholder/empty layouts that overflow).
+/// Pages covered: About, Settings, Library, Dashboard — and, since
+/// 2026-09-14, Home, which is the screen the app opens on and was the one
+/// page excluded here. The note this replaces said "the reading pane
+/// needs loaded bible data and is covered by the on-device flows"; the
+/// first half is true and the second was a hope. Seeding two verses into
+/// the provider lays the whole reading surface out, which is all the four
+/// widths below need.
+///
+/// The sibling change in the Sword repo found a real defect the moment
+/// its main screen joined this list — an 18px overflow in the toolbar at
+/// 320px, clipping a command with nothing on screen to say so. That is
+/// the argument for this one: the page a reader spends every minute on
+/// was the page no width test covered.
+///
+/// Each page is pumped with fresh providers and empty SharedPreferences
+/// (the cold-install state, which is also the state most likely to show
+/// placeholder/empty layouts that overflow).
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -38,7 +54,16 @@ void main() {
     'SettingsPage': () => const SettingsPage(),
     'LibraryPage': () => const LibraryPage(),
     'DashboardPage': () => const DashboardPage(),
+    'HomePage': () => const HomePage(),
   };
+
+  /// Enough scripture for the reading surface to have something to lay
+  /// out. An empty provider would render placeholders and pass for the
+  /// wrong reason.
+  const seed = [
+    Verse(book: '约翰福音', chapter: 3, verse: 1, text: 'seed 1'),
+    Verse(book: '约翰福音', chapter: 3, verse: 2, text: 'seed 2'),
+  ];
 
   Future<void> pumpAt(
     WidgetTester tester,
@@ -50,7 +75,24 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => MainProvider()),
+          ChangeNotifierProvider(create: (_) => MainProvider()
+            // All four of these are needed and the reason is worth
+            // recording, because three of them look redundant: the pane
+            // pages through CHAPTERS, so it needs `books` to know which
+            // page the reader is on, and it filters the verse list by
+            // book and chapter to fill that page. Seed only `verses` and
+            // the header renders, the "1 / 2" counter renders, and not
+            // one verse does — a page that passes a "nothing threw"
+            // test while laying out almost nothing. The guard at the
+            // foot of this file is what caught that, and is why it
+            // exists.
+            ..currentBook = '约翰福音'
+            ..currentChapter = 3
+            ..setBooks([
+              Book(title: '约翰福音',
+                  chapters: [Chapter(title: 3, verses: seed)]),
+            ])
+            ..setVerses(seed)),
           ChangeNotifierProvider(create: (_) => AppSettings()),
         ],
         child: MaterialApp(home: page),
@@ -85,4 +127,34 @@ void main() {
       });
     }
   }
+
+  testWidgets('HomePage really lays the verses out — the width tests above '
+      'are not measuring an empty page', (tester) async {
+    // Every assertion above is "nothing threw", which a page that
+    // rendered nothing also satisfies. HomePage is the one that could:
+    // it shows a loading state until verses arrive, and if the seed
+    // never reached the pane the four widths would be measuring a
+    // spinner. This is what says they are not.
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    addTearDown(tester.view.reset);
+
+    await pumpAt(tester, const HomePage(), const Size(320, 568));
+
+    // Walked by hand rather than through `find.textContaining`, which
+    // matches a `Text`'s own string and does not see a verse: the pane
+    // builds each one as `InlineSpan`s inside a `RichText`, so the words
+    // on screen live in `text.toPlainText()` and nowhere else.
+    final onScreen = tester
+        .widgetList<RichText>(find.byType(RichText))
+        .map((w) => w.text.toPlainText())
+        .where((t) => t.contains('seed'))
+        .length;
+    expect(onScreen, greaterThan(0),
+        reason: 'the seeded verses are not on screen, so the overflow '
+            'tests above are laying out a page with a header and no '
+            'scripture');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(milliseconds: 50));
+  });
 }

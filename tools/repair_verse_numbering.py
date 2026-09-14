@@ -221,6 +221,21 @@ def retarget(code):
     ROW_JOINS[:] = [s for s in ROW_JOINS if s in keep]
 
 
+def select(code):
+    """Keep only the specs already written against `code`.
+
+    Unlike [retarget], this changes nothing about a spec — the guards,
+    the book, the verse numbers and the witness strings are all the ones
+    somebody wrote for that edition after reading it. Running
+    `--edition leb` repairs exactly what the LEB entry above describes
+    and leaves every other edition in this file alone.
+    """
+    TAIL_SHIFTS[:] = [s for s in TAIL_SHIFTS if s['code'] == code]
+    ROW_JOINS[:] = [s for s in ROW_JOINS if s['code'] == code]
+    if not TAIL_SHIFTS and not ROW_JOINS:
+        raise SystemExit(f'no spec in this file is written against {code!r}')
+
+
 def main():
     """`--code biblexg-v3` re-points the two 梁家鏗譯本 specs at that
     edition, so a re-import gets the same two repairs.
@@ -236,9 +251,28 @@ def main():
                     help='LJK edition code to repair. Given, ONLY the '
                          '梁家鏗譯本 specs run — see below. Omitted, every '
                          'spec in this file runs, including LEB.')
+    ap.add_argument('--edition',
+                    help='Run ONLY the specs already written against this '
+                         'exact code, changing nothing about them. Use it '
+                         'to repair one edition on its own — `--edition '
+                         'leb` — without touching the others this file '
+                         'knows about.')
     args = ap.parse_args()
+    if args.code and args.edition:
+        ap.error('--code re-points the LJK specs; --edition selects specs '
+                 'as written. They answer different questions and cannot '
+                 'be combined.')
     if args.code:
         retarget(args.code)
+    if args.edition:
+        # 2026-09-14. `--code` could not express this: it re-points the
+        # LJK specs at a new edition and drops the rest, so there was no
+        # way to ask for the LEB alone — only "the LJK pair" or
+        # "everything". Repairing the LEB in the YsWords repo therefore
+        # meant running the LJK specs too, against that repo's RETIRED
+        # v2 pair, in the same command. This flag is the narrow door: it
+        # selects, it does not rewrite.
+        select(args.edition)
 
     by_code = {}
     for spec in TAIL_SHIFTS:

@@ -59,7 +59,23 @@ void main() {
       'Mark 7:16', 'Mark 9:44', 'Mark 9:46', 'Mark 11:26', 'Mark 15:28',
       'Luke 17:36', 'Luke 23:17', 'John 5:4', 'Acts 8:37', 'Acts 15:34',
       'Acts 19:41', 'Acts 24:7', 'Acts 28:29', 'Romans 16:25',
-      'Romans 16:26', 'Romans 16:27', '2 Corinthians 13:14',
+      'Romans 16:26', 'Romans 16:27',
+      // 2026-09-14: `2 Corinthians 13:14` -> `13:13`, and this line is
+      // where the defect had been legitimised. The LEB follows the
+      // critical text, which prints the chapter in thirteen verses by
+      // joining what the KJV numbers 12 and 13 — so what is genuinely
+      // absent is 13:13, and the grace benediction, which the English
+      // tradition and every other edition here call 13:14, belongs
+      // under that reference.
+      //
+      // The asset filed it as 13:13 instead. This entry then read the
+      // resulting hole at 13:14 as ordinary versification and passed,
+      // while the app — which keys every edition by its English
+      // reference — answered a reader who looked up 2 Corinthians 13:14
+      // with nothing, and 13:13 with the wrong verse. Repaired in the
+      // asset by `tools/repair_verse_numbering.py --edition leb`; the
+      // positive half is pinned below.
+      '2 Corinthians 13:13',
     ],
     'cuvs-yhwh': [],
     'cuvs-yhwh-tr': [],
@@ -474,5 +490,63 @@ void main() {
     expect(
         textOf('cuvs-yhwh-tr', 'Matthew 9:28'), contains('「主[耶穌]啊，我們信。」'));
     expect(textOf('cuvs-yhwh-tr', 'Luke 24:34'), contains('主[耶穌]果然復活'));
+  });
+
+  test('the grace benediction is at 2 Corinthians 13:14, in every edition '
+      'that ships it', () {
+    // The positive half of the versification entry above, and the reason
+    // that entry was worth chasing: this is the one defect class that
+    // outranks the rest — a reference that answers with a DIFFERENT
+    // verse. A reader comparing two columns cannot detect it, because
+    // both sides look like ordinary text.
+    //
+    // The critical text prints the chapter in thirteen verses, joining
+    // what the English tradition numbers 12 and 13, so the grace is its
+    // verse 13. Three editions here follow that numbering and the app
+    // keys every edition by its English reference, so 13:13 answered
+    // with 13:14's words beside a KJV column reading "All the saints
+    // salute you", with nothing to say the two were different verses.
+    //
+    // 13:12 needs no repair and is asserted unchanged: it holds
+    // canonical 12 AND 13 together, which is a superset, not a
+    // displacement.
+    String? textOf(String version, String ref) {
+      for (final v in load(version)) {
+        if (appKey(v) == ref) return v['text'] as String;
+      }
+      return null;
+    }
+
+    const grace = <String, List<String>>{
+      'leb': ['grace', 'love of God', 'fellowship'],
+      'biblexg-v3': ['恩', '爱', '圣灵'],
+      'biblexg-v3-tr': ['恩', '愛', '聖靈'],
+    };
+    const salute = <String, List<String>>{
+      'leb': ['holy kiss', 'saints greet you'],
+      'biblexg-v3': ['亲吻', '全体圣徒'],
+      'biblexg-v3-tr': ['親吻', '全體聖徒'],
+    };
+
+    for (final code in grace.keys) {
+      expect(textOf(code, '2 Corinthians 13:13'), isNull,
+          reason: '$code still files a verse under 13:13 — the reference '
+              'the critical text does not have');
+      for (final token in grace[code]!) {
+        expect(textOf(code, '2 Corinthians 13:14'), contains(token),
+            reason: code);
+      }
+      for (final token in salute[code]!) {
+        expect(textOf(code, '2 Corinthians 13:12'), contains(token),
+            reason: code);
+      }
+    }
+
+    // And the editions that number it the English way are untouched by
+    // any of this — the guard is that the repair did not "fix" them too.
+    for (final code in ['kjv', 'cuvs-yhwh']) {
+      expect(textOf(code, '2 Corinthians 13:13'), isNotNull, reason: code);
+      expect(textOf(code, '2 Corinthians 13:14'), isNotNull, reason: code);
+    }
   });
 }
