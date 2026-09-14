@@ -2097,6 +2097,23 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     different test happened to read the same map. Grep for the marker's
     literal form when you change it.
 
+69. **"The other concurrent session only touches SeekSparks" is not a
+    standing fact — check `git status` fresh each time, don't trust a
+    stale claim in `NEXT_TASK.md`.** 2026-09-15, 08:2x iteration: the
+    tree was clean at the start of the hour (confirmed), but partway
+    through, `lib/pages/settings_page.dart` and
+    `lib/widgets/projection_stage.dart` picked up real, unrelated WIP
+    (a projector-card i18n fix, well-formed and dated the same day) and
+    two new untracked test files appeared mid-session, plus a
+    `git stash` entry based on commit `25a538da` (2026-09-08 — a full
+    week stale) showed up in `git stash list`. Something else was
+    live-editing this exact working directory at the same time, in
+    yswords, not SeekSparks. Handled by staging only the two files this
+    iteration actually touched (`git add <path>` by name, never `-A`)
+    and leaving the other session's files and stash alone — same
+    discipline as trap 11 above, just triggered from a briefing file
+    that had assumed the collision could not happen this time.
+
 ## Trap: "local green" and "CI green" are different claims
 
 `assets/sermon_library/` is a gitignored local staging area — the app

@@ -13960,9 +13960,15 @@ has never seen this repo.
       Code-only, no asset/version/dependency change, no deploy — same
       guard rail as the note above.
 
-- [ ] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
-      chip past `plotWidth`.** Found by the refuter call on the
-      terminal-fold fix directly above (2026-09-15), while checking a
+- [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
+      chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
+      `.clamp(1.0, ...)` floor — the `left >= plotWidth` guard above
+      already makes `plotWidth - left` strictly positive there, so the
+      floor was only ever needed in the fold branch below (which keeps
+      it). New test pins `left+width <= plotWidth` for the exact repro,
+      plus a standing invariant on the randomised packer test. Found by
+      the refuter call on the terminal-fold fix directly above
+      (2026-09-15), while checking a
       claim about the *unrelated* fold branch — not itself the target of
       that slice. `room = (plotWidth - left).clamp(1.0, double.infinity)`
       floors `room` at `1.0` even when the true remaining space is
