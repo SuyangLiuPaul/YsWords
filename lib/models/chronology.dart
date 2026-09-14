@@ -530,3 +530,36 @@ String formatChronologyYear(
   if (isZh) return '创世纪元 $am · $bc';
   return 'AM $am · $bc';
 }
+
+/// Like [formatChronologyYear], for a span rather than a single year —
+/// the merged "+N" chip's cluster sheet, once a bucket can hold a
+/// row-exhaustion drop from a neighbouring year rather than only an
+/// exact same-year tie. Drops the AM anchor the single-year form leads
+/// with: two AM numbers glued together read as an interval nobody
+/// asked for, where the calendar years alone read as the span they are.
+String formatChronologyYearRange(
+  int amLo,
+  int amHi,
+  ChronologyScheme scheme,
+  String locale,
+) {
+  if (amLo == amHi) return formatChronologyYear(amLo, scheme, locale);
+  final yLo = scheme.amToYear(amLo);
+  final yHi = scheme.amToYear(amHi);
+  if (yLo == yHi) return formatChronologyYear(amLo, scheme, locale);
+  final isZh = locale.startsWith('zh');
+  final sameEra = (yLo < 0) == (yHi < 0);
+  if (sameEra) {
+    final lo = yLo < 0 ? -yLo : yLo;
+    final hi = yHi < 0 ? -yHi : yHi;
+    if (isZh) {
+      return yLo < 0 ? '公元前$lo–$hi年' : '公元$lo–$hi年';
+    }
+    return yLo < 0 ? '$lo–$hi BC' : 'AD $lo–$hi';
+  }
+  String label(int y) {
+    if (y < 0) return isZh ? '公元前${-y}年' : '${-y} BC';
+    return isZh ? '公元$y年' : 'AD $y';
+  }
+  return '${label(yLo)} – ${label(yHi)}';
+}

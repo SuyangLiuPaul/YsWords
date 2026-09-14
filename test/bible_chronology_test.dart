@@ -62,6 +62,71 @@ void main() {
     };
   });
 
+  // ── formatChronologyYearRange ─────────────────────────────────
+  //
+  // Pure — no widget needed — and previously untested anywhere in the
+  // file even though it has its own BC/AD-crossing branch and its own
+  // zh branch, both unexercised by anything that only calls
+  // [formatChronologyYear]. `masoretic-ussher`'s `creationBc` is 4004,
+  // confirmed against `assets/bible_chronology.json` rather than
+  // assumed, so `amToYear` below is worked out from that anchor.
+
+  group('formatChronologyYearRange', () {
+    late ChronologyScheme scheme;
+
+    setUpAll(() {
+      final raw = json.decode(
+        File('assets/bible_chronology.json').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      final data = ChronologyData.fromJson(raw);
+      scheme = data.activeScheme;
+      expect(scheme.creationBc, 4004,
+          reason: 'the worked examples below are anchored to this value');
+    });
+
+    test('a same-AM span delegates to formatChronologyYear', () {
+      expect(
+        formatChronologyYearRange(4000, 4000, scheme, 'en'),
+        formatChronologyYear(4000, scheme, 'en'),
+      );
+    });
+
+    test('a same-era BC span reads as one BC range, not two BC years', () {
+      // AM 4000 -> 4 BC, AM 4002 -> 2 BC.
+      expect(formatChronologyYearRange(4000, 4002, scheme, 'en'), '4–2 BC');
+      expect(
+        formatChronologyYearRange(4000, 4002, scheme, 'zh-Hans'),
+        '公元前4–2年',
+      );
+      expect(
+        formatChronologyYearRange(4000, 4002, scheme, 'zh-Hant'),
+        '公元前4–2年',
+      );
+    });
+
+    test('a same-era AD span reads as one AD range', () {
+      // AM 4010 -> AD 7, AM 4012 -> AD 9.
+      expect(formatChronologyYearRange(4010, 4012, scheme, 'en'), 'AD 7–9');
+      expect(
+        formatChronologyYearRange(4010, 4012, scheme, 'zh-Hans'),
+        '公元7–9年',
+      );
+    });
+
+    test('a span crossing BC into AD names both eras, not one', () {
+      // AM 4003 -> 1 BC, AM 4005 -> AD 2 — there is no year 0 in between,
+      // so this pair is deliberately chosen to straddle the crossing.
+      expect(
+        formatChronologyYearRange(4003, 4005, scheme, 'en'),
+        '1 BC – AD 2',
+      );
+      expect(
+        formatChronologyYearRange(4003, 4005, scheme, 'zh-Hans'),
+        '公元前1年 – 公元2年',
+      );
+    });
+  });
+
   // ── The data asset ────────────────────────────────────────────
 
   group('assets/bible_chronology.json', () {
@@ -712,6 +777,71 @@ void main() {
         reason: 'the AM 4036 sheet must not open when the AM 4038 chip is '
             'tapped',
       );
+      handle.dispose();
+    });
+
+    testWidgets('a row-exhaustion drop with nobody to tie with still gets '
+        'a chip, never silence', (tester) async {
+      // AM 4030–4033 — Calling of the Twelve, Sermon on the Mount,
+      // Feeding the 5000, Transfiguration — one event each, so none of
+      // them ties on x with anything the way the AM 4036 six-way tie
+      // above does. They sit in the same crowded 100-year window as the
+      // two chip tests above, between the AM 4029 pair and the AM 4036
+      // tie, and used to be dropped by the label packer for want of a
+      // free row and then discarded outright by the caller's old
+      // `.where((g) => g.length > 1)` filter — a bucket of one from a
+      // row-exhaustion drop looked exactly like a bucket of one from an
+      // edge drop, and both were thrown away. The tick was still
+      // painted, so the reader saw an unnamed mark with nothing to tap.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: const Size(402, 874));
+      await viewAt(tester, 4036, years: 100);
+
+      const singles = [
+        'Calling of the Twelve',
+        'Sermon on the Mount',
+        'Feeding the 5000',
+        'Transfiguration',
+      ];
+
+      // First confirm this test is actually exercising the row-
+      // exhaustion path and not a viewport where the packer had room
+      // after all — a title drawn as its own label makes the rest of
+      // this test vacuous.
+      for (final title in singles) {
+        expect(find.text(title), findsNothing,
+            reason: '$title has its own label at this viewport — this '
+                'test is not measuring the row-exhaustion path any more; '
+                'the window or the fixture data has moved');
+      }
+
+      // Every one of the four must be reachable from some on-screen
+      // chip — its own "+1", or merged into a neighbour's "+N" — by
+      // opening whichever sheet that chip leads to (a single event's own
+      // sheet, or a list sheet naming several).
+      for (final title in singles) {
+        var found = false;
+        for (final chip
+            in find.bySemanticsLabel(RegExp(r'^\+\d+$')).evaluate().toList()) {
+          await tester.tap(find.byWidget(chip.widget), warnIfMissed: false);
+          await tester.pumpAndSettle();
+          if (find
+              .descendant(
+                  of: find.byType(BottomSheet), matching: find.text(title))
+              .evaluate()
+              .isNotEmpty) {
+            found = true;
+          }
+          if (find.byType(BottomSheet).evaluate().isNotEmpty) {
+            Navigator.of(tester.element(find.byType(BottomSheet))).pop();
+            await tester.pumpAndSettle();
+          }
+          if (found) break;
+        }
+        expect(found, isTrue,
+            reason: '$title is neither labeled nor reachable from any '
+                'on-screen chip');
+      }
       handle.dispose();
     });
 
@@ -1565,15 +1695,17 @@ void main() {
       }
     });
 
-    test('every dropped candidate ends up in the plan or in exactly one '
-        'cluster bucket', () {
+    test('every row-exhaustion drop ends up in the plan or a cluster '
+        "bucket; an edge drop ends up in neither", () {
       // Six candidates share one x — a six-event year no zoom can pull
       // apart, since every row starts fresh at each x and packing harder
       // only ever seats one more of the six. A seventh, unrelated
       // candidate sits right at the plot's edge, so it is dropped too,
-      // by the OTHER path (`left + minWidth > plotWidth`) — the
-      // partition has to cover both without double-counting or losing
-      // either.
+      // but by the OTHER path (`left + minWidth > plotWidth`): its label
+      // could never have been drawn on screen, so a chip anchored at the
+      // same x can't help it either, and chronologyLabelClusters is
+      // required to exclude it rather than hand back a bucket of one a
+      // chip would draw in a place nothing was ever going to show.
       const plotWidth = 200.0;
       final lefts = [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 60.0, plotWidth - 5];
       final wants = [for (var i = 0; i < 8; i++) 40.0];
@@ -1583,7 +1715,11 @@ void main() {
         rows: 1,
         plotWidth: plotWidth,
       );
-      final buckets = chronologyLabelClusters(lefts: lefts, plan: plan);
+      final buckets = chronologyLabelClusters(
+        lefts: lefts,
+        plan: plan,
+        plotWidth: plotWidth,
+      );
 
       final placed = {for (final s in plan) s.index};
       final bucketed = <int>{};
@@ -1593,7 +1729,15 @@ void main() {
               reason: 'candidate $i counted in more than one bucket');
         }
       }
+      const edgeIndex = 7; // lefts[7] == plotWidth - 5
       for (var i = 0; i < lefts.length; i++) {
+        if (i == edgeIndex) {
+          expect(placed.contains(i) || bucketed.contains(i), isFalse,
+              reason: 'the edge-of-axis drop got a bucket, but its label '
+                  'could never have been on screen for a chip to stand '
+                  'in for');
+          continue;
+        }
         expect(placed.contains(i) || bucketed.contains(i), isTrue,
             reason: 'candidate $i is in neither the plan nor a bucket — '
                 'it vanished');
@@ -1606,10 +1750,44 @@ void main() {
       final tie = buckets.where((b) => lefts[b.first] == 10.0);
       expect(tie.length, 1);
       expect(tie.first, hasLength(5));
-      // The lone edge-of-axis drop is its own bucket of one.
-      final edge = buckets.where((b) => lefts[b.first] == plotWidth - 5);
-      expect(edge.length, 1);
-      expect(edge.first, hasLength(1));
+      // Nothing else is left to bucket: the edge drop is excluded, the
+      // tie accounts for all five of its own members.
+      expect(buckets, hasLength(1));
+    });
+
+    test('a lone row-exhaustion drop with nobody within mergeDistance '
+        'still comes back as its own bucket', () {
+      // The AD 27–30 case from the queue: four single-event years, each
+      // dropped for want of a free row, sitting between two real ties.
+      // None of them shares an x with anything, but none of them may
+      // vanish either — that was the bug. A drop far from every other
+      // drop is the base case: it must still surface as a bucket of one,
+      // even though nothing merges into it.
+      const plotWidth = 1000.0;
+      // Candidate 0 is wide enough to occupy the lane's one row all the
+      // way past candidate 1's x, so candidate 1 is dropped for want of
+      // a free row — row exhaustion, not the edge path (500 + 34 is
+      // nowhere near plotWidth).
+      final lefts = [0.0, 500.0];
+      final wants = [600.0, 40.0];
+      final plan = chronologyLabelPlan(
+        lefts: lefts,
+        wants: wants,
+        rows: 1,
+        plotWidth: plotWidth,
+      );
+      expect({for (final s in plan) s.index}, {0});
+      final buckets = chronologyLabelClusters(
+        lefts: lefts,
+        plan: plan,
+        plotWidth: plotWidth,
+        mergeDistance: 20,
+      );
+      // Candidate 1, at x 500, is 500 pt from the only other candidate —
+      // far outside mergeDistance — and there is nothing else dropped,
+      // so it must still come back as a bucket of exactly itself.
+      expect(buckets, hasLength(1));
+      expect(buckets.single, [1]);
     });
 
     test('the chip packer never lets two "+N" chips overlap', () {

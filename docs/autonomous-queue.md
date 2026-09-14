@@ -13520,6 +13520,106 @@ has never seen this repo.
       Whoever picks this up next should diff against this note's
       description before re-deriving it.
 
+      **Landed 2026-09-14, ~15:26–15:5x.** The merge-distance chaining
+      fix: `chronologyLabelClusters` now groups dropped candidates by
+      exact-x first — a same-year tie is atomic, never merges into or
+      out of a neighbour, regardless of `mergeDistance` — then chains
+      only genuinely-lone singletons (measured off the full candidate
+      list, placed labels included, not just the dropped set) by
+      proximity, bounded by both a per-link `mergeDistance` and a new
+      `maxSpan` (default `3 * mergeDistance`) on the chain's total span.
+      At the AM 4036 window this restores the AM 4029 pair, the AM
+      4030–4033 singles (now correctly reachable as one merged chip,
+      not vanished), the AM 4036 six-way tie, and the AM 4038 pair as
+      four separate buckets instead of one "+14" bucket — hand-verified
+      against `assets/bible_chronology.json` (`python3` dump of events
+      in AM range, not assumed).
+
+      **A second, related bug surfaced making the pre-existing "AM
+      4000/4029/4038 = three +2 chips" test pass, not caused by this
+      session's draft but by the exact-x grouping being too naive on
+      its own.** AM 2558 carries six events; five get their own on-
+      screen label at this viewport and one is dropped alone — a
+      singleton in the DROPPED set, but not a singleton at its own x:
+      it still has five siblings, all placed. The first version of this
+      fix treated it as an ordinary lone drop and chained it into the
+      unrelated AM 2559 singleton next door (also a genuine 1-year gap,
+      indistinguishable by distance from the AM 4030–4033 case this
+      chaining exists to rescue), producing a spurious fifth "+2" chip
+      and failing the count-of-3 assertion (found 4). Fixed by counting
+      each x value's occurrences across the FULL `lefts` array (placed
+      and dropped together) rather than only within the dropped set — a
+      dropped candidate with any same-x sibling anywhere, seated or not,
+      is still part of a tie and stays atomic; only a candidate with
+      *no* sibling at all, placed or dropped, is a genuine lone year
+      eligible for proximity-chaining. Caught by running the actual
+      failing test rather than reasoning about it: a `python3` dump of
+      `assets/bible_chronology.json` confirmed AM 2558 has 6 events and
+      AM 2559 has 1, and a temporary debug print of live cluster
+      contents (removed before commit) showed the exact `[2558, 2559]`
+      merge before the fix and two separate buckets after.
+
+      Also added: pure tests for `formatChronologyYearRange`
+      (`lib/models/chronology.dart:540`) — same-AM delegation, same-era
+      BC, same-era AD, and a BC→AD crossing, in both `en` and a `zh`
+      locale — none existed before despite the function having its own
+      era-crossing and zh branches. Confirmed `_x` is strictly
+      monotonic in `am` (linear in `am` with `spanEndAm` (~4097) >
+      `spanStartAm` (0)), the assumption `_showClusterSheet` makes when
+      it reads `ms.first`/`ms.last` as a bucket's span ends.
+
+      `flutter test test/bible_chronology_test.dart`: 92/92 pass
+      (88 existing + 4 new `formatChronologyYearRange` tests), including
+      the three previously-failing "+6"/"+2" tests unmodified —
+      re-run and confirmed independently by the 18:07 stage that
+      finally landed this diff, not just copied forward from the
+      15:26 stage that wrote it. `flutter analyze` clean on the four
+      files this item touches. The 15:26 and 16:57 stages both ended
+      their turn with the full suite still running in the background
+      and never observed its result — that is why this diff sat
+      uncommitted for four hours; see `queue:14435` below. The 18:07
+      stage backgrounded the full suite again (the same >10-minute-
+      foreground-cap problem) and committed once `flutter analyze` and
+      the targeted test above were both clean, per this hour's
+      instruction to treat CI as the full-suite backstop rather than
+      orphan the diff a fifth time.
+
+      **New finding, logged rather than fixed this hour** — see the new
+      queue item below on `chronologyChipPlan`'s silent chip-row
+      overflow: un-merging raised the global "+N" chip count as this
+      item's own acceptance note predicted it might, and it does now
+      measurably drop chips in some (transient, not-currently-asserted)
+      render frames.
+
+- [ ] **`chronologyChipPlan`'s "+N" chip row silently drops chips when
+      there are enough of them — its own docstring says it never
+      does.** Found 2026-09-14 landing `queue:13106`'s merge-distance
+      fix, above: that fix restores same-year ties as their own chips
+      instead of swallowing them into one oversized bucket, which
+      roughly doubles the global chip count, and `chronologyChipPlan`
+      (`lib/widgets/chronology_chart.dart:~2965`) packs every chip
+      across the WHOLE plot into one row with `if (left >= plotWidth)
+      break;` — the same silent-drop shape `chronologyLabelClusters`
+      itself used to have, that this whole slice of work exists to fix
+      for labels.
+      Measured, not assumed: a temporary debug print (removed before
+      commit) of `clusters.length` vs the packer's own output length at
+      every rebuild across the full `bible_chronology_test.dart` suite
+      showed 175 of 693 render frames diverge, worst case 3 of 43 chips
+      dropped (`clusters=43 placed=40`). Every settled viewport any
+      current test actually asserts against matched (0 divergence), so
+      nothing in the suite currently catches this — it is a real,
+      reachable gap for a reader who scrolls to the right window, not a
+      hypothetical.
+      Not fixed here — out of scope for the hour that was already spent
+      landing the merge-distance fix, and the right device needs
+      thinking about rather than a quick patch: multiple rows for
+      chips the way labels already get multiple rows, or wrapping, or
+      shrinking every chip on the row proportionally rather than only
+      the last one that doesn't fit. Whoever picks this up should
+      re-measure first — the numbers above are from this session's
+      code, not a floor.
+
 - [x] **A sermon that would not play left its Listen button dead, because
       only songs caught `PlaybackBlockedException`.** Reported from a live
       iPhone on 2026-09-03, `/sermons/421`, web, and mailed to the crash
@@ -14582,6 +14682,29 @@ so the bundle-size answer stays on the record.
       the full-suite run this stage never waited for would have caught.
       The diff is still sitting uncommitted in the tree; whoever picks
       it up next should fix the design, not re-land it as-is.
+
+      **Thirteenth recurrence, 2026-09-14 15:26–~15:5x — the design fix
+      succeeded, and a second, related bug surfaced while making the
+      pre-existing "+2" test pass; see `queue:13106` below for both.**
+      Still a recurrence, not a landing: this stage also ended `rc=0`
+      with the full suite still running in the background and
+      unobserved, so nothing was committed.
+
+      **Fourteenth recurrence, 2026-09-14 16:57:51–17:04:09.** Same
+      diff, one hour later: told to verify-and-land it, this stage's
+      entire output was that it was waiting on the same backgrounded
+      `flutter test` run and scheduling a fallback wakeup. Ended `rc=0`
+      seven minutes later having committed nothing either. Between
+      them, the thirteenth and fourteenth recurrences are why the diff
+      sat uncommitted for four straight hours (15:26, 16:57, the
+      17:xx slot the loop didn't reach, and 18:04) despite two stages'
+      worth of "done" work sitting in the tree.
+
+      **Landed by the 18:07 stage**, which broke the cycle by starting
+      the full suite in the background first, then doing
+      `flutter analyze` and the targeted chronology test in the
+      foreground while it ran, and committing on that plus CI as the
+      full-suite backstop rather than orphaning the diff a fifth hour.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an

@@ -7390,6 +7390,11 @@ const uiStrings = {
     'zh-Hans': '同一年内的 {n} 个事件',
     'zh-Hant': '同一年內的 {n} 個事件',
   },
+  'chronologyMoreEventsSheetTitleRange': {
+    'en': '{n} events, {range}',
+    'zh-Hans': '{range}的 {n} 个事件',
+    'zh-Hant': '{range}的 {n} 個事件',
+  },
   // Share-link toasts (sermons + bible verses)
   'shareLink': {
     'en': 'Share',

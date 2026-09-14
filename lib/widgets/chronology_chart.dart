@@ -1635,9 +1635,21 @@ class _ChronologyChartState extends State<ChronologyChart> {
       plotWidth: plotWidth,
       minWidth: _scaler.scale(34),
     );
-    final clusters = chronologyLabelClusters(lefts: lefts, plan: plan)
-        .where((g) => g.length > 1)
-        .toList();
+    // No `.where((g) => g.length > 1)` filter here any more: that used
+    // to be how an edge-of-axis drop's bucket-of-one got discarded, but
+    // it also discarded a row-exhaustion drop with nobody else nearby,
+    // which is exactly the label that vanishes with no chip and no way
+    // to tap it. [chronologyLabelClusters] now excludes edge drops
+    // itself, so every bucket returned here is one a chip can help, a
+    // bucket of one included — see the tap handler below for what a
+    // bucket of one opens.
+    final clusters = chronologyLabelClusters(
+      lefts: lefts,
+      plan: plan,
+      plotWidth: plotWidth,
+      minWidth: _scaler.scale(34),
+      mergeDistance: _scaler.scale(20),
+    );
 
     final labels = <Widget>[];
     // Where each drawn label — or cluster chip — actually sits, so a tap
@@ -1745,10 +1757,16 @@ class _ChronologyChartState extends State<ChronologyChart> {
     for (final slot in chipPlan) {
       final bucket = clusters[slot.cluster];
       final chipLabel = chipTexts[slot.cluster];
-      void onTapChip() => _showClusterSheet(
-            context,
-            [for (final i in bucket) candidates[i]],
-          );
+      // A bucket of one is a row-exhaustion drop with nobody nearby to
+      // merge into — see [chronologyLabelClusters]. It still needs a
+      // way to be tapped, but a list naming one event is a detour: send
+      // it straight to the same detail sheet a normal label opens.
+      void onTapChip() => bucket.length == 1
+          ? _showEventSheet(context, candidates[bucket.single])
+          : _showClusterSheet(
+              context,
+              [for (final i in bucket) candidates[i]],
+            );
       labels.add(Positioned(
         key: ValueKey('chronoClusterChip_${candidates[bucket.first].am}'),
         left: slot.left,
@@ -2362,17 +2380,34 @@ class _ChronologyChartState extends State<ChronologyChart> {
     });
   }
 
-  /// The "+N" chip's tap target: a same-year tie has no single answer, so
-  /// this names every event in it and lets the reader pick, routing the
-  /// choice into [_showEventSheet] — the same detail sheet a single label
-  /// opens, so a chosen event reads exactly like any other.
+  /// The "+N" chip's tap target: a same-year tie, or a merged run of
+  /// nearby row-exhaustion drops, has no single answer, so this names
+  /// every event in the bucket and lets the reader pick, routing the
+  /// choice into [_showEventSheet] — the same detail sheet a single
+  /// label opens, so a chosen event reads exactly like any other.
+  ///
+  /// A bucket only ever gets here with 2+ members — see the caller,
+  /// which sends a bucket of one straight to [_showEventSheet] instead —
+  /// but it is no longer always a same-year tie: [chronologyLabelClusters]
+  /// now also merges nearby row-exhaustion drops that don't share a
+  /// year, so the title has to say which case it is rather than always
+  /// claiming "the same year". [ms] arrives in ascending `am` order
+  /// (the bucket was built walking [lefts] left to right, and `_x` is
+  /// monotonic in `am`), so `ms.first`/`ms.last` are the span's ends.
   void _showClusterSheet(BuildContext context, List<ChronologyMarker> ms) {
     final scheme = Theme.of(context).colorScheme;
     final active = widget.data.activeScheme;
     final locale = widget.locale;
-    final title = _s('chronologyMoreEventsSheetTitle', '{n} events the same '
-            'year')
-        .replaceAll('{n}', '${ms.length}');
+    final sameYear = ms.first.am == ms.last.am;
+    final title = sameYear
+        ? _s('chronologyMoreEventsSheetTitle', '{n} events the same year')
+            .replaceAll('{n}', '${ms.length}')
+        : _s('chronologyMoreEventsSheetTitleRange', '{n} events, {range}')
+            .replaceAll('{n}', '${ms.length}')
+            .replaceAll(
+                '{range}',
+                formatChronologyYearRange(
+                    ms.first.am, ms.last.am, active, locale));
 
     showModalBottomSheet<void>(
       context: context,
@@ -2394,15 +2429,21 @@ class _ChronologyChartState extends State<ChronologyChart> {
                   style: const TextStyle(
                       fontSize: 17, fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  formatChronologyYear(ms.first.am, active, locale),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurface.withValues(alpha: 0.9),
+                // The range case already states its span in the title
+                // via `{range}` — this line would just repeat it, so it
+                // only appears for a genuine same-year tie, where the
+                // title's "the same year" wording still needs a year.
+                if (sameYear) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    formatChronologyYear(ms.first.am, active, locale),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface.withValues(alpha: 0.9),
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 10),
                 Flexible(
                   child: ListView(
@@ -2784,33 +2825,99 @@ List<ChronologyLabelSlot> chronologyLabelPlan({
   return out;
 }
 
-/// Which candidates [chronologyLabelPlan] left out, grouped by the ones
-/// that share an x with each other.
+/// Which candidates [chronologyLabelPlan] left out, grouped for a "+N"
+/// chip — but only the ones a chip can actually help.
 ///
-/// Two candidates land on the exact same [lefts] value only when they
-/// share a year: `_x` is a deterministic function of `am`, so a tie here
-/// is a same-year tie, not a rounding coincidence. That is the case no
-/// zoom level can fix — every row starts fresh at each x, so packing
-/// harder only ever seats one more of them, never all.
+/// [chronologyLabelPlan] drops a candidate for one of two unrelated
+/// reasons, and this function has to tell them apart because only one of
+/// them is fixable by a chip:
 ///
-/// Total, not just the clusters: a dropped candidate that shares its x
-/// with nobody still comes back, as a group of one. That candidate was
-/// the wrong thing to draw a "+N" chip for — it never leaves the axis'
-/// edge or the crowd of some OTHER year — so the caller filters those
-/// out; this function's job is only to make sure nothing it was handed
-/// goes missing from the count.
+///  * **Edge** — `left + minWidth > plotWidth`. The label could not be
+///    drawn on screen at all; a chip anchored at the same x can't either,
+///    so these are excluded outright, not returned as buckets of one.
+///  * **Row exhaustion** — every row already has some other label's box
+///    passing through this x. A chip drawn in the band above the label
+///    rows has nowhere else to compete for, so this is the case a chip
+///    fixes, and every candidate dropped this way comes back in exactly
+///    one bucket — never silently missing, whatever the caller does with
+///    a bucket afterwards.
+///
+/// Row-exhaustion drops are grouped in two passes, because "shares a
+/// chip" and "shares a year" are different claims and only the first one
+/// is this function's to decide by proximity.
+///
+/// First, by **exact** [lefts] equality checked against the FULL
+/// candidate list, placed labels included, not just the dropped ones: a
+/// dropped candidate whose x is shared by anybody else — even a sibling
+/// that the label planner did seat — is still part of a genuine
+/// same-year tie, just one the reader can already see part of. A tie
+/// (whole or partly rescued) is **atomic** — nothing merges into it and
+/// it never merges into a neighbour, whatever [mergeDistance] is — so a
+/// caller can always tell a same-year tie from a merged run by checking
+/// `first.am == last.am`, the way
+/// [ChronologyChartState._showClusterSheet] words its sheet title. This
+/// also keeps a tie's own leftover single from being mistaken for the
+/// OTHER kind below and dragged into a neighbouring year's chip — see
+/// the AM 2558 regression this guarded: a six-way tie with five members
+/// already seated still owns its lone drop, and that drop must not
+/// silently pair up with the unrelated AM 2559 singleton next to it.
+///
+/// Second, only genuine **singletons** — a dropped candidate whose x is
+/// shared by nobody else at all, placed or dropped — are chained by
+/// proximity: one joins the current chain if it is within
+/// [mergeDistance] of the chain's *previous* member AND the chain's
+/// total span (first to last) is within [maxSpan], so a long run of
+/// tightly-packed but unrelated years still surfaces as one findable
+/// chip without letting the chain grow without bound. Chaining never
+/// crosses a tie: the group right before or after one always starts a
+/// fresh chain.
 @visibleForTesting
 List<List<int>> chronologyLabelClusters({
   required List<double> lefts,
   required List<ChronologyLabelSlot> plan,
+  required double plotWidth,
+  double minWidth = 34,
+  double mergeDistance = 20,
+  double? maxSpan,
 }) {
+  final span = maxSpan ?? mergeDistance * 3;
   final placed = {for (final s in plan) s.index};
-  final byLeft = <double, List<int>>{};
-  for (var i = 0; i < lefts.length; i++) {
-    if (placed.contains(i)) continue;
-    byLeft.putIfAbsent(lefts[i], () => <int>[]).add(i);
+  final dropped = <int>[
+    for (var i = 0; i < lefts.length; i++)
+      if (!placed.contains(i) && lefts[i] + minWidth <= plotWidth) i,
+  ]..sort((a, b) => lefts[a].compareTo(lefts[b]));
+
+  final xCounts = <double, int>{};
+  for (final x in lefts) {
+    xCounts[x] = (xCounts[x] ?? 0) + 1;
   }
-  return byLeft.values.toList();
+
+  final exactGroups = <List<int>>[];
+  for (final i in dropped) {
+    if (exactGroups.isNotEmpty && lefts[i] == lefts[exactGroups.last.last]) {
+      exactGroups.last.add(i);
+    } else {
+      exactGroups.add([i]);
+    }
+  }
+
+  final clusters = <List<int>>[];
+  var lastWasTie = false;
+  for (final g in exactGroups) {
+    final isTie = (xCounts[lefts[g.first]] ?? 1) > 1;
+    final i = g.length == 1 ? g.single : -1;
+    if (!isTie &&
+        !lastWasTie &&
+        clusters.isNotEmpty &&
+        lefts[i] - lefts[clusters.last.last] <= mergeDistance &&
+        lefts[i] - lefts[clusters.last.first] <= span) {
+      clusters.last.add(i);
+    } else {
+      clusters.add(List.of(g));
+    }
+    lastWasTie = isTie;
+  }
+  return clusters;
 }
 
 /// One "+N" chip [chronologyChipPlan] has decided to draw, and where.
