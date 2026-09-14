@@ -279,18 +279,41 @@ def audit(version: str, verbose: bool, tail: int, versify: bool) -> int:
 # since the run count does not depend on `--no-versification`.
 # `total_tagged` is unchanged because the new run carries no Strong's
 # number.
+#
+# orphan_occurrences 9761 -> 9719 (versify=True), 25133 -> 25096
+# (versify=False), left_to_read 1991 -> 1989 (2026-09-15, commit
+# 52b7919e): 42 divine-name runs moved between H3069 (יהוה pointed as
+# Elohim) and H3068 (the ordinary pointing) to match the Hebrew in
+# `assets/originals/`, per `tools/cuv-2026-09-12-divine-name-audit.tsv`.
+# All 42 were orphans under the wrong number and are not under the
+# right one, so versify=True drops by exactly 42. versify=False drops
+# by only 37 — 5 of the 42, all in Psalms (9:19, 31:21, 38:15, 48:8,
+# 64:10), sit at a verse whose RAW (unversified) ref does not line up
+# with the Hebrew's own numbering at all (Psalm superscriptions shift
+# Hebrew verse numbers by one in these chapters, e.g. CUV 64:10 =
+# Hebrew 64:11), so the raw `have` set contains neither H3068 nor
+# H3069 before or after — orphan on both sides, no flip. This is
+# `--no-versification`'s point: it measures the corpus without the
+# offset correction, so a versification-dependent verse stays wrong
+# either way. left_to_read (the unexplained tail) drops by only 2, not
+# 42: re-classifying the 42 pre-fix numbers found 40 already
+# `explained_form` (the wrong number's own lemma still matched a word
+# in the verse) and only two — 箴言 25:22 and 詩篇 64:10 — genuinely
+# `unexplained`. `left_to_read_distinct` is unchanged at 682: both
+# H3068 and H3069 still have other unexplained occurrences elsewhere in
+# the corpus.
 PINNED = {
     True: {  # versify=True — the figure the queue quotes
         "total_runs": 367573,
         "total_tagged": 360929,
-        "left_to_read": 1991,
+        "left_to_read": 1989,
         "left_to_read_distinct": 682,
-        "orphan_occurrences": 9761,
+        "orphan_occurrences": 9719,
     },
     False: {  # --no-versification — the pre-2026-08 raw figure
         "total_runs": 367573,
         "total_tagged": 360929,
-        "orphan_occurrences": 25133,
+        "orphan_occurrences": 25096,
     },
 }
 
