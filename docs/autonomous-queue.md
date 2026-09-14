@@ -11487,6 +11487,14 @@ has never seen this repo.
       `GetMaterialApp` → `.router` migration branch, or close this as
       "won't fix"?
 
+      **Deferred a thirteenth consecutive iteration, 2026-09-14** — this
+      hour's NEXT_TASK.md picked the chronology chart's "+N" chip band-
+      height fix instead (`queue:13098`, P2, hour-sized, text-scale
+      clipping). Still branch-scale, still unattended-unsafe, still the
+      only fully open P2 checkbox, and the question above to the user is
+      still unanswered: start the `GetMaterialApp` → `.router` migration
+      branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -13412,6 +13420,53 @@ has never seen this repo.
       one widget test for the AM 4036/4038 wrong-sheet case.
       `flutter analyze` clean; full suite passed.
 
+      **2026-09-14 — the chip that shipped that same day did not get the
+      text-scale treatment `d/chrono4` already gave every other lane
+      metric in this file.** The chip's box was `Positioned(..., height:
+      13)` and its hit rect `Rect.fromLTWH(slot.left, 0, slot.width,
+      13)` — a bare `13`, not derived from `_lineHeight` like
+      `_labelRowPitch`, `_rulerHeight`, `_eraStripHeight` and the
+      fold-chip floor all already are. Measured before touching
+      anything (pumped the chart at `TextScaler.linear(1.0/1.3/2.0)`,
+      read the "+6" chip's actual `TextPainter` height off the widget
+      tree, not derived from `8.5 × scale × 1.4`): the glyph needs 12 pt
+      at 100% (fits the 13 pt box), 16 pt at 130%, 24 pt at 200% — both
+      of the larger cases were painting past the box into the label row
+      below it, since neither `Padding` nor `DecoratedBox` clips.
+      Fixed with a new `_chipBandHeight` getter — `(_lineHeight(8.5) +
+      1).clamp(13.0, 40.0)`, the `+1` covering a ~0.5 pt gap between
+      `_lineHeight`'s own estimate and the engine's measured line box at
+      both scales tested — threaded through all seven sites that used
+      to read the bare `13`: `_tickLaneHeight`, `_tickLaneMaxHeight`,
+      the `labelRows` computation, the label hit-rect top, the
+      connector-guide top (`top: 11` → `_chipBandHeight - 2`, so its
+      foot still meets the label's own top exactly, not just the chip
+      box), the label's own top, the chip's `Positioned` height, and the
+      chip's hit rect. At 100% text the getter still returns 13.0
+      (`.clamp`'s floor), so nothing about today's default-scale
+      geometry moved.
+      **Deliberately left alone**: `_OverviewPainter`'s own `const
+      bandBottom = 13.0` (near the file's overview-strip painter) — a
+      refuter confirmed it gates no text at all (pure colour rects +
+      hatching in a wholly separate render subtree, the small minimap
+      strip, not the event lane), so unifying it with `_chipBandHeight`
+      would have coupled two unrelated constants that only coincide in
+      value.
+      Regression test: a new `testWidgets` in
+      `test/bible_chronology_test.dart` pumps the AM 4036 "+6" chip at
+      the same three scales, reads the chip's actual `Positioned.height`
+      and its glyph's real `TextPainter` height off the tree, and
+      asserts the box is never shorter than the glyph. Confirmed
+      red-then-green: fails against pre-fix `chronology_chart.dart`
+      (`git stash` of just that file) at 130%/200%, passes with the fix
+      restored. All 87 tests in the file still pass (the AM 4036/4038
+      wrong-sheet case and the three pure `chronologyChipPlan` tests
+      from the same-day commit above included), `flutter analyze` clean,
+      full suite (3118 tests) passed in the foreground.
+      Still open, unchanged from `d/chrono4`: the NT's densest decade
+      (fourteen events in ten years) still cannot label every tick —
+      that needs a different device than more zoom.
+
 - [x] **A sermon that would not play left its Listen button dead, because
       only songs caught `PlaybackBlockedException`.** Reported from a live
       iPhone on 2026-09-03, `/sermons/421`, web, and mailed to the crash
@@ -14419,6 +14474,22 @@ so the bundle-size answer stays on the record.
       overclaim in the doc comment (an unverified bible.fhl.net
       cross-check), and committed. Same conclusion as recurrences
       5–9: the fix is in `run.sh`/`prompt.md`, not here.
+
+      **Eleventh recurrence, 2026-09-13 09:12:26–09:46:14.** Same shape
+      again: the stage bumped the release itself (changelog, `kAppVersion`,
+      `pubspec.yaml`, 1.5.27→1.5.28, five real changelog notes matching
+      the five commits since `1042b9c6 Release v1.5.27`) and ended with
+      its whole final message reading *"Waiting for the deploy to
+      finish."* Nothing was committed; `version.json` on `yswords-dev`
+      still read 1.5.27, confirming the deploy this stage was "waiting
+      for" never actually ran either. Landed 2026-09-14 10:5x: verified
+      the changelog's five notes against `git log --oneline
+      1042b9c6..HEAD` (exact match, reversed order, "Release v1.5.27"
+      as the sixth note), confirmed via `ls -lT` that all three files'
+      mtimes (09:44:29–09:44:32) fall inside the stage's own window,
+      and committed as `Release v1.5.28`. Same conclusion as recurrences
+      5–10: the fix is in `run.sh`/`prompt.md` under `~/Library/
+      Application Support/yswords-loop/`, not here.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an

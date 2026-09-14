@@ -715,6 +715,68 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets(
+        'the "+N" cluster chip\'s band is tall enough for its own glyph '
+        'at large text scale', (tester) async {
+      // The chip's box height was a flat 13, like every other lane
+      // metric used to be before `_lineHeight` was threaded through
+      // them — except this one was missed. Measured directly (not
+      // derived from `8.5 * scale * 1.4`, per this file's own refuter
+      // rule): at 100% text the "+6" chip's glyph needs 12 pt in its
+      // 13 pt box (fits); at 130% it needs 16 pt in the same 13 pt box;
+      // at 200% it needs 24 pt. Both of the larger cases used to
+      // overflow the fixed band and paint into the label row below it.
+      for (final scale in const [1.0, 1.3, 2.0]) {
+        tester.view.devicePixelRatio = 1.0;
+        tester.view.physicalSize = const Size(402, 874);
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          host(
+            MediaQuery(
+              data: MediaQueryData(textScaler: TextScaler.linear(scale)),
+              child: ChronologyChart(data: data, locale: 'en'),
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+        await viewAt(tester, 4036, years: 100);
+
+        final chipTextFinder = find.text('+6');
+        expect(chipTextFinder, findsOneWidget,
+            reason: 'no "+6" chip drawn at scale $scale');
+
+        // The box the chip is actually laid out and hit-tested in — read
+        // off the widget tree, not re-derived, so this fails on the
+        // fixed-13 code exactly the way the reader would experience it.
+        final positioned = tester.widget<Positioned>(
+          find
+              .ancestor(of: chipTextFinder, matching: find.byType(Positioned))
+              .first,
+        );
+        final boxHeight = positioned.height!;
+
+        // The glyph's actual drawn height, measured the same way the
+        // chart itself measures widths (`_measure`): through the
+        // ambient style and the reader's own text scaler.
+        final textWidget = tester.widget<Text>(chipTextFinder);
+        final ctx = tester.element(chipTextFinder);
+        final tp = TextPainter(
+          text: TextSpan(
+            text: textWidget.data,
+            style: DefaultTextStyle.of(ctx).style.merge(textWidget.style),
+          ),
+          maxLines: 1,
+          textScaler: MediaQuery.textScalerOf(ctx),
+          textDirection: TextDirection.ltr,
+        )..layout();
+
+        expect(boxHeight, greaterThanOrEqualTo(tp.height),
+            reason: 'at text scale $scale the chip band is $boxHeight pt '
+                'but its own glyph needs ${tp.height} pt — it will spill '
+                'into the label row below');
+      }
+    });
+
     testWidgets('every drawn event label is its own accessibility node, '
         'not one merged utterance for the whole lane', (tester) async {
       // 2026-09-09, residual #2 of the "left open, deliberately" note on

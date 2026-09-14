@@ -410,14 +410,24 @@ class _ChronologyChartState extends State<ChronologyChart> {
   double get _eraStripHeight =>
       (_lineHeight(_eraFontSize) + 3).clamp(15.0, 44.0);
 
+  /// The strip at the top of the event lane a "+N" cluster chip is
+  /// drawn and hit-tested in. Was a flat 13 — right for the chip's own
+  /// 8.5 pt glyph at 100% text (measured need: 12 pt) but not at larger
+  /// scale, where the glyph itself outgrows the box: measured 16 pt of
+  /// glyph in that same 13 pt band at 130% text, 24 pt at 200%. The `+
+  /// 1` is margin over `_lineHeight`'s own estimate, which undershot the
+  /// engine's actual line box by about half a point at both scales
+  /// measured; the floor keeps today's 100%-scale geometry unchanged.
+  double get _chipBandHeight => (_lineHeight(_chipFontSize) + 1).clamp(13.0, 40.0);
+
   /// The event lane's floor and ceiling: one label row and five.
   ///
   /// Five is where a leader line stops being believable — below that a
   /// label is too far from its own tick — so the rest of any height the
   /// folded lifeline rows give back is simply not taken, and the chart
   /// gets shorter instead. On a phone that is the whole point.
-  double get _tickLaneHeight => 13 + _labelRowPitch + 7;
-  double get _tickLaneMaxHeight => 13 + _labelRowPitch * 5 + 7;
+  double get _tickLaneHeight => _chipBandHeight + _labelRowPitch + 7;
+  double get _tickLaneMaxHeight => _chipBandHeight + _labelRowPitch * 5 + 7;
 
   /// The name column earns its width instead of being told it.
   ///
@@ -1616,7 +1626,8 @@ class _ChronologyChartState extends State<ChronologyChart> {
     ];
 
     final pitch = _labelRowPitch;
-    final labelRows = ((laneHeight - 13) / pitch).floor().clamp(1, 5);
+    final labelRows =
+        ((laneHeight - _chipBandHeight) / pitch).floor().clamp(1, 5);
     final plan = chronologyLabelPlan(
       lefts: lefts,
       wants: wants,
@@ -1643,7 +1654,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
       labelHits.add((
         Rect.fromLTWH(
           lefts[c.index],
-          13 + c.row * pitch,
+          _chipBandHeight + c.row * pitch,
           c.width + 1,
           pitch,
         ),
@@ -1652,7 +1663,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
       if (c.row > 0) {
         labels.add(Positioned(
           left: lefts[c.index] - 3,
-          top: 11,
+          top: _chipBandHeight - 2,
           width: 0.8,
           height: 2 + c.row * pitch,
           child: ColoredBox(
@@ -1663,7 +1674,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
       final selected = candidates[c.index].id == _selectedTickId;
       labels.add(Positioned(
         left: lefts[c.index],
-        top: 13 + c.row * pitch,
+        top: _chipBandHeight + c.row * pitch,
         width: c.width + 1,
         child: Semantics(
           // Each drawn title needs its own boundary — with none, a bare
@@ -1743,7 +1754,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
         left: slot.left,
         top: 0,
         width: slot.width,
-        height: 13,
+        height: _chipBandHeight,
         child: Semantics(
           label: chipLabel,
           button: true,
@@ -1778,7 +1789,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
       // for a "+10"-and-up label and, worse, had nothing to do with
       // where the packer just decided to put this one.
       chipHits.add((
-        Rect.fromLTWH(slot.left, 0, slot.width, 13),
+        Rect.fromLTWH(slot.left, 0, slot.width, _chipBandHeight),
         onTapChip,
       ));
     }
@@ -1787,9 +1798,10 @@ class _ChronologyChartState extends State<ChronologyChart> {
     // so they draw on top of anything they overlap). Without this, a
     // same-x PARTIAL tie — one candidate seated at row 0, the rest
     // folded into a chip — sends a tap on the chip's own bottom 2 pt to
-    // the row-0 label instead: that label's hit rect starts at y 13 and
-    // is inflated by 2 for a comfortable touch target, so its top edge
-    // reaches y 11, into the chip's y 0–13 band at the same x. (The
+    // the row-0 label instead: that label's hit rect starts at
+    // y `_chipBandHeight` and is inflated by 2 for a comfortable touch
+    // target, so its top edge reaches 2 pt into the chip's
+    // y 0–`_chipBandHeight` band at the same x. (The
     // connector guide below (`if (c.row > 0)`) was cleared of the same
     // suspicion by measurement, not guesswork — it sits at `left - 3`,
     // width 0.8, so it never shares an x with the chip's box at all; the
