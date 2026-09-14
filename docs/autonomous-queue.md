@@ -13659,6 +13659,62 @@ has never seen this repo.
       needed to rebase past — a worktree from `origin/main` avoided both a
       forced stash and a merge conflict on someone else's uncommitted work.
 
+      **2026-09-14 slice — an event too close to the right edge for a
+      label got no chip either, because the exclusion check reused the
+      label's own minWidth.** `chronologyLabelClusters` excluded any
+      dropped candidate with `left + minWidth(34) > plotWidth` — right
+      for a label, but the same 34pt floor was also used to decide
+      whether a **chip** could help, and a chip is far narrower.
+      Measured with a real `TextPainter` against this lane's actual
+      8.5pt chip font, not guessed: a "+1" chip is 21pt at 100% text,
+      26.1pt at 130%, 38pt at 200% — against the label's 34/44.2/68pt
+      floor. That leaves a real 13–30pt band (wider at large text scale,
+      not narrower) where a label genuinely cannot be drawn but a full,
+      unshrunk chip already fits, and the old code excluded it outright
+      — no label, no chip, the tick painted with nothing to tap.
+
+      Checked the existing test's own rationale before touching it: it
+      said a chip "can't help either" once a label doesn't fit, citing
+      the chip packer as if it only ever dropped what it couldn't seat.
+      That was never true — `chronologyChipPlan`'s shrink-to-fit
+      (`widths[i] < room ? widths[i] : room`) has existed since its
+      first commit, `4c72fe3f`; the label-sized cutoff this item is
+      replacing was added later, in `859c0e4e`, which is what
+      introduced the mismatch. `962c9570` (today, earlier) only added
+      terminal-fold for a crowded ROW — a different bug — and left the
+      cutoff itself untouched. A refuter call independently re-derived
+      the measured widths, confirmed both commits' contents and
+      ordering via `git merge-base --is-ancestor`, and confirmed
+      `chronologyMoreEvents` is the identical `'+{n}'` in all three
+      locales (so the band isn't a Chinese-only or English-only
+      artefact) — one honest caveat: the bare-`TextPainter` probe (mine
+      and the refuter's, independently) doesn't merge the reader's
+      chosen font family the way the widget's own `_measure`/`_resolve`
+      does, so the exact pt figures above are this font's, not a
+      universal constant; the label-vs-chip gap itself does not depend
+      on font choice. The refuter also could not confirm a *specific*
+      real event lands in the band from a screenshot or corpus lookup —
+      only that it is mechanically reachable, since `plotWidth` scales
+      continuously with zoom and the corpus's own rightmost events sweep
+      through every offset from the true right edge as a reader zooms.
+      No stronger claim is made than that.
+
+      **Fix**: renamed the parameter to `chipMinWidth` (default 21, the
+      100%-scale measurement above) and pointed the exclusion check at
+      it instead of the label's `minWidth`; the widget now measures its
+      own "+1" width via `_measure` before calling the cluster function,
+      the same real-font discipline every other chip on this lane
+      already gets. Rewrote the stale test at `bible_chronology_test.dart`
+      (still pins a genuinely unreachable candidate — 5pt of room, less
+      than even a shrunk chip needs) and added a case for the newly-
+      reachable band (25pt of room: no label, but a chip), plus a new
+      composed test running `labelPlan → labelClusters → chipPlan`
+      end-to-end and asserting every candidate lands in exactly one of
+      {placed, chipped, the one genuinely-unreachable index}. Both new/
+      changed tests confirmed red against the pre-fix file, green after.
+      `flutter test test/bible_chronology_test.dart`: 97/97 (96 existing
+      + 1 new). `flutter analyze` clean. Code-only, no deploy.
+
 - [x] **`chronologyChipPlan` no longer drops chips it can't seat — it folds
       the tail into one terminal "+N" chip instead.** Fixed 2026-09-14.
 

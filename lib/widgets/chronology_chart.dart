@@ -1625,6 +1625,12 @@ class _ChronologyChartState extends State<ChronologyChart> {
       for (final t in candidates) _x(t.am, plotWidth) + 3,
     ];
 
+    const chipStyle = TextStyle(
+      fontSize: _chipFontSize,
+      fontWeight: FontWeight.w700,
+    );
+    const chipPadding = 4.0; // EdgeInsets.symmetric(horizontal: 2), both sides
+
     final pitch = _labelRowPitch;
     final labelRows =
         ((laneHeight - _chipBandHeight) / pitch).floor().clamp(1, 5);
@@ -1643,11 +1649,20 @@ class _ChronologyChartState extends State<ChronologyChart> {
     // itself, so every bucket returned here is one a chip can help, a
     // bucket of one included — see the tap handler below for what a
     // bucket of one opens.
+    //
+    // The edge cutoff is the narrowest a "+N" chip is ever drawn at —
+    // one digit, e.g. "+1" — not the label's own (much wider) minWidth:
+    // see [chronologyLabelClusters]'s doc for why reusing the label's
+    // figure here used to strand a real, measured band of candidates
+    // that a chip already had room for.
+    final chipMinWidth =
+        _measure(_s('chronologyMoreEvents', '+{n}').replaceAll('{n}', '1'), chipStyle) +
+            chipPadding;
     final clusters = chronologyLabelClusters(
       lefts: lefts,
       plan: plan,
       plotWidth: plotWidth,
-      minWidth: _scaler.scale(34),
+      chipMinWidth: chipMinWidth,
       mergeDistance: _scaler.scale(20),
     );
 
@@ -1740,11 +1755,6 @@ class _ChronologyChartState extends State<ChronologyChart> {
       for (final bucket in clusters)
         _s('chronologyMoreEvents', '+{n}').replaceAll('{n}', '${bucket.length}'),
     ];
-    const chipStyle = TextStyle(
-      fontSize: _chipFontSize,
-      fontWeight: FontWeight.w700,
-    );
-    const chipPadding = 4.0; // EdgeInsets.symmetric(horizontal: 2), both sides
     final chipWants = [
       for (final t in chipTexts) _measure(t, chipStyle) + chipPadding,
     ];
@@ -2848,9 +2858,23 @@ List<ChronologyLabelSlot> chronologyLabelPlan({
 /// reasons, and this function has to tell them apart because only one of
 /// them is fixable by a chip:
 ///
-///  * **Edge** — `left + minWidth > plotWidth`. The label could not be
-///    drawn on screen at all; a chip anchored at the same x can't either,
-///    so these are excluded outright, not returned as buckets of one.
+///  * **Edge** — `left + chipMinWidth > plotWidth`. Not even the
+///    narrowest real chip has room; these are excluded outright, not
+///    returned as buckets of one. [chipMinWidth] is deliberately a
+///    chip's own floor, not a label's: a "+N" chip is far narrower than
+///    any label (measured, at this lane's default 8.5 pt chip font: 21
+///    pt at 100% text, 38 pt at 200%, against a label's 34/68 pt
+///    `minWidth`). Until 2026-09-14 this cutoff reused the label's own
+///    `minWidth` (added in `859c0e4e`, replacing an even blunter
+///    `.where((g) => g.length > 1)` at the call site), which excluded a
+///    band of candidates — real, 12–30 pt wide depending on text scale —
+///    that a full, unshrunk chip already fits in. That was true from the
+///    moment `859c0e4e` landed: [chronologyChipPlan]'s own shrink-to-fit
+///    predates it (`4c72fe3f`), so the mismatch was not introduced by
+///    the later `962c9570` terminal-fold work, which fixed a different
+///    hole (a crowded row dropping chips, not an edge candidate never
+///    entering the pipeline at all) — it just never got re-examined
+///    until now.
 ///  * **Row exhaustion** — every row already has some other label's box
 ///    passing through this x. A chip drawn in the band above the label
 ///    rows has nowhere else to compete for, so this is the case a chip
@@ -2892,7 +2916,7 @@ List<List<int>> chronologyLabelClusters({
   required List<double> lefts,
   required List<ChronologyLabelSlot> plan,
   required double plotWidth,
-  double minWidth = 34,
+  double chipMinWidth = 21,
   double mergeDistance = 20,
   double? maxSpan,
 }) {
@@ -2900,7 +2924,7 @@ List<List<int>> chronologyLabelClusters({
   final placed = {for (final s in plan) s.index};
   final dropped = <int>[
     for (var i = 0; i < lefts.length; i++)
-      if (!placed.contains(i) && lefts[i] + minWidth <= plotWidth) i,
+      if (!placed.contains(i) && lefts[i] + chipMinWidth <= plotWidth) i,
   ]..sort((a, b) => lefts[a].compareTo(lefts[b]));
 
   final xCounts = <double, int>{};
