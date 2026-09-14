@@ -29,7 +29,6 @@
 //      column, so the room it takes is room the passage was never
 //      offered.
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/widgets/projection_stage.dart';
