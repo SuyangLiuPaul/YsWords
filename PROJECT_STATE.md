@@ -522,6 +522,22 @@ sites; that is its own explicit go/no-go, not a side effect of a
 font-picker patch. `kChinaMode` and its ~10 UI/copy call sites are
 untouched.
 
+**Trap 63: a tool committed with its output uncommitted is not "done" —
+it is a fifth recurrence of a pathology this doc already had four
+instances of** (queue item `14474`). `ba7d898e` committed
+`tools/apply_cuv_divine_name_audit.py` and its TSV finding but never ran
+`--write`, so the 41 corrections it exists to apply sat as an
+uncommitted, un-pushed working-tree diff for the next iteration to
+inherit — and when that iteration finally ran it, the writer's
+`json.dump(..., indent=2)` (copy-pasted rather than matching this
+repo's own `separators=(',', ':')` minified convention, already visible
+one file over in `derive_tagged_traditional.py:381`) turned 41
+one-character edits into a 497,236-line diff across 8 bundled assets,
+which is why the previous stage stopped rather than commit it. **A tool
+that writes a shipped JSON asset needs its formatting checked against
+a sibling writer in the same repo before the first run, not after the
+diff comes back enormous.** 2026-09-15, commits `52b7919e` + `226450c8`.
+
 **Trap 62: a script that prints "✓ … now at $NEW" is not evidence it
 wrote anything — it printed the same line whether the awk matched or
 not.** `tools/bump_version.sh` bumps `pubspec.yaml` and

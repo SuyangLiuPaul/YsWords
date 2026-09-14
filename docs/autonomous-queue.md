@@ -3862,6 +3862,22 @@ reported. Work these top-down before P2.
       figure. Sweep nothing until they answer — repairing one makes the
       corpus LESS consistent, not more.
 
+      **2026-09-15: 41 verses of this settled by the publisher's own
+      module, applied.** `tools/cuv-2026-09-12-divine-name-audit.tsv`,
+      lifted from the editor's `cuvs+-YHWH.20260912.ont`
+      (md5 `f8f547517e5acfaf3dd7f11fde47eb64`) — a regression as a whole,
+      not installed, but these 41 rows cross-checked 41/41 against
+      `assets/originals/` (Leningrad + Westminster tagging). Applied via
+      `tools/apply_cuv_divine_name_audit.py --write` (commits `52b7919e`,
+      `226450c8` — the second re-derives `assets/tagged/cuvs-yhwh-tr/`).
+      37 rows moved H3069→H3068, 4 the other way; 詩篇 6:2 names the
+      divine name twice so the 41 rows are 42 individual `s` edits. This
+      is **not** the same 69: not all 41 are drawn from the 57+12 count
+      above, and the two counts have not been reconciled row-for-row.
+      **Item stays open** — the remainder of the 57/12, and whatever of
+      the 41 fell outside it, is still unswept pending the publisher's
+      answer.
+
 - [ ] **利未記 4:17's second 血 — asked, not repaired.** §四 of the CUV
       letter. Verified against `assets/originals/leviticus.json`: וְהִזָּה
       takes no object here (4:6, same construction, DOES carry the second
