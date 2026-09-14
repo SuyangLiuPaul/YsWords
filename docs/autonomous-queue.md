@@ -11504,6 +11504,15 @@ has never seen this repo.
       `GetMaterialApp` → `.router` migration branch, or close this as
       "won't fix"?
 
+      **Deferred a fifteenth consecutive iteration, 2026-09-14** — this
+      hour's NEXT_TASK.md picked the chronology chart's same-year-ties
+      sort-order fix instead (`queue:13115`'s 2026-09-14 slice, P2, the
+      Passion week sorting backwards, hour-sized). Still branch-scale,
+      still unattended-unsafe, still the only fully open P2 checkbox
+      besides the chronology chart, and the question above to the user is
+      still unanswered: start the `GetMaterialApp` → `.router` migration
+      branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -13599,6 +13608,56 @@ has never seen this repo.
       item's own acceptance note predicted it might, and it does now
       measurably drop chips in some (transient, not-currently-asserted)
       render frames.
+
+      **2026-09-14 slice — same-year ties sorted alphabetically by id,
+      putting the Passion week backwards.** `allTicks` (chronology.dart:407)
+      and the generator (build_bible_chronology.py:575) both tie-broke
+      same-AM events by `id`. Measured 9 same-year ties in the asset; 5
+      came out wrong, worst was AM 4036 (the "+6" chip): `ascension,
+      crucifixion, last_supper, pentecost, resurrection, triumphal_entry`
+      — Ascension before Crucifixion, Triumphal Entry last. AM 2598 came
+      out almost exactly reversed; AM 2558 put the plagues after the
+      manna; AM 4000 put the flight to Egypt before the Magi; AM 4038 put
+      Paul's conversion before Stephen's martyrdom.
+
+      **Fix carries `bible_timeline.json`'s own event order through as a
+      new `seq` field** instead of inventing one: the generator emits each
+      event's index in `timeline["events"]` and sorts `(am, seq)`; the two
+      ambiguous ties (AM 1924 Abrahamic covenant/Ishmael's birth; AM 2904
+      Ruth/Samson) are left exactly as the source has them. `ChronologyMarker`
+      gained `seq` (default 0 — computed markers never tie); `allTicks` and
+      the redundant `markers`/`events` re-sorts in `ChronologyData.fromJson`
+      now share one `(am, seq, id)` comparator, closing the instability risk
+      those re-sorts had regardless of whether `List.sort` happens to be
+      stable at this size.
+
+      Verified the reordering claim two ways before committing: diffed the
+      regenerated `assets/bible_chronology.json` against the prior one with
+      `seq` stripped out — confirmed the ONLY change is the 9-tie reordering
+      plus the new field, nothing reworded or moved elsewhere — and sent the
+      five narrative-order claims (Exodus 3-20, Numbers 13-14/Deut 34/Joshua
+      3-6, Matthew 2, Matthew 21-28/Acts 1-2, Acts 6-9) to an independent
+      pass whose job was to find a place the order was wrong; it could not,
+      including the flagged edge case of `wilderness_40` (a 40-year period,
+      not a point event) sorting first rather than last.
+
+      New tests: AM 4036 pinned by id explicitly (fails loudly if the
+      source is ever reshuffled), the other 3 unambiguous clusters, and a
+      general invariant that every same-AM group in `allTicks` matches its
+      relative order in `bible_timeline.json`. All 96 tests in
+      `bible_chronology_test.dart` pass, including the existing
+      `chronologyChipPlan` AM 4036/4038 tests and the "re-running it changes
+      nothing" generator test, unmodified. `flutter analyze` clean.
+      Commit `7d51abc6`.
+
+      Landed in a scratch worktree at `/tmp/yswords-chronology-work`
+      (removable) rather than the primary checkout, because the primary
+      checkout's working tree was dirty with a second session's real
+      in-progress edits to `cuvs-yhwh` tagged JSON and
+      `tools/audit_ljk_tr_forms.py` that this item's own brief said not to
+      touch, and those files also collide with a commit on `main` this item
+      needed to rebase past — a worktree from `origin/main` avoided both a
+      forced stash and a merge conflict on someone else's uncommitted work.
 
 - [x] **`chronologyChipPlan` no longer drops chips it can't seat — it folds
       the tail into one terminal "+N" chip instead.** Fixed 2026-09-14.
