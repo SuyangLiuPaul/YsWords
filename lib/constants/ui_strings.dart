@@ -5584,6 +5584,14 @@ const uiStrings = {
     'zh-Hant': '收起譯者註',
     'en': 'Show fewer notes',
   },
+  // The pill's own label. The 雅偉的話 web reader folds its notes behind
+  // a `<details>` whose summary reads exactly this, with a ▾ / ▴ after
+  // it, and the owner pointed at that control specifically.
+  'notesFoldLabel': {
+    'zh-Hans': '译者注',
+    'zh-Hant': '譯者註',
+    'en': "Translator's notes",
+  },
   'close': {
     'zh-Hans': '关闭',
     'zh-Hant': '關閉',

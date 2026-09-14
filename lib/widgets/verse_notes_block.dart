@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/ui_strings.dart';
@@ -29,14 +28,28 @@ import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 ///     the verse into pieces. **The block sits after the verse**, so the
 ///     scripture is never cut.
 ///
-/// The label sits at the END of the truncated text, in the same
-/// paragraph, not on a row of its own — 「close和expand连在一起」. That
-/// is the part the owner singled out, and it is why this is a
-/// `Text.rich` with a `TapGestureRecognizer` rather than a Column with a
-/// chevron.
+/// 2026-09-14, second pass, from the 雅偉的話 WEB reader rather than its
+/// app — 「这种可以打开在words sword reader parallel mode 三个页面apply
+/// 就很好」, with the control circled. The first pass truncated the notes
+/// at 160 characters and put an underlined link at the seam; this one is
+/// what that site actually does, and it is better in two ways:
 ///
-/// Folded by default. An expander that starts open saves nobody
-/// anything.
+///   * The control is a **pill** — 「譯者註 ▾」 — outlined when shut and
+///     filled when open. It is a button-shaped thing with a border, not
+///     a run of underlined words, so on a phone it reads as pressable
+///     before you press it.
+///   * Opening shows **all** of the notes. A half-note ending in `…` is
+///     not something anyone wanted to read; the reader either wants the
+///     apparatus or does not.
+///
+/// Its CSS (`.fnote-fold > summary`, `css/bible.css`) is a `<details>`
+/// with `border-radius: 999px` and a `::after` of ▾ / ▴, and that is
+/// what this reproduces.
+///
+/// A SHORT block is not folded at all, which is that site's rule too:
+/// it wraps only the notes that are longer than the verse they hang off.
+/// Putting 參4.6、16 behind a button would make the reader work for six
+/// characters.
 class VerseNotesBlock extends StatefulWidget {
   const VerseNotesBlock({
     super.key,
@@ -65,6 +78,9 @@ class VerseNotesBlock extends StatefulWidget {
 /// enough that 梁家鏗's 約翰福音 1:1 — twenty-six notes, some thousands
 /// of characters — does not bury the chapter.
 const int kNotePreviewChars = 160;
+
+/// A pill, i.e. a radius larger than the box can ever be tall.
+const double _kPillRadius = 999.0;
 
 const String _nbsp = ' ';
 const List<String> _superscripts = [
@@ -104,16 +120,15 @@ class _VerseNotesBlockState extends State<VerseNotesBlock> {
     final scheme = Theme.of(context).colorScheme;
     final fs = widget.settings.fontSize;
 
-    final buf = StringBuffer();
-    for (var i = 0; i < widget.notes.length; i++) {
-      if (i > 0) buf.write('\n');
-      buf
-        ..write(superscriptNumber(i + 1))
-        ..write(_nbsp)
-        ..write(widget.notes[i].trim());
-    }
-    final all = buf.toString();
-
+    // One ROW per note: the number hangs in its own column and the
+    // note's continuation lines align under its first character rather
+    // than under the number.
+    //
+    // 2026-09-14: 「yahwehdehua是 1234很好段但是都在那个注释里面」 —
+    // the numbers belong to the block and read as its structure, which
+    // they only do when they line up. Running the whole thing through
+    // one `Text` put every wrapped line hard against the margin and the
+    // numbering stopped being visible as numbering.
     final style = TextStyle(
       fontSize: fs * 0.85,
       height: widget.settings.lineSpacing,
@@ -121,35 +136,89 @@ class _VerseNotesBlockState extends State<VerseNotesBlock> {
       fontFamilyFallback: kCjkFontFallback,
       color: scheme.onSurfaceVariant,
     );
-    final folds = widget.preview > 0 && all.length > widget.preview;
-    final label = _expanded
-        ? (uiStrings['notesShowLess']?[widget.locale] ?? 'Show fewer notes')
-        : (uiStrings['notesShowAll']?[widget.locale] ?? 'Show all notes');
-
-    final spans = <InlineSpan>[
-      TextSpan(
-        text: folds && !_expanded
-            ? '${all.substring(0, widget.preview)}… '
-            : all,
-        style: style,
-      ),
-      if (folds)
-        TextSpan(
-          text: _expanded ? '  $label' : label,
-          style: style.copyWith(
-            fontWeight: FontWeight.w600,
-            color: scheme.primary,
-            decoration: TextDecoration.underline,
-            decorationColor: scheme.primary,
+    final all = [
+      for (var i = 0; i < widget.notes.length; i++)
+        '${superscriptNumber(i + 1)}$_nbsp${widget.notes[i].trim()}',
+    ].join('\n');
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < widget.notes.length; i++)
+          Padding(
+            padding: EdgeInsets.only(bottom: fs * 0.12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: fs * 1.1,
+                  child: Text(
+                    superscriptNumber(i + 1),
+                    style: style.copyWith(color: scheme.primary),
+                  ),
+                ),
+                Expanded(child: Text(widget.notes[i].trim(), style: style)),
+              ],
+            ),
           ),
-          recognizer: TapGestureRecognizer()
-            ..onTap = () => setState(() => _expanded = !_expanded),
-        ),
-    ];
+      ],
+    );
 
+    final folds = widget.preview > 0 && all.length > widget.preview;
+
+    // Inset on BOTH sides. 「一方面在两侧很难看」: the block used to run
+    // edge to edge while the verse above it sat inside a margin, so the
+    // apparatus looked like a different document rather than a note on
+    // this one.
+    final inset = EdgeInsets.fromLTRB(
+        fs * 0.6, fs * 0.3, fs * 0.6, fs * 0.15);
+
+    if (!folds) {
+      return Padding(padding: inset, child: body);
+    }
+
+    final label =
+        uiStrings['notesFoldLabel']?[widget.locale] ?? "Translator's notes";
     return Padding(
-      padding: EdgeInsets.only(top: fs * 0.3, bottom: fs * 0.15),
-      child: Text.rich(TextSpan(children: spans)),
+      padding: inset,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // The pill. `InkWell` inside a `ClipRRect` of the same radius
+          // so the press ripple keeps the shape rather than filling a
+          // rectangle behind it.
+          ClipRRect(
+            borderRadius: BorderRadius.circular(_kPillRadius),
+            child: InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: fs * 0.5, vertical: fs * 0.12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: scheme.primary),
+                  borderRadius: BorderRadius.circular(_kPillRadius),
+                  color: _expanded ? scheme.primary : null,
+                ),
+                child: Text(
+                  '$label ${_expanded ? '▴' : '▾'}',
+                  style: TextStyle(
+                    fontSize: fs * 0.8,
+                    fontFamily: widget.settings.fontFamily,
+                    fontFamilyFallback: kCjkFontFallback,
+                    color: _expanded ? scheme.onPrimary : scheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_expanded)
+            Padding(
+              padding: EdgeInsets.only(top: fs * 0.25),
+              child: body,
+            ),
+        ],
+      ),
     );
   }
 }

@@ -409,6 +409,23 @@ List<InlineSpan> buildVerseContentSpans({
         // a few pixels wide mid-prose, and opening one cut the verse
         // into pieces. One shape caused all three.
         noteSink.add(note.trim());
+        // Consecutive markers collapse to a range: `¹⁻⁵`, not `¹²³⁴⁵`.
+        // Five superscripts in a row read as the single number 12345 —
+        // you cannot see where one ends — and 梁家鏗 puts runs of them
+        // at the end of a verse constantly. A run only happens where the
+        // notes share a position, so the range loses nothing.
+        final previous = spans.isEmpty ? null : spans.last;
+        if (previous is TextSpan &&
+            previous.text != null &&
+            _isNoteMarker(previous.text!)) {
+          spans[spans.length - 1] = TextSpan(
+            text: '${_markerStart(previous.text!)}\u2060⁻\u2060'
+                '${superscriptNumber(noteSink.length)}',
+            style: previous.style,
+          );
+          lastPart = part;
+          continue;
+        }
         spans.add(TextSpan(
           text: superscriptNumber(noteSink.length),
           style: TextStyle(
@@ -504,3 +521,12 @@ List<InlineSpan> buildVerseContentSpans({
 
   return spans;
 }
+
+/// Whether a span's text is one of this file's own note markers — a run
+/// of superscript digits, optionally already a range.
+bool _isNoteMarker(String text) =>
+    text.isNotEmpty &&
+    text.runes.every((r) => '⁰¹²³⁴⁵⁶⁷⁸⁹⁻\u2060'.runes.contains(r));
+
+/// The first number of a marker that may already be a range.
+String _markerStart(String text) => text.split('\u2060').first;

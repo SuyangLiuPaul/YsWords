@@ -36,7 +36,11 @@ const _second = '在新约圣经中，和合本将“灵”译作了“圣灵”
 Widget _host(List<String> notes, AppSettings settings, {int? preview}) =>
     MaterialApp(
       home: Scaffold(
-        body: SizedBox(
+        // Scrollable, because every real caller is: six long notes fully
+        // open are taller than a phone, which is the whole reason the
+        // pill exists.
+        body: SingleChildScrollView(
+          child: SizedBox(
           width: 360,
           child: VerseNotesBlock(
             notes: notes,
@@ -44,14 +48,29 @@ Widget _host(List<String> notes, AppSettings settings, {int? preview}) =>
             locale: 'zh-Hans',
             preview: preview ?? kNotePreviewChars,
           ),
+          ),
         ),
       ),
     );
 
-/// The one Text.rich the block renders, as plain characters.
+/// The notes themselves, as plain characters — not the pill's label.
+/// Each note is its own Text beside its own number, so this joins them
+/// the way the block reads. Empty when shut, which is itself an
+/// assertion several of these tests make.
 String _rendered(WidgetTester tester) {
-  final rich = tester.widget<Text>(find.byType(Text));
-  return rich.textSpan!.toPlainText();
+  final out = <String>[];
+  var number = '';
+  for (final t in tester.widgetList<Text>(find.byType(Text))) {
+    final s = t.data ?? t.textSpan?.toPlainText() ?? '';
+    if (s.isEmpty || s.contains('译者注')) continue;
+    if (s.runes.every((r) => '⁰¹²³⁴⁵⁶⁷⁸⁹'.runes.contains(r))) {
+      number = s;
+      continue;
+    }
+    out.add('$number\u00A0$s');
+    number = '';
+  }
+  return out.join('\n');
 }
 
 void main() {
@@ -78,24 +97,43 @@ void main() {
     expect(superscriptNumber(26), '²⁶');
   });
 
-  testWidgets('「不好按」 — the control is words wide, and it is the only one',
+  testWidgets('「不好按」 — the control is a pill, and it is the only one',
       (tester) async {
     await tester.pumpWidget(_host([_long, _second], settings));
-    // No icon, no chevron, no button: one tappable run of text.
+    // 2026-09-14, second pass: the owner circled the 雅偉的話 WEB
+    // reader's control, which is a bordered pill reading 「译者注 ▾」.
+    // The first pass had an underlined run of words at the end of the
+    // truncated text; a pill reads as pressable before it is pressed.
+    expect(find.text('译者注 ▾'), findsOneWidget);
     expect(find.byType(IconButton), findsNothing);
-    expect(find.byType(Icon), findsNothing);
-    expect(_rendered(tester), contains('展开全部译者注'));
+    // Shut means shut: no half-note behind the pill.
+    expect(find.textContaining('26-27节注'), findsNothing);
   });
 
-  testWidgets('「close和expand连在一起」 — the label follows the text in the '
-      'same paragraph', (tester) async {
+  testWidgets('the pill fills and flips its triangle when open',
+      (tester) async {
     await tester.pumpWidget(_host([_long, _second], settings));
+    await tester.tap(find.text('译者注 ▾'));
+    await tester.pumpAndSettle();
+    expect(find.text('译者注 ▴'), findsOneWidget);
+    expect(find.text('译者注 ▾'), findsNothing);
+  });
+
+  testWidgets('open shows ALL of the notes, not a truncated head',
+      (tester) async {
+    // The other half of the second pass. A note cut off at 160
+    // characters and ending in `…` is not something anyone wanted to
+    // read; the reader either wants the apparatus or does not.
+    await tester.pumpWidget(_host([_long, _second], settings));
+    await tester.tap(find.text('译者注 ▾'));
+    await tester.pumpAndSettle();
     final text = _rendered(tester);
-    // The ellipsis is the seam, and the label is immediately after it.
-    // A design with the control on its own row would have a newline
-    // here, and that is exactly what was rejected.
-    expect(text, contains('… 展开全部译者注'));
-    expect(text.endsWith('展开全部译者注'), isTrue);
+    expect(text, contains(_long));
+    expect(text, contains(_second));
+    // The last note ends where the note ends. `…` appears INSIDE these
+    // notes (it is Chinese punctuation), so the assertion is that the
+    // block is not cut, not that the character is absent.
+    expect(text, endsWith(_second));
   });
 
   testWidgets('folded by default, and folded means shorter', (tester) async {
@@ -107,11 +145,7 @@ void main() {
         _host([_long, _second, _long, _second, _long, _second], settings));
     final folded = tester.getSize(find.byType(VerseNotesBlock)).height;
 
-    // Tap the LABEL, not the paragraph. The two are spans of one
-    // Text.rich and only the label carries the recognizer — which is
-    // the design, and worth asserting by tapping it the way a finger
-    // would rather than by calling the callback.
-    await tester.tapOnText(find.textRange.ofSubstring('展开全部译者注'));
+    await tester.tap(find.text('译者注 ▾'));
     await tester.pumpAndSettle();
     final open = tester.getSize(find.byType(VerseNotesBlock)).height;
 
@@ -120,7 +154,6 @@ void main() {
             'nothing was actually folded');
     expect(_rendered(tester), contains(_second),
         reason: 'the second note is only reachable once open');
-    expect(_rendered(tester), contains('收起译者注'));
   });
 
   testWidgets('a note short enough to read whole is never folded',
@@ -145,13 +178,13 @@ void main() {
   testWidgets('a different verse in the same slot folds again',
       (tester) async {
     await tester.pumpWidget(_host([_long, _second], settings));
-    await tester.tapOnText(find.textRange.ofSubstring('展开全部译者注'));
+    await tester.tap(find.text('译者注 ▾'));
     await tester.pumpAndSettle();
-    expect(_rendered(tester), contains('收起译者注'));
+    expect(find.text('译者注 ▴'), findsOneWidget);
 
     await tester.pumpWidget(_host([_second, _long], settings));
     await tester.pumpAndSettle();
-    expect(_rendered(tester), contains('展开全部译者注'),
+    expect(find.text('译者注 ▾'), findsOneWidget,
         reason: 'scrolling to another verse must not inherit the last '
             'one\'s open state');
   });
