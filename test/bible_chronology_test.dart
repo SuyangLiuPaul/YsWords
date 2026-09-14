@@ -2381,6 +2381,55 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('the tick lane also earns rows by DEMAND, not just by '
+        'what the lifelines reclaim', (tester) async {
+      // At the whole-span view nothing has folded — "nothing folds at
+      // whole span" is the property the test above this one already
+      // relies on — so the reclaim mechanism above has nothing to give
+      // the lane: whatever height it shows here is on demand alone.
+      //
+      // There are 13 PINNED candidates at this density; the six earliest
+      // (Creation, Enoch, the Flood, Abram's birth, his leaving Haran,
+      // Isaac's birth) are spread across the whole span in TIME, but at
+      // fit density the whole 4,000+ year axis is squeezed into a couple
+      // hundred points, so in PIXEL space their fixed-width labels
+      // collide anyway. Measured directly, not assumed: with just this
+      // fix reverted in the working tree, only "Creation" and "Abram is
+      // born" survive that collision at one row; the other four are
+      // dropped rather than shown, silence the reclaim mechanism could
+      // never fix because it had nothing to reclaim at this view.
+      //
+      // This is a partial fix, not a claim that every pinned event is
+      // now reachable at fit view: the seven pins later than Abraham
+      // (from "Abraham dies" through Revelation) still get no INLINE
+      // label at fit view even with this fix — the row cap the packer
+      // is built to respect is exhausted by the earlier six before it
+      // reaches them. Most still surface as a "+N" chip (tap to reach
+      // them, same as before this fix); the ones right at the axis edge
+      // do not even get that. That gap is a chip/edge-cutoff limit, not
+      // a row-count one, and this fix does not touch it — see
+      // docs/autonomous-queue.md for the follow-up.
+      await pumpChart(tester, size: tall);
+      await wholeSpan(tester);
+      final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+      const pins = [
+        'Creation',
+        'Enoch is taken',
+        "The Flood (Noah's 600th year)",
+        'Abram is born',
+        'Abram leaves Haran, aged 75',
+        'Isaac is born, Abraham aged 100',
+      ];
+      final inLane = pins.where((n) =>
+          find.descendant(of: laneBox, matching: find.text(n)).evaluate().isNotEmpty);
+
+      expect(inLane.length, greaterThan(2),
+          reason: 'more than the two that fit on the reclaim-only floor '
+              'should be in the lane once it can earn rows by demand — '
+              'found only: $inLane');
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('a viewport straddling AM 2187 draws the bars that are '
         'in it and folds only the rest', (tester) async {
       await pumpChart(tester, size: tall);

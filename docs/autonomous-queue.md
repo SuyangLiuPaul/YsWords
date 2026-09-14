@@ -11513,6 +11513,15 @@ has never seen this repo.
       still unanswered: start the `GetMaterialApp` → `.router` migration
       branch, or close this as "won't fix"?
 
+      **Deferred a sixteenth consecutive iteration, 2026-09-14** — this
+      hour's NEXT_TASK.md picked the chronology chart's tick-lane
+      demand-driven row count instead (`queue:13124`'s 2026-09-14 slice,
+      P2, the NT densest-decade gap named in `d/chrono4`, hour-sized).
+      Still branch-scale, still unattended-unsafe, still the only fully
+      open P2 checkbox besides the chronology chart, and the question
+      above to the user is still unanswered: start the `GetMaterialApp`
+      → `.router` migration branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -13714,6 +13723,67 @@ has never seen this repo.
       changed tests confirmed red against the pre-fix file, green after.
       `flutter test test/bible_chronology_test.dart`: 97/97 (96 existing
       + 1 new). `flutter analyze` clean. Code-only, no deploy.
+
+      **2026-09-14 — the tick lane's row count is now demand-driven as
+      well as supply-driven, a partial answer to the "Left open,
+      deliberately" note above (`d/chrono4`).** The lane used to earn
+      extra rows ONLY from height the folded lifeline rows gave back
+      (`_tickLaneHeight + rows.length * _rowHeight - rowsHeight`,
+      clamped to the 1–5 row range) — a decade dense with labels but
+      sitting beside equally-dense lifelines got nothing extra, because
+      there was nothing to reclaim. Added a second, independent floor:
+      `_demandedLabelRows` runs the real `chronologyLabelPlan` packer
+      once at the 5-row cap and reads back the highest row it actually
+      used; the lane's height is `max(reclaimed, demanded)`, both
+      already clamped to the same 1–5 range, so the cap itself is
+      unchanged and the widget gets taller rather than starving the
+      lifelines to pay for it (the opposite of what the reclaim
+      mechanism deliberately does — see its own comment a few lines
+      above the fix).
+      Measured, not assumed: at the literal whole-span (fit) view,
+      nothing has folded, so pre-fix the lane sat at its 1-row floor
+      (≈36.8pt) regardless. Of the 13 PINNED candidates at that density,
+      only 2 (Creation, Abram is born) fit in that one row; the fix
+      raises the lane to the 5-row cap (≈104pt) and 6 of the 13 now get
+      their own inline label. **This does not close the gap the note
+      above named** — the seven pins later than Abraham still get no
+      inline label at fit view even with the fix, because the row cap
+      (deliberately still 5, per this item's own "five is where a
+      leader line stops being believable" reasoning) is exhausted by
+      the earlier six before the packer reaches them; most of those
+      seven still surface as a "+N" chip (unaffected either way by this
+      change), and the ones nearest the axis edge get neither, per
+      `chronologyLabelClusters`' edge-cutoff — a chip/edge limit, not a
+      row-count one, untouched by this fix. The AM 4036/4038 same-year
+      ties this item's own recent passes fixed are also unaffected: at
+      that viewport the lifelines are already heavily folded, so
+      reclaim alone already hit the 5-row cap before this fix: `max`
+      picks the same value either way, and the "+6"/"+2" tests below
+      pass unmodified.
+      A refuter reviewing this account before it was committed caught a
+      materially overstated first draft — "the six pinned markers" as
+      if that were the whole candidate set, and "no chip, no inline
+      label — nothing" for markers that in fact already got a "+N" chip
+      pre-fix — and the wording above is the corrected version, not the
+      original claim.
+      New test in `bible_chronology_test.dart`: at the whole-span view,
+      asserts more than 2 of those six earliest pins are found as
+      descendants of the tick lane's own `SizedBox` (newly keyed
+      `chronoTickLaneBox`, since an unscoped `find.text` search is
+      contaminated by the same titles' separate per-lifeline-row
+      inline markers elsewhere in the tree — an earlier draft of this
+      same test got that wrong first). Confirmed red against the
+      pre-fix file (`tickLane = reclaimedTickLane` with the demand term
+      removed), green with it restored. All 98 tests in the file pass
+      (97 existing + 1 new), `flutter analyze` clean, full project
+      suite (3219 tests) passed in the foreground. Code-only, no
+      version bump, no deploy — the other session was mid-release
+      (v1.6.3 landed shortly before this slice started).
+      **Still open**: the seven later pins at fit view (see above), and
+      the original "Left open, deliberately" framing itself — a tap-to-
+      expand cluster or callout list for the densest decade specifically,
+      as opposed to more rows within the existing cap, remains
+      unbuilt.
 
 - [x] **`chronologyChipPlan` no longer drops chips it can't seat — it folds
       the tail into one terminal "+N" chip instead.** Fixed 2026-09-14.

@@ -1108,8 +1108,24 @@ class _ChronologyChartState extends State<ChronologyChart> {
     // there. Past AM 2187 the event lane was one row tall under twenty
     // empty ones; now it is the tall layer and the lifelines are the
     // thin one, which is the true shape of the data in that stretch.
-    final tickLane = (_tickLaneHeight + rows.length * _rowHeight - rowsHeight)
-        .clamp(_tickLaneHeight, _tickLaneMaxHeight);
+    final reclaimedTickLane =
+        (_tickLaneHeight + rows.length * _rowHeight - rowsHeight)
+            .clamp(_tickLaneHeight, _tickLaneMaxHeight);
+
+    // Reclaiming is supply-driven — it only ever spends height the
+    // lifelines gave back. A decade can be too dense for one row even
+    // where the lifelines above it are just as dense and give back
+    // nothing, so the lane also earns rows by DEMAND: whatever the
+    // packer needs, up to the same cap. This is a floor on top of
+    // reclaiming, not a replacement for it — the widget gets taller
+    // rather than starving the lifelines to pay for it, which is the
+    // opposite of what the reclaim comment above deliberately does.
+    final demandedTickLane =
+        (_chipBandHeight + _labelRowPitch * _demandedLabelRows(plotWidth) + 7)
+            .clamp(_tickLaneHeight, _tickLaneMaxHeight);
+    final tickLane = reclaimedTickLane > demandedTickLane
+        ? reclaimedTickLane
+        : demandedTickLane;
     final height = lanesTop + rowsHeight + tickLane;
 
     return SizedBox(
@@ -1323,6 +1339,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                                             plotWidth),
                                   ),
                                 SizedBox(
+                                  key: const ValueKey('chronoTickLaneBox'),
                                   height: tickLane,
                                   child: _tickLane(
                                       context, scheme, plotWidth, tickLane),
@@ -1566,6 +1583,65 @@ class _ChronologyChartState extends State<ChronologyChart> {
     );
   }
 
+  /// Which ticks are even candidates, by density rather than by a zoom
+  /// step: fit-to-width prints only the pinned events, because at
+  /// 0.06 pt per year the lane has room for about four labels and they
+  /// had better be the four a reader recognises. From a quarter of a
+  /// point per year the whole corpus competes.
+  ///
+  /// Shared by [_tickLane] (what actually gets drawn) and
+  /// [_demandedLabelRows] (how many rows that drawing needs), so the two
+  /// can never disagree about who is even in the running.
+  List<ChronologyMarker> _tickCandidates() {
+    final ticks = widget.data.allTicks;
+    final d = _density ?? 0;
+    return ticks.where((t) {
+      if (_atFit) return t.pin;
+      if (d < 0.25) return t.pin || t.isComputed;
+      return true;
+    }).toList();
+  }
+
+  /// How many label rows the candidates at [plotWidth] actually need, up
+  /// to the same cap [_tickLaneMaxHeight] is built from — demand-driven,
+  /// so a decade packed with ties and near-ties earns more rows even
+  /// where the lifelines above it are just as dense and reclaim nothing
+  /// back for the tick lane to spend (see the reclaim comment at the
+  /// `tickLane` computation in [_chart]).
+  ///
+  /// Runs the real, pure packer once at the maximum row count and reads
+  /// back the highest row it actually used — rather than guess a count
+  /// and re-run — so this can never disagree with what [_tickLane] goes
+  /// on to draw with whatever row count is finally chosen.
+  int _demandedLabelRows(double plotWidth) {
+    final candidates = _tickCandidates();
+    if (candidates.isEmpty) return 1;
+    final wants = [
+      for (final t in candidates)
+        _measure(
+          t.localizedTitle(widget.locale),
+          TextStyle(
+            fontSize: _labelFontSize,
+            fontWeight: t.isComputed ? FontWeight.w800 : FontWeight.w500,
+          ),
+        ),
+    ];
+    final lefts = [for (final t in candidates) _x(t.am, plotWidth) + 3];
+    final plan = chronologyLabelPlan(
+      lefts: lefts,
+      wants: wants,
+      rows: 5, // the cap — see _tickLaneMaxHeight
+      plotWidth: plotWidth,
+      minWidth: _scaler.scale(34),
+    );
+    if (plan.isEmpty) return 1;
+    var highest = 0;
+    for (final slot in plan) {
+      if (slot.row > highest) highest = slot.row;
+    }
+    return (highest + 1).clamp(1, 5);
+  }
+
   /// The event lane: every dated thing on the chart as a tick, computed
   /// ones solid, placed ones hollow.
   ///
@@ -1590,18 +1666,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
   ) {
     final ticks = widget.data.allTicks;
     final brightness = Theme.of(context).brightness;
-
-    // Which ticks are even candidates, by density rather than by a zoom
-    // step: fit-to-width prints only the pinned events, because at
-    // 0.06 pt per year the lane has room for about four labels and they
-    // had better be the four a reader recognises. From a quarter of a
-    // point per year the whole corpus competes.
-    final d = _density ?? 0;
-    final candidates = ticks.where((t) {
-      if (_atFit) return t.pin;
-      if (d < 0.25) return t.pin || t.isComputed;
-      return true;
-    }).toList();
+    final candidates = _tickCandidates();
 
     final styles = [
       for (final t in candidates)
