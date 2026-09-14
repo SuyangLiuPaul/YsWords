@@ -13891,6 +13891,108 @@ has never seen this repo.
       already-frozen zoom band, not worth a China+intl deploy cycle on
       its own.
 
+      **2026-09-15, later the same day — the terminal-fold sliver itself
+      fixed.** The gap the note directly above already named precisely:
+      a candidate whose `left` is already `>= plotWidth` on its very
+      first loop iteration hits `chronologyChipPlan`'s fold branch
+      directly, where `tailLeft = plotWidth - 1.0` fired unconditionally,
+      flooring `room` at exactly `1.0` no matter how much real space sat
+      behind the previously placed chip. Re-derived the corpus claim
+      rather than copying it forward: the tick lane builds
+      `lefts[i] = _x(t.am, plotWidth) + 3`, and `_x(am, plotWidth) =
+      (am - spanStartAm) / span * plotWidth` — for the very last event,
+      `am == spanEndAm`, so that fraction is exactly `1.0` and `_x`
+      returns exactly `plotWidth`. The corpus's own last tick is
+      `plotWidth + 3`, deterministically, by that formula — confirmed
+      against `assets/bible_chronology.json` (`spanStartAm=0`,
+      `spanEndAm=4098`), not by re-running last hour's print instrument.
+
+      **The fix**: a terminal-fold chip has already abandoned any one
+      tie's own x — it summarises a tail that can span years — so
+      instead of pinning it to a hardcoded 1pt sliver at the edge, it is
+      now seated at its `measureMergedWidth`-measured width, pulled left
+      off `plotWidth`, bounded below by the previous chip's right edge
+      (`lastRight + gap`) and by 0; it shrinks only when even that room
+      falls short. `room` stays floored at `1.0` (now via
+      `.clamp(1.0, plotWidth)` rather than an always-1.0 assignment) so
+      the already-known, deliberately-unsolved residual case — the
+      previous chip itself jammed against the edge — degrades to exactly
+      the old behaviour instead of throwing on an inverted clamp range.
+
+      **Refuted before committing** (five invariant/behaviour claims plus
+      the `_x` algebra, all given to an independent agent with the exact
+      new code and asked to break it): the terminal-fold branch itself
+      keeps `left>=0` and `left+width<=plotWidth` for every input tried,
+      never crashes for any `plotWidth` this codebase actually passes
+      (verified against the real caller and every test call site — all
+      >=300), and the width-improvement claim traced out arithmetically
+      matches the new test. Two REFUTED findings, both independently
+      reproduced afterwards and both **pre-existing, not introduced by
+      this change** — recorded as new queue follow-ups below rather than
+      fixed inline, since neither is in this slice's scope: (a) the
+      *ordinary* (non-fold) shrink path a few lines above floors `room`
+      at `1.0` the same way, so `lefts:[99.7], widths:[5.0],
+      plotWidth:100.0` places a chip at `left=99.7, width=1.0`, i.e.
+      `right=100.7 > plotWidth` — reproduced directly; (b) the terminal
+      chip can still overlap the previous chip when that previous chip is
+      itself jammed at the edge (`lefts:[98.0,200.0], widths:[50.0,20.0],
+      plotWidth:100.0` → chip0 `[98,100]`, terminal `[99,100]`) —
+      reproduced, and confirmed byte-for-byte identical to what the OLD
+      code already produced for the same input, so not a regression.
+
+      **New test**, `bible_chronology_test.dart` (~1967, right after the
+      crowded-row fold test): a previous chip seated with 328pt of real
+      room behind it before `plotWidth`, and a candidate anchored at
+      `plotWidth + 3`. Confirmed red first against the pre-fix file (a
+      literal `git stash` of only the lib file, since this fix does not
+      change the function's signature): asserted `26.0`, old code
+      produced `1.0`. Restored the fix and reran: **99 tests** in the
+      file pass (98 existing + 1 new — recounted this run, not copied
+      forward), `flutter analyze` clean, full suite (**3239 tests**, one
+      new relative to last hour's 3238) passed in the foreground.
+
+      **Not solved here, and not attempted**: the jammed-previous-chip
+      overlap case (residual (b) above) — the doc comment on
+      `chronologyChipPlan` already named this before the fix and still
+      does; absorbing already-placed chips backward into the fold until
+      there is real room is its own slice.
+
+      Code-only, no asset/version/dependency change, no deploy — same
+      guard rail as the note above.
+
+- [ ] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
+      chip past `plotWidth`.** Found by the refuter call on the
+      terminal-fold fix directly above (2026-09-15), while checking a
+      claim about the *unrelated* fold branch — not itself the target of
+      that slice. `room = (plotWidth - left).clamp(1.0, double.infinity)`
+      floors `room` at `1.0` even when the true remaining space is
+      smaller than that, so a chip whose `widths[i] >= 1.0` can be drawn
+      past the plot's right edge. Reproduced directly:
+      `chronologyChipPlan(lefts: [99.7], widths: [5.0], plotWidth: 100.0)`
+      → `left=99.7, width=1.0`, i.e. `left+width=100.7 > 100`. Same shape
+      of bug as the terminal-fold one just fixed (a hardcoded floor
+      papering over "how much room is actually left"), in the sibling
+      branch a few lines above it. Low severity — a chip drawn 0.7pt past
+      the axis in a corpus where this can actually arise — but it is the
+      same function this hour already touched, so record it rather than
+      let it drift.
+
+- [ ] **`chronologyChipPlan`'s terminal fold can still overlap the
+      previously placed chip when that chip is itself jammed against the
+      plot edge.** Also found by the same refuter call, 2026-09-15 — this
+      is the "residual case" the terminal-fold fix directly above already
+      named and deliberately left unsolved, now with a concrete repro:
+      `chronologyChipPlan(lefts: [98.0, 200.0], widths: [50.0, 20.0],
+      plotWidth: 100.0)` places the first chip at `[98.0, 100.0]` and the
+      terminal fold at `[99.0, 100.0]` — a visible 1pt overlap. Confirmed
+      byte-identical to what the pre-2026-09-15 code already produced for
+      the same input, so not a new regression, but still a real defect.
+      The fix, per the terminal-fold item's own doc comment: when the
+      fold branch's computed `room` is at its floor because the previous
+      chip left no real space, absorb that previous chip (and further
+      back, if still not enough) into the fold too, rather than trying to
+      squeeze the fold into a gap that isn't there.
+
 - [x] **`chronologyChipPlan` no longer drops chips it can't seat — it folds
       the tail into one terminal "+N" chip instead.** Fixed 2026-09-14.
 

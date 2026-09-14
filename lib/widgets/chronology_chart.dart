@@ -3054,13 +3054,18 @@ class ChronologyChipSlot {
 ///
 /// Once even a shrunk chip has nowhere left to go, it — and every chip
 /// still waiting behind it in x order — is folded into ONE terminal
-/// chip in that same last sliver of room, returned as a single
-/// [ChronologyChipSlot] whose [ChronologyChipSlot.extraClusters] names
-/// the rest of what it absorbed. Nothing is ever silently dropped: a
-/// same-year tie the reader cannot tap is worse than one folded into a
-/// wider bucket. [measureMergedWidth], given the original cluster
-/// indices being folded together, returns how wide the caller's own
-/// merged "+N" text draws; without it the merged chip just takes
+/// chip, returned as a single [ChronologyChipSlot] whose
+/// [ChronologyChipSlot.extraClusters] names the rest of what it
+/// absorbed. A terminal chip has already abandoned any one tie's own x
+/// — it summarises a tail that can span several years — so it is seated
+/// at its measured merged width by pulling it left off the plot's right
+/// edge, bounded by the previous chip's right edge (plus [gap]) and by
+/// 0; only when even that room falls short of the measured width does it
+/// shrink, same as the single-chip case. Nothing is ever silently
+/// dropped: a same-year tie the reader cannot tap is worse than one
+/// folded into a wider bucket. [measureMergedWidth], given the original
+/// cluster indices being folded together, returns how wide the caller's
+/// own merged "+N" text draws; without it the merged chip just takes
 /// whatever room is left, same as the single-chip shrink case.
 @visibleForTesting
 List<ChronologyChipSlot> chronologyChipPlan({
@@ -3081,15 +3086,22 @@ List<ChronologyChipSlot> chronologyChipPlan({
     if (left >= plotWidth) {
       // Nobody from here on has room at their own x. Rather than drop
       // them — a same-year tie the reader cannot tap at all — fold the
-      // rest of the row into one terminal chip and give it whatever
-      // sliver is left before the plot's right edge, the same
-      // shrink-not-drop the single-chip case below already gets.
+      // rest of the row into one terminal chip. Unlike the single-chip
+      // shrink below, this chip has already abandoned any one tie's own
+      // x, so pin it to its measured merged width by pulling it left off
+      // the plot's right edge — bounded by the previous chip's right
+      // edge (plus [gap]) and by 0 — and shrink only if even that room
+      // is not enough. `room` is floored at 1.0, same as the single-chip
+      // case: if the previous chip is itself jammed against the edge,
+      // this still places a sliver rather than throwing on an inverted
+      // clamp range — absorbing already-placed chips backward to make
+      // real room in that case is a follow-up, not solved here.
       final tail = order.sublist(idx);
-      final tailLeft = left > plotWidth - 1.0 ? plotWidth - 1.0 : left;
-      final room = (plotWidth - tailLeft).clamp(1.0, double.infinity);
-      final tailWidth = measureMergedWidth != null
-          ? measureMergedWidth(tail).clamp(1.0, room)
-          : room;
+      final prevRight = lastRight.isFinite ? lastRight + gap : 0.0;
+      final room = (plotWidth - prevRight).clamp(1.0, plotWidth);
+      final desiredWidth = measureMergedWidth?.call(tail) ?? room;
+      final tailWidth = desiredWidth.clamp(1.0, room);
+      final tailLeft = (plotWidth - tailWidth).clamp(0.0, plotWidth);
       out.add(ChronologyChipSlot(
         cluster: tail.first,
         extraClusters: tail.sublist(1),

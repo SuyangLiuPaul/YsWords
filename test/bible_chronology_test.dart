@@ -1964,6 +1964,43 @@ void main() {
       }
     });
 
+    test('a terminal-fold chip past the plot edge is seated at its '
+        'measured merged width, not a 1pt sliver, when the previous chip '
+        'left real room behind it', () {
+      // The real corpus shape (`queue:13149`, 2026-09-15 follow-up): the
+      // tick lane builds `lefts[i] = _x(t.am, plotWidth) + 3`, and for
+      // the very last event `t.am == spanEndAm` so `_x` returns exactly
+      // `plotWidth` — the last tick's own left is always `plotWidth + 3`,
+      // by that formula, not by a one-off measurement. A candidate whose
+      // `left` is already `>= plotWidth` hits the fold branch directly on
+      // its very first iteration, before the ordinary shrink path (which
+      // only ever sees `left < plotWidth`) gets a look at it.
+      const plotWidth = 400.0;
+      final plan = chronologyChipPlan(
+        lefts: const [50.0, plotWidth + 3],
+        widths: const [20.0, 20.0],
+        plotWidth: plotWidth,
+        measureMergedWidth: (_) => 26.0,
+      );
+      expect(plan, hasLength(2));
+      final terminal = plan.last;
+      expect(terminal.cluster, 1);
+      // The previous chip is seated at 50 and ends at 70 (width clamped
+      // to its own 20 pt ask, since 400 - 50 = 350 pt of room). The
+      // terminal chip therefore has 400 - (70 + gap) = 328 pt behind it
+      // — far more than its measured 26 pt — so it must be drawn at that
+      // full measured width, not shrunk to a sliver.
+      expect(terminal.width, 26.0,
+          reason: 'the previous chip ends at 70 with plenty of room to '
+              'plotWidth 400; the terminal chip must take its measured '
+              'width, not a hardcoded 1.0 sliver');
+      expect(terminal.left, plotWidth - 26.0,
+          reason: 'pulled left off the plot edge by exactly its own '
+              'width, not clamped to plotWidth - 1.0');
+      expect(terminal.left + terminal.width, lessThanOrEqualTo(plotWidth));
+      expect(terminal.left, greaterThanOrEqualTo(0.0));
+    });
+
     test('composed labelPlan → labelClusters → chipPlan: every candidate '
         'ends up placed or chipped — nothing is silently lost across all '
         'three stages together, not even a candidate with 3 pt of room '
