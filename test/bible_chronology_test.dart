@@ -1912,6 +1912,10 @@ void main() {
       for (final s in plan) {
         expect(s.left, greaterThanOrEqualTo(rnd[s.cluster] - 0.01));
       }
+      // No placed chip is drawn past the plot's right edge.
+      for (final s in plan) {
+        expect(s.left + s.width, lessThanOrEqualTo(900.0 + 0.01));
+      }
     });
 
     test('the chip packer shrinks, but still places, a chip that runs off '
@@ -1926,6 +1930,19 @@ void main() {
               'drawn a little narrow — it must still be placed');
       expect(plan.first.width, lessThan(30.0));
       expect(plan.first.left + plan.first.width, lessThanOrEqualTo(400.0));
+    });
+
+    test('the chip packer never draws past plotWidth even when the room '
+        'left is under 1pt', () {
+      final plan = chronologyChipPlan(
+        lefts: const [99.7],
+        widths: const [5.0],
+        plotWidth: 100.0,
+      );
+      expect(plan, hasLength(1));
+      expect(plan.first.left + plan.first.width, lessThanOrEqualTo(100.0),
+          reason: 'a floored-at-1.0 room used to let this chip draw at '
+              'left=99.7 width=1.0, past the 100.0 axis');
     });
 
     test('a crowded row folds what will not fit into one terminal chip '

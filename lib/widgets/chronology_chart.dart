@@ -3091,11 +3091,14 @@ List<ChronologyChipSlot> chronologyChipPlan({
       // x, so pin it to its measured merged width by pulling it left off
       // the plot's right edge — bounded by the previous chip's right
       // edge (plus [gap]) and by 0 — and shrink only if even that room
-      // is not enough. `room` is floored at 1.0, same as the single-chip
-      // case: if the previous chip is itself jammed against the edge,
-      // this still places a sliver rather than throwing on an inverted
-      // clamp range — absorbing already-placed chips backward to make
-      // real room in that case is a follow-up, not solved here.
+      // is not enough. `room` is floored at 1.0 here: if the previous
+      // chip is itself jammed against the edge, this still places a
+      // sliver rather than throwing on an inverted clamp range —
+      // absorbing already-placed chips backward to make real room in
+      // that case is a follow-up, not solved here. (The ordinary
+      // single-chip room just below has no floor: the `left >=
+      // plotWidth` check above already guarantees it is strictly
+      // positive there, so there is no inverted-range risk to guard.)
       final tail = order.sublist(idx);
       final prevRight = lastRight.isFinite ? lastRight + gap : 0.0;
       final room = (plotWidth - prevRight).clamp(1.0, plotWidth);
@@ -3110,7 +3113,9 @@ List<ChronologyChipSlot> chronologyChipPlan({
       ));
       break;
     }
-    final room = (plotWidth - left).clamp(1.0, double.infinity);
+    // > 0: the `left >= plotWidth` check above already took the fold
+    // branch for any case where there would be no room left.
+    final room = plotWidth - left;
     final width = widths[i] < room ? widths[i] : room;
     out.add(ChronologyChipSlot(cluster: i, left: left, width: width));
     lastRight = left + width;
