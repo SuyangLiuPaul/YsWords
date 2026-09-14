@@ -661,6 +661,7 @@
     {
       "id": "eden",
       "am": 4,
+      "seq": 1,
       "year": -4000,
       "era": "antediluvian",
       "amBasis": "placed",
@@ -675,6 +676,7 @@
     {
       "id": "fall",
       "am": 14,
+      "seq": 2,
       "year": -3990,
       "era": "antediluvian",
       "amBasis": "placed",
@@ -690,6 +692,7 @@
     {
       "id": "cain_abel",
       "am": 54,
+      "seq": 3,
       "year": -3950,
       "era": "antediluvian",
       "amBasis": "placed",
@@ -704,6 +707,7 @@
     {
       "id": "seth_born",
       "am": 134,
+      "seq": 4,
       "year": -3870,
       "era": "antediluvian",
       "amBasis": "placed",
@@ -719,6 +723,7 @@
     {
       "id": "babel",
       "am": 1804,
+      "seq": 7,
       "year": -2200,
       "era": "antediluvian",
       "amBasis": "placed",
@@ -733,6 +738,7 @@
     {
       "id": "lot_separates",
       "am": 1918,
+      "seq": 9,
       "year": -2086,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -747,6 +753,7 @@
     {
       "id": "abrahamic_covenant",
       "am": 1924,
+      "seq": 10,
       "year": -2080,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -762,6 +769,7 @@
     {
       "id": "ishmael_born",
       "am": 1924,
+      "seq": 11,
       "year": -2080,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -776,6 +784,7 @@
     {
       "id": "sodom_destroyed",
       "am": 1937,
+      "seq": 12,
       "year": -2067,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -790,6 +799,7 @@
     {
       "id": "isaac_offered",
       "am": 1949,
+      "seq": 14,
       "year": -2055,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -804,6 +814,7 @@
     {
       "id": "rebekah_marries",
       "am": 1978,
+      "seq": 15,
       "year": -2026,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -818,6 +829,7 @@
     {
       "id": "jacob_esau_born",
       "am": 1998,
+      "seq": 16,
       "year": -2006,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -832,6 +844,7 @@
     {
       "id": "job_trial",
       "am": 2004,
+      "seq": 17,
       "year": -2000,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -850,6 +863,7 @@
     {
       "id": "jacob_blessing",
       "am": 2075,
+      "seq": 18,
       "year": -1929,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -864,6 +878,7 @@
     {
       "id": "jacobs_ladder",
       "am": 2075,
+      "seq": 19,
       "year": -1929,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -878,6 +893,7 @@
     {
       "id": "jacob_marries",
       "am": 2082,
+      "seq": 20,
       "year": -1922,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -892,6 +908,7 @@
     {
       "id": "joseph_sold",
       "am": 2106,
+      "seq": 21,
       "year": -1898,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -906,6 +923,7 @@
     {
       "id": "joseph_rises",
       "am": 2119,
+      "seq": 22,
       "year": -1885,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -920,6 +938,7 @@
     {
       "id": "israel_egypt",
       "am": 2128,
+      "seq": 23,
       "year": -1876,
       "era": "patriarchs",
       "amBasis": "placed",
@@ -935,6 +954,7 @@
     {
       "id": "israel_oppressed",
       "am": 2304,
+      "seq": 24,
       "year": -1700,
       "era": "mosaic",
       "amBasis": "placed",
@@ -950,6 +970,7 @@
     {
       "id": "moses_born",
       "am": 2478,
+      "seq": 25,
       "year": -1526,
       "era": "mosaic",
       "amBasis": "placed",
@@ -964,6 +985,7 @@
     {
       "id": "burning_bush",
       "am": 2558,
+      "seq": 26,
       "year": -1446,
       "era": "mosaic",
       "amBasis": "placed",
@@ -976,36 +998,9 @@
       "titleZhHant": "荊棘焚燒"
     },
     {
-      "id": "exodus",
-      "am": 2558,
-      "year": -1446,
-      "era": "mosaic",
-      "amBasis": "placed",
-      "pin": true,
-      "refs": [
-        "Exodus 12-13"
-      ],
-      "titleEn": "The Exodus",
-      "titleZhHans": "出埃及",
-      "titleZhHant": "出埃及"
-    },
-    {
-      "id": "manna",
-      "am": 2558,
-      "year": -1446,
-      "era": "mosaic",
-      "amBasis": "placed",
-      "pin": false,
-      "refs": [
-        "Exodus 16"
-      ],
-      "titleEn": "Manna from Heaven",
-      "titleZhHans": "天降吗哪",
-      "titleZhHant": "天降嗎哪"
-    },
-    {
       "id": "plagues",
       "am": 2558,
+      "seq": 27,
       "year": -1446,
       "era": "mosaic",
       "amBasis": "placed",
@@ -1018,8 +1013,24 @@
       "titleZhHant": "埃及十災"
     },
     {
+      "id": "exodus",
+      "am": 2558,
+      "seq": 28,
+      "year": -1446,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": true,
+      "refs": [
+        "Exodus 12-13"
+      ],
+      "titleEn": "The Exodus",
+      "titleZhHans": "出埃及",
+      "titleZhHant": "出埃及"
+    },
+    {
       "id": "red_sea",
       "am": 2558,
+      "seq": 29,
       "year": -1446,
       "era": "mosaic",
       "amBasis": "placed",
@@ -1032,8 +1043,24 @@
       "titleZhHant": "過紅海"
     },
     {
+      "id": "manna",
+      "am": 2558,
+      "seq": 30,
+      "year": -1446,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Exodus 16"
+      ],
+      "titleEn": "Manna from Heaven",
+      "titleZhHans": "天降吗哪",
+      "titleZhHant": "天降嗎哪"
+    },
+    {
       "id": "sinai",
       "am": 2558,
+      "seq": 31,
       "year": -1446,
       "era": "mosaic",
       "amBasis": "placed",
@@ -1049,6 +1076,7 @@
     {
       "id": "tabernacle",
       "am": 2559,
+      "seq": 32,
       "year": -1445,
       "era": "mosaic",
       "amBasis": "placed",
@@ -1062,50 +1090,9 @@
       "titleZhHant": "建造會幕"
     },
     {
-      "id": "jericho",
-      "am": 2598,
-      "year": -1406,
-      "era": "conquest",
-      "amBasis": "placed",
-      "pin": false,
-      "refs": [
-        "Joshua 6"
-      ],
-      "titleEn": "Fall of Jericho",
-      "titleZhHans": "耶利哥城陷",
-      "titleZhHant": "耶利哥城陷"
-    },
-    {
-      "id": "jordan_crossed",
-      "am": 2598,
-      "year": -1406,
-      "era": "conquest",
-      "amBasis": "placed",
-      "pin": false,
-      "refs": [
-        "Joshua 3-4"
-      ],
-      "titleEn": "Israel Crosses Jordan",
-      "titleZhHans": "过约旦河",
-      "titleZhHant": "過約旦河"
-    },
-    {
-      "id": "moses_dies",
-      "am": 2598,
-      "year": -1406,
-      "era": "mosaic",
-      "amBasis": "placed",
-      "pin": false,
-      "refs": [
-        "Deuteronomy 34"
-      ],
-      "titleEn": "Death of Moses",
-      "titleZhHans": "摩西之死",
-      "titleZhHant": "摩西之死"
-    },
-    {
       "id": "wilderness_40",
       "am": 2598,
+      "seq": 33,
       "year": -1406,
       "era": "mosaic",
       "amBasis": "placed",
@@ -1119,8 +1106,54 @@
       "titleZhHant": "曠野四十年"
     },
     {
+      "id": "moses_dies",
+      "am": 2598,
+      "seq": 34,
+      "year": -1406,
+      "era": "mosaic",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Deuteronomy 34"
+      ],
+      "titleEn": "Death of Moses",
+      "titleZhHans": "摩西之死",
+      "titleZhHant": "摩西之死"
+    },
+    {
+      "id": "jordan_crossed",
+      "am": 2598,
+      "seq": 35,
+      "year": -1406,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Joshua 3-4"
+      ],
+      "titleEn": "Israel Crosses Jordan",
+      "titleZhHans": "过约旦河",
+      "titleZhHant": "過約旦河"
+    },
+    {
+      "id": "jericho",
+      "am": 2598,
+      "seq": 36,
+      "year": -1406,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Joshua 6"
+      ],
+      "titleEn": "Fall of Jericho",
+      "titleZhHans": "耶利哥城陷",
+      "titleZhHant": "耶利哥城陷"
+    },
+    {
       "id": "land_divided",
       "am": 2605,
+      "seq": 37,
       "year": -1399,
       "era": "conquest",
       "amBasis": "placed",
@@ -1135,6 +1168,7 @@
     {
       "id": "judges_period",
       "am": 2624,
+      "seq": 38,
       "year": -1380,
       "era": "conquest",
       "amBasis": "placed",
@@ -1149,6 +1183,7 @@
     {
       "id": "deborah",
       "am": 2764,
+      "seq": 39,
       "year": -1240,
       "era": "conquest",
       "amBasis": "placed",
@@ -1163,6 +1198,7 @@
     {
       "id": "gideon",
       "am": 2813,
+      "seq": 40,
       "year": -1191,
       "era": "conquest",
       "amBasis": "placed",
@@ -1175,22 +1211,9 @@
       "titleZhHant": "基甸三百勇士"
     },
     {
-      "id": "ruth",
-      "am": 2904,
-      "year": -1100,
-      "era": "conquest",
-      "amBasis": "placed",
-      "pin": false,
-      "refs": [
-        "Ruth 1-4"
-      ],
-      "titleEn": "Story of Ruth",
-      "titleZhHans": "路得记",
-      "titleZhHant": "路得記"
-    },
-    {
       "id": "samson",
       "am": 2904,
+      "seq": 41,
       "year": -1100,
       "era": "conquest",
       "amBasis": "placed",
@@ -1203,8 +1226,24 @@
       "titleZhHant": "參孫戰非利士"
     },
     {
+      "id": "ruth",
+      "am": 2904,
+      "seq": 42,
+      "year": -1100,
+      "era": "conquest",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Ruth 1-4"
+      ],
+      "titleEn": "Story of Ruth",
+      "titleZhHans": "路得记",
+      "titleZhHant": "路得記"
+    },
+    {
       "id": "samuel_called",
       "am": 2924,
+      "seq": 43,
       "year": -1080,
       "era": "conquest",
       "amBasis": "placed",
@@ -1219,6 +1258,7 @@
     {
       "id": "saul_anointed",
       "am": 2954,
+      "seq": 44,
       "year": -1050,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1233,6 +1273,7 @@
     {
       "id": "david_anointed",
       "am": 2979,
+      "seq": 45,
       "year": -1025,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1247,6 +1288,7 @@
     {
       "id": "david_goliath",
       "am": 2980,
+      "seq": 46,
       "year": -1024,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1261,6 +1303,7 @@
     {
       "id": "david_king",
       "am": 2994,
+      "seq": 47,
       "year": -1010,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1275,6 +1318,7 @@
     {
       "id": "jerusalem_captured",
       "am": 3001,
+      "seq": 48,
       "year": -1003,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1289,6 +1333,7 @@
     {
       "id": "davidic_covenant",
       "am": 3004,
+      "seq": 49,
       "year": -1000,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1303,6 +1348,7 @@
     {
       "id": "solomon_king",
       "am": 3034,
+      "seq": 50,
       "year": -970,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1317,6 +1363,7 @@
     {
       "id": "temple_built",
       "am": 3038,
+      "seq": 51,
       "year": -966,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1332,6 +1379,7 @@
     {
       "id": "kingdom_divided",
       "am": 3073,
+      "seq": 52,
       "year": -931,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1346,6 +1394,7 @@
     {
       "id": "elijah_carmel",
       "am": 3144,
+      "seq": 53,
       "year": -860,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1360,6 +1409,7 @@
     {
       "id": "elisha_succeeds",
       "am": 3156,
+      "seq": 54,
       "year": -848,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1374,6 +1424,7 @@
     {
       "id": "jonah",
       "am": 3224,
+      "seq": 55,
       "year": -780,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1388,6 +1439,7 @@
     {
       "id": "israel_falls",
       "am": 3282,
+      "seq": 56,
       "year": -722,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1402,6 +1454,7 @@
     {
       "id": "hezekiah_reform",
       "am": 3289,
+      "seq": 57,
       "year": -715,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1417,6 +1470,7 @@
     {
       "id": "isaiah",
       "am": 3304,
+      "seq": 58,
       "year": -700,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1431,6 +1485,7 @@
     {
       "id": "jeremiah",
       "am": 3377,
+      "seq": 60,
       "year": -627,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1445,6 +1500,7 @@
     {
       "id": "josiah_reform",
       "am": 3382,
+      "seq": 59,
       "year": -622,
       "era": "monarchy",
       "amBasis": "placed",
@@ -1459,6 +1515,7 @@
     {
       "id": "judah_falls",
       "am": 3418,
+      "seq": 61,
       "year": -586,
       "era": "exile",
       "amBasis": "placed",
@@ -1475,6 +1532,7 @@
     {
       "id": "daniel_lions",
       "am": 3464,
+      "seq": 62,
       "year": -540,
       "era": "exile",
       "amBasis": "placed",
@@ -1489,6 +1547,7 @@
     {
       "id": "return_zerubbabel",
       "am": 3466,
+      "seq": 63,
       "year": -538,
       "era": "exile",
       "amBasis": "placed",
@@ -1503,6 +1562,7 @@
     {
       "id": "temple_rebuilt",
       "am": 3488,
+      "seq": 64,
       "year": -516,
       "era": "exile",
       "amBasis": "placed",
@@ -1517,6 +1577,7 @@
     {
       "id": "esther",
       "am": 3526,
+      "seq": 65,
       "year": -478,
       "era": "exile",
       "amBasis": "placed",
@@ -1531,6 +1592,7 @@
     {
       "id": "ezra_returns",
       "am": 3546,
+      "seq": 66,
       "year": -458,
       "era": "exile",
       "amBasis": "placed",
@@ -1545,6 +1607,7 @@
     {
       "id": "nehemiah_walls",
       "am": 3559,
+      "seq": 67,
       "year": -445,
       "era": "exile",
       "amBasis": "placed",
@@ -1559,6 +1622,7 @@
     {
       "id": "malachi",
       "am": 3574,
+      "seq": 68,
       "year": -430,
       "era": "exile",
       "amBasis": "placed",
@@ -1573,6 +1637,7 @@
     {
       "id": "intertestamental",
       "am": 3604,
+      "seq": 69,
       "year": -400,
       "era": "intertestamental",
       "amBasis": "placed",
@@ -1585,6 +1650,7 @@
     {
       "id": "greek_period",
       "am": 3671,
+      "seq": 70,
       "year": -333,
       "era": "intertestamental",
       "amBasis": "placed",
@@ -1597,6 +1663,7 @@
     {
       "id": "septuagint",
       "am": 3754,
+      "seq": 71,
       "year": -250,
       "era": "intertestamental",
       "amBasis": "placed",
@@ -1609,6 +1676,7 @@
     {
       "id": "maccabees",
       "am": 3837,
+      "seq": 72,
       "year": -167,
       "era": "intertestamental",
       "amBasis": "placed",
@@ -1621,6 +1689,7 @@
     {
       "id": "rome_judea",
       "am": 3941,
+      "seq": 73,
       "year": -63,
       "era": "intertestamental",
       "amBasis": "placed",
@@ -1633,6 +1702,7 @@
     {
       "id": "john_baptist_born",
       "am": 3998,
+      "seq": 74,
       "year": -6,
       "era": "nt",
       "amBasis": "placed",
@@ -1647,6 +1717,7 @@
     {
       "id": "jesus_born",
       "am": 3999,
+      "seq": 75,
       "year": -5,
       "era": "nt",
       "amBasis": "placed",
@@ -1660,22 +1731,9 @@
       "titleZhHant": "耶穌基督降生"
     },
     {
-      "id": "flight_egypt",
-      "am": 4000,
-      "year": -4,
-      "era": "nt",
-      "amBasis": "placed",
-      "pin": false,
-      "refs": [
-        "Matthew 2:13-23"
-      ],
-      "titleEn": "Flight to Egypt",
-      "titleZhHans": "逃往埃及",
-      "titleZhHant": "逃往埃及"
-    },
-    {
       "id": "magi",
       "am": 4000,
+      "seq": 76,
       "year": -4,
       "era": "nt",
       "amBasis": "placed",
@@ -1688,8 +1746,24 @@
       "titleZhHant": "博士來朝"
     },
     {
+      "id": "flight_egypt",
+      "am": 4000,
+      "seq": 77,
+      "year": -4,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Matthew 2:13-23"
+      ],
+      "titleEn": "Flight to Egypt",
+      "titleZhHans": "逃往埃及",
+      "titleZhHant": "逃往埃及"
+    },
+    {
       "id": "jesus_temple_12",
       "am": 4011,
+      "seq": 78,
       "year": 8,
       "era": "nt",
       "amBasis": "placed",
@@ -1704,6 +1778,7 @@
     {
       "id": "jesus_baptized",
       "am": 4029,
+      "seq": 79,
       "year": 26,
       "era": "nt",
       "amBasis": "placed",
@@ -1719,6 +1794,7 @@
     {
       "id": "temptation",
       "am": 4029,
+      "seq": 80,
       "year": 26,
       "era": "nt",
       "amBasis": "placed",
@@ -1734,6 +1810,7 @@
     {
       "id": "disciples_called",
       "am": 4030,
+      "seq": 81,
       "year": 27,
       "era": "nt",
       "amBasis": "placed",
@@ -1750,6 +1827,7 @@
     {
       "id": "sermon_mount",
       "am": 4031,
+      "seq": 82,
       "year": 28,
       "era": "nt",
       "amBasis": "placed",
@@ -1764,6 +1842,7 @@
     {
       "id": "5000_fed",
       "am": 4032,
+      "seq": 83,
       "year": 29,
       "era": "nt",
       "amBasis": "placed",
@@ -1779,6 +1858,7 @@
     {
       "id": "transfiguration",
       "am": 4033,
+      "seq": 84,
       "year": 30,
       "era": "nt",
       "amBasis": "placed",
@@ -1791,37 +1871,24 @@
       "titleZhHant": "登山變像"
     },
     {
-      "id": "ascension",
+      "id": "triumphal_entry",
       "am": 4036,
+      "seq": 85,
       "year": 33,
       "era": "nt",
       "amBasis": "placed",
       "pin": false,
       "refs": [
-        "Acts 1:9-11"
+        "Matthew 21:1-11"
       ],
-      "titleEn": "Ascension",
-      "titleZhHans": "耶稣升天",
-      "titleZhHant": "耶穌升天"
-    },
-    {
-      "id": "crucifixion",
-      "am": 4036,
-      "year": 33,
-      "era": "nt",
-      "amBasis": "placed",
-      "pin": true,
-      "refs": [
-        "Matthew 27",
-        "John 19"
-      ],
-      "titleEn": "Crucifixion of Jesus",
-      "titleZhHans": "耶稣被钉十字架",
-      "titleZhHant": "耶穌被釘十字架"
+      "titleEn": "Triumphal Entry",
+      "titleZhHans": "荣进圣城",
+      "titleZhHant": "榮進聖城"
     },
     {
       "id": "last_supper",
       "am": 4036,
+      "seq": 86,
       "year": 33,
       "era": "nt",
       "amBasis": "placed",
@@ -1836,22 +1903,25 @@
       "titleZhHant": "最後的晚餐"
     },
     {
-      "id": "pentecost",
+      "id": "crucifixion",
       "am": 4036,
+      "seq": 87,
       "year": 33,
       "era": "nt",
       "amBasis": "placed",
-      "pin": false,
+      "pin": true,
       "refs": [
-        "Acts 2"
+        "Matthew 27",
+        "John 19"
       ],
-      "titleEn": "Pentecost: Holy Spirit Poured Out",
-      "titleZhHans": "五旬节圣灵降临",
-      "titleZhHant": "五旬節聖靈降臨"
+      "titleEn": "Crucifixion of Jesus",
+      "titleZhHans": "耶稣被钉十字架",
+      "titleZhHant": "耶穌被釘十字架"
     },
     {
       "id": "resurrection",
       "am": 4036,
+      "seq": 88,
       "year": 33,
       "era": "nt",
       "amBasis": "placed",
@@ -1866,36 +1936,39 @@
       "titleZhHant": "耶穌復活"
     },
     {
-      "id": "triumphal_entry",
+      "id": "ascension",
       "am": 4036,
+      "seq": 89,
       "year": 33,
       "era": "nt",
       "amBasis": "placed",
       "pin": false,
       "refs": [
-        "Matthew 21:1-11"
+        "Acts 1:9-11"
       ],
-      "titleEn": "Triumphal Entry",
-      "titleZhHans": "荣进圣城",
-      "titleZhHant": "榮進聖城"
+      "titleEn": "Ascension",
+      "titleZhHans": "耶稣升天",
+      "titleZhHant": "耶穌升天"
     },
     {
-      "id": "paul_converted",
-      "am": 4038,
-      "year": 35,
+      "id": "pentecost",
+      "am": 4036,
+      "seq": 90,
+      "year": 33,
       "era": "nt",
       "amBasis": "placed",
       "pin": false,
       "refs": [
-        "Acts 9"
+        "Acts 2"
       ],
-      "titleEn": "Paul's Conversion on Damascus Road",
-      "titleZhHans": "保罗大马色路上悔改",
-      "titleZhHant": "保羅大馬色路上悔改"
+      "titleEn": "Pentecost: Holy Spirit Poured Out",
+      "titleZhHans": "五旬节圣灵降临",
+      "titleZhHant": "五旬節聖靈降臨"
     },
     {
       "id": "stephen_martyred",
       "am": 4038,
+      "seq": 91,
       "year": 35,
       "era": "nt",
       "amBasis": "placed",
@@ -1908,8 +1981,24 @@
       "titleZhHant": "司提反殉道"
     },
     {
+      "id": "paul_converted",
+      "am": 4038,
+      "seq": 92,
+      "year": 35,
+      "era": "nt",
+      "amBasis": "placed",
+      "pin": false,
+      "refs": [
+        "Acts 9"
+      ],
+      "titleEn": "Paul's Conversion on Damascus Road",
+      "titleZhHans": "保罗大马色路上悔改",
+      "titleZhHant": "保羅大馬色路上悔改"
+    },
+    {
       "id": "paul_journeys",
       "am": 4050,
+      "seq": 93,
       "year": 47,
       "era": "nt",
       "amBasis": "placed",
@@ -1924,6 +2013,7 @@
     {
       "id": "jerusalem_council",
       "am": 4052,
+      "seq": 94,
       "year": 49,
       "era": "nt",
       "amBasis": "placed",
@@ -1938,6 +2028,7 @@
     {
       "id": "paul_rome",
       "am": 4063,
+      "seq": 95,
       "year": 60,
       "era": "nt",
       "amBasis": "placed",
@@ -1952,6 +2043,7 @@
     {
       "id": "temple_destroyed",
       "am": 4073,
+      "seq": 96,
       "year": 70,
       "era": "nt",
       "amBasis": "placed",
@@ -1967,6 +2059,7 @@
     {
       "id": "john_patmos",
       "am": 4098,
+      "seq": 97,
       "year": 95,
       "era": "nt",
       "amBasis": "placed",

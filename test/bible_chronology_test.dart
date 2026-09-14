@@ -1502,6 +1502,63 @@ void main() {
     });
   });
 
+  group('same-year events keep bible_timeline.json\'s narrative order', () {
+    // allTicks used to tie-break same-AM events alphabetically by id,
+    // which is meaningless — it put the Ascension before the
+    // Crucifixion in the AM 4036 "+6" cluster. The tie-break is now the
+    // event's own position in bible_timeline.json (carried as `seq`).
+    test('AM 4036 — the Passion week — is not alphabetised', () {
+      final ids = data.allTicks
+          .where((t) => t.am == 4036)
+          .map((t) => t.id)
+          .toList();
+      expect(ids, [
+        'triumphal_entry',
+        'last_supper',
+        'crucifixion',
+        'resurrection',
+        'ascension',
+        'pentecost',
+      ]);
+    });
+
+    test('the other unambiguous same-year ties are in source order', () {
+      expect(data.allTicks.where((t) => t.am == 2558).map((t) => t.id),
+          ['burning_bush', 'plagues', 'exodus', 'red_sea', 'manna', 'sinai']);
+      expect(data.allTicks.where((t) => t.am == 2598).map((t) => t.id),
+          ['wilderness_40', 'moses_dies', 'jordan_crossed', 'jericho']);
+      expect(data.allTicks.where((t) => t.am == 4000).map((t) => t.id),
+          ['magi', 'flight_egypt']);
+      expect(data.allTicks.where((t) => t.am == 4038).map((t) => t.id),
+          ['stephen_martyred', 'paul_converted']);
+    });
+
+    test('every same-AM group of events matches its relative order in '
+        'bible_timeline.json', () {
+      final timeline = json.decode(
+        File('assets/bible_timeline.json').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      final sourceOrder = <String, int>{};
+      for (final (i, e) in (timeline['events'] as List)
+          .cast<Map<String, dynamic>>()
+          .indexed) {
+        sourceOrder[e['id'] as String] = i;
+      }
+      final byAm = <int, List<String>>{};
+      for (final e in data.events) {
+        byAm.putIfAbsent(e.am, () => []).add(e.id);
+      }
+      for (final entry in byAm.entries) {
+        if (entry.value.length < 2) continue;
+        final sourcePositions =
+            entry.value.map((id) => sourceOrder[id]!).toList();
+        expect(sourcePositions, [...sourcePositions]..sort(),
+            reason: 'AM ${entry.key}: ${entry.value} is not in '
+                'bible_timeline.json order');
+      }
+    });
+  });
+
   group('era bands', () {
     test('tile the whole axis without gaps or overlaps', () {
       expect(data.eras, hasLength(8));

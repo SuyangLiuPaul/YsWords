@@ -537,7 +537,7 @@ def build():
     by_marker = {m["id"]: m for m in markers}
     events = []
     seen_ids = set()
-    for e in timeline["events"]:
+    for seq, e in enumerate(timeline["events"]):
         eid = e["id"]
         if eid in seen_ids:
             problems.append("duplicate timeline event id %s" % eid)
@@ -563,6 +563,7 @@ def build():
         events.append({
             "id": eid,
             "am": am,
+            "seq": seq,
             "year": e["year"],
             "era": e["era"],
             "amBasis": "placed",
@@ -572,7 +573,10 @@ def build():
             "titleZhHans": e["titleZhHans"],
             "titleZhHant": e["titleZhHant"],
         })
-    events.sort(key=lambda x: (x["am"], x["id"]))
+    # Tie-break by source order, not id: same-year events are narrative
+    # sequence in bible_timeline.json (e.g. AM 4036's Passion week), and
+    # sorting by id alphabetises that back into nonsense.
+    events.sort(key=lambda x: (x["am"], x["seq"]))
 
     for pid in PINNED_EVENTS:
         if not any(x["id"] == pid for x in events):

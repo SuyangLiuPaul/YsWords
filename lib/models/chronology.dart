@@ -254,6 +254,14 @@ class ChronologyMarker {
   final String id;
   final int am;
 
+  /// Position in `bible_timeline.json`'s own event order. The tie-break
+  /// for same-year events: two things dated to the same AM are still
+  /// narrated in a sequence (the Passion week's six events all land on
+  /// AM 4036), and that sequence is what [seq] preserves. Computed
+  /// markers don't carry one in the asset and default to 0, which only
+  /// matters if a marker ever ties with another on [am] — none do today.
+  final int seq;
+
   /// Which era band this tick belongs to. Its own era, not the band it
   /// happens to land in — the two can differ where eras overlap.
   final String era;
@@ -288,6 +296,7 @@ class ChronologyMarker {
     required this.titleEn,
     required this.titleZhHans,
     required this.titleZhHant,
+    this.seq = 0,
     this.era = '',
     this.amBasis = AmBasis.computed,
     this.pin = true,
@@ -305,6 +314,7 @@ class ChronologyMarker {
       ChronologyMarker(
         id: j['id'] as String,
         am: (j['am'] as num).toInt(),
+        seq: (j['seq'] as num?)?.toInt() ?? 0,
         era: j['era'] as String? ?? '',
         amBasis: (j['amBasis'] as String? ?? 'computed') == 'placed'
             ? AmBasis.placed
@@ -348,6 +358,16 @@ class ChronologyContested {
           (k, v) => MapEntry(k.toString(), v.toString()),
         ),
       );
+}
+
+/// Shared ordering for the tick lane: year, then source order within
+/// that year, then id as a last-resort tie-break for anything that
+/// still matches (e.g. two markers that both default [seq] to 0).
+int _byAmThenSeqThenId(ChronologyMarker a, ChronologyMarker b) {
+  final c = a.am.compareTo(b.am);
+  if (c != 0) return c;
+  final s = a.seq.compareTo(b.seq);
+  return s != 0 ? s : a.id.compareTo(b.id);
 }
 
 /// The whole parsed asset.
@@ -402,10 +422,7 @@ class ChronologyData {
 
   /// Both layers in one axis-ordered list — what the tick lane draws.
   List<ChronologyMarker> get allTicks {
-    final all = [...markers, ...events]..sort((a, b) {
-        final c = a.am.compareTo(b.am);
-        return c != 0 ? c : a.id.compareTo(b.id);
-      });
+    final all = [...markers, ...events]..sort(_byAmThenSeqThenId);
     return all;
   }
 
@@ -448,12 +465,12 @@ class ChronologyData {
         .whereType<Map<String, dynamic>>()
         .map(ChronologyMarker.fromJson)
         .toList()
-      ..sort((a, b) => a.am.compareTo(b.am));
+      ..sort(_byAmThenSeqThenId);
     final events = ((j['events'] as List?) ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(ChronologyMarker.fromJson)
         .toList()
-      ..sort((a, b) => a.am.compareTo(b.am));
+      ..sort(_byAmThenSeqThenId);
     final spanEnd = (meta['spanEndAm'] as num?)?.toInt() ?? 0;
     final contested = (j['contested'] as Map?)?.cast<String, dynamic>();
     return ChronologyData(
