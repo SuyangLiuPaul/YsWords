@@ -14609,6 +14609,11 @@ has never seen this repo.
       decade events their own inline label") is still unbuilt, and this
       slice only covered the 13 pinned ticks, not the wider corpus.
 
+      Pushed as `c0e833bb`. CI run `34991411228` (head `c0e833bb`) was
+      still `in_progress` after ~6 minutes of polling (this iteration's
+      foreground budget) — next iteration's step 0 should check it
+      before picking anything else.
+
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
       `.clamp(1.0, ...)` floor — the `left >= plotWidth` guard above
