@@ -14141,8 +14141,16 @@ has never seen this repo.
       all pass (2 new in this slice; the sourcing/resolvability tests
       were extended in place, not duplicated). Full suite, run in the
       foreground: **3297 tests passed** (1 pre-existing, unrelated
-      skip). Code + test only — no asset, version or dependency change,
-      no deploy, per this item's own guard rail.
+      skip) — took ~57 minutes wall clock locally. Code + test only —
+      no asset, version or dependency change, no deploy, per this
+      item's own guard rail.
+
+      Pushed as `d64e5b44`. CI run `34941070191` was still
+      `in_progress` after the ~6-minute poll budget — the local suite's
+      own ~57-minute runtime makes that budget structurally too short
+      for this repo now, not a sign of trouble. **Next iteration's step
+      0 should check `gh run view 34941070191` (or whatever superseded
+      it) before picking anything else up.**
 
       **Not done by this slice**: the data-model extension (birth/death
       years, parent links, scheme-per-date) this item's own suggested
