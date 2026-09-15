@@ -207,6 +207,15 @@ const _kProjectionCompanions = 'projectionCompanions';
 // 2026-09-13: the order of service — what goes on the wall, in order,
 // prepared before the room fills. See `projection_agenda.dart`.
 const _kProjectionAgenda = 'projectionAgenda';
+// 2026-09-15. 「projector mode 可以有设置 下面类似于Genesis 2:17 这些的字体
+// 大小 还有中文英文的相应的字体吗？」 — three settings the wall did not
+// have. The reference size was a ratio off the passage with a 26 px
+// floor and no way to touch it; the type was whatever the engine chose,
+// with only a CJK fallback pinned, so a wall carrying a Chinese edition
+// and an English one set both in the same face.
+const _kProjectionReferenceStep = 'projectionReferenceStep';
+const _kProjectionFontZh = 'projectionFontZh';
+const _kProjectionFontEn = 'projectionFontEn';
 
 /// Tolerant of anything but a JSON list: a corrupt blob costs the
 /// operator their order of service, so it yields an empty one rather
@@ -354,6 +363,9 @@ class AppSettings extends ChangeNotifier {
   final Map<String, String> _projectionCompanions = <String, String>{};
   List<AgendaItem> _projectionAgenda = const [];
   String _projectionGround = 'seeded';
+  int _projectionReferenceStep = 0;
+  String _projectionFontZh = '';
+  String _projectionFontEn = '';
   ProjectionLayout _projectionLayout = ProjectionLayout.standard;
   List<ProjectionPreset> _projectionPresets = const <ProjectionPreset>[];
 
@@ -587,6 +599,50 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_kProjectionTypeStep, step);
+  }
+
+  /// Index into [kProjectionReferenceSteps]. 0 is 「自动」 — the ratio
+  /// off the passage with its floor, which is what the wall did before
+  /// this setting existed and is still the right answer for most rooms.
+  ///
+  /// Clamped at the READ, like the type ladder above and for the same
+  /// reason: a shortened ladder must not strand a stored index.
+  int get projectionReferenceStep => _projectionReferenceStep;
+
+  Future<void> setProjectionReferenceStep(int step) async {
+    if (_projectionReferenceStep == step) return;
+    _projectionReferenceStep = step;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kProjectionReferenceStep, step);
+  }
+
+  /// The face the wall sets CHINESE scripture in, and the face it sets
+  /// ENGLISH scripture in. Empty means 「跟随阅读字体」 — whatever the
+  /// reader chose for the app.
+  ///
+  /// Two settings rather than one because the wall routinely carries
+  /// both at once (a Chinese edition with an English companion under
+  /// it), and one family that suits 宋体-set scripture rarely suits the
+  /// Latin line beneath it.
+  String get projectionFontZh => _projectionFontZh;
+
+  Future<void> setProjectionFontZh(String key) async {
+    if (_projectionFontZh == key) return;
+    _projectionFontZh = key;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kProjectionFontZh, key);
+  }
+
+  String get projectionFontEn => _projectionFontEn;
+
+  Future<void> setProjectionFontEn(String key) async {
+    if (_projectionFontEn == key) return;
+    _projectionFontEn = key;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kProjectionFontEn, key);
   }
 
   /// Whether the wall carries a second edition under the first.
@@ -1297,6 +1353,9 @@ class AppSettings extends ChangeNotifier {
       _kProjectionCompanions,
       _kProjectionAgenda,
       _kProjectionGround,
+      _kProjectionReferenceStep,
+      _kProjectionFontZh,
+      _kProjectionFontEn,
       _kProjectionLayout,
       _kProjectionPresets,
       _kAutoExpandFirstRef,
@@ -1524,6 +1583,9 @@ class AppSettings extends ChangeNotifier {
           prefs.getString(_kProjectionCompanions)));
     _projectionAgenda = _decodeStoredAgenda(prefs.getString(_kProjectionAgenda));
     _projectionGround = prefs.getString(_kProjectionGround) ?? 'seeded';
+    _projectionReferenceStep = prefs.getInt(_kProjectionReferenceStep) ?? 0;
+    _projectionFontZh = prefs.getString(_kProjectionFontZh) ?? '';
+    _projectionFontEn = prefs.getString(_kProjectionFontEn) ?? '';
     _projectionLayout = _decodeStoredLayout(prefs.getString(_kProjectionLayout));
     // A corrupt blob loses the presets, not the launch. Rows that are
     // not presets are dropped individually (ProjectionPreset.fromJson

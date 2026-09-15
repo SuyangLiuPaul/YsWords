@@ -1783,6 +1783,11 @@ class _ProjectionPageState extends State<ProjectionPage> {
                     secondLoading: _secondLoading,
                     countdownRemaining: _countdownLeft,
                     layout: _settings.projectionLayout,
+                    referenceStep: _settings.projectionReferenceStep,
+                    fontZh: projectionFamilyFor(
+                        _settings.projectionFontZh, _settings.fontFamily),
+                    fontEn: projectionFamilyFor(
+                        _settings.projectionFontEn, _settings.fontFamily),
                   ),
                 ),
                 // THE CONTROLS SIT AT THE TOP, AND THE REFERENCE AT THE

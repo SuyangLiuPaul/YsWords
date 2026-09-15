@@ -325,6 +325,40 @@ const projectionStrings = <String, Map<String, String>>{
     'zh-Hant': '顯示節號',
     'en': 'Verse numbers',
   },
+  // 2026-09-15. 「projector mode 可以有设置 下面类似于Genesis 2:17
+  // 这些的字体大小 还有中文英文相应的字体吗？」 Three
+  // settings the wall did not have.
+  'projectionReferenceSize': {
+    'zh-Hans': '出处字号',
+    'zh-Hant': '出處字級',
+    'en': 'Reference size',
+  },
+  'projectionReferenceSizeAuto': {
+    'zh-Hans': '自动（跟随经文）',
+    'zh-Hant': '自動（跟隨經文）',
+    'en': 'Auto (follows the passage)',
+  },
+  'projectionFontZh': {
+    'zh-Hans': '中文字体',
+    'zh-Hant': '中文字體',
+    'en': 'Chinese face',
+  },
+  'projectionFontEn': {
+    'zh-Hans': '英文字体',
+    'zh-Hant': '英文字體',
+    'en': 'English face',
+  },
+  'projectionFontFollow': {
+    'zh-Hans': '跟随阅读字体',
+    'zh-Hant': '跟隨閱讀字體',
+    'en': 'Follow the reading font',
+  },
+  'projectionFontHint': {
+    'zh-Hans': '墙上常常同时有中文和英文（下面一排是对照版本），所以分开选。',
+    'zh-Hant': '牆上常常同時有中文和英文（下面一排是對照版本），所以分開選。',
+    'en': 'The wall often carries both at once — a companion edition '
+        'sits under the first — so the two are chosen separately.',
+  },
   'projectionReferencePlace': {
     'zh-Hans': '经文出处',
     'zh-Hant': '經文出處',

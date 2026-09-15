@@ -2162,6 +2162,38 @@ class _ProjectorCard extends StatelessWidget {
                 ],
               ),
             ),
+            // 2026-09-15. The reference's own size, which until now was a
+            // ratio off the passage with a floor and no way to touch it.
+            // Auto is first and is the default: the ratio is still the
+            // right answer for most rooms, because it is the rule that
+            // keeps the address readable when a long reading winds the
+            // passage down.
+            row(
+              'projectionReferenceSize',
+              'Reference size',
+              DropdownButton<int>(
+                value: settings.projectionReferenceStep
+                    .clamp(0, kProjectionReferenceSteps.length - 1),
+                onChanged: (v) {
+                  if (v != null) settings.setProjectionReferenceStep(v);
+                },
+                items: [
+                  for (var i = 0;
+                      i < kProjectionReferenceSteps.length;
+                      i++)
+                    DropdownMenuItem(
+                      value: i,
+                      child: Text(
+                        kProjectionReferenceSteps[i] == null
+                            ? t('projectionReferenceSizeAuto',
+                                'Auto (follows the passage)')
+                            : '${kProjectionReferenceSteps[i]!.round()} px',
+                        style: label(),
+                      ),
+                    ),
+                ],
+              ),
+            ),
             row(
               'projectionAlign',
               'Alignment',
@@ -2246,6 +2278,51 @@ class _ProjectorCard extends StatelessWidget {
                         : 'projectionLayoutDevotionalHint',
                     '',
                     locale),
+                style: label(weight: FontWeight.w400, scale: 0.8)
+                    .copyWith(color: scheme.onSurfaceVariant),
+              ),
+            ),
+            // Stacked, not in a row: a font name is as wide as a version
+            // name, and the phone report that produced `stack: true` for
+            // the companion pickers applies here for the same reason.
+            for (final spec in [
+              ('projectionFontZh', 'Chinese face', settings.projectionFontZh,
+                  settings.setProjectionFontZh),
+              ('projectionFontEn', 'English face', settings.projectionFontEn,
+                  settings.setProjectionFontEn),
+            ])
+              row(
+                spec.$1,
+                spec.$2,
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: isValidFontKey(spec.$3) ? spec.$3 : '',
+                  onChanged: (key) {
+                    if (key != null) spec.$4(key);
+                  },
+                  items: [
+                    DropdownMenuItem(
+                      value: '',
+                      child: Text(
+                          t('projectionFontFollow',
+                              'Follow the reading font'),
+                          style: label()),
+                    ),
+                    for (final f in availableFontOptions())
+                      DropdownMenuItem(
+                        value: f.key,
+                        child: Text(f.labelFor(locale), style: label()),
+                      ),
+                  ],
+                ),
+                stack: true,
+              ),
+            Padding(
+              padding: EdgeInsets.only(top: 4 * s),
+              child: Text(
+                t('projectionFontHint',
+                    'The wall often carries both at once, so the two are '
+                        'chosen separately.'),
                 style: label(weight: FontWeight.w400, scale: 0.8)
                     .copyWith(color: scheme.onSurfaceVariant),
               ),
@@ -2336,6 +2413,11 @@ class _ProjectorCard extends StatelessWidget {
                     secondCode: null,
                     secondLoading: false,
                     layout: settings.projectionLayout,
+                    referenceStep: settings.projectionReferenceStep,
+                    fontZh: projectionFamilyFor(
+                        settings.projectionFontZh, settings.fontFamily),
+                    fontEn: projectionFamilyFor(
+                        settings.projectionFontEn, settings.fontFamily),
                   )),
                 ),
               ),

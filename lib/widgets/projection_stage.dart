@@ -121,12 +121,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:yswords/constants/bible_versions.dart'
-    show shortBibleVersionLabel;
+    show shortBibleVersionLabel, bibleVersionLanguage;
 import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/constants/text_patterns.dart'
     show sanitizeForProjection;
 import 'package:yswords/models/verse.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yswords/utils/font_catalog.dart'
+    show kCjkFontFallback, resolveFontFamily;
 
 /// The palette the projection paints in, whatever the reader's own
 /// theme is set to.
@@ -479,6 +480,46 @@ const double kProjectionReferenceWallWidth = 1920.0;
 double projectionPreviewTypeSize(double boxWidth, double typeSize) =>
     typeSize * (boxWidth / kProjectionReferenceWallWidth);
 
+/// The sizes the operator may pin the reference to, in logical pixels.
+///
+/// 2026-09-15. 「下面类似于Genesis 2:17 这些的字体大小」 — the reference
+/// had no setting at all: it was [kProjectionReferenceScale] off the
+/// passage, floored at [kProjectionReferenceFloor], and that was that.
+///
+/// Index 0 is `null`, meaning AUTO — the ratio-and-floor the wall has
+/// always used. It is first and it is the default because it is still
+/// the right answer for most rooms: it is the rule that keeps the
+/// address readable when a long reading winds the passage down. The
+/// explicit sizes exist for the rooms where it is not — a small screen
+/// at the front of a large hall, or a projector whose bottom edge is
+/// cut off by the platform.
+const List<double?> kProjectionReferenceSteps = <double?>[
+  null, 20, 26, 32, 40, 52, 64,
+];
+
+/// The reference size in force, given what the operator pinned.
+///
+/// [step] is clamped here rather than at the write, so shortening the
+/// ladder above cannot strand a stored index on a wall nobody can fix
+/// mid-service.
+double projectionReferenceSizeFor(double typeSize, int step) {
+  final pinned = kProjectionReferenceSteps[
+      step.clamp(0, kProjectionReferenceSteps.length - 1)];
+  if (pinned != null) return pinned;
+  return math.max(
+      typeSize * kProjectionReferenceScale, kProjectionReferenceFloor);
+}
+
+/// The family the wall should use for a script, given what the operator
+/// pinned and what the reader chose for the app.
+///
+/// Empty means 「跟随阅读字体」, and the reader's own family is the right
+/// answer for that — not the engine default. Resolved HERE rather than
+/// in the widget so the projection page and the Settings preview cannot
+/// disagree about what a stored key means.
+String projectionFamilyFor(String pinnedKey, String readerFamily) =>
+    pinnedKey.isEmpty ? readerFamily : resolveFontFamily(pinnedKey);
+
 /// The share of the viewport left as margin on each side, and top and
 /// bottom.
 ///
@@ -507,6 +548,9 @@ class ProjectionStage extends StatelessWidget {
     this.secondLoading = false,
     this.countdownRemaining,
     this.layout = ProjectionLayout.standard,
+    this.referenceStep = 0,
+    this.fontZh = '',
+    this.fontEn = '',
   });
 
   /// How the passage is set: centred or start-aligned, verse by verse
@@ -561,6 +605,22 @@ class ProjectionStage extends StatelessWidget {
   /// page always had, so a caller that does not care about grounds —
   /// every existing one — is unchanged.
   final ProjectionGround ground;
+
+  /// Which of [kProjectionReferenceSteps] the operator pinned the
+  /// reference to. 0 is auto — the ratio-and-floor the wall has always
+  /// used, and the default, so a caller that does not care is unchanged.
+  final int referenceStep;
+
+  /// The faces the wall sets Chinese and English scripture in. Empty
+  /// means 「跟随阅读字体」 and is resolved by the CALLER, not here —
+  /// this widget is handed a family name or nothing.
+  ///
+  /// Which of the two applies is decided by the LANGUAGE OF THE EDITION
+  /// (`bibleVersionLanguage`), not by scanning characters: a Chinese
+  /// edition quoting a Greek word is still Chinese scripture, and an
+  /// English one carrying 雅伟 in a note is still English.
+  final String fontZh;
+  final String fontEn;
 
   final bool secondOn;
   /// The second edition's text per verse in [verses], by position;
@@ -763,11 +823,10 @@ class ProjectionStage extends StatelessWidget {
   /// can never collide with the text above it.
   static const double _kReferenceInsetShare = 0.35;
 
-  /// The reference size actually in force: the ratio, floored.
-  double get _referenceSize => math.max(
-        typeSize * kProjectionReferenceScale,
-        kProjectionReferenceFloor,
-      );
+  /// The reference size actually in force: what the operator pinned,
+  /// or the ratio floored when they left it on auto.
+  double get _referenceSize =>
+      projectionReferenceSizeFor(typeSize, referenceStep);
 
   Widget _emptyState() => Text(
         _s('projectionNoPassage', 'No passage is open', locale),
@@ -828,24 +887,28 @@ class ProjectionStage extends StatelessWidget {
         _StagePiece(_runTogetherSpan(
             [for (final v in verses) sanitizeForProjection(v.text)],
             size,
-            scheme.onSurface)),
+            scheme.onSurface,
+            family: _familyFor(versionCode))),
       ];
     }
     return [
       for (var i = 0; i < verses.length; i++)
         _StagePiece(_lineSpan(sanitizeForProjection(verses[i].text),
-            verses[i].verseLabel, size, scheme.onSurface)),
+            verses[i].verseLabel, size, scheme.onSurface,
+            family: _familyFor(versionCode))),
     ];
   }
 
   /// The verses as one paragraph. Numbers, when they are on, sit inline
   /// in front of each verse exactly as a printed Bible sets them —
   /// which is the only way a run-together passage can carry them at all.
-  TextSpan _runTogetherSpan(List<String> texts, double size, Color ink) {
+  TextSpan _runTogetherSpan(List<String> texts, double size, Color ink,
+      {String? family}) {
     final numbered = layout.numbers && verses.length > 1;
     return TextSpan(
       style: TextStyle(
         color: ink,
+        fontFamily: family,
         fontFamilyFallback: kCjkFontFallback,
         fontSize: size,
         height: _kLineHeight,
@@ -870,6 +933,15 @@ class ProjectionStage extends StatelessWidget {
     );
   }
 
+  /// The face this edition's scripture is set in, or null to let the
+  /// engine choose as it did before there was a setting.
+  String? _familyFor(String? code) {
+    final key = bibleVersionLanguage(code ?? versionCode).startsWith('zh')
+        ? fontZh
+        : fontEn;
+    return key.isEmpty ? null : key;
+  }
+
   /// Centred, or aligned to where the line starts. `TextAlign.start`
   /// rather than `left` — a Hebrew passage starts on the right, and the
   /// setting is about the measure, not about a side of the screen.
@@ -882,11 +954,13 @@ class ProjectionStage extends StatelessWidget {
   /// the words and the number is only there so a listener can find
   /// their place in a printed Bible. A single verse carries none; the
   /// reference below already names it.
-  TextSpan _lineSpan(String text, String label, double size, Color ink) {
+  TextSpan _lineSpan(String text, String label, double size, Color ink,
+      {String? family}) {
     final numbered = layout.numbers && verses.length > 1;
     return TextSpan(
       style: TextStyle(
         color: ink,
+        fontFamily: family,
         fontFamilyFallback: kCjkFontFallback,
         fontSize: size,
         height: _kLineHeight,
@@ -916,6 +990,7 @@ class ProjectionStage extends StatelessWidget {
           text: _secondBody(null),
           style: TextStyle(
             color: scheme.onSurfaceVariant,
+            fontFamily: _familyFor(secondCode),
             fontFamilyFallback: kCjkFontFallback,
             fontSize: size,
             height: _kLineHeight,
@@ -933,14 +1008,16 @@ class ProjectionStage extends StatelessWidget {
             size,
             texts.every((t) => t != null)
                 ? scheme.onSurface
-                : scheme.onSurfaceVariant)),
+                : scheme.onSurfaceVariant,
+            family: _familyFor(secondCode))),
       ];
     }
     return [
       for (var i = 0; i < verses.length; i++)
         _StagePiece(_lineSpan(
             _secondBody(texts[i]), verses[i].verseLabel, size,
-            texts[i] == null ? scheme.onSurfaceVariant : scheme.onSurface)),
+            texts[i] == null ? scheme.onSurfaceVariant : scheme.onSurface,
+            family: _familyFor(secondCode))),
     ];
   }
 
