@@ -11712,6 +11712,15 @@ has never seen this repo.
       `GetMaterialApp` → `.router` migration branch, or close this as
       "won't fix"?
 
+      **Deferred a twenty-first consecutive iteration, 2026-09-15** —
+      this hour's NEXT_TASK.md picked the chronology chart's densest-
+      decade reachability measurement instead (`queue:13323`'s
+      2026-09-15 slice). Still branch-scale, still unattended-unsafe,
+      still the only fully open P2 checkbox besides the chronology
+      chart, and the question above to the user is still unanswered:
+      start the `GetMaterialApp` → `.router` migration branch, or close
+      this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -14421,6 +14430,91 @@ has never seen this repo.
       and it still needs a design decision rather than an hour, per
       last slice's own note about the 2026-09-14 proximity-bucketing
       attempt.
+
+      **2026-09-15 slice — measured densest-decade reachability end to
+      end, per this hour's NEXT_TASK.md.** The "Left open, deliberately"
+      note's own remaining half — "The NT's densest decade still cannot
+      label every tick" — asked for a device, not a measurement, but the
+      device it named (a tap-to-expand cluster / callout list) has, in
+      fact, been built incrementally by the intervening slices above
+      (`_showClusterSheet` + `chronologyLabelClusters` +
+      `chronologyChipPlan`). What had never been measured is whether it
+      actually reaches every event in the decade the note names. This
+      slice measured it, once, against the real corpus.
+
+      Re-derived the corpus fact rather than copying it forward (python3
+      over `assets/bible_chronology.json`'s `events` + `markers`,
+      scanning every integer window start, half-open `[a, a+10)`): AM
+      4029–4038 is the single densest 10-year window in the whole
+      corpus — no tie — 14 events, 0 markers: AM 4029 ×2, 4030, 4031,
+      4032, 4033, AM 4036 ×6 (the Passion week + Pentecost), AM 4038 ×2.
+      Matches the note's own "fourteen events in ten years, six on one
+      year" exactly.
+
+      The existing AM-4036 "+6" test (`test/bible_chronology_test.dart`,
+      just above) only ever asserted `namedInSheet.length, greaterThan(1)`
+      — more than one of the six named in the opened sheet — and never
+      checked all six, nor any of the other 8 events sharing this same
+      100-year window. New test, placed directly after it: at the same
+      `viewAt(tester, 4036, years: 100)` viewport, all 14 titles are
+      checked — reachable as an inline label inside `chronoTickLaneBox`,
+      or by tapping some on-screen "+N" chip and finding the title in the
+      `BottomSheet` it opens. Chips are re-found by their own
+      `ValueKey('chronoClusterChip_$am')` on each loop iteration rather
+      than a cached `Widget` reference — popping a sheet rebuilds the
+      lane, so a captured `Widget` is a stale instance the tree no
+      longer contains by the next tap, which is what the first draft of
+      this test hit. Sheet text is scoped to `find.descendant(of:
+      find.byType(BottomSheet), ...)`, and the sheet's own `Scrollable`
+      is scrolled via `scrollUntilVisible` before concluding a title is
+      missing — `_showClusterSheet`'s `ListView(shrinkWrap: true)` is
+      still lazy despite `shrinkWrap`, so with a 14-item bucket an
+      off-screen title reads as "not built yet", not "unreachable",
+      until scrolled to.
+
+      **Result: all 14 are reachable on unmodified code — no defect
+      found.** Demonstrated the test has teeth, since it passed on the
+      first run: temporarily changed `_showClusterSheet`'s `for (final m
+      in ms)` to `for (final m in ms.take(3))`
+      (`chronology_chart.dart:2577`), reran, went red naming exactly the
+      4 events the truncation drops (Transfiguration, Resurrection,
+      Ascension, Pentecost — proving the existing weak `length >
+      1`-style assertion would NOT have caught this, since 3 remaining
+      names still satisfy "more than one"), then reverted — `git diff`
+      on the lib file confirmed empty before committing. (An earlier
+      perturbation attempt, restoring the old
+      `.where((g) => g.length > 1)` filter this item's own 2026-09-15
+      slice removed, did NOT turn the test red: every bucket in this
+      specific 100-year window already merges to length > 1 via
+      row-exhaustion merging, so that particular historical filter
+      happens not to bite here. Recorded so a later reader doesn't
+      re-try the same perturbation expecting it to work.)
+
+      Refuted before committing (independent agent, given the exact
+      claims and the commands to reproduce them): the densest-window
+      corpus claim (re-parsed the asset from scratch, confirmed no wider
+      tie), the "existing test only asserts more-than-one" claim (read
+      the pre-change test directly), the new test's mechanics (chip
+      re-lookup by key, sheet scoping, scroll-before-conclude — read
+      against the widget code, no gap found), the red-then-green
+      perturbation (rerun live), and the 113→114 test count (rerun
+      live, not grepped). All five survived.
+
+      `flutter analyze` clean, repo-wide. `bible_chronology_test.dart`:
+      **114 tests**, all pass (1 new this slice; baseline 113 recounted
+      at `08574392`, not copied forward). Full suite left to CI per
+      `queue:15174`'s standing ruling — the single test file was run in
+      the foreground only. Code + test only: no asset, version,
+      dependency or deploy change, per this item's own standing rule.
+      `queue:11538` deferred a twenty-first time, logged at its own
+      entry.
+
+      Checkbox stays open: reachability at the densest decade is now
+      pinned by a real test, which narrows the "Left open, deliberately"
+      note to its labelling half only — giving every one of the 14
+      events its own on-screen INLINE label (rather than routing 12 of
+      them through "+N" chips) is still unbuilt, and still needs the
+      design decision the previous slice named rather than an hour.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the

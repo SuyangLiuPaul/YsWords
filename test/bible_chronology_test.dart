@@ -1212,6 +1212,112 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('every one of the 14 events in the densest decade in the '
+        'whole corpus (AM 4029–4038) is reachable, enumerated — not just '
+        '"more than one" of them', (tester) async {
+      // The test above only asserts `namedInSheet.length > 1` for the
+      // AM 4036 six-way tie alone — it has never checked that all six are
+      // named, and it has never looked at the other eight events sharing
+      // this same crowded 100-year window. This test measures the whole
+      // decade at once, the "Left open, deliberately" note's own next
+      // step (docs/autonomous-queue.md:13323, repeated at 13504/13683/
+      // 13974): "The NT's densest decade still cannot label every tick".
+      //
+      // Re-derived directly from assets/bible_chronology.json for this
+      // slice (python3, `events` + `markers`, half-open window
+      // `[a, a+10)`, scanning every possible start): AM 4029–4038 is the
+      // single densest 10-year window in the whole corpus — 14 events,
+      // no markers in it — AM 4029 x2, 4030, 4031, 4032, 4033, AM 4036
+      // x6 (the Passion week + Pentecost), AM 4038 x2. That matches the
+      // note's own "fourteen events in ten years, six on one year".
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: const Size(402, 874));
+      await viewAt(tester, 4036, years: 100);
+
+      const titles = [
+        'Baptism of Jesus',
+        'Wilderness Temptation',
+        'Calling of the Twelve',
+        'Sermon on the Mount',
+        'Feeding the 5000',
+        'Transfiguration',
+        'Triumphal Entry',
+        'Last Supper',
+        'Crucifixion of Jesus',
+        'Resurrection',
+        'Ascension',
+        'Pentecost: Holy Spirit Poured Out',
+        "Paul's Conversion on Damascus Road",
+        'Stephen Martyred',
+      ];
+
+      final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+      final unreached = <String>[];
+
+      for (final title in titles) {
+        // Reachable as its own inline label — no tap needed.
+        if (find
+            .descendant(of: laneBox, matching: find.text(title))
+            .evaluate()
+            .isNotEmpty) {
+          continue;
+        }
+
+        var found = false;
+        // Keyed by the chip's own `ValueKey('chronoClusterChip_$am')`, not
+        // by widget identity: popping a sheet rebuilds the lane, so a
+        // `Widget` captured before the tap is a stale instance the tree
+        // no longer contains by the time the next chip is tapped.
+        final chipKeys = find
+            .descendant(
+              of: laneBox,
+              matching: find.bySemanticsLabel(RegExp(r'^\+\d+$')),
+            )
+            .evaluate()
+            .map((e) => e.findAncestorWidgetOfExactType<Positioned>()?.key)
+            .whereType<Key>()
+            .toList();
+        for (final chipKey in chipKeys) {
+          final chipFinder = find.byKey(chipKey);
+          if (chipFinder.evaluate().isEmpty) continue;
+          await tester.tap(chipFinder, warnIfMissed: false);
+          await tester.pumpAndSettle();
+          final sheet = find.byType(BottomSheet);
+          if (sheet.evaluate().isNotEmpty) {
+            // The sheet's list is `ListView(shrinkWrap: true)` — still
+            // lazy despite `shrinkWrap`, so with a 14-item bucket a
+            // title can be legitimately unbuilt (off-screen), not
+            // unreachable. Scroll the sheet's own Scrollable before
+            // concluding either way.
+            try {
+              await tester.scrollUntilVisible(
+                find.descendant(of: sheet, matching: find.text(title)),
+                60,
+                scrollable:
+                    find.descendant(of: sheet, matching: find.byType(Scrollable))
+                        .first,
+              );
+              found = true;
+            } catch (_) {
+              found = find
+                  .descendant(of: sheet, matching: find.text(title))
+                  .evaluate()
+                  .isNotEmpty;
+            }
+            Navigator.of(tester.element(sheet)).pop();
+            await tester.pumpAndSettle();
+          }
+          if (found) break;
+        }
+        if (!found) unreached.add(title);
+      }
+
+      expect(unreached, isEmpty,
+          reason: 'events with no inline label and not named in any '
+              'on-screen chip\'s sheet: $unreached');
+      handle.dispose();
+    });
+
     testWidgets('tapping the AM 4038 "+2" chip opens its own sheet, not '
         "the AM 4036 tie's", (tester) async {
       // AM 4036 (a "+6" chip) and AM 4038 (a "+2" chip) are two years
