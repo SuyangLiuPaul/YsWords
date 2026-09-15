@@ -14516,6 +14516,12 @@ has never seen this repo.
       them through "+N" chips) is still unbuilt, and still needs the
       design decision the previous slice named rather than an hour.
 
+      Pushed as `b941e04b`. CI run `34980295589` (head `b941e04b`) was
+      still `in_progress` after ~6 minutes of polling (this iteration's
+      foreground budget) — **next iteration's step 0 must check it
+      before picking anything else**, same as the standing rule this
+      item already carries above.
+
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
       `.clamp(1.0, ...)` floor — the `left >= plotWidth` guard above
