@@ -159,6 +159,30 @@ void main() {
     return defects;
   }
 
+  /// Everything wrong with the scheme carried on [lifelines] relative to
+  /// [active], the scheme `data.activeScheme` resolves to and the one
+  /// `chronology_chart.dart` actually draws on: a plotted lifeline whose
+  /// `scheme` isn't [active], or an [active] that isn't itself
+  /// [ChronologyScheme.supported]. `chronology_chart.dart` never filters
+  /// `data.lifelines` by scheme — it trusts every lifeline it draws to
+  /// already be on [active] — so this is the only place that claim is
+  /// checked.
+  List<String> schemeDefects(
+    List<Lifeline> lifelines,
+    ChronologyScheme active,
+  ) {
+    final defects = <String>[];
+    if (!active.supported) {
+      defects.add('active scheme ${active.id} is not marked supported');
+    }
+    for (final l in lifelines) {
+      if (l.scheme != active.id) {
+        defects.add('${l.personId} scheme ${l.scheme} != active ${active.id}');
+      }
+    }
+    return defects;
+  }
+
   /// Copy of [source] with one field replaced — the tracked asset is
   /// never mutated, only an in-memory `Lifeline`.
   Lifeline withBirthAm(Lifeline source, int birthAm) => Lifeline(
@@ -209,6 +233,23 @@ void main() {
         lifespan: source.lifespan,
         refs: source.refs,
         derivationEn: derivationEn,
+        derivationZhHans: source.derivationZhHans,
+        derivationZhHant: source.derivationZhHant,
+      );
+
+  Lifeline withScheme(Lifeline source, String scheme) => Lifeline(
+        personId: source.personId,
+        lineId: source.lineId,
+        scheme: scheme,
+        nameEn: source.nameEn,
+        nameZhHans: source.nameZhHans,
+        nameZhHant: source.nameZhHant,
+        fatherId: source.fatherId,
+        birthAm: source.birthAm,
+        deathAm: source.deathAm,
+        lifespan: source.lifespan,
+        refs: source.refs,
+        derivationEn: source.derivationEn,
         derivationZhHans: source.derivationZhHans,
         derivationZhHant: source.derivationZhHant,
       );
@@ -482,6 +523,45 @@ void main() {
         expect(ids, contains(l.scheme),
             reason: '${l.personId} cites unknown scheme ${l.scheme}');
       }
+    });
+
+    // The check above only confirms `l.scheme` names a *known* scheme —
+    // a lifeline carrying a known but unsupported scheme (Septuagint or
+    // Samaritan, both present in `data.schemes`) would still pass it,
+    // and `_chart` in `chronology_chart.dart` plots `data.lifelines`
+    // unfiltered, so it would be drawn on the Ussher axis under the
+    // Masoretic banner. `schemeDefects` is the check that actually ties
+    // a plotted lifeline to the scheme the chart renders on.
+
+    test('every plotted lifeline is on the scheme the chart actually '
+        'renders, data.activeScheme, and that scheme is supported', () {
+      expect(schemeDefects(data.lifelines, data.activeScheme), isEmpty);
+    });
+
+    test('the scheme check has teeth', () {
+      final shem = data.lifelines.firstWhere((l) => l.personId == 'shem');
+      // A scheme id that is real (present in `data.schemes`, so the
+      // weaker "known scheme" test above would pass it) but carried,
+      // not supported — exactly the case the weaker test misses.
+      final unsupported = data.schemes.firstWhere((s) => !s.supported).id;
+      final wrongScheme = [
+        for (final l in data.lifelines)
+          l.personId == 'shem' ? withScheme(shem, unsupported) : l,
+      ];
+      expect(
+        schemeDefects(wrongScheme, data.activeScheme),
+        contains(
+          'shem scheme $unsupported != active ${data.activeScheme.id}',
+        ),
+      );
+    });
+
+    test('_meta.defaultScheme resolves to a real, supported scheme — '
+        "activeScheme's unsupported-fallback path is never taken today",
+        () {
+      expect(data.schemes.map((s) => s.id), contains(data.defaultScheme));
+      expect(data.activeScheme.id, data.defaultScheme);
+      expect(data.activeScheme.supported, isTrue);
     });
 
     // The load-bearing consistency check on the whole Genesis 5 + 11

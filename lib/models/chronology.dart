@@ -13,11 +13,17 @@ library;
 
 /// One chronology scheme — a named way of anchoring AM 0 to a BC year.
 ///
-/// Only [supported] schemes have lifelines plotted. The unsupported ones
-/// are carried anyway so the reader can see WHICH question is open: the
-/// Masoretic, Septuagint and Samaritan genealogies disagree by roughly
-/// 1,500 years, and a chart that mentioned only its own scheme would
-/// read as though there were nothing to disagree about.
+/// Only [supported] schemes have lifelines plotted. That is enforced by
+/// `test/bible_chronology_test.dart`'s `schemeDefects` check against the
+/// generated asset, not by filtering at render time: `chronology_chart.dart`
+/// trusts every `Lifeline.scheme` it draws to already equal
+/// `ChronologyData.activeScheme.id`, because the asset is required to
+/// guarantee that, and the test is what makes that a guarantee rather
+/// than an assumption. The unsupported ones are carried anyway so the
+/// reader can see WHICH question is open: the Masoretic, Septuagint and
+/// Samaritan genealogies disagree by roughly 1,500 years, and a chart
+/// that mentioned only its own scheme would read as though there were
+/// nothing to disagree about.
 class ChronologyScheme {
   final String id;
   final bool supported;
@@ -436,9 +442,19 @@ class ChronologyData {
   String localizedComputedNote(String locale) =>
       _localeMap(computedNote, locale);
 
+  /// The scheme the chart is actually drawn on. If `_meta.defaultScheme`
+  /// ever fails to resolve, the fallback prefers a [ChronologyScheme.
+  /// supported] entry over `schemes.first` — `schemes` is asset order,
+  /// not a supported-first order, so falling back to the literal first
+  /// entry could silently land on an unsupported rival. A no-op today:
+  /// `defaultScheme` resolves to `masoretic-ussher`, the one supported
+  /// scheme, so this `orElse` is never the path taken.
   ChronologyScheme get activeScheme => schemes.firstWhere(
         (s) => s.id == defaultScheme,
-        orElse: () => schemes.first,
+        orElse: () => schemes.firstWhere(
+          (s) => s.supported,
+          orElse: () => schemes.first,
+        ),
       );
 
   ChronologyLine? lineById(String id) {

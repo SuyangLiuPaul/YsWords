@@ -1075,6 +1075,11 @@ class _ChronologyChartState extends State<ChronologyChart> {
     double nameColumn,
   ) {
     final data = widget.data;
+    // Unfiltered by `active` on purpose: every `Lifeline.scheme` is
+    // required to already equal `data.activeScheme.id` — see the doc
+    // comment on `ChronologyScheme.supported` — and
+    // `test/bible_chronology_test.dart`'s `schemeDefects` check is what
+    // enforces that against the generated asset, not this widget.
     final rows = data.lifelines;
     final lanesTop = _rulerHeight + _eraStripHeight;
     final step = _rulerStep(plotWidth);

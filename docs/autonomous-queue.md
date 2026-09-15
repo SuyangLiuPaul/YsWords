@@ -14272,6 +14272,72 @@ has never seen this repo.
       whatever the data-model task's third piece turns out to still
       need are still ahead.
 
+      **2026-09-15 follow-up slice closes the "chronology scheme" third
+      itself.** Verified the previous slice's "already closed by earlier
+      work" reading was wrong: the old test only checked that
+      `l.scheme` names a *known* scheme id, never that it matches the
+      scheme the chart actually renders on. `_chart` in
+      `chronology_chart.dart` plots `data.lifelines` completely
+      unfiltered by scheme, so a lifeline carrying a known-but-carried
+      (unsupported) scheme id — Septuagint or Samaritan, both present
+      in `data.schemes` for the reader to see the disagreement — would
+      have passed the old test and still been drawn under the Ussher
+      banner.
+
+      Added `schemeDefects(lifelines, active)` in
+      `test/bible_chronology_test.dart`, on the same pattern as
+      `fatherLinkDefects`/`derivationAgeDefects`, plus a `withScheme`
+      in-memory copy helper. Three new tests: (1) every plotted lifeline
+      in the real asset equals `data.activeScheme.id`, and that scheme
+      is `supported`; (2) a "has teeth" perturbation — set one lifeline
+      to a real-but-unsupported scheme id and assert `schemeDefects`
+      catches it, confirmed red first by temporarily neutering the
+      production check, rerunning, and reverting; (3) `_meta.defaultScheme`
+      resolves to a real `supported` scheme, i.e. `activeScheme`'s
+      `orElse` fallback is not the path taken today. Verified against
+      the real asset: 20 lifelines, all `scheme: "masoretic-ussher"`;
+      `schemes` carries exactly one `supported: true` entry
+      (`masoretic-ussher`, `creationBc` 4004) plus two carried-not-
+      supported (`septuagint`, `samaritan`); `_meta.defaultScheme ==
+      "masoretic-ussher"`.
+
+      Code changes, both no-op against today's asset (said so in the
+      commit rather than implying a behaviour change): `activeScheme`'s
+      `orElse` now prefers a `supported` scheme over the literal
+      `schemes.first` (finding 2 from planning — `schemes` is asset
+      order, not supported-first order, so the old fallback could have
+      silently landed on an unsupported rival if `defaultScheme` ever
+      stopped resolving). The doc comment on `ChronologyScheme.supported`
+      (`chronology.dart:16`) claimed "only supported schemes have
+      lifelines plotted" as if it were enforced; it now says it is
+      enforced by `schemeDefects` against the generated asset, not by
+      runtime filtering — `chronology_chart.dart`'s `_chart` still reads
+      `data.lifelines` unfiltered on purpose, with a comment at the read
+      site pointing back to the test. No UI copy added: the surfacing
+      half (`_schemeBanner`, `_showSchemeSheet`, the computed/placed
+      strings) was already done and this slice is validation-only, per
+      its own instruction.
+
+      Refuted before committing (an independent agent given the exact
+      claims and asked to break them): the no-op-fallback claim, the
+      "chart never filters by scheme elsewhere in the file" claim, the
+      "`Lifeline.scheme` read nowhere outside chronology.dart" claim
+      (same `ColorScheme` false-positive trap as the `fatherId` slice —
+      excluded), and the "new tests don't just duplicate the old one"
+      claim — all four survived, none refuted.
+
+      `flutter analyze` clean. `bible_chronology_test.dart`: **112
+      tests**, all pass (3 new this slice; recounted against this
+      slice's own baseline of 109 at `547b1b1d`, not copied forward).
+      Full suite left to CI rather than a local background run, per
+      `queue:15174`'s standing ruling — run id recorded once it
+      completes. Code + test only, no asset/version/dependency change,
+      no deploy.
+
+      Checkbox stays open: the tap-to-open-father's-sheet follow-on and
+      the densest-decade callout are still ahead, and ticking this item
+      was explicitly out of scope for the slice.
+
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
       `.clamp(1.0, ...)` floor — the `left >= plotWidth` guard above
