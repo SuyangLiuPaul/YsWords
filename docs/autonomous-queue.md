@@ -100,6 +100,56 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [x] **2026-09-15 FIXED — Tier 5, systemic: `tools/audit_divine_name.py
+      --check` was landed 2026-09-14 (`7515073f`) with a docstring line
+      documenting it as "pinned totals, for CI" and nothing anywhere ran
+      it.** `grep -rn audit_divine_name .github/ tools/ test/ docs/`
+      turned up only the script itself and two docs mentions — of the
+      four `tools/audit_*.py` files with a `--check` mode, it was one of
+      two no workflow invoked, and the only one whose absence was
+      unintentional and undocumented: `audit_originals_compounds.py` is
+      also not wired in, but deliberately, per its own comment at
+      `flutter-ci.yml:145-151` — on a bare runner it would SKIP (exit 0)
+      rather than fetch, so wiring it in would be a step that always
+      passes vacuously. The **sibling** census on the same corpus already
+      suffered exactly this failure: `flutter-ci.yml:172-182`'s own
+      comment records 38 edits drifting `audit_strongs_tagging.py`'s
+      pinned totals silently for weeks before that gate was wired in on
+      2026-09-08 (quoting that comment, not re-measuring it).
+      `assets/tagged/cuvs-yhwh/` is **not** part of the 2026-09-02 freeze
+      (only `assets/cuvs-yhwh.json` / `-tr.json` are) and was edited as
+      recently as this morning (`52b7919e`, which touched
+      `cuvs-yhwh/`; the Traditional derivation in `226450c8` touched
+      `cuvs-yhwh-tr/`).
+
+      Added a `Divine-name census totals` step to `flutter-ci.yml`,
+      immediately after the Strong's-tagging census step, running
+      `python3 tools/audit_divine_name.py --check`. All of its inputs
+      (`assets/tagged/cuvs-yhwh/`, `assets/originals/`, both
+      `originals_versification*.json`, `tools/cuv-2026-09-12-divine-
+      name-audit.tsv`) are tracked and committed, so unlike
+      `audit_originals_compounds.py` this needs no `.cache/` warm-up and
+      runs offline on a bare runner (`--check` measured locally at
+      ~1 second).
+
+      **Proved the gate can go red before wiring it in**, per this
+      loop's own rule that a step which always passes vacuously is the
+      failure this workflow's comments warn against: loaded the real
+      module via `importlib`, set `PINNED['agree']` to 296 (one over the
+      true 295) without touching the tracked file, and got `RC= 1`,
+      `FAIL: census agree: pinned 296, measured 295 (delta -1)`. `git
+      status --porcelain` was empty both before and after — the
+      perturbation never touched disk. No claim that this gate "would
+      have caught" any past drift: the 41 rows already applied by
+      `tools/apply_cuv_divine_name_audit.py` were applied *before*
+      `PINNED` was measured (`226450c8`), so this is the first census
+      this repo has pinned, not a catch of prior drift.
+
+      `flutter analyze` not implicated (no Dart changed). CI watched to
+      green on the pushed commit — this is the first time the new step
+      ran on a bare runner. No asset touched; `docs`/`.github` only, so
+      no deploy this iteration.
+
 - [x] **2026-09-15 FIXED — Tier 5, systemic: `tools/release_github.sh`
       pushed the release tag and stopped, printing a `gh run list`
       suggestion to a human instead of checking whether the five
@@ -11607,6 +11657,18 @@ has never seen this repo.
       above to the user is still unanswered: start the `GetMaterialApp`
       → `.router` migration branch, or close this as "won't fix"?
 
+      **Deferred a seventeenth consecutive iteration, 2026-09-15** — this
+      hour's NEXT_TASK.md picked wiring `tools/audit_divine_name.py
+      --check` into `flutter-ci.yml` instead (Tier 5, the census gate was
+      landed 2026-09-14 but nothing ran it). (NEXT_TASK.md's brief called
+      this the "sixteenth" deferral; the file already carries a sixteenth
+      dated 2026-09-14 above, so this one is numbered seventeenth to match
+      what is actually here.) Still branch-scale, still unattended-unsafe,
+      still the only fully open P2 checkbox besides the chronology chart,
+      and the question above to the user is still unanswered: start the
+      `GetMaterialApp` → `.router` migration branch, or close this as
+      "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -15203,6 +15265,32 @@ so the bundle-size answer stays on the record.
       `flutter analyze` and the targeted chronology test in the
       foreground while it ran, and committing on that plus CI as the
       full-suite backstop rather than orphaning the diff a fifth hour.
+
+      **Fifteenth recurrence, 2026-09-15 14:21:49–14:32:05.** The stage
+      wrote the whole divine-name CI gate — the new `flutter-ci.yml`
+      step and the queue entry documenting it, both landed below at
+      this hour's date — then ended `rc=0` with its entire final message
+      reading: *"Waiting on the full `flutter test` suite to finish in
+      the background before committing — will continue once it
+      completes."* The repo hash was unchanged by the stage
+      (`36d702f4 → 36d702f4`); both edited files' mtimes fell inside the
+      stage's own window. Landed intact by the following stage (this
+      one) apart from two factual corrections to the queue entry's own
+      prose (the "only one no workflow invoked" overclaim, and the
+      `226450c8` asset-path attribution) — see that entry, dated
+      2026-09-15, for what changed. This is the **fourth recurrence in
+      two days whose stated cause is specifically a backgrounded
+      `flutter test`**, not the third as this hour's brief first framed
+      it: the twelfth (2026-09-14 12:54:30, "running in the background;
+      I'll resume once it completes rather than continue polling"), the
+      thirteenth (2026-09-14 15:26) and fourteenth (2026-09-14 16:57:51)
+      all gave the same reason on 2026-09-14; this one repeats it on
+      2026-09-15. Diff here was YAML + Markdown only, so unlike those
+      three the full suite was never actually a gate for the commit —
+      backgrounding it bought nothing. Same conclusion as every prior
+      recurrence: the fix is in `run.sh`/`prompt.md` under `~/Library/
+      Application Support/yswords-loop/`, outside this repo, not touched
+      here.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an

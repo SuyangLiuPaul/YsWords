@@ -183,6 +183,24 @@ jobs:
       - name: Strong's-tagging census totals
         run: python3 tools/audit_strongs_tagging.py --check
 
+      # Divine-name census (tools/audit_divine_name.py), read-only. Landed
+      # 2026-09-14 (7515073f) with a `--check` mode documented for CI, but
+      # never actually wired into any workflow until now. Same shape as the
+      # Strong's-tagging gate above: pins raw totals over
+      # assets/tagged/cuvs-yhwh/ (agree/disagree_h3068/neither/unresolved,
+      # plus the TSV reconciliation), a ratchet rather than an invariant
+      # true by construction. A legitimate future sweep of the remaining
+      # disagree_h3068 verses moves these numbers; the fix is to re-derive
+      # and bump PINNED in tools/audit_divine_name.py in the same commit,
+      # explaining the delta, not to loosen the check. All inputs
+      # (assets/tagged/cuvs-yhwh/, assets/originals/, both
+      # originals_versification*.json, tools/cuv-2026-09-12-divine-name-
+      # audit.tsv) are tracked and committed, so — unlike
+      # audit_originals_compounds.py above — this runs offline on a bare
+      # runner with nothing to warm.
+      - name: Divine-name census totals
+        run: python3 tools/audit_divine_name.py --check
+
       - name: Test
         run: flutter test --reporter expanded
 
