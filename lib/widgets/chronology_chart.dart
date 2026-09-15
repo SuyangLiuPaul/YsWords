@@ -2448,6 +2448,16 @@ class _ChronologyChartState extends State<ChronologyChart> {
                               ),
                           ],
                         ),
+                      ] else ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _s('chronologyNotInScripture',
+                              'Not recorded in Scripture'),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onSurface.withValues(alpha: 0.85),
+                          ),
+                        ),
                       ],
                     ],
                   ),

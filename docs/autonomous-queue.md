@@ -14091,6 +14091,64 @@ has never seen this repo.
       Code-only, no asset/version/dependency change, no deploy — same
       guard rail as the note above.
 
+      **2026-09-15, later still — the sourcing-guard slice (this item's
+      own suggested first task): extended the guard to the placed-event
+      layer.**
+      Both existing sourcing tests (`'every year is sourced …'` and
+      `'every citation resolves …'`) only ever iterated `data.lifelines`
+      and `data.markers`; `data.events` — the 93-entry placed layer,
+      including every AD-end event behind the user's own repeated
+      「chronology chart为什么不能一直往右边一直到今天」 — had no sourcing
+      check at all. Re-derived directly from `assets/bible_chronology.json`,
+      not assumed: **93 events, 7 markers**; exactly **5 events carry an
+      empty `refs`** (`intertestamental`, `greek_period`, `septuagint`,
+      `maccabees`, `rome_judea`), all five `era: "intertestamental"`, and
+      that era contains exactly those five and nothing else — an
+      independent agent re-parsed the JSON from scratch and confirmed all
+      five numbers, including the load-bearing iff (no event has
+      `refs.isEmpty` without `era == intertestamental`, and no
+      intertestamental event carries a citation). The other 88 events
+      span the remaining 7 eras and carry 116 distinct refs between them,
+      all of which resolve via `firstResolvableReference`.
+
+      **No citation was invented for the five.** They are genuinely
+      extra-biblical (Alexander's conquest, the Septuagint, the
+      Maccabean revolt, Rome's conquest of Judea, and the 400 silent
+      years framing them). The exemption in
+      `test/bible_chronology_test.dart` is asserted as a rule over `era`,
+      pinned as an iff so a future unsourced event outside that era
+      fails, and so does a sourced event wrongly tagged intertestamental.
+
+      **`_showEventSheet` said nothing for those five** — its citation
+      `Wrap` was gated `if (m.refs.isNotEmpty)` with no `else`, so the
+      sheet's own stated purpose ("the first thing it says is where the
+      year came from") silently went unmet for a twentieth of the placed
+      layer. Added `chronologyNotInScripture` ("Not recorded in
+      Scripture" / 经文未记载 / 經文未記載) in all three locales, rendered
+      in the same slot the citation chips would occupy; the existing
+      dynamic `'every chronology* key exists in all three locales'` test
+      already covers it, no separate edit needed. Two new widget tests
+      open the sheet for every currently-unsourced event and for a
+      sourced neighbour (`nehemiah_walls`) and assert the line appears
+      only for the former.
+
+      Refuted before committing: all corpus claims above (the 93/7
+      split, the 5-event id set, the era iff, the 88/116 split) given to
+      an independent agent that re-parsed the asset from scratch — all
+      held, no counterexample.
+
+      `flutter analyze` clean. `bible_chronology_test.dart`: 104 tests,
+      all pass (2 new in this slice; the sourcing/resolvability tests
+      were extended in place, not duplicated). Full suite, run in the
+      foreground: **3297 tests passed** (1 pre-existing, unrelated
+      skip). Code + test only — no asset, version or dependency change,
+      no deploy, per this item's own guard rail.
+
+      **Not done by this slice**: the data-model extension (birth/death
+      years, parent links, scheme-per-date) this item's own suggested
+      first task also named — this only did the sourcing-guard half.
+      Checkbox stays open; several iterations still ahead.
+
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
       `.clamp(1.0, ...)` floor — the `left >= plotWidth` guard above

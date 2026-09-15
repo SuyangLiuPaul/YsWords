@@ -7279,6 +7279,11 @@ const uiStrings = {
     'zh-Hans': '经文未记载卒年',
     'zh-Hant': '經文未記載卒年',
   },
+  'chronologyNotInScripture': {
+    'en': 'Not recorded in Scripture',
+    'zh-Hans': '经文未记载',
+    'zh-Hant': '經文未記載',
+  },
   'chronologyLifespan': {
     'en': 'lived {n} years',
     'zh-Hans': '共活了 {n} 年',

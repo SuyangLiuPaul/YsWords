@@ -156,6 +156,26 @@ void main() {
         expect(m.refs, isNotEmpty,
             reason: 'marker ${m.id} has no verse citation');
       }
+      // The placed-events layer — `bible_timeline.json`'s 93 events —
+      // was untouched by this test until now. Its one legitimate
+      // exemption is the five intertestamental events (400 Silent
+      // Years, Alexander, the Septuagint, the Maccabees, Rome's
+      // conquest of Judea): genuinely extra-biblical, not a gap. The
+      // exemption is asserted as an iff on `era`, not an id allow-list,
+      // so it cannot be widened later just by adding another unsourced
+      // event and leaving its era off this line.
+      const extraBiblicalEra = 'intertestamental';
+      for (final e in data.events) {
+        final isUnsourced = e.refs.isEmpty;
+        final isExemptEra = e.era == extraBiblicalEra;
+        expect(isUnsourced, isExemptEra,
+            reason: isUnsourced
+                ? 'event ${e.id} has no verse citation and is not '
+                    'era $extraBiblicalEra — either cite it or decide '
+                    'its era belongs in the exemption'
+                : 'event ${e.id} is era $extraBiblicalEra but carries '
+                    'a citation — the exemption should not include it');
+      }
     });
 
     test('every citation resolves to a passage the reader can open', () {
@@ -171,6 +191,13 @@ void main() {
         for (final r in m.refs) {
           if (firstResolvableReference(r) == null) {
             unresolvable.add('${m.id}: $r');
+          }
+        }
+      }
+      for (final e in data.events) {
+        for (final r in e.refs) {
+          if (firstResolvableReference(r) == null) {
+            unresolvable.add('${e.id}: $r');
           }
         }
       }
@@ -399,6 +426,40 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 60));
   }
+
+  /// The on-glass tick-lane labels whose text is exactly [title] — the
+  /// same "actually on screen, not just built into the off-screen part
+  /// of the Stack" filter the stacked-label test below uses, but keyed
+  /// by rendered text instead of "first on glass", so it can target one
+  /// specific event rather than whichever tick happens to be nearest.
+  /// [viewport] is the plot's own scroll box, not the device width: the
+  /// label lane's Stack is laid out at full-timeline width regardless of
+  /// scroll position, so a label's paint rect can sit well past the
+  /// screen edge while still being (or not being) inside the part the
+  /// reader can actually see and tap. Matched on the label's CENTRE
+  /// falling inside the viewport, not full containment — the deepest
+  /// zoom is a fixed 43-year window, and a long title near that
+  /// window's edge legitimately overhangs it while still being the
+  /// thing a tap on its visible portion would hit.
+  List<Element> onGlassMatches(
+    WidgetTester tester,
+    String title,
+    Rect viewport,
+  ) =>
+      find
+          .byWidgetPredicate((w) =>
+              w is Text &&
+              w.data == title &&
+              w.style?.fontSize != null &&
+              (w.style!.fontSize! - 12).abs() < 0.01 &&
+              w.maxLines == 1 &&
+              w.softWrap == false)
+          .evaluate()
+          .where((e) {
+            final r = tester.getRect(find.byWidget(e.widget));
+            return viewport.contains(r.center);
+          })
+          .toList();
 
   group('ChronologyChart', () {
     testWidgets('renders at 402 pt without overflowing', (tester) async {
@@ -669,6 +730,71 @@ void main() {
         ),
         findsOneWidget,
         reason: 'the sheet must name the label that was tapped',
+      );
+    });
+
+    testWidgets(
+        'an event with no verse citation says so in its detail sheet, '
+        'not an empty citation row', (tester) async {
+      final unsourced = data.events.where((e) => e.refs.isEmpty).toList();
+      // Re-derived, not assumed: the sourcing test above pins this to
+      // exactly the five intertestamental events, but this test only
+      // needs "at least one" to have something to open.
+      expect(unsourced, isNotEmpty,
+          reason: 'nothing unsourced to test — has the exemption changed?');
+
+      await pumpChart(tester, size: const Size(900, 1700));
+      for (final e in unsourced) {
+        final title = e.localizedTitle('en');
+        await viewAt(tester, e.am, years: 8);
+        final viewport = tester.getRect(find.byType(SingleChildScrollView).last);
+        final matches = onGlassMatches(tester, title, viewport);
+        expect(matches, hasLength(1),
+            reason: '"$title" (${e.id}) is not uniquely on glass at '
+                'AM ${e.am}');
+        await tester.tap(find.byWidget(matches.single.widget));
+        await tester.pumpAndSettle();
+        expect(
+          find.descendant(
+            of: find.byType(BottomSheet),
+            matching: find.text('Not recorded in Scripture'),
+          ),
+          findsOneWidget,
+          reason: '${e.id} has no citation and must say so in its sheet',
+        );
+        Navigator.of(tester.element(find.byType(BottomSheet))).pop();
+        await tester.pumpAndSettle();
+      }
+    });
+
+    testWidgets('a sourced event does not carry the no-citation line',
+        (tester) async {
+      // The intertestamental cluster's own neighbour: sourced, and far
+      // enough from the rest of the monarchy-era events to be alone on
+      // glass at this zoom.
+      final sourced =
+          data.events.firstWhere((e) => e.id == 'nehemiah_walls');
+      expect(sourced.refs, isNotEmpty,
+          reason: 're-check the fixture — this event should be sourced');
+      final title = sourced.localizedTitle('en');
+
+      await pumpChart(tester, size: const Size(900, 1700));
+      await viewAt(tester, sourced.am, years: 8);
+      final viewport = tester.getRect(find.byType(SingleChildScrollView).last);
+      final matches = onGlassMatches(tester, title, viewport);
+      expect(matches, hasLength(1),
+          reason: '"$title" (${sourced.id}) is not uniquely on glass at '
+              'AM ${sourced.am}');
+      await tester.tap(find.byWidget(matches.single.widget));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('Not recorded in Scripture'),
+        ),
+        findsNothing,
+        reason: '${sourced.id} carries a citation and must not show the '
+            'no-citation line',
       );
     });
 
