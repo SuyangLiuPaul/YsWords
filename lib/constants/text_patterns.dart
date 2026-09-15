@@ -237,6 +237,26 @@ String displayCleanup(String chunk) {
       chunk.replaceAll(_pilcrowPattern, ''));
 }
 
+/// The verse as a ROOM should see it.
+///
+/// 2026-09-15, photographed off a phone with the markup circled: the
+/// projector preview put
+///
+///     …挣脱了罪和死的规律。<note:2节注："生命之灵的规律"中的"灵"字译自
+///     τὸ πνεῦμα。和合本加插了"圣"字…>
+///
+/// on the wall, at wall size, in front of a congregation. Every other
+/// surface in the app — the reader, the copy path, search, the popup —
+/// goes through one of the sanitisers in this file; the projector was
+/// written later and went straight to `verse.text`.
+///
+/// `sanitizeForSearch` is the right shape and the wrong name for this
+/// caller, so it is spelled out here: notes gone, the content of
+/// `{clarification}` and `[supplied]` kept because that IS the verse,
+/// pilcrows gone, and — unlike the copy path — LINE BREAKS KEPT, because
+/// a psalm set as verse on a wall is set as verse for a reason.
+String sanitizeForProjection(String text) => sanitizeForSearch(text);
+
 /// 2026-05-07: collapse stray ASCII spaces that sit between an
 /// annotation marker (`[…]`, `{…}`, `<note:…>`) and adjacent CJK
 /// text. The CUVS-Yahweh asset (and a few others) ship verses like

@@ -123,6 +123,8 @@ import 'package:flutter/material.dart';
 import 'package:yswords/constants/bible_versions.dart'
     show shortBibleVersionLabel;
 import 'package:yswords/constants/projection_strings.dart';
+import 'package:yswords/constants/text_patterns.dart'
+    show sanitizeForProjection;
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
 
@@ -824,13 +826,15 @@ class ProjectionStage extends StatelessWidget {
     if (layout.flow == ProjectionFlow.continuous) {
       return [
         _StagePiece(_runTogetherSpan(
-            [for (final v in verses) v.text], size, scheme.onSurface)),
+            [for (final v in verses) sanitizeForProjection(v.text)],
+            size,
+            scheme.onSurface)),
       ];
     }
     return [
       for (var i = 0; i < verses.length; i++)
-        _StagePiece(_lineSpan(
-            verses[i].text, verses[i].verseLabel, size, scheme.onSurface)),
+        _StagePiece(_lineSpan(sanitizeForProjection(verses[i].text),
+            verses[i].verseLabel, size, scheme.onSurface)),
     ];
   }
 
@@ -957,9 +961,14 @@ class ProjectionStage extends StatelessWidget {
       return _s('projectionSecondVersionLoading',
           'Loading the second edition', locale);
     }
-    return text ??
-        _s('projectionSecondVersionMissing',
-            'This edition has no text here', locale);
+    if (text == null) {
+      return _s('projectionSecondVersionMissing',
+          'This edition has no text here', locale);
+    }
+    // The companion edition carries the same markup the first one does,
+    // and the same rule applies to it: the room reads scripture, not
+    // the apparatus the file stores it with.
+    return sanitizeForProjection(text);
   }
 
   /// The reference, and the edition or editions it belongs to.
