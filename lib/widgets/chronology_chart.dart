@@ -1824,6 +1824,11 @@ class _ChronologyChartState extends State<ChronologyChart> {
       lefts: chipLefts,
       widths: chipWants,
       plotWidth: plotWidth,
+      // Below this, a chip stops being a usable tap target and folds
+      // into the terminal chip instead of shrinking further — see the
+      // function doc; `18` is the old fixed chip width this file used
+      // before real measurement replaced it, kept here as a floor.
+      minWidth: _scaler.scale(18),
       measureMergedWidth: (mergedClusters) {
         final n = [for (final ci in mergedClusters) clusters[ci].length]
             .fold<int>(0, (a, b) => a + b);
@@ -3114,12 +3119,26 @@ class ChronologyChipSlot {
 /// indices being folded together, returns how wide the caller's own
 /// merged "+N" text draws; without it the merged chip just takes
 /// whatever room is left, same as the single-chip shrink case.
+///
+/// [minWidth] is the floor below which a shrunk chip stops being a
+/// usable chip and becomes the same problem as running out of room
+/// outright: without it, the ordinary shrink branch below squeezes a
+/// chip to whatever sliver of `plotWidth` remains even when that
+/// sliver is a couple of points wide — mathematically tappable in a
+/// widget test, which taps by coordinate regardless of rendered size,
+/// but not by an actual finger. Measured live at fit view on a 402pt
+/// device: the last cluster before AM 4098 (the span's own end) was
+/// shrinking to 2.7pt wide before this floor existed. Below
+/// [minWidth], a chip folds into the terminal chip the same way
+/// running out of room outright does — this only changes *when* that
+/// fold triggers, not what it does.
 @visibleForTesting
 List<ChronologyChipSlot> chronologyChipPlan({
   required List<double> lefts,
   required List<double> widths,
   required double plotWidth,
   double gap = 2,
+  double minWidth = 1.0,
   double Function(List<int> mergedClusters)? measureMergedWidth,
 }) {
   final order = List<int>.generate(lefts.length, (i) => i)
@@ -3130,8 +3149,8 @@ List<ChronologyChipSlot> chronologyChipPlan({
     final i = order[idx];
     final desired = lefts[i];
     final left = desired < lastRight + gap ? lastRight + gap : desired;
-    if (left >= plotWidth) {
-      // Nobody from here on has room at their own x. Rather than drop
+    if (left + minWidth > plotWidth) {
+      // Nobody from here on has usable room at their own x. Rather than drop
       // them — a same-year tie the reader cannot tap at all — fold the
       // rest of the row into one terminal chip. Unlike the single-chip
       // shrink below, this chip has already abandoned any one tie's own
@@ -3167,8 +3186,9 @@ List<ChronologyChipSlot> chronologyChipPlan({
       ));
       break;
     }
-    // > 0: the `left >= plotWidth` check above already took the fold
-    // branch for any case where there would be no room left.
+    // > 0: the `left + minWidth > plotWidth` check above already took
+    // the fold branch for any case where there would be no usable room
+    // left.
     final room = plotWidth - left;
     final width = widths[i] < room ? widths[i] : room;
     out.add(ChronologyChipSlot(cluster: i, left: left, width: width));

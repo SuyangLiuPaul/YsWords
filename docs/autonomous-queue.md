@@ -11721,6 +11721,15 @@ has never seen this repo.
       start the `GetMaterialApp` → `.router` migration branch, or close
       this as "won't fix"?
 
+      **Deferred a twenty-second consecutive iteration, 2026-09-16** —
+      this hour's NEXT_TASK.md picked measuring fit-view reachability
+      for all 13 pinned chronology ticks instead (this item's own
+      still-open note, below). Still branch-scale, still
+      unattended-unsafe, still the only fully open P2 checkbox besides
+      the chronology chart, and the question above to the user is still
+      unanswered: start the `GetMaterialApp` → `.router` migration
+      branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -14521,6 +14530,84 @@ has never seen this repo.
       foreground budget) — **next iteration's step 0 must check it
       before picking anything else**, same as the standing rule this
       item already carries above.
+
+      **2026-09-16 — measured fit-view reachability for all 13 pinned
+      ticks, found and fixed a real one.** This slice's own suggested
+      next step (the "seven pins later than Abraham … surface as a
+      '+N' chip instead" note above) had never been driven through a
+      real widget tree — it was inferred from the 2026-09-15 edge-
+      cutoff fix, not observed. New `testWidgets` in
+      `test/bible_chronology_test.dart`, same template as the densest-
+      decade test above: pumps at `tall`, calls `wholeSpan(tester)`,
+      and for each of the 13 pinned ticks (re-derived directly from
+      `assets/bible_chronology.json` — 7 markers + 6 events carry
+      `pin: true`, absent-defaults-to-true confirmed by reading the
+      JSON, matching the 6+7 split this item's own prior slice already
+      states) checks reachability as an inline label or via tapping
+      every on-screen "+N" chip and scrolling its sheet.
+
+      **Refuted before committing, and the refuter found a real gap**:
+      the first version of this test passed on the first run, and
+      "teeth" were demonstrated the same way the densest-decade test's
+      were (perturbing `_showClusterSheet`'s `for (final m in ms)` to
+      `ms.take(1)`, confirming red, reverting, confirming `git diff`
+      clean) — but the refuter, given the claim and asked to break it,
+      pointed out that `tester.tap()` taps a widget wherever its
+      *layout* says it is, even off the visible plot, so a geometry bug
+      that pushed a chip thousands of points off-screen would be
+      architecturally invisible to a test that only checks *content*,
+      not *position*. Reproduced live: offsetting
+      `chronologyChipPlan`'s terminal-fold `tailLeft` by 2000pt left the
+      test green. **Closed the gap in the test itself** — before
+      tapping a chip, the test now asserts its rect overlaps the tick
+      lane's own rect (`tester.getRect`), rejecting a tap on anything
+      painted outside the lane's `Clip.hardEdge` boundary as not a real
+      reach, whatever `tester.tap()` would do to it.
+
+      **That in turn surfaced a genuine defect the original claim had
+      missed**: measured live at fit view on a 402pt device
+      (`plotWidth = 236.2`), the last chip — bundling `jesus_born`,
+      `crucifixion` and `john_patmos` (AM 4098, the span's own end,
+      confirmed sitting at `_x(spanEndAm, plotWidth) + 3 == plotWidth +
+      3`, past the right edge, exactly as this item's prior slice
+      predicted) — was shrinking to **2.7pt wide**, a size no real
+      finger could reliably hit even though it sits within the plot and
+      so passed both the content check and the new overlap check.
+      `chronologyChipPlan` had no floor on how far the ordinary
+      (non-fold) shrink path would squeeze a chip — unlike
+      `chronologyLabelPlan`, which already refuses to place a label
+      narrower than its own `minWidth` and drops it to the chip
+      fallback instead. Added the same floor to `chronologyChipPlan`:
+      a new `minWidth` parameter (default `1.0`, so the existing direct
+      unit tests of the function are unaffected), and the fold branch's
+      entry condition changed from `left >= plotWidth` to `left +
+      minWidth > plotWidth` — below the floor, a chip folds into the
+      terminal chip instead of shrinking further, exactly the same
+      escape valve the function already had for running out of room
+      outright, just triggered earlier. The real call site in
+      `_tickLane` now passes `minWidth: _scaler.scale(18)` — the old
+      fixed chip width this file used before real measurement replaced
+      it, reused here as a floor rather than a fixed size. Root cause:
+      the shrink-to-fit branch was built to handle "not quite enough
+      room," not "room is present but useless," and nothing upstream
+      of it treated those as the same problem the way the label
+      planner already did.
+
+      Re-verified after the fix: the same test passes, and the fold
+      now engages for that cluster instead of squeezing it to 2.7pt.
+
+      `flutter analyze` clean, repo-wide. `bible_chronology_test.dart`:
+      **115 tests**, all pass (1 new this slice; baseline 114 recounted
+      at `b941e04b`, not copied forward) — rerun after the fix, not
+      just before it. Full suite left to CI per `queue:15174`'s
+      standing ruling. Code + test only: no asset, version, dependency
+      or deploy change, per this item's own standing rule.
+      `queue:11538` deferred a twenty-second time, logged at its own
+      entry.
+
+      Checkbox stays open: the labelling half ("give all 14 densest-
+      decade events their own inline label") is still unbuilt, and this
+      slice only covered the 13 pinned ticks, not the wider corpus.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the

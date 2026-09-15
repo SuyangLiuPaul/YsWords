@@ -3179,6 +3179,142 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('every one of the 13 pinned ticks is reachable at '
+        'whole-span (fit) view, enumerated — not inferred from the '
+        'edge-cutoff fix', (tester) async {
+      // The test above this one measures 6 of the 13 pins reachable as
+      // inline labels and *asserts in its own comment*, without ever
+      // driving it through a widget tree, that the other 7 — Abraham's
+      // death through Revelation — still reach the reader via a "+N"
+      // chip once row exhaustion drops their label. That is exactly the
+      // kind of claim this file exists to catch: "the fold reaches them
+      // too" was inferred from the 2026-09-15 edge-cutoff deletion, not
+      // observed. This test checks all 13 pinned ticks the same way the
+      // densest-decade test above checks its 14 — by finding each one
+      // either as its own inline label, or by tapping every on-screen
+      // "+N" chip in turn and scrolling its sheet.
+      //
+      // Re-derived directly from assets/bible_chronology.json (7 markers
+      // + 93 events; `pin` defaults to true when the key is absent, which
+      // is why all 7 markers count): AM 0, 987, 1656, 2008, 2083, 2108,
+      // 2183, 2558, 3038, 3418, 3999, 4036, 4098 — 13 total, matching the
+      // "6 + 7" arithmetic the test above already states.
+      //
+      // `john_patmos` (AM 4098, the span's own end) is the one worth
+      // naming going in: the tick lane computes `lefts[i] = _x(t.am,
+      // plotWidth) + 3`, so at AM 4098 == `spanEndAm` that is `left ==
+      // plotWidth + 3` — past the right edge before the packer even
+      // runs — and its only route to the reader is
+      // [chronologyChipPlan]'s shrink-then-terminal-fold, exercised here
+      // in a real widget tree for the first time.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: tall);
+      await wholeSpan(tester);
+
+      const titles = [
+        'Creation',
+        'Enoch is taken',
+        "The Flood (Noah's 600th year)",
+        'Abram is born',
+        'Abram leaves Haran, aged 75',
+        'Isaac is born, Abraham aged 100',
+        'Abraham dies, aged 175',
+        'The Exodus',
+        "Solomon's Temple Built",
+        'Judah Falls; Temple Destroyed',
+        'Birth of Jesus Christ',
+        'Crucifixion of Jesus',
+        'John Exiled to Patmos; Revelation Written',
+      ];
+
+      final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+      final unreached = <String>[];
+
+      for (final title in titles) {
+        // Reachable as its own inline label — no tap needed.
+        if (find
+            .descendant(of: laneBox, matching: find.text(title))
+            .evaluate()
+            .isNotEmpty) {
+          continue;
+        }
+
+        // The lane's own painted rect, recomputed every title: popping a
+        // sheet rebuilds the lane, and a geometry bug in the packer could
+        // in principle shift it between iterations. `tester.tap()` taps
+        // wherever a widget's LAYOUT says it is, even past the lane's own
+        // clip — chronology_chart.dart's `_tickLane` Stack is built with
+        // `clipBehavior: Clip.hardEdge`, so a chip placed outside this
+        // rect is invisible and untappable for a real finger even though
+        // `tester.tap()` would still "succeed" against it. Overlap with
+        // `laneRect` is what tells the two cases apart; a bare tap does
+        // not. (Found by deliberately shifting `chronologyChipPlan`'s
+        // terminal-fold `tailLeft` 2000pt off-plot in the tree — the tap
+        // still landed and the sheet still opened, with nothing here to
+        // say the chip a user would see was nowhere near that tap.)
+        final laneRect = tester.getRect(laneBox);
+
+        var found = false;
+        // Keyed by the chip's own `ValueKey('chronoClusterChip_$am')`, not
+        // by widget identity: popping a sheet rebuilds the lane, so a
+        // `Widget` captured before the tap is a stale instance the tree
+        // no longer contains by the time the next chip is tapped.
+        final chipKeys = find
+            .descendant(
+              of: laneBox,
+              matching: find.bySemanticsLabel(RegExp(r'^\+\d+$')),
+            )
+            .evaluate()
+            .map((e) => e.findAncestorWidgetOfExactType<Positioned>()?.key)
+            .whereType<Key>()
+            .toList();
+        for (final chipKey in chipKeys) {
+          final chipFinder = find.byKey(chipKey);
+          if (chipFinder.evaluate().isEmpty) continue;
+          if (!laneRect.overlaps(tester.getRect(chipFinder))) {
+            // Painted outside the lane's own clip — not a real chip a
+            // finger could reach, whatever `tester.tap()` would do to it.
+            continue;
+          }
+          await tester.tap(chipFinder, warnIfMissed: false);
+          await tester.pumpAndSettle();
+          final sheet = find.byType(BottomSheet);
+          if (sheet.evaluate().isNotEmpty) {
+            // A bucket of one skips the cluster list and opens the same
+            // detail sheet an inline label would — still a BottomSheet,
+            // still worth scrolling before concluding either way, since
+            // its own `ListView(shrinkWrap: true)` is lazy the same way
+            // the cluster sheet's is.
+            try {
+              await tester.scrollUntilVisible(
+                find.descendant(of: sheet, matching: find.text(title)),
+                60,
+                scrollable:
+                    find.descendant(of: sheet, matching: find.byType(Scrollable))
+                        .first,
+              );
+              found = true;
+            } catch (_) {
+              found = find
+                  .descendant(of: sheet, matching: find.text(title))
+                  .evaluate()
+                  .isNotEmpty;
+            }
+            Navigator.of(tester.element(sheet)).pop();
+            await tester.pumpAndSettle();
+          }
+          if (found) break;
+        }
+        if (!found) unreached.add(title);
+      }
+
+      expect(unreached, isEmpty,
+          reason: 'pinned ticks with no inline label and not named in '
+              'any on-screen chip\'s sheet: $unreached');
+      expect(tester.takeException(), isNull);
+      handle.dispose();
+    });
+
     testWidgets('a viewport straddling AM 2187 draws the bars that are '
         'in it and folds only the rest', (tester) async {
       await pumpChart(tester, size: tall);
