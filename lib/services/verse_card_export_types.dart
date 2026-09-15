@@ -37,6 +37,21 @@ enum VerseCardDelivery {
   /// holds it.
   savedToFile,
 
+  /// 2026-09-15. Put into the device's own photo library.
+  ///
+  /// Its own outcome rather than [savedToFile], because there is no
+  /// path to tell the reader and telling them one would send them
+  /// looking in the wrong place. "Saved to your photos" is a different
+  /// sentence from "Saved to /Users/…/Downloads", and the reader acts
+  /// on which one they are given.
+  savedToPhotos,
+
+  /// 2026-09-15. The photo library refused — on iOS, permission not
+  /// granted. Its own outcome because the remedy is the reader's and
+  /// is specific: it is in Settings, not in this app, and "it broke"
+  /// would send them nowhere.
+  photosDenied,
+
   /// This platform has no way to deliver the file. The reader is told
   /// to screenshot the card instead.
   unavailable,

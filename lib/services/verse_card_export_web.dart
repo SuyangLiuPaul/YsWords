@@ -56,6 +56,10 @@ bool canShareImage() {
 /// sheet where it exists, the anchor download where it does not.
 bool canDeliverImage() => true;
 
+/// The browser saves through its own download UI, so there is never a
+/// photo library in the picture and never a path to name.
+bool get savesToPhotoLibrary => false;
+
 String? _lastSavedPath;
 
 /// Always null on the web — a download goes wherever the browser puts

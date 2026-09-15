@@ -42,6 +42,14 @@ abstract class VerseCardExport {
   /// happen.
   static bool get canDeliver => impl.canDeliverImage();
 
+  /// True where "save" means the photo library rather than a path.
+  ///
+  /// The sheet asks so it can LABEL the button with what will actually
+  /// happen — 「保存到相册」 on a phone, "Save image" on a desktop. A
+  /// button that says one and does the other is the lie this whole
+  /// split exists to avoid.
+  static bool get savesToPhotos => impl.savesToPhotoLibrary;
+
   /// Where [deliver] last wrote a file, for the "Saved to …" message.
   /// Null on every other outcome.
   static String? get lastSavedPath => impl.lastSavedPath;

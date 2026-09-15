@@ -74,6 +74,16 @@
 	     library, and keeps nothing after the sheet closes. -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose one of your own photos as the background of a verse image. The photo is used only on that card and is not stored or uploaded.</string>
+	<!-- 2026-09-15. A DIFFERENT key from the one above, and both are
+	     needed: NSPhotoLibraryUsageDescription covers READING the
+	     library (image_picker, for a verse card's background), and this
+	     one covers ADDING to it (gal, for 「保存到相册」). iOS terminates
+	     the app rather than refusing the call when the matching key is
+	     absent, so the omission would not have shown up as a failed
+	     save — it would have shown up as the app disappearing the first
+	     time anyone tried. -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save a verse image to your photos, so you can keep it or send it on. Nothing is uploaded.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>

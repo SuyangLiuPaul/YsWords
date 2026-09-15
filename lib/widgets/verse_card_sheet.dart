@@ -271,9 +271,20 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
             if (VerseCardExport.canShare)
               TextButton.icon(
                 onPressed: _busy ? null : () => _export(saveOnly: true),
-                icon: const Icon(Icons.download_rounded, size: 18),
+                // 2026-09-15: on a phone this now means the photo
+                // library, so it says so and shows the matching glyph.
+                // A download arrow over "保存到相册" would send a reader
+                // looking in Files for a picture that is in Photos.
+                icon: Icon(
+                    VerseCardExport.savesToPhotos
+                        ? Icons.photo_library_rounded
+                        : Icons.download_rounded,
+                    size: 18),
                 label: Text(
-                  uiStrings['verseCardSave']?[locale] ?? 'Save image',
+                  VerseCardExport.savesToPhotos
+                      ? (uiStrings['verseCardSaveToPhotos']?[locale] ??
+                          'Save to Photos')
+                      : (uiStrings['verseCardSave']?[locale] ?? 'Save image'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -402,7 +413,8 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
     // closing it out from under them would be actively unhelpful.
     if (outcome == VerseCardDelivery.shared ||
         outcome == VerseCardDelivery.downloaded ||
-        outcome == VerseCardDelivery.savedToFile) {
+        outcome == VerseCardDelivery.savedToFile ||
+        outcome == VerseCardDelivery.savedToPhotos) {
       // `openedInTab` is deliberately NOT here: the reader still has to
       // long-press the picture in the tab that just opened, and closing
       // this sheet would take away the card they may want to try again
@@ -431,6 +443,18 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
         final path = VerseCardExport.lastSavedPath ?? '';
         message = (uiStrings['verseCardSavedTo']?[locale] ?? 'Saved to {path}')
             .replaceAll('{path}', path);
+      case VerseCardDelivery.savedToPhotos:
+        message = uiStrings['verseCardSavedToPhotos']?[locale] ??
+            'Saved to your photos';
+      case VerseCardDelivery.photosDenied:
+        // Not an error toast: the remedy is the reader's and it is in
+        // the OS, so it is worded as an instruction and given the
+        // longer reading time the other instruction gets.
+        message = uiStrings['verseCardPhotosDenied']?[locale] ??
+            'No photo-library permission. Allow it for this app in your '
+                'device settings.';
+        icon = Icons.info_outline_rounded;
+        background = scheme.inverseSurface;
       case VerseCardDelivery.unavailable:
         message = uiStrings['verseCardScreenshotHint']?[locale] ??
             'Saving images is not supported on this platform yet.';
@@ -450,7 +474,8 @@ class _VerseCardSheetState extends State<VerseCardSheet> {
       message: message,
       icon: icon,
       background: background,
-      duration: outcome == VerseCardDelivery.unavailable
+      duration: (outcome == VerseCardDelivery.unavailable ||
+              outcome == VerseCardDelivery.photosDenied)
           ? const Duration(milliseconds: 4000)
           : const Duration(milliseconds: 2200),
     );

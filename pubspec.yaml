@@ -140,6 +140,17 @@ dependencies:
   # the export — can use. Nothing is written to disk and nothing is
   # kept past the sheet.
   image_picker: ^1.2.3
+  # 2026-09-15. 「words这个做好... save to local image」 — on iOS and
+  # Android the card had no way out at all: `getDownloadsDirectory()`
+  # returns null there by path_provider's own contract, so the sheet
+  # swapped the Save button for a "take a screenshot" hint. Both were
+  # added, on 「两个都加」: saving and sharing are two different wants,
+  # and the desktop and web paths have offered them as two buttons since
+  # they existed.
+  #   gal         → straight into the photo library, one tap
+  #   share_plus  → the OS share sheet, for everywhere else it goes
+  gal: ^2.3.0
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:

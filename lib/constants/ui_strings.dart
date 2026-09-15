@@ -8658,6 +8658,26 @@ const uiStrings = {
         'copy — Exodus 30:13 is one. The ① ② ③ notes are never copied '
         'either way; this switch has nothing to do with them.',
   },
+  // 2026-09-15. 「words这个做好... save to local image」, answered
+  // 「两个都加」. On a phone the card previously had no way out at
+  // all — `getDownloadsDirectory()` is null on iOS and Android by
+  // path_provider's contract, so the sheet offered a screenshot hint.
+  'verseCardSaveToPhotos': {
+    'zh-Hans': '保存到相册',
+    'zh-Hant': '儲存到相簿',
+    'en': 'Save to Photos',
+  },
+  'verseCardSavedToPhotos': {
+    'zh-Hans': '已保存到相册',
+    'zh-Hant': '已儲存到相簿',
+    'en': 'Saved to your photos',
+  },
+  'verseCardPhotosDenied': {
+    'zh-Hans': '没有相册权限。请到系统设置里允许雅伟之言存图片。',
+    'zh-Hant': '沒有相簿權限。請到系統設定裡允許雅偉之言存圖片。',
+    'en': 'No photo-library permission. Allow it for this app in your '
+        'device settings.',
+  },
   // 2026-09-15. Shown under the switch when it is ON and the chapter
   // the preview is drawn from contains nothing it would remove — which
   // is most chapters, and is why the switch read as broken.

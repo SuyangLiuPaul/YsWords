@@ -55,6 +55,17 @@
          asks `canInstall` first and sends them there rather than
          failing at the intent. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- 2026-09-15. Saving a verse image to the photo library (gal).
+         Android 10 (API 29) and up need NO permission for this — scoped
+         storage lets an app write its own media through MediaStore. This
+         app's minSdk is 24, so the four releases below that still do,
+         and `maxSdkVersion` is what stops a modern device being asked
+         for a broad storage grant it does not need. Without the cap the
+         Play listing would show "Photos and media: modify or delete"
+         to every user for the sake of Android 7. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
