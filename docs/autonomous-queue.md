@@ -14411,6 +14411,12 @@ has never seen this repo.
       isn't worth a China+intl deploy cycle. `queue:11538` deferred a
       twentieth time, logged at its own entry.
 
+      Pushed as `08574392`. CI run `34971138872` (head `08574392`) was
+      still `in_progress` after ~6 minutes of polling (this iteration's
+      foreground budget) — **next iteration's step 0 must check it
+      before picking anything else**, same as the standing rule this
+      item already carries for the scheme-validation slice above.
+
       Checkbox stays open: the densest-decade callout is still ahead,
       and it still needs a design decision rather than an hour, per
       last slice's own note about the 2026-09-14 proximity-bucketing
