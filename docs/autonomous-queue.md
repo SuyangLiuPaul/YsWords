@@ -11703,6 +11703,15 @@ has never seen this repo.
       unanswered: start the `GetMaterialApp` → `.router` migration branch,
       or close this as "won't fix"?
 
+      **Deferred a twentieth consecutive iteration, 2026-09-15** — this
+      hour's NEXT_TASK.md picked the chronology chart's tap-to-open-
+      father's-sheet follow-on instead (`queue:13314`'s 2026-09-15
+      slice). Still branch-scale, still unattended-unsafe, still the
+      only fully open P2 checkbox besides the chronology chart, and the
+      question above to the user is still unanswered: start the
+      `GetMaterialApp` → `.router` migration branch, or close this as
+      "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -14341,6 +14350,71 @@ has never seen this repo.
       Checkbox stays open: the tap-to-open-father's-sheet follow-on and
       the densest-decade callout are still ahead, and ticking this item
       was explicitly out of scope for the slice.
+
+      **CI note, 2026-09-15:** both open CI questions from the slice
+      above are discharged — run `34964006387` (`aa79f9b1`, HEAD at
+      planning time) and run `34963465227` (`30d70e67`, itself) both
+      finished **success**. Not re-asking a third time.
+
+      **2026-09-15 slice — tap-to-open-father's-sheet.** Took this
+      item's own named next step, per this hour's NEXT_TASK.md. The
+      "Son of {name} (aged {n} at the birth)" line in `_showPersonSheet`
+      (`chronology_chart.dart:2232`) was plain, unwrapped `Text` before
+      this slice — confirmed by reading the pre-change code, not
+      assumed. It is now wrapped in `Semantics(button: true, child:
+      InkWell(...))`; tapping it pops the current sheet (via the
+      builder's own `ctx`, closed over from the outer `builder: (ctx)
+      =>`) and opens the father's own `_showPersonSheet` off the
+      method's outer `context` — the same pop-then-push-off-outer-
+      context pattern `_showClusterSheet`'s `ListTile.onTap`
+      (`chronology_chart.dart:2574`) already uses for its own
+      sheet→sheet hop, confirmed to be the only other such call site in
+      the file (the other two `Navigator.of(ctx).pop()` sites invoke
+      `widget.onTapRef!`, an external callback, not a local sheet
+      method). Styled with `scheme.primary` + underline rather than new
+      copy, per the item's own "prefer not to" guidance — no
+      `ui_strings.dart` change.
+
+      One new widget test in `test/bible_chronology_test.dart`, placed
+      directly after the existing father-line test and reusing
+      `pumpChart`: opens Methuselah, taps "Son of Enoch (aged 65 at the
+      birth)", and asserts — scoped to `find.byType(BottomSheet)` so it
+      isn't fooled by the chart's own row labels sitting underneath —
+      that exactly one `BottomSheet` remains, Methuselah's name is gone
+      from it, and it now carries Enoch's name plus his own father line
+      naming Jared (162, re-derived from `assets/bible_chronology.json`:
+      `enoch.birthAm 622 − jared.birthAm 460`). Confirmed red first by
+      stashing just `chronology_chart.dart` and rerunning the single
+      test (failed: the sheet still named Methuselah, because the old
+      Text had nothing to tap), then green again with the fix restored.
+      Corpus re-derived directly from the asset, not copied forward: 20
+      lifelines, `adam` the only root, all 19 others resolve their
+      `fatherId`.
+
+      Refuted before committing (independent agent given the exact
+      claims and the commands to reproduce them, not this summary): the
+      "was display-only before this slice" claim, the "`_showClusterSheet`
+      is the only in-file sheet→sheet precedent" claim, the corpus
+      numbers, the red-then-green test claim (rerun live), and the
+      112→113 test-count claim (rerun live, not grepped — grep alone
+      undercounts this file by ~64 because several tests are generated
+      in a loop). All five survived.
+
+      `flutter analyze` clean, repo-wide. `bible_chronology_test.dart`:
+      **113 tests**, all pass (1 new this slice; baseline 112 recounted
+      at `30d70e67`, not copied forward). Full suite left to CI per
+      `queue:15174`'s standing ruling — a `flutter test` full-suite run
+      was started locally by mistake and stopped before it could finish,
+      per that same ruling and the "no background job left unresolved"
+      rule. Code + test only: no asset, version, dependency or deploy
+      change — this item's own standing rule is that a chart-sheet line
+      isn't worth a China+intl deploy cycle. `queue:11538` deferred a
+      twentieth time, logged at its own entry.
+
+      Checkbox stays open: the densest-decade callout is still ahead,
+      and it still needs a design decision rather than an hour, per
+      last slice's own note about the 2026-09-14 proximity-bucketing
+      attempt.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the

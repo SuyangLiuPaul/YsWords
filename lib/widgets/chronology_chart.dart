@@ -2233,16 +2233,26 @@ class _ChronologyChartState extends State<ChronologyChart> {
                         Builder(builder: (_) {
                           final father = widget.data.lifelineById(l.fatherId!);
                           if (father == null) return const SizedBox.shrink();
-                          return Text(
-                            _s('chronologyFatherAge',
-                                    'Son of {name} (aged {n} at the birth)')
-                                .replaceAll(
-                                    '{name}', father.localizedName(locale))
-                                .replaceAll('{n}',
-                                    '${l.birthAm - father.birthAm}'),
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: scheme.onSurface.withValues(alpha: 0.85),
+                          return Semantics(
+                            button: true,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.of(ctx).pop();
+                                _showPersonSheet(context, father);
+                              },
+                              child: Text(
+                                _s('chronologyFatherAge',
+                                        'Son of {name} (aged {n} at the birth)')
+                                    .replaceAll(
+                                        '{name}', father.localizedName(locale))
+                                    .replaceAll('{n}',
+                                        '${l.birthAm - father.birthAm}'),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: scheme.primary,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
                             ),
                           );
                         }),

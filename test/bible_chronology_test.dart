@@ -883,6 +883,41 @@ void main() {
           reason: 'adam is the root lifeline and has no father to name');
     });
 
+    testWidgets(
+        "tapping the father line replaces the sheet with the father's own",
+        (tester) async {
+      await pumpChart(tester);
+      await tester.tap(find.text('Methuselah').first);
+      await tester.pumpAndSettle();
+      // methuselah.birthAm 687 - enoch.birthAm 622 == 65.
+      final fatherLine = find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text('Son of Enoch (aged 65 at the birth)'),
+      );
+      expect(fatherLine, findsOneWidget);
+
+      await tester.tap(fatherLine);
+      await tester.pumpAndSettle();
+
+      // One sheet, not two: only one BottomSheet route is up, it no
+      // longer names Methuselah, and it carries Enoch's own title and
+      // his own father line.
+      expect(find.byType(BottomSheet), findsOneWidget);
+      final sheet = find.byType(BottomSheet);
+      expect(find.descendant(of: sheet, matching: find.text('Methuselah')),
+          findsNothing);
+      expect(find.descendant(of: sheet, matching: find.text('Enoch')),
+          findsOneWidget);
+      // enoch.birthAm 622 - jared.birthAm 460 == 162.
+      expect(
+        find.descendant(
+          of: sheet,
+          matching: find.text('Son of Jared (aged 162 at the birth)'),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('the whole-span view fits the width, and only the plot '
         'scrolls sideways when zoomed', (tester) async {
       await pumpChart(tester);
