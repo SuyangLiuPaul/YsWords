@@ -11739,6 +11739,15 @@ has never seen this repo.
       is still unanswered: start the `GetMaterialApp` → `.router`
       migration branch, or close this as "won't fix"?
 
+      **Deferred a twenty-fourth consecutive iteration, 2026-09-16** —
+      this hour's NEXT_TASK.md picked measuring the position-based
+      (bare-lane) tap route for the whole chronology corpus instead
+      (`queue:13341`'s 2026-09-16 slice, below). Still branch-scale,
+      still unattended-unsafe, still the only fully open P2 checkbox
+      besides the chronology chart, and the question above to the user
+      is still unanswered: start the `GetMaterialApp` → `.router`
+      migration branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -14701,6 +14710,75 @@ has never seen this repo.
       still `in_progress` after ~6 minutes of polling (this iteration's
       foreground budget) — next iteration's step 0 must check it before
       picking anything else.
+
+      **2026-09-16 slice — the position-based route, measured.** The
+      previous slice explicitly left this open: does a raw tap at an
+      unpinned tick's own bare mark — no label, no chip, just the thin
+      line/circle `_TickPainter` draws for every one of the 100 ticks —
+      actually reach that tick's own sheet at fit view, via `onTapDown`'s
+      fallback (`for (final t in ticks) { … if (dx <= bestDx) best = t; }`
+      over `widget.data.allTicks`, nearest-in-x within 14pt, `<=` so the
+      last tick in list order wins a tie)? New `testWidgets` walks all
+      100 ticks, taps each one's own computed x on the bare part of the
+      lane (recomputed fresh every iteration — see below), and checks
+      the opened sheet names that tick.
+
+      **Result: 80 of 100 reach themselves cleanly; the other 20 fail for
+      two distinct, fully-understood reasons — no lib change either
+      way.** (1) **19 are non-last members of the corpus's 9 exact-AM tie
+      groups** (28 ticks total, e.g. all 6 of AM 2558's Exodus-week
+      events resolve to whichever is last in list order) — exactly the
+      documented `<=` behaviour, not a bug to fix. (2) **The corpus's own
+      last tick** (`john_patmos`, AM 4098 == `spanEndAm`) sits with its
+      computed x exactly on the tick lane's right edge; a tap at exactly
+      `x == plotWidth` misses the `GestureDetector`'s hit-test region
+      entirely because Flutter's own `Size`/`Rect.contains` is
+      right-exclusive (`dx < width`, not `<=`) — a platform fact, not
+      this widget's arithmetic, confirmed by perturbation (clamping the
+      tap 0.5pt short of the edge instead of exactly on it made this
+      tick reach cleanly, with nothing else about the test changed, then
+      reverted). Both classes are pinned in the test as an independently
+      re-derived expected partition (not relaxed to fit the observed
+      result), and both ticks the edge case and the ties already have a
+      working CONTENT-based route (pinned tick, chip/label reachable —
+      confirmed by the two tests above this one).
+
+      **A real bug was found and fixed, but it was in this test, not the
+      widget.** First draft hoisted the tick lane's bounding rect once
+      before the 100-tap loop. Popping the 24th-or-so sheet legitimately
+      reflowed the lane (a newly selected tick can demand a different
+      label-row count than the last one, per the neighbouring test's own
+      "popping a sheet rebuilds the lane" warning), which shifted the
+      lane down 21pt on screen. The stale rect then aimed every
+      subsequent tap's y at what was now a LABEL row instead of the bare
+      margin, and every tap from that point on opened the same wrong,
+      stuck-looking sheet ("Abram leaves Haran, aged 75") regardless of
+      x. Fixed by reading the rect fresh every iteration, matching the
+      convention the pinned-ticks test above already uses for chips.
+
+      Refuted before committing (independent agent, given all four
+      claims — monotonicity of the fallback scan, the tie-break-picks-
+      last rule, the right-edge exclusion, and the exact 80/19/1
+      partition — and told to re-derive each from source and an
+      independent Python re-simulation of the algorithm over the real
+      100-tick corpus): all four held, no counterexample found.
+
+      `flutter analyze` clean, repo-wide. `bible_chronology_test.dart`:
+      **117 tests**, all pass (1 new this slice; baseline 116 recounted
+      at `fcd4ad7a`). Full suite left to CI per `queue:15174`'s standing
+      ruling. Code + test only: no asset, version, dependency or deploy
+      change, per this item's own standing rule.
+
+      Checkbox stays open: the labelling half ("give all 14
+      densest-decade events their own inline label") is still unbuilt,
+      and so is the product question this and the previous slice both
+      surfaced — whether any of the 87 unpinned ticks should ever be
+      promoted to a chip at fit view, or whether the now-fully-measured
+      bare-lane-tap fallback (80/100 reach themselves; the other 20 for
+      the two reasons above) is judged sufficient for them as-is.
+
+      Pushed as `<pending>`. `queue:11538` deferred a twenty-fourth time,
+      logged at its own entry.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the

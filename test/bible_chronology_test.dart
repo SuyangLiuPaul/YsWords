@@ -3436,6 +3436,156 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('the position-based route: a raw tap at each tick\'s own '
+        'x, away from any label or chip, is measured for whether it '
+        'reaches that tick\'s own sheet', (tester) async {
+      // The test above measures the CONTENT-based route — an on-screen
+      // label or chip, found by its text and tapped. This one measures
+      // the other route `onTapDown` offers, named but left unmeasured by
+      // this item's previous slice: a tap on bare lane, at a tick's own
+      // x, that never lands inside any label's or chip's hit rect at
+      // all. `onTapDown` falls back to `for (final t in ticks) { … if
+      // (dx <= bestDx) best = t; }` over the WHOLE unfiltered
+      // `data.allTicks`, nearest-in-x within 14 pt, with `<=` so the
+      // LAST tick in list order wins any tie. That is a concrete way for
+      // this to come back wrong: two ticks close enough in x — same AM,
+      // or merely within 14 pt of each other at fit view's ~0.06 pt per
+      // year here — and the earlier one's own mark can never open its
+      // own sheet no matter how precisely a reader taps it.
+      //
+      // The tap's y is chosen fresh every iteration, never hoisted: the
+      // pinned test above this one already warns that popping a sheet
+      // rebuilds the lane, and rebuilding can change how many label rows
+      // it reserves (a newly selected tick can belong to a fuller or
+      // emptier row-packing than the last one), which moves the lane's
+      // own top on screen and the boundary between its label rows and
+      // its bare margin below them. A `laneRect` read once before the
+      // loop went stale after exactly that — a reproducible run of this
+      // test with a hoisted rect kept opening "Abram leaves Haran, aged
+      // 75" for every tap after the lane shifted, because the stale y
+      // had drifted from the reserved bottom margin into that tick's own
+      // label row. `_chipBandHeight + labelRows * pitch` is what
+      // `labelHits`/`chipHits` occupy (built in `_tickLane` above); the
+      // lane's own height always reserves `+7` beyond that (see
+      // `_tickLaneHeight` / `_tickLaneMaxHeight`), so `height - 2`,
+      // read fresh each time, is always below both — checked below on
+      // the live rect, not assumed.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: tall);
+      await wholeSpan(tester);
+
+      final allTicks = data.allTicks;
+      final span = (data.spanEndAm - data.spanStartAm).abs().toDouble();
+      final plotWidth = plotWidthOf(tester);
+      double xOf(int am) => (am - data.spanStartAm) / span * plotWidth;
+
+      final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+
+      final reached = <String>{};
+      final unreached = <String>{};
+
+      for (final t in allTicks) {
+        final liveRect = tester.getRect(laneBox);
+        final bareDy = liveRect.height - 2;
+
+        // No drawn label may reach into the row this tap targets, at
+        // the lane's CURRENT layout — checked fresh, since the layout
+        // just shifted at least once in a real run (see above).
+        for (final e in find
+            .descendant(of: laneBox, matching: find.byType(Text))
+            .evaluate()) {
+          final r = tester.getRect(find.byWidget(e.widget));
+          expect(r.top - liveRect.top, lessThan(bareDy),
+              reason: 'a label reaches into the row this test relies on '
+                  'being bare, for the tap aimed at "${t.titleEn}"');
+        }
+
+        final dx = xOf(t.am).clamp(0.0, plotWidth);
+        await tester.tapAt(Offset(liveRect.left + dx, liveRect.top + bareDy));
+        await tester.pumpAndSettle();
+
+        var found = false;
+        final sheet = find.byType(BottomSheet);
+        if (sheet.evaluate().isNotEmpty) {
+          final title = t.localizedTitle('en');
+          try {
+            await tester.scrollUntilVisible(
+              find.descendant(of: sheet, matching: find.text(title)),
+              60,
+              scrollable: find
+                  .descendant(of: sheet, matching: find.byType(Scrollable))
+                  .first,
+            );
+            found = true;
+          } catch (_) {
+            found = find
+                .descendant(of: sheet, matching: find.text(title))
+                .evaluate()
+                .isNotEmpty;
+          }
+          Navigator.of(tester.element(sheet)).pop();
+          await tester.pumpAndSettle();
+        }
+        (found ? reached : unreached).add(t.titleEn);
+      }
+
+      // Independently re-derive the tie-break outcome the production
+      // code computes, so the assertion below states WHY a title landed
+      // where it did rather than pinning an opaque list. Same rule as
+      // `onTapDown`: nearest in x within 14 pt, `<=` so the last tick in
+      // `allTicks` order at a given x wins.
+      final expectedReached = <String>{};
+      final expectedUnreached = <String>{};
+      for (final t in allTicks) {
+        final myX = xOf(t.am);
+        ChronologyMarker? best;
+        var bestDx = 14.0;
+        for (final other in allTicks) {
+          final dx = (xOf(other.am) - myX).abs();
+          if (dx <= bestDx) {
+            bestDx = dx;
+            best = other;
+          }
+        }
+        (best?.id == t.id ? expectedReached : expectedUnreached).add(t.titleEn);
+      }
+
+      // One measured exception to that pure math, checked here rather
+      // than silently absorbed into a looser assertion: the corpus's own
+      // last tick sits at `am == spanEndAm`, so its computed x is
+      // exactly `plotWidth` — the lane's own right edge. A perturbation
+      // run of this test (clamping the tap 0.5 pt short of that edge
+      // instead of exactly on it) reached all 81 the pure tie-break math
+      // predicts, this one included — proving the shortfall here is
+      // Flutter's own right-exclusive `Rect`/`Size.contains` at the
+      // mathematically exact boundary pixel, not a tie or an off-by-one
+      // in this widget's `<=`. No real tap lands on that exact
+      // sub-pixel float; the same tick already has a working
+      // CONTENT-based route too (it is one of the 13 pinned titles the
+      // test above this one confirms reachable through
+      // `chronologyChipPlan`'s terminal-fold). So: documented here, no
+      // lib change, and moved from the pure-math prediction into
+      // `expectedUnreached` rather than left to fail the assertion below.
+      final lastTick =
+          allTicks.firstWhere((t) => t.am == data.spanEndAm).titleEn;
+      expect(expectedReached.remove(lastTick), isTrue,
+          reason: 'the pure math should have predicted the corpus\'s own '
+              'last tick reaches itself; if this fails the corpus shape '
+              'changed and this exception needs re-deriving');
+      expectedUnreached.add(lastTick);
+
+      expect(reached, unorderedEquals(expectedReached),
+          reason: 'measured reached set does not match the independently '
+              're-derived nearest-in-x-within-14pt tie-break — got '
+              '$reached, expected $expectedReached');
+      expect(unreached, unorderedEquals(expectedUnreached),
+          reason: 'measured unreached set does not match the '
+              'independently re-derived tie-break — got $unreached, '
+              'expected $expectedUnreached');
+      expect(tester.takeException(), isNull);
+      handle.dispose();
+    });
+
     testWidgets('a viewport straddling AM 2187 draws the bars that are '
         'in it and folds only the rest', (tester) async {
       await pumpChart(tester, size: tall);
