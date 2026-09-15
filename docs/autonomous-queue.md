@@ -5875,21 +5875,53 @@ reported. Work these top-down before P2.
       the artifact. It IS still testimony at positions it does not share —
       西番雅書 1:1 is one.
 
-- [ ] **`nahor_elder` is the only entry using half-width `()` inside CJK
-      text, in `assets/bible_chronology.json` and `assets/family_tree.json`.**
-      Filed 2026-09-15, found while validating `fatherId` on the
-      chronology chart (`queue:13280`'s slice that day) — not fixed there,
-      because that slice's own guard rail forbade any asset edit.
-      拿鶴(亞伯拉罕祖父) / 拿鹤(亚伯拉罕祖父) use half-width `(` `)` against
-      102 full-width `（）` pairs elsewhere in `bible_chronology.json`. It
-      originates in `assets/family_tree.json` and is copied into the
-      chronology asset — and into three of its `derivationEn`/
-      `derivationZhHans`/`derivationZhHant` strings — by
-      `tools/build_bible_chronology.py`. Neither asset is frozen (only
-      `cuvs-yhwh*` is); fixing it means editing both assets plus the
-      generator, and re-checking `family_tree_page.dart`, which also
-      renders that name. Same shape of fix as the `()`→（） rows in the
-      72-mark sweep above, just in a different pair of assets.
+- [x] **`nahor_elder` was NOT the only entry — fixed 2026-09-16.** The
+      2026-09-15 filing undercounted: a full census of `family_tree.json`'s
+      four zh fields (`nameZhHans`, `nameZhHant`, `summaryZhHans`,
+      `summaryZhHant`, 277 people) found half-width `(`/`)` in **10**
+      people, not just `nahor_elder` — `methuselah`, `lamech`, `japheth`,
+      `peleg`, `nahor_elder`, `jacob`, `jeconiah`, `shealtiel`,
+      `joseph_father_of_jesus`, `shimea` (22 opens / 22 closes total, a
+      refuter independently re-derived this exact list and count). Two
+      other marks in the same fields were widened alongside it, against
+      an already-dominant full-width twin: `;` 178 (vs `；` ×348) and `,`
+      56 (vs `，` ×120). Two more were measured and left alone: `:` 100 —
+      every one digit-adjacent, a scripture reference like `馬太福音
+      1:13-16`, verified with no exceptions; and `'` 10 — convention
+      genuinely undecided, filed as its own item below rather than swept.
+      `assets/family_tree.json` is our own editorial prose, not scripture,
+      and not one of the frozen `cuvs-yhwh*` assets, so this was a
+      straight widen via a new script,
+      `tools/repair_family_tree_ascii_punctuation.py` (refuses on
+      before/after count drift), followed by re-running
+      `tools/build_bible_chronology.py`, whose diff came out limited to
+      exactly the 6 `nahor_elder` strings the old filing named (8 paren
+      chars: `nameZhHans`/`nameZhHant` ×1 each, `derivationZhHans`/
+      `derivationZhHant` ×2 each in its own entry, ×1 each in `terah`'s,
+      which cites its father's name). `_nameColumnWidth` in
+      `chronology_chart.dart` measures label width live rather than using
+      a fixed budget, so the wider full-width parens needed no layout
+      change; `test/bible_chronology_test.dart`'s "a name in the left
+      column is never cut short" and "the generator is the only author of
+      the asset" both still pass. New guard:
+      `test/family_tree_ascii_punctuation_test.dart` (verified red against
+      the pre-fix asset before landing — non-zero `;`/`,`/`(`/`)` counts —
+      and pins `:`=100, `'`=10 so a later sweep can't silently widen those
+      too).
+
+- [ ] **The `'` class in `family_tree.json`'s zh fields (10 occurrences)
+      needs a convention call, not a sweep.** Filed 2026-09-16, split out
+      of the item above. `peleg`, `hagar`, `judah`, `jesse` (zh-Hans) use
+      `'…'` where their zh-Hant twins use `「…」` — but
+      `lib/pages/bible_trivia_page.dart:2521` sets zh-Hans inner quotes as
+      ASCII `"`, not `'`. `abinadab_brother`'s two occurrences (hans and
+      hant) are `Saul's`, English possessive inside an otherwise-untranslated
+      summary fragment ("耶西的 次子; served in Saul's army against the
+      Philistines.") — a translation-completeness gap, a different
+      problem from the quote-style question. Needs the user's call on
+      which zh-Hans inner-quote convention is canonical before touching
+      any of it. `judah`'s `'圭必不离犹大'` quotes Gen 49:10 — whatever the
+      mark, the wording stays untouched.
 
 - [x] **`說；「` opened a quotation with a semicolon in 5 verses — fixed
       2026-08-23 in all three files.** 列王紀上 22:13, 路加福音 13:2,
@@ -11747,6 +11779,15 @@ has never seen this repo.
       besides the chronology chart, and the question above to the user
       is still unanswered: start the `GetMaterialApp` → `.router`
       migration branch, or close this as "won't fix"?
+
+      **Deferred a twenty-fifth consecutive iteration, 2026-09-16** —
+      this hour's NEXT_TASK.md picked the P0 `nahor_elder`/family_tree.json
+      half-width-paren item instead (below), the last actionable item once
+      Tiers 1–5 were confirmed empty or blocked. Still branch-scale, still
+      unattended-unsafe, still the only fully open P2 checkbox besides the
+      chronology chart, and the question above to the user is still
+      unanswered: start the `GetMaterialApp` → `.router` migration branch,
+      or close this as "won't fix"?
 
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two

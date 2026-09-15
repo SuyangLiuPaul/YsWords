@@ -483,8 +483,8 @@
       "lineId": "shemite",
       "scheme": "masoretic-ussher",
       "nameEn": "Nahor (the elder)",
-      "nameZhHans": "拿鹤(亚伯拉罕祖父)",
-      "nameZhHant": "拿鶴(亞伯拉罕祖父)",
+      "nameZhHans": "拿鹤（亚伯拉罕祖父）",
+      "nameZhHant": "拿鶴（亞伯拉罕祖父）",
       "fatherId": "serug",
       "birthAm": 1849,
       "deathAm": 1997,
@@ -495,8 +495,8 @@
         "Genesis 11:25"
       ],
       "derivationEn": "Serug was 30 when Nahor (the elder) was born (Genesis 11:22); Nahor (the elder) lived 148 years (Genesis 11:24, Genesis 11:25).",
-      "derivationZhHans": "西鹿 30 岁生拿鹤(亚伯拉罕祖父)（创世记 11:22）；拿鹤(亚伯拉罕祖父)共活了 148 年（创世记 11:24、创世记 11:25）。",
-      "derivationZhHant": "西鹿 30 歲生拿鶴(亞伯拉罕祖父)（創世記 11:22）；拿鶴(亞伯拉罕祖父)共活了 148 年（創世記 11:24、創世記 11:25）。"
+      "derivationZhHans": "西鹿 30 岁生拿鹤（亚伯拉罕祖父）（创世记 11:22）；拿鹤（亚伯拉罕祖父）共活了 148 年（创世记 11:24、创世记 11:25）。",
+      "derivationZhHant": "西鹿 30 歲生拿鶴（亞伯拉罕祖父）（創世記 11:22）；拿鶴（亞伯拉罕祖父）共活了 148 年（創世記 11:24、創世記 11:25）。"
     },
     {
       "personId": "terah",
@@ -514,8 +514,8 @@
         "Genesis 11:32"
       ],
       "derivationEn": "Nahor (the elder) was 29 when Terah was born (Genesis 11:24); Terah lived 205 years (Genesis 11:32).",
-      "derivationZhHans": "拿鹤(亚伯拉罕祖父) 29 岁生他拉（创世记 11:24）；他拉共活了 205 年（创世记 11:32）。",
-      "derivationZhHant": "拿鶴(亞伯拉罕祖父) 29 歲生他拉（創世記 11:24）；他拉共活了 205 年（創世記 11:32）。"
+      "derivationZhHans": "拿鹤（亚伯拉罕祖父） 29 岁生他拉（创世记 11:24）；他拉共活了 205 年（创世记 11:32）。",
+      "derivationZhHant": "拿鶴（亞伯拉罕祖父） 29 歲生他拉（創世記 11:24）；他拉共活了 205 年（創世記 11:32）。"
     },
     {
       "personId": "abraham",
