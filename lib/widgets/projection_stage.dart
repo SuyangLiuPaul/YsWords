@@ -99,6 +99,21 @@
 ///     onto the wall beside it — which is most of them, in most rooms,
 ///     as [kProjectionSideMargin] already concedes — spills near-black
 ///     instead of a full-value rectangle.
+///   * **[ProjectionGround.photo]** — 2026-09-15, 「projector可以选择image
+///     background吗在setting设置」. The operator's own picture, under a
+///     fixed dark scrim.
+///
+///     The scrim is not a taste setting and is not optional. A verse on
+///     a wall has exactly one job and a photograph has no obligation to
+///     be dark where the words fall; [kProjectionPhotoScrim] is the
+///     opacity at which white type at wall size stays legible over a
+///     bright sky, and an operator who could turn it down would
+///     eventually turn it down over the wrong photograph, in front of a
+///     room, with no way to tell until the words had gone.
+///
+///     With no picture chosen this ground paints exactly [seeded]. An
+///     operator who clears the photo gets the default wall back, not a
+///     blank one — the same rule the blank key follows.
 ///
 /// ## EVERY STYLE HERE PINS `kCjkFontFallback`
 ///
@@ -177,7 +192,7 @@ ColorScheme projectionDarkScheme(Color seed) => ColorScheme.fromSeed(
 /// Persisted by NAME (`ProjectionGround.name`), never by index, so
 /// inserting a fifth ground later cannot silently reassign the choice an
 /// operator already made.
-enum ProjectionGround { seeded, ink, black, spotlight }
+enum ProjectionGround { seeded, ink, black, spotlight, photo }
 
 /// Where the passage sits against the measure.
 ///
@@ -373,8 +388,25 @@ BoxDecoration projectionGroundDecoration(
           colors: <Color>[scheme.surface, kProjectionTrueBlack],
         ),
       );
+    case ProjectionGround.photo:
+      // The BASE, under the picture. Deliberately the default ground
+      // rather than black: this is what the wall shows when no photo is
+      // chosen or one fails to decode, and it is also what shows through
+      // wherever a picture does not reach the edge. Returning a dark
+      // colour is what keeps `projectionGroundColors`'s luminance rule a
+      // property of the whole SET.
+      return BoxDecoration(color: scheme.surface);
   }
 }
+
+/// How far the scrim darkens the operator's picture.
+///
+/// Not a setting. See [ProjectionGround.photo]: the one job of a verse
+/// on a wall is to be read, and 0.58 is where white type at wall size
+/// survives a bright sky. An operator able to lower it would lower it
+/// over the wrong photograph eventually, in front of a room, and find
+/// out only after the words had gone.
+const double kProjectionPhotoScrim = 0.58;
 
 /// Every colour [ground] can put on the wall.
 ///
@@ -551,6 +583,7 @@ class ProjectionStage extends StatelessWidget {
     this.referenceStep = 0,
     this.fontZh = '',
     this.fontEn = '',
+    this.backdrop,
   });
 
   /// How the passage is set: centred or start-aligned, verse by verse
@@ -622,6 +655,15 @@ class ProjectionStage extends StatelessWidget {
   final String fontZh;
   final String fontEn;
 
+  /// The operator's own picture, for [ProjectionGround.photo].
+  ///
+  /// Null is not an error and not an empty wall: the photo ground
+  /// paints its base, which is the default ground, so an operator who
+  /// clears the picture gets the wall they started with. Loaded by the
+  /// caller rather than here — this widget is given an image or it is
+  /// not, and never touches a file.
+  final ImageProvider? backdrop;
+
   final bool secondOn;
   /// The second edition's text per verse in [verses], by position;
   /// null when the block is off or not loaded.
@@ -634,10 +676,36 @@ class ProjectionStage extends StatelessWidget {
   /// A single call site for the blank wall and the lit one is the whole
   /// of rule 2 in the library doc: there is nowhere for a second opinion
   /// about what "blank" looks like to live.
-  Widget _ground({Widget? child}) => DecoratedBox(
-        decoration: projectionGroundDecoration(ground, scheme),
-        child: child,
-      );
+  Widget _ground({Widget? child}) {
+    final base = DecoratedBox(
+      decoration: projectionGroundDecoration(ground, scheme),
+      child: child,
+    );
+    final photo = backdrop;
+    if (ground != ProjectionGround.photo || photo == null) return base;
+    // The picture, then the scrim, then the words. Order matters and is
+    // the whole of why the scrim is not a setting: nothing below it can
+    // reach the type, and nothing above it can be dimmed.
+    //
+    // `cover` rather than `contain`: a wall with bars down the sides is
+    // a wall that looks broken, and a photograph the operator chose is
+    // theirs to have cropped. `filterQuality` is left at the default —
+    // this is one image scaled once per frame, not a scroll.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: projectionGroundDecoration(ground, scheme),
+        ),
+        Image(image: photo, fit: BoxFit.cover),
+        ColoredBox(
+          color: kProjectionTrueBlack
+              .withValues(alpha: kProjectionPhotoScrim),
+        ),
+        if (child != null) child,
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -191,6 +191,7 @@ import 'package:yswords/constants/bible_versions.dart'
         resolvableVersion,
         shortBibleVersionLabel;
 import 'package:yswords/constants/book_names.dart' show bookNameToEnglish;
+import 'package:yswords/services/projection_backdrop.dart';
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/models/app_settings.dart';
@@ -1788,6 +1789,8 @@ class _ProjectionPageState extends State<ProjectionPage> {
                         _settings.projectionFontZh, _settings.fontFamily),
                     fontEn: projectionFamilyFor(
                         _settings.projectionFontEn, _settings.fontFamily),
+                    backdrop: projectionBackdropImage(
+                        _settings.projectionBackdrop),
                   ),
                 ),
                 // THE CONTROLS SIT AT THE TOP, AND THE REFERENCE AT THE

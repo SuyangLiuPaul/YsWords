@@ -29,6 +29,8 @@ import 'package:yswords/services/update_service.dart';
 import 'package:yswords/widgets/update_check_tile.dart';
 import 'package:yswords/providers/main_provider.dart';
 import 'package:yswords/constants/projection_strings.dart';
+import 'package:yswords/services/projection_backdrop.dart';
+import 'package:yswords/services/verse_photo_picker.dart' show pickVersePhoto;
 import 'package:yswords/widgets/projection_stage.dart';
 import 'package:yswords/pages/projection_page.dart' show kProjectionTypeSteps;
 import 'package:yswords/models/verse.dart';
@@ -2012,6 +2014,34 @@ class _AccountSectionState extends State<_AccountSection> {
 /// / App / Account) without forcing a refactor of the existing card
 /// layout.
 /// The projector's own card. See the note at its call site.
+/// Ask the operator for a picture and keep it.
+///
+/// Reuses `pickVersePhoto` rather than calling `image_picker` again:
+/// that service already decided this app hands BYTES around rather than
+/// paths, and already downscales, which is what keeps a 4000×3000
+/// phone photograph from being held decoded behind a settings sheet.
+Future<void> _pickProjectionBackdrop(
+    BuildContext context, AppSettings settings) async {
+  final bytes = await pickVersePhoto();
+  // Null is the common case — they backed out — and is not an error.
+  if (bytes == null) return;
+  final stored = await storeProjectionBackdrop(bytes);
+  if (!context.mounted) return;
+  if (stored == null) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(projectionString('projectionBackdropFailed',
+          'That picture could not be saved — the background is unchanged.',
+          settings.locale)),
+    ));
+    return;
+  }
+  // The path is the same every time, so a setter that compares values
+  // would ignore the second pick. Clear it first: the picture changed
+  // even though its name did not.
+  await settings.setProjectionBackdrop('');
+  await settings.setProjectionBackdrop(stored);
+}
+
 class _ProjectorCard extends StatelessWidget {
   const _ProjectorCard({
     required this.settings,
@@ -2162,6 +2192,67 @@ class _ProjectorCard extends StatelessWidget {
                 ],
               ),
             ),
+            // 2026-09-15. 「projector可以选择image background吗在setting
+            // 设置」. Shown only when the photo ground is chosen — a
+            // "choose a picture" button under a ground that ignores it
+            // is a control that does nothing, which is the defect the
+            // wheel's overflow sheet was reported for the same week.
+            if (ground == ProjectionGround.photo)
+              Padding(
+                padding: EdgeInsets.only(top: 8 * s),
+                child: !projectionBackdropSupported
+                    ? Text(
+                        t('projectionBackdropUnavailable',
+                            'The web build cannot keep a picture.'),
+                        style: label(weight: FontWeight.w400, scale: 0.85)
+                            .copyWith(color: scheme.onSurfaceVariant),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              OutlinedButton.icon(
+                                icon: const Icon(Icons.image_outlined,
+                                    size: 18),
+                                label: Text(
+                                  settings.projectionBackdrop.isEmpty
+                                      ? t('projectionBackdropChoose',
+                                          'Choose a picture')
+                                      : t('projectionBackdropReplace',
+                                          'Replace'),
+                                  style: label(scale: 0.9),
+                                ),
+                                onPressed: () =>
+                                    _pickProjectionBackdrop(context, settings),
+                              ),
+                              if (settings.projectionBackdrop.isNotEmpty)
+                                TextButton.icon(
+                                  icon: const Icon(Icons.close_rounded,
+                                      size: 18),
+                                  label: Text(
+                                    t('projectionBackdropRemove', 'Remove'),
+                                    style: label(scale: 0.9),
+                                  ),
+                                  onPressed: () async {
+                                    await clearProjectionBackdrop();
+                                    await settings.setProjectionBackdrop('');
+                                  },
+                                ),
+                            ],
+                          ),
+                          SizedBox(height: 4 * s),
+                          Text(
+                            t('projectionBackdropHint',
+                                'A fixed dark scrim goes over the picture.'),
+                            style: label(weight: FontWeight.w400, scale: 0.8)
+                                .copyWith(color: scheme.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
+              ),
             // 2026-09-15. The reference's own size, which until now was a
             // ratio off the passage with a floor and no way to touch it.
             // Auto is first and is the default: the ratio is still the
@@ -2418,6 +2509,8 @@ class _ProjectorCard extends StatelessWidget {
                         settings.projectionFontZh, settings.fontFamily),
                     fontEn: projectionFamilyFor(
                         settings.projectionFontEn, settings.fontFamily),
+                    backdrop: projectionBackdropImage(
+                        settings.projectionBackdrop),
                   )),
                 ),
               ),

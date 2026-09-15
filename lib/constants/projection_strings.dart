@@ -359,6 +359,45 @@ const projectionStrings = <String, Map<String, String>>{
     'en': 'The wall often carries both at once — a companion edition '
         'sits under the first — so the two are chosen separately.',
   },
+  // 2026-09-15. 「projector可以选择image background吗在setting设置」
+  'projectionGround_photo': {
+    'zh-Hans': '图片',
+    'zh-Hant': '圖片',
+    'en': 'Photo',
+  },
+  'projectionBackdropChoose': {
+    'zh-Hans': '选图片',
+    'zh-Hant': '選圖片',
+    'en': 'Choose a picture',
+  },
+  'projectionBackdropReplace': {
+    'zh-Hans': '换一张',
+    'zh-Hant': '換一張',
+    'en': 'Replace',
+  },
+  'projectionBackdropRemove': {
+    'zh-Hans': '去掉图片',
+    'zh-Hant': '去掉圖片',
+    'en': 'Remove',
+  },
+  'projectionBackdropHint': {
+    'zh-Hans': '图片上会盖一层固定的暗罩，否则墙上的字读不清。没选图片就是普通背景。',
+    'zh-Hant': '圖片上會蓋一層固定的暗罩，否則牆上的字讀不清。沒選圖片就是普通背景。',
+    'en': 'A fixed dark scrim goes over the picture, or the words on the '
+        'wall cannot be read. With no picture this is the ordinary '
+        'background.',
+  },
+  'projectionBackdropUnavailable': {
+    'zh-Hans': '网页版存不住图片，请在手机或电脑版设。',
+    'zh-Hant': '網頁版存不住圖片，請在手機或電腦版設。',
+    'en': 'The web build cannot keep a picture — set one from the phone '
+        'or desktop app.',
+  },
+  'projectionBackdropFailed': {
+    'zh-Hans': '这张图存不下来，背景没有改。',
+    'zh-Hant': '這張圖存不下來，背景沒有改。',
+    'en': 'That picture could not be saved — the background is unchanged.',
+  },
   'projectionReferencePlace': {
     'zh-Hans': '经文出处',
     'zh-Hant': '經文出處',

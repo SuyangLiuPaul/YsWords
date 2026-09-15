@@ -216,6 +216,10 @@ const _kProjectionAgenda = 'projectionAgenda';
 const _kProjectionReferenceStep = 'projectionReferenceStep';
 const _kProjectionFontZh = 'projectionFontZh';
 const _kProjectionFontEn = 'projectionFontEn';
+// The PATH of the copy in the app's own support directory, not the path
+// the picker returned — see `projection_backdrop.dart` for why that
+// distinction is the whole feature.
+const _kProjectionBackdrop = 'projectionBackdrop';
 
 /// Tolerant of anything but a JSON list: a corrupt blob costs the
 /// operator their order of service, so it yields an empty one rather
@@ -366,6 +370,7 @@ class AppSettings extends ChangeNotifier {
   int _projectionReferenceStep = 0;
   String _projectionFontZh = '';
   String _projectionFontEn = '';
+  String _projectionBackdrop = '';
   ProjectionLayout _projectionLayout = ProjectionLayout.standard;
   List<ProjectionPreset> _projectionPresets = const <ProjectionPreset>[];
 
@@ -643,6 +648,22 @@ class AppSettings extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kProjectionFontEn, key);
+  }
+
+  /// Where the chosen wall picture is kept. Empty when none is chosen.
+  ///
+  /// A path that no longer resolves is not an error state anywhere that
+  /// reads it: [ProjectionGround.photo] paints its base, which is the
+  /// default ground, so a deleted file degrades to the wall the
+  /// operator started with rather than to a blank one.
+  String get projectionBackdrop => _projectionBackdrop;
+
+  Future<void> setProjectionBackdrop(String path) async {
+    if (_projectionBackdrop == path) return;
+    _projectionBackdrop = path;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kProjectionBackdrop, path);
   }
 
   /// Whether the wall carries a second edition under the first.
@@ -1356,6 +1377,7 @@ class AppSettings extends ChangeNotifier {
       _kProjectionReferenceStep,
       _kProjectionFontZh,
       _kProjectionFontEn,
+      _kProjectionBackdrop,
       _kProjectionLayout,
       _kProjectionPresets,
       _kAutoExpandFirstRef,
@@ -1586,6 +1608,7 @@ class AppSettings extends ChangeNotifier {
     _projectionReferenceStep = prefs.getInt(_kProjectionReferenceStep) ?? 0;
     _projectionFontZh = prefs.getString(_kProjectionFontZh) ?? '';
     _projectionFontEn = prefs.getString(_kProjectionFontEn) ?? '';
+    _projectionBackdrop = prefs.getString(_kProjectionBackdrop) ?? '';
     _projectionLayout = _decodeStoredLayout(prefs.getString(_kProjectionLayout));
     // A corrupt blob loses the presets, not the launch. Rows that are
     // not presets are dropped individually (ProjectionPreset.fromJson
