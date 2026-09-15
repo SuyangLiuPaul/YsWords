@@ -11694,6 +11694,15 @@ has never seen this repo.
       above to the user is still unanswered: start the `GetMaterialApp` →
       `.router` migration branch, or close this as "won't fix"?
 
+      **Deferred a nineteenth consecutive iteration, 2026-09-15** — this
+      hour's NEXT_TASK.md picked landing the orphaned `1bcfd760` commit
+      (the `fatherId` slice's unpushed tail) and logging the sixteenth
+      `queue:15174` recurrence instead. Still branch-scale, still
+      unattended-unsafe, still the only fully open P2 checkbox besides the
+      chronology chart, and the question above to the user is still
+      unanswered: start the `GetMaterialApp` → `.router` migration branch,
+      or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -14236,12 +14245,15 @@ has never seen this repo.
       `flutter analyze` clean. `bible_chronology_test.dart`: **109
       tests**, all pass (5 new this slice: 4 data + 1 widget; recounted
       against this slice's own baseline of 104, not copied forward).
-      Full suite, foreground: pending at commit time — this file will
-      carry the final count in a follow-up entry once it completes (the
-      ~57-minute wall-clock run is why the code commit and the full-run
-      confirmation are split across two commits rather than blocking
-      the first on the second, per this item's own "commit before
-      waiting on anything" guard rail).
+      Full suite, foreground: the local background run started at commit
+      time never produced a count — the loop stage ended (`rc=0`) 11
+      minutes later and the background process died with it, leaving
+      `1bcfd760` committed but unpushed for roughly an hour before the
+      next planning pass caught it (see `queue:15174`'s sixteenth
+      recurrence entry). The full suite was verified instead by CI run
+      `34954343111` on `origin/main` at `1bcfd760`, which completed
+      **success** — that run, not a local wall-clock count, is the
+      confirmation this paragraph used to promise.
 
       Code + test only — no asset, version or dependency change;
       `ui_strings.dart` copy is user-visible but a chart-sheet line
@@ -15460,6 +15472,46 @@ so the bundle-size answer stays on the record.
       recurrence: the fix is in `run.sh`/`prompt.md` under `~/Library/
       Application Support/yswords-loop/`, outside this repo, not touched
       here.
+
+      **Sixteenth recurrence, 2026-09-15 18:31:14–18:42:57.** The stage
+      did real work — `Lifeline.fatherId` made load-bearing in the
+      chronology chart, 5 new tests, `flutter analyze` clean, targeted
+      suite 109/109, refuted — committed it as `1bcfd760`, then ended its
+      final message with *"Once it completes I'll confirm it's green,
+      push to `origin main`, watch that CI run, and land a short
+      follow-up commit…"* about a full `flutter test` suite it had started
+      in the background. The stage ended 11 minutes later, `rc=0`. The
+      background run died with it. Unlike recurrences 1–15, this time the
+      "commit before waiting" guard rail held — nothing was lost, the work
+      was safely in a local commit — but the commit then sat **unpushed**
+      for roughly an hour, undiscovered until the next planning pass read
+      `git rev-list --left-right --count origin/main...HEAD` and found
+      `0  1`. This is the same failure one notch downstream: commit-without-
+      push instead of nothing-committed-at-all, and CI never saw the
+      change in that hour either way. Landed by this stage: pushed
+      `1bcfd760` directly (`git push origin main`, no local full-suite
+      rerun — CI at `.github/workflows/flutter-ci.yml:204-205` already runs
+      the full suite on every push to `main`, so reproducing a 57-minute
+      local run first was the redundant step, not a missing safeguard),
+      then polled CI run `34954343111` in the foreground to conclusion:
+      **success**.
+      Continuing the scoping the fifteenth recurrence's own entry already
+      established ("fourth recurrence **in two days**", explicitly to
+      exclude the fourth/fifth/sixth/ninth/tenth recurrences, which cite
+      the same background-test pattern but predate 2026-09-14): this is
+      the **fifth such recurrence in two days** — the twelfth, thirteenth,
+      fourteenth and fifteenth all fell on 2026-09-14/15, and this one
+      repeats the pattern again within the same stretch. Recounted
+      directly from this file, not copied from the plan that assigned
+      this item, which is worth flagging: that plan asserted the span
+      between the 12th and this one was "roughly 38" hours. Measured
+      from the 12th's own timestamp (2026-09-14 12:54:30) to this stage's
+      window (2026-09-15 18:31:14–18:42:57), the actual span is **~29h37m
+      to ~29h48m**, not 38 — the plan's figure was wrong and is corrected
+      here rather than carried forward.
+      Same conclusion as every prior recurrence: the fix is in
+      `run.sh`/`prompt.md` under `~/Library/Application Support/
+      yswords-loop/`, outside this repo, not touched here.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
