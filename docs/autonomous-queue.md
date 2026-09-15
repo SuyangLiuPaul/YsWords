@@ -14330,8 +14330,12 @@ has never seen this repo.
       tests**, all pass (3 new this slice; recounted against this
       slice's own baseline of 109 at `547b1b1d`, not copied forward).
       Full suite left to CI rather than a local background run, per
-      `queue:15174`'s standing ruling — run id recorded once it
-      completes. Code + test only, no asset/version/dependency change,
+      `queue:15174`'s standing ruling. Pushed as `30d70e67`; CI run
+      `34963465227` was still `in_progress` after ~6 minutes of polling
+      (this iteration's foreground budget) — **next iteration's step 0
+      must check it before picking anything else**, per this item's own
+      rule about not leaving a red (or unresolved) push for the next
+      pass to find quietly. Code + test only, no asset/version/dependency change,
       no deploy.
 
       Checkbox stays open: the tap-to-open-father's-sheet follow-on and
