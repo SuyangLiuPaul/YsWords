@@ -13983,21 +13983,22 @@ has never seen this repo.
       same function this hour already touched, so record it rather than
       let it drift.
 
-- [ ] **`chronologyChipPlan`'s terminal fold can still overlap the
+- [x] **`chronologyChipPlan`'s terminal fold can still overlap the
       previously placed chip when that chip is itself jammed against the
-      plot edge.** Also found by the same refuter call, 2026-09-15 — this
-      is the "residual case" the terminal-fold fix directly above already
-      named and deliberately left unsolved, now with a concrete repro:
-      `chronologyChipPlan(lefts: [98.0, 200.0], widths: [50.0, 20.0],
-      plotWidth: 100.0)` places the first chip at `[98.0, 100.0]` and the
-      terminal fold at `[99.0, 100.0]` — a visible 1pt overlap. Confirmed
-      byte-identical to what the pre-2026-09-15 code already produced for
-      the same input, so not a new regression, but still a real defect.
-      The fix, per the terminal-fold item's own doc comment: when the
-      fold branch's computed `room` is at its floor because the previous
-      chip left no real space, absorb that previous chip (and further
-      back, if still not enough) into the fold too, rather than trying to
-      squeeze the fold into a gap that isn't there.
+      plot edge.** Fixed 2026-09-15: the fold branch now loops — while the
+      real room is under the 1.0 floor and a previous chip is still
+      seated, pop it and prepend its indices onto the fold's tail, then
+      recompute room from the new previous chip (or 0.0 once none are
+      left). Exact repro (`lefts: [98.0, 200.0], widths: [50.0, 20.0],
+      plotWidth: 100.0`) now returns one slot at `left=0, width=100`
+      covering both indices, no overlap. Added a named regression test
+      plus a property test over a lefts/widths/plotWidth grid (including
+      edge-jammed and past-edge anchors) asserting no overlap, no
+      past-`plotWidth` slot, no reordering, and no dropped/duplicated
+      cluster index; all 6 pre-existing chip-packer invariants pass
+      unchanged. Was the "residual case" the terminal-fold fix directly
+      above already named and deliberately left unsolved on 2026-09-14 —
+      not a new regression, a follow-up.
 
 - [x] **`chronologyChipPlan` no longer drops chips it can't seat — it folds
       the tail into one terminal "+N" chip instead.** Fixed 2026-09-14.

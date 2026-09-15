@@ -2018,6 +2018,96 @@ void main() {
       expect(terminal.left, greaterThanOrEqualTo(0.0));
     });
 
+    test('the terminal fold absorbs a previous chip that left no real '
+        'room, instead of overlapping it (queue:13986)', () {
+      // Exact repro from the queue item: the first chip is seated at
+      // [98.0, 100.0] — jammed against the plot edge with nothing behind
+      // it — so the terminal fold's `room` used to floor at 1.0 and draw
+      // at [99.0, 100.0], a 1pt overlap with the chip already there. The
+      // fix folds that previous chip into the terminal one instead.
+      final plan = chronologyChipPlan(
+        lefts: const [98.0, 200.0],
+        widths: const [50.0, 20.0],
+        plotWidth: 100.0,
+      );
+      expect(plan, hasLength(1),
+          reason: 'the previous chip had no real room of its own once the '
+              'fold needed it, so it must be absorbed into one slot, not '
+              'left standing to be overlapped');
+      final covered = {plan.single.cluster, ...plan.single.extraClusters};
+      expect(covered, {0, 1});
+      expect(plan.single.left, greaterThanOrEqualTo(0.0));
+      expect(plan.single.left + plan.single.width, lessThanOrEqualTo(100.0));
+    });
+
+    test('property: for a grid of lefts/widths/plotWidth, including '
+        'edge-jammed and past-edge anchors, the chip packer never '
+        'overlaps, never exceeds plotWidth, never reorders, and never '
+        'drops a cluster index', () {
+      const plotWidths = [40.0, 60.0, 100.0, 150.0, 300.0];
+      const anchorSets = [
+        [98.0, 200.0], // the queue's exact jammed-previous-chip repro
+        [0.0, 40.0, 80.0, 120.0, 160.0],
+        [95.0, 96.0, 97.0, 98.0, 99.0], // tightly packed near the edge
+        [10.0, 500.0], // one placed comfortably, one far past the edge
+        [-5.0, 30.0, 60.0, 90.0, 400.0], // a past-edge anchor too
+      ];
+      const widthSets = [
+        [50.0, 20.0],
+        [15.0, 15.0, 15.0, 15.0, 15.0],
+        [30.0, 30.0, 30.0, 30.0, 30.0],
+        [40.0, 40.0],
+        [10.0, 20.0, 20.0, 20.0, 20.0],
+      ];
+      for (final plotWidth in plotWidths) {
+        for (final lefts in anchorSets) {
+          for (final widths in widthSets) {
+            if (widths.length != lefts.length) continue;
+            final plan = chronologyChipPlan(
+              lefts: lefts,
+              widths: widths,
+              plotWidth: plotWidth,
+            );
+            final context = 'plotWidth=$plotWidth lefts=$lefts widths=$widths';
+            // No two slots overlap.
+            for (var i = 1; i < plan.length; i++) {
+              expect(
+                plan[i].left,
+                greaterThanOrEqualTo(plan[i - 1].left + plan[i - 1].width - 1e-9),
+                reason: 'overlap at slot $i — $context',
+              );
+            }
+            // No slot's right edge exceeds plotWidth.
+            for (final s in plan) {
+              expect(s.left + s.width, lessThanOrEqualTo(plotWidth + 1e-9),
+                  reason: 'past plotWidth — $context');
+            }
+            // Slots stay in x order (by original anchor).
+            for (var i = 1; i < plan.length; i++) {
+              expect(
+                lefts[plan[i].cluster],
+                greaterThanOrEqualTo(lefts[plan[i - 1].cluster]),
+                reason: 'reordered — $context',
+              );
+            }
+            // The union of cluster + extraClusters is exactly the input
+            // index set — nothing dropped, nothing duplicated.
+            final covered = <int>{};
+            for (final s in plan) {
+              covered.add(s.cluster);
+              covered.addAll(s.extraClusters);
+            }
+            expect(covered, {for (var i = 0; i < lefts.length; i++) i},
+                reason: 'index set mismatch — $context');
+            expect(covered.length,
+                plan.fold<int>(0, (n, s) => n + 1 + s.extraClusters.length),
+                reason: 'a cluster index appears in more than one slot — '
+                    '$context');
+          }
+        }
+      }
+    });
+
     test('composed labelPlan → labelClusters → chipPlan: every candidate '
         'ends up placed or chipped — nothing is silently lost across all '
         'three stages together, not even a candidate with 3 pt of room '

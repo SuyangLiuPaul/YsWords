@@ -3061,11 +3061,15 @@ class ChronologyChipSlot {
 /// at its measured merged width by pulling it left off the plot's right
 /// edge, bounded by the previous chip's right edge (plus [gap]) and by
 /// 0; only when even that room falls short of the measured width does it
-/// shrink, same as the single-chip case. Nothing is ever silently
-/// dropped: a same-year tie the reader cannot tap is worse than one
-/// folded into a wider bucket. [measureMergedWidth], given the original
-/// cluster indices being folded together, returns how wide the caller's
-/// own merged "+N" text draws; without it the merged chip just takes
+/// shrink, same as the single-chip case. If the previous chip is itself
+/// jammed against the edge and leaves no real room, it is absorbed into
+/// the same terminal chip too — and further back, if still not enough —
+/// so the fold is never squeezed into a gap that isn't there and never
+/// overlaps the chip before it. Nothing is ever silently dropped: a
+/// same-year tie the reader cannot tap is worse than one folded into a
+/// wider bucket. [measureMergedWidth], given the original cluster
+/// indices being folded together, returns how wide the caller's own
+/// merged "+N" text draws; without it the merged chip just takes
 /// whatever room is left, same as the single-chip shrink case.
 @visibleForTesting
 List<ChronologyChipSlot> chronologyChipPlan({
@@ -3091,17 +3095,24 @@ List<ChronologyChipSlot> chronologyChipPlan({
       // x, so pin it to its measured merged width by pulling it left off
       // the plot's right edge — bounded by the previous chip's right
       // edge (plus [gap]) and by 0 — and shrink only if even that room
-      // is not enough. `room` is floored at 1.0 here: if the previous
-      // chip is itself jammed against the edge, this still places a
-      // sliver rather than throwing on an inverted clamp range —
-      // absorbing already-placed chips backward to make real room in
-      // that case is a follow-up, not solved here. (The ordinary
-      // single-chip room just below has no floor: the `left >=
-      // plotWidth` check above already guarantees it is strictly
-      // positive there, so there is no inverted-range risk to guard.)
-      final tail = order.sublist(idx);
-      final prevRight = lastRight.isFinite ? lastRight + gap : 0.0;
-      final room = (plotWidth - prevRight).clamp(1.0, plotWidth);
+      // is not enough. If the previous chip is itself jammed against the
+      // edge and leaves no real room (`plotWidth - prevRight` under the
+      // 1.0 floor), absorb it — and further back, if still not enough —
+      // into this same fold instead of squeezing into a gap that isn't
+      // there. That is what keeps the fold from overlapping the chip
+      // placed just before it.
+      final tail = List<int>.of(order.sublist(idx));
+      var prevRight = lastRight.isFinite ? lastRight + gap : 0.0;
+      while (plotWidth - prevRight < 1.0 && out.isNotEmpty) {
+        final prev = out.removeLast();
+        tail.insertAll(0, [prev.cluster, ...prev.extraClusters]);
+        prevRight = out.isEmpty ? 0.0 : out.last.left + out.last.width + gap;
+      }
+      // Upper-bounded by `plotWidth` as before, except when `plotWidth`
+      // itself is under the 1.0 floor — that inverted-range case is
+      // reachable independently of the loop above and predates it.
+      final room = (plotWidth - prevRight)
+          .clamp(1.0, plotWidth < 1.0 ? 1.0 : plotWidth);
       final desiredWidth = measureMergedWidth?.call(tail) ?? room;
       final tailWidth = desiredWidth.clamp(1.0, room);
       final tailLeft = (plotWidth - tailWidth).clamp(0.0, plotWidth);
