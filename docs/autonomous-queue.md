@@ -14697,6 +14697,11 @@ has never seen this repo.
       decision, not an hour's work), or whether the bare-lane-tap
       fallback is judged sufficient for them as-is.
 
+      Pushed as `1f0941b1`. CI run `34999913012` (head `1f0941b1`) was
+      still `in_progress` after ~6 minutes of polling (this iteration's
+      foreground budget) — next iteration's step 0 must check it before
+      picking anything else.
+
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
       `.clamp(1.0, ...)` floor — the `left >= plotWidth` guard above
