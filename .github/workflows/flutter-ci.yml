@@ -23,9 +23,11 @@
 #   5. flutter analyze — fail on any new analysis issues. The
 #      3 pre-existing settings_page infos are tolerated (counted +
 #      compared; any new finding fails the build)
-#   6. flutter test — must be 109/109 (current count). New tests
-#      that pass push the threshold up; failing or skipping a
-#      previously-passing test breaks the build.
+#   6. flutter test — the whole suite must pass. This comment used to
+#      pin a "109/109" count; that was stale (May 2026) and, as of
+#      2026-09-15, coincided with an unrelated chronology test file
+#      that happens to also have 109 tests — misleading, not current.
+#      The gate is "no failing or skipped test", not a specific count.
 #
 # Runs on ubuntu-latest. iOS / macOS / Android builds are NOT
 # exercised here — they're built daily by the local launchd job
