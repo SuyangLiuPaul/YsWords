@@ -174,6 +174,95 @@ if ! git push origin "$TAG"; then
   exit 1
 fi
 echo
-echo "Pushed $TAG. The five platform workflows are building now; each"
-echo "attaches its asset to the Release when it finishes. Watch with:"
-echo "  gh run list --limit 6"
+echo "Pushed $TAG. Waiting for the five platform release workflows..."
+
+# 2026-09-15: v1.6.8 shipped with four assets, not five — macOS failed
+# 11 minutes after the tag went public (a new plugin's platform minimum,
+# see PROJECT_STATE.md trap 70), and nothing here noticed. The script
+# used to stop at the push and print a `gh run list` suggestion to a
+# human. That is not a report, it is a hope: the tag is the only trigger
+# these five workflows have, a red one can only be fixed by a NEW tag,
+# and until now the sole way to learn about it was someone looking.
+#
+# Bounded, not indefinite: today's own runs give the real shape — macOS
+# failed at +11 min, iOS was still building at +10 min — so the cap has
+# to clear a normal build, not a canary. Both knobs are overridable so
+# the test harness in tools/test_release_scripts.py never sleeps for
+# real.
+RELEASE_WORKFLOWS=(
+  "Release Android"
+  "Release iOS (unsigned)"
+  "Release Linux"
+  "Release macOS"
+  "Release Windows"
+)
+N=${#RELEASE_WORKFLOWS[@]}
+RESULT_STATUS=()
+RESULT_CONCL=()
+i=0
+while [ "$i" -lt "$N" ]; do
+  RESULT_STATUS[$i]=""
+  RESULT_CONCL[$i]=""
+  i=$((i + 1))
+done
+
+POLL_INTERVAL="${RELEASE_GITHUB_POLL_INTERVAL:-30}"
+POLL_CAP="${RELEASE_GITHUB_POLL_CAP:-1800}"
+START=$SECONDS
+while :; do
+  ALL_DONE=1
+  i=0
+  while [ "$i" -lt "$N" ]; do
+    if [ "${RESULT_STATUS[$i]}" != "completed" ]; then
+      wf="${RELEASE_WORKFLOWS[$i]}"
+      READ_OUT="$(gh run list --commit "$COMMIT" --workflow "$wf" \
+        --event push --limit 1 --json status,conclusion \
+        --jq '(.[0].status // "not_started") + " " + (.[0].conclusion // "none")')"
+      read -r RSTATUS RCONCL <<<"$READ_OUT"
+      RESULT_STATUS[$i]="$RSTATUS"
+      RESULT_CONCL[$i]="$RCONCL"
+      [ "$RSTATUS" = "completed" ] || ALL_DONE=0
+    fi
+    i=$((i + 1))
+  done
+  [ "$ALL_DONE" = "1" ] && break
+  [ "$((SECONDS - START))" -ge "$POLL_CAP" ] && break
+  sleep "$POLL_INTERVAL"
+done
+
+echo
+echo "Release workflow results for $TAG:"
+FAILED=0
+PENDING=0
+i=0
+while [ "$i" -lt "$N" ]; do
+  wf="${RELEASE_WORKFLOWS[$i]}"
+  st="${RESULT_STATUS[$i]}"
+  cn="${RESULT_CONCL[$i]}"
+  if [ "$st" != "completed" ]; then
+    echo "  ?? $wf — still $st after ${POLL_CAP}s. Not green, not known red"
+    echo "     either — check yourself: gh run list --commit $COMMIT --workflow '$wf'"
+    PENDING=$((PENDING + 1))
+  elif [ "$cn" = "success" ]; then
+    echo "  ok $wf"
+  else
+    echo "  !! $wf — $cn"
+    FAILED=$((FAILED + 1))
+  fi
+  i=$((i + 1))
+done
+
+if [ "$FAILED" -gt 0 ] || [ "$PENDING" -gt 0 ]; then
+  echo
+  echo "!!! $TAG is ALREADY PUBLIC. Do not delete it, do not re-point it," >&2
+  echo "!!! do not re-run a release workflow expecting it to fix this tag —" >&2
+  echo "!!! a re-run checks out the same tree and fails the same way. This" >&2
+  echo "!!! is a BUILD report, not a tagging failure: the Release exists" >&2
+  echo "!!! with fewer than five platform assets. Investigate the run(s)" >&2
+  echo "!!! above (or wait longer for a pending one), then fix forward with" >&2
+  echo "!!! a new tag — see PROJECT_STATE.md trap 70 for how v1.6.8 did." >&2
+  exit 1
+fi
+
+echo
+echo "All five platform builds for $TAG succeeded."

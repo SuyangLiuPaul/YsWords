@@ -118,15 +118,42 @@ class ReleaseGithub(unittest.TestCase):
         git(self.work, 'remote', 'add', 'origin', str(self.origin))
         git(self.work, 'push', '-q', '-u', 'origin', 'main')
 
-        # `gh run list` — the CI gate. Records its argv so a test can
-        # assert WHAT was asked, and answers with $GH_CONCLUSION.
+        # `gh run list` — used by two different callers in the script,
+        # answering two different --jq shapes, so the stub is argv-aware
+        # rather than a single answer for every invocation:
+        #   * the pre-tag CI gate asks about --workflow 'Flutter CI' and
+        #     wants a bare conclusion string ($GH_CONCLUSION);
+        #   * the post-push wait asks about each release workflow by name
+        #     and wants "<status> <conclusion>" — defaulting to a green,
+        #     already-completed run so tests that don't care about the
+        #     wait (e.g. the CI gate tests) sail through it, and
+        #     overridable per workflow via GH_STATUS_<KEY>/GH_CONCL_<KEY>.
+        # Records argv so a test can assert WHAT was asked.
         self.bin = root / 'bin'
         self.bin.mkdir()
         self.gh_log = root / 'gh.log'
         executable(self.bin / 'gh', f'''
             #!/usr/bin/env bash
             echo "$*" >> "{self.gh_log}"
-            printf '%s\\n' "${{GH_CONCLUSION:-success}}"
+            wf=""; prev=""
+            for a in "$@"; do
+              if [ "$prev" = "--workflow" ]; then wf="$a"; fi
+              prev="$a"
+            done
+            if [ "$wf" = "Flutter CI" ]; then
+              printf '%s\\n' "${{GH_CONCLUSION:-success}}"
+              exit 0
+            fi
+            case "$wf" in
+              "Release Android") key=ANDROID ;;
+              "Release iOS (unsigned)") key=IOS ;;
+              "Release Linux") key=LINUX ;;
+              "Release macOS") key=MACOS ;;
+              "Release Windows") key=WINDOWS ;;
+              *) key="" ;;
+            esac
+            status_var="GH_STATUS_$key"; concl_var="GH_CONCL_$key"
+            printf '%s %s\\n' "${{!status_var:-completed}}" "${{!concl_var:-success}}"
         ''')
 
     def run_script(self, *args, **env):
@@ -238,6 +265,52 @@ class ReleaseGithub(unittest.TestCase):
         self.assertIn('run list', asked)
         self.assertIn(f'--commit {head}', asked)
         self.assertIn("--workflow Flutter CI", asked)
+
+    def test_all_five_platform_builds_green_is_a_quiet_success(self):
+        # Stub default: every workflow answers completed/success.
+        r = self.run_script(RELEASE_GITHUB_POLL_INTERVAL='0')
+
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn('All five platform builds for v1.0.0 succeeded',
+                      r.stdout)
+        self.assertNotIn('ALREADY PUBLIC', r.stdout + r.stderr)
+
+    def test_one_red_platform_build_is_loud_and_names_the_tag_as_public(self):
+        # The v1.6.8 shape: four green, macOS failed.
+        r = self.run_script(RELEASE_GITHUB_POLL_INTERVAL='0',
+                            GH_CONCL_MACOS='failure')
+
+        self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn('!! Release macOS — failure', r.stdout)
+        self.assertIn('ok Release Android', r.stdout)
+        self.assertIn('ALREADY PUBLIC', r.stderr)
+        self.assertIn('do not re-point it', r.stderr)
+        # Still released: a failed platform build must not have stopped
+        # the tag itself from reaching origin.
+        self.assertIn('refs/tags/v1.0.0', self.remote_tags())
+
+    def test_a_build_still_running_past_the_cap_is_reported_not_hidden(self):
+        # iOS still `in_progress` at the (test-sized) cap — not success,
+        # not failure, and the report must say so rather than going
+        # quiet or claiming green.
+        r = self.run_script(RELEASE_GITHUB_POLL_INTERVAL='0',
+                            RELEASE_GITHUB_POLL_CAP='0',
+                            GH_STATUS_IOS='in_progress')
+
+        self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn('still in_progress', r.stdout)
+        self.assertIn('Release iOS (unsigned)', r.stdout)
+        self.assertNotIn('All five platform builds', r.stdout)
+        self.assertIn('ALREADY PUBLIC', r.stderr)
+
+    def test_dry_run_never_polls_release_workflows(self):
+        git(self.work, 'tag', '-a', 'v1.0.0', '-m', 'v1.0.0')
+
+        r = self.run_script('--dry-run')
+
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertNotIn('Release Android', self.gh_log.read_text(
+            encoding='utf-8'))
 
     def test_a_commit_whose_two_version_sources_disagree_is_refused(self):
         (self.work / 'pubspec.yaml').write_text(

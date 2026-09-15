@@ -100,6 +100,50 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [x] **2026-09-15 FIXED — Tier 5, systemic: `tools/release_github.sh`
+      pushed the release tag and stopped, printing a `gh run list`
+      suggestion to a human instead of checking whether the five
+      platform builds it triggers actually succeeded.** This is why
+      v1.6.8 shipped with four platform assets, not five, and nobody
+      was told: `Release macOS` (run `34921910429`) failed 11 minutes
+      after the tag went public — `gal` declares a macOS 11.0 minimum,
+      `pod install` refuses the whole build rather than skipping the
+      plugin (PROJECT_STATE.md trap 70) — while Android/iOS/Linux/
+      Windows attached their assets. Re-measured before writing this:
+      `gh release view v1.6.8` still shows exactly those four; the
+      fifth never landed because the tag cannot be re-pointed.
+      The script now polls `gh run list --commit <sha> --workflow
+      <name> --event push` for each of the five release workflows
+      after the push, bounded by `RELEASE_GITHUB_POLL_CAP` (default 30
+      min, overridable — both env vars exist so the test harness never
+      sleeps for real) rather than waiting indefinitely, and prints a
+      per-workflow ok/red/still-building line. **Design call: a red or
+      still-pending build makes the script exit 1** — the point is a
+      human or a future automated caller can `if`-check it rather than
+      re-reading a suggestion — while stating loudly in the message
+      that the tag is already public and cannot be re-pointed; a red
+      platform result there means "cut a follow-up tag," never "redo
+      this one." `--dry-run` is untouched (it returns before the push,
+      so it polls nothing — added a test for exactly this). New cases
+      in `tools/test_release_scripts.py`'s `ReleaseGithub`: all-five-
+      green, one-red (the actual v1.6.8 shape), and a bounded timeout
+      with one workflow still `in_progress`. Required making the
+      test's `gh` stub **argv-aware** first — it used to answer
+      `$GH_CONCLUSION` to every invocation regardless of `--workflow`,
+      which would have fed the new wait path whatever the pre-tag CI
+      gate's test cases set. `python3 tools/test_release_scripts.py`
+      (37 cases) and `flutter test test/release_scripts_test.dart` both
+      green; `flutter analyze` clean; full `flutter test` also run —
+      its one failure (`pull_to_refresh_test.dart`) is the concurrent
+      session's own uncommitted, in-progress `dashboard_page.dart` fix
+      for the phone spinner bug, not this change (verified: my diff
+      touches only `tools/release_github.sh` and
+      `tools/test_release_scripts.py`, no Dart). Not the same item as
+      the loop-tooling entry elsewhere in this file, under P2 (`run.sh`/
+      `prompt.md` staying rc=0 with unresolved work) — that one is
+      outside this repo and untouched here. No deploy: tooling only,
+      nothing user-visible.
+
 - [x] **2026-09-07 FIXED — Bible-trivia page had zero test coverage across
       3,315 lines and ~80 factual scripture claims; audit found and fixed
       one real error (Luke's prologue mis-cited as 36 Greek words, is
