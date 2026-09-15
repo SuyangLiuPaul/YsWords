@@ -5932,6 +5932,16 @@ reported. Work these top-down before P2.
       `assets/assets/bible_chronology.json` are md5-identical to the repo
       copy at HEAD on all four. Fix has reached a reader.
 
+      Pushed as `390a4064`. `flutter analyze` (0 issues) and the full
+      `flutter test` suite (3,314 tests, all green) both ran locally
+      before the commit. CI run `35028295821` (same head) was still
+      `in_progress` after the full ~6-minute foreground-polling budget
+      (18 polls at 20s) — next iteration's step 0 must check it before
+      picking anything else, same as the previous iteration's own
+      unresolved run. No further deploy needed this iteration: the
+      thing that reaches the reader is the dev/qat asset already
+      verified live above, not this bookkeeping commit.
+
 - [ ] **The `'` class in `family_tree.json`'s zh fields (10 occurrences)
       needs a convention call, not a sweep.** Filed 2026-09-16, split out
       of the item above. `peleg`, `hagar`, `judah`, `jesse` (zh-Hans) use
