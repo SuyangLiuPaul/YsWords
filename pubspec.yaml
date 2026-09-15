@@ -155,6 +155,13 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # 2026-09-15. Already resolved as a transitive dependency of
+  # flutter_test, but a test that IMPORTS it has to say so —
+  # `depend_on_referenced_packages` is an analyzer error here, and the
+  # local analyzer caught it before CI did. Used by
+  # `pull_to_refresh_ceiling_test.dart` to elapse four minutes without
+  # spending four minutes.
+  fake_async: ^1.3.1
   # On-device tests. Songs leans on three plugins a widget test can
   # only stub — audioplayers, path_provider, shared_preferences — so
   # downloads, playback and playlists had never actually run against a

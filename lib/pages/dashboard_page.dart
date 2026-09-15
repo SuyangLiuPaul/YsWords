@@ -6,6 +6,7 @@ import 'package:yswords/constants/app_version.dart';
 import 'package:yswords/constants/bible_versions.dart';
 import 'package:yswords/constants/build_flags.dart';
 import 'package:yswords/utils/app_nav.dart';
+import 'package:yswords/utils/spinner_ceiling.dart';
 import 'package:yswords/utils/short_book_name.dart' show shortBookName;
 import 'package:yswords/widgets/fitted_line.dart';
 import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
@@ -649,12 +650,21 @@ class _DashboardPageState extends State<DashboardPage> {
   /// nothing, and the sync service surfaces its own state in Settings.
   Future<void> _pullToRefresh() async {
     final settings = context.read<AppSettings>();
-    await Future.wait<void>([
+    // 2026-09-15, from an iPhone: 「我往下划一下这个就不走了一直在这里」.
+    //
+    // This used to `await Future.wait([...])` outright, and one of
+    // those is `syncNow()`, whose Firestore write waits two minutes and
+    // then — on timing out — refreshes the token and tries once more.
+    // Four minutes of spinner, reachable by a reader who was trying to
+    // scroll. See `spinner_ceiling.dart` for why the fix is not a
+    // shorter timeout: the work is left to finish in its own time, and
+    // only the GESTURE stops watching.
+    await waitWithCeiling(Future.wait<void>([
       if (CloudAuthService.instance.isSignedIn)
         CloudSyncService.instance.syncNow().catchError((_) => false),
       WebUpdateChecker.instance.checkNow().catchError((_) {}),
       _checkForUpdateNow(settings),
-    ]);
+    ]).then((_) {}));
     if (!mounted) return;
     // The page's own content last, and on the same frame: the counts and
     // the resume card are live-reactive, but the daily pick and the
