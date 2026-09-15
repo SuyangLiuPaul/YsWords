@@ -5909,6 +5909,15 @@ reported. Work these top-down before P2.
       and pins `:`=100, `'`=10 so a later sweep can't silently widen those
       too).
 
+      Pushed as `89e766d0`. CI run `35019194445` (same head) was still
+      `in_progress` after ~5 minutes of polling (this iteration's
+      foreground budget) — next iteration's step 0 must check it before
+      picking anything else. No deploy this iteration despite the
+      user-visible text change, for the same reason: watching the push to
+      a conclusion took the whole foreground budget, and deploying on an
+      unconfirmed CI result is the wrong trade — the next iteration
+      should deploy once green.
+
 - [ ] **The `'` class in `family_tree.json`'s zh fields (10 occurrences)
       needs a convention call, not a sweep.** Filed 2026-09-16, split out
       of the item above. `peleg`, `hagar`, `judah`, `jesse` (zh-Hans) use
