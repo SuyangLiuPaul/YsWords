@@ -5918,6 +5918,20 @@ reported. Work these top-down before P2.
       unconfirmed CI result is the wrong trade — the next iteration
       should deploy once green.
 
+      **Deployed 2026-09-16, v1.6.9.** CI on `e6e8884b` (the following
+      commit) confirmed green (`35019828416`) before this ran, so the
+      condition above was met. Re-measured the still-served pre-fix
+      assets first — dev was serving `family_tree.json` with 80
+      half-width `(` (repo HEAD has 58) and `bible_chronology.json` md5
+      `99e1af6b…` (repo HEAD `e5791746…`) — so the deploy was genuinely
+      overdue, not assumed. `tools/release_web.sh` built and deployed all
+      four dev/qat sites; verified independently afterward (not just
+      trusting the script's own log, which this run's stdout redirection
+      truncated): all four `/version.json` answer `1.6.9`, and both
+      `assets/assets/family_tree.json` and
+      `assets/assets/bible_chronology.json` are md5-identical to the repo
+      copy at HEAD on all four. Fix has reached a reader.
+
 - [ ] **The `'` class in `family_tree.json`'s zh fields (10 occurrences)
       needs a convention call, not a sweep.** Filed 2026-09-16, split out
       of the item above. `peleg`, `hagar`, `judah`, `jesse` (zh-Hans) use
@@ -11793,6 +11807,16 @@ has never seen this repo.
       this hour's NEXT_TASK.md picked the P0 `nahor_elder`/family_tree.json
       half-width-paren item instead (below), the last actionable item once
       Tiers 1–5 were confirmed empty or blocked. Still branch-scale, still
+      unattended-unsafe, still the only fully open P2 checkbox besides the
+      chronology chart, and the question above to the user is still
+      unanswered: start the `GetMaterialApp` → `.router` migration branch,
+      or close this as "won't fix"?
+
+      **Deferred a twenty-sixth consecutive iteration, 2026-09-16** — this
+      hour's NEXT_TASK.md picked shipping the already-landed, already-green
+      family_tree/chronology punctuation fix to dev/qat instead (`queue:5878`
+      below), the one thing left over from the previous iteration's own
+      foreground-budget deferral. Still branch-scale, still
       unattended-unsafe, still the only fully open P2 checkbox besides the
       chronology chart, and the question above to the user is still
       unanswered: start the `GetMaterialApp` → `.router` migration branch,

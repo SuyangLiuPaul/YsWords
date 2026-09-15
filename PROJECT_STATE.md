@@ -251,9 +251,19 @@ direction it defends.
 
 | Tier | Sites | Version | Rule |
 |---|---|---|---|
-| dev | `yswords-dev`, `yswords-cn-dev` | **1.5.24** | push freely |
-| qat | `yswords-qat`, `yswords-cn-qat` | **1.5.24** | push freely once dev is verified |
-| prod | `yswords`, `yswords-cn`, **`yahwehword.com`** | **1.5.22** | ⛔ never without explicit permission **in the current turn** |
+| dev | `yswords-dev`, `yswords-cn-dev` | **1.6.9** | push freely |
+| qat | `yswords-qat`, `yswords-cn-qat` | **1.6.9** | push freely once dev is verified |
+| prod | `yswords`, `yswords-cn`, **`yahwehword.com`** | **1.6.8** | ⛔ never without explicit permission **in the current turn** |
+
+**dev/qat moved to 1.6.9, 2026-09-16** — `tools/release_web.sh`, default
+flags, shipped the family_tree/chronology punctuation fix that had sat
+committed-and-green since `89e766d0` waiting for CI confirmation
+(`queue:5878`). Read off `version.json` on all four sites plus a byte
+(md5) comparison of the served `family_tree.json` and
+`bible_chronology.json` against the repo copy at HEAD — the version
+number alone can't prove an asset shipped, since a bump can land with
+other assets unchanged. No prod push; prod stays on 1.6.8 pending its
+own explicit permission.
 
 `yahwehword.com` is not a fourth tier — it is a custom domain on the
 prod site, so it moves when prod moves and serves the same `version.json`.
