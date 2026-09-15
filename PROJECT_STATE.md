@@ -2114,6 +2114,32 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     discipline as trap 11 above, just triggered from a briefing file
     that had assumed the collision could not happen this time.
 
+70. **A new plugin can raise a platform's minimum OS, and `pod install`
+    refuses the WHOLE build rather than skipping the plugin.**
+    2026-09-15: `gal` was added for 「保存到相册」 and declares macOS 11.0;
+    the project targeted 10.15. Nothing in Dart could see it —
+    `flutter analyze` and 3,289 tests were green, web prod shipped,
+    the tag went up, and four of the five platform workflows attached
+    their assets before macOS came back red.
+
+    Two consequences worth keeping:
+
+    * **Check a new plugin's platform minimums BEFORE tagging**, not
+      after. The release workflows only build; a red one is discovered
+      after the tag is public and cannot be fixed in place, because a
+      re-run checks out the same tag.
+    * **The Podfile and the pbxproj have to move together.** One governs
+      pod resolution, the other the app target, and raising only one
+      fails later and less clearly.
+      `test/verse_card_save_routes_test.dart` now reads both.
+
+    **v1.6.8 therefore has four platform assets, not five.** That was the
+    owner's call (「1」) rather than cutting 1.6.9 immediately: v1.6.7's
+    macOS build still works and 1.6.8 carried nothing for macOS — the
+    photo-library save is a phone feature. The fix is on `main`
+    (`e806adc0`), so **macOS rides the next release**. Do not be
+    surprised by the gap, and do not try to re-point the v1.6.8 tag.
+
 ## Trap: "local green" and "CI green" are different claims
 
 `assets/sermon_library/` is a gitignored local staging area — the app
