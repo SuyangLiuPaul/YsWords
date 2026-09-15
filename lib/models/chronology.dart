@@ -448,6 +448,13 @@ class ChronologyData {
     return null;
   }
 
+  Lifeline? lifelineById(String id) {
+    for (final l in lifelines) {
+      if (l.personId == id) return l;
+    }
+    return null;
+  }
+
   String localizedUndrawn(String locale) => _localeMap(undrawnLines, locale);
 
   /// Everyone alive in [am], in chart order.

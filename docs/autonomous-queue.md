@@ -5875,6 +5875,22 @@ reported. Work these top-down before P2.
       the artifact. It IS still testimony at positions it does not share —
       西番雅書 1:1 is one.
 
+- [ ] **`nahor_elder` is the only entry using half-width `()` inside CJK
+      text, in `assets/bible_chronology.json` and `assets/family_tree.json`.**
+      Filed 2026-09-15, found while validating `fatherId` on the
+      chronology chart (`queue:13280`'s slice that day) — not fixed there,
+      because that slice's own guard rail forbade any asset edit.
+      拿鶴(亞伯拉罕祖父) / 拿鹤(亚伯拉罕祖父) use half-width `(` `)` against
+      102 full-width `（）` pairs elsewhere in `bible_chronology.json`. It
+      originates in `assets/family_tree.json` and is copied into the
+      chronology asset — and into three of its `derivationEn`/
+      `derivationZhHans`/`derivationZhHant` strings — by
+      `tools/build_bible_chronology.py`. Neither asset is frozen (only
+      `cuvs-yhwh*` is); fixing it means editing both assets plus the
+      generator, and re-checking `family_tree_page.dart`, which also
+      renders that name. Same shape of fix as the `()`→（） rows in the
+      72-mark sweep above, just in a different pair of assets.
+
 - [x] **`說；「` opened a quotation with a semicolon in 5 verses — fixed
       2026-08-23 in all three files.** 列王紀上 22:13, 路加福音 13:2,
       約翰福音 7:45, 約翰福音 9:9 and 希伯來書 3:11 now read 「說：」.
@@ -11669,6 +11685,15 @@ has never seen this repo.
       `GetMaterialApp` → `.router` migration branch, or close this as
       "won't fix"?
 
+      **Deferred an eighteenth consecutive iteration, 2026-09-15** — this
+      hour's NEXT_TASK.md picked making `Lifeline.fatherId` load-bearing
+      in the chronology chart instead (`queue:13280`'s 2026-09-15 slice —
+      validate parent links + surface parentage in the person sheet).
+      Still branch-scale, still unattended-unsafe, still the only fully
+      open P2 checkbox besides the chronology chart, and the question
+      above to the user is still unanswered: start the `GetMaterialApp` →
+      `.router` migration branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -14156,6 +14181,84 @@ has never seen this repo.
       years, parent links, scheme-per-date) this item's own suggested
       first task also named — this only did the sourcing-guard half.
       Checkbox stays open; several iterations still ahead.
+
+      **2026-09-15, later still — made `fatherId` load-bearing (the
+      "parent links" third of the still-open data-model task above).**
+      `Lifeline.fatherId` was parsed (`chronology.dart:119/153/186`) and
+      read nowhere before this slice — confirmed by an independent
+      refuter agent re-grepping `lib/`, `test/`, `tools/` from scratch,
+      not assumed; the one trap (`BiblicalPerson.fatherId`, an unrelated
+      field used heavily by the family-tree page) does not collide with
+      `Lifeline.fatherId`.
+
+      **(a) Validated it.** Four new tests in
+      `test/bible_chronology_test.dart`, right after the existing
+      `'every lifeline belongs to a declared line of descent'`: every
+      `fatherId` resolves and forms one acyclic tree rooted at `adam`
+      with no birth outside the father's lifetime
+      (`fatherLinkDefects`); the begetting age stated in
+      `derivationEn`/`derivationZhHans`/`derivationZhHant` prose matches
+      `birthAm - father.birthAm` in all three locales
+      (`derivationAgeDefects`); and one "has teeth" test each, built the
+      way the citation-canon precedent does it — perturbing an
+      in-memory copy of a `Lifeline` (wrong birth year, a dangling
+      `fatherId`, a second root, a two-node cycle, a wrong derivation
+      number) and asserting the helper catches it. The tracked asset
+      was never touched. Re-derived against the real asset rather than
+      assumed: 20 lifelines, exactly one root (`adam`), two `lineId`s
+      (`sethite` 10, `shemite` 10, handover `noah`→`shem`), all 19
+      parent links resolve and are acyclic, no birth outside a father's
+      lifetime, and all 19 begetting ages in all three locales agree
+      with the arithmetic — all four claims given to an independent
+      refuter agent, all held, no counterexample.
+
+      **(b) Surfaced it.** `_showPersonSheet`
+      (`chronology_chart.dart:2169`) now prints one line above the
+      contemporaries count — "Son of {father} (aged {n} at the birth)"
+      — for every non-root person, omitted entirely for `adam`. New key
+      `chronologyFatherAge` in `ui_strings.dart` (en/zh-Hans/zh-Hant),
+      picked up automatically by the existing dynamic "every
+      `chronology*` key exists in all three locales" test. Added
+      `ChronologyData.lifelineById` alongside the existing `lineById`
+      rather than an inline `firstWhere` at the call site. New widget
+      test opens the sheet for Methuselah (non-root: "Son of Enoch
+      (aged 65 at the birth)") and for Adam (root: no "Son of" line at
+      all). Plain text, not tap-to-open — the nested-modal constraint
+      this sheet already documents stays out of scope, per this item's
+      own instruction for the slice.
+
+      Refuted before committing (an independent agent given the exact
+      claims and asked to break them, not review the change): the
+      "read nowhere" claim, the 20/1-root/10-10 split, the acyclic/
+      no-dangling/in-lifetime claim, and the four-way derivation-prose
+      arithmetic match — all four TRUE, no counterexample.
+
+      `flutter analyze` clean. `bible_chronology_test.dart`: **109
+      tests**, all pass (5 new this slice: 4 data + 1 widget; recounted
+      against this slice's own baseline of 104, not copied forward).
+      Full suite, foreground: pending at commit time — this file will
+      carry the final count in a follow-up entry once it completes (the
+      ~57-minute wall-clock run is why the code commit and the full-run
+      confirmation are split across two commits rather than blocking
+      the first on the second, per this item's own "commit before
+      waiting on anything" guard rail).
+
+      Code + test only — no asset, version or dependency change;
+      `ui_strings.dart` copy is user-visible but a chart-sheet line
+      alone is not worth a China+intl deploy cycle, per this item's own
+      guard rail.
+
+      **Not done by this slice**: the "chronology scheme each date
+      belongs to" third of the original suggested-first-task list.
+      `scheme` is already parsed onto `Lifeline` and already validated
+      (`'every lifeline declares the chronology scheme its year is
+      on'`), so as far as this pass can tell that third is already
+      closed by earlier work, not still open — but that reading was
+      not re-verified against the rendering the way `fatherId` was
+      this slice, so leaving the checkbox open rather than asserting it.
+      Checkbox stays open; the tap-to-open-father's-sheet follow-on and
+      whatever the data-model task's third piece turns out to still
+      need are still ahead.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the

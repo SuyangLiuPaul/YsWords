@@ -62,6 +62,157 @@ void main() {
     };
   });
 
+  // ── fatherId — pure helpers, operating on whatever list of lifelines
+  // they're handed. The tests below feed both the real loaded asset
+  // (must be empty) and a deliberately broken in-memory copy (must not
+  // be) — never the tracked JSON, which stays untouched.
+
+  /// Everything wrong with the parent links in [lifelines]: an
+  /// unresolvable `fatherId`, more or fewer than one root, a root that
+  /// isn't `adam`, a birth outside the father's lifetime, or a cycle.
+  List<String> fatherLinkDefects(List<Lifeline> lifelines) {
+    final byId = {for (final l in lifelines) l.personId: l};
+    final defects = <String>[];
+
+    final roots = lifelines.where((l) => l.fatherId == null).toList();
+    if (roots.length != 1) {
+      defects.add('expected exactly one root, found ${roots.length}');
+    } else if (roots.single.personId != 'adam') {
+      defects.add('the one root is ${roots.single.personId}, not adam');
+    }
+
+    for (final l in lifelines) {
+      if (l.fatherId == null) continue;
+      final father = byId[l.fatherId];
+      if (father == null) {
+        defects.add(
+            '${l.personId} fatherId ${l.fatherId} does not resolve');
+        continue;
+      }
+      if (l.birthAm < father.birthAm) {
+        defects.add('${l.personId} is born before ${father.personId} is');
+      }
+      if (father.deathAm != null && l.birthAm > father.deathAm!) {
+        defects.add(
+            '${father.personId} is dead when ${l.personId} is born');
+      }
+    }
+
+    for (final l in lifelines) {
+      final seen = <String>{};
+      var cur = l;
+      var broke = false;
+      while (cur.fatherId != null) {
+        if (!seen.add(cur.personId)) {
+          defects.add('cycle in ancestry starting at ${l.personId}');
+          broke = true;
+          break;
+        }
+        final next = byId[cur.fatherId];
+        if (next == null) {
+          broke = true; // already reported above
+          break;
+        }
+        cur = next;
+      }
+      if (!broke && cur.personId != 'adam') {
+        defects.add(
+            '${l.personId} traces back to ${cur.personId}, not adam');
+      }
+    }
+
+    return defects;
+  }
+
+  /// Wherever the begetting age stated in the derivation prose (all
+  /// three locales) disagrees with `birthAm - father.birthAm`.
+  List<String> derivationAgeDefects(List<Lifeline> lifelines) {
+    final byId = {for (final l in lifelines) l.personId: l};
+    final enPattern = RegExp(r'was (\d+) when');
+    final hansPattern = RegExp(r'(\d+)\s*岁生');
+    final hantPattern = RegExp(r'(\d+)\s*歲生');
+    final defects = <String>[];
+
+    for (final l in lifelines) {
+      if (l.fatherId == null) continue;
+      final father = byId[l.fatherId];
+      if (father == null) continue; // reported by fatherLinkDefects
+      final expected = l.birthAm - father.birthAm;
+
+      final en = enPattern.firstMatch(l.derivationEn);
+      if (en == null || int.parse(en.group(1)!) != expected) {
+        defects.add('${l.personId} derivationEn age '
+            '${en == null ? 'missing' : en.group(1)} != $expected');
+      }
+      final hans = hansPattern.firstMatch(l.derivationZhHans);
+      if (hans == null || int.parse(hans.group(1)!) != expected) {
+        defects.add('${l.personId} derivationZhHans age '
+            '${hans == null ? 'missing' : hans.group(1)} != $expected');
+      }
+      final hant = hantPattern.firstMatch(l.derivationZhHant);
+      if (hant == null || int.parse(hant.group(1)!) != expected) {
+        defects.add('${l.personId} derivationZhHant age '
+            '${hant == null ? 'missing' : hant.group(1)} != $expected');
+      }
+    }
+
+    return defects;
+  }
+
+  /// Copy of [source] with one field replaced — the tracked asset is
+  /// never mutated, only an in-memory `Lifeline`.
+  Lifeline withBirthAm(Lifeline source, int birthAm) => Lifeline(
+        personId: source.personId,
+        lineId: source.lineId,
+        scheme: source.scheme,
+        nameEn: source.nameEn,
+        nameZhHans: source.nameZhHans,
+        nameZhHant: source.nameZhHant,
+        fatherId: source.fatherId,
+        birthAm: birthAm,
+        deathAm: source.deathAm,
+        lifespan: source.lifespan,
+        refs: source.refs,
+        derivationEn: source.derivationEn,
+        derivationZhHans: source.derivationZhHans,
+        derivationZhHant: source.derivationZhHant,
+      );
+
+  Lifeline withFatherId(Lifeline source, String? fatherId) => Lifeline(
+        personId: source.personId,
+        lineId: source.lineId,
+        scheme: source.scheme,
+        nameEn: source.nameEn,
+        nameZhHans: source.nameZhHans,
+        nameZhHant: source.nameZhHant,
+        fatherId: fatherId,
+        birthAm: source.birthAm,
+        deathAm: source.deathAm,
+        lifespan: source.lifespan,
+        refs: source.refs,
+        derivationEn: source.derivationEn,
+        derivationZhHans: source.derivationZhHans,
+        derivationZhHant: source.derivationZhHant,
+      );
+
+  Lifeline withDerivationEn(Lifeline source, String derivationEn) =>
+      Lifeline(
+        personId: source.personId,
+        lineId: source.lineId,
+        scheme: source.scheme,
+        nameEn: source.nameEn,
+        nameZhHans: source.nameZhHans,
+        nameZhHant: source.nameZhHant,
+        fatherId: source.fatherId,
+        birthAm: source.birthAm,
+        deathAm: source.deathAm,
+        lifespan: source.lifespan,
+        refs: source.refs,
+        derivationEn: derivationEn,
+        derivationZhHans: source.derivationZhHans,
+        derivationZhHant: source.derivationZhHant,
+      );
+
   // ── formatChronologyYearRange ─────────────────────────────────
   //
   // Pure — no widget needed — and previously untested anywhere in the
@@ -241,6 +392,87 @@ void main() {
         expect(data.lineById(l.lineId), isNotNull,
             reason: '${l.personId} is in unknown line ${l.lineId}');
       }
+    });
+
+    // `fatherId` is parsed by `Lifeline.fromJson` but, until now, read
+    // nowhere: no validation, no render. It is also the one field the
+    // chart's whole "coloured by descent" premise rests on, so a wrong
+    // or absent link would be dead data on the claim the picture makes.
+
+    test('every fatherId resolves to a real lifeline, forming one '
+        'acyclic tree rooted at adam, with no one born outside their '
+        "father's lifetime", () {
+      expect(fatherLinkDefects(data.lifelines), isEmpty);
+    });
+
+    test('the fatherId check has teeth', () {
+      final byId = {for (final l in data.lifelines) l.personId: l};
+      final shem = byId['shem']!;
+      final noah = byId['noah']!;
+
+      // Born before the father who is supposed to have begotten him.
+      final bornTooEarly = [
+        for (final l in data.lifelines)
+          l.personId == 'shem' ? withBirthAm(shem, noah.birthAm - 1) : l,
+      ];
+      expect(
+        fatherLinkDefects(bornTooEarly),
+        contains('shem is born before noah is'),
+      );
+
+      // A fatherId that names nobody on the chart.
+      final danglingFather = [
+        for (final l in data.lifelines)
+          l.personId == 'shem' ? withFatherId(shem, 'nobody') : l,
+      ];
+      expect(
+        fatherLinkDefects(danglingFather),
+        contains('shem fatherId nobody does not resolve'),
+      );
+
+      // A second root — adam already has none, so giving shem one too
+      // means two lifelines with a null fatherId.
+      final secondRoot = [
+        for (final l in data.lifelines)
+          l.personId == 'shem' ? withFatherId(shem, null) : l,
+      ];
+      expect(
+        fatherLinkDefects(secondRoot),
+        contains('expected exactly one root, found 2'),
+      );
+
+      // A two-node cycle: point noah at shem, on top of shem already
+      // pointing at noah.
+      final cycle = [
+        for (final l in data.lifelines)
+          l.personId == 'noah' ? withFatherId(noah, 'shem') : l,
+      ];
+      expect(
+        fatherLinkDefects(cycle),
+        anyElement(contains('cycle in ancestry')),
+      );
+    });
+
+    test('the begetting age stated in the derivation prose matches '
+        'birthAm arithmetic, in all three locales', () {
+      expect(derivationAgeDefects(data.lifelines), isEmpty);
+    });
+
+    test('the derivation-arithmetic check has teeth', () {
+      final shem = data.lifelines.firstWhere((l) => l.personId == 'shem');
+      final wrongProse = [
+        for (final l in data.lifelines)
+          l.personId == 'shem'
+              ? withDerivationEn(
+                  shem,
+                  shem.derivationEn.replaceFirst('was 502 when', 'was 5 when'),
+                )
+              : l,
+      ];
+      expect(
+        derivationAgeDefects(wrongProse),
+        contains('shem derivationEn age 5 != 502'),
+      );
     });
 
     test('every lifeline declares the chronology scheme its year is on',
@@ -547,6 +779,28 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('How this year is derived'), findsOneWidget);
       expect(find.textContaining('969'), findsWidgets);
+    });
+
+    testWidgets(
+        "the sheet names a non-root person's father and his age at the "
+        'birth, and omits the line entirely for adam', (tester) async {
+      await pumpChart(tester);
+      await tester.tap(find.text('Methuselah').first);
+      await tester.pumpAndSettle();
+      // methuselah.birthAm 687 - enoch.birthAm 622 == 65.
+      expect(find.text('Son of Enoch (aged 65 at the birth)'),
+          findsOneWidget);
+
+      // A fresh pump replaces the whole tree, sheet included. Adam's
+      // bar sits well before the default view's cursor (near the
+      // Flood), so reach it the same way the reachability test above
+      // does — zoom all the way out first.
+      await pumpChart(tester);
+      await wholeSpan(tester);
+      await tester.tap(find.text('Adam').first);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Son of'), findsNothing,
+          reason: 'adam is the root lifeline and has no father to name');
     });
 
     testWidgets('the whole-span view fits the width, and only the plot '

@@ -2224,6 +2224,24 @@ class _ChronologyChartState extends State<ChronologyChart> {
                           color: scheme.onSurface.withValues(alpha: 0.85),
                         ),
                       ),
+                      if (l.fatherId != null) ...[
+                        Builder(builder: (_) {
+                          final father = widget.data.lifelineById(l.fatherId!);
+                          if (father == null) return const SizedBox.shrink();
+                          return Text(
+                            _s('chronologyFatherAge',
+                                    'Son of {name} (aged {n} at the birth)')
+                                .replaceAll(
+                                    '{name}', father.localizedName(locale))
+                                .replaceAll('{n}',
+                                    '${l.birthAm - father.birthAm}'),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: scheme.onSurface.withValues(alpha: 0.85),
+                            ),
+                          );
+                        }),
+                      ],
                       const SizedBox(height: 4),
                       Text(
                         _s('chronologyContemporaries',
