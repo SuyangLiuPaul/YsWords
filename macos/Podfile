@@ -1,4 +1,13 @@
-platform :osx, '10.15'
+# 2026-09-15: raised 10.15 → 11.0 because `gal` (the photo-library save
+# added this version) declares 11.0 as its minimum and `pod install`
+# refuses the whole build otherwise — which is how the v1.6.8 macOS
+# release failed.
+#
+# The cost is macOS 10.15 Catalina, which Apple itself stopped patching
+# in 2022; 11.0 Big Sur is November 2020. This app is not on the Mac App
+# Store — the macOS build is a GitHub Release asset — so nobody is
+# stranded mid-update: an old Mac keeps the last build it downloaded.
+platform :osx, '11.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'

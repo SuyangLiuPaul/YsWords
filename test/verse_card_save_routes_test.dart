@@ -119,6 +119,34 @@ void main() {
               'modern install asks for storage it does not need');
     });
 
+    test('macOS targets at least what the plugins demand', () {
+      // 2026-09-15: the v1.6.8 macOS release build failed on exactly
+      // this. `gal` declares 11.0 and `pod install` refuses the whole
+      // build rather than skipping the plugin — and nothing in Dart can
+      // see it, so the first sign was a red release workflow AFTER the
+      // tag had gone up and the other four platforms had shipped.
+      //
+      // Both files, because they disagree silently: the Podfile governs
+      // pod resolution and the pbxproj governs the app target, and
+      // raising one without the other fails later and less clearly.
+      final podfile = File('macos/Podfile').readAsStringSync();
+      final project =
+          File('macos/Runner.xcodeproj/project.pbxproj').readAsStringSync();
+
+      final pod =
+          RegExp("platform :osx, '(\\d+)\\.(\\d+)'").firstMatch(podfile);
+      expect(pod, isNotNull, reason: 'the Podfile names no macOS platform');
+      expect(int.parse(pod!.group(1)!), greaterThanOrEqualTo(11),
+          reason: 'gal needs macOS 11.0; pod install refuses the build '
+              'below it');
+
+      expect(project, isNot(contains('MACOSX_DEPLOYMENT_TARGET = 10.')),
+          reason: 'the Xcode target still says 10.x while the Podfile '
+              'says 11 — they have to move together');
+      expect(project, contains('MACOSX_DEPLOYMENT_TARGET = 11.'),
+          reason: 'the app target does not declare macOS 11');
+    });
+
     test('both plugins are pinned in the lockfile', () {
       final lock = File('pubspec.lock').readAsStringSync();
       expect(lock, contains('  gal:'));
