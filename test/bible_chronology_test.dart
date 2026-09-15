@@ -3315,6 +3315,127 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('every tick in the whole corpus, not just the 13 pins, '
+        'measured for whole-span reachability in one pass', (tester) async {
+      // The test above only ever walked the 13 `pin: true` ticks. This
+      // one widens that to all `data.allTicks` — 7 markers + 93 events,
+      // re-derived at run time below rather than copied as a literal,
+      // so a future `tools/build_bible_chronology.py` regeneration can't
+      // silently stop being covered.
+      //
+      // It is a DIFFERENT shape of test than the one above it, not a
+      // superset loop over the same titles: walking every on-screen
+      // label and chip once, and recording everything each names, is
+      // O(labels + chips) instead of O(titles x chips) — the loop above
+      // taps every visible chip again for each of the 13 titles it is
+      // still hunting for. That is fine at 13; it would not be at 100.
+      //
+      // `_tickCandidates()` in chronology_chart.dart states outright
+      // that this is expected to come back short: "fit-to-width prints
+      // only the pinned events, because at 0.06 pt per year the lane
+      // has room for about four labels" — `_atFit: return t.pin;`. So
+      // the assertion below is not `unreached.isEmpty`; it is that the
+      // reached set is EXACTLY the pinned titles, and the unreached set
+      // is EXACTLY the unpinned ones — an honest measurement of a
+      // documented density cutoff, not a bug. A reader who wants the
+      // other 87 has to zoom in at least one step first, which is a
+      // product question for `queue:13341`, not a defect this test
+      // should paper over by relaxing to `isEmpty` or dropping the
+      // exactness.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: tall);
+      await wholeSpan(tester);
+
+      final allTicks = data.allTicks;
+      final allTitles = allTicks.map((t) => t.titleEn).toSet();
+      expect(allTitles, hasLength(allTicks.length),
+          reason: 'two ticks share a title — this test tells them apart '
+              'by text, so a collision here would silently under-count');
+      final pinnedTitles =
+          allTicks.where((t) => t.pin).map((t) => t.titleEn).toSet();
+
+      final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+      final reached = <String>{};
+
+      // One sweep: every Text anywhere in [scope] whose data names a
+      // real tick counts as reached from there. Chip text reads "+N"
+      // and sheet furniture (year, era, "N events...") reads as
+      // something else, so neither can collide with a title in
+      // `allTitles` (checked unique above) and false-positive `reached`.
+      void harvest(Finder scope) {
+        for (final e
+            in find.descendant(of: scope, matching: find.byType(Text)).evaluate()) {
+          final t = (e.widget as Text).data;
+          if (t != null && allTitles.contains(t)) reached.add(t);
+        }
+      }
+
+      harvest(laneBox);
+
+      final chipKeys = find
+          .descendant(
+            of: laneBox,
+            matching: find.bySemanticsLabel(RegExp(r'^\+\d+$')),
+          )
+          .evaluate()
+          .map((e) => e.findAncestorWidgetOfExactType<Positioned>()?.key)
+          .whereType<Key>()
+          .toList();
+
+      for (final chipKey in chipKeys) {
+        final chipFinder = find.byKey(chipKey);
+        if (chipFinder.evaluate().isEmpty) continue;
+        // Recomputed per chip, not hoisted: popping the previous chip's
+        // sheet rebuilds the lane (see the pinned test's own comment on
+        // this), and this is the rect a tap on the NEXT chip is judged
+        // against.
+        final laneRect = tester.getRect(laneBox);
+        if (!laneRect.overlaps(tester.getRect(chipFinder))) continue;
+        await tester.tap(chipFinder, warnIfMissed: false);
+        await tester.pumpAndSettle();
+        final sheet = find.byType(BottomSheet);
+        if (sheet.evaluate().isNotEmpty) {
+          harvest(sheet);
+          // A cluster sheet's `ListView(shrinkWrap: true, children: [...])`
+          // still only builds what its Sliver has laid out — offscreen
+          // members of a large bucket are not Elements yet at the top
+          // scroll position. No bucket in this corpus is anywhere near
+          // tall enough to need more than start/middle/end, but taking
+          // all three is cheap insurance against the day one is.
+          final scrollables = find
+              .descendant(of: sheet, matching: find.byType(Scrollable))
+              .evaluate()
+              .toList();
+          if (scrollables.isNotEmpty) {
+            final state = tester
+                .state<ScrollableState>(find.byWidget(scrollables.first.widget));
+            final max = state.position.maxScrollExtent;
+            if (max > 0) {
+              for (final frac in [0.5, 1.0]) {
+                state.position.jumpTo(max * frac);
+                await tester.pumpAndSettle();
+                harvest(sheet);
+              }
+            }
+          }
+          Navigator.of(tester.element(sheet)).pop();
+          await tester.pumpAndSettle();
+        }
+      }
+
+      final unreached = allTitles.difference(reached);
+
+      expect(reached, unorderedEquals(pinnedTitles),
+          reason: 'reached should be exactly the ${pinnedTitles.length} '
+              'pinned titles, no more and no fewer — got $reached');
+      expect(unreached, unorderedEquals(allTitles.difference(pinnedTitles)),
+          reason: 'unreached should be exactly the '
+              '${allTitles.length - pinnedTitles.length} unpinned titles — '
+              'got $unreached');
+      expect(tester.takeException(), isNull);
+      handle.dispose();
+    });
+
     testWidgets('a viewport straddling AM 2187 draws the bars that are '
         'in it and folds only the rest', (tester) async {
       await pumpChart(tester, size: tall);

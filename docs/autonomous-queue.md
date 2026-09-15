@@ -11730,6 +11730,15 @@ has never seen this repo.
       unanswered: start the `GetMaterialApp` → `.router` migration
       branch, or close this as "won't fix"?
 
+      **Deferred a twenty-third consecutive iteration, 2026-09-16** —
+      this hour's NEXT_TASK.md picked widening fit-view reachability
+      measurement to the whole 100-tick chronology corpus instead
+      (`queue:13341`'s 2026-09-16 slice, below). Still branch-scale,
+      still unattended-unsafe, still the only fully open P2 checkbox
+      besides the chronology chart, and the question above to the user
+      is still unanswered: start the `GetMaterialApp` → `.router`
+      migration branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -14613,6 +14622,80 @@ has never seen this repo.
       still `in_progress` after ~6 minutes of polling (this iteration's
       foreground budget) — next iteration's step 0 should check it
       before picking anything else.
+
+      **2026-09-16 — widened from the 13 pinned ticks to the whole
+      100-tick corpus, one pass, and confirmed the shortfall is a
+      documented density cutoff, not a bug.** New `testWidgets` in
+      `test/bible_chronology_test.dart`, placed directly after the
+      13-pin test: pumps at `tall`, calls `wholeSpan(tester)`, then
+      walks the tick lane and every on-screen "+N" chip **once**,
+      harvesting every `Text` whose data names a real tick (inline
+      label or chip-sheet content) into one `Set<String> reached` —
+      O(labels + chips), not O(titles × chips) the way the 13-pin test's
+      per-title loop is; that shape stops being affordable once titles
+      go from 13 to 100. `allTicks` (7 markers + 93 events, re-derived
+      from `data` at run time, not hardcoded) and title uniqueness (all
+      100 distinct) were both re-checked in the test itself rather than
+      assumed.
+
+      **The measurement: `reached` is exactly the 13 `pin: true`
+      titles, `unreached` is exactly the other 87.** Traced to
+      `_tickCandidates()` in `chronology_chart.dart`: `if (_atFit)
+      return t.pin;` — at whole-span view, an unpinned tick is not a
+      candidate for a label OR a chip at all, so it has no route to a
+      reader through either mechanism this test (or the 13-pin test
+      before it) checks. The function's own doc comment already states
+      this is deliberate density control ("fit-to-width prints only the
+      pinned events, because at 0.06 pt per year the lane has room for
+      about four labels"), not row-exhaustion or an edge-cutoff bug like
+      the previous two slices found — so **no lib change**: the test
+      pins the measured partition with the reason stated
+      (`unorderedEquals(pinnedTitles)` / `unorderedEquals(unpinned)`)
+      rather than asserting `unreached.isEmpty`, which would be the
+      exact "relax the assertion to fit the observed result" failure
+      this item's own standing rule forbids.
+
+      Worth recording separately from the lib code: a raw tap on the
+      bare lane, away from any label, still resolves to the *nearest*
+      tick within 14pt (`onTapDown`'s fallback loop at
+      `chronology_chart.dart` around line 1947, which iterates
+      `widget.data.allTicks` unfiltered by `pin`) — so an unpinned
+      tick's own thin tick-mark (drawn for every tick by `_TickPainter`,
+      also unfiltered by `pin`) IS tappable to reach its sheet, just
+      with no label or chip naming it first. This test does not measure
+      that path (it is a position-based reach, not a content-based one,
+      and the two existing tests in this item both work by content), so
+      it is not claimed as "these 87 are otherwise unreachable" —
+      only that neither of this file's two content-based reachability
+      routes reaches them at fit view.
+
+      Refuted before committing (independent agent, given the four
+      claims — corpus count, no-dedup-inside-`allTicks`, the `_atFit`
+      mechanism as the sole gate, and the reached/unreached partition —
+      and the commands to re-derive each from source): re-parsed the
+      asset itself (7+93=100, all titles unique), traced
+      `_tickCandidates`/`_tickLane`/the chip-building path directly
+      (confirmed a chip's sheet can never include a non-candidate),
+      confirmed `_atFit` and `_density == null` are the literal same
+      check (not just usually true together), confirmed `wholeSpan()`'s
+      `maxScrollExtent == 0` stopping condition is equivalent to true
+      `_atFit`, and reran the actual test live. All four survived.
+
+      `flutter analyze` clean, repo-wide. `bible_chronology_test.dart`:
+      **116 tests**, all pass (1 new this slice; baseline 115 recounted
+      at `c0e833bb`, not copied forward). Full suite left to CI per
+      `queue:15174`'s standing ruling. Code + test only: no asset,
+      version, dependency or deploy change, per this item's own standing
+      rule. `queue:11538` deferred a twenty-third time, logged at its
+      own entry.
+
+      Checkbox stays open: the labelling half ("give all 14
+      densest-decade events their own inline label") is still unbuilt,
+      and now so is a second, related design question this slice
+      surfaced rather than answered — whether any of the 87 unpinned
+      ticks should ever be promoted to a chip at fit view (a product
+      decision, not an hour's work), or whether the bare-lane-tap
+      fallback is judged sufficient for them as-is.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
