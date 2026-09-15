@@ -657,8 +657,26 @@ String narrowBibleVersionLabel(String version) {
 String? bibleVersionFullCanonFallback(String version) {
   switch (version) {
     case 'biblexg-v2':    // LJK2 (Simplified Chinese, NT only)
+    // 2026-09-15: and v3, which is the row a reader can actually pick.
+    // 「如果我选的中文是梁简 或繁体 但是选的是旧约 然后就有fallback 雅伟简
+    // 繁做backup吗」 — no, it did not, and this is why.
+    //
+    // On 2026-09-14 the v2 pair was hidden and [_kSupersededBy] sent
+    // stored preferences to v3. Every OTHER consumer of that change
+    // followed the supersession automatically, because they go through
+    // `resolvableVersion`. This table does not: it is keyed on the code
+    // itself, so the moment the pickable row became `biblexg-v3` the
+    // lookup started returning null and a reader on 梁简 who opened
+    // Genesis got nothing at all — the fallback was still standing
+    // guard over an edition nobody could select any more.
+    //
+    // `nt_only_editions_have_a_fallback_test.dart` now derives this
+    // from the assets rather than trusting the table, so the next
+    // supersession cannot repeat it.
+    case 'biblexg-v3':    // LJK2 September fetch (Simplified, NT only)
       return 'cuvs-yhwh';      // 和合本雅伟版 (Simplified, full canon)
     case 'biblexg-v2-tr': // LJK2 (Traditional Chinese, NT only)
+    case 'biblexg-v3-tr': // LJK2 September fetch (Traditional, NT only)
       return 'cuvs-yhwh-tr';   // 和合本雅伟版 (Traditional, full canon)
     // 2026-09-08: the Westcott-Hort is the first NT-only edition whose
     // own language family has NO full-canon edition to fall back to.
