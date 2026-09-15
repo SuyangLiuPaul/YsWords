@@ -14777,8 +14777,11 @@ has never seen this repo.
       bare-lane-tap fallback (80/100 reach themselves; the other 20 for
       the two reasons above) is judged sufficient for them as-is.
 
-      Pushed as `<pending>`. `queue:11538` deferred a twenty-fourth time,
-      logged at its own entry.
+      Pushed as `0d599cb0`. CI run `35010204160` (head `0d599cb0`) was
+      still `in_progress` after ~6 minutes of polling (this iteration's
+      foreground budget) — next iteration's step 0 must check it before
+      picking anything else. `queue:11538` deferred a twenty-fourth
+      time, logged at its own entry.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
