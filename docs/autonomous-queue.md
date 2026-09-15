@@ -3871,12 +3871,37 @@ reported. Work these top-down before P2.
       `tools/apply_cuv_divine_name_audit.py --write` (commits `52b7919e`,
       `226450c8` — the second re-derives `assets/tagged/cuvs-yhwh-tr/`).
       37 rows moved H3069→H3068, 4 the other way; 詩篇 6:2 names the
-      divine name twice so the 41 rows are 42 individual `s` edits. This
-      is **not** the same 69: not all 41 are drawn from the 57+12 count
-      above, and the two counts have not been reconciled row-for-row.
-      **Item stays open** — the remainder of the 57/12, and whatever of
-      the 41 fell outside it, is still unswept pending the publisher's
-      answer.
+      divine name twice so the 41 rows are 42 individual `s` edits.
+
+      **2026-09-15: reconciled row-for-row, and the 57+12=69 restated
+      above does not survive proper versification remapping.**
+      `tools/audit_divine_name.py` (`--check` pins the totals) applies
+      the Ezekiel/Psalms remap `audit_strongs_tagging.py` already uses
+      for the identical offset problem — the thing the 2026-09-06 naive
+      attempt (`docs/p0-drift-2026-09-06.md`) didn't do. Result: Ezekiel
+      20:47/20:49 (the 2 "unresolved" keys) resolve as clean AGREEMENT
+      once mapped to Hebrew 21:3/21:5, and the naive attempt's "12
+      verses, Hebrew carries neither number" is not a real class at
+      all — it measures 0 right now, and since the reconciliation shows
+      none of the 41 already-applied rows were drawn from it, fixing
+      those 41 cannot have changed that count, so it was 0 before the
+      fix too. **True pre-fix total: 60 verses, all one undifferentiated
+      "corpus says H3069, Hebrew says H3068" class — the letter's own
+      "約六十處" already matches this and needs no correction.** Of the
+      41 already applied: 37 came from this 60, 0 from the never-real
+      "12", 4 are outside it entirely (the reverse-direction rows: Gen
+      15:8, 2Sam 7:22, 詩篇 141:8, 結 34:2 — corpus said H3068, Hebrew
+      says H3069, the opposite disagreement). Remaining unswept: 23
+      verses (`python3 tools/audit_divine_name.py` — "disagree" bucket).
+      Refuter-verified: arithmetic invariant, the "neither never existed"
+      inference, the Ezekiel resolution and the reused book-code matching
+      logic were each independently re-derived from raw JSON/git history
+      and held up; only the causal claim of *why* the old ad hoc count
+      landed on 69 was flagged as strong corroboration rather than proof
+      (the original throwaway script is gone and can't be rerun).
+      **Item stays open** — the 23 remaining disagree verses are still
+      unswept pending the publisher's answer; sweeping them now would
+      make the corpus less consistent, not more.
 
 - [ ] **利未記 4:17's second 血 — asked, not repaired.** §四 of the CUV
       letter. Verified against `assets/originals/leviticus.json`: וְהִזָּה
