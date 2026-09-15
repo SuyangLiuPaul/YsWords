@@ -22,6 +22,12 @@ import 'package:flutter_test/flutter_test.dart';
 ///     `lib/pages/bible_trivia_page.dart` sets zh-Hans inner quotes as ASCII
 ///     `"`. That needs a call, not a sweep — filed as its own queue item.
 ///
+/// A later slice (queue:5945's non-blocked half) translated the two `'`
+/// inside `abinadab_brother`'s `Saul's army` clause — English left
+/// untranslated inside an otherwise-Chinese field, a different defect from
+/// the quote-style question above — dropping the count from 10 to **8**.
+/// The remaining 8 (`peleg`/`hagar`/`judah`/`jesse`) still await that call.
+///
 /// This is what stops a future sweep from finishing the `:`/`'` classes by
 /// mistake: both counts are pinned here, not just asserted absent, so a
 /// change that widens either shows up as a failure instead of a silent
@@ -71,9 +77,31 @@ void main() {
     expect(countMark(':'), 100,
         reason: 'every : is a digit-adjacent scripture reference, e.g. '
             '馬太福音 1:13-16 — a different convention, not a defect');
-    expect(countMark('\''), 10,
+    expect(countMark('\''), 8,
         reason: "convention is undecided between '…' and 「」 for zh-Hans "
             'inner quotes — filed in the queue, not swept here');
+  });
+
+  test('the four zh fields hold no run of 3+ ASCII letters', () {
+    final asciiRun = RegExp('[A-Za-z]{3,}');
+    final offenders = <String>[];
+    for (final p in people) {
+      final map = p as Map;
+      final id = map['id'] as String;
+      for (final f in fields) {
+        final v = map[f] as String?;
+        if (v == null) continue;
+        if (asciiRun.hasMatch(v)) {
+          offenders.add('$id.$f: $v');
+        }
+      }
+    }
+    expect(offenders, isEmpty,
+        reason: 'a zh field with an English word or clause inside it is a '
+            'translation-completeness gap, e.g. the untranslated '
+            "\"served in Saul's army\" clause queue:5945 found in "
+            'abinadab_brother — this guards the whole class, not just that '
+            'one');
   });
 
   test('every : is digit-adjacent, the fact that keeps it out of scope', () {

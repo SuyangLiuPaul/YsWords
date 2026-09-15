@@ -5942,19 +5942,45 @@ reported. Work these top-down before P2.
       thing that reaches the reader is the dev/qat asset already
       verified live above, not this bookkeeping commit.
 
-- [ ] **The `'` class in `family_tree.json`'s zh fields (10 occurrences)
+- [ ] **The `'` class in `family_tree.json`'s zh fields (now 8, was 10)
       needs a convention call, not a sweep.** Filed 2026-09-16, split out
       of the item above. `peleg`, `hagar`, `judah`, `jesse` (zh-Hans) use
       `'…'` where their zh-Hant twins use `「…」` — but
       `lib/pages/bible_trivia_page.dart:2521` sets zh-Hans inner quotes as
-      ASCII `"`, not `'`. `abinadab_brother`'s two occurrences (hans and
-      hant) are `Saul's`, English possessive inside an otherwise-untranslated
-      summary fragment ("耶西的 次子; served in Saul's army against the
-      Philistines.") — a translation-completeness gap, a different
-      problem from the quote-style question. Needs the user's call on
-      which zh-Hans inner-quote convention is canonical before touching
-      any of it. `judah`'s `'圭必不离犹大'` quotes Gen 49:10 — whatever the
-      mark, the wording stays untouched.
+      ASCII `"`, not `'`. Needs the user's call on which zh-Hans inner-quote
+      convention is canonical before touching any of it. `judah`'s
+      `'圭必不离犹大'` quotes Gen 49:10 — whatever the mark, the wording
+      stays untouched. **This half is still open and still blocked on the
+      user — nothing below changes that.**
+
+      **The translation-completeness half is done, 2026-09-16.** The
+      `abinadab_brother` pair this item originally flagged as `Saul's`
+      turned out to be one of three Jesse's-sons entries shipping raw
+      English inside a Chinese field, not one: a full re-measure found
+      `eliab` ("rebuked David for coming to the battlefield") and `shimea`
+      ("(also called Shammah)") carried the same defect, plus all six of
+      Jesse's non-David sons (`eliab`, `abinadab_brother`, `shimea`,
+      `nethanel`, `raddai`, `ozem`) had a stray space after `耶西的` and a
+      half-width `.` terminator where every other zh summary in the asset
+      uses `。`. All 12 strings fixed by hand (not the repair script — this
+      is authored translation, not a mechanical substitution):
+      `eliab` "耶西的长子；斥责大卫前来战场。"/"耶西的長子；斥責大衛前來戰場。",
+      `abinadab_brother` "耶西的次子；跟随扫罗出征，对抗非利士人。"/"耶西的次子；
+      跟隨掃羅出征，對抗非利士人。" (`跟随/跟隨扫罗/掃羅出征` lifted verbatim
+      from the app's own `cuvs-yhwh.json` 1 Sam 17:13), `shimea` "耶西的三子
+      （又名沙玛）。"/"耶西的三子（又名沙瑪）。" (Shimea=Shammah and the 沙玛/沙瑪
+      transliteration are the app's own `cuvs-yhwh.json` 1 Chr 2:13 note, not
+      an outside claim), `nethanel`/`raddai`/`ozem` punctuation-only. A
+      refuter subagent tried and failed to break any of the six factual
+      claims (identity, references, transliteration, existing
+      大卫/大衛-扫罗/掃羅-玛/瑪 conventions) — see commit for the transcript
+      summary. Removing the two `Saul's` apostrophes is why the count above
+      dropped from 10 to 8; the other 8 are the unrelated quote-style
+      question and are untouched.
+      `test/family_tree_ascii_punctuation_test.dart` updated (`'` 10→8, plus
+      a new no-3+-ASCII-letter-run guard proven red against the pre-fix
+      asset) so this specific class cannot regress; `bible_chronology.json`
+      re-generated and diffed empty (none of the six ids appear in it).
 
 - [x] **`說；「` opened a quotation with a semicolon in 5 verses — fixed
       2026-08-23 in all three files.** 列王紀上 22:13, 路加福音 13:2,
