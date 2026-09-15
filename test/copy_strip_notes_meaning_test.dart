@@ -95,6 +95,42 @@ void main() {
             'meet — 「（细拉）」 is the commonest of the 343');
   });
 
+  test('the chapter the hint points at is not a chapter the card calls '
+      'empty', () {
+    // 2026-09-15, the same reader, an hour later, over 出埃及记 30:
+    // 「这个toggled on但是却没有包含」 — the card printed 「这一章没有这类
+    // 括号说明」 on the very chapter whose verse 13 the hint above sends
+    // people to.
+    //
+    // The cause was scope: the card tested the THREE VERSES THE PREVIEW
+    // SAMPLES and printed a claim about the whole chapter, and 出 30:13
+    // sits eleven verses below the three it shows. So this asserts the
+    // shape of the trap rather than the wording of the fix: a chapter
+    // whose parenthetical is outside the first three verses.
+    final chapter = [
+      for (final v in _cuv)
+        if (v['book'] == '出埃及记' && v['chapter'] == '30') v,
+    ];
+    expect(chapter, isNotEmpty, reason: 'the fixture chapter is missing');
+
+    bool hasNote(Map<String, dynamic> v) =>
+        parentheticalNotePattern.hasMatch(v['text'] as String);
+
+    final firstThree = chapter.take(3).where(hasNote);
+    final anywhere = chapter.where(hasNote);
+    expect(firstThree, isEmpty,
+        reason: 'the preview samples three verses and this chapter must '
+            'still be one whose parenthetical is out of shot — otherwise '
+            'this test no longer exercises the bug');
+    expect(anywhere, isNotEmpty,
+        reason: 'a card that reads only the sample would call this '
+            'chapter empty, which is what was reported');
+    expect((anywhere.first['verse'] as String), '13',
+        reason: 'the hint names 出埃及记 30:13 by number; if the first '
+            'parenthetical in the chapter moves, the hint has to move '
+            'with it');
+  });
+
   test('every locale says the same thing about the ① notes', () {
     for (final locale in ['zh-Hans', 'zh-Hant', 'en']) {
       final hint = uiStrings['copyStripNotesHint']![locale]!;

@@ -8666,6 +8666,18 @@ const uiStrings = {
     'zh-Hant': '這一章沒有這類括號說明，所以開不開都一樣。',
     'en': 'This chapter has none, so the switch changes nothing here.',
   },
+  // 2026-09-15, same day, same reader: the line above was shown over
+  // 出埃及记 30 — the chapter whose verse 13 is the very example the
+  // hint sends people to. It was reading the three verses the preview
+  // samples and claiming a fact about the whole chapter. This is the
+  // third state that was missing: the chapter HAS one, the preview just
+  // is not showing it, and the useful thing to print is where it is.
+  'copyStripNotesElsewhere': {
+    'zh-Hans': '这一章有（第 {verse} 节），但上面预览的几节里没有，所以看不出分别。',
+    'zh-Hant': '這一章有（第 {verse} 節），但上面預覽的幾節裡沒有，所以看不出分別。',
+    'en': 'This chapter has one (verse {verse}), but not in the verses '
+        'previewed above, so you cannot see the difference here.',
+  },
   // 2026-09-13. The projector, as the owner asked for it: a button on the
   // selection bar, and a Settings card that decides how the wall looks
   // and which edition keeps the passage company — 「像copy风格一样在

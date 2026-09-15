@@ -599,28 +599,65 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                                 // and most chapters do not. A switch that
                                 // demonstrably does nothing reads as broken,
                                 // so it says when it has nothing to do.
+                                //
+                                // Corrected the same day, by the same
+                                // reader, over 出埃及记 30 — the chapter
+                                // whose verse 13 is the example the hint
+                                // above sends people to. The first version
+                                // read the THREE VERSES THE PREVIEW SAMPLES
+                                // and printed a claim about the whole
+                                // chapter, so it called 出 30 empty while
+                                // 出 30:13 sat eleven verses below the fold.
+                                //
+                                // Three states, not two: the preview shows
+                                // one (say nothing — the switch speaks for
+                                // itself), the chapter has one out of shot
+                                // (say where), the chapter has none (say so).
                                 if (settings.copyStripParentheticals &&
                                     !verseSamples.any((v) =>
                                         parentheticalNotePattern
                                             .hasMatch(v['text'] as String)))
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 4 * s),
-                                    child: Text(
-                                      uiStrings['copyStripNotesNothingHere']
-                                              ?[settings.locale] ??
-                                          'This chapter has none, so the '
-                                              'switch changes nothing here.',
-                                      style: TextStyle(
-                                        fontFamily: settings.fontFamily,
-                                        fontFamilyFallback: kCjkFontFallback,
-                                        fontSize: settings.fontSize * 0.85,
-                                        fontStyle: FontStyle.italic,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
+                                  Builder(builder: (context) {
+                                    // The WHOLE chapter, not the three
+                                    // verses on screen — that confusion is
+                                    // the whole reason this branch exists.
+                                    Verse? elsewhere;
+                                    for (final v in versesInChapter) {
+                                      if (parentheticalNotePattern
+                                          .hasMatch(v.text)) {
+                                        elsewhere = v;
+                                        break;
+                                      }
+                                    }
+                                    final text = elsewhere == null
+                                        ? (uiStrings[
+                                                    'copyStripNotesNothingHere']
+                                                ?[settings.locale] ??
+                                            'This chapter has none, so the '
+                                                'switch changes nothing here.')
+                                        : (uiStrings['copyStripNotesElsewhere']
+                                                    ?[settings.locale] ??
+                                                'This chapter has one (verse '
+                                                    '{verse}), but not in the '
+                                                    'verses previewed above.')
+                                            .replaceAll('{verse}',
+                                                elsewhere.verseLabel);
+                                    return Padding(
+                                      padding: EdgeInsets.only(top: 4 * s),
+                                      child: Text(
+                                        text,
+                                        style: TextStyle(
+                                          fontFamily: settings.fontFamily,
+                                          fontFamilyFallback: kCjkFontFallback,
+                                          fontSize: settings.fontSize * 0.85,
+                                          fontStyle: FontStyle.italic,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurfaceVariant,
+                                        ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  }),
                               ],
                             ),
                           ),
