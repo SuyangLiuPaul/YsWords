@@ -14,9 +14,33 @@
 #     yswords-cn-qat (+ yswords-cn prod with --include-prod)
 #
 # Usage:
-#   tools/release_web.sh                   # bump patch, build both, deploy 4 dev/qat sites
-#   tools/release_web.sh --no-bump         # use current pubspec version
+#   tools/release_web.sh                   # build both, deploy 4 dev/qat sites (NO bump)
+#   tools/release_web.sh --bump            # bump the patch version first
 #   tools/release_web.sh --include-prod    # ALSO push to yswords + yswords-cn (REQUIRES user OK)
+#
+# THE VERSION DOES NOT MOVE FOR A DEV DEPLOY. 2026-09-16 「除非我叫你
+# release和prod push 否则版本号码不要变 sword和words都是一样」. The version
+# number is the owner's release marker, not a progress counter: the
+# in-app update check and the changelog both read it, so a version that
+# moved without a release tells every user something shipped when
+# nothing did.
+#
+# Which left dev builds indistinguishable from each other, so 「Dev 可以
+# 有：123这样在最后」 — a dev build shows `1.6.11.7`, where the last
+# number is the commits since the last `v*` tag. It is DERIVED, not
+# stored: nothing to bump, nothing to forget, and it cannot disagree
+# with the tree it was built from.
+#
+# It goes ONLY into the displayed version (`--dart-define`), never into
+# pubspec — `version.json`, the APK's versionCode, the version cache the
+# iOS reinstall script reads and `verify_site` all go on reading the
+# plain release version, and `UpdateService._parse` takes the first
+# three segments, so `1.6.11.7` compares as 1.6.11 wherever it is
+# compared.
+#
+# A run with --include-prod is a RELEASE and carries no dev suffix.
+# Ported from SeekSparks, which is this repo's own fork — same rule,
+# same spelling, so the two apps cannot drift on what a version means.
 set -euo pipefail
 
 PROJECT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -34,10 +58,14 @@ if [ ! -x "$NETLIFY" ]; then
   exit 1
 fi
 
-BUMP=1
+# 2026-09-16: the default flipped from bump to NO bump — see the note
+# at the top. `--no-bump` is still accepted, and is now a no-op, so
+# anything that passes it keeps working.
+BUMP=0
 INCLUDE_PROD=0
 for arg in "$@"; do
   case "$arg" in
+    --bump) BUMP=1 ;;
     --no-bump) BUMP=0 ;;
     --include-prod) INCLUDE_PROD=1 ;;
   esac
@@ -53,6 +81,22 @@ APP_VERSION="$(awk '/^version:/ {print $2; exit}' "$PROJECT/pubspec.yaml")"
 # of each build's own wall clock (which made iOS/web/Android disagree and
 # an unset shell var land empty → blank "last updated").
 echo "==> APP_VERSION=$APP_VERSION (release time stamped in source)"
+
+# The version a READER sees. Same as APP_VERSION for a release; for a
+# dev deploy it carries the dev build number described at the top.
+# Everything that identifies the BUILD — version.json, the version
+# cache, verify_site — goes on using APP_VERSION, because those are
+# about the release and this one is about the tree.
+DISPLAY_VERSION="$APP_VERSION"
+if [[ "$INCLUDE_PROD" = "0" ]]; then
+  LAST_TAG="$(git -C "$PROJECT" describe --tags --abbrev=0 --match 'v*' \
+    2>/dev/null || true)"
+  DEV_BUILD="$(git -C "$PROJECT" rev-list --count \
+    "${LAST_TAG:+$LAST_TAG..}HEAD" 2>/dev/null || echo 0)"
+  DISPLAY_VERSION="$APP_VERSION.$DEV_BUILD"
+  echo "==> dev build $DEV_BUILD since ${LAST_TAG:-the first commit};" \
+    "readers see $DISPLAY_VERSION"
+fi
 
 # 2026-05-27 (v1.3.47): refresh the version cache so the launchd-
 # spawned yswords-ios-reinstall.sh has a known-good fallback even
@@ -408,7 +452,7 @@ echo "==> building INTERNATIONAL bundle"
 # which is the file dart-defines actually reach.
 "$FLUTTER" build web --release \
   --no-web-resources-cdn \
-  --dart-define="APP_VERSION=$APP_VERSION"
+  --dart-define="APP_VERSION=$DISPLAY_VERSION"
 strip_restricted_assets
 prerender
 INTL_SITES=(
@@ -439,7 +483,7 @@ echo "==> building CHINA bundle (CHINA_MODE=true)"
 # often already warm in the browser cache from other Flutter apps.
 "$FLUTTER" build web --release \
   --no-web-resources-cdn \
-  --dart-define="APP_VERSION=$APP_VERSION" \
+  --dart-define="APP_VERSION=$DISPLAY_VERSION" \
   --dart-define="CHINA_MODE=true"
 strip_restricted_assets
 prerender
