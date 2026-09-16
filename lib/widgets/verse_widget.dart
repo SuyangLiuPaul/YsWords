@@ -339,6 +339,10 @@ class _VerseWidgetState extends State<VerseWidget> {
                 // the 雅偉的話 shape. Was a boxed card per note, always
                 // open, which is what 「根本看不清」 was about.
                 VerseNotesBlock(
+                  // This verse's own margins — `leftIndent` is where its
+                  // text starts, which is where its notes belong.
+                  textInsets:
+                      EdgeInsets.only(left: leftIndent, right: baseIndent),
                   notes: [..._noteSink, ...verse.blockNotes],
                   settings: settings,
                   locale: locale,

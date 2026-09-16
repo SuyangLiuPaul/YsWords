@@ -56,6 +56,7 @@ class VerseNotesBlock extends StatefulWidget {
     required this.notes,
     required this.settings,
     required this.locale,
+    this.textInsets = EdgeInsets.zero,
     this.preview = kNotePreviewChars,
   });
 
@@ -64,6 +65,22 @@ class VerseNotesBlock extends StatefulWidget {
   final List<String> notes;
   final AppSettings settings;
   final String locale;
+
+  /// The margins of the VERSE TEXT this apparatus hangs under.
+  ///
+  /// 2026-09-16 「我在words上看这个标记是不是要有些indentation呢」, of
+  /// 哥林多后书 5's 「① "凭据"：原文是"质"」 — the note's marker sat
+  /// LEFT of the verse it belongs to. The block had an inset of its own
+  /// (0.6 em, added when it used to run edge to edge: 「一方面在两侧很难
+  /// 看」) but that inset was measured from the page, not from the text,
+  /// and the reader's paragraph starts further in than 0.6 em. So the
+  /// one thing on the page that is subordinate to the verse was the one
+  /// thing standing outside its margin.
+  ///
+  /// Passed in rather than recomputed here: the two callers — paragraph
+  /// mode and verse-by-verse mode — already hold their own indent, and
+  /// a second copy of that arithmetic would drift from theirs.
+  final EdgeInsets textInsets;
 
   /// Characters of the block to show before folding the rest. 0 never
   /// folds.
@@ -190,12 +207,19 @@ class _VerseNotesBlockState extends State<VerseNotesBlock> {
 
     final folds = widget.preview > 0 && all.length > widget.preview;
 
-    // Inset on BOTH sides. 「一方面在两侧很难看」: the block used to run
-    // edge to edge while the verse above it sat inside a margin, so the
-    // apparatus looked like a different document rather than a note on
-    // this one.
+    // Inset on BOTH sides, FROM THE VERSE'S OWN MARGINS.
+    // 「一方面在两侧很难看」: the block used to run edge to edge while
+    // the verse above it sat inside a margin, so the apparatus looked
+    // like a different document rather than a note on this one. The
+    // 0.6 em is what makes it read as subordinate to the verse, and it
+    // only does that when it is measured from where the verse starts —
+    // see [textInsets].
     final inset = EdgeInsets.fromLTRB(
-        fs * 0.6, fs * 0.3, fs * 0.6, fs * 0.15);
+      widget.textInsets.left + fs * 0.6,
+      fs * 0.3,
+      widget.textInsets.right + fs * 0.6,
+      fs * 0.15,
+    );
 
     if (!folds) {
       return Padding(padding: inset, child: body);

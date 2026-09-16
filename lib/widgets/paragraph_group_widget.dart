@@ -364,6 +364,10 @@ class _ParagraphGroupWidgetState extends State<ParagraphGroupWidget> {
                 // 2026-09-14: one numbered block for the whole
                 // paragraph, the 雅偉的話 shape.
                 VerseNotesBlock(
+                  // The paragraph's own margins, so the apparatus hangs
+                  // inside the verse rather than outside it.
+                  textInsets: EdgeInsets.only(
+                      left: blockPadding.left, right: blockPadding.right),
                   notes: [
                     ..._noteSink,
                     for (final verse in group) ...verse.blockNotes,
