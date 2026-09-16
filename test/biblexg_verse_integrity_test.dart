@@ -48,6 +48,36 @@ void main() {
       '路加福音 9: 31', '馬可福音 11: 26', '馬可福音 15: 28', '馬太福音 17: 21',
       '馬太福音 18: 11', '馬太福音 23: 14',
     ],
+    // v3 is the 梁简 edition a reader can actually select — v2 is the
+    // hidden/superseded snapshot (bible_versions.dart:378-402). Same 24
+    // publisher-side gaps as v2, minus 馬可福音 6:8-11 (restored, commit
+    // `3cefcab7`), plus two that are NOT losses: 哥林多後書 13:3,13 (v3's
+    // own 12-14節註 says verse 12 absorbs the old-13 clause, and the
+    // publisher's cn-2co.json has no 13/14 split either — a renumbering,
+    // not our importer dropping text) and 腓立比書 1:2 (v3's verse "1" is
+    // the publisher's cn-phi.json verseIndex 1+2 concatenated verbatim;
+    // text is fully present, only the combined label has no entry of
+    // its own).
+    'assets/biblexg-v3.json': [
+      '以弗所书 6: 20', '使徒行传 1: 22', '使徒行传 15: 34', '使徒行传 24: 7',
+      '使徒行传 28: 29', '使徒行传 8: 37', '加拉太书 1: 2', '哥林多前书 15: 52',
+      '哥林多后书 1: 14', '哥林多后书 13: 3,13', '希伯来书 6: 2',
+      '提摩太前书 1: 19', '提摩太前书 2: 2', '歌罗西书 2: 21', '约翰一书 3: 20',
+      '约翰二书 1: 2', '约翰福音 5: 4', '罗马书 15: 19', '腓立比书 1: 2',
+      '路加福音 1: 2,3,4,75', '路加福音 17: 36', '路加福音 9: 31',
+      '马可福音 11: 26', '马可福音 15: 28', '马太福音 17: 21',
+      '马太福音 18: 11', '马太福音 23: 14',
+    ],
+    'assets/biblexg-v3-tr.json': [
+      '以弗所書 6: 20', '使徒行傳 1: 22', '使徒行傳 15: 34', '使徒行傳 24: 7',
+      '使徒行傳 28: 29', '使徒行傳 8: 37', '加拉太書 1: 2', '哥林多前書 15: 52',
+      '哥林多後書 1: 14', '哥林多後書 13: 3,13', '希伯來書 6: 2',
+      '提摩太前書 1: 19', '提摩太前書 2: 2', '歌羅西書 2: 21', '約翰一書 3: 20',
+      '約翰二書 1: 2', '約翰福音 5: 4', '羅馬書 15: 19', '腓立比書 1: 2',
+      '路加福音 1: 2,3,4,75', '路加福音 17: 36', '路加福音 9: 31',
+      '馬可福音 11: 26', '馬可福音 15: 28', '馬太福音 17: 21',
+      '馬太福音 18: 11', '馬太福音 23: 14',
+    ],
   };
 
   List<Map<String, dynamic>> load(String path) =>
@@ -146,9 +176,16 @@ void main() {
     // whole corpus, so this verse was the only casualty — counted, not
     // assumed. Restored from the publisher's own characters and checked
     // against the printed 註釋本; nothing here was written by hand.
+    //
+    // v3 (the edition a reader can actually select) re-lost the same
+    // clause; the v3 fetch re-ran the importer against the same
+    // empty-verseIndex node in the publisher's cn-rom.json, and the fix
+    // is the same restoration, by the same characters.
     const wanted = {
       'assets/biblexg-v2.json': ['罗马书', '正如经上所记：没有义人，一个也没有，'],
       'assets/biblexg-v2-tr.json': ['羅馬書', '正如經上所記：沒有義人，一個也沒有，'],
+      'assets/biblexg-v3.json': ['罗马书', '正如经上所记：没有义人，一个也没有，'],
+      'assets/biblexg-v3-tr.json': ['羅馬書', '正如經上所記：沒有義人，一個也沒有，'],
     };
     wanted.forEach((path, want) {
       final verse = load(path).firstWhere((v) =>
@@ -169,9 +206,20 @@ void main() {
     // a test does not have — see tools/import_ljk2.py, where the cause
     // is fixed: a comment node's `{lineBreak, content}` dicts are body,
     // not footnote, and exactly two exist in the publisher's corpus.
+    //
+    // v3 re-lost the same two clauses (12:36b here, 4:16b below) the same
+    // way — the fetch that built it re-ran into the same importer hole.
+    // Restored by moving the clause out of blockNotes and back onto the
+    // verse; no character invented. The publisher's own text has a stray
+    // space in 12:36b's Simplified — 「隱藏起來 了。」 — that neither our
+    // v2.json nor the printed 註釋本 carries; closed up here to match
+    // both, and to match the Traditional (which the publisher never had
+    // the space bug in to begin with).
     const wanted = {
       'assets/biblexg-v2.json': ['约翰福音', '耶稣说完了这些话，便离开他们，隐藏起来了。'],
       'assets/biblexg-v2-tr.json': ['約翰福音', '耶穌說完了這些話，便離開他們，隱藏起來了。'],
+      'assets/biblexg-v3.json': ['约翰福音', '耶稣说完了这些话，便离开他们，隐藏起来了。'],
+      'assets/biblexg-v3-tr.json': ['約翰福音', '耶穌說完了這些話，便離開他們，隱藏起來了。'],
     };
     wanted.forEach((path, want) {
       final verse = load(path).firstWhere((v) =>
@@ -180,6 +228,36 @@ void main() {
       expect((verse['blockNotes'] as List).join(), isNot(contains(want[1])),
           reason: '$path — scripture is still sitting in a note card');
     });
+  });
+
+  test('約翰一書 4:16 still ends with the half-verse the Simplified lost', () {
+    // 4:16b 「神就是愛，那住在愛裡的，就住在神裡面，神也住在他裡面。」 was the
+    // other half of the same defect as 約翰福音 12:36b above — glued to the
+    // end of the 13節註 footnote in a comment node, so it read as the
+    // editor's aside rather than as John's sentence. Simplified-only in
+    // both v2 and v3: the Traditional never lost it (see
+    // tools/import_ljk2.py — the `tw-*.json` source feeding it is not the
+    // node type that carried the bug).
+    const wanted = {
+      'assets/biblexg-v2.json': ['约翰一书', '神就是爱，那住在爱里的，就住在神里面，神也住在他里面。'],
+      'assets/biblexg-v3.json': ['约翰一书', '神就是爱，那住在爱里的，就住在神里面，神也住在他里面。'],
+    };
+    wanted.forEach((path, want) {
+      final verse = load(path).firstWhere((v) =>
+          v['book'] == want[0] && v['chapter'] == '4' && v['verse'] == '16');
+      expect(verse['text'] as String, endsWith(want[1]), reason: path);
+      expect((verse['blockNotes'] as List?)?.join() ?? '',
+          isNot(contains(want[1])),
+          reason: '$path — scripture is still sitting in a note card');
+    });
+    // The Traditional never had the defect — assert it still doesn't,
+    // and that it carries the same clause the Simplified now does.
+    const traditionalWant = '神就是愛，那住在愛裡的，就住在神裡面，神也住在他裡面。';
+    for (final path in ['assets/biblexg-v2-tr.json', 'assets/biblexg-v3-tr.json']) {
+      final verse = load(path).firstWhere((v) =>
+          v['book'] == '約翰一書' && v['chapter'] == '4' && v['verse'] == '16');
+      expect(verse['text'] as String, endsWith(traditionalWant), reason: path);
+    }
   });
 
   test('no verse body carries a critical-apparatus note', () {
@@ -419,15 +497,36 @@ void main() {
     expect(eph['text'], contains('<note:參4.6，>'));
   });
 
-  test('the Traditional still has the 馬可福音 6 that the Simplified lost', () {
+  test('the Traditional still has the 馬可福音 6 that the hidden v2 lost',
+      () {
+    for (final path in ['assets/biblexg-v2-tr.json', 'assets/biblexg-v3-tr.json']) {
+      final mark6 = {
+        for (final v in load(path))
+          if (v['book'] == '馬可福音' && v['chapter'] == '6')
+            v['verse'] as String: v['text'] as String
+      };
+      expect(mark6['7'], endsWith('制服不潔的靈。'),
+          reason: '$path — the hidden v2.json truncates 6:7 at 並授予他們權能');
+      expect(mark6['8'], contains('只帶一根手杖'), reason: path);
+      expect(mark6['11'], contains('把腳上的塵土跺落'), reason: path);
+    }
+  });
+
+  test('the selectable v3 Simplified has restored 馬可福音 6:8-11', () {
+    // commit `3cefcab7` restored 6:8-11 in biblexg-v3.json — the edition
+    // a reader can actually select — while the hidden biblexg-v2.json
+    // (bible_versions.dart:378-402) keeps the publisher's own gap
+    // (pinned in expectedGaps above). Before this test, that restoration
+    // had no guard at all: the test above only ever read the Traditional.
     final mark6 = {
-      for (final v in load('assets/biblexg-v2-tr.json'))
-        if (v['book'] == '馬可福音' && v['chapter'] == '6')
+      for (final v in load('assets/biblexg-v3.json'))
+        if (v['book'] == '马可福音' && v['chapter'] == '6')
           v['verse'] as String: v['text'] as String
     };
-    expect(mark6['7'], endsWith('制服不潔的靈。'),
-        reason: 'the Simplified truncates 6:7 at 並授予他們權能');
-    expect(mark6['8'], contains('只帶一根手杖'));
-    expect(mark6['11'], contains('把腳上的塵土跺落'));
+    expect(mark6['7'], endsWith('制服不洁的灵。'));
+    expect(mark6['8'], contains('只带一根手杖'));
+    expect(mark6['9'], isNotNull);
+    expect(mark6['10'], isNotNull);
+    expect(mark6['11'], contains('把脚上的尘土跺落'));
   });
 }
