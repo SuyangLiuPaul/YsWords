@@ -6,8 +6,8 @@
     "defaultScheme": "masoretic-ussher",
     "spanStartAm": 0,
     "spanEndAm": 4098,
-    "computedEndAm": 2315,
-    "count": 22,
+    "computedEndAm": 2369,
+    "count": 23,
     "eventCount": 93,
     "description": "Two layers on one Anno Mundi axis. (1) LIFELINES — Genesis 5 and 11, Adam to Abraham, the only span where Scripture states a continuous chain of begetting ages; names from assets/family_tree.json, years recomputed from the Masoretic ages and cross-checked against it. (2) EVENTS — the same 98 events the event list on this page shows, from assets/bible_timeline.json, placed on the AM axis by their stated BC/AD year through the 4004 BC anchor, so both views of the page span Creation to Revelation. The two layers are drawn differently and labelled, because a placed year is not a computed one. No data is taken from the copyrighted reference sheet in docs/reference/.",
     "computedNote": {
@@ -74,9 +74,9 @@
     {
       "id": "isaac_jacob",
       "colorHex": "#1E7A8C",
-      "nameEn": "Isaac and Jacob",
-      "nameZhHans": "以撒与雅各",
-      "nameZhHant": "以撒與雅各"
+      "nameEn": "Isaac, Jacob and Joseph",
+      "nameZhHans": "以撒、雅各与约瑟",
+      "nameZhHant": "以撒、雅各與約瑟"
     }
   ],
   "eras": [
@@ -592,6 +592,32 @@
       "noteEn": "assets/family_tree.json dates Jacob (Israel) 2006-1859 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2168-2315 is 1836-1689 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
       "noteZhHans": "assets/family_tree.json 把雅各（以色列）定在公元前 2006-1859 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2168-2315 在 4004 锚点下为公元前 1836-1689 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
       "noteZhHant": "assets/family_tree.json 把雅各（以色列）定在公元前 2006-1859 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2168-2315 在 4004 錨點下為公元前 1836-1689 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
+    },
+    {
+      "personId": "joseph",
+      "lineId": "isaac_jacob",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Joseph",
+      "nameZhHans": "约瑟",
+      "nameZhHant": "約瑟",
+      "fatherId": "jacob",
+      "birthAm": 2259,
+      "deathAm": 2369,
+      "lifespan": 110,
+      "refs": [
+        "Genesis 41:46",
+        "Genesis 41:53",
+        "Genesis 45:6",
+        "Genesis 47:9",
+        "Genesis 50:22",
+        "Genesis 50:26"
+      ],
+      "derivationEn": "Genesis never states Jacob's age when Joseph was born; it is computed. Joseph was 30 when he stood before Pharaoh (Genesis 41:46); 7 years of plenty followed (Genesis 41:53); 2 years of famine had passed when he sent for his family (Genesis 45:6) — Joseph was 39 when Jacob entered Egypt. Jacob was 130 at that entry (Genesis 47:9), so Jacob was 130 − 39 = 91 when Joseph was born. Joseph lived 110 years (Genesis 50:22, Genesis 50:26).",
+      "derivationZhHans": "经文没有哪一节直接说雅各生约瑟时几岁，这是推算所得：约瑟站在法老面前时 30 岁（创世记 41:46）；接着 7 个丰年过去（41:53）；约瑟差人去接家人时，饥荒已过了 2 年（45:6）——雅各一家进埃及时约瑟 39 岁。雅各进埃及时 130 岁（47:9），130 − 39 = 91，就是雅各生约瑟时的年岁。约瑟共活了 110 年（创世记 50:22、创世记 50:26）。",
+      "derivationZhHant": "經文沒有哪一節直接說雅各生約瑟時幾歲，這是推算所得：約瑟站在法老面前時 30 歲（創世記 41:46）；接著 7 個豐年過去（41:53）；約瑟差人去接家人時，饑荒已過了 2 年（45:6）——雅各一家進埃及時約瑟 39 歲。雅各進埃及時 130 歲（47:9），130 − 39 = 91，就是雅各生約瑟時的年歲。約瑟共活了 110 年（創世記 50:22、創世記 50:26）。",
+      "noteEn": "assets/family_tree.json dates Joseph 1915-1805 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2259-2369 is 1745-1635 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
+      "noteZhHans": "assets/family_tree.json 把约瑟定在公元前 1915-1805 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2259-2369 在 4004 锚点下为公元前 1745-1635 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
+      "noteZhHant": "assets/family_tree.json 把約瑟定在公元前 1915-1805 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2259-2369 在 4004 錨點下為公元前 1745-1635 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
     }
   ],
   "markers": [
@@ -2125,7 +2151,7 @@
   ],
   "contested": {
     "startAm": 1918,
-    "endAm": 2315,
+    "endAm": 2369,
     "eventCount": 8,
     "note": {
       "en": "Inside this band the two scales disagree by about 170 years. The lifelines put Abram's birth at AM 2008 (1996 BC on this anchor); assets/bible_timeline.json places his call at 2091 BC on the late-date scheme, which is earlier than the lifelines have him born. Both are shown where their own source puts them. Neither has been shifted to make the picture tidy.",

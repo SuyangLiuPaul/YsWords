@@ -5,9 +5,11 @@ interactive chronology chart on the Bible Timeline page.
 Two layers, one axis:
 
   * LIFELINES, computed from the Masoretic begetting ages Genesis
-    states directly, chapters 5 and 11 for Adam → Abraham and 21, 25
-    and 35/47 for Isaac and Jacob (Adam → Jacob). Every year traces to
-    a verse.
+    states, chapters 5 and 11 for Adam → Abraham, 21, 25 and 35/47 for
+    Isaac and Jacob, and 41, 45, 47 and 50 for Joseph (Adam → Joseph).
+    Every year traces to a verse — directly, for everyone up to and
+    including Jacob; by chaining four verses together for Joseph, whose
+    father's age at his birth Genesis never states outright (see CHAIN).
   * EVENTS, read from `assets/bible_timeline.json` and PLACED on the
     same Anno Mundi axis through the 4004 BC anchor, so the chart spans
     Creation → Revelation exactly as the event list on the same page
@@ -166,12 +168,54 @@ CHAIN = [
                                                   "Genesis 12:4", "Acts 7:4"],       ["Genesis 25:7"]),
     # Genesis states both ages directly, so the chain stays continuous
     # one generation further than Genesis 11 alone — see the module
-    # docstring. Joseph is deliberately not next: his birth year needs
-    # a four-verse chain (Gen 41:46 + 41:53 + 45:6 + 47:9), which is
-    # its own slice.
+    # docstring.
     ("isaac",       "abraham",     100,   180,   ["Genesis 21:5"],                  ["Genesis 35:28"]),
     ("jacob",       "isaac",       60,    147,   ["Genesis 25:26"],                 ["Genesis 47:28"]),
+    # Jacob's age at Joseph's birth (91) is not stated by any single
+    # verse — it is CHAINED: Joseph was 30 before Pharaoh (41:46) + 7
+    # years of plenty (41:53) + 2 years of famine already passed when he
+    # sent for his family (45:6) = 39, Joseph's age when Jacob entered
+    # Egypt; Jacob was 130 at that entry (47:9); 130 - 39 = 91. See
+    # DERIVED_PEOPLE below — this is the one CHAIN link whose "begat"
+    # figure is derived rather than directly stated, and its derivation
+    # sentence says so instead of using the generic "X was N when Y was
+    # born" phrasing every other row gets.
+    ("joseph",      "jacob",       91,    110,   ["Genesis 41:46", "Genesis 41:53",
+                                                  "Genesis 45:6", "Genesis 47:9"],  ["Genesis 50:22", "Genesis 50:26"]),
 ]
+
+# CHAIN rows whose "begat" figure is computed from a chain of verses
+# rather than stated by a single one. Their derivation sentence must say
+# "computed from" and show the chain — never the generic "X was N when Y
+# was born" phrasing, which would misattribute the number to one verse.
+DERIVED_PEOPLE = {
+    "joseph": {
+        "en": (
+            "Genesis never states Jacob's age when Joseph was born; it "
+            "is computed. Joseph was 30 when he stood before Pharaoh "
+            "(Genesis 41:46); 7 years of plenty followed (Genesis "
+            "41:53); 2 years of famine had passed when he sent for his "
+            "family (Genesis 45:6) — Joseph was 39 when Jacob entered "
+            "Egypt. Jacob was 130 at that entry (Genesis 47:9), so Jacob "
+            "was 130 − 39 = 91 when Joseph was born. Joseph lived "
+            "%d years (%s)."
+        ),
+        "hans": (
+            "经文没有哪一节直接说雅各生约瑟时几岁，这是推算所得：约瑟站在"
+            "法老面前时 30 岁（创世记 41:46）；接着 7 个丰年过去（41:53）；"
+            "约瑟差人去接家人时，饥荒已过了 2 年（45:6）——雅各一家进埃及"
+            "时约瑟 39 岁。雅各进埃及时 130 岁（47:9），130 − 39 = 91，"
+            "就是雅各生约瑟时的年岁。约瑟共活了 %d 年（%s）。"
+        ),
+        "hant": (
+            "經文沒有哪一節直接說雅各生約瑟時幾歲，這是推算所得：約瑟站在"
+            "法老面前時 30 歲（創世記 41:46）；接著 7 個豐年過去（41:53）；"
+            "約瑟差人去接家人時，饑荒已過了 2 年（45:6）——雅各一家進埃及"
+            "時約瑟 39 歲。雅各進埃及時 130 歲（47:9），130 − 39 = 91，"
+            "就是雅各生約瑟時的年歲。約瑟共活了 %d 年（%s）。"
+        ),
+    },
+}
 
 # Which descent band each lifeline is drawn in.
 LINE_OF = {
@@ -187,7 +231,7 @@ LINE_OF = {
     # Genesis 11 — reusing "shemite" would put them under a legend
     # label ("Shem's line (Genesis 11)") that overclaims where their
     # ages actually come from. See LINES below.
-    "isaac": "isaac_jacob", "jacob": "isaac_jacob",
+    "isaac": "isaac_jacob", "jacob": "isaac_jacob", "joseph": "isaac_jacob",
 }
 
 # People whose death year Scripture never gives are drawn open-ended,
@@ -326,9 +370,9 @@ LINES = [
     {
         "id": "isaac_jacob",
         "colorHex": "#1E7A8C",
-        "nameEn": "Isaac and Jacob",
-        "nameZhHans": "以撒与雅各",
-        "nameZhHant": "以撒與雅各",
+        "nameEn": "Isaac, Jacob and Joseph",
+        "nameZhHans": "以撒、雅各与约瑟",
+        "nameZhHant": "以撒、雅各與約瑟",
     },
 ]
 
@@ -463,6 +507,11 @@ def build():
                         % (person["nameZhHans"], lived, zh_refs(dref, False)))
             der_hant = ("本刻度的零年：年數自創造起算。%s共活了 %d 年（%s）。"
                         % (person["nameZhHant"], lived, zh_refs(dref, True)))
+        elif pid in DERIVED_PEOPLE:
+            tpl = DERIVED_PEOPLE[pid]
+            der_en = tpl["en"] % (lived, ", ".join(dref))
+            der_hans = tpl["hans"] % (lived, zh_refs(dref, False))
+            der_hant = tpl["hant"] % (lived, zh_refs(dref, True))
         else:
             der_en = ("%s was %d when %s was born (%s); %s lived %d years "
                       "(%s)." % (fname, begat, person["name"],
@@ -494,11 +543,11 @@ def build():
             "derivationZhHant": der_hant,
         }
 
-        if pid in ("abraham", "isaac", "jacob"):
+        if pid in ("abraham", "isaac", "jacob", "joseph"):
             # Numbers are derived here, not transcribed, so the note
             # can't drift from the arithmetic that produced the bar.
             # family_tree.json's BC range and the derived-from-AM BC
-            # range are both computed the same way for all three
+            # range are both computed the same way for all four
             # patriarchs (the gap is a constant ~170 years, the same
             # anchor mismatch propagated down one chain — see
             # CONTESTED_NOTE for where it first shows).
@@ -573,11 +622,12 @@ def build():
     # The complaint this pass answers: the chart stopped at Abraham
     # while the event list on the SAME page ran to Revelation, so
     # scrolling right never arrived anywhere. Genesis states Isaac's
-    # and Jacob's ages directly (21:5, 25:26, 35:28, 47:28), so their
-    # lifelines are drawn too. Past Jacob — Joseph and beyond —
-    # Scripture stops giving a continuous chain of stated ages, so no
-    # further lifelines are invented — what extends past that is the
-    # span and the events.
+    # and Jacob's ages directly (21:5, 25:26, 35:28, 47:28), and gives
+    # Joseph's via a four-verse chain (41:46, 41:53, 45:6, 47:9) rather
+    # than a single stated age, so their lifelines are drawn too. Past
+    # Joseph, Scripture stops giving a continuous chain of ages
+    # altogether — direct or chained — so no further lifelines are
+    # invented; what extends past that is the span and the events.
     timeline = json.load(open(TIMELINE, encoding="utf-8"))
     by_marker = {m["id"]: m for m in markers}
     events = []
@@ -633,9 +683,10 @@ def build():
         raise SystemExit(1)
 
     # Where the computed chain runs out. NOT Abraham's death — Eber,
-    # Isaac and Jacob all outlive him on the Masoretic count, Jacob
-    # latest of the three — so it is read off the bars rather than
-    # assumed.
+    # Isaac, Jacob and now Joseph all outlive him on the Masoretic
+    # count, Joseph latest of them all (his derived-not-stated bar
+    # still ends later than everyone else's stated one) — so it is
+    # read off the bars rather than assumed.
     computed_end = max(
         x["deathAm"] for x in lifelines if x["deathAm"] is not None)
     span_end = max([computed_end] + [x["am"] for x in events])

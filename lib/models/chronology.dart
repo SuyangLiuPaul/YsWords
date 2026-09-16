@@ -128,9 +128,9 @@ class Lifeline {
 
   /// Null when Scripture gives no death year. Drawn open-ended rather
   /// than guessed. (Empty today; the field exists so a later pass can
-  /// add Ham, Japheth and others without a schema change — Isaac and
-  /// Jacob both have a stated death year and are no longer in this
-  /// state.)
+  /// add Ham, Japheth and others without a schema change — Isaac,
+  /// Jacob and Joseph all have a stated death year and are no longer
+  /// in this state.)
   final int? deathAm;
 
   final int lifespan;
@@ -384,10 +384,11 @@ class ChronologyData {
   final int spanStartAm;
   final int spanEndAm;
 
-  /// Last year the Genesis 5/11 arithmetic reaches. Left of it the
-  /// chart has lifelines; right of it only placed events. Read off the
-  /// bars by the generator rather than assumed to be Abraham's death —
-  /// Eber outlives him on the Masoretic count.
+  /// Last year the stated-or-chained lifeline arithmetic reaches. Left
+  /// of it the chart has lifelines; right of it only placed events.
+  /// Read off the bars by the generator rather than assumed to be
+  /// Abraham's death — Eber, Isaac, Jacob and Joseph all outlive him on
+  /// the Masoretic count, Joseph latest of all.
   final int computedEndAm;
 
   final List<ChronologyScheme> schemes;

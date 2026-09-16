@@ -134,11 +134,25 @@ void main() {
 
   /// Wherever the begetting age stated in the derivation prose (all
   /// three locales) disagrees with `birthAm - father.birthAm`.
+  ///
+  /// Two prose shapes are recognised: the ordinary "X was N when Y was
+  /// born" for a directly-stated age, and a "... = N when ..." /
+  /// "... = N，..." computed shape for a link like Joseph's, whose age
+  /// is chained from several verses rather than stated by one (see
+  /// DERIVED_PEOPLE in tools/build_bible_chronology.py). The computed
+  /// shape is tried FIRST and, if present, wins — a derived sentence
+  /// legitimately narrates other ages first (e.g. Joseph was 30 stood
+  /// before Pharaoh) before arriving at the begetting age itself, and
+  /// the plain "was N when" pattern would otherwise match one of those
+  /// earlier numbers instead.
   List<String> derivationAgeDefects(List<Lifeline> lifelines) {
     final byId = {for (final l in lifelines) l.personId: l};
     final enPattern = RegExp(r'was (\d+) when');
     final hansPattern = RegExp(r'(\d+)\s*岁生');
     final hantPattern = RegExp(r'(\d+)\s*歲生');
+    final computedEnPattern = RegExp(r'=\s*(\d+) when');
+    final computedHansPattern = RegExp(r'=\s*(\d+)，');
+    final computedHantPattern = RegExp(r'=\s*(\d+)，');
     final defects = <String>[];
 
     for (final l in lifelines) {
@@ -147,17 +161,20 @@ void main() {
       if (father == null) continue; // reported by fatherLinkDefects
       final expected = l.birthAm - father.birthAm;
 
-      final en = enPattern.firstMatch(l.derivationEn);
+      final en = computedEnPattern.firstMatch(l.derivationEn) ??
+          enPattern.firstMatch(l.derivationEn);
       if (en == null || int.parse(en.group(1)!) != expected) {
         defects.add('${l.personId} derivationEn age '
             '${en == null ? 'missing' : en.group(1)} != $expected');
       }
-      final hans = hansPattern.firstMatch(l.derivationZhHans);
+      final hans = computedHansPattern.firstMatch(l.derivationZhHans) ??
+          hansPattern.firstMatch(l.derivationZhHans);
       if (hans == null || int.parse(hans.group(1)!) != expected) {
         defects.add('${l.personId} derivationZhHans age '
             '${hans == null ? 'missing' : hans.group(1)} != $expected');
       }
-      final hant = hantPattern.firstMatch(l.derivationZhHant);
+      final hant = computedHantPattern.firstMatch(l.derivationZhHant) ??
+          hantPattern.firstMatch(l.derivationZhHant);
       if (hant == null || int.parse(hant.group(1)!) != expected) {
         defects.add('${l.personId} derivationZhHant age '
             '${hant == null ? 'missing' : hant.group(1)} != $expected');
@@ -604,6 +621,58 @@ void main() {
               'computed independently and must agree');
       expect(jacob.fatherId, 'isaac');
       expect(isaac.fatherId, 'abraham');
+    });
+
+    // Pins the four-verse chain (Gen 41:46 + 41:53 + 45:6 + 47:9 = 91,
+    // Jacob's age at Joseph's birth; Gen 50:22/50:26 = Joseph's 110-year
+    // lifespan) AND cross-checks it against assets/family_tree.json,
+    // which is on a different (BC, late-date) scale but still encodes
+    // the same 91-year gap and 110-year lifespan independently.
+    test("Joseph's years are the Gen 41/45/47/50 chain, not a stated "
+        'age, and agree with family_tree.json', () {
+      final jacob = data.lifelines.firstWhere((l) => l.personId == 'jacob');
+      final joseph = data.lifelines.firstWhere((l) => l.personId == 'joseph');
+
+      expect(joseph.fatherId, 'jacob');
+      expect(joseph.birthAm, jacob.birthAm + 91,
+          reason: '30 (Gen 41:46) + 7 (41:53) + 2 (45:6) = 39; '
+              '130 (Gen 47:9) - 39 = 91');
+      expect(joseph.birthAm, 2259);
+      expect(joseph.lifespan, 110, reason: 'Genesis 50:22 / 50:26');
+      expect(joseph.deathAm, 2369);
+      expect(joseph.refs, containsAll(<String>[
+        'Genesis 41:46', 'Genesis 41:53', 'Genesis 45:6', 'Genesis 47:9',
+        'Genesis 50:22', 'Genesis 50:26',
+      ]));
+      // Joseph's derivation must say the figure is computed, never that
+      // a verse states it directly — the standard "X was N when Y was
+      // born" phrasing every other lifeline uses would misattribute a
+      // number no single verse gives.
+      for (final text in [
+        joseph.derivationEn, joseph.derivationZhHans, joseph.derivationZhHant,
+      ]) {
+        expect(text, isNot(contains('when Joseph was born (Genesis 41:46')),
+            reason: 'must not phrase 91 as a stated begetting age');
+      }
+      expect(joseph.derivationEn, contains('computed'));
+
+      final famJoseph = familyTree['joseph']!;
+      final famJacob = familyTree['jacob']!;
+      expect(famJoseph['yearSystem'], 'bc',
+          reason: 'a different scale from the AM lifelines — the point '
+              'of the cross-check is that it agrees anyway');
+      expect(
+        (famJoseph['birthYear'] as int) - (famJacob['birthYear'] as int),
+        91,
+        reason: 'both are negative BC years (more negative = earlier); '
+            'family_tree.json encodes the same 91-year gap on its own '
+            'late-date BC scale',
+      );
+      expect(
+        (famJoseph['deathYear'] as int) - (famJoseph['birthYear'] as int),
+        110,
+        reason: 'family_tree.json also gives Joseph a 110-year lifespan',
+      );
     });
 
     test('the contested schemes are carried, not just the chosen one', () {
@@ -2017,18 +2086,22 @@ void main() {
   });
 
   group('the two layers stay distinguishable', () {
-    test('lifelines are still bounded by a continuous stated chain', () {
+    test('lifelines are still bounded by a continuous chain of ages', () {
       // The span doubled; the BARS did not, past where Scripture stops
-      // giving a continuous chain of stated ages. That boundary moved
-      // once already — Isaac and Jacob's ages are stated as directly
-      // as Genesis 11's — so this pins the chain's actual end (Jacob),
-      // not a fixed "past Abraham" claim.
-      expect(data.lifelines, hasLength(22));
+      // giving a continuous chain of ages — directly stated ages for
+      // everyone up to Jacob, and Joseph's alone chained together from
+      // four verses rather than a single one. That boundary moved twice
+      // now — Isaac and Jacob's ages are stated as directly as Genesis
+      // 11's, and Joseph's is the chain's first derived link — so this
+      // pins the chain's actual end (Joseph), not a fixed "past
+      // Abraham" or "past Jacob" claim.
+      expect(data.lifelines, hasLength(23));
       expect(data.lifelines.first.personId, 'adam');
       final byId = {for (final l in data.lifelines) l.personId};
       expect(byId, contains('abraham'));
       expect(byId, contains('isaac'));
       expect(byId, contains('jacob'));
+      expect(byId, contains('joseph'));
       for (final l in data.lifelines) {
         for (final r in l.refs) {
           expect(

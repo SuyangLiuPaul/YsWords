@@ -7305,16 +7305,17 @@ const uiStrings = {
     'zh-Hant': '此年份的推算依據',
   },
   'chronologyScopeNote': {
-    'en': 'The bars cover Genesis 5 and 11 only — Adam to Abraham, the '
-        'span where Scripture states the ages these years are computed '
-        'from. The axis runs on to Revelation because the events do, '
-        'and the two are drawn differently on purpose.',
-    'zh-Hans': '横条仅涵盖创世记第 5、11 章——从亚当到亚伯拉罕，'
-        '即经文明载岁数、可据以推算年份的一段。刻度一直延伸到启示录，'
-        '因为事件延伸到那里；两者的画法刻意不同。',
-    'zh-Hant': '橫條僅涵蓋創世記第 5、11 章——從亞當到亞伯拉罕，'
-        '即經文明載歲數、可據以推算年份的一段。刻度一直延伸到啟示錄，'
-        '因為事件延伸到那裡；兩者的畫法刻意不同。',
+    'en': 'The bars run from Adam to Joseph, the span where every birth '
+        'year comes from Scripture — most stated directly, Joseph\'s '
+        'chained together from four verses (see his bar). The axis runs '
+        'on to Revelation because the events do, and the two are drawn '
+        'differently on purpose.',
+    'zh-Hans': '横条从亚当延伸到约瑟，这一段每个出生年份都出自经文——'
+        '多数是经文直接明载，约瑟的则由四节经文推算合成（见其横条）。'
+        '刻度一直延伸到启示录，因为事件延伸到那里；两者的画法刻意不同。',
+    'zh-Hant': '橫條從亞當延伸到約瑟，這一段每個出生年份都出自經文——'
+        '多數是經文直接明載，約瑟的則由四節經文推算合成（見其橫條）。'
+        '刻度一直延伸到啟示錄，因為事件延伸到那裡；兩者的畫法刻意不同。',
   },
   // ── Second pass, 2026-09-04 ───────────────────────────────────
   // The chart used to stop at Abraham (AM 2187) while the event list

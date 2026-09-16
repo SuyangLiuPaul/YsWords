@@ -15604,6 +15604,108 @@ has never seen this repo.
       that assigned this slice called it out explicitly as its own
       refuter pass, not a one-line follow-on.
 
+      **2026-09-17 slice — Joseph, the chain's first derived (not
+      stated) link.** Took the above. `CHAIN` gains `("joseph", "jacob",
+      91, 110, ["Genesis 41:46", "Genesis 41:53", "Genesis 45:6",
+      "Genesis 47:9"], ["Genesis 50:22", "Genesis 50:26"])`: 30 (41:46)
+      + 7 (41:53) + 2 (45:6) = 39, Joseph's age when Jacob entered
+      Egypt; 130 (47:9) − 39 = 91, Jacob's age at Joseph's birth — a
+      figure no single verse states. AM 2259-2369 (1745-1635 BC on the
+      4004 anchor). Cross-checked against `family_tree.json`'s
+      independently-curated BC figures: `joseph.birthYear −
+      jacob.birthYear` = 91, `joseph`'s own lifespan = 110, both exact
+      despite the ~170-year anchor mismatch.
+
+      **Design call A, taken as instructed.** The generic template ("X
+      was N when Y was born") would have produced "Jacob was 91 when
+      Joseph was born" — misattributing a four-verse chain to one verse,
+      the exact failure this queue exists to catch. Added
+      `DERIVED_PEOPLE`, a small per-person override dict checked before
+      the generic branch; Joseph's derivation narrates the chain in all
+      three locales and ends "... = 91 when Joseph was born" — the "="
+      marks it computed, never stated. Line label (B): `isaac_jacob`'s
+      three name strings became "Isaac, Jacob and Joseph" / "以撒、雅各
+      与约瑟" / "以撒、雅各與約瑟"; id kept (nothing outside the builder
+      keys on it). Three descent colours (C) unchanged — Joseph joins
+      the existing third line, not a fourth.
+
+      **Consequence, not a choice: `computedEndAm` moved AM 2315 (Jacob)
+      → AM 2369 (Joseph, who now outlives every other lifeline).** Read
+      off the bars via `max(...deathAm)`, not asserted. `spanEndAm`
+      unchanged at 4098. Every comment/docstring naming where the chain
+      stops — the module docstring, the CHAIN comment, the placed-event
+      layer comment, the `computed_end` comment, `chronology.dart`'s
+      `computedEndAm` and `deathAm` docs — updated to name Joseph.
+
+      **Stale UI copy, folded in as the task asked.** `chronologyScopeNote`
+      still said "Genesis 5 and 11 only — Adam to Abraham" at HEAD,
+      already false since the Isaac/Jacob slice moved the bars to Jacob
+      and never touched this string. New copy (`ui_strings.dart` + the
+      matching inline fallback in `chronology_chart.dart`) says the bars
+      run Adam to Joseph, most ages stated directly, Joseph's chained
+      from four verses.
+
+      **Verified, not assumed.** Builder exits 0, re-running is a no-op,
+      23 lifelines (22 + Joseph). `flutter analyze` clean repo-wide.
+      `bible_chronology_test.dart` alone first (121 tests, was 120), then
+      the full suite in the foreground to completion (3330 including
+      tearDownAll, all pass, exit 0) — no backgrounded run left
+      unresolved. Two test defects found and fixed before either run was
+      trusted, both against code THIS slice wrote, not pre-existing: (1)
+      the generic `derivationAgeDefects` regex (`was (\d+) when`)
+      accidentally matched an intermediate number inside Joseph's own
+      narrated derivation ("Joseph was 30 when he stood before Pharaoh")
+      instead of the begetting age — fixed by adding a "computed"
+      variant pattern the helper tries first, rather than hardcoding
+      Joseph's id into the test; (2) the new pinned test's own
+      family_tree cross-check had the subtraction backwards
+      (`famJacob − famJoseph` instead of `famJoseph − famJacob`, since
+      both are negative BC years) — caught by the assertion itself
+      (`Expected: <91>, Actual: <-91>`). New named test: "Joseph's years
+      are the Gen 41/45/47/50 chain, not a stated age, and agree with
+      family_tree.json", pinning the AM figures, the family_tree
+      cross-check, and that the derivation prose never phrases 91 as a
+      stated age. Renamed 'lifelines are still bounded by a continuous
+      stated chain' → '... a continuous chain of ages' (Joseph's link
+      isn't stated), `hasLength(22)` → `hasLength(23)`.
+
+      An independent refuter agent was given the four verse readings,
+      the 39-at-entry step, the 130−39=91 subtraction, the AM 2259/2369
+      figures, the family_tree 91/110 cross-checks, the 23-lifeline
+      count, and the "Joseph outlives every other lifeline" claim, and
+      asked to break them from its own knowledge of the Masoretic text,
+      not from a description of this slice. All survived. The refuter's
+      one apparent counterexample — an "Enoch taken at AM 622" figure —
+      traced to a transcription slip in the PROMPT, not the generator:
+      re-run against the actual `CHAIN` table, Enoch is taken at AM 987
+      as the code has always computed, and the refuter's own
+      independent re-derivation of the rest of the chain matched the
+      repo exactly.
+
+      Asset + code + test only, no version bump, no deploy — this
+      item's own guard rail, which applies even though this slice also
+      fixed a user-visible string (noted for the user rather than
+      deployed).
+
+      **Also noticed, not fixed.** `build_bible_chronology.py`'s
+      `_meta.description` still says "the same 98 events the event list
+      on this page shows"; the generator actually emits 93 (events are
+      deduped against the computed markers). `git log -S` shows this
+      predates this slice and is unrelated to Joseph — filed below
+      rather than fixed inline, since it is outside this task's scope.
+
+- [ ] **`build_bible_chronology.py`'s `_meta.description` says "98
+      events"; the generator emits 93.** Found 2026-09-17 while adding
+      the Joseph lifeline (entry above). `DUPLICATES` dedupes 5 timeline
+      events against computed markers before the `events` list is built,
+      so `len(events)` has been under 98 since duplication was added —
+      this is stale prose, not a data defect (`eventCount` in the
+      asset's own `_meta` is correct). One-line fix: update the
+      docstring's count in `tools/build_bible_chronology.py`'s `doc`
+      literal to match `len(events)` (or just say "the timeline events"
+      without a number, so it can't drift again) and confirm no test
+      pins "98" anywhere else.
+
 - [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
       event's sheet — not just no sheet.** Found 2026-09-16 while
       measuring whether the chronology chart's bare-lane and chip tap

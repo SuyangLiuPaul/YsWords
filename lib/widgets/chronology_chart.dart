@@ -2792,9 +2792,10 @@ class _ChronologyChartState extends State<ChronologyChart> {
         '{years}', '${widget.data.spanEndAm - widget.data.spanStartAm}');
     return Text(
       '$span '
-      '${_s('chronologyScopeNote', 'The bars cover Genesis 5 and 11 only '
-          '— Adam to Abraham, the span where Scripture states the ages '
-          'these years are computed from.')}',
+      '${_s('chronologyScopeNote', 'The bars run from Adam to Joseph, '
+          'the span where every birth year comes from Scripture — most '
+          'stated directly, Joseph\'s chained together from four verses '
+          '(see his bar).')}',
       style: TextStyle(
         fontSize: 11.5,
         height: 1.6,
