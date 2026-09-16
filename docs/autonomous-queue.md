@@ -8449,6 +8449,38 @@ has never seen this repo.
       re-import that fixes or worsens either is visible as drift, not
       silently swallowed.
 
+- [x] **`ff226ddc` — 3 truncated verses in the selectable 梁简 v3 pair,
+      fixed 2026-09-16, bookkept here 2026-09-17.** The commit shipped
+      with no queue record — verified with `git show --stat ff226ddc`,
+      which touches only `assets/biblexg-v3.json`,
+      `assets/biblexg-v3-tr.json` and
+      `test/biblexg_verse_integrity_test.dart`. 約翰福音 12:36 and 約翰一書
+      4:16 had lost their second half to an adjacent footnote
+      (`clean_block_comment` defect); 羅馬書 3:10 was dropped outright
+      (publisher's poetry-node empty-`verseIndex` case, which the
+      importer only keeps for numbered nodes). All three had already
+      been fixed once in the hidden v2 pair; v3 — the edition a reader
+      can actually select — had re-lost them, because no test in this
+      repo checked the v3 pair's structure at all
+      (`biblexg_verse_integrity_test.dart`'s `expectedGaps` and every
+      by-name verse test were hardcoded to v2). Restored from a source
+      that already had each clause correct; no character invented.
+
+      **Follow-up filed, not done by that commit or this bookkeeping
+      pass:** port the rest of the cross-edition set tests from the v2
+      pair to v3 — the commit only added v3/v3-tr to `expectedGaps` and
+      the three specific by-name tests (3:10, 12:36, 4:16) it was
+      fixing. Per the previous plan that assigned this bookkeeping,
+      there are **16 length-delta offenders and 73 note-count
+      differences** between v2 and v3 that have never been swept for v3
+      specifically (not independently re-measured by this pass — the
+      number should be re-derived, not trusted on carry-forward, when
+      the follow-up is actually picked up), each needing per-verse
+      adjudication against the publisher rather than a blind port — the
+      same clean_block_comment / poetry-node classes this commit just
+      found two more instances of are plausible culprits, but each one
+      needs checking, not assuming.
+
 ## P1 — Bible study correctness
 
 - [x] **A stale cache outlived every upgrade — fixed in v1.4.39.**
@@ -15480,6 +15512,97 @@ has never seen this repo.
       green, but per this loop's own rule that only proves the Mac
       agrees with itself. Next iteration's step 0 should check
       `35063334736`'s conclusion before picking anything else.
+
+      **CI note:** `35063334736` (`b260ad7d`) finished **success** —
+      checked at the start of the slice below before picking anything.
+
+      **2026-09-17 slice — Isaac and Jacob.** Took this item's own
+      named next step (`CHAIN` comment at :138, and the module
+      docstring): the two people Genesis states ages for directly past
+      Abraham. `tools/build_bible_chronology.py` `CHAIN` gains
+      `("isaac", "abraham", 100, 180, ["Genesis 21:5"], ["Genesis
+      35:28"])` and `("jacob", "isaac", 60, 147, ["Genesis 25:26"],
+      ["Genesis 47:28"])` — AM 2108-2288 and 2168-2315, 1896-1716 BC
+      and 1836-1689 BC on the 4004 anchor. Cross-checked two ways, both
+      held: the new `isaac` lifeline's `birthAm` equals the pre-existing
+      `isaac_born` marker's `am` (2108, computed independently from
+      Abraham's birth + 100), and `family_tree.json`'s BC intervals for
+      both (100/60/180/147 years) match the AM-scale arithmetic exactly
+      despite the ~170-year anchor difference (a family_tree.json BC
+      figure had never been used as a per-generation interval check
+      before this slice — only as a whole-value match, which never
+      fires for these two since their `yearSystem` is `"bc"` not
+      `"am"`).
+
+      **The design call, taken as instructed.** Isaac and Jacob are
+      Shem's descendants but not named in Genesis 11, so reusing
+      `lineId: "shemite"` would have put them under a legend line that
+      says "Shem's line (Genesis 11)" — untrue of where their ages
+      actually come from. Added a third `ChronologyLine`,
+      `isaac_jacob`, `#1E7A8C` (a teal — the two existing lines are both
+      browns, `#6B5E3F`/`#8C5A2F`, and the era palette already spends
+      red/green/blue/purple/slate-purple/gold), labelled "Isaac and
+      Jacob" / "以撒与雅各" / "以撒與雅各" — a claim about who the line
+      holds, not a chapter range, since Joseph is deliberately not in
+      it yet (his birth year needs a four-verse chain: Gen 41:46 +
+      41:53 + 45:6 + 47:9 — filed as this item's own next slice below).
+      Two doc comments in `chronology_chart.dart` (:3220, :3288) said
+      "the two lines of descent" / "two descent colours"; both now say
+      three, since a third meaning-carrying colour existed as of this
+      commit, not before.
+
+      **Consequence, not a choice: `computedEndAm` moved from AM 2187
+      (Eber, who outlives Abraham) to AM 2315 (Jacob, who outlives them
+      both).** This is read off the bars (`computed_end = max(...
+      deathAm)`), not asserted — the comment at that line and the one
+      at `:531-535` describing why lifelines stop where they do (it
+      said "past Abraham", now says "past Jacob") both needed
+      correcting to match, which is acceptance criterion 4. `spanEndAm`
+      did NOT move (still AM 4098 / AD 95) — the timeline events already
+      reach further right than AM 2315. The generalized `noteEn`/
+      `noteZhHans`/`noteZhHant` on all three of abraham/isaac/jacob
+      (previously hardcoded to Abraham's own numbers) now computes its
+      BC figures from `person`/`birth`/`death` directly rather than
+      transcribing them, so it can't drift from the arithmetic that
+      produced the bar it sits under.
+
+      **Verified, not assumed:** builder exits 0, 22 lifelines (20 + 2),
+      re-running is a no-op per the existing "generator is the only
+      author of the asset" test. `flutter analyze` clean. Ran
+      `test/bible_chronology_test.dart` alone first (120 tests, was
+      119 — the ratchet-pinned chip-drift numbers
+      (`_pinnedMaxOrdinaryChipDrift` etc.) held unchanged, as expected
+      since `spanEndAm` didn't move), then the full suite in the
+      foreground to completion (3329 tests, all pass, exit 0) — no
+      backgrounded run left unresolved. New named test: "Isaac's and
+      Jacob's years match Genesis and the isaac_born marker", pinning
+      both bars' AM years and the marker-agreement cross-check. Also
+      renamed the stale test `'lifelines are still bounded by Genesis 5
+      and 11'` (no longer true) to `'... bounded by a continuous stated
+      chain'`, `hasLength(20)` → `hasLength(22)`.
+
+      An independent refuter agent was given all 9 factual claims in
+      this slice (all 4 verse readings, the AM arithmetic, the Ussher
+      BC cross-check, the continuity claim, the 22-lifeline count, and
+      the family_tree.json interval cross-check) and asked to break
+      them, working from its own knowledge of the Masoretic text and
+      Ussher tables rather than trusting this description. All 9
+      survived; no counterexample found.
+
+      Asset + code + test only, no version bump, no deploy (per this
+      item's own guard rail — this is not a UI-copy-only change the
+      user can newly see; the bars are drawn, but this loop does not
+      deploy chart slices per-iteration, matching the fatherId/scheme
+      slices above).
+
+      **Not done by this slice, filed as the item's own next step:**
+      Joseph — birth year needs Gen 41:46 (age 30 when he stood before
+      Pharaoh) + 41:53 (7 years of plenty) + 45:6 (2 years into famine
+      when he sent for his family) + 47:9 (Jacob's age 130 at entering
+      Egypt, cross-checked against Joseph's own age via the famine
+      timeline) chained together, not a single stated age — the task
+      that assigned this slice called it out explicitly as its own
+      refuter pass, not a one-line follow-on.
 
 - [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
       event's sheet — not just no sheet.** Found 2026-09-16 while

@@ -582,6 +582,30 @@ void main() {
       expect(meth.deathAm, flood.am);
     });
 
+    // Pins the Genesis 21:5 / 25:26 / 35:28 / 47:28 arithmetic (AM
+    // 2108-2288 and 2168-2315) AND the cross-check the task that added
+    // these two named: the isaac_born MARKER — computed independently,
+    // from Abraham's birth year plus his stated age at Isaac's birth
+    // — has to land on the same year as the isaac LIFELINE's birth, or
+    // the two layers disagree about the same page.
+    test("Isaac's and Jacob's years match Genesis and the isaac_born "
+        'marker', () {
+      final isaac = data.lifelines.firstWhere((l) => l.personId == 'isaac');
+      final jacob = data.lifelines.firstWhere((l) => l.personId == 'jacob');
+      final isaacBorn =
+          data.markers.firstWhere((m) => m.id == 'isaac_born');
+
+      expect(isaac.birthAm, 2108, reason: 'Genesis 21:5');
+      expect(isaac.deathAm, 2288, reason: 'Genesis 35:28');
+      expect(jacob.birthAm, 2168, reason: 'Genesis 25:26');
+      expect(jacob.deathAm, 2315, reason: 'Genesis 47:28');
+      expect(isaac.birthAm, isaacBorn.am,
+          reason: 'the isaac lifeline and the isaac_born marker are '
+              'computed independently and must agree');
+      expect(jacob.fatherId, 'isaac');
+      expect(isaac.fatherId, 'abraham');
+    });
+
     test('the contested schemes are carried, not just the chosen one', () {
       final supported = data.schemes.where((s) => s.supported).toList();
       final alternatives = data.schemes.where((s) => !s.supported).toList();
@@ -1993,20 +2017,26 @@ void main() {
   });
 
   group('the two layers stay distinguishable', () {
-    test('lifelines are still bounded by Genesis 5 and 11', () {
-      // The span doubled; the BARS did not. Nothing past Abraham has a
-      // stated begetting age, so nothing past Abraham gets a lifeline.
-      expect(data.lifelines, hasLength(20));
+    test('lifelines are still bounded by a continuous stated chain', () {
+      // The span doubled; the BARS did not, past where Scripture stops
+      // giving a continuous chain of stated ages. That boundary moved
+      // once already — Isaac and Jacob's ages are stated as directly
+      // as Genesis 11's — so this pins the chain's actual end (Jacob),
+      // not a fixed "past Abraham" claim.
+      expect(data.lifelines, hasLength(22));
       expect(data.lifelines.first.personId, 'adam');
       final byId = {for (final l in data.lifelines) l.personId};
       expect(byId, contains('abraham'));
+      expect(byId, contains('isaac'));
+      expect(byId, contains('jacob'));
       for (final l in data.lifelines) {
         for (final r in l.refs) {
           expect(
             r.startsWith('Genesis') || r.startsWith('Acts') ||
                 r.startsWith('Hebrews'),
             isTrue,
-            reason: '${l.personId} cites $r — outside Genesis 5/11',
+            reason: '${l.personId} cites $r — not a book this chain '
+                'draws from',
           );
         }
         expect(l.deathAm, isNotNull);

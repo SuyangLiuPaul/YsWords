@@ -6,8 +6,8 @@
     "defaultScheme": "masoretic-ussher",
     "spanStartAm": 0,
     "spanEndAm": 4098,
-    "computedEndAm": 2187,
-    "count": 20,
+    "computedEndAm": 2315,
+    "count": 22,
     "eventCount": 93,
     "description": "Two layers on one Anno Mundi axis. (1) LIFELINES — Genesis 5 and 11, Adam to Abraham, the only span where Scripture states a continuous chain of begetting ages; names from assets/family_tree.json, years recomputed from the Masoretic ages and cross-checked against it. (2) EVENTS — the same 98 events the event list on this page shows, from assets/bible_timeline.json, placed on the AM axis by their stated BC/AD year through the 4004 BC anchor, so both views of the page span Creation to Revelation. The two layers are drawn differently and labelled, because a placed year is not a computed one. No data is taken from the copyrighted reference sheet in docs/reference/.",
     "computedNote": {
@@ -70,6 +70,13 @@
       "nameEn": "Shem's line (Genesis 11)",
       "nameZhHans": "闪的家系（创世记 11）",
       "nameZhHant": "閃的家系（創世記 11）"
+    },
+    {
+      "id": "isaac_jacob",
+      "colorHex": "#1E7A8C",
+      "nameEn": "Isaac and Jacob",
+      "nameZhHans": "以撒与雅各",
+      "nameZhHant": "以撒與雅各"
     }
   ],
   "eras": [
@@ -538,9 +545,53 @@
       "derivationEn": "Terah was 130 when Abraham was born (Genesis 11:26, Genesis 11:32, Genesis 12:4, Acts 7:4); Abraham lived 175 years (Genesis 25:7).",
       "derivationZhHans": "他拉 130 岁生亚伯拉罕（创世记 11:26、创世记 11:32、创世记 12:4、使徒行传 7:4）；亚伯拉罕共活了 175 年（创世记 25:7）。",
       "derivationZhHant": "他拉 130 歲生亞伯拉罕（創世記 11:26、創世記 11:32、創世記 12:4、使徒行傳 7:4）；亞伯拉罕共活了 175 年（創世記 25:7）。",
-      "noteEn": "assets/family_tree.json dates Abraham 2166-1991 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2008-2183 is 1996-1821 BC on the 4004 BC anchor). Reconciling the two scales past Abraham is deliberately left to a later pass rather than fudged.",
-      "noteZhHans": "assets/family_tree.json 把亚伯拉罕定在公元前 2166-1991 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2008-2183 在 4004 锚点下为公元前 1996-1821 年）。亚伯拉罕之后两套刻度的调和刻意留待后续，不作勉强弥合。",
-      "noteZhHant": "assets/family_tree.json 把亞伯拉罕定在公元前 2166-1991 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2008-2183 在 4004 錨點下為公元前 1996-1821 年）。亞伯拉罕之後兩套刻度的調和刻意留待後續，不作勉強彌合。"
+      "noteEn": "assets/family_tree.json dates Abraham 2166-1991 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2008-2183 is 1996-1821 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
+      "noteZhHans": "assets/family_tree.json 把亚伯拉罕定在公元前 2166-1991 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2008-2183 在 4004 锚点下为公元前 1996-1821 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
+      "noteZhHant": "assets/family_tree.json 把亞伯拉罕定在公元前 2166-1991 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2008-2183 在 4004 錨點下為公元前 1996-1821 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
+    },
+    {
+      "personId": "isaac",
+      "lineId": "isaac_jacob",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Isaac",
+      "nameZhHans": "以撒",
+      "nameZhHant": "以撒",
+      "fatherId": "abraham",
+      "birthAm": 2108,
+      "deathAm": 2288,
+      "lifespan": 180,
+      "refs": [
+        "Genesis 21:5",
+        "Genesis 35:28"
+      ],
+      "derivationEn": "Abraham was 100 when Isaac was born (Genesis 21:5); Isaac lived 180 years (Genesis 35:28).",
+      "derivationZhHans": "亚伯拉罕 100 岁生以撒（创世记 21:5）；以撒共活了 180 年（创世记 35:28）。",
+      "derivationZhHant": "亞伯拉罕 100 歲生以撒（創世記 21:5）；以撒共活了 180 年（創世記 35:28）。",
+      "noteEn": "assets/family_tree.json dates Isaac 2066-1886 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2108-2288 is 1896-1716 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
+      "noteZhHans": "assets/family_tree.json 把以撒定在公元前 2066-1886 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2108-2288 在 4004 锚点下为公元前 1896-1716 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
+      "noteZhHant": "assets/family_tree.json 把以撒定在公元前 2066-1886 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2108-2288 在 4004 錨點下為公元前 1896-1716 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
+    },
+    {
+      "personId": "jacob",
+      "lineId": "isaac_jacob",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Jacob (Israel)",
+      "nameZhHans": "雅各（以色列）",
+      "nameZhHant": "雅各（以色列）",
+      "fatherId": "isaac",
+      "birthAm": 2168,
+      "deathAm": 2315,
+      "lifespan": 147,
+      "refs": [
+        "Genesis 25:26",
+        "Genesis 47:28"
+      ],
+      "derivationEn": "Isaac was 60 when Jacob (Israel) was born (Genesis 25:26); Jacob (Israel) lived 147 years (Genesis 47:28).",
+      "derivationZhHans": "以撒 60 岁生雅各（以色列）（创世记 25:26）；雅各（以色列）共活了 147 年（创世记 47:28）。",
+      "derivationZhHant": "以撒 60 歲生雅各（以色列）（創世記 25:26）；雅各（以色列）共活了 147 年（創世記 47:28）。",
+      "noteEn": "assets/family_tree.json dates Jacob (Israel) 2006-1859 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2168-2315 is 1836-1689 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
+      "noteZhHans": "assets/family_tree.json 把雅各（以色列）定在公元前 2006-1859 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2168-2315 在 4004 锚点下为公元前 1836-1689 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
+      "noteZhHant": "assets/family_tree.json 把雅各（以色列）定在公元前 2006-1859 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2168-2315 在 4004 錨點下為公元前 1836-1689 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
     }
   ],
   "markers": [
@@ -2074,7 +2125,7 @@
   ],
   "contested": {
     "startAm": 1918,
-    "endAm": 2187,
+    "endAm": 2315,
     "eventCount": 8,
     "note": {
       "en": "Inside this band the two scales disagree by about 170 years. The lifelines put Abram's birth at AM 2008 (1996 BC on this anchor); assets/bible_timeline.json places his call at 2091 BC on the late-date scheme, which is earlier than the lifelines have him born. Both are shown where their own source puts them. Neither has been shifted to make the picture tidy.",

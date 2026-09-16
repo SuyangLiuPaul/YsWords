@@ -4,8 +4,10 @@ interactive chronology chart on the Bible Timeline page.
 
 Two layers, one axis:
 
-  * LIFELINES, computed from the Masoretic begetting ages of Genesis 5
-    and 11 (Adam → Abraham). Every year traces to a verse.
+  * LIFELINES, computed from the Masoretic begetting ages Genesis
+    states directly, chapters 5 and 11 for Adam → Abraham and 21, 25
+    and 35/47 for Isaac and Jacob (Adam → Jacob). Every year traces to
+    a verse.
   * EVENTS, read from `assets/bible_timeline.json` and PLACED on the
     same Anno Mundi axis through the 4004 BC anchor, so the chart spans
     Creation → Revelation exactly as the event list on the same page
@@ -162,6 +164,13 @@ CHAIN = [
     # Abram leaves Haran at 75.
     ("abraham",     "terah",       130,   175,   ["Genesis 11:26", "Genesis 11:32",
                                                   "Genesis 12:4", "Acts 7:4"],       ["Genesis 25:7"]),
+    # Genesis states both ages directly, so the chain stays continuous
+    # one generation further than Genesis 11 alone — see the module
+    # docstring. Joseph is deliberately not next: his birth year needs
+    # a four-verse chain (Gen 41:46 + 41:53 + 45:6 + 47:9), which is
+    # its own slice.
+    ("isaac",       "abraham",     100,   180,   ["Genesis 21:5"],                  ["Genesis 35:28"]),
+    ("jacob",       "isaac",       60,    147,   ["Genesis 25:26"],                 ["Genesis 47:28"]),
 ]
 
 # Which descent band each lifeline is drawn in.
@@ -174,11 +183,17 @@ LINE_OF = {
     "eber": "shemite", "peleg": "shemite", "reu": "shemite",
     "serug": "shemite", "nahor_elder": "shemite", "terah": "shemite",
     "abraham": "shemite",
+    # Isaac and Jacob are Shem's descendants too, but not named in
+    # Genesis 11 — reusing "shemite" would put them under a legend
+    # label ("Shem's line (Genesis 11)") that overclaims where their
+    # ages actually come from. See LINES below.
+    "isaac": "isaac_jacob", "jacob": "isaac_jacob",
 }
 
 # People whose death year Scripture never gives are drawn open-ended,
 # not guessed at. Nobody in CHAIN is in this state today; the flag
-# exists so a later iteration can add Ham, Japheth, Isaac, Jacob…
+# exists so a later iteration can add Ham, Japheth and others whose
+# lifespan Scripture never states.
 OPEN_ENDED = set()
 
 # Chinese book names used when phrasing the derivation sentences.
@@ -303,6 +318,17 @@ LINES = [
         "nameEn": "Shem's line (Genesis 11)",
         "nameZhHans": "闪的家系（创世记 11）",
         "nameZhHant": "閃的家系（創世記 11）",
+    },
+    # Both browns above are used, so this needed a hue that reads as
+    # distinct from them and from the eight ERA_STYLE colours at both
+    # brightnesses `_readable()` produces (chronology_chart.dart) — a
+    # teal, where none of the browns/red/green/blue/purples/gold sit.
+    {
+        "id": "isaac_jacob",
+        "colorHex": "#1E7A8C",
+        "nameEn": "Isaac and Jacob",
+        "nameZhHans": "以撒与雅各",
+        "nameZhHant": "以撒與雅各",
     },
 ]
 
@@ -468,24 +494,40 @@ def build():
             "derivationZhHant": der_hant,
         }
 
-        if pid == "abraham":
+        if pid in ("abraham", "isaac", "jacob"):
+            # Numbers are derived here, not transcribed, so the note
+            # can't drift from the arithmetic that produced the bar.
+            # family_tree.json's BC range and the derived-from-AM BC
+            # range are both computed the same way for all three
+            # patriarchs (the gap is a constant ~170 years, the same
+            # anchor mismatch propagated down one chain — see
+            # CONTESTED_NOTE for where it first shows).
+            fam_birth_bc = -person["birthYear"]
+            fam_death_bc = -person["deathYear"]
+            am_birth_bc = CREATION_BC - birth
+            am_death_bc = CREATION_BC - death
             entry["noteEn"] = (
-                "assets/family_tree.json dates Abraham 2166-1991 BC, a "
-                "late-date scheme that does not join up with the Anno "
-                "Mundi count used here (AM 2008-2183 is 1996-1821 BC on "
-                "the 4004 BC anchor). Reconciling the two scales past "
-                "Abraham is deliberately left to a later pass rather "
-                "than fudged.")
+                "assets/family_tree.json dates %s %d-%d BC, a late-date "
+                "scheme that does not join up with the Anno Mundi count "
+                "used here (AM %d-%d is %d-%d BC on the 4004 BC anchor). "
+                "Reconciling the two scales for the patriarchs is "
+                "deliberately left to a later pass rather than fudged."
+                % (person["name"], fam_birth_bc, fam_death_bc, birth,
+                   death, am_birth_bc, am_death_bc))
             entry["noteZhHans"] = (
-                "assets/family_tree.json 把亚伯拉罕定在公元前 2166-1991 年，"
-                "属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2008-2183 "
-                "在 4004 锚点下为公元前 1996-1821 年）。亚伯拉罕之后两套刻度的"
-                "调和刻意留待后续，不作勉强弥合。")
+                "assets/family_tree.json 把%s定在公元前 %d-%d 年，属于晚期定年"
+                "方案，与本图所用的创世纪元并不衔接（AM %d-%d 在 4004 锚点下为"
+                "公元前 %d-%d 年）。列祖世系两套刻度的调和刻意留待后续，不作"
+                "勉强弥合。"
+                % (person["nameZhHans"], fam_birth_bc, fam_death_bc, birth,
+                   death, am_birth_bc, am_death_bc))
             entry["noteZhHant"] = (
-                "assets/family_tree.json 把亞伯拉罕定在公元前 2166-1991 年，"
-                "屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2008-2183 "
-                "在 4004 錨點下為公元前 1996-1821 年）。亞伯拉罕之後兩套刻度的"
-                "調和刻意留待後續，不作勉強彌合。")
+                "assets/family_tree.json 把%s定在公元前 %d-%d 年，屬於晚期定年"
+                "方案，與本圖所用的創世紀元並不銜接（AM %d-%d 在 4004 錨點下為"
+                "公元前 %d-%d 年）。列祖世系兩套刻度的調和刻意留待後續，不作"
+                "勉強彌合。"
+                % (person["nameZhHant"], fam_birth_bc, fam_death_bc, birth,
+                   death, am_birth_bc, am_death_bc))
 
         lifelines.append(entry)
 
@@ -530,9 +572,12 @@ def build():
     #
     # The complaint this pass answers: the chart stopped at Abraham
     # while the event list on the SAME page ran to Revelation, so
-    # scrolling right never arrived anywhere. Scripture gives no
-    # continuous begetting ages past Abraham, so no lifelines are
-    # invented — what extends is the span and the events.
+    # scrolling right never arrived anywhere. Genesis states Isaac's
+    # and Jacob's ages directly (21:5, 25:26, 35:28, 47:28), so their
+    # lifelines are drawn too. Past Jacob — Joseph and beyond —
+    # Scripture stops giving a continuous chain of stated ages, so no
+    # further lifelines are invented — what extends past that is the
+    # span and the events.
     timeline = json.load(open(TIMELINE, encoding="utf-8"))
     by_marker = {m["id"]: m for m in markers}
     events = []
@@ -587,9 +632,10 @@ def build():
             sys.stderr.write("FAIL: %s\n" % p)
         raise SystemExit(1)
 
-    # Where the computed chain runs out. NOT Abraham's death — Eber
-    # outlives him on the Masoretic count — so it is read off the bars
-    # rather than assumed.
+    # Where the computed chain runs out. NOT Abraham's death — Eber,
+    # Isaac and Jacob all outlive him on the Masoretic count, Jacob
+    # latest of the three — so it is read off the bars rather than
+    # assumed.
     computed_end = max(
         x["deathAm"] for x in lifelines if x["deathAm"] is not None)
     span_end = max([computed_end] + [x["am"] for x in events])

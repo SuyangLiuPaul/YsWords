@@ -128,7 +128,9 @@ class Lifeline {
 
   /// Null when Scripture gives no death year. Drawn open-ended rather
   /// than guessed. (Empty today; the field exists so a later pass can
-  /// add Ham, Japheth, Isaac and the rest without a schema change.)
+  /// add Ham, Japheth and others without a schema change — Isaac and
+  /// Jacob both have a stated death year and are no longer in this
+  /// state.)
   final int? deathAm;
 
   final int lifespan;
