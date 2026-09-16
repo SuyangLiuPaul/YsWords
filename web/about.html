@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" data-lang="hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>关于 · 雅伟之言、雅伟之剑、雅伟之界、新闻洞见</title>
+<meta name="description" content="四个免费的圣经工具：雅伟之言（读）、雅伟之剑（查）、雅伟之界（看）、新闻洞见（察）。网页直接用，也可下载安装。Four free Bible tools — read, study, see, discern.">
+<link rel="canonical" href="https://yahwehword.com/about">
+<link rel="icon" href="/favicon.png">
+<meta name="theme-color" content="#f7f9ff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101417" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="关于 · Yahweh's Word">
+<meta property="og:description" content="四个免费的圣经工具：读、查、看、察。Four free Bible tools.">
+<meta property="og:url" content="https://yahwehword.com/about">
+<meta property="og:image" content="https://yahwehword.com/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<!--
+  ONE FILE, NO WEBFONT, NO BUILD STEP. Deliberate, and the reason is the
+  readership rather than taste: fonts.gstatic.com is not reachable from
+  mainland China, and this is the first page a newcomer sees. It renders
+  before any of the four apps it introduces has begun to load.
+
+  It is also NOT a Flutter route. `/about` on this domain returned 200
+  long before this file existed — that was the SPA catch-all handing
+  back the whole app, which means downloading CanvasKit to read four
+  paragraphs. netlify.toml carries the rule that keeps this ahead of the
+  catch-all, and `about.html` (not `about/index.html`) is what makes
+  `/about` a 200 rather than a 301 to `/about/`.
+
+  THE COLOURS ARE WORDS' OWN, not an impression of them. 「风格可以跟words
+  一致」. The app builds its theme with `ColorScheme.fromSeed(seedColor:
+  Colors.lightBlue)` (lib/main.dart), so the tokens below were PRINTED
+  from that same call rather than sampled off a screenshot — surface
+  #f7f9ff / #101417, primary #27638a / #96cdf8, and the rest.
+
+  THREE SCRIPTS, like the four apps. Every translatable string ships all
+  three and CSS shows one, so switching is instant, needs no round trip,
+  and the page still reads if the script never runs. The small script
+  only remembers the choice and guesses the first one.
+-->
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #f7f9ff;
+    --card: #ffffff;
+    --card-alt: #f1f4f9;
+    --ink: #181c20;
+    --muted: #41474d;
+    --faint: #72787e;
+    --outline: #c1c7ce;
+    --primary: #27638a;
+    --on-primary: #ffffff;
+    --p-container: #cae6ff;
+    --on-p-container: #004b70;
+    --shadow: 0 1px 3px rgba(24, 28, 32, .07);
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+      "Noto Sans CJK SC", sans-serif;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --surface: #101417;
+    --card: #181c20;
+    --card-alt: #1d2226;
+    --ink: #e0e3e8;
+    --muted: #c1c7ce;
+    --faint: #8b9198;
+    --outline: #41474d;
+    --primary: #96cdf8;
+    --on-primary: #00344f;
+    --p-container: #004b70;
+    --on-p-container: #cae6ff;
+    --shadow: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --surface: #101417;
+      --card: #181c20;
+      --card-alt: #1d2226;
+      --ink: #e0e3e8;
+      --muted: #c1c7ce;
+      --faint: #8b9198;
+      --outline: #41474d;
+      --primary: #96cdf8;
+      --on-primary: #00344f;
+      --p-container: #004b70;
+      --on-p-container: #cae6ff;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+  }
+  .wrap { max-width: 48rem; margin: 0 auto; padding: 0 1.25rem; }
+
+  /* one string, three scripts — see the head comment */
+  [data-l] { display: none; }
+  html[data-lang="hans"] [data-l="hans"],
+  html[data-lang="hant"] [data-l="hant"],
+  html[data-lang="en"]   [data-l="en"] { display: inline; }
+
+  /* ── top bar ──────────────────────────────────────────────── */
+  .bar {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .875rem 0; flex-wrap: wrap;
+  }
+  .bar .spacer { flex: 1; }
+  .seg {
+    display: inline-flex; border: 1px solid var(--outline);
+    border-radius: 999px; overflow: hidden; background: var(--card);
+  }
+  .seg button {
+    appearance: none; border: 0; background: transparent;
+    color: var(--muted); font: inherit; font-size: .8125rem;
+    padding: .3rem .7rem; cursor: pointer; line-height: 1.6;
+  }
+  .seg button + button { border-left: 1px solid var(--outline); }
+  .seg button[aria-pressed="true"] {
+    background: var(--p-container); color: var(--on-p-container);
+    font-weight: 600;
+  }
+  .seg button:focus-visible { outline: 2px solid var(--primary);
+    outline-offset: -2px; }
+
+  /* ── hero ─────────────────────────────────────────────────── */
+  .hero { padding: 2rem 0 2.75rem; }
+  .mark {
+    font-size: clamp(1.5rem, 5.5vw, 2.25rem);
+    line-height: 1.35; margin: 0 0 .875rem; font-weight: 600;
+    letter-spacing: .01em; text-wrap: balance;
+  }
+  /* Each name carries its OWN separator and cannot be split from it.
+     On a 375 dp phone the hero wrapped as 「雅伟之言·雅伟之剑 /
+     ·雅伟之界·新闻洞见」 — a line beginning with a separator, which
+     reads as a typo. A break may now fall only BETWEEN names. */
+  .mark .nm { white-space: nowrap; }
+  .mark .sep { color: var(--primary); padding: 0 .12em; font-weight: 400; }
+  .thesis { margin: 0; font-size: 1.0625rem; color: var(--muted);
+    max-width: 36rem; text-wrap: pretty; }
+  .thesis b { color: var(--ink); font-weight: 600; }
+
+  /* ── section heads ────────────────────────────────────────── */
+  h2 {
+    font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--faint); font-weight: 600; margin: 0 0 1.125rem;
+    display: flex; align-items: center; gap: .875rem;
+  }
+  h2::after { content: ""; flex: 1; height: 1px; background: var(--outline); }
+
+  /* ── the four ─────────────────────────────────────────────── */
+  .apps { display: grid; gap: 1rem; grid-template-columns: 1fr;
+    margin: 0 0 3.25rem; }
+  @media (min-width: 44rem) { .apps { grid-template-columns: 1fr 1fr; } }
+  .app {
+    background: var(--card); border: 1px solid var(--outline);
+    border-radius: 16px; padding: 1.375rem; box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+  }
+  .app-head { display: flex; align-items: center; gap: .5rem;
+    flex-wrap: wrap; }
+  .zh { font-size: 1.3125rem; font-weight: 600; margin: 0;
+    letter-spacing: .02em; }
+  .verb {
+    font-size: .8125rem; color: var(--on-p-container);
+    background: var(--p-container); border-radius: 999px;
+    padding: .1rem .6rem; white-space: nowrap; font-weight: 600;
+  }
+  .en { color: var(--faint); font-size: .875rem; margin: .125rem 0 .75rem; }
+  .what { margin: 0 0 .75rem; font-size: .9375rem; color: var(--muted); }
+  .host { font-size: .75rem; color: var(--faint); margin: 0;
+    word-break: break-all; }
+  .links { margin-top: auto; padding-top: 1.125rem; display: flex;
+    gap: .5rem; flex-wrap: wrap; align-items: center; }
+  a.go, a.dl {
+    text-decoration: none; font-size: .875rem; border-radius: 999px;
+    padding: .35rem .95rem; white-space: nowrap;
+    border: 1px solid transparent; font-weight: 500;
+  }
+  a.go { background: var(--primary); color: var(--on-primary); }
+  a.dl { border-color: var(--outline); color: var(--ink);
+    background: var(--card-alt); }
+  a.go:hover { filter: brightness(1.08); }
+  a.dl:hover { border-color: var(--primary); color: var(--primary); }
+  a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .soon { font-size: .8125rem; color: var(--faint); }
+
+  /* ── contact ──────────────────────────────────────────────── */
+  .contact {
+    background: var(--card); border: 1px solid var(--outline);
+    border-radius: 16px; padding: 1.75rem 1.5rem; box-shadow: var(--shadow);
+  }
+  .contact p { margin: 0 0 .75rem; }
+  .contact p:last-child { margin-bottom: 0; }
+  .mail {
+    display: inline-block; font-size: clamp(1.0625rem, 4.2vw, 1.375rem);
+    font-weight: 600; color: var(--primary); text-decoration: none;
+    border-bottom: 2px solid var(--p-container);
+    padding-bottom: .1em; margin: .35rem 0 1.125rem; word-break: break-all;
+  }
+  .mail:hover { border-color: var(--primary); }
+  .small { font-size: .875rem; color: var(--muted); }
+  .small b { color: var(--ink); }
+
+  footer {
+    margin-top: 3rem; padding: 1.5rem 0 3rem;
+    border-top: 1px solid var(--outline); color: var(--faint);
+    font-size: .8125rem;
+  }
+  footer p { margin: 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    a.go, a.dl, .mail, .seg button {
+      transition: background-color .15s, color .15s, border-color .15s,
+        filter .15s;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="bar">
+    <div class="seg" role="group" id="lang">
+      <button type="button" data-set-lang="hans" aria-pressed="true">简体</button>
+      <button type="button" data-set-lang="hant" aria-pressed="false">繁體</button>
+      <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="seg" role="group" id="theme">
+      <button type="button" data-set-theme="light" aria-pressed="false"><span data-l="hans">浅色</span><span data-l="hant">淺色</span><span data-l="en">Light</span></button>
+      <button type="button" data-set-theme="dark" aria-pressed="false"><span data-l="hans">深色</span><span data-l="hant">深色</span><span data-l="en">Dark</span></button>
+      <button type="button" data-set-theme="auto" aria-pressed="true"><span data-l="hans">跟随</span><span data-l="hant">跟隨</span><span data-l="en">Auto</span></button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1 class="mark">
+      <span data-l="hans"><span class="nm">雅伟之言<span class="sep">·</span></span><span class="nm">雅伟之剑<span class="sep">·</span></span><span class="nm">雅伟之界<span class="sep">·</span></span><span class="nm">新闻洞见</span></span>
+      <span data-l="hant"><span class="nm">雅偉之言<span class="sep">·</span></span><span class="nm">雅偉之劍<span class="sep">·</span></span><span class="nm">雅偉之界<span class="sep">·</span></span><span class="nm">新聞洞見</span></span>
+      <span data-l="en"><span class="nm">Yahweh’s Words<span class="sep">·</span></span><span class="nm">Sword<span class="sep">·</span></span><span class="nm">World<span class="sep">·</span></span><span class="nm">News Insight</span></span>
+    </h1>
+    <p class="thesis">
+      <span data-l="hans">四个免费的圣经工具，一个域名，各做一件事：<b>读</b>、<b>查</b>、<b>看</b>、<b>察</b>。不收费，不放广告，不注册也能用。网页打开就读，也可以装到手机和电脑上。</span>
+      <span data-l="hant">四個免費的聖經工具，一個網域，各做一件事：<b>讀</b>、<b>查</b>、<b>看</b>、<b>察</b>。不收費，不放廣告，不註冊也能用。網頁打開就讀，也可以裝到手機和電腦上。</span>
+      <span data-l="en">Four free Bible tools on one domain, each doing one thing: <b>read</b>, <b>study</b>, <b>see</b>, <b>discern</b>. No charge, no advertising, no account needed. Open them in a browser, or install them on a phone or a desktop.</span>
+    </p>
+  </header>
+
+  <h2><span data-l="hans">四个应用</span><span data-l="hant">四個應用</span><span data-l="en">The four</span></h2>
+  <div class="apps">
+
+    <article class="app">
+      <div class="app-head">
+        <h3 class="zh"><span data-l="hans">雅伟之言</span><span data-l="hant">雅偉之言</span><span data-l="en">Yahweh’s Words</span></h3>
+        <span class="verb"><span data-l="hans">读</span><span data-l="hant">讀</span><span data-l="en">Read</span></span>
+      </div>
+      <p class="en"><span data-l="hans">Yahweh’s Words</span><span data-l="hant">Yahweh’s Words</span><span data-l="en">雅伟之言</span></p>
+      <p class="what">
+        <span data-l="hans">中英对照的圣经：和合本雅伟版、梁家铿译本、KJV、NASB、LEB，附希腊文与希伯来文原文、串珠、讲道与诗歌。</span>
+        <span data-l="hant">中英對照的聖經：和合本雅偉版、梁家鏗譯本、KJV、NASB、LEB，附希臘文與希伯來文原文、串珠、講道與詩歌。</span>
+        <span data-l="en">A bilingual Bible — CUV (Yahweh), the Leung translation, KJV, NASB and LEB — with the original Greek and Hebrew, cross-references, sermons and hymns.</span>
+      </p>
+      <p class="host">yahwehword.com</p>
+      <div class="links">
+        <a class="go" href="https://yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
+        <a class="dl" href="https://github.com/SuyangLiuPaul/YsWords/releases/latest"><span data-l="hans">下载安装包</span><span data-l="hant">下載安裝包</span><span data-l="en">Download</span></a>
+      </div>
+    </article>
+
+    <article class="app">
+      <div class="app-head">
+        <h3 class="zh"><span data-l="hans">雅伟之剑</span><span data-l="hant">雅偉之劍</span><span data-l="en">Yahweh’s Sword</span></h3>
+        <span class="verb"><span data-l="hans">查</span><span data-l="hant">查</span><span data-l="en">Study</span></span>
+      </div>
+      <p class="en"><span data-l="hans">Yahweh’s Sword</span><span data-l="hant">Yahweh’s Sword</span><span data-l="en">雅伟之剑</span></p>
+      <p class="what">
+        <span data-l="hans">为大屏幕做的查经工具：原文结构化检索、逐节比对，以及世界历史轮盘与时间条。</span>
+        <span data-l="hant">為大螢幕做的查經工具：原文結構化檢索、逐節比對，以及世界歷史輪盤與時間條。</span>
+        <span data-l="en">A study tool for bigger screens: structured original-language search, verse-by-verse comparison, and the world-history wheel and timeline.</span>
+      </p>
+      <p class="host">sword.yahwehword.com</p>
+      <div class="links">
+        <a class="go" href="https://sword.yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
+        <a class="dl" href="https://github.com/SuyangLiuPaul/SeekSparks/releases/latest"><span data-l="hans">下载安装包</span><span data-l="hant">下載安裝包</span><span data-l="en">Download</span></a>
+      </div>
+    </article>
+
+    <article class="app">
+      <div class="app-head">
+        <h3 class="zh"><span data-l="hans">雅伟之界</span><span data-l="hant">雅偉之界</span><span data-l="en">Yahweh’s World</span></h3>
+        <span class="verb"><span data-l="hans">看</span><span data-l="hant">看</span><span data-l="en">See</span></span>
+      </div>
+      <p class="en"><span data-l="hans">Yahweh’s World</span><span data-l="hant">Yahweh’s World</span><span data-l="en">雅伟之界</span></p>
+      <p class="what">
+        <span data-l="hans">圣经世界的三维地球：经文里的地名、旅程与疆域，放回它们所在的地方。</span>
+        <span data-l="hant">聖經世界的三維地球：經文裡的地名、旅程與疆域，放回它們所在的地方。</span>
+        <span data-l="en">The biblical globe: the places, journeys and kingdoms of scripture, put back where they actually are.</span>
+      </p>
+      <p class="host">world.yahwehword.com</p>
+      <div class="links">
+        <a class="go" href="https://world.yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
+        <span class="soon"><span data-l="hans">网页版</span><span data-l="hant">網頁版</span><span data-l="en">Web only</span></span>
+      </div>
+    </article>
+
+    <article class="app">
+      <div class="app-head">
+        <h3 class="zh"><span data-l="hans">新闻洞见</span><span data-l="hant">新聞洞見</span><span data-l="en">News Insight</span></h3>
+        <span class="verb"><span data-l="hans">察</span><span data-l="hant">察</span><span data-l="en">Discern</span></span>
+      </div>
+      <p class="en"><span data-l="hans">News Insight</span><span data-l="hant">News Insight</span><span data-l="en">新闻洞见</span></p>
+      <p class="what">
+        <span data-l="hans">世界、中国与澳洲的新闻，每一条都配上一节相关的经文与一段默想。</span>
+        <span data-l="hant">世界、中國與澳洲的新聞，每一條都配上一節相關的經文與一段默想。</span>
+        <span data-l="en">World, China and Australia headlines, each paired with a related verse and a short reflection.</span>
+      </p>
+      <!-- newsinsight.yahwehword.com is set as this site's custom domain
+           on Netlify, but yahwehword.com's DNS is on CLOUDFLARE and the
+           CNAME does not exist yet. Naming an address that does not
+           resolve is worse than naming the one that does, so both the
+           label and the link below stay on the netlify.app host until
+           that record is added — then both change together. -->
+      <p class="host">news-insight.netlify.app</p>
+      <div class="links">
+        <a class="go" href="https://news-insight.netlify.app/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
+        <a class="dl" href="https://github.com/SuyangLiuPaul/yahwehs_world/releases/latest"><span data-l="hans">下载安装包</span><span data-l="hant">下載安裝包</span><span data-l="en">Download</span></a>
+      </div>
+    </article>
+
+  </div>
+
+  <h2><span data-l="hans">联系我们</span><span data-l="hant">聯絡我們</span><span data-l="en">Contact</span></h2>
+  <div class="contact">
+    <p>
+      <span data-l="hans">有问题、发现错误，或者读着哪里别扭 —— 都写信给我们。</span>
+      <span data-l="hant">有問題、發現錯誤，或者讀著哪裡彆扭 —— 都寫信給我們。</span>
+      <span data-l="en">Questions, mistakes you have found, or anything that simply reads wrong — write to us.</span>
+    </p>
+    <a class="mail" href="mailto:support@yahwehword.com">support@yahwehword.com</a>
+    <p class="small">
+      <span data-l="hans">每一封我们都会看。报告经文问题时，请写上<b>书卷、章、节和所用译本</b>，我们就能直接查到那一节。</span>
+      <span data-l="hant">每一封我們都會看。回報經文問題時，請寫上<b>書卷、章、節和所用譯本</b>，我們就能直接查到那一節。</span>
+      <span data-l="en">We read every message. When reporting a problem with the text, please include the <b>book, chapter, verse and which translation</b> — that is enough for us to find it.</span>
+    </p>
+  </div>
+
+  <footer>
+    <p>
+      <span data-l="hans">雅伟之言 · 雅伟之剑 · 雅伟之界 · 新闻洞见</span>
+      <span data-l="hant">雅偉之言 · 雅偉之劍 · 雅偉之界 · 新聞洞見</span>
+      <span data-l="en">Yahweh’s Words · Sword · World · News Insight</span>
+      &nbsp;|&nbsp; yahwehword.com
+    </p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var TAG = { hans: 'zh-Hans', hant: 'zh-Hant', en: 'en' };
+
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  function setLang(l) {
+    if (!TAG[l]) l = 'hans';
+    root.setAttribute('data-lang', l);
+    root.setAttribute('lang', TAG[l]);
+    var b = document.querySelectorAll('[data-set-lang]');
+    for (var i = 0; i < b.length; i++) {
+      b[i].setAttribute('aria-pressed',
+        b[i].getAttribute('data-set-lang') === l ? 'true' : 'false');
+    }
+    store('about.lang', l);
+  }
+
+  function setTheme(t) {
+    if (t === 'light' || t === 'dark') root.setAttribute('data-theme', t);
+    else { root.removeAttribute('data-theme'); t = 'auto'; }
+    var b = document.querySelectorAll('[data-set-theme]');
+    for (var i = 0; i < b.length; i++) {
+      b[i].setAttribute('aria-pressed',
+        b[i].getAttribute('data-set-theme') === t ? 'true' : 'false');
+    }
+    store('about.theme', t);
+  }
+
+  // First visit: guess from the browser, the way the apps do. zh-TW and
+  // zh-HK are Traditional; any other zh is Simplified; everything else
+  // is English. A stored choice always wins.
+  function guess() {
+    var n = (navigator.language || 'zh-Hans').toLowerCase();
+    if (n.indexOf('zh') !== 0) return 'en';
+    return (n.indexOf('tw') > 0 || n.indexOf('hk') > 0 ||
+            n.indexOf('hant') > 0) ? 'hant' : 'hans';
+  }
+
+  setLang(read('about.lang') || guess());
+  setTheme(read('about.theme') || 'auto');
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-set-lang],[data-set-theme]') : null;
+    if (!t) return;
+    if (t.hasAttribute('data-set-lang')) setLang(t.getAttribute('data-set-lang'));
+    else setTheme(t.getAttribute('data-set-theme'));
+  });
+})();
+</script>
+</body>
+</html>

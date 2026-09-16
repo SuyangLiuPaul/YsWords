@@ -214,6 +214,27 @@
   to = "/read/404.html"
   status = 404
 
+# 2026-09-16: the about page is a REAL FILE and must be served as one.
+#
+# 「我有三个app 要不要有个/intro还是/info /about 之类的」 — `/about`, and
+# it introduces all three and carries support@yahwehword.com.
+#
+# `about.html`, NOT `about/index.html`. Measured on dev: with the
+# directory layout Netlify's own pretty-URL handling answered `/about`
+# with a 301 to `/about/` before any rule here was consulted, so the
+# canonical link pointed at a url that redirected. A single page is a
+# single file, and then `/about` is a 200.
+#
+# The rule below is belt-and-braces — Netlify serves a static file ahead
+# of a non-forced rule — and is written down because the thing it guards
+# against is silent: `/about` returned 200 on this domain LONG before
+# the file existed, that being the catch-all handing back the Flutter
+# shell. "It loads" proves nothing here.
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+
 # Static-file SPA fallback. The Netlify Function URLs (`/api/*` and
 # `/.netlify/functions/*`) are matched and served by Netlify BEFORE
 # this catch-all rewrite, so the function doesn't get swallowed by

@@ -48,4 +48,15 @@
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <!--
+    2026-09-16: `/about`, which is the fourth entry point that belongs
+    to no generated sitemap — and the only page on this domain a
+    crawler can read without running JavaScript at all. It introduces
+    the three apps and carries support@yahwehword.com.
+  -->
+  <url>
+    <loc>https://yahwehword.com/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
