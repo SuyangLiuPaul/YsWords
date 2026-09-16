@@ -2,6 +2,14 @@
 
 **Effective 2026-05-11 (after v1.2.43 hit prod). Read this BEFORE any deploy.**
 
+> 2026-09-17: the prod rule below is unchanged and still canonical.
+> What *has* moved since this was written is the version-bump default —
+> `release_web.sh` no longer bumps unless you pass `--bump`, so the
+> `--no-bump` in the commands below is now a no-op rather than a
+> correction. That, the version-number convention, the release-tag
+> rules and where the signing keys live are written up once for all
+> four apps in [release-and-secrets-convention.md](release-and-secrets-convention.md).
+
 ## Rule
 
 | Tier | Permission |
