@@ -2470,6 +2470,86 @@ reported. Work these top-down before P2.
 > actionable. If you reach the second case, say so plainly in the
 > report rather than quietly restarting the glyph work.
 
+**2026-09-16 — `audit_originals_compounds.py --check` run against a
+warm cache (no queue item ticked; this is the fallback's data-audit
+branch, run because every tier above P0 was blocked — see this hour's
+`NEXT_TASK.md`).**
+
+`.cache/originals/` confirmed warm before running (39 `morphhb-*.xml` +
+`opengnt.zip`, unchanged since 2026-08-11, so both halves actually
+measured rather than skipping):
+
+```
+$ python3 tools/audit_originals_compounds.py --check
+OK: build_originals.py reproduces every shipped Hebrew OT and Greek NT verse (0 drift).
+$ echo $?
+0
+```
+
+Counts (Hebrew):
+
+```
+Hebrew OT words          : 298776
+  multi-word lexemes     : 784
+  ketiv/qere             : 1248
+verses the importer no longer reproduces        : 0
+
+adjacent same-Strong runs: 2018
+  genuine repetition               1976
+  repetition beside a compound       39
+  written but not read                3
+```
+
+Counts (`--greek`):
+
+```
+Greek NT words           : 138010
+  multi-word lexemes     : 3
+verses the importer no longer reproduces        : 0
+adjacent same-Strong runs: 361  (genuine repetition)
+```
+
+**No drift.** 784 multi-word lexemes and 2,018 total same-Strong runs
+(1,976+39+3) match the counts recorded when this repair landed
+(`e714e31d`, table above). 138,010 Greek words / 3 multi-word / 361
+same-Strong also match `06278514`'s figures exactly.
+
+One number does NOT match the historical table and is worth recording
+so nobody re-flags it as new drift later: **ketiv/qere prints 1,248
+today, not the 1,229 in `e714e31d`'s commit message.** Checked before
+writing this down, because a mismatched count is exactly the kind of
+claim this loop has been burned by:
+
+* `assets/originals/*.json` (the Hebrew half) has not been touched by
+  any commit since `e714e31d` — `git log --all -- assets/originals/*.json`
+  shows only the initial import, `e714e31d` itself, and `06278514`
+  (Greek-only; touches Greek book files, not Hebrew ones).
+* The counting code path is byte-for-byte unchanged since `e714e31d` —
+  `git diff e714e31d -- tools/audit_originals_compounds.py` shows only
+  new Greek/`--check` code added around it, nothing inside the Hebrew
+  loop that computes `variants`.
+* Checked out `tools/audit_originals_compounds.py` exactly as it stood
+  at `e714e31d` and ran it standalone against today's (unchanged) assets
+  — it also prints `ketiv/qere : 1248`, not 1229.
+
+So the code has never produced 1229 against this data; that number was
+never this script's own output. A refuter pass narrowed *why* without
+fully settling it: `e714e31d`'s prose describes "1,229 ketiv/qere pairs
+… measured before changing anything" — plausibly a narrower, differently
+scoped pre-fix metric (strict 1:1 ketiv/qere pairs from note-groups
+where the two sides have equal token counts; a reimplementation got
+1,228 that way) rather than the shipped `variants` counter, which sums
+every merged token carrying a `k`/`q` key across all note-groups,
+including ones where the ketiv and qere sides don't pair 1:1. Not
+settled precisely, but the load-bearing fact — **no drift, no data
+change, no code change since the fix landed** — is confirmed two
+independent ways (`--check`'s own verse-level reproduction, and
+literally re-running the original commit's script against current
+data). Filing this so a future iteration doesn't waste an hour
+re-discovering the same 19-count gap and mistaking it for regression.
+
+Read-only pass: no lib/asset/test change, no version bump, no deploy.
+
 - [x] **DONE 2026-09-09 (second pass) — 8 of the 105 flagged verses were
       genuine omitted-text; repaired.** Built `tools/
       audit_publisher_adoption_drift.py`, which re-derives the 44/105 split
