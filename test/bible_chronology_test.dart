@@ -646,6 +646,59 @@ void main() {
       expect(isaac.fatherId, 'abraham');
     });
 
+    // Pins the Genesis 16:16 / 25:17 arithmetic (AM 2094-2231) and the
+    // family_tree.json 86/137 cross-check, and that Ishmael is filed as
+    // a BRANCH off Abraham — not a further link toward Isaac — so his
+    // years don't move the chain's computed end.
+    test("Ishmael's years are the Genesis 16:16 / 25:17 ages Scripture "
+        'states directly, and he is a branch off Abraham', () {
+      final abraham =
+          data.lifelines.firstWhere((l) => l.personId == 'abraham');
+      final ishmael =
+          data.lifelines.firstWhere((l) => l.personId == 'ishmael');
+
+      expect(ishmael.fatherId, 'abraham');
+      expect(ishmael.lineId, 'ishmaelite');
+      expect(ishmael.birthAm, abraham.birthAm + 86, reason: 'Genesis 16:16');
+      expect(ishmael.birthAm, 2094);
+      expect(ishmael.lifespan, 137, reason: 'Genesis 25:17');
+      expect(ishmael.deathAm, 2231);
+      expect(ishmael.refs, containsAll(<String>[
+        'Genesis 16:16', 'Genesis 25:17',
+      ]));
+      for (final text in [
+        ishmael.derivationEn, ishmael.derivationZhHans,
+        ishmael.derivationZhHant,
+      ]) {
+        expect(text, contains('16:16'));
+        expect(text, contains('25:17'));
+      }
+
+      final famAbraham = familyTree['abraham']!;
+      final famIshmael = familyTree['ishmael']!;
+      expect(famIshmael['yearSystem'], 'bc');
+      expect(
+        (famIshmael['birthYear'] as int) - (famAbraham['birthYear'] as int),
+        86,
+        reason: 'family_tree.json encodes the same 86-year gap on its own '
+            'late-date BC scale',
+      );
+      expect(
+        (famIshmael['deathYear'] as int) - (famIshmael['birthYear'] as int),
+        137,
+        reason: 'family_tree.json also gives Ishmael a 137-year lifespan',
+      );
+
+      // Ishmael outlives Abraham (2231 > 2183) but not Isaac (2288) or
+      // Joseph (2369) — the computed boundary does not move.
+      expect(ishmael.deathAm, greaterThan(abraham.deathAm!));
+      final joseph =
+          data.lifelines.firstWhere((l) => l.personId == 'joseph');
+      expect(ishmael.deathAm, lessThan(joseph.deathAm!));
+      expect(data.computedEndAm, 2369);
+      expect(data.spanEndAm, 4098);
+    });
+
     // Pins the four-verse chain (Gen 41:46 + 41:53 + 45:6 + 47:9 = 91,
     // Jacob's age at Joseph's birth; Gen 50:22/50:26 = Joseph's 110-year
     // lifespan) AND cross-checks it against assets/family_tree.json,
@@ -2117,8 +2170,10 @@ void main() {
       // now — Isaac and Jacob's ages are stated as directly as Genesis
       // 11's, and Joseph's is the chain's first derived link — so this
       // pins the chain's actual end (Joseph), not a fixed "past
-      // Abraham" or "past Jacob" claim.
-      expect(data.lifelines, hasLength(23));
+      // Abraham" or "past Jacob" claim. 24, not 23: Ishmael is a branch
+      // off Abraham, not a further link, so he adds a lifeline without
+      // moving the chain's end.
+      expect(data.lifelines, hasLength(24));
       expect(data.lifelines.first.personId, 'adam');
       final byId = {for (final l in data.lifelines) l.personId};
       expect(byId, contains('abraham'));

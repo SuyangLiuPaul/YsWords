@@ -7,7 +7,7 @@
     "spanStartAm": 0,
     "spanEndAm": 4098,
     "computedEndAm": 2369,
-    "count": 23,
+    "count": 24,
     "eventCount": 93,
     "description": "Two layers on one Anno Mundi axis. (1) LIFELINES — the begetting ages Genesis states, chained from Adam to Joseph: directly, for everyone up to and including Jacob; by chaining four verses together for Joseph, whose father's age at his birth Genesis never states outright (see CHAIN in this file). Names from assets/family_tree.json, years recomputed from the Masoretic ages and cross-checked against it. (2) EVENTS — the same 93 events the event list on this page shows, from assets/bible_timeline.json, placed on the AM axis by their stated BC/AD year through the 4004 BC anchor, so both views of the page span Creation to Revelation. The two layers are drawn differently and labelled, because a placed year is not a computed one. No data is taken from the copyrighted reference sheet in docs/reference/.",
     "computedNote": {
@@ -77,6 +77,13 @@
       "nameEn": "Isaac, Jacob and Joseph",
       "nameZhHans": "以撒、雅各与约瑟",
       "nameZhHant": "以撒、雅各與約瑟"
+    },
+    {
+      "id": "ishmaelite",
+      "colorHex": "#A63A6B",
+      "nameEn": "Ishmael's line",
+      "nameZhHans": "以实玛利的家系",
+      "nameZhHant": "以實瑪利的家系"
     }
   ],
   "eras": [
@@ -548,6 +555,28 @@
       "noteEn": "assets/family_tree.json dates Abraham 2166-1991 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2008-2183 is 1996-1821 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
       "noteZhHans": "assets/family_tree.json 把亚伯拉罕定在公元前 2166-1991 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2008-2183 在 4004 锚点下为公元前 1996-1821 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
       "noteZhHant": "assets/family_tree.json 把亞伯拉罕定在公元前 2166-1991 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2008-2183 在 4004 錨點下為公元前 1996-1821 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
+    },
+    {
+      "personId": "ishmael",
+      "lineId": "ishmaelite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Ishmael",
+      "nameZhHans": "以实玛利",
+      "nameZhHant": "以實瑪利",
+      "fatherId": "abraham",
+      "birthAm": 2094,
+      "deathAm": 2231,
+      "lifespan": 137,
+      "refs": [
+        "Genesis 16:16",
+        "Genesis 25:17"
+      ],
+      "derivationEn": "Abraham was 86 when Ishmael was born (Genesis 16:16); Ishmael lived 137 years (Genesis 25:17).",
+      "derivationZhHans": "亚伯拉罕 86 岁生以实玛利（创世记 16:16）；以实玛利共活了 137 年（创世记 25:17）。",
+      "derivationZhHant": "亞伯拉罕 86 歲生以實瑪利（創世記 16:16）；以實瑪利共活了 137 年（創世記 25:17）。",
+      "noteEn": "assets/family_tree.json dates Ishmael 2080-1943 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2094-2231 is 1910-1773 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
+      "noteZhHans": "assets/family_tree.json 把以实玛利定在公元前 2080-1943 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2094-2231 在 4004 锚点下为公元前 1910-1773 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
+      "noteZhHant": "assets/family_tree.json 把以實瑪利定在公元前 2080-1943 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2094-2231 在 4004 錨點下為公元前 1910-1773 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
     },
     {
       "personId": "isaac",

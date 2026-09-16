@@ -15768,6 +15768,115 @@ has never seen this repo.
       remains in the chart's own files after this slice, checked by
       re-grepping both terms across `lib/` and `tools/` post-edit.
 
+      **2026-09-17 slice — Ishmael, the chart's first branch off the
+      chain.** `CHAIN` gains `("ishmael", "abraham", 86, 137,
+      ["Genesis 16:16"], ["Genesis 25:17"])`, placed right after
+      Abraham and before Isaac for birth order (AM 2094 vs 2108).
+      Genesis states both figures directly, so Ishmael takes the
+      generic "X was N when Y was born" phrasing, not `DERIVED_PEOPLE`.
+      AM 2094-2231 (1910-1773 BC on the 4004 anchor). Cross-checked
+      against `family_tree.json`: `ishmael.birthYear −
+      abraham.birthYear` = 86, `ishmael`'s own lifespan = 137, both
+      exact. Ishmael outlives Abraham (2231 > 2183) but not Isaac
+      (2288) or Joseph (2369), so `computedEndAm` (2369) and
+      `spanEndAm` (4098) are unchanged — asserted in the new test, not
+      assumed.
+
+      **The fork, not just another link.** Every prior `CHAIN` row has
+      exactly one child in the table; Ishmael is Abraham's son but not
+      Isaac's ancestor, so his row shares Abraham's father and nothing
+      after it reads from him. This makes the lifeline layer a tree for
+      the first time, which is the reference chart's own visual idea
+      (parallel descent streams) and something the data model already
+      supported but had never exercised.
+
+      **Design call taken, per the task's instruction not to defer it.**
+      Neither `shemite` ("Shem's line (Genesis 11)" — Ishmael isn't in
+      Genesis 11) nor `isaac_jacob` (names three specific other people)
+      fit, so a fourth `ChronologyLine`, id `ishmaelite`, was added:
+      "Ishmael's line" / 「以实玛利的家系」/「以實瑪利的家系」. Colour
+      `#A63A6B` (rose/plum) — checked, not assumed: measured RGB
+      distance at both the light-theme value and the `_readable()`
+      dark-theme lerp toward white against all three existing lines AND
+      all eight `ERA_STYLE` hues; nearest neighbour either way is
+      "mosaic" red at ~37-64 RGB-distance, clear of every other hue by a
+      wider margin. Every "three lines of descent" / "three descent
+      colours" comment in `chronology_chart.dart` (the `_BasisGlyph` and
+      `_hatch` doc comments) updated to "four" — the same two comments
+      the Isaac/Jacob slice had to fix when they said "two".
+
+      **Refuted, not just asserted — and the first phrasing of the claim
+      did not survive as stated.** The task that assigned this slice
+      justified it as "Ishmael is the last person whose begetting age
+      AND lifespan Genesis states outright". Taken literally that is
+      false: Jacob, already drawn in a prior slice, has both facts
+      stated exactly as directly (Gen 25:26 — Isaac was 60; Gen 47:28 —
+      Jacob lived 147 years) with no chaining, so Jacob is a real
+      counterexample to the sentence as written, not a near-miss. The
+      claim that actually holds, and the one this slice needed, is
+      narrower: **among people not yet on the chart**, Ishmael is the
+      last one addable to `CHAIN` in its existing (personId, fatherId,
+      begetting age, lifespan, ...) shape without chaining several
+      verses (Joseph already exhausted that path) or changing the model
+      to accept a non-father anchor. Esau, Sarah, Rebekah, Levi, Kohath,
+      Amram and Moses were checked against that narrower claim and none
+      breaks it: Esau's birth age is Isaac's already-drawn 60 (Gen
+      25:26) and his death is never dated; Rebekah, Levi, Kohath and
+      Amram have no begetting age stated at all; Moses' death age (120,
+      Deut 34:7) is stated but Amram's age at his birth is not. Sarah is
+      the one genuine near-miss — Gen 17:17 (bore Isaac at 90) + Gen
+      23:1 (died at 127) gives both figures directly — but her anchor is
+      her husband, not a father, so she does not fit `CHAIN`'s shape
+      without a model change this slice was told not to make. Filed
+      below as its own next slice rather than built today. The "first
+      fork" claim was also checked directly against `CHAIN`: every row
+      before Ishmael's is the sole entry naming its father as
+      `fatherId`; Ishmael's is the first case where `fatherId` repeats
+      (`abraham`, for both Ishmael and Isaac).
+
+      **Verified, not assumed.** Builder exits 0, re-running is a no-op
+      (`git diff --stat` identical byte count both times). 24 lifelines
+      (23 + Ishmael). `flutter analyze` clean repo-wide.
+      `bible_chronology_test.dart` alone first, then the full suite in
+      the foreground to completion — no backgrounded run left
+      unresolved. New named test: "Ishmael's years are the Genesis
+      16:16 / 25:17 ages Scripture states directly, and he is a branch
+      off Abraham", pinning the AM figures, the `family_tree.json`
+      86/137 cross-check, the derivation prose citing both verses, and
+      the outlives-Abraham-but-not-Isaac-or-Joseph ordering. Existing
+      count pin updated `hasLength(23)` → `hasLength(24)`. Legend at a
+      fourth swatch pumped at 130% and 200% text scale via the existing
+      generic scale-loop widget tests (not hardcoded to a line count) —
+      no new overflow.
+
+      Asset + code + test only, no version bump, no deploy — this
+      item's own guard rail, carried forward from the fatherId/scheme/
+      Isaac-Jacob/Joseph/stale-copy slices.
+
+- [ ] **Sarah — a next chronology-chart slice, filed rather than built.**
+      Found 2026-09-17 while refuting the Ishmael slice above. Genesis
+      states Sarah's age directly at two points — 90 when she bore Isaac
+      (Genesis 17:17) and 127 at her death (Genesis 23:1) — the same
+      shape of "both figures stated outright" that made Ishmael this
+      slice's justification. She does not fit today's `CHAIN` table
+      because her row would need to anchor on her HUSBAND, not a
+      father: `CHAIN`'s tuple is `(personId, fatherId, father's age at
+      birth, lifespan, ...)`, and Sarah's 90 is Abraham's age at Isaac's
+      birth restated from the wife's side, not a begetting age of her
+      own. Building this honestly needs either a second anchor kind
+      (`spouseId` alongside `fatherId`) or a deliberate decision to
+      still key her off `fatherId: null` with a birth computed some
+      other way — a small model change, not a data-only slice, so it
+      was not taken unattended today. Numbers to carry forward: if
+      Sarah is drawn at Isaac's birth (AM 2108) minus her own age there
+      (90), her birth would be AM 2018 and her death AM 2145 (2018 +
+      127) — 10 years after Abraham's birth (AM 2008), which is
+      consistent with Genesis 17:17's "shall Sarah, that is ninety years
+      old, bear?" being asked of a woman younger than her 100-year-old
+      husband. Cross-check against `family_tree.json` before building:
+      confirm `sarah.birthYear`/`deathYear` if present, or that she is
+      absent from it, before trusting the arithmetic above.
+
 - [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
       event's sheet — not just no sheet.** Found 2026-09-16 while
       measuring whether the chronology chart's bare-lane and chip tap

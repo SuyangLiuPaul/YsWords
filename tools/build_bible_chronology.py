@@ -5,11 +5,12 @@ interactive chronology chart on the Bible Timeline page.
 Two layers, one axis:
 
   * LIFELINES, computed from the Masoretic begetting ages Genesis
-    states, chapters 5 and 11 for Adam → Abraham, 21, 25 and 35/47 for
-    Isaac and Jacob, and 41, 45, 47 and 50 for Joseph (Adam → Joseph).
-    Every year traces to a verse — directly, for everyone up to and
-    including Jacob; by chaining four verses together for Joseph, whose
-    father's age at his birth Genesis never states outright (see CHAIN).
+    states, chapters 5 and 11 for Adam → Abraham, 16 for Ishmael, and
+    21, 25 and 35/47 for Isaac and Jacob, and 41, 45, 47 and 50 for
+    Joseph (Adam → Joseph, with Ishmael a branch off Abraham). Every
+    year traces to a verse — directly, for everyone except Joseph; his
+    alone is chained together from four verses, since his father's age
+    at his birth Genesis never states outright (see CHAIN).
   * EVENTS, read from `assets/bible_timeline.json` and PLACED on the
     same Anno Mundi axis through the 4004 BC anchor, so the chart spans
     Creation → Revelation exactly as the event list on the same page
@@ -167,6 +168,15 @@ CHAIN = [
     # Abram leaves Haran at 75.
     ("abraham",     "terah",       130,   175,   ["Genesis 11:26", "Genesis 11:32",
                                                   "Genesis 12:4", "Acts 7:4"],       ["Genesis 25:7"]),
+    # Ishmael is the chain's first fork, not its next link: he is
+    # Abraham's son, not Isaac's ancestor, so his row shares Abraham's
+    # father and does not feed anything after it. Both figures are
+    # stated directly, unlike Joseph's, so he takes the generic
+    # "X was N when Y was born" phrasing. Placed here, ahead of Isaac,
+    # for birth order (AM 2094 vs 2108) — not because anything in CHAIN
+    # depends on that order beyond a row needing its father's birth
+    # already computed, which Abraham's row above supplies either way.
+    ("ishmael",     "abraham",     86,    137,   ["Genesis 16:16"],                 ["Genesis 25:17"]),
     # Genesis states both ages directly, so the chain stays continuous
     # one generation further than Genesis 11 alone — see the module
     # docstring.
@@ -233,6 +243,9 @@ LINE_OF = {
     # label ("Shem's line (Genesis 11)") that overclaims where their
     # ages actually come from. See LINES below.
     "isaac": "isaac_jacob", "jacob": "isaac_jacob", "joseph": "isaac_jacob",
+    # Ishmael is Abraham's son too, but not Isaac's line — the same
+    # overclaim reusing "isaac_jacob" would make in the other direction.
+    "ishmael": "ishmaelite",
 }
 
 # People whose death year Scripture never gives are drawn open-ended,
@@ -374,6 +387,20 @@ LINES = [
         "nameEn": "Isaac, Jacob and Joseph",
         "nameZhHans": "以撒、雅各与约瑟",
         "nameZhHant": "以撒、雅各與約瑟",
+    },
+    # The chart's first fork: Ishmael branches off Abraham rather than
+    # continuing toward Isaac, so neither "shemite" nor "isaac_jacob"
+    # names who this line actually holds. Rose/plum — distinct from the
+    # three colours above and from all eight ERA_STYLE hues, checked at
+    # both the light-theme value and the `_readable()` dark-theme lerp
+    # toward white (chronology_chart.dart); its nearest neighbour either
+    # way is "mosaic" red, ~40 in RGB-distance terms.
+    {
+        "id": "ishmaelite",
+        "colorHex": "#A63A6B",
+        "nameEn": "Ishmael's line",
+        "nameZhHans": "以实玛利的家系",
+        "nameZhHant": "以實瑪利的家系",
     },
 ]
 
@@ -548,14 +575,14 @@ def build():
             "derivationZhHant": der_hant,
         }
 
-        if pid in ("abraham", "isaac", "jacob", "joseph"):
+        if pid in ("abraham", "ishmael", "isaac", "jacob", "joseph"):
             # Numbers are derived here, not transcribed, so the note
             # can't drift from the arithmetic that produced the bar.
             # family_tree.json's BC range and the derived-from-AM BC
-            # range are both computed the same way for all four
-            # patriarchs (the gap is a constant ~170 years, the same
-            # anchor mismatch propagated down one chain — see
-            # CONTESTED_NOTE for where it first shows).
+            # range are both computed the same way for all five of
+            # these (the gap is a constant ~170 years, the same anchor
+            # mismatch propagated down one chain — see CONTESTED_NOTE
+            # for where it first shows).
             fam_birth_bc = -person["birthYear"]
             fam_death_bc = -person["deathYear"]
             am_birth_bc = CREATION_BC - birth

@@ -3219,8 +3219,8 @@ List<ChronologyChipSlot> chronologyChipPlan({
 
 /// The one glyph that separates a counted year from a placed one:
 /// filled diamond vs hollow circle. Shape and fill, never hue — the
-/// chart already spends colour on the three lines of descent and the
-/// eight era bands, and a fourth meaning carried by hue alone would
+/// chart already spends colour on the four lines of descent and the
+/// eight era bands, and a fifth meaning carried by hue alone would
 /// vanish in greyscale and for a colour-blind reader.
 class _BasisGlyph extends StatelessWidget {
   final bool computed;
@@ -3287,7 +3287,7 @@ Color _readable(Brightness brightness, Color base) {
 
 /// Diagonal hatching. The chart's texture for "this is not counted
 /// data" — texture rather than a tint, so it survives greyscale and
-/// does not compete with the three descent colours or the eight era
+/// does not compete with the four descent colours or the eight era
 /// colours already spending hue.
 void _hatch(
   Canvas canvas,
