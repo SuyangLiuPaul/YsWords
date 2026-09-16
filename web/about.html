@@ -189,8 +189,11 @@
   a.go { background: var(--primary); color: var(--on-primary); }
   a.dl { border-color: var(--outline); color: var(--ink);
     background: var(--card-alt); }
+  a.gh { text-decoration: none; font-size: .8125rem; color: var(--faint);
+    white-space: nowrap; padding: .35rem 0; }
   a.go:hover { filter: brightness(1.08); }
   a.dl:hover { border-color: var(--primary); color: var(--primary); }
+  a.gh:hover { color: var(--primary); }
   a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
   /* ── contact ──────────────────────────────────────────────── */
@@ -218,7 +221,7 @@
   footer p { margin: 0; }
 
   @media (prefers-reduced-motion: no-preference) {
-    a.go, a.dl, .mail, .seg button {
+    a.go, a.dl, a.gh, .mail, .seg button {
       transition: background-color .15s, color .15s, border-color .15s,
         filter .15s;
     }
@@ -272,7 +275,8 @@
       <p class="host">yahwehword.com</p>
       <div class="links">
         <a class="go" href="https://yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
-        <a class="dl" href="https://github.com/SuyangLiuPaul/YsWords/releases/latest"><span data-l="hans">下载安装包</span><span data-l="hant">下載安裝包</span><span data-l="en">Download</span></a>
+        <a class="dl" href="/dl/words"><span data-l="hans">下载 APK</span><span data-l="hant">下載 APK</span><span data-l="en">Download APK</span></a>
+        <a class="gh" href="https://github.com/SuyangLiuPaul/YsWords/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
       </div>
     </article>
 
@@ -290,7 +294,8 @@
       <p class="host">sword.yahwehword.com</p>
       <div class="links">
         <a class="go" href="https://sword.yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
-        <a class="dl" href="https://github.com/SuyangLiuPaul/SeekSparks/releases/latest"><span data-l="hans">下载安装包</span><span data-l="hant">下載安裝包</span><span data-l="en">Download</span></a>
+        <a class="dl" href="/dl/sword"><span data-l="hans">下载 APK</span><span data-l="hant">下載 APK</span><span data-l="en">Download APK</span></a>
+        <a class="gh" href="https://github.com/SuyangLiuPaul/SeekSparks/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
       </div>
     </article>
 
@@ -311,7 +316,8 @@
         <!-- 2026-09-17: this card said 「网页版」 because the globe had no
              release to point at. v0.1.2 ships an Android APK and a macOS
              disk image, so it gets the same Download button as the rest. -->
-        <a class="dl" href="https://github.com/SuyangLiuPaul/yahwehs-globe/releases/latest"><span data-l="hans">下载安装包</span><span data-l="hant">下載安裝包</span><span data-l="en">Download</span></a>
+        <a class="dl" href="/dl/world"><span data-l="hans">下载 APK</span><span data-l="hant">下載 APK</span><span data-l="en">Download APK</span></a>
+        <a class="gh" href="https://github.com/SuyangLiuPaul/yahwehs-globe/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
       </div>
     </article>
 
@@ -334,7 +340,8 @@
       <p class="host">newsinsight.yahwehword.com</p>
       <div class="links">
         <a class="go" href="https://newsinsight.yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
-        <a class="dl" href="https://github.com/SuyangLiuPaul/yahwehs_world/releases/latest"><span data-l="hans">下载安装包</span><span data-l="hant">下載安裝包</span><span data-l="en">Download</span></a>
+        <a class="dl" href="/dl/news"><span data-l="hans">下载 APK</span><span data-l="hant">下載 APK</span><span data-l="en">Download APK</span></a>
+        <a class="gh" href="https://github.com/SuyangLiuPaul/yahwehs_world/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
       </div>
     </article>
 
