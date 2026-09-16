@@ -1962,7 +1962,25 @@ class _ChronologyChartState extends State<ChronologyChart> {
           }
         }
         if (best != null) {
-          _showEventSheet(context, best);
+          // The mark a reader just tapped may stand for more than one
+          // event — the label lane already handles this for the chip
+          // path (`bucket.length == 1 ? _showEventSheet : _showClusterSheet`
+          // above); bare lane fell straight to `best`'s own sheet
+          // instead, so a tap on a tick that ties with others silently
+          // opened whichever one `<=` happened to leave standing and
+          // gave no way to reach the rest. Group by x, not by exact
+          // `am`: a sub-pixel epsilon groups what the reader genuinely
+          // cannot tell apart at the current viewport, and at deep zoom
+          // — where the same ticks are pixels apart — they separate
+          // back into their own groups of one.
+          final bestX = _x(best.am, plotWidth);
+          final coLocated = [
+            for (final t in ticks)
+              if ((_x(t.am, plotWidth) - bestX).abs() < 0.5) t,
+          ]..sort((a, b) => a.am.compareTo(b.am));
+          coLocated.length == 1
+              ? _showEventSheet(context, best)
+              : _showClusterSheet(context, coLocated);
         } else {
           // Bare lane — no label, no tick within reach. This did
           // nothing at all, and because the lane's detector is opaque

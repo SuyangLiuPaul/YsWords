@@ -14893,6 +14893,93 @@ has never seen this repo.
       picking anything else. `queue:11538` deferred a twenty-fourth
       time, logged at its own entry.
 
+      **2026-09-16, later the same day — the bare-lane tap fallback now
+      opens a cluster sheet, not just the tie-winner's own.** The slice
+      above measured the gap and correctly judged it "not a bug to fix"
+      at the mechanism level (the `<=` tie-break is exactly as
+      documented) — but left the outcome standing: a reader who taps the
+      one mark drawn at, say, AM 2558 got one of the six Exodus-week
+      events with no route to the other five. The chip path already
+      solves precisely this, one screen away
+      (`bucket.length == 1 ? _showEventSheet : _showClusterSheet` at
+      `chronology_chart.dart:1856-1861`, confirmed still current by
+      direct read). `onTapDown`'s bare-lane fallback now does the same:
+      after picking `best` by the existing nearest-in-x-within-14pt
+      `<=` scan (unchanged), it gathers every tick in `widget.data
+      .allTicks` within 0.5pt of `best`'s own x — a sub-pixel epsilon
+      rather than exact-`am` equality, so it groups what the reader
+      genuinely cannot tell apart at the current viewport and lets the
+      same ticks separate back into singletons at deep zoom — sorts
+      that group ascending by `am` (required: `_showClusterSheet` reads
+      `.first`/`.last` for its title), and opens `_showEventSheet` for a
+      group of one or `_showClusterSheet` naming all of them otherwise.
+
+      **Measured, not assumed, on today's asset — both before and
+      after.** Re-ran the previous slice's own `testWidgets` (all 100
+      ticks, raw tap at each one's own bare-lane x) against the OLD code
+      first (temporarily `git stash`ed the one-hunk lib diff): confirms
+      the prior slice's 80 reached / 20 unreached exactly. Same test
+      against the NEW code: **99 of 100 now reach themselves or a
+      cluster sheet naming them — only `john_patmos` (the corpus's own
+      last tick, `am == spanEndAm`) stays unreached**, for the reason
+      already on record above (`x == plotWidth`, Flutter's right-
+      exclusive `Rect.contains` drops the tap before `onTapDown` runs at
+      all) and confirmed untouched by this diff: a 0.01pt nudge inside
+      the edge reaches it; exactly on the edge still does not. This
+      slice does **not** claim to fix `john_patmos` — that tick already
+      has a working content-based route (it is pinned, reachable via
+      its chip).
+
+      The 19 newly-reached non-last tie members all carry an exact-`am`
+      twin in their new group (re-derived per-group this slice: AM 2558
+      ×6, 4036×6, 2598×4, then 2904/1924/2075/4000/4029/4038×2 each — 9
+      groups, 28 ticks, matching the prior slice's own count), so the
+      0.5pt epsilon's looseness (it also sweeps in some non-identical-x
+      neighbours, e.g. Creation/am 0 with Adam & Eve/am 4 at this
+      viewport's ~0.058pt-per-year) is not what is producing the 99 —
+      every newly-reached title is named by a sheet listing its actual
+      exact-x tie group.
+
+      `test/bible_chronology_test.dart`'s position-based-route test was
+      rewritten, not relaxed: its independent re-derivation now mirrors
+      the new grouping logic (same nearest-in-x tie-break, then "is `t`
+      within 0.5pt of `best`'s x") rather than the old "`best.id == t
+      .id`" check, and the `john_patmos` right-edge exception is kept
+      as its own separately-asserted line, not folded into a looser
+      overall match.
+
+      Perturbation check for teeth: truncated `coLocated` by one
+      (`removeLast()` whenever a group had >1 member) — test went red,
+      naming the dropped events (e.g. "Flight to Egypt", "Paul's
+      Conversion on Damascus Road") in the mismatch; reverted; `git
+      diff` on the lib file confirmed clean of the perturbation before
+      committing.
+
+      Refuted before committing (independent agent, given the diff, the
+      test methodology, and all four claims above — the 80/20 baseline,
+      the 99/1 result, the `john_patmos` mechanism, and the chip-path
+      idiom being real current code): reran both counts itself rather
+      than trusting mine, checked the epsilon for float instability
+      (closest any pair comes to the 0.5pt threshold is 0.0187pt, ~14
+      orders of magnitude above float64 epsilon) and for a coincidental-
+      pass (every newly-reached title has a genuine exact-`am` twin, not
+      just an epsilon-swept neighbour), and nudge-swept the right edge
+      to isolate the `Rect.contains` mechanism directly. All four held.
+
+      `flutter analyze` clean, repo-wide. `bible_chronology_test.dart`:
+      **117 tests, all pass** (no test added this slice, only the
+      existing position-based-route test's body changed; baseline 117
+      recounted fresh at `0d599cb0`, matches). Full suite left to CI per
+      `queue:15174`'s standing ruling. Code + test only: no asset,
+      version, dependency or deploy change, per this item's own standing
+      rule — nothing to deploy this slice.
+
+      Checkbox stays open: the labelling half ("give all 14
+      densest-decade events their own inline label") is still unbuilt,
+      and the product question about promoting any of the 87 unpinned
+      ticks to a chip at fit view is still open — this slice only
+      changed where a bare-lane tap on an already-drawn mark routes to.
+
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the
       `.clamp(1.0, ...)` floor — the `left >= plotWidth` guard above

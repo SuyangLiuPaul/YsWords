@@ -3533,7 +3533,11 @@ void main() {
       // code computes, so the assertion below states WHY a title landed
       // where it did rather than pinning an opaque list. Same rule as
       // `onTapDown`: nearest in x within 14 pt, `<=` so the last tick in
-      // `allTicks` order at a given x wins.
+      // `allTicks` order at a given x wins — but `best` no longer opens
+      // only its own sheet. It now opens a cluster sheet naming every
+      // tick within 0.5 pt of its own x (see `onTapDown`'s co-located
+      // grouping), so a tap at `t`'s own x reaches `t` whenever `t` is
+      // in THAT group, whether or not `t` itself won the tie.
       final expectedReached = <String>{};
       final expectedUnreached = <String>{};
       for (final t in allTicks) {
@@ -3547,25 +3551,27 @@ void main() {
             best = other;
           }
         }
-        (best?.id == t.id ? expectedReached : expectedUnreached).add(t.titleEn);
+        final coLocatesWithT =
+            best != null && (myX - xOf(best.am)).abs() < 0.5;
+        (coLocatesWithT ? expectedReached : expectedUnreached).add(t.titleEn);
       }
 
       // One measured exception to that pure math, checked here rather
       // than silently absorbed into a looser assertion: the corpus's own
       // last tick sits at `am == spanEndAm`, so its computed x is
-      // exactly `plotWidth` — the lane's own right edge. A perturbation
-      // run of this test (clamping the tap 0.5 pt short of that edge
-      // instead of exactly on it) reached all 81 the pure tie-break math
-      // predicts, this one included — proving the shortfall here is
-      // Flutter's own right-exclusive `Rect`/`Size.contains` at the
-      // mathematically exact boundary pixel, not a tie or an off-by-one
-      // in this widget's `<=`. No real tap lands on that exact
-      // sub-pixel float; the same tick already has a working
-      // CONTENT-based route too (it is one of the 13 pinned titles the
-      // test above this one confirms reachable through
+      // exactly `plotWidth` — the lane's own right edge, where Flutter's
+      // own right-exclusive `Rect`/`Size.contains` drops the tap before
+      // `onTapDown` ever sees it, not a tie or an off-by-one in this
+      // widget's `<=` or its co-located grouping. No real tap lands on
+      // that exact sub-pixel float; the same tick already has a working
+      // CONTENT-based route too (it is one of the pinned titles the test
+      // above this one confirms reachable through
       // `chronologyChipPlan`'s terminal-fold). So: documented here, no
       // lib change, and moved from the pure-math prediction into
       // `expectedUnreached` rather than left to fail the assertion below.
+      // With the co-located cluster-sheet fallback added by this slice,
+      // that one right-edge tick is now the ONLY gap: measured at 99 of
+      // 100 reached, up from 80 of 100 before this change.
       final lastTick =
           allTicks.firstWhere((t) => t.am == data.spanEndAm).titleEn;
       expect(expectedReached.remove(lastTick), isTrue,
