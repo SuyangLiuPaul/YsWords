@@ -13014,10 +13014,50 @@
     "chapter": "6",
     "verse": "7",
     "verseLabel": "7",
-    "text": "耶稣召集那十二人，开始两个两个差派他们出去，并授予他们权能",
+    "text": "耶稣召集那十二人，开始两个两个差派他们出去，并授予他们权能制服不洁的灵。",
     "isParagraphStart": true,
     "paragraphType": "paragraph",
     "id": "41006007"
+  },
+  {
+    "book": "马可福音",
+    "chapter": "6",
+    "verse": "8",
+    "verseLabel": "8",
+    "text": "他叮嘱他们说：“上路只带一根手杖，其余什么都不带，面饼、皮口袋一律不带，腰带里连铜钱也不放。",
+    "isParagraphStart": false,
+    "paragraphType": "paragraph",
+    "id": "41006008"
+  },
+  {
+    "book": "马可福音",
+    "chapter": "6",
+    "verse": "9",
+    "verseLabel": "9",
+    "text": "可以穿鞋，但不必穿两件束腰外衣。”",
+    "isParagraphStart": false,
+    "paragraphType": "paragraph",
+    "id": "41006009"
+  },
+  {
+    "book": "马可福音",
+    "chapter": "6",
+    "verse": "10",
+    "verseLabel": "10",
+    "text": "还说：“你们无论到哪里，进了一家，就应借宿在那家，直到离开那里。",
+    "isParagraphStart": false,
+    "paragraphType": "paragraph",
+    "id": "41006010"
+  },
+  {
+    "book": "马可福音",
+    "chapter": "6",
+    "verse": "11",
+    "verseLabel": "11",
+    "text": "若有什么地方不欢迎你们，不肯听你们的，你们离开那地方的时候，要把脚上的尘土跺落，见证他们的错。”",
+    "isParagraphStart": false,
+    "paragraphType": "paragraph",
+    "id": "41006011"
   },
   {
     "book": "马可福音",
