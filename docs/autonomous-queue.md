@@ -100,6 +100,79 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [x] **2026-09-16 — fallback iteration (tiers 1–6 all blocked/empty; see
+      NEXT_TASK.md's own walk).** BUGS empty, P2's 4 open items all
+      genuinely blocked (branch-scale `.router` work deferred 12×; the
+      chronology-chart threads explicitly "not this loop's call to make
+      unattended"; a bare-lane fix needing a product call; the loop-stage
+      rc=0 item living outside this repo), P3's one open item is the
+      NASB licensing skip, P1 empty, Tier 5 nothing has caused a shipped
+      failure since 2026-09-15, and P0's 14 open items are all blocked on
+      the publisher or a convention call (the two verse-omission
+      carve-outs stay blocked — they're the publisher's own Simplified
+      holes, and 繁→簡 conversion to fill them is writing scripture, not
+      repair). Took the fallback's second option (widen test coverage)
+      over the first (re-run a data audit): `audit_originals_compounds.py
+      --check` had already run clean, 0 drift, one iteration earlier
+      (`25551112`), and no commit had touched `assets/` since
+      (`git log -1 -- assets/` = `4ad60bab`), so a same-day re-run would
+      have been a provable no-op.
+
+      **Of the four `tools/audit_*.py` files with a `--check` flag,
+      `audit_p0.py` was the only one with a unit test of its own
+      (`test/test_audit_p0_check.py`).** `audit_strongs_tagging.py`'s and
+      `audit_divine_name.py`'s `check()` — the two CI gates wired in on
+      2026-09-08 and 2026-09-15 respectively — had none; `grep -rl
+      "audit_divine_name\|audit_strongs_tagging" test/` returned nothing.
+      Both gates recompute a census over the real corpus and diff it
+      against a module-level `PINNED` dict; CI's own steps already
+      exercise the real corpus every push, so what was untested was the
+      comparison/reporting logic, not the corpus.
+
+      **New `test/test_audit_census_checks.py`** (6 cases, follows
+      `test_audit_p0_check.py`'s `importlib.util.spec_from_file_location`
+      loader shape): monkeypatches `audit_divine_name.census`/`.reconcile`
+      and `audit_strongs_tagging._compute` with synthetic dicts sized to
+      match `PINNED`/`PINNED_RECONCILE`, so no test walks the real
+      367,573-run corpus. One "matching counts return 0" test and one
+      "one-off perturbation returns 1, with the exact `pinned N, measured
+      M (delta ±D)` message asserted" test per dict: `PINNED` and
+      `PINNED_RECONCILE` for divine-name, the `True` and `False` branches
+      for strongs-tagging (the `False` branch has no `left_to_read` keys,
+      so a perturbation test on `True` alone would leave it unproven).
+      Runs in ~2ms standalone.
+
+      **Proved the new tests can go red before trusting them**: stubbed
+      both modules' `check()` to a function always returning 0 and reran
+      the file — all 6 tests failed with the expected assertion errors,
+      confirming they aren't vacuously passing.
+
+      **Wired into CI** as a new `Strong's-tagging / divine-name gate
+      unit tests` step in `flutter-ci.yml`, immediately after the
+      divine-name census step, running `python3
+      test/test_audit_census_checks.py` — not switched to `unittest
+      discover`, which would sweep in files needing the untracked
+      `assets/sermon_library/` corpus and go red on a bare runner.
+
+      **Refuted before committing** (separate agent, asked to disprove
+      each claim by re-running the underlying command): confirmed exactly
+      4 `tools/audit_*.py` files carry a `--check` flag (3 via
+      `add_argument`, `audit_p0.py` via `if '--check' in args`); confirmed
+      3 of those 4 are wired into CI today, with `audit_originals_
+      compounds.py`'s omission genuinely deliberate (`.cache/` is
+      gitignored and cold on a bare runner, so its `--check` would SKIP/
+      exit 0 vacuously); confirmed `audit_p0.py` was the only pre-existing
+      one with a dedicated test (the other two `test/` hits for these
+      names are comment-only, not tests); confirmed the new file's 6 tests
+      never mutate the tracked `PINNED`/`PINNED_RECONCILE` dicts (only
+      local `dict(...)` copies) and never invoke the real corpus-walking
+      code.
+
+      `flutter analyze`: clean (no Dart changed). Full `flutter test`:
+      3,316 passed / 1 skipped. No `assets/`, `lib/`, version or
+      dependency change — tooling/test/CI only, so no deploy this
+      iteration.
+
 - [x] **2026-09-15 FIXED — Tier 5, systemic: `tools/audit_divine_name.py
       --check` was landed 2026-09-14 (`7515073f`) with a docstring line
       documenting it as "pinned totals, for CI" and nothing anywhere ran

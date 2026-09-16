@@ -203,6 +203,19 @@ jobs:
       - name: Divine-name census totals
         run: python3 tools/audit_divine_name.py --check
 
+      # Unit tests for the two gates directly above (added 2026-09-16):
+      # neither audit_strongs_tagging.py's nor audit_divine_name.py's
+      # check() had a test of its own, unlike audit_p0.py's (the step at
+      # :163). Both stub census()/reconcile()/_compute() with synthetic
+      # dicts rather than re-walking the real corpus (367,573 runs), so
+      # this proves the COMPARISON logic — the part CI's steps above
+      # cannot exercise, since the real corpus always passes them by
+      # construction of `PINNED` being kept in sync with it. Pure
+      # in-memory fixtures, no assets, safe unconditionally, same
+      # reasoning as :163's own comment.
+      - name: Strong's-tagging / divine-name gate unit tests
+        run: python3 test/test_audit_census_checks.py
+
       - name: Test
         run: flutter test --reporter expanded
 
