@@ -3,9 +3,12 @@
 now: `tools/audit_divine_name.py` and `tools/audit_strongs_tagging.py`.
 
 `test/test_audit_p0_check.py` already covers the third `--check` gate
-(`tools/audit_p0.py`); `tools/audit_originals_compounds.py`'s `--check`
-is deliberately not wired into CI at all (see `flutter-ci.yml`'s comment
-at its P0 step) and has no test here for the same reason.
+(`tools/audit_p0.py`); `test/test_audit_compounds_check.py` covers the
+fourth and last, `tools/audit_originals_compounds.py`. That gate's
+`--check` is itself deliberately not wired into CI (see
+`flutter-ci.yml`'s comment at its P0 step) — its own test file is, since
+the test never touches `.cache/originals/` and so has none of the
+cold-runner problem the gate itself has.
 
 Both gates under test share a shape: a `check()` that recomputes a
 census/comparison over the real corpus and diffs it against a module-level

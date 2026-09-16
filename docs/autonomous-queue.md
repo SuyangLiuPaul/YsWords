@@ -180,6 +180,78 @@ reported. Work these top-down before P2.
       iteration's step 0 should check `35057061032`'s conclusion before
       picking anything else.
 
+      Closed out at the next iteration: `35057061032` completed
+      **success**.
+
+- [x] **2026-09-16 — fallback iteration (tiers 1–6 again all
+      blocked/empty; BUGS tier's own item was a footnote-indentation fix
+      landed by a second Claude session sharing this checkout, not by
+      this loop).** Continued `55a43be8`'s own principle ("a gate passing
+      on the real corpus proves nothing about whether it can fail") to
+      the one census `--check` gate it left uncovered:
+      `tools/audit_originals_compounds.py`. Of the four `tools/audit_*.py`
+      files with a `--check` flag, this was the only one whose PASS can
+      be *vacuous* — `--check` exits 0 both when the corpus has no drift
+      and when `.cache/originals/` is cold (`main()`'s `--check` branch
+      returns before calling `hebrew_drift()`/`greek_drift()` if
+      `cache_ready()` is false), and the two paths are only
+      distinguishable by the word `SKIP:` on stdout, not by exit code.
+
+      **New `test/test_audit_compounds_check.py`** (4 cases, same
+      `importlib.util.spec_from_file_location` loader shape as its three
+      siblings): monkeypatches `cache_ready`/`hebrew_drift`/`greek_drift`
+      on the loaded module and drives `main()` with `sys.argv` set to
+      `--check` (this tool's check logic lives inline in `main()`, unlike
+      the other three which expose a standalone `check()`). Cases: cold
+      cache returns 0 with `SKIP:` on stdout *and* the two `*_drift()`
+      stubs wired to raise if called at all, proving they never run;
+      warm cache with no drift returns 0 with `0 drift`; warm cache with
+      drift (2 Hebrew refs + 1 Greek ref) returns 1 and lists both
+      languages' refs, proving `hebrew_drift() + greek_drift()`'s
+      concatenation isn't silently dropping one side; 15 Hebrew + 10
+      Greek refs (25 total) prints exactly 20 and `… 5 more`, pinning the
+      truncation branch. Touches no real corpus and no `.cache/` at all.
+
+      **Proved the tests can go red**: forced the tool's `--check` branch
+      to `if False:` instead of `if drift:` (so it always fell through to
+      the "OK, 0 drift" return-0 path regardless of what the stubs
+      returned), reran — the two drift-bearing tests failed with
+      `AssertionError: 0 != 1` as expected, the two no-drift-shaped ones
+      still passed. Reverted; `git diff tools/` empty before committing.
+
+      **Wired into CI** as `Originals-compounds audit gate unit tests` in
+      `flutter-ci.yml`, right after the existing census-gate-tests step —
+      safe unconditionally, same reasoning as its siblings, since it
+      never touches `.cache/originals/`.
+
+      **Corrected `test/test_audit_census_checks.py`'s docstring**, which
+      still said `audit_originals_compounds.py` "has no test here" —
+      true when written, false after this commit.
+
+      **Refuted before committing** (separate agent, asked to disprove
+      each claim by re-deriving it, not by re-reading my summary):
+      re-grepped all 22 `tools/audit_*.py` files independently and
+      confirmed exactly 4 carry a `--check` flag with the PINNED-vs-
+      measured-census shape (the other `--check`-flagged tools under
+      `tools/` — `build_changelog.py`, `add_cdc_artwork.py`,
+      `import_ydh_texts.py` etc. — are idempotency/dry-run flags, not
+      census gates), and that all 4 now have a real test file that drives
+      their actual check logic; independently re-read
+      `cache_ready()`/`main()`'s `--check` branch and confirmed the
+      cold-cache short-circuit happens before either `*_drift()` call;
+      independently ran `python3 tools/audit_originals_compounds.py
+      --check` live (safe — this flag never fetches) and got literal
+      `OK: … (0 drift)`, confirming `.cache/originals/` is in fact warm
+      on this Mac (40/40 files) and this loop's prior "0 drift" queue
+      entries were real measurements, not vacuous SKIPs.
+
+      `flutter analyze` not run: no Dart changed. Full `flutter test` not
+      re-run either (same reason) — ran the four affected Python test
+      files directly instead (`test_audit_compounds_check.py`,
+      `test_audit_census_checks.py`, `test_audit_p0_check.py`), all
+      green. No `assets/`, `lib/`, version or dependency change —
+      tooling/test/CI only, so no deploy this iteration.
+
 - [x] **2026-09-15 FIXED — Tier 5, systemic: `tools/audit_divine_name.py
       --check` was landed 2026-09-14 (`7515073f`) with a docstring line
       documenting it as "pinned totals, for CI" and nothing anywhere ran

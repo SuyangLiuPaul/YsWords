@@ -216,6 +216,17 @@ jobs:
       - name: Strong's-tagging / divine-name gate unit tests
         run: python3 test/test_audit_census_checks.py
 
+      # Unit tests for the fourth and last `--check` gate without one
+      # (added 2026-09-16): tools/audit_originals_compounds.py's --check
+      # exits 0 on both "no drift" and "cache is cold, nothing measured"
+      # — this pins that those two paths are actually distinguishable, by
+      # stubbing cache_ready()/hebrew_drift()/greek_drift() rather than
+      # touching .cache/originals/. The gate itself stays out of CI (see
+      # the P0 step's comment above); this test file is safe here because
+      # it never warms or reads that cache at all.
+      - name: Originals-compounds audit gate unit tests
+        run: python3 test/test_audit_compounds_check.py
+
       - name: Test
         run: flutter test --reporter expanded
 
