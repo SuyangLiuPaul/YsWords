@@ -16798,6 +16798,15 @@ so the bundle-size answer stays on the record.
       prior recurrence: the fix is in `run.sh`/`prompt.md`, not touched
       here.
 
+      **Same iteration, follow-up:** with the two orphans landed, HEAD
+      was 16 commits past the last dev/qat deploy (v1.6.9) — past the
+      6-iteration threshold, and including a scripture correction
+      (`b35dfce4`) and a chronology-chart UI fix. Ran
+      `tools/release_web.sh`, deployed v1.6.10 to all four dev/qat
+      sites (international + CHINA_MODE), verified `version.json` on
+      each, committed as `7155f4fd`, pushed, and watched CI run
+      `35092044752` to **success**. No prod deploy.
+
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
       `nfp_[A-Za-z0-9]{20,}` pattern registered. The two broad AWS
