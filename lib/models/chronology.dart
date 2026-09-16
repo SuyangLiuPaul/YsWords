@@ -3,10 +3,11 @@
 /// `tools/build_bible_chronology.py`).
 ///
 /// The chart's unit is **Anno Mundi** — years since Creation. That is
-/// deliberate: Genesis 5 and 11 state *intervals* (X was N years old
-/// when he fathered Y; he lived M years), and intervals are what the
-/// text actually gives. A BC year is an interval plus an anchor, and the
-/// anchor is the contested part. So AM is stored, BC is derived through
+/// deliberate: Genesis states *intervals* (X was N years old when he
+/// fathered Y; he lived M years), chained here from Adam to Joseph, and
+/// intervals are what the text actually gives. A BC year is an interval
+/// plus an anchor, and the anchor is the contested part. So AM is
+/// stored, BC is derived through
 /// a named [ChronologyScheme], and the scheme is shown on screen rather
 /// than folded silently into the numbers.
 library;
@@ -207,8 +208,8 @@ class Lifeline {
 
 /// How a tick got its position on the AM axis. The distinction the
 /// chart is not allowed to blur: a [computed] year is the sum of ages
-/// Genesis 5 and 11 state, a [placed] one is a scholar's placement
-/// converted through the anchor.
+/// Scripture states, chained across generations; a [placed] one is a
+/// scholar's placement converted through the anchor.
 enum AmBasis { computed, placed }
 
 /// One era band — background orientation across 4,100 years, taken from
@@ -274,8 +275,11 @@ class ChronologyMarker {
   /// happens to land in — the two can differ where eras overlap.
   final String era;
 
-  /// [AmBasis.computed] for the seven Genesis 5/11 anchors,
-  /// [AmBasis.placed] for everything from `bible_timeline.json`.
+  /// [AmBasis.computed] for the seven anchors this file's arithmetic
+  /// derives (Creation, Enoch, the Flood, Abram's birth and call,
+  /// Isaac's birth, Abraham's death — drawn from several Genesis
+  /// chapters, not just 5 and 11), [AmBasis.placed] for everything from
+  /// `bible_timeline.json`.
   final AmBasis amBasis;
 
   /// Whether this tick gets a "Jump to" chip and a printed label.

@@ -25,12 +25,13 @@ import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
 /// under copyright (Bible Charts and Maps, LLC, 2012). Nothing here is
 /// traced or transcribed from it: the layout is a plain left-to-right
 /// lifeline chart, not its spiral, and every number comes from
-/// `assets/bible_chronology.json`, which is computed from the Masoretic
-/// ages in Genesis 5 and 11 and cross-checked against our own
+/// `assets/bible_chronology.json`, which is computed from the begetting
+/// ages Genesis states — directly, up to and including Jacob; chained
+/// across four verses for Joseph — and cross-checked against our own
 /// `assets/family_tree.json`.
 ///
 /// **Honesty about the dates.** The bars are laid out in Anno Mundi —
-/// years since Creation — because intervals are what Genesis 5 and 11
+/// years since Creation — because intervals are what those chained ages
 /// actually state. The BC labels need an anchor, and the anchor is the
 /// contested part; the scheme banner at the top says which one is in
 /// use and opens a sheet naming the Septuagint and Samaritan

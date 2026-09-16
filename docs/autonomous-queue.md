@@ -15694,7 +15694,7 @@ has never seen this repo.
       predates this slice and is unrelated to Joseph — filed below
       rather than fixed inline, since it is outside this task's scope.
 
-- [ ] **`build_bible_chronology.py`'s `_meta.description` says "98
+- [x] **`build_bible_chronology.py`'s `_meta.description` says "98
       events"; the generator emits 93.** Found 2026-09-17 while adding
       the Joseph lifeline (entry above). `DUPLICATES` dedupes 5 timeline
       events against computed markers before the `events` list is built,
@@ -15704,7 +15704,69 @@ has never seen this repo.
       docstring's count in `tools/build_bible_chronology.py`'s `doc`
       literal to match `len(events)` (or just say "the timeline events"
       without a number, so it can't drift again) and confirm no test
-      pins "98" anywhere else.
+      pins "98" anywhere else. **Fixed 2026-09-17 — see the wider slice
+      logged under the chronology chart item, which closed this and the
+      rest of the same stale-copy class.**
+
+      **2026-09-17 slice — the wider stale-copy class this filed item
+      belonged to.** The fatherId/Isaac-Jacob/Joseph slices moved the
+      computed bars Adam → Abraham → Jacob → Joseph but left several
+      pieces of user-visible copy and doc comments still framing the
+      computed layer as "Genesis 5 and 11" / ending at "Adam to
+      Abraham" / "98 events" — exactly the class that reads plausibly
+      and is wrong about scripture. Fixed: `_meta.description` (now
+      interpolates `len(events)` instead of a literal, and names the
+      real Adam→Joseph span without overclaiming which chapters);
+      `COMPUTED_NOTE` (all 3 locales, generator + rendered via
+      `chronology_chart.dart`); `chronologyComputedEnds` and
+      `chronologyBasisComputed` (`ui_strings.dart`, all 3 locales —
+      reworded to name no chapter list at all, per the refuter
+      guidance in the task that assigned this slice, since Joseph's
+      link is chained/derived, not stated, and a chapter list risks
+      re-implying otherwise); `dashboard_page.dart`'s inline fallback
+      subtitle; doc comments in `chronology_chart.dart`,
+      `chronology.dart` (×3 sites), and `ui_strings.dart`'s
+      `chronologyChart` section comment. Left alone, per the task's
+      explicit "do NOT fix" list: the three SCHEMES notes describing
+      where the Masoretic/Septuagint/Samaritan genealogies diverge
+      (still true), and the onboarding/dashboard "98 events" strings
+      that correctly describe the *timeline page's* own event count, a
+      different number from the chart layer's 93 on purpose.
+
+      **New regression test**, `bible_chronology_test.dart`: asserts
+      `_meta.description`'s "N events" figure never disagrees with
+      `data.events.length`. Perturbed to "98 events" and confirmed it
+      fails (`Expected: <93>, Actual: <98>`), then reverted via a clean
+      regenerate — `git diff --stat` matched before and after the
+      perturbation, so nothing was left hand-edited.
+
+      **Refuted, not just asserted**: 93 = 98 raw timeline events minus
+      the 5 in `DUPLICATES`; `computedEndAm` 2369 is Joseph's own
+      `deathAm`, read off the asset; Joseph's begetting age is chained
+      from exactly Gen 41:46 + 41:53 + 45:6 + 47:9, no single verse
+      states it; the seven computed markers cite Genesis 1, 5, 7, 11,
+      12, 21 and 25 (plus Acts 7, Hebrews 11) — not just 5 and 11,
+      which is why the new copy stopped naming a chapter list. The
+      refuter also caught two more sites outside this item's own file
+      list that carried the same stale framing — a comment above
+      `chronologyChart` in `ui_strings.dart` and the AM-unit rationale
+      at the top of `chronology.dart` — folded into this slice rather
+      than filed separately, since both were doc-only and cheap.
+
+      Asset + code + test only, no version bump, no deploy — this
+      item's own guard rail, carried forward from the fatherId/scheme/
+      Isaac-Jacob/Joseph slices, even though user-visible strings
+      changed.
+
+      `flutter analyze` clean repo-wide. `bible_chronology_test.dart`
+      alone first (122 tests, was 121), then the full suite in the
+      foreground to completion (3331 including tearDownAll, all pass,
+      exit 0).
+
+      **Noticed, not fixed — nothing new found.** No further "Genesis
+      5 and 11" / "Adam to Abraham" / hardcoded event-count copy
+      remains in the chart's own files after this slice, checked by
+      re-grepping both terms across `lib/` and `tools/` post-edit.
 
 - [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
       event's sheet — not just no sheet.** Found 2026-09-16 while

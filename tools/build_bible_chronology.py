@@ -30,8 +30,9 @@ Why a separate asset from `assets/family_tree.json`:
     `test/bible_chronology_test.dart` fails the build if any is missing.
 
 Provenance: names/localisations are lifted from `assets/family_tree.json`
-(our own curated data). Years are recomputed here from the Masoretic
-ages of Genesis 5 and 11 and checked against family_tree's AM values.
+(our own curated data). Years are recomputed here from the begetting
+ages Genesis states, chained Adam to Joseph, and checked against
+family_tree's AM values.
 
 NOTHING here is transcribed from the reference chart in
 `docs/reference/` — that sheet is under copyright and is a reference for
@@ -132,7 +133,7 @@ ERA_STYLE = {
     "nt": ("#B8860B", "New Testament", "新约", "新約"),
 }
 
-# ── The Masoretic chronology of Genesis 5 and 11 ────────────────────
+# ── The begetting-age chain, Adam to Joseph ──────────────────────────
 #
 # (personId, fatherId, father's age at the son's birth, total lifespan,
 #  birth citation, death citation, extra citations)
@@ -412,27 +413,31 @@ def marker(mid, am, era, refs, en, hans, hant):
 # makes them true, rather than in the widget.
 COMPUTED_NOTE = {
     "en": (
-        "Left of this line every year is COMPUTED: it is the sum of the "
-        "begetting ages Genesis 5 and 11 state, and each bar carries the "
-        "arithmetic. Right of it Scripture stops giving a continuous "
-        "chain of ages, so there are no lifelines to draw — only events, "
-        "PLACED on the BC/AD years of assets/bible_timeline.json. The "
-        "ground fades out there for the same reason a bar with no stated "
-        "death year fades out: the chart is saying it does not know."
+        "Left of this line every year is COMPUTED: it is the ages "
+        "Scripture states, chained together — directly, for everyone up "
+        "to and including Jacob, and by chaining four verses together "
+        "for Joseph — and each bar carries the arithmetic. Right of it "
+        "Scripture stops giving a continuous chain of ages, so there are "
+        "no lifelines to draw — only events, PLACED on the BC/AD years "
+        "of assets/bible_timeline.json. The ground fades out there for "
+        "the same reason a bar with no stated death year fades out: the "
+        "chart is saying it does not know."
     ),
     "zh-Hans": (
-        "此线以左，每一个年份都是「推算」出来的：把创世记 5、11 章所记的生子"
-        "年龄相加而得，每根横条都附着算式。此线以右，经文不再给出连续的年岁"
-        "链条，因此没有生平横条可画——只有事件，按 assets/bible_timeline.json "
-        "的公元前后年份「定位」。那一段的底色会淡出，理由和没有记载卒年的横条"
-        "淡出是同一个：本图在说它不知道。"
+        "此线以左，每一个年份都是「推算」出来的：把经文所记的岁数逐代相连而"
+        "得——雅各及以前各代直接见于经文，约瑟一代则是把四处经文串联推得——"
+        "每根横条都附着算式。此线以右，经文不再给出连续的年岁链条，因此没有"
+        "生平横条可画——只有事件，按 assets/bible_timeline.json 的公元前后"
+        "年份「定位」。那一段的底色会淡出，理由和没有记载卒年的横条淡出是同"
+        "一个：本图在说它不知道。"
     ),
     "zh-Hant": (
-        "此線以左，每一個年份都是「推算」出來的：把創世記 5、11 章所記的生子"
-        "年齡相加而得，每根橫條都附著算式。此線以右，經文不再給出連續的年歲"
-        "鏈條，因此沒有生平橫條可畫——只有事件，按 assets/bible_timeline.json "
-        "的公元前後年份「定位」。那一段的底色會淡出，理由和沒有記載卒年的橫條"
-        "淡出是同一個：本圖在說它不知道。"
+        "此線以左，每一個年份都是「推算」出來的：把經文所記的歲數逐代相連而"
+        "得——雅各及以前各代直接見於經文，約瑟一代則是把四處經文串聯推得——"
+        "每根橫條都附著算式。此線以右，經文不再給出連續的年歲鏈條，因此沒有"
+        "生平橫條可畫——只有事件，按 assets/bible_timeline.json 的公元前後"
+        "年份「定位」。那一段的底色會淡出，理由和沒有記載卒年的橫條淡出是同"
+        "一個：本圖在說它不知道。"
     ),
 }
 
@@ -763,12 +768,15 @@ def build():
             "count": len(lifelines),
             "eventCount": len(events),
             "description": (
-                "Two layers on one Anno Mundi axis. (1) LIFELINES — "
-                "Genesis 5 and 11, Adam to Abraham, the only span where "
-                "Scripture states a continuous chain of begetting ages; "
-                "names from assets/family_tree.json, years recomputed "
-                "from the Masoretic ages and cross-checked against it. "
-                "(2) EVENTS — the same 98 events the event list on this "
+                "Two layers on one Anno Mundi axis. (1) LIFELINES — the "
+                "begetting ages Genesis states, chained from Adam to "
+                "Joseph: directly, for everyone up to and including "
+                "Jacob; by chaining four verses together for Joseph, "
+                "whose father's age at his birth Genesis never states "
+                "outright (see CHAIN in this file). Names from "
+                "assets/family_tree.json, years recomputed from the "
+                "Masoretic ages and cross-checked against it. "
+                "(2) EVENTS — the same %d events the event list on this "
                 "page shows, from assets/bible_timeline.json, placed on "
                 "the AM axis by their stated BC/AD year through the "
                 "4004 BC anchor, so both views of the page span "
@@ -776,7 +784,7 @@ def build():
                 "differently and labelled, because a placed year is not "
                 "a computed one. No data is taken from the copyrighted "
                 "reference sheet in docs/reference/."
-            ),
+            ) % len(events),
             "computedNote": COMPUTED_NOTE,
             "undrawnLines": UNDRAWN,
         },

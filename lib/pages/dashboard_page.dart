@@ -923,7 +923,7 @@ class _DashboardPageState extends State<DashboardPage> {
               title: uiStrings['chronologyChart']?[locale] ??
                   'Chronology chart',
               subtitle: uiStrings['chronologyFeaturedSubtitle']?[locale] ??
-                  'Who was alive at the same time — Adam to Abraham, drag '
+                  'Who was alive at the same time — Adam to Joseph, drag '
                       'the year and see',
               scheme: scheme,
               settings: settings,

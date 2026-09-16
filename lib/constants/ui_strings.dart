@@ -7181,9 +7181,9 @@ const uiStrings = {
   },
   // ── Chronology chart ──────────────────────────────────────────
   // The second view on the Bible Timeline page: parallel lifelines
-  // from Genesis 5 and 11, so contemporaneity is visible. Asked for
-  // 2026-08-12 「我要你参考这个图，你做一个可以iteractive的放在一个板块
-  // 里面…而且是featured」.
+  // from the begetting ages Genesis states, chained Adam to Joseph, so
+  // contemporaneity is visible. Asked for 2026-08-12 「我要你参考这个图，
+  // 你做一个可以iteractive的放在一个板块里面…而且是featured」.
   'chronologyChart': {
     'en': 'Chronology chart',
     'zh-Hans': '年代对照图',
@@ -7340,9 +7340,9 @@ const uiStrings = {
     'zh-Hant': '定位事件——出於學界定年，非由經文推算',
   },
   'chronologyComputedEnds': {
-    'en': 'Genesis 5 & 11 ages end here',
-    'zh-Hans': '创世记 5、11 的岁数到此为止',
-    'zh-Hant': '創世記 5、11 的歲數到此為止',
+    'en': "Scripture's chain of ages ends here",
+    'zh-Hans': '经文岁数链到此为止',
+    'zh-Hant': '經文歲數鏈到此為止',
   },
   'chronologyContestedLabel': {
     'en': 'The two scales disagree here',
@@ -7380,12 +7380,12 @@ const uiStrings = {
     'zh-Hant': '此年份的來源',
   },
   'chronologyBasisComputed': {
-    'en': 'Counted from the begetting ages Genesis 5 and 11 state. The '
-        'BC label is that count placed on the 4004 BC anchor.',
-    'zh-Hans': '由创世记 5、11 章所记的生子年龄累加而得。公元前标签是把这个'
-        '年数放在公元前 4004 年的锚点上。',
-    'zh-Hant': '由創世記 5、11 章所記的生子年齡累加而得。公元前標籤是把這個'
-        '年數放在公元前 4004 年的錨點上。',
+    'en': 'Counted from the ages Scripture states, chained together. '
+        'The BC label is that count placed on the 4004 BC anchor.',
+    'zh-Hans': '由经文所记的岁数逐代相连累加而得。公元前标签是把这个年数'
+        '放在公元前 4004 年的锚点上。',
+    'zh-Hant': '由經文所記的歲數逐代相連累加而得。公元前標籤是把這個年數'
+        '放在公元前 4004 年的錨點上。',
   },
   'chronologyBasisPlaced': {
     'en': 'Placed at {year} by assets/bible_timeline.json — the same '

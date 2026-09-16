@@ -355,6 +355,29 @@ void main() {
       expect(data.spanEndAm, greaterThan(data.spanStartAm));
     });
 
+    // 2026-09-17: `_meta.description` hand-typed "98 events" while three
+    // prior slices (fatherId, Isaac/Jacob, Joseph) moved DUPLICATES and
+    // events.length to 93 underneath it, and nothing caught the drift —
+    // grepping this file for "98" or "description" found zero hits. The
+    // generator now interpolates `len(events)` instead of a literal, so
+    // this only fires again if a future edit reintroduces a hardcoded
+    // number in the "N events" phrasing.
+    test("_meta.description's event count never disagrees with "
+        'events.length', () {
+      final description = (raw['_meta'] as Map)['description'] as String;
+      final match = RegExp(r'(\d+) events').firstMatch(description);
+      expect(match, isNotNull,
+          reason: 'description no longer names an event count in the '
+              '"N events" phrasing this test looks for — update the '
+              'regex to match the new phrasing, not just delete this '
+              'test');
+      expect(int.parse(match!.group(1)!), data.events.length,
+          reason: 'description names a stale event count; regenerate '
+              'assets/bible_chronology.json with '
+              'tools/build_bible_chronology.py rather than hand-editing '
+              'either');
+    });
+
     test('every year is sourced — citations and arithmetic, per locale',
         () {
       for (final l in data.lifelines) {
