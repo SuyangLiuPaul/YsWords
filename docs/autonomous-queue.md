@@ -15257,6 +15257,76 @@ has never seen this repo.
       something else. None of these are this loop's call to make
       unattended.
 
+      **2026-09-16, still later — the drift, measured across the real
+      corpus, not just the one AM 4029-4038 anecdote above.** The
+      product decision (3) above was blocked on evidence beyond one
+      decade. New `testWidgets` (next to the bare-lane/chip-route test
+      above): sweeps 5 viewports — fit view, `viewAt(4036, years: 100)`
+      (the densest decade), `viewAt(2558, years: 200)`,
+      `viewAt(2200, years: 400)`, and `viewAt(4098, years: 30)` (chosen
+      to reach the terminal-fold branch, which none of the other four
+      viewports triggered) — and for every on-screen "+N" chip, taps it,
+      harvests its own sheet's titles (the chip route's own bucket,
+      established reliable by the test above this one), and computes the
+      distance from the chip's drawn centre x to the nearest of its own
+      bucket members' true tick x (`_x(am, plotWidth) + 3`, the same
+      construction `_tickLane` feeds into `chronologyChipPlan`'s
+      `chipLefts`).
+
+      **Measured: 11 ordinary (packed) chips, 1 fold chip.** Ordinary:
+      max drift 45.25pt (`chronoClusterChip_4038` at the AM4036/100y
+      viewport — the same chip the anecdote above already named), **6 of
+      11 (55%) exceed the bare-lane fallback's own 14pt search radius**.
+      The one fold chip measured drifted only 13.75pt — LESS than most
+      of the ordinary chips, not more; the terminal-fold branch's
+      deliberate abandonment of its own x is not, on this one sample,
+      the worse offender the fold-branch design doc worried about.
+      Reported separately per this test's own design, not pooled with
+      the ordinary numbers, since the fold branch's `tailLeft = plotWidth
+      - tailWidth` construction makes "distance from own x" a different
+      kind of number for it.
+
+      Pinned as a ratchet (`_pinnedMaxOrdinaryChipDrift`,
+      `_pinnedOverBareLaneRadiusCount`, `_pinnedMaxFoldChipDrift` near
+      the top of `test/bible_chronology_test.dart`) — numbers that move
+      when behaviour moves, not invariants true by construction.
+
+      Perturbation check: added 25pt to `chronologyChipPlan`'s `left`
+      computation at `chronology_chart.dart:3169` — test went red,
+      correctly naming the moved max-drift number (max ordinary jumped
+      to 104.75pt) rather than failing on something unrelated; reverted;
+      `git diff` on the lib file confirmed clean before committing.
+
+      Refuted before committing (independent agent, given the claimed
+      numbers and the coordinate-frame construction): re-ran the test,
+      reproduced the same 11+1 measurements and both pinned maxima
+      independently; verified the test's `xOf`/`tickX` formula against
+      `chronology_chart.dart`'s own `_x` (`:1380`) and `lefts` (`:1695`)
+      construction and found them identical, so the drift numbers are in
+      the same coordinate frame the widget actually paints in, not an
+      artefact of a frame mismatch; verified the fold/ordinary
+      discriminator (chip's right edge within 1.0pt of `plotWidth`) is
+      not a misclassification for the one fold sample measured, since
+      that chip's own desired x already exceeds `plotWidth` before
+      packing starts; confirmed no stale-sheet leakage between taps;
+      confirmed 118→119 test count at HEAD. No claim broke.
+
+      `flutter analyze` clean, repo-wide. `bible_chronology_test.dart`:
+      **119 tests, all pass** (118 baseline recounted fresh, plus this
+      one new test). Test-only: no asset, lib, version, dependency or
+      deploy change.
+
+      **The product question (3) above, now with the number attached**:
+      55% of on-screen ordinary chips (6 of 11) drift far enough that a
+      bare-lane tap at the chip's own x can miss every one of its real
+      members and land on something else instead — the worst case 3.2x
+      the bare-lane search radius. That is common, not a rare edge case,
+      on the four ordinary-chip viewports measured. Whether the fix is
+      (a) capping the packer's drift, (b) narrowing the bare-lane search
+      radius, or (c) accepting it as "tap the chip precisely, not near
+      it" is still the user's call, not this loop's — this slice only
+      removes "we don't know how often it happens" from the decision.
+
 - [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
       event's sheet — not just no sheet.** Found 2026-09-16 while
       measuring whether the chronology chart's bare-lane and chip tap
@@ -15297,6 +15367,20 @@ has never seen this repo.
       up there; whoever picks this item up should extend or replace
       that pinned assertion once a fix direction is chosen, not add a
       second overlapping test beside it.
+
+      **2026-09-16, later — how often is (a)/(b)/(c) above actually live,
+      measured across the corpus rather than the one AM 4038 repro?**
+      See the corpus-wide drift measurement added to the entry above
+      this one (same date). 6 of 11 on-screen ordinary chips measured
+      across 4 real viewports drift past the 14pt bare-lane search
+      radius this item's own defect depends on — this is the common
+      case at these viewports, not a one-off. Candidate (c), "accept it,
+      the chip itself still works" is weaker evidence than it looked
+      before this measurement: more than half the time a reader who is a
+      few pixels off the chip gets told about the wrong event, not no
+      event. Still not this loop's call — the product decision is the
+      threshold to set, not the count — but the count the decision needs
+      is now on file.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the

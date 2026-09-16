@@ -41,6 +41,14 @@ import 'package:yswords/widgets/chronology_chart.dart';
 /// Plus the ordinary UI guarantees: it renders, every person is
 /// reachable, it fits a 402 pt phone, and the horizontal scrolling stays
 /// inside its own box.
+///
+/// Ratchet pins for the chip-drift characterization test — see
+/// `docs/autonomous-queue.md:15260`/`:13639` for what these numbers are
+/// for. Re-derive, don't patch, if the packer or the corpus changes.
+const _pinnedMaxOrdinaryChipDrift = 45.25;
+const _pinnedOverBareLaneRadiusCount = 6;
+const _pinnedMaxFoldChipDrift = 13.75;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -3821,6 +3829,209 @@ void main() {
               'lands on SOME real event (just not one of the chip\'s '
               'own) — if every bare set is empty the finding this test '
               'pins has changed shape and needs re-measuring');
+      expect(tester.takeException(), isNull);
+      handle.dispose();
+    });
+
+    testWidgets('characterizing chronologyChipPlan drift: how far a '
+        'packed chip lands from its own bucket\'s true tick x, swept '
+        'across the real corpus', (tester) async {
+      // queue:15260 asks whether capping this drift is a cheap fix or a
+      // chart-wide redesign, but the only evidence on file is the ONE
+      // anecdote the test above this one measured, at ONE viewport
+      // (AM 4029-4038). That is not enough to make the product call the
+      // queue item itself says is not this loop's to make. This test
+      // measures the distribution instead of guessing at a threshold —
+      // no lib change, no fix, just the number the question needs.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: const Size(402, 874));
+
+      final allTicks = data.allTicks;
+      final allTitles = allTicks.map((t) => t.titleEn).toSet();
+      expect(allTitles, hasLength(allTicks.length),
+          reason: 'two ticks share a title — the harvest below tells '
+              'them apart by text, so a collision would under-count');
+      final amByTitle = {for (final t in allTicks) t.titleEn: t.am};
+
+      final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+
+      Future<Set<String>> harvestSheet() async {
+        final sheet = find.byType(BottomSheet);
+        if (sheet.evaluate().isEmpty) return {};
+        final found = <String>{};
+        void sweep() {
+          for (final e in find
+              .descendant(of: sheet, matching: find.byType(Text))
+              .evaluate()) {
+            final t = (e.widget as Text).data;
+            if (t != null && allTitles.contains(t)) found.add(t);
+          }
+        }
+
+        sweep();
+        final scrollables = find
+            .descendant(of: sheet, matching: find.byType(Scrollable))
+            .evaluate()
+            .toList();
+        if (scrollables.isNotEmpty) {
+          final state = tester
+              .state<ScrollableState>(find.byWidget(scrollables.first.widget));
+          final max = state.position.maxScrollExtent;
+          if (max > 0) {
+            for (final frac in [0.5, 1.0]) {
+              state.position.jumpTo(max * frac);
+              await tester.pumpAndSettle();
+              sweep();
+            }
+          }
+        }
+        return found;
+      }
+
+      // Four viewports, per this item's acceptance criteria: fit view,
+      // the known-densest decade (re-derived, not copied, by the test
+      // above this one), and two more spread across the span so the
+      // measurement is not just that one decade's anecdote again.
+      final viewports = <(String, Future<void> Function())>[
+        ('fit', () => wholeSpan(tester)),
+        ('AM4036/100y', () => viewAt(tester, 4036, years: 100)),
+        ('AM2558/200y', () => viewAt(tester, 2558, years: 200)),
+        ('AM2200/400y', () => viewAt(tester, 2200, years: 400)),
+        ('AM4098/30y', () => viewAt(tester, 4098, years: 30)),
+      ];
+
+      // Recorded per chip, not pooled, so a re-derivation can see WHICH
+      // viewport/chip produced the worst case, the same discipline the
+      // test above this one used for its per-chip disagreement table.
+      final ordinaryDrifts = <double>[];
+      final foldDrifts = <double>[];
+      final log = <String>[];
+
+      for (final vp in viewports) {
+        await vp.$2();
+        final plotWidth = plotWidthOf(tester);
+        final span = (data.spanEndAm - data.spanStartAm).abs().toDouble();
+        double xOf(int am) => (am - data.spanStartAm) / span * plotWidth;
+
+        final laneRect = tester.getRect(laneBox);
+        // Same on-screen filter the 5b43d009 slice above uses: `Stack`
+        // builds every chip across the whole corpus regardless of
+        // scroll position, so without it this finder also picks up
+        // chips from decades that are not actually on screen at this
+        // viewport.
+        final chipEntries = find
+            .descendant(
+              of: laneBox,
+              matching: find.bySemanticsLabel(RegExp(r'^\+\d+$')),
+            )
+            .evaluate()
+            .map((e) => (
+                  key: e.findAncestorWidgetOfExactType<Positioned>()?.key,
+                  label: (e.widget as Semantics).properties.label!,
+                ))
+            .where((r) =>
+                r.key != null &&
+                laneRect.overlaps(tester.getRect(find.byKey(r.key!))))
+            .toList();
+
+        for (final entry in chipEntries) {
+          final chipKey = entry.key!;
+          final chipFinder = find.byKey(chipKey);
+          if (chipFinder.evaluate().isEmpty) continue;
+          final chipRect = tester.getRect(chipFinder);
+          final chipCentre = chipRect.center.dx;
+
+          await tester.tap(chipFinder, warnIfMissed: false);
+          await tester.pumpAndSettle();
+          final titles = await harvestSheet();
+          final sheet = find.byType(BottomSheet);
+          if (sheet.evaluate().isNotEmpty) {
+            Navigator.of(tester.element(sheet)).pop();
+            await tester.pumpAndSettle();
+          }
+          if (titles.isEmpty) continue;
+
+          // The chip's own bucket, established by the tap route — the
+          // test above this one confirms the CHIP route (unlike the
+          // bare-lane one) always reaches exactly the events its own
+          // sheet names, so the harvested titles are the bucket, not an
+          // approximation of it.
+          var nearest = double.infinity;
+          for (final title in titles) {
+            final am = amByTitle[title];
+            if (am == null) continue;
+            // Same construction `_tickLane` uses for `chipLefts`:
+            // `lefts[i] = _x(t.am, plotWidth) + 3`
+            // (chronology_chart.dart:1695) — this is each member's own,
+            // un-packed x, before `chronologyChipPlan` ever nudges it.
+            final tickX = laneRect.left + xOf(am) + 3;
+            final d = (chipCentre - tickX).abs();
+            if (d < nearest) nearest = d;
+          }
+          if (!nearest.isFinite) continue;
+
+          // A fold chip abandons its own x on purpose:
+          // `chronologyChipPlan`'s terminal-fold branch seats it at
+          // `tailLeft = plotWidth - tailWidth`
+          // (chronology_chart.dart:3198), so its right edge sits at the
+          // plot's own right edge — no ordinary packed chip's width
+          // lands there except by coincidence. That is the discriminator
+          // used here, not a re-derivation of the packer's internal
+          // cluster/extraClusters split, which is private to the widget.
+          final plotRightScreenX = laneRect.left + plotWidth;
+          final isFold = (chipRect.right - plotRightScreenX).abs() < 1.0;
+
+          (isFold ? foldDrifts : ordinaryDrifts).add(nearest);
+          log.add('${vp.$1} ${(chipKey as ValueKey).value} '
+              '${isFold ? "FOLD" : "ordinary"} '
+              'drift=${nearest.toStringAsFixed(1)}pt');
+        }
+      }
+
+      expect(ordinaryDrifts, isNotEmpty,
+          reason: 'no ordinary packed chip was measured at any of the '
+              'four viewports — the viewport list has drifted from what '
+              'actually produces chips; re-derive rather than let this '
+              'pass vacuously. Log so far:\n${log.join('\n')}');
+
+      const bareLaneSearchRadius = 14.0;
+      final overBareRadius =
+          ordinaryDrifts.where((d) => d > bareLaneSearchRadius).length;
+
+      final maxOrdinary = ordinaryDrifts.reduce((a, b) => a > b ? a : b);
+      final maxFold =
+          foldDrifts.isEmpty ? 0.0 : foldDrifts.reduce((a, b) => a > b ? a : b);
+
+      // Measured at HEAD (`82245b2c` + this slice), 402x874, 4 viewports:
+      // see the queue write-up this commit also makes for the full
+      // per-chip log and the counts against the 14pt bare-lane radius.
+      // Pinned in the ratchet style this repo already uses
+      // (`audit_strongs_tagging.py`'s PINNED, `strongs_alignment_test
+      // .dart`'s singleton-pair count) — a number that moves when
+      // behaviour moves, not an invariant true by construction.
+      expect(ordinaryDrifts.length, greaterThanOrEqualTo(4),
+          reason: 'fewer on-screen ordinary chips than the four viewports '
+              'used to produce — the measurement has gone thin. Log:\n'
+              '${log.join('\n')}');
+      expect(maxOrdinary, closeTo(_pinnedMaxOrdinaryChipDrift, 0.5),
+          reason: 'the worst ordinary-chip drift measured across the '
+              'four viewports moved from the pinned '
+              '$_pinnedMaxOrdinaryChipDrift — re-derive the pin (this is '
+              'a characterization, not an invariant), and update the '
+              'queue write-up this test\'s commit made. Full log:\n'
+              '${log.join('\n')}');
+      expect(overBareRadius, _pinnedOverBareLaneRadiusCount,
+          reason: 'the count of ordinary chips drifting past the '
+              '14pt bare-lane search radius moved from the pinned '
+              '$_pinnedOverBareLaneRadiusCount — re-derive, and update '
+              'the queue write-up. Full log:\n${log.join('\n')}');
+      if (foldDrifts.isNotEmpty) {
+        expect(maxFold, closeTo(_pinnedMaxFoldChipDrift, 0.5),
+            reason: 'the worst fold-chip drift moved from the pinned '
+                '$_pinnedMaxFoldChipDrift — re-derive. Full log:\n'
+                '${log.join('\n')}');
+      }
+
       expect(tester.takeException(), isNull);
       handle.dispose();
     });
