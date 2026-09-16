@@ -192,7 +192,6 @@
   a.go:hover { filter: brightness(1.08); }
   a.dl:hover { border-color: var(--primary); color: var(--primary); }
   a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-  .soon { font-size: .8125rem; color: var(--faint); }
 
   /* ── contact ──────────────────────────────────────────────── */
   .contact {
@@ -309,7 +308,10 @@
       <p class="host">world.yahwehword.com</p>
       <div class="links">
         <a class="go" href="https://world.yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
-        <span class="soon"><span data-l="hans">网页版</span><span data-l="hant">網頁版</span><span data-l="en">Web only</span></span>
+        <!-- 2026-09-17: this card said 「网页版」 because the globe had no
+             release to point at. v0.1.2 ships an Android APK and a macOS
+             disk image, so it gets the same Download button as the rest. -->
+        <a class="dl" href="https://github.com/SuyangLiuPaul/yahwehs-globe/releases/latest"><span data-l="hans">下载安装包</span><span data-l="hant">下載安裝包</span><span data-l="en">Download</span></a>
       </div>
     </article>
 
