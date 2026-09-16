@@ -227,6 +227,16 @@ jobs:
       - name: Originals-compounds audit gate unit tests
         run: python3 test/test_audit_compounds_check.py
 
+      # Unit tests for tools/audit_songs_snapshot_churn.py's pure
+      # split_song_changes()/restamped_to_generated_at() functions (added
+      # 2026-09-16). The tool itself stays out of CI — it shells out to
+      # `git log`/`git show` over assets/songs.json's history, which a
+      # bare checkout is not guaranteed to have — but this test file uses
+      # only synthetic in-memory fixtures (never assets/songs.json, never
+      # git), so it is safe unconditionally on a bare runner.
+      - name: Songs-snapshot-churn audit unit tests
+        run: python3 test/test_audit_songs_snapshot_churn.py
+
       - name: Test
         run: flutter test --reporter expanded
 

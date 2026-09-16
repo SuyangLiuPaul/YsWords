@@ -100,6 +100,81 @@ Highest tier since 2026-08-24. Anything the user hit on the phone, the
 iPad, the Mi Pad or the web build. Crash reports mailed in count as
 reported. Work these top-down before P2.
 
+- [ ] **Songs page's default "recent" sort surfaces the wrong songs —
+      found by this loop's audit, not reported from a device.**
+      **BLOCKED — needs a user decision** (see the two options spelled
+      out below, under "Open product question"). It sits in this BUGS
+      tier despite not being device-reported — it was found by this
+      loop's own audit, not by the user hitting it on a device — and is
+      kept here rather than moved so it does not get lost. The
+      Songs page (`lib/pages/songs_page.dart:131`) defaults to sort
+      `'recent'` (newest `updatedAt` first, `_applySort` :601-612) with
+      no persistence and every filter defaulting to `'all'`
+      (:102-125), so a fresh load shows the full 629-song catalogue in
+      that order. `.github/workflows/sync-songs.yml` re-syncs
+      `assets/songs.json` roughly daily. Measured across the 7 most
+      recent daily syncs (commits eb59f280 → 413eef71, 2026-09-08
+      through 2026-09-15): the four smaller sources — cgdc (63/63),
+      cahaya (47/47), ydh (5/5), setapak (2/2), plus 1 of fydt's 213 —
+      had `updatedAt` rewritten to that run's `_meta.generatedAt` on
+      **every** one of the 7 runs, with every other field byte-identical
+      to the prior commit (no title/audio/lyrics/themes/verse change).
+      cdc (298) and the rest of fydt (212-213) stayed fully
+      byte-identical, including `updatedAt`, across the same 7 runs. The
+      one earlier commit checked, 91eaa742 (2026-09-07), is a mixed day:
+      fydt's 213 rows got real editorial fields (url, audioUrl,
+      scoreUrl, artworkUrl, …), but setapak's 2 and ydh's 5 rows only
+      had `firstSeenAt` — a bookkeeping timestamp, not editorial content
+      — rewritten, so they belong with the restamp pattern, not the real
+      sync, despite the tool's own `content_changed` bucket counting
+      them together with fydt (it only excludes `updatedAt`, not
+      `firstSeenAt`). cdc's touched rows and all of cgdc were still
+      timestamp-only that day too. Widening past the two runs examined
+      in detail: cgdc and cahaya HAVE had real content changes before,
+      in August (`2c1febef`/`9ecb6145`/`0910c7d8` gave cgdc artworkUrl;
+      `f95dd767`/`b858a25e` built cahaya's source) — so these sources are
+      not incapable of real updates, they just had none in the 8 commits
+      examined here (2026-09-07 through -15). Net effect: at HEAD,
+      exactly 118 songs share the maximum
+      `updatedAt`, all from those four small sources, and they sort to
+      the top of the default view (tie-broken by title) ahead of every
+      cdc/fydt row — regardless of whether anything in the row actually
+      changed. "Recent" reads as "recently changed" but means "source
+      happens to get rewritten wholesale on every sync."
+
+      **Root cause is upstream**, in `scripts/sync_songs.py v2` in the
+      **yswords-data** repo (inferred from `_meta.generator`; not
+      independently read this iteration) — not fixable here. **Open
+      product question, not answered by this loop:** should "recent"
+      mean real content-change time (would need yswords-data to stop
+      re-stamping unconditionally, or this repo to derive a real
+      "last changed" from field-level diffing instead of trusting
+      `updatedAt`), or should `'recent'` stop being the *default* sort
+      until the upstream timestamp is trustworthy?
+
+      Landed `tools/audit_songs_snapshot_churn.py` (report-only, exits 0
+      unconditionally, no CI gate — see its docstring for the full
+      method) + `test/test_audit_songs_snapshot_churn.py` (7 synthetic-
+      fixture cases, proven able to fail by breaking an assertion by
+      hand), wired into `.github/workflows/flutter-ci.yml` as a "Songs-
+      snapshot-churn audit unit tests" step (the test only, never the
+      tool itself — the tool shells out to `git log`/`git show`, which a
+      bare CI checkout is not guaranteed to have). Refuted before
+      committing: a separate agent independently
+      rebuilt all 8 commits' JSON and re-diffed every row by `id`,
+      confirming the 118-row/7-run pattern exactly, confirming the
+      Dart-side default-sort/no-persistence claims by reading the whole
+      2587-line file, and confirming the 118-row top-of-list claim by
+      reimplementing the app's exact string comparator. It also caught
+      an overclaim in an earlier draft (that 91eaa742's cdc rows were a
+      real content change, not a restamp), a second overclaim that
+      91eaa742's setapak/ydh rows were a "genuine content sync" when the
+      only field that moved was `firstSeenAt` (bookkeeping, not
+      editorial content), and an unqualified "ever" that ignored real
+      cgdc/cahaya content commits from August, outside the window this
+      audit actually examined — all three corrected in the tool's
+      docstring and above before commit.
+
 - [x] **2026-09-16 — fallback iteration (tiers 1–6 all blocked/empty; see
       NEXT_TASK.md's own walk).** BUGS empty, P2's 4 open items all
       genuinely blocked (branch-scale `.router` work deferred 12×; the
