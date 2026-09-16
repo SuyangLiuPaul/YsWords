@@ -15877,6 +15877,18 @@ has never seen this repo.
       confirm `sarah.birthYear`/`deathYear` if present, or that she is
       absent from it, before trusting the arithmetic above.
 
+      **2026-09-17 — cross-check done, numbers confirmed.** Sarah is
+      present in `family_tree.json`: `birthYear` −2156, `deathYear`
+      −2029, `lifespan` 127, `fatherId: null`. Abraham is −2166, so
+      Sarah is born 10 years after him on `family_tree.json`'s own
+      scale — matching this note's AM arithmetic exactly (Isaac's AM
+      2108 − 90 = AM 2018, i.e. 10 years after Abraham's AM 2008) and
+      matching Genesis 17:17's 90-vs-100. Her null `fatherId`
+      independently corroborates the reason she doesn't fit `CHAIN`
+      today: `family_tree.json` itself doesn't key her to a father
+      either. The next slice can build from these confirmed numbers
+      without re-deriving them.
+
 - [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
       event's sheet — not just no sheet.** Found 2026-09-16 while
       measuring whether the chronology chart's bare-lane and chip tap
