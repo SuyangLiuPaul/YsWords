@@ -15327,6 +15327,13 @@ has never seen this repo.
       it" is still the user's call, not this loop's — this slice only
       removes "we don't know how often it happens" from the decision.
 
+      **Pushed as `b260ad7d`. CI run `35063334736` was still
+      `in_progress` after the ~6-minute watch budget** — local `flutter
+      analyze` and the full `bible_chronology_test.dart` run were both
+      green, but per this loop's own rule that only proves the Mac
+      agrees with itself. Next iteration's step 0 should check
+      `35063334736`'s conclusion before picking anything else.
+
 - [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
       event's sheet — not just no sheet.** Found 2026-09-16 while
       measuring whether the chronology chart's bare-lane and chip tap
