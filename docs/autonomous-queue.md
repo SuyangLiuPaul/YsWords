@@ -16777,6 +16777,27 @@ so the bundle-size answer stays on the record.
       `run.sh`/`prompt.md` under `~/Library/Application Support/
       yswords-loop/`, outside this repo, not touched here.
 
+      **Seventeenth recurrence, 2026-09-16.** An execution stage did real
+      work — landed the songs-snapshot-churn audit (`tools/
+      audit_songs_snapshot_churn.py`, `test/
+      test_audit_songs_snapshot_churn.py`, the CI wiring, the BUGS-tier
+      queue entry) and had it refuter-cleared — then ended without
+      committing. A second, independent orphan was also sitting in the
+      same tree: stale `ios/Podfile.lock`/`macos/Podfile.lock` from two
+      already-committed, human-driven commits (`4940d9d8`, `e806adc0`)
+      that had never regenerated them — not this loop's own orphan, but
+      a second orphaned class the same failure mode leaves undiscovered
+      in a shared checkout. Landed both as two separate commits
+      (`2b88c3d7`, `aacb1935`) this hour, and corrected two further
+      overclaims the refuter caught in the audit text itself before
+      committing (see `2b88c3d7`'s message). Note: the planning pass
+      that assigned this landing called it the "fifth recurrence" —
+      that count did not match this file, which already had a fifth,
+      sixth, and eleven more; corrected to seventeenth here, counted
+      directly from this item's own entries. Same conclusion as every
+      prior recurrence: the fix is in `run.sh`/`prompt.md`, not touched
+      here.
+
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
       `nfp_[A-Za-z0-9]{20,}` pattern registered. The two broad AWS
