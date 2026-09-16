@@ -11858,6 +11858,16 @@ has never seen this repo.
       unanswered: start the `GetMaterialApp` → `.router` migration branch,
       or close this as "won't fix"?
 
+      **Deferred a twenty-seventh consecutive iteration, 2026-09-16** —
+      this hour's NEXT_TASK.md picked a coverage slice of the chronology
+      chart's own bare-lane/chip tap agreement instead (below), the only
+      other live P2 surface once this item and `queue:15894` (fix lives
+      outside the repo) were ruled out for an unattended hour. Still
+      branch-scale, still unattended-unsafe, still the only fully open P2
+      checkbox besides the chronology chart, and the question above to the
+      user is still unanswered: start the `GetMaterialApp` → `.router`
+      migration branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -14979,6 +14989,154 @@ has never seen this repo.
       and the product question about promoting any of the 87 unpinned
       ticks to a chip at fit view is still open — this slice only
       changed where a bare-lane tap on an already-drawn mark routes to.
+
+      **2026-09-16, later still — do the bare-lane route and the chip
+      route agree on what a tap under a chip reaches? Measured: no, and
+      not in the way expected.** The previous two slices each measured
+      one route in isolation (the chip route's own reachability; the
+      bare-lane route's own reachability against the exact-x tie it
+      groups by). Nobody had checked what happens where they overlap —
+      a reader who aims for an on-screen "+N" chip, misses by a few
+      vertical pixels, and lands on bare lane directly below it.
+
+      The hypothesis going in (stated in this hour's own brief) was that
+      the bare-lane set would be a **subset** of the chip's own set,
+      since bare-lane groups by `< 0.5pt` of x
+      (`chronology_chart.dart:1979`) and the chip route by chained
+      `mergeDistance: _scaler.scale(20)` (`:1727` →
+      `chronologyLabelClusters`, doc at `:3025-3033`) — two orders of
+      magnitude apart, same direction. **Measured on the 4 on-screen
+      chips at the densest decade (AM 4029-4038, `viewAt(4036, years:
+      100)`), the hypothesis is wrong**: the two sets are completely
+      DISJOINT, not nested.
+
+      | chip | chip's own sheet | bare-lane tap at the chip's own x |
+      |---|---|---|
+      | AM 4029 "+2" | Baptism of Jesus, Wilderness Temptation | Feeding the 5000 |
+      | AM 4030 "+4" | Calling of the Twelve, Sermon on the Mount, Feeding the 5000, Transfiguration | Stephen Martyred, Paul's Conversion on Damascus Road |
+      | AM 4036 "+6" | the 6 Passion-week/Pentecost events | (nothing within 14pt) |
+      | AM 4038 "+2" | Stephen Martyred, Paul's Conversion on Damascus Road | Paul's First Missionary Journey — a tick from well outside this decade |
+
+      **Why**, re-derived by reading `chronologyChipPlan` rather than
+      guessed: it is a one-row packer that nudges a chip's drawn `left`
+      rightward only far enough to clear the PREVIOUS chip's right edge
+      (`left = desired < lastRight + gap ? lastRight + gap : desired`) —
+      nothing bounds cumulative rightward drift against any of the
+      chip's OWN bucket's true tick x-positions. So the on-screen x a
+      chip is actually drawn at is frequently well outside both the
+      bare-lane fallback's 0.5pt grouping radius and its 14pt search
+      radius for the ticks that chip represents — in the AM 4038 case,
+      drifted far enough to land nearest a wholly unrelated, later tick.
+      The two routes are not one strict and one loose version of the
+      same grouping; they can disagree about which decade they are even
+      naming.
+
+      **No lib change**, per this item's own acceptance criterion: a
+      change is only warranted where the bare-lane route drops an event
+      with no other on-screen route, and every event here still has its
+      real route — a precise tap on the chip pixels themselves, which
+      every earlier chip-reachability test in this file already
+      confirms works. What bare-lane does instead is show the reader a
+      **wrong, unrelated** sheet rather than no sheet — a different, and
+      arguably worse, defect than the omission this item's guard rail
+      names, but out of scope for an unattended fix today. Queued as its
+      own follow-up below this entry rather than fixed inline.
+
+      One new `testWidgets`, next to the position-based-route test:
+      taps each on-screen chip (filtered by `laneRect.overlaps(...)`,
+      the same filter the whole-corpus reachability test above uses —
+      without it the finder also picks up chips from OTHER decades that
+      `Stack` still builds off-screen at this scroll position, and a tap
+      "at their centre" lands off the real window and silently hits
+      nothing, which is what produced several spurious empty/empty
+      chip-bare pairs before this filter was added), records the titles
+      each sheet names, then taps bare lane at the same x directly
+      below. Asserted: no chip's `bare` set shares even one title with
+      its own `chip` set (the actual measured shape), plus a teeth
+      assertion that at least one `bare` set is non-empty (so the first
+      assertion is not vacuously true from every tap finding nothing).
+
+      Perturbation check: widened the `0.5` in `coLocated`'s filter to
+      `30` (chosen to exceed `mergeDistance`) — test went red, naming
+      real shared titles (`{Baptism of Jesus, Wilderness Temptation}`,
+      `{Sermon on the Mount, Feeding the 5000, Transfiguration}`);
+      reverted; `git diff` on the lib file confirmed clean before
+      committing.
+
+      Refuted before committing (independent agent, given the four
+      measured chip/bare pairs and the `chronologyChipPlan`-drift
+      explanation): read `chronologyChipPlan` itself and confirmed the
+      "right-only nudge, no proximity bound" mechanism is accurate, not
+      a misreading; ruled out `_selectedTickId`-driven repacking between
+      the two taps (all four buckets route through `_showClusterSheet`,
+      which never touches it); confirmed the "bare" tap y sits inside
+      the lane's real ≥7pt margin below the last label row, not
+      accidentally inside a label's inflated hit-rect; confirmed the
+      chip's on-screen x is read once and reused unchanged for both
+      taps. Could not break the claim.
+
+      `flutter analyze` clean, repo-wide. `bible_chronology_test.dart`:
+      **118 tests, all pass** (117 baseline recounted fresh at `6adef51a`
+      plus this one new test). Full suite left to CI per `queue:15174`'s
+      standing ruling. Test-only: no asset, lib, version, dependency or
+      deploy change, per this item's own standing rule.
+
+      Checkbox stays open. Two product decisions surfaced by this and
+      the previous slice, restated here so they stay visible rather than
+      rediscovered: (1) should all 14 densest-decade events get their
+      own inline label — the row cap is deliberately 5, so this needs
+      either a different device or a raised cap; (2) should any of the
+      87 unpinned ticks ever be promoted to a chip at fit view, or is
+      the bare-lane fallback sufficient for them. Plus, new from this
+      slice: (3) the bare-lane route can show a reader a wrong,
+      unrelated event instead of the one they meant to reach, whenever a
+      chip's packed position has drifted from its own ticks — worth a
+      product decision on whether that is worse than the omission this
+      item has focused on so far, and if so whether the fix is capping
+      `chronologyChipPlan`'s drift, narrowing bare-lane's 14pt search, or
+      something else. None of these are this loop's call to make
+      unattended.
+
+- [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
+      event's sheet — not just no sheet.** Found 2026-09-16 while
+      measuring whether the chronology chart's bare-lane and chip tap
+      routes agree (entry above, `docs/autonomous-queue.md` — this
+      item's own git-blame will find it). `chronologyChipPlan` packs
+      each chip's drawn `left` by nudging it right only far enough to
+      clear the previous chip on the same row, with no bound on how far
+      that drifts the chip's ON-SCREEN position from its OWN bucket's
+      true tick x-positions. At the densest decade (AM 4029-4038,
+      `viewAt(4036, years: 100)`), a bare-lane tap under the AM 4038
+      "+2" chip resolves to "Paul's First Missionary Journey" — a tick
+      from a completely different decade — because the chip's packed
+      x has drifted within `onTapDown`'s 14pt nearest-tick search of
+      that unrelated tick instead of either of its own two members.
+
+      This is a different shape of defect than the omission this
+      chart's whole tap-reachability work has focused on so far: nobody
+      loses ACCESS to an event (the chip itself, tapped precisely,
+      still opens the right sheet — every reachability test in
+      `test/bible_chronology_test.dart` confirms this still works). The
+      risk is a reader who is a few pixels off getting told about the
+      WRONG event with full confidence, which is arguably worse for a
+      chart whose whole point is dates a reader might quote.
+
+      Not fixed here because it needs a product/design call this loop
+      should not make unattended: candidate fixes are (a) bounding how
+      far `chronologyChipPlan` may drift a chip from its own bucket's
+      x before it must shrink/fold instead, (b) narrowing `onTapDown`'s
+      bare-lane search radius so a distant drifted chip can no longer
+      be the "nearest" match, or (c) treating this as acceptable because
+      a reader who taps between two chips got SOME sheet rather than
+      silence and can back out and retry precisely — a threshold the
+      user, not this loop, should set.
+
+      A regression test for the discovery already exists — the
+      "bare-lane route and chip route" test at the entry above pins
+      the current disjoint behaviour so any fix (or any worsening) shows
+      up there; whoever picks this item up should extend or replace
+      that pinned assertion once a fix direction is chosen, not add a
+      second overlapping test beside it.
 
 - [x] **`chronologyChipPlan`'s ordinary (non-fold) shrink path can place a
       chip past `plotWidth`.** FIXED 2026-09-15 (`95959594`): dropped the

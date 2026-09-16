@@ -3592,6 +3592,239 @@ void main() {
       handle.dispose();
     });
 
+    testWidgets('the bare-lane route and the chip route: does a tap under '
+        'a chip reach the same events the chip itself names?', (tester) async {
+      // `chronology_chart.dart:1979` groups the bare-lane fallback by
+      // `< 0.5` of x — a sub-pixel epsilon that only ever catches an
+      // EXACT same-x tie. `chronology_chart.dart:1727`'s chip route
+      // groups by `_scaler.scale(20)` — two orders of magnitude wider,
+      // and (per `chronologyLabelClusters`'s own doc at :3025-3033) it
+      // also chains together nearby SINGLETON drops that share no year
+      // at all. Nobody has checked whether a reader who misses the chip
+      // itself and lands on the bare lane directly under it reaches the
+      // same set the chip's own sheet would have named.
+      //
+      // AM 4029-4038 (the densest decade — re-derived below, not copied
+      // from the note this file already quotes at the test above) has
+      // both kinds of chip in view at this viewport: the AM 4036 "+6"
+      // same-year tie, and merged runs of the four AM 4030-4033
+      // row-exhaustion singles the test above this one exercises.
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: const Size(402, 874));
+      await viewAt(tester, 4036, years: 100);
+
+      // Re-derive the densest-decade fact fresh, per this item's own
+      // "re-derive from the asset" instruction — the docstring above
+      // only carries it forward as prose.
+      final raw = jsonDecode(
+        File('assets/bible_chronology.json').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      final allAms = <int>[
+        for (final e in raw['events'] as List) e['am'] as int,
+        for (final m in raw['markers'] as List) m['am'] as int,
+      ]..sort();
+      var bestStart = allAms.first;
+      var bestCount = 0;
+      for (final start in allAms) {
+        final count =
+            allAms.where((a) => a >= start && a < start + 10).length;
+        if (count > bestCount) {
+          bestCount = count;
+          bestStart = start;
+        }
+      }
+      expect(bestStart, 4029,
+          reason: 'the densest 10-year window has moved — this test\'s '
+              'viewport and expectations need re-deriving, not patching');
+      expect(bestCount, 14,
+          reason: 'the densest decade\'s event count has moved — '
+              're-derive rather than patch the number');
+
+      final allTicks = data.allTicks;
+      final allTitles = allTicks.map((t) => t.titleEn).toSet();
+      expect(allTitles, hasLength(allTicks.length),
+          reason: 'two ticks share a title — the harvest below tells '
+              'them apart by text, so a collision would under-count');
+
+      final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+
+      Future<Set<String>> harvestSheet() async {
+        final sheet = find.byType(BottomSheet);
+        if (sheet.evaluate().isEmpty) return {};
+        final found = <String>{};
+        void sweep() {
+          for (final e in find
+              .descendant(of: sheet, matching: find.byType(Text))
+              .evaluate()) {
+            final t = (e.widget as Text).data;
+            if (t != null && allTitles.contains(t)) found.add(t);
+          }
+        }
+
+        sweep();
+        final scrollables = find
+            .descendant(of: sheet, matching: find.byType(Scrollable))
+            .evaluate()
+            .toList();
+        if (scrollables.isNotEmpty) {
+          final state = tester
+              .state<ScrollableState>(find.byWidget(scrollables.first.widget));
+          final max = state.position.maxScrollExtent;
+          if (max > 0) {
+            for (final frac in [0.5, 1.0]) {
+              state.position.jumpTo(max * frac);
+              await tester.pumpAndSettle();
+              sweep();
+            }
+          }
+        }
+        return found;
+      }
+
+      // Keyed by the chip's own `ValueKey('chronoClusterChip_$am')` —
+      // popping a sheet rebuilds the lane (see the pinned-reachability
+      // test's own note on this), so a `Widget` captured up front would
+      // be a stale instance by the second chip.
+      // Paired in the same pass, not re-derived from the key afterwards:
+      // `bySemanticsLabel` matches the `Semantics` element itself, so its
+      // own `properties.label` is read right here rather than by walking
+      // back up from the `Positioned` key, which is the chip's PARENT,
+      // not its ancestor — `find.ancestor` from the key would search the
+      // wrong direction entirely.
+      // `Stack` builds every chip across the WHOLE corpus regardless of
+      // horizontal scroll position — only paint is clipped — so without
+      // an on-screen filter this finder also picks up chips from other
+      // crowded decades that are not actually visible at this scroll
+      // offset, and a tap "at their centre" lands off the real window
+      // and hits nothing. The reachability test above this one hits the
+      // same trap and filters the same way.
+      final laneRect = tester.getRect(laneBox);
+      final chipEntries = find
+          .descendant(
+            of: laneBox,
+            matching: find.bySemanticsLabel(RegExp(r'^\+\d+$')),
+          )
+          .evaluate()
+          .map((e) => (
+                key: e.findAncestorWidgetOfExactType<Positioned>()?.key,
+                label: (e.widget as Semantics).properties.label!,
+              ))
+          .where((r) =>
+              r.key != null &&
+              laneRect.overlaps(tester.getRect(find.byKey(r.key!))))
+          .toList();
+      expect(chipEntries, isNotEmpty,
+          reason: 'this viewport should still be crowded enough to fold '
+              'some ticks into a chip — if not, the viewport has drifted '
+              'and this test is not exercising the chip route at all');
+
+      // Per-chip: what its own sheet names, versus what a tap on bare
+      // lane directly below its on-screen x reaches. Recorded per chip
+      // (not pooled) so a disagreement names WHICH chip disagrees.
+      final perChip = <String, ({Set<String> chip, Set<String> bare})>{};
+
+      for (final entry in chipEntries) {
+        final chipKey = entry.key!;
+        final chipFinder = find.byKey(chipKey);
+        if (chipFinder.evaluate().isEmpty) continue;
+        // `chronoClusterChip_$am` names the FIRST candidate the bucket
+        // was built from, which can repeat across chips that merged
+        // ("+2" appears three times in this decade) — the semantics
+        // label alone is not unique either, so key by both together.
+        final id = '${(chipKey as ValueKey).value}_${entry.label}';
+
+        final chipDx = tester.getCenter(chipFinder).dx;
+
+        await tester.tap(chipFinder, warnIfMissed: false);
+        await tester.pumpAndSettle();
+        final chipTitles = await harvestSheet();
+        var sheet = find.byType(BottomSheet);
+        if (sheet.evaluate().isNotEmpty) {
+          Navigator.of(tester.element(sheet)).pop();
+          await tester.pumpAndSettle();
+        }
+
+        // Fresh rect: popping the sheet above can change how many label
+        // rows the lane reserves (a newly `_selectedTickId` can shift
+        // row-packing), which moves the boundary between the label rows
+        // and the bare margin below them — the position-based-route
+        // test above this one hit exactly this staleness.
+        final liveLaneRect = tester.getRect(laneBox);
+        final bareDy = liveLaneRect.height - 2;
+        await tester.tapAt(Offset(chipDx, liveLaneRect.top + bareDy));
+        await tester.pumpAndSettle();
+        final bareTitles = await harvestSheet();
+        sheet = find.byType(BottomSheet);
+        if (sheet.evaluate().isNotEmpty) {
+          Navigator.of(tester.element(sheet)).pop();
+          await tester.pumpAndSettle();
+        }
+
+        perChip[id] = (chip: chipTitles, bare: bareTitles);
+      }
+
+      // The measured relationship is NOT the hypothesised proper subset
+      // ("bare-lane reaches fewer of the SAME events"). Measured on the
+      // four on-screen chips this decade actually produces:
+      //
+      //   chronoClusterChip_4029_+2: chip {Baptism of Jesus, Wilderness
+      //     Temptation}, bare {Feeding the 5000}
+      //   chronoClusterChip_4030_+4: chip {Calling of the Twelve, Sermon
+      //     on the Mount, Feeding the 5000, Transfiguration}, bare
+      //     {Stephen Martyred, Paul's Conversion on Damascus Road}
+      //   chronoClusterChip_4036_+6: chip {6 Passion-week/Pentecost
+      //     events}, bare {} (nothing within 14pt at that x)
+      //   chronoClusterChip_4038_+2: chip {Stephen Martyred, Paul's
+      //     Conversion on Damascus Road}, bare {Paul's First Missionary
+      //     Journey}
+      //
+      // Every non-empty `bare` set names an event ABSENT from its own
+      // chip's bucket — in the 4038 case, one from a wholly different
+      // decade. `chronologyChipPlan` (the one-row packer chipLefts feed)
+      // nudges each chip's drawn `left` right only far enough to clear
+      // its own left neighbour, with no requirement that the result
+      // stay near any of its bucket's own tick x's — so "the same x" a
+      // reader sees the chip drawn at is frequently not within 0.5pt,
+      // nor even within the bare fallback's 14pt search radius, of the
+      // ticks the chip actually represents. The two routes are not one
+      // strict and one loose version of the same grouping; they can
+      // disagree about which DECADE they are even naming.
+      //
+      // So the assertion pinned here is the intersection, not a subset:
+      // no chip in this decade's `bare` set shares even one title with
+      // its own `chip` set.
+      final overlapping = <String>[];
+      for (final entry in perChip.entries) {
+        final shared = entry.value.bare.intersection(entry.value.chip);
+        if (shared.isNotEmpty) {
+          overlapping.add('${entry.key}: bare and chip both name $shared');
+        }
+      }
+      expect(overlapping, isEmpty,
+          reason: 'a bare-lane tap under a chip named something the '
+              'chip itself also names — the routes have converged for '
+              'at least this chip, which is worth knowing since the '
+              'four chips measured when this test was written shared '
+              'nothing at all:\n${overlapping.join('\n')}');
+
+      // Teeth for the claim above: at least one measured chip's bare
+      // set is non-empty and therefore genuinely disjoint (not just
+      // vacuously so, the way the AM 4036 tie's empty bare set is). If
+      // this goes empty, the finding above has stopped reproducing and
+      // this test should be re-derived, not weakened to keep passing.
+      final nonEmptyDisjoint = perChip.entries
+          .where((e) => e.value.bare.isNotEmpty)
+          .map((e) => e.key)
+          .toSet();
+      expect(nonEmptyDisjoint, isNotEmpty,
+          reason: 'expected at least one chip where the bare-lane tap '
+              'lands on SOME real event (just not one of the chip\'s '
+              'own) — if every bare set is empty the finding this test '
+              'pins has changed shape and needs re-measuring');
+      expect(tester.takeException(), isNull);
+      handle.dispose();
+    });
+
     testWidgets('a viewport straddling AM 2187 draws the bars that are '
         'in it and folds only the rest', (tester) async {
       await pumpChart(tester, size: tall);
