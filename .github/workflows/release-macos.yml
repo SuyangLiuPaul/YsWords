@@ -143,7 +143,7 @@ jobs:
             # sibling platform workflow created it a moment earlier.
             gh release create "$tag" \
               --title "$tag" \
-              --notes "Automated macOS desktop build (unsigned). Unzip, then clear the quarantine flag so Gatekeeper allows it: \`xattr -dr com.apple.quarantine YsWords.app\` (or right-click the app → Open the first time)." \
+              --notes "Automated macOS desktop build (unsigned). Unzip, then clear the quarantine flag so Gatekeeper allows it: \`xattr -dr com.apple.quarantine Yahwehs-Words.app\` (or right-click the app → Open the first time)." \
               || true
           fi
           gh release upload "$tag" "$PKG" --clobber

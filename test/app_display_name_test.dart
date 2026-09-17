@@ -169,13 +169,24 @@ void main() {
     expect(plistValue(plist, 'CFBundleDisplayName'), wanted);
     expect(plistValue(plist, 'CFBundleName'), wanted);
 
-    // PRODUCT_NAME must stay as it is — see the note above. It names the
-    // BUNDLE (`yswords.app`); nothing a reader sees reads it any more.
+    // 2026-09-18: PRODUCT_NAME was pinned to the scaffold's `yswords`
+    // here, on the grounds that renaming it renames the .app and
+    // tools/yswords-ios-reinstall.sh hard-codes /Applications/yswords.app.
+    // The rename happened — the download button says
+    // `Yahwehs-Words-macOS-v….zip` and the bundle inside it may not say
+    // another app's name — and the hard-coded paths were moved with it.
+    // So the pin stays, on the new name, and the reason it guards is
+    // written as an assertion rather than as prose: whatever
+    // PRODUCT_NAME says, the reinstall script installs THAT bundle.
     final cfg = read('macos/Runner/Configs/AppInfo.xcconfig');
-    expect(cfg, contains('PRODUCT_NAME = yswords'),
-        reason: 'renaming the macOS product also renames the .app, and '
-            'tools/yswords-ios-reinstall.sh installs to a hard-coded '
-            '/Applications/yswords.app');
+    final productName =
+        RegExp(r'^PRODUCT_NAME = (.+)$', multiLine: true).firstMatch(cfg);
+    expect(productName, isNotNull, reason: 'PRODUCT_NAME is gone');
+    expect(productName!.group(1)!.trim(), 'Yahwehs-Words');
+    expect(read('tools/yswords-ios-reinstall.sh'),
+        contains('/Applications/${productName.group(1)!.trim()}.app'),
+        reason: 'the reinstall script would copy a bundle the build no '
+            'longer produces');
   });
 
   test('the web manifest is capitalised the same way', () {

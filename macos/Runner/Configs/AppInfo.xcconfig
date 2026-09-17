@@ -12,7 +12,7 @@
 // xcshareddata/xcschemes/Runner.xcscheme. Nothing a user sees reads it
 // any more: CFBundleDisplayName and CFBundleName are both spelled out
 // literally in Runner/Info.plist as of 2026-09-01.
-PRODUCT_NAME = yswords
+PRODUCT_NAME = Yahwehs-Words
 
 // The application's bundle identifier
 //

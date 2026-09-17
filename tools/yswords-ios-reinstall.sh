@@ -9,7 +9,7 @@
 #      adb install -r (Android certs are permanent but we still
 #      refresh on the same cadence so new commits ship without
 #      manual intervention)
-#   4. flutter build macos --release → /Applications/yswords.app
+#   4. flutter build macos --release → /Applications/Yahwehs-Words.app
 #      replaced on this Mac. Self-only target.
 #
 # Per-device failures are isolated — one device offline / bricked
@@ -1146,7 +1146,7 @@ else
 fi
 
 # ─── macOS BUILD + INSTALL (this Mac) ────────────────────────────
-# Build the native macOS desktop app and replace /Applications/yswords.app.
+# Build the native macOS desktop app and replace /Applications/Yahwehs-Words.app.
 # Killing any running instance first since cp -R can't overwrite a busy
 # bundle. Single-device target (this Mac), no roster — if the script is
 # ever run on a different Mac it'll just install there instead.
@@ -1161,8 +1161,8 @@ echo ""
 # AND renews the profile from CLI (requires an Apple ID signed into
 # Xcode → Settings → Accounts; done 2026-06-11).
 echo "→ flutter build macos --config-only ${DEFINES[*]}"
-MACOS_APP_BUILT="$PROJECT/build/macos/Build/Products/Release/yswords.app"
-MACOS_APP_INSTALLED="/Applications/yswords.app"
+MACOS_APP_BUILT="$PROJECT/build/macos/Build/Products/Release/Yahwehs-Words.app"
+MACOS_APP_INSTALLED="/Applications/Yahwehs-Words.app"
 if "$FLUTTER" build macos --config-only --release "${DEFINES[@]}" \
     && xcodebuild -workspace "$PROJECT/macos/Runner.xcworkspace" \
         -scheme Runner -configuration Release \
@@ -1173,14 +1173,14 @@ if "$FLUTTER" build macos --config-only --release "${DEFINES[@]}" \
   # If yswords is currently running, replacing the bundle while open
   # corrupts the install. Kill first; the user will see the window close
   # at 04:00 but the schedule fires when the Mac is idle anyway.
-  pkill -f "/Applications/yswords.app/Contents/MacOS/yswords" 2>/dev/null || true
+  pkill -f "/Applications/Yahwehs-Words.app/Contents/MacOS/Yahwehs-Words" 2>/dev/null || true
   sleep 1
   rm -rf "$MACOS_APP_INSTALLED"
   if cp -R "$MACOS_APP_BUILT" "$MACOS_APP_INSTALLED"; then
-    echo "✓ installed to /Applications/yswords.app (this Mac)"
+    echo "✓ installed to /Applications/Yahwehs-Words.app (this Mac)"
     successes=$((successes + 1))
   else
-    echo "✗ install to /Applications/yswords.app FAILED"
+    echo "✗ install to /Applications/Yahwehs-Words.app FAILED"
     failures=$((failures + 1))
   fi
 else

@@ -82,12 +82,51 @@ prod 许可**不延续到下一轮**。细则在 `docs/release-policy.md`。
 
 ## 三、发布产物
 
-一次 release 四件，名字是 **app 的名字**，不是仓库的名字：
+名字是 **app 的名字**，不是仓库的名字，也不是当年建仓时随手起的那个
+codename。2026-09-18 统一成这样，产物名里带版本：
 
 ```
-NewsInsight-Android.apk   NewsInsight-iOS.zip
-NewsInsight-macOS.zip     NewsInsight-Web.zip
+Yahwehs-Words-Android-v1.6.14.apk     Yahwehs-Words-macOS-v1.6.14.zip
+Yahwehs-Words-Windows-x64-v1.6.14.zip Yahwehs-Words-Linux-x64-v1.6.14.tar.gz
+
+Yahwehs-Sword-Android-v1.6.316.apk    Yahwehs-Sword-iOS-v1.6.316-unsigned.ipa
+Yahwehs-Sword-Windows-x64-…zip        Yahwehs-Sword-Linux-x64-…tar.gz
+Yahwehs-Sword-macOS-v1.6.316.zip
+
+News-Insight-Android-v1.2.10.apk      News-Insight-iOS-v1.2.10.zip
+News-Insight-macOS-v1.2.10.zip        News-Insight-Web-v1.2.10.zip
 ```
+
+### 两条不能破的规矩
+
+**一、平台字样不能改。** app 自己挑更新包的时候只认这几个子串——
+`.apk`、`Windows`、`macOS`、`Linux`——**从来不解析前面那个产品名**。
+正因为不解析，改名才是安全的。反过来说，哪天把 `…-macOS-…` 改成
+`…-Mac-…`，所有 macOS 用户的应用内更新会静悄悄退回到网页版下载页，
+没有任何报错。
+
+**二、包里面的东西也要叫同一个名字。** 2026-09-18 之前只改了外面：
+`Yahwehs-Sword-Windows-x64-v1.6.315.zip` 解开是一个叫 `SeekSparks` 的
+文件夹，里面是 `yswords.exe`；macOS 那个解开是 `yahwehswords.app`。
+三个名字，没一个是下载按钮上写的那个。要一起改的有四处：
+
+| 平台 | 改哪里 | 还要跟着改 |
+|---|---|---|
+| Windows | `windows/CMakeLists.txt` 的 `BINARY_NAME` | workflow 里 `staging/<名字>`、release note 里的 `<名字>\<名字>.exe` |
+| Linux | `linux/CMakeLists.txt` 的 `BINARY_NAME` | release note 里的 `./<名字>` |
+| macOS | `macos/Runner/Configs/AppInfo.xcconfig` 的 `PRODUCT_NAME` | release note 里 `xattr -dr com.apple.quarantine <名字>.app`；News Insight 还要改 `tools/release_github.sh` 里写死的 `.app` 路径 |
+| 本机安装脚本 | `tools/*-ios-reinstall.sh` 里的 `/Applications/<名字>.app` | —— |
+
+**`PRODUCT_NAME` / `BINARY_NAME` 可以改，`PRODUCT_BUNDLE_IDENTIFIER`
+/ `APPLICATION_ID` 永远不能改。** 前者只是文件名，后者是操作系统认
+app 的身份——一改，已经装在读者手机上的那个就成了另一个 app，数据全
+丢，更新也覆盖不上去。Sword 的 linux 到今天还写着
+`com.example.yswords`，就是这个原因，错着也不改。
+
+以上两条各自由三个仓库里的
+`test/the_packages_and_what_is_inside_them_test.dart` 看着——它把
+workflow / CMake / xcconfig / release note 放在一起读，任何一处单独改
+动都会在那里红掉，而不是在读者的下载文件夹里。
 
 about 页（https://yahwehword.com/about）四个卡片的下载按钮都指
 `releases/latest`，**不指具体版本**。这样每次发版不用回头改页面，
