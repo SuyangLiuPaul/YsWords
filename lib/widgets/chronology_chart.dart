@@ -1838,6 +1838,32 @@ class _ChronologyChartState extends State<ChronologyChart> {
         return _measure(label, chipStyle) + chipPadding;
       },
     );
+    // Where a bare-lane tap should land for a tick whose cluster
+    // [chronologyChipPlan] dropped into a chip — its own bucket's tap
+    // target, keyed by the id [_tickCandidates] assigned it, not the
+    // cluster index (a terminal chip can fold several buckets into one
+    // slot, so cluster index alone would not tell two folded buckets
+    // apart). Populated in the loop below, read by the bare-lane search
+    // near the bottom of this method.
+    final chipTapById = <String, VoidCallback>{};
+    // Same key, the chip's own drawn horizontal SPAN — `(left, right)` —
+    // what the bare-lane search below measures distance to for a
+    // clustered tick, instead of its true, undrawn `_x(t.am, plotWidth)`.
+    // [chronologyChipPlan] nudges a chip right by however much clearing
+    // its row neighbour takes, with no bound on the result, so a chip
+    // can end up well away from the x its own tick would plot at — and a
+    // bare-lane tap aimed at the chip the reader can actually see was
+    // instead being matched against a position nothing is drawn at,
+    // which is how a tap under one chip could resolve to a tick from a
+    // different decade entirely. A span, not just its centre point: a
+    // chip is drawn `slot.width` wide, and a tap anywhere across that
+    // width is still visually "under" it, at a distance of zero — a
+    // single centre point would leave the chip's own left and right
+    // thirds closer, in the search below, to whatever real tick or
+    // neighbouring chip happens to sit just past that edge, which is the
+    // same wrong-event failure this fix exists to close, just moved from
+    // the chip's centre to its edges instead of removed.
+    final chipSpanById = <String, (double left, double right)>{};
     for (final slot in chipPlan) {
       final mergedIndices = [slot.cluster, ...slot.extraClusters];
       // Usually just the one bucket this slot came from — but when the
@@ -1860,6 +1886,11 @@ class _ChronologyChartState extends State<ChronologyChart> {
               context,
               [for (final i in bucket) candidates[i]],
             );
+      final chipSpan = (slot.left, slot.left + slot.width);
+      for (final i in bucket) {
+        chipTapById[candidates[i].id] = onTapChip;
+        chipSpanById[candidates[i].id] = chipSpan;
+      }
       labels.add(Positioned(
         key: ValueKey('chronoClusterChip_${candidates[bucket.first].am}'),
         left: slot.left,
@@ -1956,13 +1987,47 @@ class _ChronologyChartState extends State<ChronologyChart> {
         ChronologyMarker? best;
         var bestDx = 14.0;
         for (final t in ticks) {
-          final dx = (_x(t.am, plotWidth) - p.dx).abs();
+          // A candidate [chronologyChipPlan] dropped into a chip is not
+          // drawn at `_x(t.am, plotWidth)` at all — it is drawn wherever
+          // the chip packer put its slot, which can drift arbitrarily
+          // far in a crowded row (see `chipSpanById` above). Measuring
+          // against the undrawn position let a tap under the chip the
+          // reader can see resolve to whatever *other* tick happened to
+          // plot closer to that undrawn x — a different decade, in the
+          // AM 4038 case this fixed. Every tick still competes in one
+          // search; only the x each one competes at changes: a
+          // clustered tick's distance is zero anywhere inside its own
+          // chip's drawn span, and the distance to its nearer edge
+          // outside it — not distance to a single centre point, which
+          // would leave the chip's own edges no better off than before.
+          final span = chipSpanById[t.id];
+          final double dx;
+          if (span != null) {
+            final (left, right) = span;
+            dx = p.dx < left
+                ? left - p.dx
+                : (p.dx > right ? p.dx - right : 0.0);
+          } else {
+            dx = (_x(t.am, plotWidth) - p.dx).abs();
+          }
           if (dx <= bestDx) {
             bestDx = dx;
             best = t;
           }
         }
-        if (best != null) {
+        final chipTap = best == null ? null : chipTapById[best.id];
+        if (chipTap != null) {
+          // `best` is itself a member of a chip's bucket — its own chip
+          // already knows exactly which events it stands for (a bucket
+          // of one goes straight to that event's sheet; more than one
+          // goes to the cluster sheet), so hand off to that instead of
+          // re-deriving a group from native x below: a terminal chip can
+          // fold buckets from different years into one slot, and those
+          // buckets are not "co-located" in the sense the check below
+          // means — they only share a slot because the row ran out of
+          // room, not because they tie on the same year.
+          chipTap();
+        } else if (best != null) {
           // The mark a reader just tapped may stand for more than one
           // event — the label lane already handles this for the chip
           // path (`bucket.length == 1 ? _showEventSheet : _showClusterSheet`
