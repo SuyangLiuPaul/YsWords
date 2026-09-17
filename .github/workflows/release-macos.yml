@@ -107,7 +107,7 @@ jobs:
           [ -z "$tag" ] && tag="dev-${GITHUB_SHA::7}"
           app="$(ls -d build/macos/Build/Products/Release/*.app | head -1)"
           if [ -z "$app" ]; then echo "No .app produced"; exit 1; fi
-          pkg="YsWords-macOS-${tag}.zip"
+          pkg="Yahwehs-Words-macOS-${tag}.zip"
           # ditto preserves the bundle structure / symlinks / resource
           # forks that a plain `zip` would corrupt for a macOS .app.
           ditto -c -k --sequesterRsrc --keepParent "$app" "$pkg"
@@ -117,7 +117,7 @@ jobs:
       - name: Upload workflow artifact (always)
         uses: actions/upload-artifact@v7
         with:
-          name: YsWords-macOS
+          name: Yahwehs-Words-macOS
           path: ${{ env.PKG }}
           if-no-files-found: error
 

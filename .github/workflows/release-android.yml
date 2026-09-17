@@ -195,7 +195,7 @@ jobs:
           tag="${{ steps.ver.outputs.tag }}"
           [ -z "$tag" ] && tag="dev-${GITHUB_SHA::7}"
           src="build/app/outputs/flutter-apk/app-intl-release.apk"
-          pkg="YsWords-Android-${tag}.apk"
+          pkg="Yahwehs-Words-Android-${tag}.apk"
           cp "$src" "$pkg"
           echo "PKG=$pkg" >> "$GITHUB_ENV"
           echo "Staged $pkg ($(du -h "$pkg" | cut -f1))"
@@ -203,7 +203,7 @@ jobs:
       - name: Upload workflow artifact (always)
         uses: actions/upload-artifact@v7
         with:
-          name: YsWords-Android
+          name: Yahwehs-Words-Android
           path: ${{ env.PKG }}
           if-no-files-found: error
 

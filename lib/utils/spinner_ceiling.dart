@@ -30,10 +30,22 @@ import 'dart:async';
 ///
 /// Long enough for a warm sync and an update check on a normal
 /// connection, short enough that a reader on a bad one reads it as
-/// "nothing to do" rather than as a frozen app. Past roughly ten
-/// seconds an unexplained spinner stops being feedback and starts being
-/// a fault report.
-const Duration kPullSpinnerCeiling = Duration(seconds: 12);
+/// "nothing to do" rather than as a frozen app.
+///
+/// 2026-09-18, twelve seconds down to five, at the owner's word:
+/// 「这个是首页 不用12秒 可以5s够了」. Twelve was chosen against the worst
+/// case the WORK might need; five is chosen against what the HOME
+/// SCREEN is for. Nothing on this page is waiting on the sync — the
+/// counts and the resume card are live-reactive, the daily verse and
+/// the evidence are re-read on the same frame the spinner leaves — so
+/// the spinner is not protecting anything the reader is about to read.
+/// It is only saying "I heard you", and five seconds says that.
+///
+/// The work is NOT cut short by this, and that distinction is the whole
+/// point of the file: a sync that needs forty seconds still takes
+/// forty, still lands, and still shows its state in Settings. Only the
+/// gesture stops watching.
+const Duration kPullSpinnerCeiling = Duration(seconds: 5);
 
 /// Wait for [work], but never longer than [ceiling].
 ///

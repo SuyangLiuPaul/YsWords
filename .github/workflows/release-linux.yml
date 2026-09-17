@@ -91,7 +91,7 @@ jobs:
           tag="${{ steps.ver.outputs.tag }}"
           [ -z "$tag" ] && tag="dev-${GITHUB_SHA::7}"
           src="build/linux/x64/release/bundle"
-          pkg="YsWords-Linux-x64-${tag}.tar.gz"
+          pkg="Yahwehs-Words-Linux-x64-${tag}.tar.gz"
           # Archive the bundle CONTENTS (so it extracts to ./yswords, lib/, data/)
           tar -czf "$pkg" -C "$src" .
           echo "PKG=$pkg" >> "$GITHUB_ENV"
@@ -100,7 +100,7 @@ jobs:
       - name: Upload workflow artifact (always)
         uses: actions/upload-artifact@v7
         with:
-          name: YsWords-Linux-x64
+          name: Yahwehs-Words-Linux-x64
           path: ${{ env.PKG }}
           if-no-files-found: error
 
@@ -126,7 +126,7 @@ jobs:
             # sibling platform workflow created it a moment earlier.
             gh release create "$tag" \
               --title "$tag" \
-              --notes "Automated Linux x64 build. Download the tarball, extract (\`tar -xzf YsWords-Linux-x64-${tag}.tar.gz\`), and run \`./yswords\`. Requires GTK3 (\`libgtk-3-0\`) installed on the host." \
+              --notes "Automated Linux x64 build. Download the tarball, extract (\`tar -xzf Yahwehs-Words-Linux-x64-${tag}.tar.gz\`), and run \`./yswords\`. Requires GTK3 (\`libgtk-3-0\`) installed on the host." \
               || true
           fi
           gh release upload "$tag" "$PKG" --clobber

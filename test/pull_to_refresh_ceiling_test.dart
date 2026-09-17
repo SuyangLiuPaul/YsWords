@@ -91,12 +91,22 @@ void main() {
   });
 
   test('the ceiling is short enough to read as "nothing to do"', () {
-    // Past roughly ten seconds an unexplained spinner stops being
-    // feedback and starts being a fault report. Pinned so a later
-    // "just give it a bit longer" has to argue with this line.
-    expect(kPullSpinnerCeiling.inSeconds, lessThanOrEqualTo(15));
-    expect(kPullSpinnerCeiling.inSeconds, greaterThanOrEqualTo(8),
-        reason: 'too short and a normal sync never gets to finish, so '
-            'the pull stops doing its job');
+    // 2026-09-18: 12 → 5, and the lower bound went with it. 「这个是首页
+    // 不用12秒 可以5s够了」 — it was reported a second time, as a spinner
+    // that "is still there", by the reader it was already meant to
+    // protect.
+    //
+    // The old floor of 8 seconds was defending the SYNC's chance to
+    // finish inside the gesture. That was the wrong thing to defend:
+    // nothing on the home screen is waiting on the sync, and the work
+    // is never cut short — only the watching is. What the floor is for
+    // now is that the spinner must be seen at all, or a pull looks like
+    // it did nothing.
+    expect(kPullSpinnerCeiling.inSeconds, lessThanOrEqualTo(6),
+        reason: 'an unexplained spinner stops being feedback and starts '
+            'being a fault report');
+    expect(kPullSpinnerCeiling.inSeconds, greaterThanOrEqualTo(2),
+        reason: 'shorter than this and the reader cannot tell the pull '
+            'was heard');
   });
 }

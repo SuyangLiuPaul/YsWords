@@ -73,7 +73,7 @@ jobs:
           $stage = "staging/YsWords"
           New-Item -ItemType Directory -Force -Path $stage | Out-Null
           Get-ChildItem $src -Exclude *.lib,*.exp | Copy-Item -Destination $stage -Recurse -Force
-          $zip = "YsWords-Windows-x64-$tag.zip"
+          $zip = "Yahwehs-Words-Windows-x64-$tag.zip"
           Compress-Archive -Path "staging/YsWords" -DestinationPath $zip -Force
           "ZIP=$zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           Write-Host "Packaged $zip ($([math]::Round((Get-Item $zip).Length/1MB,1)) MB)"
@@ -81,7 +81,7 @@ jobs:
       - name: Upload workflow artifact (always)
         uses: actions/upload-artifact@v7
         with:
-          name: YsWords-Windows-x64
+          name: Yahwehs-Words-Windows-x64
           path: ${{ env.ZIP }}
           if-no-files-found: error
 
