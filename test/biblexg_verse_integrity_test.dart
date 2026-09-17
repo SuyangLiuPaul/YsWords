@@ -352,6 +352,130 @@ void main() {
             'than punctuation — one side may have lost a clause');
   });
 
+  test('the selectable v3 pair carries the same amount of scripture per verse',
+      () {
+    // Same audit as the v2 pair above, run against v3/v3-tr — the editions
+    // a reader can actually select. `ff226ddc` only added v3 to
+    // expectedGaps and fixed three verses by name; the set test itself
+    // was never ported. Re-derived at HEAD, not carried forward: 14
+    // offenders, not the queue's stale carried-forward 16.
+    const knownDifferences = <String, String>{
+      // Carried from the v2/v2-tr table above; reasons are the
+      // publisher's, not re-litigated here. 馬可福音 6:7 is not carried —
+      // v3 restored it (commit `3cefcab7`, guarded by the test below).
+      '提摩太后书 3:15': '简体缺「而且你自幼便明白神聖的經典，」',
+      '马太福音 9:14': '繁体正文含「通常每逢週一週四」，简体无',
+      '马太福音 27:48': '繁体正文含「士兵解渴的飲料」，简体作注',
+      '马太福音 26:29': '繁体正文含「即葡萄酒」，简体作注',
+      // v2's '使徒行传 8:41' — v3's versification carries the same
+      // clause one verse earlier. Not chased further here; filed as a
+      // by-product in the queue.
+      '使徒行传 8:40': '繁体正文含「即向北沿海」，简体作注',
+      '路加福音 9:5': '繁体正文含「作為警告」，简体作注「意即警告」',
+      '彼得后书 2:21': '用词不同',
+      '哥林多后书 5:8': '用词不同',
+      '使徒行传 20:4': '用词不同',
+      '腓立比书 2:3': '用词不同',
+      '马可福音 7:15': '用词不同',
+      '罗马书 12:6': '用词不同',
+      // Not carried from v2 — checked directly against the publisher's
+      // own source files (~/.cache/yswords/ljk-source/cn-rev.json,
+      // tw-rev.json, chapter 5): their Simplified source ends verse 9
+      // with 「使他们成为」; their Traditional source starts verse 10
+      // with the same clause instead. Our v3 pair reproduces each
+      // source's own boundary exactly — the publisher's two editions
+      // disagree with each other, the same class as 馬可福音 6:7-11 and
+      // 提摩太後書 3:15. Not ours to move; filed in
+      // docs/梁家鏗譯本-請教出版方.md.
+      '启示录 5:9': '两份官方来源就此边界互相不一致，各自照录',
+      '启示录 5:10': '两份官方来源就此边界互相不一致，各自照录',
+    };
+    final inlineNote = RegExp(r'<note:.*?>');
+    String body(Map<String, dynamic> v) =>
+        (v['text'] as String).replaceAll(inlineNote, '');
+    final cn = {for (final v in load('assets/biblexg-v3.json')) v['id']: v};
+    final tr = {for (final v in load('assets/biblexg-v3-tr.json')) v['id']: v};
+
+    final offenders = <String>[];
+    for (final entry in cn.entries) {
+      final other = tr[entry.key];
+      if (other == null) continue;
+      final delta = body(entry.value).length - body(other).length;
+      if (delta.abs() <= 3) continue;
+      final ref = '${entry.value['book']} '
+          '${entry.value['chapter']}:${entry.value['verseLabel']}';
+      if (!knownDifferences.containsKey(ref)) offenders.add('$ref ($delta)');
+    }
+    expect(offenders, isEmpty,
+        reason: 'a verse differs in length between the v3 pair by more '
+            'than punctuation — one side may have lost a clause');
+  });
+
+  test(
+      'the selectable v3 pair disagrees about a note in a pinned set of '
+      'verses', () {
+    // Same audit as the v2 pair's note-count test below, run against
+    // v3/v3-tr. Re-derived at HEAD: 73 verses, of which 30 carry across
+    // from the v2 set (使徒行传 8:41 and 路加福音 9:17 do not — v3 either
+    // renumbers or no longer disagrees there) and 43 are NEW to v3 and
+    // have not been checked against the publisher yet.
+    //
+    // Pinned as an OBSERVED baseline, not an adjudicated one — unlike
+    // the v2 set below, most of this list has not been run through
+    // tools/audit_biblexg_notes.py. A future importer change should
+    // show up here as a new reference, not silently. The 43 unchecked
+    // ones are filed as a queue item; their presence in this set means
+    // "seen", not "cleared".
+    const knownNoteDifferences = <String>{
+      // The 30 that carry across from the v2/v2-tr set below.
+      '马太福音 10:8', '马太福音 13:21', '马太福音 22:45', '马太福音 26:29',
+      '马太福音 27:48', '路加福音 6:3', '路加福音 9:46', '路加福音 10:5',
+      '路加福音 19:38', '约翰福音 1:18', '约翰福音 6:45', '使徒行传 8:5',
+      '罗马书 8:29', '罗马书 11:2', '罗马书 11:27', '罗马书 12:6',
+      '哥林多前书 6:11', '哥林多前书 15:27', '哥林多后书 6:17',
+      '哥林多后书 6:18', '以弗所书 2:8', '以弗所书 3:12', '以弗所书 4:25',
+      '以弗所书 6:3', '歌罗西书 3:10', '帖撒罗尼迦前书 5:19',
+      '提摩太后书 3:15', '启示录 3:1', '启示录 8:12', '启示录 12:17',
+      // The 43 new to v3 — unadjudicated, see the queue item this test
+      // files them under.
+      '使徒行传 2:16', '使徒行传 3:13', '使徒行传 3:21', '使徒行传 5:37',
+      '使徒行传 12:2', '使徒行传 13:6', '使徒行传 13:14', '使徒行传 20:32',
+      '加拉太书 3:7', '加拉太书 3:9', '启示录 5:10', '启示录 5:12',
+      '启示录 8:7', '哥林多前书 10:16', '哥林多前书 13:2', '哥林多前书 13:8',
+      '哥林多前书 14:1', '哥林多后书 5:8', '希伯来书 10:26',
+      '帖撒罗尼迦前书 3:2', '帖撒罗尼迦后书 2:7', '帖撒罗尼迦后书 2:8',
+      '歌罗西书 1:9', '歌罗西书 3:9', '约翰一书 2:18', '约翰一书 3:9',
+      '约翰一书 5:20', '约翰福音 1:14', '约翰福音 1:16', '约翰福音 12:25',
+      '罗马书 10:8', '罗马书 10:13', '路加福音 9:5', '路加福音 11:9',
+      '路加福音 11:23', '路加福音 12:20', '路加福音 23:43', '马可福音 5:2',
+      '马可福音 9:42', '马可福音 9:43', '马太福音 7:11', '马太福音 8:19',
+      '马太福音 8:20',
+    };
+    final note = RegExp(r'<note:.*?>');
+    final cn = {for (final v in load('assets/biblexg-v3.json')) v['id']: v};
+    final tr = {for (final v in load('assets/biblexg-v3-tr.json')) v['id']: v};
+
+    final differing = <String>{};
+    for (final entry in cn.entries) {
+      final other = tr[entry.key];
+      if (other == null) continue;
+      final a = note.allMatches(entry.value['text'] as String).length;
+      final b = note.allMatches(other['text'] as String).length;
+      if (a == b) continue;
+      differing.add('${entry.value['book']} '
+          '${entry.value['chapter']}:${entry.value['verseLabel']}');
+    }
+    expect(differing.difference(knownNoteDifferences), isEmpty,
+        reason: 'a verse newly disagrees about a note between the v3 pair. '
+            'If our importer dropped an inline note, its words are now '
+            'printed as scripture — run tools/audit_biblexg_notes.py '
+            'against the publisher before assuming otherwise');
+    expect(knownNoteDifferences.difference(differing), isEmpty,
+        reason: 'a listed v3 note difference is gone — if that was a '
+            'repair, take it off the list; if the note vanished from both '
+            'editions, it was lost');
+  });
+
   test('the two editions disagree about a note in exactly 32 verses', () {
     // An editor's gloss flattened out of its note and into the verse body
     // is the 羅馬書 16:24 defect, and it is invisible on screen: the verse
