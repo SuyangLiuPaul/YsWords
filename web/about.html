@@ -37,7 +37,16 @@
   THREE SCRIPTS, like the four apps. Every translatable string ships all
   three and CSS shows one, so switching is instant, needs no round trip,
   and the page still reads if the script never runs. The small script
-  only remembers the choice and guesses the first one.
+  remembers the choice and guesses the first one.
+
+  LIGHT AND DARK ARE THE SYSTEM'S CALL, with no control on the page —
+  2026-09-17 「the light or dark mode should be auto not in that corner」.
+  There is one definition of each palette now (`:root` and the
+  prefers-color-scheme block), not three; the `data-theme` attribute and
+  the stored `about.theme` key are gone rather than left inert. Language
+  keeps its switch, because a device's language does not tell you which
+  script a reader wants — a phone set to English is often held by
+  someone who would rather read 简体.
 -->
 <style>
   :root {
@@ -54,27 +63,13 @@
     --p-container: #cae6ff;
     --on-p-container: #004b70;
     --shadow: 0 1px 3px rgba(24, 28, 32, .07);
+    --error: #b3261e;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
       "Noto Sans CJK SC", sans-serif;
   }
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --surface: #101417;
-    --card: #181c20;
-    --card-alt: #1d2226;
-    --ink: #e0e3e8;
-    --muted: #c1c7ce;
-    --faint: #8b9198;
-    --outline: #41474d;
-    --primary: #96cdf8;
-    --on-primary: #00344f;
-    --p-container: #004b70;
-    --on-p-container: #cae6ff;
-    --shadow: none;
-  }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
+    :root {
       color-scheme: dark;
       --surface: #101417;
       --card: #181c20;
@@ -88,6 +83,7 @@
       --p-container: #004b70;
       --on-p-container: #cae6ff;
       --shadow: none;
+      --error: #ffb4ab;
     }
   }
 
@@ -114,7 +110,6 @@
     display: flex; align-items: center; gap: .5rem;
     padding: .875rem 0; flex-wrap: wrap;
   }
-  .bar .spacer { flex: 1; }
   .seg {
     display: inline-flex; border: 1px solid var(--outline);
     border-radius: 999px; overflow: hidden; background: var(--card);
@@ -168,6 +163,13 @@
   }
   .app-head { display: flex; align-items: center; gap: .5rem;
     flex-wrap: wrap; }
+  /* Each app's real mark, at the size a home screen shows it. Words'
+     is the file /logo already serves; the other three were copied from
+     their own repositories into web/app-icons/ — a page that introduces
+     four apps and draws none of their icons is asking the reader to
+     recognise a name they have never seen. */
+  .ico { width: 44px; height: 44px; border-radius: 11px; flex: none;
+    background: var(--card-alt); }
   .zh { font-size: 1.3125rem; font-weight: 600; margin: 0;
     letter-spacing: .02em; }
   .verb {
@@ -210,6 +212,37 @@
     padding-bottom: .1em; margin: .35rem 0 1.125rem; word-break: break-all;
   }
   .mail:hover { border-color: var(--primary); }
+  .cform { display: grid; gap: .75rem; margin: 1rem 0 1.25rem; }
+  .cform .row { display: grid; gap: .75rem; grid-template-columns: 1fr; }
+  @media (min-width: 30rem) {
+    .cform .row { grid-template-columns: 1fr 1fr; }
+  }
+  .f { display: grid; gap: .3rem; min-width: 0; }
+  .lb { font-size: .8125rem; color: var(--faint); font-weight: 600; }
+  .cform input, .cform textarea {
+    font: inherit; font-size: .9375rem; color: var(--ink);
+    background: var(--card-alt); border: 1px solid var(--outline);
+    border-radius: 10px; padding: .55rem .7rem; width: 100%;
+  }
+  .cform textarea { resize: vertical; min-height: 6.5rem; }
+  .cform input:focus, .cform textarea:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--p-container);
+  }
+  .actions { display: flex; align-items: center; gap: .875rem;
+    flex-wrap: wrap; }
+  button.send {
+    font: inherit; font-size: .9375rem; font-weight: 500; cursor: pointer;
+    background: var(--primary); color: var(--on-primary);
+    border: 1px solid transparent; border-radius: 999px;
+    padding: .45rem 1.35rem;
+  }
+  button.send:hover { filter: brightness(1.08); }
+  button.send[disabled] { opacity: .55; cursor: default; filter: none; }
+  .note { font-size: .875rem; color: var(--muted); }
+  .note.good { color: var(--primary); }
+  .note.bad { color: var(--error); }
+  .or { font-size: .9375rem; color: var(--muted); }
   .small { font-size: .875rem; color: var(--muted); }
   .small b { color: var(--ink); }
 
@@ -221,7 +254,8 @@
   footer p { margin: 0; }
 
   @media (prefers-reduced-motion: no-preference) {
-    a.go, a.dl, a.gh, .mail, .seg button {
+    a.go, a.dl, a.gh, .mail, .seg button, button.send,
+    .cform input, .cform textarea {
       transition: background-color .15s, color .15s, border-color .15s,
         filter .15s;
     }
@@ -236,12 +270,6 @@
       <button type="button" data-set-lang="hans" aria-pressed="true">简体</button>
       <button type="button" data-set-lang="hant" aria-pressed="false">繁體</button>
       <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
-    </div>
-    <div class="spacer"></div>
-    <div class="seg" role="group" id="theme">
-      <button type="button" data-set-theme="light" aria-pressed="false"><span data-l="hans">浅色</span><span data-l="hant">淺色</span><span data-l="en">Light</span></button>
-      <button type="button" data-set-theme="dark" aria-pressed="false"><span data-l="hans">深色</span><span data-l="hant">深色</span><span data-l="en">Dark</span></button>
-      <button type="button" data-set-theme="auto" aria-pressed="true"><span data-l="hans">跟随</span><span data-l="hant">跟隨</span><span data-l="en">Auto</span></button>
     </div>
   </nav>
 
@@ -263,6 +291,7 @@
 
     <article class="app">
       <div class="app-head">
+        <img class="ico" src="/logo/logo-256.png" alt="" width="44" height="44" loading="lazy" decoding="async">
         <h3 class="zh"><span data-l="hans">雅伟之言</span><span data-l="hant">雅偉之言</span><span data-l="en">Yahweh’s Words</span></h3>
         <span class="verb"><span data-l="hans">读</span><span data-l="hant">讀</span><span data-l="en">Read</span></span>
       </div>
@@ -282,6 +311,7 @@
 
     <article class="app">
       <div class="app-head">
+        <img class="ico" src="/app-icons/sword.png" alt="" width="44" height="44" loading="lazy" decoding="async">
         <h3 class="zh"><span data-l="hans">雅伟之剑</span><span data-l="hant">雅偉之劍</span><span data-l="en">Yahweh’s Sword</span></h3>
         <span class="verb"><span data-l="hans">查</span><span data-l="hant">查</span><span data-l="en">Study</span></span>
       </div>
@@ -301,6 +331,7 @@
 
     <article class="app">
       <div class="app-head">
+        <img class="ico" src="/app-icons/world.png" alt="" width="44" height="44" loading="lazy" decoding="async">
         <h3 class="zh"><span data-l="hans">雅伟之界</span><span data-l="hant">雅偉之界</span><span data-l="en">Yahweh’s World</span></h3>
         <span class="verb"><span data-l="hans">看</span><span data-l="hant">看</span><span data-l="en">See</span></span>
       </div>
@@ -323,6 +354,7 @@
 
     <article class="app">
       <div class="app-head">
+        <img class="ico" src="/app-icons/news.png" alt="" width="44" height="44" loading="lazy" decoding="async">
         <h3 class="zh"><span data-l="hans">新闻洞见</span><span data-l="hant">新聞洞見</span><span data-l="en">News Insight</span></h3>
         <span class="verb"><span data-l="hans">察</span><span data-l="hant">察</span><span data-l="en">Discern</span></span>
       </div>
@@ -354,7 +386,44 @@
       <span data-l="hant">有問題、發現錯誤，或者讀著哪裡彆扭 —— 都寫信給我們。</span>
       <span data-l="en">Questions, mistakes you have found, or anything that simply reads wrong — write to us.</span>
     </p>
-    <a class="mail" href="mailto:support@yahwehword.com">support@yahwehword.com</a>
+    <!-- 2026-09-17 「contact us in about page can also have a form just
+         like words with similar ways but need to collect user's contact
+         and name」. It posts to /api/submitFeedback — the SAME function
+         the in-app feedback page has used since v1.2.x, which already
+         takes `name` and `replyTo` and emails them on. A second endpoint
+         would have been a second thing to keep configured, and the one
+         that exists is already on the CORS allowlist for this origin.
+
+         If the send fails for any reason, the message is not lost: the
+         catch below writes it into the mailto: link under the form, so
+         the visitor's next click carries what they typed. -->
+    <form class="cform" id="cform" novalidate>
+      <div class="row">
+        <label class="f">
+          <span class="lb"><span data-l="hans">怎么称呼</span><span data-l="hant">怎麼稱呼</span><span data-l="en">Your name</span></span>
+          <input name="name" type="text" autocomplete="name" maxlength="80" required>
+        </label>
+        <label class="f">
+          <span class="lb"><span data-l="hans">邮箱（我们回信用）</span><span data-l="hant">電郵（我們回信用）</span><span data-l="en">Email (so we can reply)</span></span>
+          <input name="replyTo" type="email" autocomplete="email" inputmode="email" maxlength="200" required>
+        </label>
+      </div>
+      <label class="f">
+        <span class="lb"><span data-l="hans">想说的话</span><span data-l="hant">想說的話</span><span data-l="en">Your message</span></span>
+        <textarea name="message" rows="5" maxlength="4000" required></textarea>
+      </label>
+      <div class="actions">
+        <button type="submit" class="send"><span data-l="hans">发送</span><span data-l="hant">傳送</span><span data-l="en">Send</span></button>
+        <span class="note" id="cnote" role="status" aria-live="polite"></span>
+      </div>
+    </form>
+
+    <p class="or">
+      <span data-l="hans">也可以直接写信：</span>
+      <span data-l="hant">也可以直接寫信：</span>
+      <span data-l="en">Or write to us directly:</span>
+    </p>
+    <a class="mail" id="cmail" href="mailto:support@yahwehword.com">support@yahwehword.com</a>
     <p class="small">
       <span data-l="hans">每一封我们都会看。报告经文问题时，请写上<b>书卷、章、节和所用译本</b>，我们就能直接查到那一节。</span>
       <span data-l="hant">每一封我們都會看。回報經文問題時，請寫上<b>書卷、章、節和所用譯本</b>，我們就能直接查到那一節。</span>
@@ -393,17 +462,6 @@
     store('about.lang', l);
   }
 
-  function setTheme(t) {
-    if (t === 'light' || t === 'dark') root.setAttribute('data-theme', t);
-    else { root.removeAttribute('data-theme'); t = 'auto'; }
-    var b = document.querySelectorAll('[data-set-theme]');
-    for (var i = 0; i < b.length; i++) {
-      b[i].setAttribute('aria-pressed',
-        b[i].getAttribute('data-set-theme') === t ? 'true' : 'false');
-    }
-    store('about.theme', t);
-  }
-
   // First visit: guess from the browser, the way the apps do. zh-TW and
   // zh-HK are Traditional; any other zh is Simplified; everything else
   // is English. A stored choice always wins.
@@ -415,13 +473,83 @@
   }
 
   setLang(read('about.lang') || guess());
-  setTheme(read('about.theme') || 'auto');
+
+  // The status line has to speak whichever script the reader picked, and
+  // it is written by JS rather than shipped as three spans because it
+  // appears one at a time, in response to something.
+  var MSG = {
+    sending: { hans: '发送中…', hant: '傳送中…', en: 'Sending…' },
+    ok: { hans: '收到了，谢谢。我们会尽快回信。',
+          hant: '收到了，謝謝。我們會盡快回信。',
+          en: 'Received — thank you. We will reply soon.' },
+    need: { hans: '名字、邮箱和内容都要填。',
+            hant: '名字、電郵和內容都要填。',
+            en: 'Name, email and message are all needed.' },
+    addr: { hans: '邮箱地址看起来不对。',
+            hant: '電郵地址看起來不對。',
+            en: 'That email address does not look right.' },
+    fail: { hans: '没能送出去 —— 你写的内容已经放进下面那个邮件链接里了，点一下直接寄给我们。',
+            hant: '沒能送出去 —— 你寫的內容已經放進下面那個郵件連結裡了，點一下直接寄給我們。',
+            en: 'Could not send — what you typed is now in the email link below; one tap sends it to us.' }
+  };
+
+  var form = document.getElementById('cform');
+  var note = document.getElementById('cnote');
+  var cmail = document.getElementById('cmail');
+  // Same shape the function validates with (submitFeedback.mjs).
+  var EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[a-zA-Z]{2,}$/;
+
+  function say(key, cls) {
+    var m = MSG[key];
+    note.textContent = m[root.getAttribute('data-lang')] || m.en;
+    note.className = 'note' + (cls ? ' ' + cls : '');
+  }
+
+  if (form) form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = form.elements;
+    var name = f['name'].value.trim();
+    var email = f['replyTo'].value.trim();
+    var message = f['message'].value.trim();
+    if (!name || !email || !message) { say('need', 'bad'); return; }
+    if (!EMAIL_RE.test(email)) { say('addr', 'bad'); f['replyTo'].focus(); return; }
+
+    var btn = form.querySelector('button.send');
+    btn.disabled = true;
+    say('sending');
+
+    fetch('/api/submitFeedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category: 'About page',
+        name: name,
+        replyTo: email,
+        message: message,
+        position: '/about',
+        locale: root.getAttribute('data-lang'),
+        browserLocale: navigator.language || '',
+        userAgent: navigator.userAgent || '',
+        theme: window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark' : 'light'
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      form.reset();
+      say('ok', 'good');
+    }).catch(function () {
+      cmail.href = 'mailto:support@yahwehword.com' +
+        '?subject=' + encodeURIComponent('yahwehword.com — ' + name) +
+        '&body=' + encodeURIComponent(
+          message + '\n\n— ' + name + ' <' + email + '>');
+      say('fail', 'bad');
+    }).then(function () { btn.disabled = false; });
+  });
 
   document.addEventListener('click', function (e) {
-    var t = e.target.closest ? e.target.closest('[data-set-lang],[data-set-theme]') : null;
-    if (!t) return;
-    if (t.hasAttribute('data-set-lang')) setLang(t.getAttribute('data-set-lang'));
-    else setTheme(t.getAttribute('data-set-theme'));
+    var t = e.target.closest ? e.target.closest('[data-set-lang]') : null;
+    if (t) setLang(t.getAttribute('data-set-lang'));
   });
 })();
 </script>
