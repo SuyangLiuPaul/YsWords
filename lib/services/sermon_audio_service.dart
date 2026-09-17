@@ -112,6 +112,15 @@ class SermonAudioService extends ChangeNotifier {
   static const _positionKeyPrefix = 'sermon.audio.pos.';
   static const _lengthKeyPrefix = 'sermon.audio.len.';
 
+  /// How much of the current part must play before another autosave is
+  /// written. `onPosition` fires several times a second; an unthrottled
+  /// write per tick would be a write storm worse than the bug it fixes.
+  /// 5s is the same order of magnitude as the throttle podcast apps use
+  /// for "resume where you left off" and caps the worst case — killing
+  /// the app mid-sermon with no pause — at losing one throttle window,
+  /// not the whole talk.
+  static const Duration _positionSaveInterval = Duration(seconds: 5);
+
   /// Bytes per second of the corpus's stated encoding — 32 kbps mono,
   /// CBR, per the header at the top of this file.
   ///
@@ -142,6 +151,37 @@ class SermonAudioService extends ChangeNotifier {
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   bool _wired = false;
+
+  /// Where the last autosave (not an explicit pause/stop/seek) left the
+  /// throttle, for the CURRENT part only — reset to null every time
+  /// `_playPart` starts one, so the first tick of a new part always
+  /// saves rather than waiting out a stale interval measured against the
+  /// previous part's numbers.
+  Duration? _lastAutosavedPosition;
+
+  /// True from the moment `applyPendingSeek` issues `_player.seek(…)`
+  /// until that call's own future completes. On the web engine `seek`
+  /// is a synchronous `currentTime =` assignment, so this window is
+  /// nominally zero; on native it is a real plugin round-trip, and
+  /// `applyPendingSeek` nulls `_pendingSeek` BEFORE that round-trip
+  /// resolves (so a rebuild does not re-issue the same seek while it is
+  /// still in flight). Without this flag, an `onPosition` tick landing
+  /// in that gap would see `_pendingSeek == null` and autosave whatever
+  /// stale position the platform reports before the seek actually
+  /// lands — the resume offset this whole path exists to protect.
+  bool _seekInFlight = false;
+
+  /// Bumped every time a new resume seek starts, and again whenever
+  /// `_playPart` resets state for a new part. A refuter caught the gap
+  /// this closes: `_seekInFlight` alone is one shared bool, so if a
+  /// resume seek to part A is still an outstanding native round-trip
+  /// when the listener jumps to part C mid-flight, part C's `_playPart`
+  /// clears `_seekInFlight` and starts its own seek — and if part A's
+  /// orphaned `whenComplete` then fires, it would clear the flag again
+  /// while part C's seek is still genuinely unresolved. Each seek now
+  /// captures its own generation and only clears the flag if it is
+  /// still current.
+  int _seekGeneration = 0;
 
   /// Set by `_playPart` right before it starts a load, cleared the
   /// first time `onPlaying(true)` fires afterwards. Exists only so
@@ -219,6 +259,20 @@ class SermonAudioService extends ChangeNotifier {
     });
     _player.onPosition.listen((p) {
       _position = p;
+      // A load in flight (`_loading`) or a resume seek not yet applied
+      // (`_pendingSeek`) means `p` is not yet the listener's real place
+      // in this part — `_playPart` sets both before the file is even
+      // requested, and a throttled write landing in that window would
+      // persist `part:0` over whatever `_savedPosition` read back at
+      // the top of `play()`, which is the one way this autosave could
+      // make the bug worse than it found it.
+      if (!_loading &&
+          _pendingSeek == null &&
+          !_seekInFlight &&
+          shouldAutosave(_lastAutosavedPosition, p, _positionSaveInterval)) {
+        _lastAutosavedPosition = p;
+        unawaited(_savePosition());
+      }
       notifyListeners();
     });
     _player.onDuration.listen((d) {
@@ -308,6 +362,9 @@ class SermonAudioService extends ChangeNotifier {
         data: 'part=$_partIndex resumeAt=${resumeAt ?? "none"}');
     _position = Duration.zero;
     _duration = Duration.zero;
+    _lastAutosavedPosition = null;
+    _seekInFlight = false;
+    _seekGeneration++;
     _pendingSeek = resumeAt;
     _awaitingFirstPlaying = true;
     try {
@@ -349,7 +406,14 @@ class SermonAudioService extends ChangeNotifier {
     }
     _partIndex += 1;
     _loading = true;
+    // Name the new part in the saved position right away — the boundary
+    // is exactly the moment the OLD part's leftover `_position` (its own
+    // final seconds, not zero) would otherwise get paired with the NEW
+    // `_partIndex`, pointing a resume at a time that does not exist in
+    // the part it now names.
+    _position = Duration.zero;
     notifyListeners();
+    await _savePosition();
     await _playPart();
   }
 
@@ -473,6 +537,21 @@ class SermonAudioService extends ChangeNotifier {
     return (lengths.length - 1, Duration.zero);
   }
 
+  /// Whether a tick at [current], given the position [lastSaved] as of
+  /// the last autosave (null if this part has not autosaved yet), is far
+  /// enough past it to write another — the whole of the throttle
+  /// decision, kept pure so the bound can be pinned without a clock or a
+  /// player. Uses the audio position itself rather than wall-clock time:
+  /// while playing at 1x, elapsed position IS elapsed time, and a
+  /// scrub backwards (which `seek`/`seekOverall` already persist
+  /// directly, not through this path) should not be starved by an
+  /// interval measured from a position now ahead of it.
+  static bool shouldAutosave(
+      Duration? lastSaved, Duration current, Duration interval) {
+    if (lastSaved == null) return true;
+    return current - lastSaved >= interval || current < lastSaved;
+  }
+
   /// Seek anywhere in the talk, across part boundaries.
   Future<void> seekOverall(Duration to) async {
     final parts = _sermonId == null ? null : _index?[_sermonId];
@@ -560,7 +639,17 @@ class SermonAudioService extends ChangeNotifier {
       // can land ahead of the first `sermon.playing` crumb above.
       ErrorReporter.breadcrumb('sermon.seek',
           data: 'to=${pending.inSeconds}s duration=${_duration.inSeconds}s');
-      unawaited(_player.seek(pending));
+      _seekInFlight = true;
+      final myGeneration = ++_seekGeneration;
+      unawaited(_player.seek(pending).whenComplete(() {
+        // Only clear the flag if this is still the current seek — an
+        // orphaned earlier one (superseded by a part change while it
+        // was still in flight) must not clear it out from under a
+        // newer seek that has not landed yet.
+        if (_seekGeneration == myGeneration) {
+          _seekInFlight = false;
+        }
+      }));
     } else {
       _pendingSeek = null;
     }

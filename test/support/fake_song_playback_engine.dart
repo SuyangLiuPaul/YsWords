@@ -134,8 +134,39 @@ class FakeSongPlaybackEngine implements SongPlaybackEngine {
   Future<void> pause() => Future.value();
   @override
   Future<void> stop() => Future.value();
+
+  /// When true, `seek()` never completes on its own — models the async
+  /// plugin round-trip the native engine's seek makes (the web engine's
+  /// `currentTime =` assignment is synchronous and has no such window),
+  /// so a test can drive an `onPosition` tick into the gap between "seek
+  /// requested" and "seek actually applied." A list, not a single slot,
+  /// so a test can hold two overlapping seeks at once — needed to drive
+  /// the case where an earlier seek resolves after a later one has
+  /// already started.
+  bool holdSeek = false;
+  final List<Completer<void>> _heldSeeks = [];
+
   @override
-  Future<void> seek(Duration to) => Future.value();
+  Future<void> seek(Duration to) {
+    if (holdSeek) {
+      final c = Completer<void>();
+      _heldSeeks.add(c);
+      return c.future;
+    }
+    return Future.value();
+  }
+
+  /// Resolves the held seek at [index] — 0 is the first `seek()` call
+  /// while `holdSeek` was true, 1 the second, and so on, by ABSOLUTE
+  /// call order. Not a "still pending" index: completing #0 does not
+  /// shift #1 down to #0, so a test holding several overlapping seeks
+  /// can resolve them in any order without the indices moving under it.
+  void resolveHeldSeek({int index = 0}) {
+    if (index < _heldSeeks.length && !_heldSeeks[index].isCompleted) {
+      _heldSeeks[index].complete();
+    }
+  }
+
   @override
   Future<void> setVolume(double volume) => Future.value();
 

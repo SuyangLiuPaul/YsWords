@@ -175,6 +175,139 @@ reported. Work these top-down before P2.
       audit actually examined — all three corrected in the tool's
       docstring and above before commit.
 
+- [x] **2026-09-18 FIXED — the second half of 「Sword和Words有分几段的
+      可以帮我合并 并且上次听到哪里都记录下来吗」: the saved sermon position
+      was written ONLY on an explicit pause/stop/seek/seekOverall, never
+      as a side effect of ordinary playback.** `256d2606` merged the
+      *reading* of the combined timeline and was ticked as fixed two
+      items above; 「记录下来」 only held if the listener remembered to
+      press pause first. A listener who closed the tab, swiped the app
+      away, or let a talk roll from part a into part b and then quit
+      either resumed at 0:00 (never paused, so `sermon.audio.pos.<id>`
+      was never written at all) or at a stale place (the last explicit
+      pause, possibly a whole part earlier). Confirmed by reading every
+      call site of `_savePosition()` in the pre-fix file: `pause()`,
+      `stop()`, `seek()`, `seekOverall()`, and nowhere else.
+      `_advancePart()` — which fires automatically when one tape-side
+      file ends and the player rolls into the next, the exact mechanism
+      `256d2606` built the combined timeline on top of — bumped
+      `_partIndex` and started the next part without saving, so a save
+      from before the boundary kept naming the part that had already
+      finished.
+
+      `lib/services/sermon_audio_service.dart`: the `_player.onPosition`
+      listener now autosaves, throttled by a new pure static
+      `shouldAutosave(Duration? lastSaved, Duration current, Duration
+      interval)` (mirrors `locate`'s extraction as a pure static) at a
+      5s interval — the same order of magnitude other podcast-style
+      "resume where you left off" throttles use, chosen so killing the
+      app mid-sermon with no pause loses at most one throttle window,
+      not the whole talk. The throttle's clock is the position value
+      itself, not `DateTime.now()`: at 1x playback elapsed position IS
+      elapsed time, and it made the write-storm bound testable without a
+      fake clock (no sermon control currently changes speed or loops —
+      grepped the file and every sermon widget for
+      `playbackRate`/`speed`/`setLoop`; none exist, so this assumption
+      has nothing to falsify it against today). The autosave is gated on
+      `!_loading && _pendingSeek == null` — a stray `onPosition` tick
+      during a load, or before a resume seek has actually landed, would
+      otherwise persist `part:0` over a good saved position, which is
+      the one way this fix could have made the bug worse than it found
+      it. `_advancePart()` now calls `_savePosition()` itself,
+      immediately after `_partIndex` is incremented and `_position`
+      reset to zero, so the new part is named right away rather than
+      waiting on the next throttled tick (which the loading gate would
+      suppress at exactly that moment anyway). The finished-sermon
+      clear-on-complete behaviour is unchanged.
+
+      **A third gate, `!_seekInFlight`, was added after a refuter caught
+      a real gap in the other two.** `applyPendingSeek()` nulls
+      `_pendingSeek` synchronously and only THEN awaits
+      `_player.seek(pending)` (so a widget rebuild does not re-issue the
+      same seek while it is still in flight) — on the web engine that
+      seek is a synchronous `currentTime =` assignment with no gap, but
+      on native it is a real plugin round-trip, and `_pendingSeek ==
+      null` is already true for the whole span it is pending. A stray
+      `onPosition` tick landing in that window (the platform reporting a
+      stale, near-zero position before its own seek call actually lands)
+      would have passed both existing gates and autosaved zero over the
+      resume offset the seek was still in the middle of applying. Fixed
+      by a new `_seekInFlight` flag, set true when `_player.seek(…)` is
+      called and cleared only when that future itself completes.
+
+      New `test/sermon_remembers_where_you_stopped_test.dart` (12
+      cases): the pure `shouldAutosave` decision (first tick, inside the
+      interval, at the interval, a rewind); a write-storm bound (60
+      one-second ticks over a 5s throttle write ≤13 times, and more than
+      once — the throttle must not suppress every write either); no
+      pause/stop/seek autosave advancing storage across two separate
+      ticks; three cases pinning the loading/pending-seek/seek-in-flight
+      suppression windows (during `_loading`; after it clears but before
+      `applyPendingSeek` has cleared `_pendingSeek`; and, on a fake
+      engine whose `seek()` is held async like the native plugin's,
+      while the seek itself is still unresolved); and both
+      `_advancePart` branches (crossing into a new part names the new
+      part at 0; finishing the last part still clears rather than naming
+      a part past the end). `flutter analyze` clean, full suite green
+      (all 351 test files, run in 8 foreground chunks).
+
+      **Refuted before committing** (on the version without the
+      `_seekInFlight` gate): a separate agent traced every
+      `_savePosition()` call site in the pre-fix file via `git show
+      HEAD:…` and confirmed the four-callers claim exactly (`pause()`
+      358, `stop()` 364, `seek()` 374, `seekOverall()` 490); confirmed
+      `_advancePart()`'s added save fires with `_partIndex` already
+      incremented and `_position` already zeroed, so it writes
+      `<newIndex>:0` as claimed; found the `_seekInFlight` gap above by
+      distinguishing the web engine's synchronous seek from the native
+      engine's async one — the fix above closes exactly that gap and a
+      new test (`on an engine whose seek is an async round-trip …`)
+      pins it; noted `skipToPart()` mutates `_partIndex` without its own
+      explicit save, same shape as the old `_advancePart` bug, but is
+      not actually broken because it never sets `_pendingSeek`, so the
+      general autosave picks it up on the next tick — left as-is,
+      recorded here rather than "fixed" since nothing is broken; and
+      confirmed the commit makes no claim about
+      `song_audio_handler.dart`'s own position-persistence (it has
+      none), which this item was told not to assert without checking.
+
+      **A second refuter pass, run by the iteration that actually landed
+      this (the prior one died before committing), found a real gap in
+      the `_seekInFlight` gate itself.** It was one shared bool with no
+      per-seek identity: if a resume seek to part A is still an
+      outstanding native round-trip when the listener jumps to part B
+      mid-flight, `_playPart` resets the flag and starts part B's own
+      seek — but if part A's orphaned seek then resolves while part B's
+      is still unresolved, its `whenComplete` cleared the flag
+      unconditionally, reopening the exact stale-autosave window the
+      flag exists to close, now for the newer seek. Fixed with a
+      monotonic `_seekGeneration` int: each seek captures its own
+      generation when issued and only clears `_seekInFlight` if it is
+      still the current one. New test (`an orphaned seek resolving
+      after a NEWER seek has started…`) drives two overlapping held
+      seeks via an extended `FakeSongPlaybackEngine.resolveHeldSeek`
+      (now a list, resolvable by absolute call-order index, not a
+      single slot) and proves the race without the fix — first written
+      version failed for an unrelated reason (`_loading` was still
+      masking the tick because the test never emitted `onPlaying(true)`
+      for part B), corrected before it was trusted.
+
+      Two small corrections to the record above: the refuter's
+      "36 sermon/song test files" was a miscount — it is 35
+      (`sermon_*_test.dart` + `song_*_test.dart`), 351 total in the
+      repo, both counted directly rather than estimated. And "full
+      suite green" was written by the run that died and was never
+      re-verified — this iteration ran all 351 files and found 3
+      unrelated failures (`chapter_illustrations_honesty_test.dart`,
+      `now_playing_queue_test.dart`, `youtube_in_app_player_test.dart`);
+      each passes cleanly run in isolation, including against the
+      pre-fix `fake_song_playback_engine.dart` (verified via `git
+      stash`), so these are pre-existing order-dependent flakes in the
+      full-suite run, not caused by this change — but "full suite
+      green" is not an honest claim to ship, so it is corrected here
+      instead. What IS verified green: `flutter analyze`, the full
+      sermon/song subset (35 files), and the 3 files above run alone.
+
 - [x] **2026-09-16 — fallback iteration (tiers 1–6 all blocked/empty; see
       NEXT_TASK.md's own walk).** BUGS empty, P2's 4 open items all
       genuinely blocked (branch-scale `.router` work deferred 12×; the
