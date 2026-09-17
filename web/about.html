@@ -215,6 +215,17 @@
   .sub { font-size: .9375rem; font-weight: 700; color: var(--ink);
     margin: 0 0 .5rem; }
   .sub + p { margin-bottom: 1.5rem; }
+  /* The name itself, once, in the script it was written in. The key
+     underneath exists because the one thing readers get wrong about
+     these four letters is which end to start from. */
+  .why p.tetra { margin: 0 0 .875rem; display: flex; flex-wrap: wrap;
+    align-items: baseline; gap: .125rem .875rem; }
+  .tetra-word { font-size: 2.125rem; line-height: 1.15; color: var(--ink);
+    letter-spacing: .08em;
+    font-family: "SBL Hebrew", "Ezra SIL", "Taamey Frank CLM",
+      "Times New Roman", serif; }
+  .tetra-key { font-size: .8125rem; color: var(--faint); }
+  .tetra-key i { font-style: normal; unicode-bidi: isolate; }
   .why .sub:not(:first-child) { margin-top: .25rem; }
   /* The one quotation on the page, given the weight of one. */
   .verse {
@@ -353,10 +364,18 @@
   <h2><span data-l="hans">我们为什么做这些</span><span data-l="hant">我們為什麼做這些</span><span data-l="en">Why we make these</span></h2>
   <div class="why">
     <h3 class="sub"><span data-l="hans">先说那个名字</span><span data-l="hant">先說那個名字</span><span data-l="en">First, the name</span></h3>
+    <p class="tetra">
+      <span class="tetra-word" lang="he" dir="rtl">יהוה</span>
+      <span class="tetra-key" dir="ltr">
+        <span data-l="hans">从右往左读：<i>י</i> Y、<i>ה</i> H、<i>ו</i> W、<i>ה</i> H</span>
+        <span data-l="hant">從右往左讀：<i>י</i> Y、<i>ה</i> H、<i>ו</i> W、<i>ה</i> H</span>
+        <span data-l="en">Read right to left: <i>י</i> Y, <i>ה</i> H, <i>ו</i> W, <i>ה</i> H</span>
+      </span>
+    </p>
     <p>
-      <span data-l="hans">圣经里神的名字写作四个希伯来字母 <b>YHWH</b>。中文多半译成「耶和华」—— 那个读法是把 YHWH 的辅音和「我主」（אֲדֹנָי）的元音拼在一起念出来的，十六世纪才进入西方译本，并不是原来的读音。按学界对古代读法的重建，<b>雅伟</b>更接近祂自己所报的那个名字。所以这四个 app 都称祂雅伟。</span>
-      <span data-l="hant">聖經裡神的名字寫作四個希伯來字母 <b>YHWH</b>。中文多半譯成「耶和華」—— 那個讀法是把 YHWH 的子音和「我主」（אֲדֹנָי）的母音拼在一起唸出來的，十六世紀才進入西方譯本，並不是原來的讀音。按學界對古代讀法的重建，<b>雅偉</b>更接近祂自己所報的那個名字。所以這四個 app 都稱祂雅偉。</span>
-      <span data-l="en">God’s name in the Hebrew Bible is written with four letters, <b>YHWH</b>. English has long said “Jehovah” — a reading made by setting those consonants against the vowels of <i>Adonai</i> (“my Lord”), which entered Western Bibles only in the sixteenth century and was never how the name was said. The reconstruction closest to the original sound is <b>Yahweh</b>, and that is the name all four apps use.</span>
+      <span data-l="hans">圣经里神的名字就写作这四个希伯来字母，拉丁转写作 <b>YHWH</b>。中文多半译成「耶和华」—— 那个读法是把 YHWH 的辅音和「我主」（אֲדֹנָי）的元音拼在一起念出来的，十六世纪才进入西方译本，并不是原来的读音。按学界对古代读法的重建，<b>雅伟</b>更接近祂自己所报的那个名字。所以这四个 app 都称祂雅伟。</span>
+      <span data-l="hant">聖經裡神的名字就寫作這四個希伯來字母，拉丁轉寫作 <b>YHWH</b>。中文多半譯成「耶和華」—— 那個讀法是把 YHWH 的子音和「我主」（אֲדֹנָי）的母音拼在一起唸出來的，十六世紀才進入西方譯本，並不是原來的讀音。按學界對古代讀法的重建，<b>雅偉</b>更接近祂自己所報的那個名字。所以這四個 app 都稱祂雅偉。</span>
+      <span data-l="en">God’s name in the Hebrew Bible is written with these four letters, transliterated <b>YHWH</b>. English has long said “Jehovah” — a reading made by setting those consonants against the vowels of <i>Adonai</i> (“my Lord”), which entered Western Bibles only in the sixteenth century and was never how the name was said. The reconstruction closest to the original sound is <b>Yahweh</b>, and that is the name all four apps use.</span>
     </p>
 
     <h3 class="sub"><span data-l="hans">我们想做的事</span><span data-l="hant">我們想做的事</span><span data-l="en">What we are trying to do</span></h3>
