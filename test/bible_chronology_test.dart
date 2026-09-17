@@ -1024,9 +1024,10 @@ void main() {
     });
 
     // A third class, distinct from the undrawn-lines note above: Levi,
-    // Kohath, Amram, Moses, Aaron and Joshua all have a lifespan
-    // Scripture states outright, but no verse gives their father's age
-    // at their birth, so there is no year to anchor a bar on.
+    // Kohath, Amram, Moses, Aaron, Joshua and David all have a lifespan
+    // Scripture states (David's by sum, not by a verse's own word), but
+    // no verse gives their father's age at their birth, so there is no
+    // year to anchor a bar on.
     test(
         'the unanchored-lifespans note is declared in all three locales',
         () {
@@ -1049,6 +1050,14 @@ void main() {
         ('Numbers', 33, 39, 'hundred and twenty and three years old', 123,
             'Numbers 33:39'),
         ('Joshua', 24, 29, 'hundred and ten years old', 110, 'Joshua 24:29'),
+        // David: 30 at accession and 40 on the throne (2 Sam 5:4), the
+        // 40 itemised as 7½ + 33 (2 Sam 5:5) and repeated in 1 Kings
+        // 2:11 — 70 is the note's own sum of 30 + 40, not a number any
+        // of these verses states outright (checked separately below).
+        ('2 Samuel', 5, 4, 'thirty years old', 30, '2 Samuel 5:4'),
+        ('2 Samuel', 5, 4, 'reigned forty years', 40, '2 Samuel 5:4'),
+        ('2 Samuel', 5, 5, 'thirty and three years', 33, '2 Samuel 5:5'),
+        ('1 Kings', 2, 11, 'forty years', 40, '1 Kings 2:11'),
       ];
       final en = data.localizedUnanchored('en');
       for (final (book, chapter, verse, versePhrase, numeral, ref)
@@ -1064,6 +1073,34 @@ void main() {
                   'from $ref');
         }
       }
+      // 70 is not itemised above because no verse states it outright —
+      // it is 30 + 40 by the note's own arithmetic. Checked directly.
+      for (final locale in const ['en', 'zh-Hans', 'zh-Hant']) {
+        expect(data.localizedUnanchored(locale), contains('70'),
+            reason: 'the $locale note does not give David\'s summed age '
+                '70');
+      }
+    });
+
+    test(
+        'every family_tree.json person with a stated lifespan is either '
+        'drawn as a lifeline or declared in unanchoredFamilyTreeIds', () {
+      final withLifespan = familyTree.values
+          .where((p) => p['lifespan'] != null)
+          .map((p) => p['id'] as String)
+          .toSet();
+      final drawn = data.lifelines.map((l) => l.personId).toSet();
+      final declaredUnanchored =
+          ((raw['_meta'] as Map)['unanchoredFamilyTreeIds'] as List)
+              .cast<String>()
+              .toSet();
+      expect(withLifespan.difference(drawn), declaredUnanchored,
+          reason: 'a person with a stated lifespan is missing from the '
+              'chart and not accounted for in _meta.unanchoredFamilyTreeIds '
+              '— they would silently vanish from the chart');
+      expect(declaredUnanchored.difference(withLifespan), isEmpty,
+          reason: '_meta.unanchoredFamilyTreeIds names someone '
+              'family_tree.json does not give a lifespan to');
     });
 
     test('AM converts to BC on the anchor, skipping the year zero', () {

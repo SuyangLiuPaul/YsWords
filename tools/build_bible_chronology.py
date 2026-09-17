@@ -626,38 +626,58 @@ UNDRAWN = {
 # A third, distinct class from UNDRAWN above: these are not nameless or
 # ageless. Scripture states each lifespan plainly — the gap is that no
 # verse states the father's age at the birth, so there is no year to
-# anchor the bar's left edge on. Six lifespans, verified individually
-# against assets/kjv.json rather than assumed from the pattern.
+# anchor the bar's left edge on. Seven lifespans, verified individually
+# against assets/kjv.json rather than assumed from the pattern. The
+# seventh, David, differs from the other six in HOW his number is known
+# — it is a sum, not a verse's own word — but not in the anchor gap: no
+# verse gives Jesse's age at David's birth either.
 UNANCHORED = {
     "en": (
         "Exodus 6:16 gives Levi's 137 years, Exodus 6:18 his son "
         "Kohath's 133, and Exodus 6:20 Kohath's son Amram's 137 — "
         "three more lifespans in the same passage. Three more follow "
         "the same pattern: Moses died at 120 (Deuteronomy 34:7), Aaron "
-        "at 123 (Numbers 33:39), Joshua at 110 (Joshua 24:29). None of "
-        "the six is drawn here. The reason is not that Scripture is "
+        "at 123 (Numbers 33:39), Joshua at 110 (Joshua 24:29). A "
+        "seventh belongs with them for the same anchor gap, though his "
+        "number arrives differently: no verse states David's age "
+        "outright. 2 Samuel 5:4 gives 30 at his accession and 40 more "
+        "years on the throne — 70 by addition, not by any verse's own "
+        "word. Even the 40 is rounded: 2 Samuel 5:5 itemises 7 years "
+        "and 6 months in Hebron plus 33 in Jerusalem, and 1 Kings 2:11 "
+        "repeats the 40; the exact total is 40 and a half. None of "
+        "the seven is drawn here. The reason is not that Scripture is "
         "silent on their years — it plainly is not — but that no "
         "verse states how old their father was when they were born; "
-        "Amram's age at Moses' birth, for instance, is never given, "
-        "so there is no birth year to anchor a bar on."
+        "Amram's age at Moses' birth, and Jesse's age at David's, are "
+        "never given, so there is no birth year to anchor a bar on."
     ),
     "zh-Hans": (
         "出埃及记 6:16 说利未活了 137 年，6:18 说他的儿子哥辖活了 133 年，"
         "6:20 说哥辖的儿子暗兰活了 137 年，同一段经文又列出三笔岁数；后面"
         "还有三位同样留下了岁数：摩西死时 120 岁（申命记 34:7）、亚伦死时 "
-        "123 岁（民数记 33:39）、约书亚死时 110 岁（约书亚记 24:29）。这"
-        "六位都没有画在图上。原因不是经文没提他们的岁数——分明是提了——而"
-        "是没有一节经文说他们出生时父亲几岁；譬如暗兰生摩西时几岁，经文"
-        "从未交代，因此没有出生年可供横条起点。"
+        "123 岁（民数记 33:39）、约书亚死时 110 岁（约书亚记 24:29）。第"
+        "七位的算法不同：没有一节经文直接说大卫活了多少岁。撒母耳记下 "
+        "5:4 说他登基时 30 岁，在位 40 年——70 是加出来的，不是经文自己"
+        "写的数。连 40 也是取整而来：撒母耳记下 5:5 拆开来是在希伯仑 7 年"
+        "零 6 个月，在耶路撒冷 33 年，列王纪上 2:11 同样说是 40 年，精确"
+        "加总其实是 40 年半。这七位都没有画在图上。原因不是经文没提他们"
+        "的岁数——分明是提了——而是没有一节经文说他们出生时父亲几岁；譬如"
+        "暗兰生摩西时几岁、耶西生大卫时几岁，经文从未交代，因此没有出生"
+        "年可供横条起点。"
     ),
     "zh-Hant": (
         "出埃及記 6:16 說利未活了 137 年，6:18 說他的兒子哥轄活了 133 年，"
         "6:20 說哥轄的兒子暗蘭活了 137 年，同一段經文又列出三筆歲數；後面"
         "還有三位同樣留下了歲數：摩西死時 120 歲（申命記 34:7）、亞倫死時 "
-        "123 歲（民數記 33:39）、約書亞死時 110 歲（約書亞記 24:29）。這"
-        "六位都沒有畫在圖上。原因不是經文沒提他們的歲數——分明是提了——而"
-        "是沒有一節經文說他們出生時父親幾歲；譬如暗蘭生摩西時幾歲，經文"
-        "從未交代，因此沒有出生年可供橫條起點。"
+        "123 歲（民數記 33:39）、約書亞死時 110 歲（約書亞記 24:29）。第"
+        "七位的算法不同：沒有一節經文直接說大衛活了多少歲。撒母耳記下 "
+        "5:4 說他登基時 30 歲，在位 40 年——70 是加出來的，不是經文自己"
+        "寫的數。連 40 也是取整而來：撒母耳記下 5:5 拆開來是在希伯崙 7 年"
+        "零 6 個月，在耶路撒冷 33 年，列王紀上 2:11 同樣說是 40 年，精確"
+        "加總其實是 40 年半。這七位都沒有畫在圖上。原因不是經文沒提他們"
+        "的歲數——分明是提了——而是沒有一節經文說他們出生時父親幾歲；譬如"
+        "暗蘭生摩西時幾歲、耶西生大衛時幾歲，經文從未交代，因此沒有出生"
+        "年可供橫條起點。"
     ),
 }
 
@@ -1130,6 +1150,13 @@ def build():
             "computedNote": COMPUTED_NOTE,
             "undrawnLines": UNDRAWN,
             "unanchoredLifespans": UNANCHORED,
+            # Ids present in assets/family_tree.json with a stated
+            # lifespan that this chart cannot anchor (see UNANCHORED
+            # above for why). Declared explicitly so a future addition
+            # to family_tree.json with a lifespan can't silently drop
+            # off the chart without anyone noticing — see the
+            # completeness test in test/bible_chronology_test.dart.
+            "unanchoredFamilyTreeIds": ["david"],
         },
         "schemes": SCHEMES,
         "lines": LINES,

@@ -16121,6 +16121,48 @@ has never seen this repo.
       Not yet pushed at write time — see commit log for whether CI went
       green.
 
+      **2026-09-17 slice — David, the seventh unanchored lifespan, and
+      the only one already in our own data.** The six-lifespans
+      `UNANCHORED` note (Levi/Kohath/Amram/Moses/Aaron/Joshua, landed
+      earlier the same day) missed the one member of that class already
+      in `assets/family_tree.json`: of the 26 people there carrying a
+      `lifespan` field, 26 lifelines were drawn and `family − drawn =
+      {david}` (the reverse difference, `drawn − family = {esau}`, is
+      not a bug — Esau's bar is deliberately open-ended, no death age).
+      David's gap is honest in a different way than the other six: his
+      70 is never stated outright, it is 30 (accession) + 40 (reign,
+      2 Samuel 5:4) by addition, and even the 40 is a rounding — 2
+      Samuel 5:5 itemises 7 years 6 months in Hebron + 33 in Jerusalem
+      (40½), 1 Kings 2:11 repeats the flat 40. The anchor gap is the
+      same as the other six: no verse gives Jesse's age at David's
+      birth (checked against every Jesse verse in `assets/kjv.json`,
+      none pairs him with a number). `UNANCHORED` (all 3 locales) and
+      its "Six lifespans"/"None of the six" framing became seven;
+      `_meta` gained `unanchoredFamilyTreeIds: ["david"]`, read raw in
+      the test rather than widening `lib/models/chronology.dart`.
+
+      **New completeness invariant**, not just a citation test: `{family
+      _tree ids with a lifespan} − {drawn lifeline personIds} ==
+      {_meta.unanchoredFamilyTreeIds}`. Proved it actually catches the
+      failure it exists for — set `unanchoredFamilyTreeIds` to `[]` by
+      hand, watched the test fail (`Expected: Set:[] / Actual:
+      Set:['david']`), then regenerated the asset from the builder and
+      confirmed it matched the pre-perturbation file byte-for-byte.
+
+      Builder re-run twice, byte-identical both times. `flutter analyze`
+      clean. `bible_chronology_test.dart` (131 tests) in the foreground
+      first, then the rest of the suite in 7 foreground chunks of ≤55
+      files (349 files total), all green. An independent refuter agent
+      was given the four claims above (the 26/26/{david}/{esau} sets,
+      "70 is a sum, not a stated figure", "no verse gives Jesse's age",
+      the 7.5+33=40.5 arithmetic) and asked to break them from its own
+      re-derivation against `assets/kjv.json` and `assets/family_tree.json`
+      rather than from this description — all four survived.
+
+      Asset + code + test only, no version bump, no deploy — this
+      item's own guard rail. Checkbox stays open; the chart item spans
+      many slices.
+
 - [ ] **Follow-up, filed not built: the `matriarchs` line id/name is
       deliberately plural.** Noted 2026-09-17 landing the Sarah slice
       above. Only Sarah is on the `matriarchs` line today, but
