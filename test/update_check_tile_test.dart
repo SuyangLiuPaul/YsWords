@@ -469,9 +469,28 @@ void main() {
           'Download');
     });
 
-    _onPlatform('off Android it is the browser too',
-        platform: TargetPlatform.iOS, (tester) async {
+    _onPlatform('off Android, where there is a file to fetch, it is the '
+        'browser too', platform: TargetPlatform.macOS, (tester) async {
       expect(await bannerAction(tester, _info()), 'Download');
+    });
+
+    _onPlatform('on iOS there is no button, because there is nothing it '
+        'could do', platform: TargetPlatform.iOS, (tester) async {
+      // 2026-09-18 「我按那个ios去另一个界面不对」. This test used to expect
+      // 'Download' here, and that expectation was the defect written
+      // down: the release's only iOS asset is an UNSIGNED .ipa, which
+      // iOS will not install from Safari — so the button opened a
+      // GitHub page holding a file the device could not use.
+      //
+      // The banner stays. "A newer version exists" is true and is the
+      // part an iPhone reader cannot otherwise learn; how an iOS build
+      // reaches a phone is a question for whoever sideloaded it, and no
+      // screen in this app can answer it honestly.
+      expect(await bannerAction(tester, _info()), isNull,
+          reason: 'a button that leads somewhere useless spends the '
+              'reader\'s tap and their trust in the next one');
+      expect(find.textContaining('v1.5.22'), findsOneWidget,
+          reason: 'the version itself must still be stated');
     });
 
     _onPlatform('tapping it runs the same flow as the About page',

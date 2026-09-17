@@ -77,8 +77,13 @@ class _SermonAudioBarState extends State<SermonAudioBar> {
     final playing = isCurrent && _svc.isPlaying;
     final loading = isCurrent && _svc.isLoading;
 
-    final duration = isCurrent ? _svc.duration : Duration.zero;
-    final position = isCurrent ? _svc.position : Duration.zero;
+    // THE WHOLE TALK, not the file currently open. A sermon is one to
+    // six tape sides and part b begins mid-sentence; a clock that
+    // restarted at every boundary told a listener forty minutes in that
+    // they were four minutes in. 2026-09-18 「Sword和Words有分几段的 可以
+    // 帮我合并」. See `SermonAudioService.overallPosition`.
+    final duration = isCurrent ? _svc.overallDuration : Duration.zero;
+    final position = isCurrent ? _svc.overallPosition : Duration.zero;
     final maxMs = duration.inMilliseconds.toDouble();
     final posMs = position.inMilliseconds
         .toDouble()
@@ -177,7 +182,7 @@ class _SermonAudioBarState extends State<SermonAudioBar> {
                                 : null,
                             onChangeEnd: maxMs > 0
                                 ? (v) {
-                                    _svc.seek(
+                                    _svc.seekOverall(
                                         Duration(milliseconds: v.round()));
                                     setState(() => _dragValue = null);
                                   }
@@ -200,21 +205,12 @@ class _SermonAudioBarState extends State<SermonAudioBar> {
                                   ],
                                 ),
                               ),
-                              if (isCurrent && _svc.hasMultipleParts) ...[
-                                const SizedBox(width: 10),
-                                Text(
-                                  _t('sermonAudioPart', 'Part %1 of %2',
-                                          locale)
-                                      .replaceFirst('%1', '${_svc.partNumber}')
-                                      .replaceFirst('%2', '${_svc.partCount}'),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: scheme.onSurfaceVariant,
-                                    fontFamily: settings.fontFamily,
-                                    fontFamilyFallback: kCjkFontFallback,
-                                  ),
-                                ),
-                              ],
+                              // The part counter is gone with the split
+                              // timeline it belonged to: 「第 2 段 / 共 3
+                              // 段」 was the app telling the listener
+                              // about its own file layout. The clock
+                              // beside it now says where they are in the
+                              // talk, which is what they were asking.
                             ],
                           ),
                         ),

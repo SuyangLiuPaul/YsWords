@@ -29,6 +29,9 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -157,6 +160,23 @@ class _Banner extends StatelessWidget {
     // the in-app install on Android with an APK, and the download page
     // where neither is possible. The last is still worth a banner — that
     // a newer version exists is the part a reader cannot otherwise learn.
+    //
+    // AND NO BUTTON AT ALL ON iOS. 2026-09-18 「我按那个ios去另一个界面不
+    // 对」: the release's only iOS asset is an UNSIGNED .ipa, and iOS
+    // cannot install one from Safari — so 「下载」 opened a GitHub page
+    // holding a file the device it was running on could not use. A
+    // button that leads somewhere useless is worse than no button: it
+    // spends the reader's tap and their trust in the next one.
+    //
+    // The banner still appears, because "a newer version exists" is
+    // true and is the part an iPhone reader cannot otherwise learn; how
+    // an iOS build reaches a phone is a question for whoever sideloaded
+    // it, and no screen in this app can answer it honestly.
+    //
+    // Device-dependent by construction: this asks the running platform,
+    // not the asset list, because the asset list has an .ipa in it and
+    // that .ipa is exactly the trap.
+    final onIos = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
     final Widget? action;
     if (info == null) {
       action = FilledButton(
@@ -179,6 +199,8 @@ class _Banner extends StatelessWidget {
             permissionTimeout: permissionTimeout)),
         child: Text(_s('updateInstallNow', 'Update now')),
       );
+    } else if (onIos) {
+      action = null;
     } else if (LinkOpener.isAvailable) {
       action = FilledButton(
         onPressed: () => LinkOpener.openOrWarn(context, info.downloadUrl,

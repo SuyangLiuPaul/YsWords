@@ -110,6 +110,25 @@ class SermonAudioService extends ChangeNotifier {
   static bool get isConfigured => baseUrl.isNotEmpty;
 
   static const _positionKeyPrefix = 'sermon.audio.pos.';
+  static const _lengthKeyPrefix = 'sermon.audio.len.';
+
+  /// Bytes per second of the corpus's stated encoding — 32 kbps mono,
+  /// CBR, per the header at the top of this file.
+  ///
+  /// It exists because ONE TALK IN THREE FILES IS STILL ONE TALK. The
+  /// index carries `bytes` and no duration, so a combined timeline has
+  /// to start from an estimate; at the stated bitrate that estimate is
+  /// within a second or two, and each part's real length replaces it
+  /// the first time that part plays. A minority of files were encoded
+  /// at a higher bitrate than the corpus header claims — their estimate
+  /// reads long until they have been played once, after which the
+  /// measured duration is exact. 2026-09-18 「Sword和Words有分几段的 可以
+  /// 帮我合并」.
+  static const int _bytesPerSecond = 4000;
+
+  /// Real durations, learned from the player and remembered, keyed by
+  /// [SermonAudioPart.file]. A second listen has exact offsets.
+  final Map<String, Duration> _learnedLengths = {};
 
   final SongPlaybackEngine _player;
   Map<String, List<SermonAudioPart>>? _index;
@@ -203,6 +222,17 @@ class SermonAudioService extends ChangeNotifier {
     });
     _player.onDuration.listen((d) {
       _duration = d;
+      // The estimate served its purpose; keep the truth. The total
+      // shifts by a second or two as each part is heard for the first
+      // time, and thereafter this device has the real numbers.
+      final parts = _sermonId == null ? null : _index?[_sermonId];
+      if (parts != null && _partIndex < parts.length && d > Duration.zero) {
+        final file = parts[_partIndex].file;
+        if (_learnedLengths[file] != d) {
+          _learnedLengths[file] = d;
+          unawaited(_rememberLength(file, d));
+        }
+      }
       notifyListeners();
     });
     _player.onError.listen((event) {
@@ -261,6 +291,7 @@ class SermonAudioService extends ChangeNotifier {
 
     _sermonId = sermonId;
     _error = null;
+    await _restoreLengths(parts);
     final saved = await _savedPosition(sermonId);
     _partIndex = saved.$1.clamp(0, parts.length - 1);
     _loading = true;
@@ -344,9 +375,12 @@ class SermonAudioService extends ChangeNotifier {
 
   /// Skip within the talk. Sermons are long and people lose their
   /// place; 30 seconds back is the gesture every podcast app has.
+  ///
+  /// ACROSS THE WHOLE TALK, not within the current file: thirty seconds
+  /// back from ten seconds into part b is twenty seconds before the end
+  /// of part a, which is where the sentence the listener missed is.
   Future<void> nudge(Duration by) async {
-    final target = _position + by;
-    await seek(target < Duration.zero ? Duration.zero : target);
+    await seekOverall(overallPosition + by);
   }
 
   Future<void> skipToPart(int index) async {
@@ -382,6 +416,79 @@ class SermonAudioService extends ChangeNotifier {
   List<SermonAudioPart> partsOf(String sermonId) =>
       _index?[sermonId] ?? const [];
 
+  // ── One talk, one timeline ──────────────────────────────────────
+  //
+  // The files are tape sides: part b opens mid-sentence where part a
+  // ran out. The player has always rolled from one into the next, but
+  // the BAR showed "第 2 段 / 共 3 段" and a clock that restarted at
+  // every boundary — so a listener forty minutes into a talk saw 4:12,
+  // and the thing they were told was one sermon behaved like three.
+  //
+  // Everything below presents the parts as one length and one position.
+  // Nothing about the files or the playback changes.
+
+  /// How long [part] runs: measured if this device has ever played it,
+  /// otherwise derived from its size at the corpus's fixed bitrate.
+  Duration lengthOf(SermonAudioPart part) =>
+      _learnedLengths[part.file] ??
+      Duration(seconds: part.bytes <= 0 ? 0 : part.bytes ~/ _bytesPerSecond);
+
+  /// The whole talk, all parts.
+  Duration get overallDuration {
+    final parts = _sermonId == null ? null : _index?[_sermonId];
+    if (parts == null) return Duration.zero;
+    var total = Duration.zero;
+    for (final p in parts) {
+      total += lengthOf(p);
+    }
+    return total;
+  }
+
+  /// Where the listener is in the whole talk.
+  Duration get overallPosition {
+    final parts = _sermonId == null ? null : _index?[_sermonId];
+    if (parts == null) return Duration.zero;
+    var before = Duration.zero;
+    for (var i = 0; i < _partIndex && i < parts.length; i++) {
+      before += lengthOf(parts[i]);
+    }
+    return before + _position;
+  }
+
+  /// Which part [at] falls in, and how far into it — the whole of the
+  /// mapping, kept pure so it can be tested without a player.
+  static (int, Duration) locate(
+      List<Duration> lengths, Duration at) {
+    if (lengths.isEmpty) return (0, Duration.zero);
+    var remaining = at < Duration.zero ? Duration.zero : at;
+    for (var i = 0; i < lengths.length; i++) {
+      if (remaining < lengths[i] || i == lengths.length - 1) {
+        final clamped =
+            remaining > lengths[i] ? lengths[i] : remaining;
+        return (i, clamped);
+      }
+      remaining -= lengths[i];
+    }
+    return (lengths.length - 1, Duration.zero);
+  }
+
+  /// Seek anywhere in the talk, across part boundaries.
+  Future<void> seekOverall(Duration to) async {
+    final parts = _sermonId == null ? null : _index?[_sermonId];
+    if (parts == null || parts.isEmpty) return;
+    final (index, offset) =
+        locate([for (final p in parts) lengthOf(p)], to);
+    if (index == _partIndex) {
+      await seek(offset);
+      return;
+    }
+    _partIndex = index;
+    _loading = true;
+    notifyListeners();
+    await _playPart(resumeAt: offset);
+    await _savePosition();
+  }
+
   // ── Resume ──────────────────────────────────────────────────────
   //
   // A sermon runs 35-70 minutes across its parts. Losing your place is
@@ -393,6 +500,29 @@ class SermonAudioService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
         '$_positionKeyPrefix$id', '$_partIndex:${_position.inSeconds}');
+  }
+
+  Future<void> _rememberLength(String file, Duration d) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('$_lengthKeyPrefix$file', d.inSeconds);
+    } catch (_) {/* a lost measurement costs an estimate, nothing more */}
+  }
+
+  /// Read back what earlier listens measured, for the parts of one
+  /// sermon. Called when a sermon becomes current, so the timeline is
+  /// exact from the first frame rather than after each part has played.
+  Future<void> _restoreLengths(List<SermonAudioPart> parts) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      for (final p in parts) {
+        if (_learnedLengths.containsKey(p.file)) continue;
+        final secs = prefs.getInt('$_lengthKeyPrefix${p.file}');
+        if (secs != null && secs > 0) {
+          _learnedLengths[p.file] = Duration(seconds: secs);
+        }
+      }
+    } catch (_) {/* estimates stand */}
   }
 
   Future<void> _clearPosition(String sermonId) async {
