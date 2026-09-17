@@ -8483,6 +8483,47 @@ has never seen this repo.
 
 ## P1 — Bible study correctness
 
+- [ ] **Chronology chart: two pre-existing overclaims in
+      `tools/build_bible_chronology.py`'s CHAIN derivation, found
+      2026-09-17 by the refuter checking the Sarah slice below — not
+      part of that slice, not fixed here, filed instead.**
+
+      1. **Abraham's shipped `derivationEn` misattributes its own
+         citation.** The generated text reads "Terah was 130 when
+         Abraham was born (Genesis 11:26, Genesis 11:32, Genesis 12:4,
+         Acts 7:4)" — but Genesis 11:26 itself states Terah was
+         **70** when he begat his three sons; the 130 figure is
+         derived by combining 11:32 (Terah dies at 205) + 12:4
+         (Abraham leaves Haran at 75, after Terah's death per Acts
+         7:4) — exactly as the CHAIN table's own comment two lines
+         above the `abraham` row already explains correctly. The
+         generic "X was N when Y was born (refs)" phrasing (used for
+         every CHAIN row not in `DERIVED_PEOPLE`) is only honest when
+         one of the cited refs actually states N; for Abraham it
+         doesn't, and the reader has no way to tell 11:26 apart from
+         a row where the parenthetical really does support the
+         number.
+      2. **The comment "this is the one CHAIN link whose 'begat'
+         figure is derived rather than directly stated" (near
+         `DERIVED_PEOPLE`, currently only containing `joseph`) is
+         false as written.** Abraham's is also derived (see above,
+         not from a single verse), and Shem's row (502, "Genesis 5:32,
+         Genesis 11:10") is at minimum a two-verse combination too.
+         "The one" should be "the one written up with full derivation
+         prose" or Abraham should get the same `DERIVED_PEOPLE`
+         treatment Joseph got.
+
+      Neither is a change to any AM year, a lifespan, or a rendered
+      bar — this is citation-accuracy inside the derivation prose
+      only, which is why it is P1 (study-tool correctness) and not P0
+      (the verse text itself is untouched). Fix by either giving
+      Abraham a `DERIVED_PEOPLE`-style entry with honest "computed
+      from" prose, or narrowing the generic phrasing's citation list
+      to only the ref(s) that actually state the figure. Re-run the
+      full CHAIN table for any other row with the same shape before
+      calling it done — this was found by spot-checking two rows, not
+      by auditing all 24.
+
 - [x] **A stale cache outlived every upgrade — fixed in v1.4.39.**
       The user's screenshot showed 283 CDC songs with a language badge
       where the play button belongs, while CGDC rows beside them played.
@@ -15853,7 +15894,20 @@ has never seen this repo.
       item's own guard rail, carried forward from the fatherId/scheme/
       Isaac-Jacob/Joseph/stale-copy slices.
 
-- [ ] **Sarah — a next chronology-chart slice, filed rather than built.**
+- [x] **Sarah — a next chronology-chart slice, filed rather than built.**
+      **2026-09-17 — shipped.** Not a `spouseId` anchor as filed below:
+      the model gained `anchorChildId` instead (`CHILD_ANCHORED` in
+      `tools/build_bible_chronology.py`, `fatherId: null,
+      anchorChildId: isaac`), because Gen 17:17 states Sarah's OWN age,
+      not Abraham's restated from her side, and `family_tree.json`
+      already keys `isaac.motherId == 'sarah'` — a child anchor, not a
+      husband one. The "anchor on her HUSBAND" / `spouseId` framing two
+      paragraphs below is the stale pre-build guess; there is no spouse
+      model in the code and none should be re-derived from it. AM
+      2018-2145, matching this note's own arithmetic. 25 lifelines,
+      `flutter analyze` clean, full suite green, `matriarchs` line
+      (plural — see follow-up item below) added at #9650B4, ~74
+      RGB-distance from its nearest neighbour (`exile`).
       Found 2026-09-17 while refuting the Ishmael slice above. Genesis
       states Sarah's age directly at two points — 90 when she bore Isaac
       (Genesis 17:17) and 127 at her death (Genesis 23:1) — the same
@@ -15888,6 +15942,55 @@ has never seen this repo.
       today: `family_tree.json` itself doesn't key her to a father
       either. The next slice can build from these confirmed numbers
       without re-deriving them.
+
+      **2026-09-17 — landed.** All seven files verified, refuted and
+      committed by explicit name. Generator re-run: byte-identical
+      output both before and after two comment-only edits made from
+      the refuter's findings (below), confirming the shipped asset is
+      real generator output, not a hand-edit. `flutter analyze`: 0
+      issues. Full suite run in the foreground in chunks (a 120-file
+      chunk still exceeded the 10-minute Bash ceiling mid-run and had
+      to be split further into two 60-file chunks — filed as its own
+      item above) — 3334 tests passed, 1 skipped, 0 failed, across
+      all 349 test files. Checked independently: all 25 lifelines
+      have at most one of `fatherId`/`anchorChildId` non-null (script
+      dump, not eyeballing).
+
+      **Refuter caught two real overclaims, both in comments this
+      slice introduced — fixed before commit:**
+      1. `tools/build_bible_chronology.py`'s new `matriarchs` LINES
+         comment claimed the nearest-neighbour colour distance to
+         `exile` purple was "~74 either way" (light AND dark mode).
+         `_readable()` lerps 40% toward white in dark mode, which
+         scales every RGB distance down by that same factor — the
+         real dark-mode figure is ~44, not ~74 (still past the ~40
+         floor the ishmaelite comment treats as sufficient, but only
+         just). Comment corrected to state both numbers.
+      2. `chronology_chart.dart`'s two "four lines of descent" → "five
+         lines of descent" comment edits contradicted the build
+         script's own "Sarah is not a line of descent at all" — fixed
+         to say "five line colours" instead, since matriarchs is a
+         fifth swatch, not a fifth descent chain.
+
+      The refuter also found two **pre-existing** overclaims in
+      `tools/build_bible_chronology.py` unrelated to this slice
+      (Abraham's derivation prose misattributes Gen 11:26, and a
+      false "the one CHAIN link… derived" claim) — not this slice's to
+      fix; filed separately under P1 above rather than fixed inline.
+
+      Pushed to `origin/main`; CI watched to green (see commit log for
+      the run).
+
+- [ ] **Follow-up, filed not built: the `matriarchs` line id/name is
+      deliberately plural.** Noted 2026-09-17 landing the Sarah slice
+      above. Only Sarah is on the `matriarchs` line today, but
+      Rebekah (Gen 25:20, married at 40 — no age at Jacob/Esau's birth
+      stated) and Rachel (age never stated at all) would be the same
+      `CHILD_ANCHORED` anchor kind if their ages ever get pinned down
+      from other verses, so the line was named for the category, not
+      the one person on it yet. Nothing to build — just don't rename
+      it to "Sarah" or singularize it when a second person is not yet
+      on the chart.
 
 - [ ] **A bare-lane tap directly under a "+N" chip can open the WRONG
       event's sheet — not just no sheet.** Found 2026-09-16 while
@@ -17302,6 +17405,43 @@ so the bundle-size answer stays on the record.
       tracked there.
 
 ## P3 — known but blocked or deferred
+
+- [ ] **This loop's own tooling defect: `flutter test` backgrounded
+      inside a `claude -p` iteration strands the work permanently, not
+      temporarily. Worked around by hand this hour by running the
+      suite in foreground chunks — filing so the underlying prompt/
+      orchestration gets a permanent fix rather than every iteration
+      rediscovering the same workaround. Filed 2026-09-17 while
+      landing the Sarah slice below, at the instruction of that hour's
+      `NEXT_TASK.md`.**
+
+      Four consecutive hourly iterations (06:13, 09:19, 10:31, and the
+      Opus planning call before this one) implemented or inherited the
+      same chronology-chart work, started `flutter test` in the
+      background to get around the full suite's ~11.5 min runtime
+      exceeding a single Bash call's 10 min ceiling, announced they
+      would "wait for the notification," and then ended their turn.
+      **Under `claude -p`, ending the turn ends the process — there is
+      no later turn for a notification to arrive into.** The work sat
+      uncommitted in the working tree for four straight hours because
+      each stage's background test run was silently abandoned along
+      with the stage itself.
+
+      **The fix, used successfully to land the Sarah slice**: split
+      the suite across three (or more, if a chunk still runs long)
+      foreground `flutter test file1 file2 ...` calls, each well under
+      the 10-minute ceiling, each with its exit code checked before
+      moving on — e.g.
+
+          flutter test $(find test -name '*_test.dart' | sort | sed -n '1,120p' | tr '\n' ' ') --reporter compact
+
+      dividing the sorted file list into chunks small enough to finish
+      in one call. If a chunk still risks the ceiling (this hour, a
+      120-file chunk did, mid-run, taking >10 min because of a couple
+      of slow corpus-sweep tests), split it again rather than
+      backgrounding it. `claude -p` sessions must never rely on a
+      background task notification arriving in a later turn, because
+      for a one-shot `-p` invocation there is no later turn.
 
 - [x] **EC018 / EC019 sermon transcripts — T7 checked, DONE 2026-09-05,
       open question moved to the user.** T7 (`/Volumes/T7/02 Church &

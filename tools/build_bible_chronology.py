@@ -195,6 +195,55 @@ CHAIN = [
                                                   "Genesis 45:6", "Genesis 47:9"],  ["Genesis 50:22", "Genesis 50:26"]),
 ]
 
+# People Genesis dates only in relation to a CHILD's birth, not a
+# father's begetting age — Sarah's own father Terah is named (Genesis
+# 20:12) but no begetting age for her is stated, so she cannot be
+# chained from him the way CHAIN's rows are. Genesis 17:17 states her
+# age directly, in her own right, so the anchor runs the other way:
+# (personId, anchorChildId, her age when that child was born, her
+# lifespan, birth ref(s), death ref(s)). Processed after CHAIN, since it
+# needs the child's birth year already computed.
+CHILD_ANCHORED = [
+    ("sarah", "isaac", 90, 127, ["Genesis 17:17", "Genesis 21:5"],
+     ["Genesis 23:1"]),
+]
+
+# Custom derivation prose for CHILD_ANCHORED rows — never the generic
+# "X was N when Y was born" phrasing (wrong direction: it is the CHILD's
+# birth that is stated, not a begetting age of the anchor person).
+CHILD_ANCHORED_DERIVATION = {
+    "sarah": {
+        "en": (
+            "Genesis 17:17 states two ages in one breath: Abraham \"an "
+            "hundred years old\" and Sarah \"ninety years old.\" But "
+            "17:1 already puts Abraham at 99 earlier in the same "
+            "chapter, and 17:21 promises Isaac \"at this set time in "
+            "the next year\"; 21:5 then states Abraham was 100 when "
+            "Isaac was born. Both of 17:17's ages look forward a year, "
+            "to the birth itself, not to the day of the promise — so "
+            "Sarah was %d when Isaac was born (Genesis 17:17, Genesis "
+            "21:5), not at the promise a year earlier. Sarah lived %d "
+            "years (%s)."
+        ),
+        "hans": (
+            "创世记 17:17 一口气说出两个岁数——亚伯拉罕「一百岁」，撒拉「九十"
+            "岁」。但同一章 17:1 已说亚伯拉罕当时 99 岁，17:21 又应许以撒"
+            "「到明年这时候」出生；21:5 则说以撒出生时亚伯拉罕正是 100 岁。"
+            "可见 17:17 的两个岁数指向的都是一年后的出生那一刻，而非应许"
+            "当下——因此撒拉生以撒时是 %d 岁（创世记 17:17、21:5），而非应许"
+            "时就已是这个岁数。撒拉共活了 %d 年（%s）。"
+        ),
+        "hant": (
+            "創世記 17:17 一口氣說出兩個歲數——亞伯拉罕「一百歲」，撒拉「九十"
+            "歲」。但同一章 17:1 已說亞伯拉罕當時 99 歲，17:21 又應許以撒"
+            "「到明年這時候」出生；21:5 則說以撒出生時亞伯拉罕正是 100 歲。"
+            "可見 17:17 的兩個歲數指向的都是一年後的出生那一刻，而非應許"
+            "當下——因此撒拉生以撒時是 %d 歲（創世記 17:17、21:5），而非應許"
+            "時就已是這個歲數。撒拉共活了 %d 年（%s）。"
+        ),
+    },
+}
+
 # CHAIN rows whose "begat" figure is computed from a chain of verses
 # rather than stated by a single one. Their derivation sentence must say
 # "computed from" and show the chain — never the generic "X was N when Y
@@ -246,6 +295,10 @@ LINE_OF = {
     # Ishmael is Abraham's son too, but not Isaac's line — the same
     # overclaim reusing "isaac_jacob" would make in the other direction.
     "ishmael": "ishmaelite",
+    # Sarah is not a further link in anyone's begetting chain — see
+    # CHILD_ANCHORED — so none of the descent-line labels above fit her
+    # either.
+    "sarah": "matriarchs",
 }
 
 # People whose death year Scripture never gives are drawn open-ended,
@@ -402,6 +455,24 @@ LINES = [
         "nameZhHans": "以实玛利的家系",
         "nameZhHant": "以實瑪利的家系",
     },
+    # Sarah is not a line of descent at all — a single bar, anchored on
+    # her son's birth rather than a father's begetting age (see
+    # CHILD_ANCHORED). A violet hue, checked by RGB distance against all
+    # four lines above AND the eight ERA_STYLE hues at both brightnesses
+    # `_readable()` produces (chronology_chart.dart): nearest neighbour
+    # either way is "exile" purple (#5F3F86) — ~74 in RGB-distance terms
+    # in light mode, where `_readable()` leaves colours untouched; dark
+    # mode's 40%-toward-white lerp scales every distance down by the
+    # same 0.6 factor, to ~44, still past the ~40 the ishmaelite comment
+    # above treats as sufficient, but only just. Plural id/name because
+    # a later pass may add Rebekah or Rachel to the same anchor kind.
+    {
+        "id": "matriarchs",
+        "colorHex": "#9650B4",
+        "nameEn": "Matriarchs (dated by a child's birth)",
+        "nameZhHans": "女先祖（以子女出生定年）",
+        "nameZhHant": "女先祖（以子女出生定年）",
+    },
 ]
 
 # Lines the reference chart draws in full and this one deliberately does
@@ -492,6 +563,41 @@ CONTESTED_NOTE = {
 }
 
 
+def two_scale_note(person, birth, death):
+    """The family_tree.json-vs-Anno-Mundi caveat block shared by every
+    patriarch entry (and Sarah, whose AM year is computed via
+    CHILD_ANCHORED rather than CHAIN, but carries the same late-date-BC
+    mismatch — see CHILD_ANCHORED)."""
+    fam_birth_bc = -person["birthYear"]
+    fam_death_bc = -person["deathYear"]
+    am_birth_bc = CREATION_BC - birth
+    am_death_bc = CREATION_BC - death
+    return {
+        "noteEn": (
+            "assets/family_tree.json dates %s %d-%d BC, a late-date "
+            "scheme that does not join up with the Anno Mundi count "
+            "used here (AM %d-%d is %d-%d BC on the 4004 BC anchor). "
+            "Reconciling the two scales for the patriarchs is "
+            "deliberately left to a later pass rather than fudged."
+            % (person["name"], fam_birth_bc, fam_death_bc, birth,
+               death, am_birth_bc, am_death_bc)),
+        "noteZhHans": (
+            "assets/family_tree.json 把%s定在公元前 %d-%d 年，属于晚期定年"
+            "方案，与本图所用的创世纪元并不衔接（AM %d-%d 在 4004 锚点下为"
+            "公元前 %d-%d 年）。列祖世系两套刻度的调和刻意留待后续，不作"
+            "勉强弥合。"
+            % (person["nameZhHans"], fam_birth_bc, fam_death_bc, birth,
+               death, am_birth_bc, am_death_bc)),
+        "noteZhHant": (
+            "assets/family_tree.json 把%s定在公元前 %d-%d 年，屬於晚期定年"
+            "方案，與本圖所用的創世紀元並不銜接（AM %d-%d 在 4004 錨點下為"
+            "公元前 %d-%d 年）。列祖世系兩套刻度的調和刻意留待後續，不作"
+            "勉強彌合。"
+            % (person["nameZhHant"], fam_birth_bc, fam_death_bc, birth,
+               death, am_birth_bc, am_death_bc)),
+    }
+
+
 def build():
     fam = json.load(open(FAMILY, encoding="utf-8"))
     people = {p["id"]: p for p in fam["people"]}
@@ -579,37 +685,59 @@ def build():
             # Numbers are derived here, not transcribed, so the note
             # can't drift from the arithmetic that produced the bar.
             # family_tree.json's BC range and the derived-from-AM BC
-            # range are both computed the same way for all five of
-            # these (the gap is a constant ~170 years, the same anchor
+            # range are both computed the same way for all these people
+            # (the gap is a constant ~170 years, the same anchor
             # mismatch propagated down one chain — see CONTESTED_NOTE
-            # for where it first shows).
-            fam_birth_bc = -person["birthYear"]
-            fam_death_bc = -person["deathYear"]
-            am_birth_bc = CREATION_BC - birth
-            am_death_bc = CREATION_BC - death
-            entry["noteEn"] = (
-                "assets/family_tree.json dates %s %d-%d BC, a late-date "
-                "scheme that does not join up with the Anno Mundi count "
-                "used here (AM %d-%d is %d-%d BC on the 4004 BC anchor). "
-                "Reconciling the two scales for the patriarchs is "
-                "deliberately left to a later pass rather than fudged."
-                % (person["name"], fam_birth_bc, fam_death_bc, birth,
-                   death, am_birth_bc, am_death_bc))
-            entry["noteZhHans"] = (
-                "assets/family_tree.json 把%s定在公元前 %d-%d 年，属于晚期定年"
-                "方案，与本图所用的创世纪元并不衔接（AM %d-%d 在 4004 锚点下为"
-                "公元前 %d-%d 年）。列祖世系两套刻度的调和刻意留待后续，不作"
-                "勉强弥合。"
-                % (person["nameZhHans"], fam_birth_bc, fam_death_bc, birth,
-                   death, am_birth_bc, am_death_bc))
-            entry["noteZhHant"] = (
-                "assets/family_tree.json 把%s定在公元前 %d-%d 年，屬於晚期定年"
-                "方案，與本圖所用的創世紀元並不銜接（AM %d-%d 在 4004 錨點下為"
-                "公元前 %d-%d 年）。列祖世系兩套刻度的調和刻意留待後續，不作"
-                "勉強彌合。"
-                % (person["nameZhHant"], fam_birth_bc, fam_death_bc, birth,
-                   death, am_birth_bc, am_death_bc))
+            # for where it first shows). Sarah gets the identical note
+            # below, once her CHILD_ANCHORED birth year is computed.
+            entry.update(two_scale_note(person, birth, death))
 
+        lifelines.append(entry)
+
+    # ── The child-anchored rows ──────────────────────────────────────
+    #
+    # Processed after CHAIN because each needs its anchor child's birth
+    # year already computed. See CHILD_ANCHORED for why Sarah cannot be
+    # a CHAIN row: Genesis 20:12 names her father but states no
+    # begetting age, so there is no age to chain her birth from his.
+    for pid, anchor_child, age_at_birth, lived, bref, dref in CHILD_ANCHORED:
+        person = people.get(pid)
+        if person is None:
+            problems.append("%s is not in family_tree.json" % pid)
+            continue
+        if anchor_child not in birth_of:
+            problems.append(
+                "%s anchors on child %s, not yet computed" % (pid, anchor_child))
+            continue
+
+        birth = birth_of[anchor_child] - age_at_birth
+        birth_of[pid] = birth
+        death = birth + lived
+
+        tpl = CHILD_ANCHORED_DERIVATION[pid]
+        der_en = tpl["en"] % (age_at_birth, lived, ", ".join(dref))
+        der_hans = tpl["hans"] % (age_at_birth, lived, zh_refs(dref, False))
+        der_hant = tpl["hant"] % (age_at_birth, lived, zh_refs(dref, True))
+
+        entry = {
+            "personId": pid,
+            "lineId": LINE_OF[pid],
+            "scheme": "masoretic-ussher",
+            "nameEn": person["name"],
+            "nameZhHans": person["nameZhHans"],
+            "nameZhHant": person["nameZhHant"],
+            # Not chained from a father — see CHILD_ANCHORED.
+            "fatherId": None,
+            "anchorChildId": anchor_child,
+            "birthAm": birth,
+            "deathAm": death,
+            "lifespan": lived,
+            "refs": bref + [r for r in dref if r not in bref],
+            "derivationEn": der_en,
+            "derivationZhHans": der_hans,
+            "derivationZhHant": der_hant,
+        }
+        entry.update(two_scale_note(person, birth, death))
         lifelines.append(entry)
 
     flood = birth_of["noah"] + 600

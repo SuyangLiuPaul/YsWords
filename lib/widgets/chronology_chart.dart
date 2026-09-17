@@ -2280,6 +2280,34 @@ class _ChronologyChartState extends State<ChronologyChart> {
                             ),
                           );
                         }),
+                      ] else if (l.anchorChildId != null) ...[
+                        Builder(builder: (_) {
+                          final child =
+                              widget.data.lifelineById(l.anchorChildId!);
+                          if (child == null) return const SizedBox.shrink();
+                          return Semantics(
+                            button: true,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.of(ctx).pop();
+                                _showPersonSheet(context, child);
+                              },
+                              child: Text(
+                                _s('chronologyMotherAge',
+                                        'Mother of {name} (aged {n} at the birth)')
+                                    .replaceAll(
+                                        '{name}', child.localizedName(locale))
+                                    .replaceAll('{n}',
+                                        '${child.birthAm - l.birthAm}'),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: scheme.primary,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
                       ],
                       const SizedBox(height: 4),
                       Text(
@@ -3219,8 +3247,10 @@ List<ChronologyChipSlot> chronologyChipPlan({
 
 /// The one glyph that separates a counted year from a placed one:
 /// filled diamond vs hollow circle. Shape and fill, never hue — the
-/// chart already spends colour on the four lines of descent and the
-/// eight era bands, and a fifth meaning carried by hue alone would
+/// chart already spends colour on the five line colours (four lines of
+/// descent plus Sarah's own, which is not a descent line — see
+/// CHILD_ANCHORED in tools/build_bible_chronology.py) and the eight
+/// era bands, and a sixth meaning carried by hue alone would
 /// vanish in greyscale and for a colour-blind reader.
 class _BasisGlyph extends StatelessWidget {
   final bool computed;
@@ -3287,7 +3317,7 @@ Color _readable(Brightness brightness, Color base) {
 
 /// Diagonal hatching. The chart's texture for "this is not counted
 /// data" — texture rather than a tint, so it survives greyscale and
-/// does not compete with the four descent colours or the eight era
+/// does not compete with the five line colours or the eight era
 /// colours already spending hue.
 void _hatch(
   Canvas canvas,

@@ -7,7 +7,7 @@
     "spanStartAm": 0,
     "spanEndAm": 4098,
     "computedEndAm": 2369,
-    "count": 24,
+    "count": 25,
     "eventCount": 93,
     "description": "Two layers on one Anno Mundi axis. (1) LIFELINES — the begetting ages Genesis states, chained from Adam to Joseph: directly, for everyone up to and including Jacob; by chaining four verses together for Joseph, whose father's age at his birth Genesis never states outright (see CHAIN in this file). Names from assets/family_tree.json, years recomputed from the Masoretic ages and cross-checked against it. (2) EVENTS — the same 93 events the event list on this page shows, from assets/bible_timeline.json, placed on the AM axis by their stated BC/AD year through the 4004 BC anchor, so both views of the page span Creation to Revelation. The two layers are drawn differently and labelled, because a placed year is not a computed one. No data is taken from the copyrighted reference sheet in docs/reference/.",
     "computedNote": {
@@ -84,6 +84,13 @@
       "nameEn": "Ishmael's line",
       "nameZhHans": "以实玛利的家系",
       "nameZhHant": "以實瑪利的家系"
+    },
+    {
+      "id": "matriarchs",
+      "colorHex": "#9650B4",
+      "nameEn": "Matriarchs (dated by a child's birth)",
+      "nameZhHans": "女先祖（以子女出生定年）",
+      "nameZhHant": "女先祖（以子女出生定年）"
     }
   ],
   "eras": [
@@ -647,6 +654,30 @@
       "noteEn": "assets/family_tree.json dates Joseph 1915-1805 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2259-2369 is 1745-1635 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
       "noteZhHans": "assets/family_tree.json 把约瑟定在公元前 1915-1805 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2259-2369 在 4004 锚点下为公元前 1745-1635 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
       "noteZhHant": "assets/family_tree.json 把約瑟定在公元前 1915-1805 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2259-2369 在 4004 錨點下為公元前 1745-1635 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
+    },
+    {
+      "personId": "sarah",
+      "lineId": "matriarchs",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Sarah",
+      "nameZhHans": "撒拉",
+      "nameZhHant": "撒拉",
+      "fatherId": null,
+      "anchorChildId": "isaac",
+      "birthAm": 2018,
+      "deathAm": 2145,
+      "lifespan": 127,
+      "refs": [
+        "Genesis 17:17",
+        "Genesis 21:5",
+        "Genesis 23:1"
+      ],
+      "derivationEn": "Genesis 17:17 states two ages in one breath: Abraham \"an hundred years old\" and Sarah \"ninety years old.\" But 17:1 already puts Abraham at 99 earlier in the same chapter, and 17:21 promises Isaac \"at this set time in the next year\"; 21:5 then states Abraham was 100 when Isaac was born. Both of 17:17's ages look forward a year, to the birth itself, not to the day of the promise — so Sarah was 90 when Isaac was born (Genesis 17:17, Genesis 21:5), not at the promise a year earlier. Sarah lived 127 years (Genesis 23:1).",
+      "derivationZhHans": "创世记 17:17 一口气说出两个岁数——亚伯拉罕「一百岁」，撒拉「九十岁」。但同一章 17:1 已说亚伯拉罕当时 99 岁，17:21 又应许以撒「到明年这时候」出生；21:5 则说以撒出生时亚伯拉罕正是 100 岁。可见 17:17 的两个岁数指向的都是一年后的出生那一刻，而非应许当下——因此撒拉生以撒时是 90 岁（创世记 17:17、21:5），而非应许时就已是这个岁数。撒拉共活了 127 年（创世记 23:1）。",
+      "derivationZhHant": "創世記 17:17 一口氣說出兩個歲數——亞伯拉罕「一百歲」，撒拉「九十歲」。但同一章 17:1 已說亞伯拉罕當時 99 歲，17:21 又應許以撒「到明年這時候」出生；21:5 則說以撒出生時亞伯拉罕正是 100 歲。可見 17:17 的兩個歲數指向的都是一年後的出生那一刻，而非應許當下——因此撒拉生以撒時是 90 歲（創世記 17:17、21:5），而非應許時就已是這個歲數。撒拉共活了 127 年（創世記 23:1）。",
+      "noteEn": "assets/family_tree.json dates Sarah 2156-2029 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2018-2145 is 1986-1859 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
+      "noteZhHans": "assets/family_tree.json 把撒拉定在公元前 2156-2029 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2018-2145 在 4004 锚点下为公元前 1986-1859 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
+      "noteZhHant": "assets/family_tree.json 把撒拉定在公元前 2156-2029 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2018-2145 在 4004 錨點下為公元前 1986-1859 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
     }
   ],
   "markers": [

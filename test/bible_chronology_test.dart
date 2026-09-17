@@ -77,12 +77,24 @@ void main() {
 
   /// Everything wrong with the parent links in [lifelines]: an
   /// unresolvable `fatherId`, more or fewer than one root, a root that
-  /// isn't `adam`, a birth outside the father's lifetime, or a cycle.
+  /// isn't `adam`, a birth outside the father's lifetime, a cycle, or —
+  /// for a lifeline anchored on a CHILD's birth instead of a father's
+  /// begetting age (`anchorChildId`; see CHILD_ANCHORED in
+  /// tools/build_bible_chronology.py) — an unresolvable anchor or a
+  /// birth ordering that puts the anchor person after, or dead before,
+  /// the child they are supposedly the parent of.
+  ///
+  /// A lifeline with `anchorChildId` set is exempt from the "traces back
+  /// to adam via fatherId" walk below: its provenance is by marriage or
+  /// motherhood, not a begetting-age chain, and it is never itself a
+  /// link anyone else's fatherId points through.
   List<String> fatherLinkDefects(List<Lifeline> lifelines) {
     final byId = {for (final l in lifelines) l.personId: l};
     final defects = <String>[];
 
-    final roots = lifelines.where((l) => l.fatherId == null).toList();
+    final roots = lifelines
+        .where((l) => l.fatherId == null && l.anchorChildId == null)
+        .toList();
     if (roots.length != 1) {
       defects.add('expected exactly one root, found ${roots.length}');
     } else if (roots.single.personId != 'adam') {
@@ -107,6 +119,26 @@ void main() {
     }
 
     for (final l in lifelines) {
+      if (l.anchorChildId == null) continue;
+      final child = byId[l.anchorChildId];
+      if (child == null) {
+        defects.add(
+            '${l.personId} anchorChildId ${l.anchorChildId} does not resolve');
+        continue;
+      }
+      if (l.birthAm >= child.birthAm) {
+        defects.add(
+            '${l.personId} is born after their anchor child ${child.personId}');
+      }
+      if (l.deathAm != null && child.birthAm > l.deathAm!) {
+        defects.add(
+            '${l.personId} is dead when their anchor child ${child.personId} '
+            'is born');
+      }
+    }
+
+    for (final l in lifelines) {
+      if (l.fatherId == null && l.anchorChildId != null) continue;
       final seen = <String>{};
       var cur = l;
       var broke = false;
@@ -218,8 +250,46 @@ void main() {
         nameZhHans: source.nameZhHans,
         nameZhHant: source.nameZhHant,
         fatherId: source.fatherId,
+        anchorChildId: source.anchorChildId,
         birthAm: birthAm,
         deathAm: source.deathAm,
+        lifespan: source.lifespan,
+        refs: source.refs,
+        derivationEn: source.derivationEn,
+        derivationZhHans: source.derivationZhHans,
+        derivationZhHant: source.derivationZhHant,
+      );
+
+  Lifeline withAnchorChildId(Lifeline source, String? anchorChildId) =>
+      Lifeline(
+        personId: source.personId,
+        lineId: source.lineId,
+        scheme: source.scheme,
+        nameEn: source.nameEn,
+        nameZhHans: source.nameZhHans,
+        nameZhHant: source.nameZhHant,
+        fatherId: source.fatherId,
+        anchorChildId: anchorChildId,
+        birthAm: source.birthAm,
+        deathAm: source.deathAm,
+        lifespan: source.lifespan,
+        refs: source.refs,
+        derivationEn: source.derivationEn,
+        derivationZhHans: source.derivationZhHans,
+        derivationZhHant: source.derivationZhHant,
+      );
+
+  Lifeline withDeathAm(Lifeline source, int? deathAm) => Lifeline(
+        personId: source.personId,
+        lineId: source.lineId,
+        scheme: source.scheme,
+        nameEn: source.nameEn,
+        nameZhHans: source.nameZhHans,
+        nameZhHant: source.nameZhHant,
+        fatherId: source.fatherId,
+        anchorChildId: source.anchorChildId,
+        birthAm: source.birthAm,
+        deathAm: deathAm,
         lifespan: source.lifespan,
         refs: source.refs,
         derivationEn: source.derivationEn,
@@ -235,6 +305,7 @@ void main() {
         nameZhHans: source.nameZhHans,
         nameZhHant: source.nameZhHant,
         fatherId: fatherId,
+        anchorChildId: source.anchorChildId,
         birthAm: source.birthAm,
         deathAm: source.deathAm,
         lifespan: source.lifespan,
@@ -253,6 +324,7 @@ void main() {
         nameZhHans: source.nameZhHans,
         nameZhHant: source.nameZhHant,
         fatherId: source.fatherId,
+        anchorChildId: source.anchorChildId,
         birthAm: source.birthAm,
         deathAm: source.deathAm,
         lifespan: source.lifespan,
@@ -270,6 +342,7 @@ void main() {
         nameZhHans: source.nameZhHans,
         nameZhHant: source.nameZhHant,
         fatherId: source.fatherId,
+        anchorChildId: source.anchorChildId,
         birthAm: source.birthAm,
         deathAm: source.deathAm,
         lifespan: source.lifespan,
@@ -542,6 +615,56 @@ void main() {
       );
     });
 
+    // Sarah's `anchorChildId` (Isaac) takes the place a `fatherId` chain
+    // would otherwise occupy — checked separately here so a broken
+    // anchor, or a birth-order violation against the child, is caught
+    // exactly as a broken fatherId link would be. Also confirms Sarah's
+    // null fatherId does NOT make her a second root on the real asset —
+    // 'the fatherId check has teeth' above already proves the OPPOSITE
+    // case (giving Shem a null fatherId IS a defect), so this is the
+    // half of the exemption that test cannot exercise.
+    test('the anchorChildId check has teeth, and does not flag the real '
+        'asset', () {
+      expect(fatherLinkDefects(data.lifelines), isEmpty);
+
+      final sarah = data.lifelines.firstWhere((l) => l.personId == 'sarah');
+      final isaac = data.lifelines.firstWhere((l) => l.personId == 'isaac');
+
+      // An anchorChildId that names nobody on the chart.
+      final danglingAnchor = [
+        for (final l in data.lifelines)
+          l.personId == 'sarah' ? withAnchorChildId(sarah, 'nobody') : l,
+      ];
+      expect(
+        fatherLinkDefects(danglingAnchor),
+        contains('sarah anchorChildId nobody does not resolve'),
+      );
+
+      // Born after the child she is supposedly the mother of.
+      final bornTooLate = [
+        for (final l in data.lifelines)
+          l.personId == 'sarah'
+              ? withBirthAm(sarah, isaac.birthAm + 1)
+              : l,
+      ];
+      expect(
+        fatherLinkDefects(bornTooLate),
+        contains('sarah is born after their anchor child isaac'),
+      );
+
+      // Dead before the child she is supposedly the mother of is born.
+      final deadTooSoon = [
+        for (final l in data.lifelines)
+          l.personId == 'sarah'
+              ? withDeathAm(sarah, isaac.birthAm - 1)
+              : l,
+      ];
+      expect(
+        fatherLinkDefects(deadTooSoon),
+        contains('sarah is dead when their anchor child isaac is born'),
+      );
+    });
+
     test('the begetting age stated in the derivation prose matches '
         'birthAm arithmetic, in all three locales', () {
       expect(derivationAgeDefects(data.lifelines), isEmpty);
@@ -695,6 +818,62 @@ void main() {
       final joseph =
           data.lifelines.firstWhere((l) => l.personId == 'joseph');
       expect(ishmael.deathAm, lessThan(joseph.deathAm!));
+      expect(data.computedEndAm, 2369);
+      expect(data.spanEndAm, 4098);
+    });
+
+    // Pins Sarah's Genesis 17:17 / 23:1 arithmetic (AM 2018-2145) and the
+    // family_tree.json 10/127-year cross-check on ITS OWN (BC) scale, and
+    // that she is anchored on Isaac's birth rather than chained from a
+    // father — Genesis 20:12 names Terah as her father but states no
+    // begetting age for her, so there is nothing to chain her birth from
+    // his the way every CHAIN row above does.
+    test("Sarah's years are anchored on Isaac's birth (Genesis 17:17, "
+        '21:5), not a father\'s begetting age, and Genesis 23:1 gives her '
+        'lifespan directly', () {
+      final isaac = data.lifelines.firstWhere((l) => l.personId == 'isaac');
+      final sarah = data.lifelines.firstWhere((l) => l.personId == 'sarah');
+
+      expect(sarah.fatherId, isNull,
+          reason: 'Genesis 20:12 names Terah as her father but states no '
+              'begetting age for her — nothing to chain her birth from');
+      expect(sarah.anchorChildId, 'isaac');
+      expect(sarah.lineId, 'matriarchs');
+      expect(sarah.birthAm, isaac.birthAm - 90, reason: 'Genesis 17:17');
+      expect(sarah.birthAm, 2018);
+      expect(sarah.lifespan, 127, reason: 'Genesis 23:1');
+      expect(sarah.deathAm, 2145);
+      expect(sarah.refs, containsAll(<String>[
+        'Genesis 17:17', 'Genesis 23:1',
+      ]));
+      for (final text in [
+        sarah.derivationEn, sarah.derivationZhHans, sarah.derivationZhHant,
+      ]) {
+        expect(text, contains('17:17'));
+        expect(text, contains('23:1'));
+      }
+
+      final famAbraham = familyTree['abraham']!;
+      final famSarah = familyTree['sarah']!;
+      expect(famSarah['yearSystem'], 'bc');
+      expect(
+        (famSarah['birthYear'] as int) - (famAbraham['birthYear'] as int),
+        10,
+        reason: 'family_tree.json has Sarah born 10 years after Abraham on '
+            'its own late-date BC scale',
+      );
+      expect(
+        (famSarah['deathYear'] as int) - (famSarah['birthYear'] as int),
+        127,
+        reason: 'family_tree.json also gives Sarah a 127-year lifespan '
+            '(Genesis 23:1)',
+      );
+
+      // Sarah outlives Abraham's birth by a wide margin but dies well
+      // before Joseph — the computed boundary does not move.
+      final joseph =
+          data.lifelines.firstWhere((l) => l.personId == 'joseph');
+      expect(sarah.deathAm, lessThan(joseph.deathAm!));
       expect(data.computedEndAm, 2369);
       expect(data.spanEndAm, 4098);
     });
@@ -2170,10 +2349,13 @@ void main() {
       // now — Isaac and Jacob's ages are stated as directly as Genesis
       // 11's, and Joseph's is the chain's first derived link — so this
       // pins the chain's actual end (Joseph), not a fixed "past
-      // Abraham" or "past Jacob" claim. 24, not 23: Ishmael is a branch
+      // Abraham" or "past Jacob" claim. 25, not 23: Ishmael is a branch
       // off Abraham, not a further link, so he adds a lifeline without
-      // moving the chain's end.
-      expect(data.lifelines, hasLength(24));
+      // moving the chain's end; Sarah is a further branch again, anchored
+      // on Isaac's birth rather than a father's begetting age (see
+      // CHILD_ANCHORED in tools/build_bible_chronology.py), so she too
+      // adds a lifeline without moving it.
+      expect(data.lifelines, hasLength(25));
       expect(data.lifelines.first.personId, 'adam');
       final byId = {for (final l in data.lifelines) l.personId};
       expect(byId, contains('abraham'));

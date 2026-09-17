@@ -125,6 +125,15 @@ class Lifeline {
 
   final String? fatherId;
 
+  /// Set instead of [fatherId] when Genesis dates this person only in
+  /// relation to a CHILD's birth — Sarah's own age is stated directly
+  /// (Genesis 17:17), but her father Terah's begetting age for her
+  /// never is, so she cannot be chained from him. Points at the child
+  /// whose birth year she is anchored on (`tools/build_bible_chronology.py`'s
+  /// `CHILD_ANCHORED`). At most one of [fatherId] / [anchorChildId] is
+  /// non-null for any lifeline today.
+  final String? anchorChildId;
+
   final int birthAm;
 
   /// Null when Scripture gives no death year. Drawn open-ended rather
@@ -160,6 +169,7 @@ class Lifeline {
     required this.nameZhHans,
     required this.nameZhHant,
     required this.fatherId,
+    this.anchorChildId,
     required this.birthAm,
     required this.deathAm,
     required this.lifespan,
@@ -193,6 +203,7 @@ class Lifeline {
         nameZhHans: j['nameZhHans'] as String? ?? '',
         nameZhHant: j['nameZhHant'] as String? ?? '',
         fatherId: j['fatherId'] as String?,
+        anchorChildId: j['anchorChildId'] as String?,
         birthAm: (j['birthAm'] as num).toInt(),
         deathAm: (j['deathAm'] as num?)?.toInt(),
         lifespan: (j['lifespan'] as num?)?.toInt() ?? 0,

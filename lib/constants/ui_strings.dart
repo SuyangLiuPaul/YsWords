@@ -7299,6 +7299,11 @@ const uiStrings = {
     'zh-Hans': '{name}之子（生子时 {n} 岁）',
     'zh-Hant': '{name}之子（生子時 {n} 歲）',
   },
+  'chronologyMotherAge': {
+    'en': 'Mother of {name} (aged {n} at the birth)',
+    'zh-Hans': '{name}之母（生子时 {n} 岁）',
+    'zh-Hant': '{name}之母（生子時 {n} 歲）',
+  },
   'chronologyDerivation': {
     'en': 'How this year is derived',
     'zh-Hans': '此年份的推算依据',
