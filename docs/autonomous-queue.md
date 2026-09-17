@@ -8466,20 +8466,47 @@ has never seen this repo.
       by-name verse test were hardcoded to v2). Restored from a source
       that already had each clause correct; no character invented.
 
-      **Follow-up filed, not done by that commit or this bookkeeping
-      pass:** port the rest of the cross-edition set tests from the v2
-      pair to v3 — the commit only added v3/v3-tr to `expectedGaps` and
-      the three specific by-name tests (3:10, 12:36, 4:16) it was
-      fixing. Per the previous plan that assigned this bookkeeping,
-      there are **16 length-delta offenders and 73 note-count
-      differences** between v2 and v3 that have never been swept for v3
-      specifically (not independently re-measured by this pass — the
-      number should be re-derived, not trusted on carry-forward, when
-      the follow-up is actually picked up), each needing per-verse
-      adjudication against the publisher rather than a blind port — the
-      same clean_block_comment / poetry-node classes this commit just
-      found two more instances of are plausible culprits, but each one
-      needs checking, not assuming.
+      **Follow-up done 2026-09-17 (`164a89e7`):** ported both set tests
+      (length-delta, note-count) from the v2/v2-tr pair to v3/v3-tr in
+      `biblexg_verse_integrity_test.dart`. Re-derived both counts fresh
+      rather than trusting the carried-forward "16" above — it was
+      stale; the real count is **14** length-delta offenders, not 16.
+      The note-count figure of 73 held up under re-derivation. Both
+      re-checked by an adversarial refuter pass before committing.
+
+      Of the 14, 12 carry a reason across from the v2 table (one
+      renumbered — see the by-product below); the other two, 启示录
+      5:9/5:10, are new and checked directly against the publisher's
+      own `cn-rev.json`/`tw-rev.json`: their Simplified source ends
+      verse 9 with 「使他们成为」, their Traditional source starts verse
+      10 with the same clause — the publisher's own two editions
+      disagree with each other, and our v3 pair reproduces each
+      source's own boundary exactly. Filed in
+      `docs/梁家鏗譯本-請教出版方.md` §一.3, not repaired.
+
+      **By-product, filed not chased per the assigning plan:** v2's
+      known-difference table lists 使徒行传 8:41; v3's equivalent
+      offending verse is 8:40 for the same clause. Acts 8 has 40 verses,
+      so 8:41 looks like a v2-side versification artifact of the hidden
+      edition — not investigated further since v2 is superseded.
+
+      **New queue item filed by this pass:** of the 73 note-count
+      differences, only the 30 that carry over from the v2 table have
+      ever been checked against the publisher via
+      `tools/audit_biblexg_notes.py`. The other **43 are new to v3 and
+      unadjudicated** — pinned in the new v3 test as an *observed*
+      baseline, not an approved one:
+      使徒行传 2:16, 3:13, 3:21, 5:37, 12:2, 13:6, 13:14, 20:32 ·
+      加拉太书 3:7, 3:9 · 启示录 5:10, 5:12, 8:7 · 哥林多前书 10:16, 13:2,
+      13:8, 14:1 · 哥林多后书 5:8 · 希伯来书 10:26 · 帖撒罗尼迦前书 3:2 ·
+      帖撒罗尼迦后书 2:7, 2:8 · 歌罗西书 1:9, 3:9 · 约翰一书 2:18, 3:9,
+      5:20 · 约翰福音 1:14, 1:16, 12:25 · 罗马书 10:8, 10:13 · 路加福音
+      9:5, 11:9, 11:23, 12:20, 23:43 · 马可福音 5:2, 9:42, 9:43 ·
+      马太福音 7:11, 8:19, 8:20. Each needs the same publisher check the
+      30 carried ones already had, not a blind carry-forward.
+
+      **CI:** pushed as `22a18ea2` (merged with an unrelated concurrent
+      `chore(songs)` commit); run `35198838714` — green.
 
 ## P1 — Bible study correctness
 
