@@ -35,7 +35,7 @@
 const REPOS = {
 	words: 'SuyangLiuPaul/Yahwehs-Words',
 	sword: 'SuyangLiuPaul/Yahwehs-Sword',
-	world: 'SuyangLiuPaul/yahwehs-globe',
+	world: 'SuyangLiuPaul/Yahwehs-World',
 	news: 'SuyangLiuPaul/News-Insight',
 };
 
