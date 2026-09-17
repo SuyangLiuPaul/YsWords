@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +15,7 @@ import 'package:yswords/models/chapter.dart';
 import 'package:yswords/models/verse.dart';
 import 'package:yswords/pages/home_page.dart';
 import 'package:yswords/providers/main_provider.dart';
+import 'package:yswords/utils/reader_header_fit.dart';
 
 /// The book and version pills in the reading-pane header, measured on
 /// the real screen, at every width the app is meant to run on.
@@ -89,6 +92,12 @@ void main() {
   /// 帖撒罗尼迦后书 is the longest book name the catalogue holds, and the
   /// one that pushed the version pill off the row. 约翰福音 is an ordinary
   /// one, kept so a fix that only works for long names still fails here.
+  ///
+  /// 2026-09-17: 撒母耳記上 joins them, in Traditional, because that is
+  /// what the fifth report was reading — an iPhone 12 with the book pill
+  /// in full and the version beside it cut to 「雅…」. It is not the
+  /// longest name in the catalogue, which is the point: the row's width
+  /// is not the screen's.
   const books = <String>['约翰福音', '帖撒罗尼迦后书'];
 
   Verse verse(String book, int n) =>
@@ -99,8 +108,18 @@ void main() {
     Size size,
     double menuScale,
     String version,
-    String book,
-  ) async {
+    String book, {
+    /// Highlights put a COUNT BADGE in the trailing cluster, which takes
+    /// its width out of the pills' row without changing the screen.
+    int highlights = 0,
+    /// The SYSTEM type size, which is not the app's own font slider and
+    /// not the Menu Size slider. iOS Dynamic Type scales every label in
+    /// this header while the pills' padding and the icons beside them
+    /// stay where they are, so it squeezes the row in a way no
+    /// screen-width rule can see. 2026-09-17: this is the axis the
+    /// fifth report arrived on.
+    double textScale = 1.0,
+  }) async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     tester.view.devicePixelRatio = 1.0;
     tester.view.physicalSize = size;
@@ -123,10 +142,20 @@ void main() {
               ..setBooks([
                 Book(title: book, chapters: [Chapter(title: 3, verses: seed)]),
               ])
-              ..setVerses(seed)),
+              ..setVerses(seed)
+              ..syncHighlights({
+                for (var i = 0; i < highlights; i++) '$book 3:$i': 1,
+              })),
         ChangeNotifierProvider<AppSettings>.value(value: settings),
       ],
-      child: const MaterialApp(home: HomePage()),
+      child: MaterialApp(
+        builder: (ctx, child) => MediaQuery(
+          data: MediaQuery.of(ctx)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
+        home: const HomePage(),
+      ),
     ));
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump(const Duration(milliseconds: 400));
@@ -278,4 +307,173 @@ void main() {
             'at 1.0x — the scale is not reaching the pills, so the grid '
             'above is measuring one configuration three times');
   });
+  testWidgets('the traditional edition fits beside a traditional book '
+      'name on an iPhone 12 — the fifth report', (tester) async {
+    // 2026-09-17, photographed: 撒母耳記上 16 in full, and 「雅…」 beside
+    // it. The grid above reads zh-Hans names against the simplified
+    // edition; this is the pair the reader actually had.
+    addTearDown(tester.view.reset);
+    await pumpHome(tester, const Size(390, 844), 1.0, 'cuvs-yhwh-tr',
+        '撒母耳記上');
+    final found = pairs(tester, 'zh-Hans');
+    expect(found, isNotEmpty);
+    final bad = found.expand(clipped).toList();
+    expect(bad, isEmpty,
+        reason: 'ellipsised on an iPhone 12 reading 撒母耳記上 in the '
+            'Traditional edition: ${bad.join(", ")}');
+    await dispose(tester);
+  });
+
+  group('which pill gives way is measured, not thresholded', () {
+    test('a roomy row keeps the formal book name', () {
+      expect(
+          readerHeaderFoldsBookName(
+              available: 300,
+              fullBookWidth: 120,
+              versionWidth: 60,
+              chrome: 52),
+          isFalse);
+    });
+
+    test('a tight row folds the book name, which has a short form', () {
+      // The version pill has no short form below `narrowLabel` — an
+      // elided one says 「雅…」, which names nothing — so the book is the
+      // one that gives way.
+      expect(
+          readerHeaderFoldsBookName(
+              available: 200,
+              fullBookWidth: 120,
+              versionWidth: 60,
+              chrome: 52),
+          isTrue);
+    });
+
+    test('it is the ROW that decides, so the same screen can answer both '
+        'ways', () {
+      // Split view, a chapter that has sermons, a longer locale: all of
+      // them change the row without changing the screen. This is the
+      // property four screen-width thresholds did not have.
+      const full = 150.0;
+      expect(
+          readerHeaderFoldsBookName(
+              available: 280, fullBookWidth: full, versionWidth: 60,
+              chrome: 52),
+          isFalse);
+      expect(
+          readerHeaderFoldsBookName(
+              available: 240, fullBookWidth: full, versionWidth: 60,
+              chrome: 52),
+          isTrue);
+    });
+
+    test('an unbounded row never folds', () {
+      expect(
+          readerHeaderFoldsBookName(
+              available: double.infinity,
+              fullBookWidth: 400,
+              versionWidth: 200,
+              chrome: 52),
+          isFalse);
+    });
+
+    test('the header no longer asks the screen', () {
+      final src =
+          File('lib/widgets/bible_reading_pane.dart').readAsStringSync();
+      expect(src.contains('readerHeaderFoldsBookName'), isTrue,
+          reason: 'the header must take this decision from the row it was '
+              'given');
+      expect(src.contains('final useShort = screenW'), isFalse,
+          reason: 'the fourth screen-width threshold is back; an iPhone 12 '
+              'is exactly 390 and this is the report that keeps arriving');
+    });
+  });
+
+  for (final textScale in <double>[1.15, 1.3]) {
+    testWidgets('both pills survive iOS Dynamic Type at ${textScale}x — '
+        'iPhone 12', (tester) async {
+      // The system type size scales the labels and NOT the padding, the
+      // chevron or the icon clusters, so the row tightens without the
+      // screen changing at all. Every screen-width rule this header has
+      // had is blind to it by construction.
+      addTearDown(tester.view.reset);
+      await pumpHome(tester, const Size(390, 844), 1.0, 'cuvs-yhwh-tr',
+          '撒母耳記上',
+          textScale: textScale);
+      final found = pairs(tester, 'zh-Hans');
+      expect(found, isNotEmpty);
+      final bad = found.expand(clipped).toList();
+      expect(bad, isEmpty,
+          reason: 'ellipsised at system text size ${textScale}x on an '
+              'iPhone 12: ${bad.join(", ")}');
+      await dispose(tester);
+    });
+  }
+
+  testWidgets('landscape on a phone, where the sidebar takes the width '
+      'the rule was reading', (tester) async {
+    // An iPhone 12 on its side is 844 wide, which every screen-width
+    // rule this header has had calls roomy — and at that width the page
+    // opens its SIDEBAR, so the reading pane, and the pill row inside
+    // it, get a fraction of those 844 points.
+    addTearDown(tester.view.reset);
+    await pumpHome(tester, const Size(844, 390), 1.5, 'cuvs-yhwh-tr',
+        '撒母耳記上');
+    final found = pairs(tester, 'zh-Hans');
+    expect(found, isNotEmpty);
+    final bad = found.expand(clipped).toList();
+    expect(bad, isEmpty,
+        reason: 'ellipsised on a landscape iPhone 12 with the sidebar '
+            'open: ${bad.join(", ")}');
+    await dispose(tester);
+  });
+
+  testWidgets('the header clears the notch', (tester) async {
+    // 2026-09-17, photographed: the book pill and the version pill at
+    // the same height as the clock, with the notch over the second one.
+    // Whatever else is true of that screenshot, a header drawn INTO the
+    // status-bar band is a defect on its own, and nothing in this suite
+    // was asking.
+    addTearDown(tester.view.reset);
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.padding = const FakeViewPadding(top: 47);
+    tester.view.viewPadding = const FakeViewPadding(top: 47);
+    addTearDown(() {
+      tester.view.resetPadding();
+      tester.view.resetViewPadding();
+    });
+    await pumpHome(
+        tester, const Size(390, 844), 1.0, 'cuvs-yhwh-tr', '撒母耳記上');
+    final found = pairs(tester, 'zh-Hans');
+    expect(found, isNotEmpty);
+    for (final pair in found) {
+      final top = pair.localToGlobal(Offset.zero).dy;
+      expect(top, greaterThanOrEqualTo(47.0),
+          reason: 'the header pills start ${top.toStringAsFixed(1)}px from '
+              'the top of a screen whose notch takes 47 — they are drawn '
+              'in the status bar, behind the clock and the camera');
+    }
+    await dispose(tester);
+  });
+
+  testWidgets('a reader who highlights verses still reads both pills',
+      (tester) async {
+    // The trailing cluster grows with what the reader has DONE — a
+    // highlight count badge, and the sermon badge beside it — and every
+    // pixel it takes comes out of the pills. A reader with highlights is
+    // reading on a narrower row than the same phone showed on the day
+    // they installed it, which is one more thing a screen-width rule
+    // cannot see.
+    addTearDown(tester.view.reset);
+    await pumpHome(
+        tester, const Size(390, 844), 1.0, 'cuvs-yhwh-tr', '撒母耳記上',
+        highlights: 24);
+    final found = pairs(tester, 'zh-Hans');
+    expect(found, isNotEmpty);
+    final bad = found.expand(clipped).toList();
+    expect(bad, isEmpty,
+        reason: 'ellipsised on an iPhone 12 for a reader with 24 '
+            'highlights: ${bad.join(", ")}');
+    await dispose(tester);
+  });
+
 }

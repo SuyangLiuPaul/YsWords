@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:yswords/constants/bible_versions.dart';
+import 'package:yswords/utils/reader_header_fit.dart';
 import 'package:yswords/constants/motion.dart';
 import 'package:yswords/constants/projection_strings.dart';
 import 'package:yswords/constants/text_patterns.dart';
@@ -7437,7 +7438,46 @@ class _FloatingHeader extends StatelessWidget {
                     // sitting flush-left right after the icons.
                     if (showBookInfo)
                       Expanded(
-                        child: Row(
+                        child: LayoutBuilder(
+                            builder: (rowCtx, rowBox) {
+                        // ASK THE ROW, NOT THE SCREEN. See
+                        // `readerHeaderFoldsBookName` — this decision
+                        // has been made by screen width four times and
+                        // reported again after every one of them, most
+                        // recently from an iPhone 12 reading 撒母耳記上
+                        // with the version pill cut to 「雅…」.
+                        final scaler = MediaQuery.textScalerOf(rowCtx);
+                        final pillStyle = TextStyle(
+                          fontFamily: settings.fontFamily,
+                          fontFamilyFallback: kCjkFontFallback,
+                          fontSize: fontSize * 0.78,
+                          fontWeight: FontWeight.w700,
+                        );
+                        final foldBookName = readerHeaderFoldsBookName(
+                          available: rowBox.maxWidth,
+                          fullBookWidth: headerLabelWidth(
+                              '$book $chapter', pillStyle,
+                              scaler: scaler),
+                          versionWidth: headerLabelWidth(
+                              narrowBibleVersionLabel(version),
+                              pillStyle.copyWith(
+                                  fontWeight: FontWeight.w600),
+                              scaler: scaler),
+                          // Everything in the row that is not those two
+                          // strings: both pills' 8px padding either side
+                          // (32), their 1px borders (4), the 6px gap
+                          // between them, the chevron, and six pixels of
+                          // slack — a pill that fits by half a pixel is
+                          // an ellipsis on somebody's phone, and the
+                          // rounding in a Row's own layout was worth
+                          // 0.8px of it on an iPhone 8 at 1.5x. What
+                          // being wrong costs here is 撒上 16 instead of
+                          // 撒母耳記上 16; what being wrong the other way
+                          // costs is 「雅…」.
+                          chrome: 48 +
+                              (fontSize * 0.78).clamp(12.0, 16.0),
+                        );
+                        return Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                         // 2026-06-14 (v1.3.73): the book name gets layout
@@ -7505,23 +7545,18 @@ class _FloatingHeader extends StatelessWidget {
                               // formal name. Applies to all locales
                               // uniformly.
                               child: Builder(builder: (ctx) {
-                                final screenW =
-                                    MediaQuery.of(ctx).size.width;
-                                // 2026-09-14: scaled by `menuScale`.
-                                // The 390 was measured at 1.0x, and the
-                                // reader who raises the Menu Size
-                                // slider raises this label AND the icon
-                                // clusters either side of it, so the
-                                // width at which the formal name stops
-                                // fitting moves with the slider. Left
-                                // fixed, a reader at 1.5x on an iPhone
-                                // 12 got 「帖撒罗尼迦后书 3」 clipped by
-                                // 18px and the version pill beside it
-                                // cut to 「雅…」 — the same report the
-                                // pills have now been fixed for four
-                                // times, arriving by a different route.
-                                final useShort =
-                                    screenW < 390 * chromeScale;
+                                // 2026-09-17: MEASURED, not thresholded.
+                                // This read `screenW < 390 * chromeScale`
+                                // — the fourth screen-width rule on this
+                                // one defect — and an iPhone 12 is
+                                // exactly 390, so the name kept its full
+                                // form and pushed the version pill
+                                // beside it down to 「雅…」. The pills are
+                                // not given the screen; they are given
+                                // what the icon clusters leave, and that
+                                // moves with the locale, the menu scale,
+                                // the font slider and split view.
+                                final useShort = foldBookName;
                                 return Text(
                                   useShort
                                       ? '${shortBookName(book, locale)} $chapter'
@@ -7675,7 +7710,8 @@ class _FloatingHeader extends StatelessWidget {
                           }),
                         ),
                           ],
-                        ),
+                        );
+                        }),
                       )
                     else
                       const Spacer(),
