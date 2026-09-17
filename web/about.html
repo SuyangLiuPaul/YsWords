@@ -227,7 +227,7 @@
   .tetra-key { font-size: .8125rem; color: var(--faint); }
   .tetra-key i { font-style: normal; unicode-bidi: isolate; }
   .why .sub:not(:first-child) { margin-top: .25rem; }
-  /* The one quotation on the page, given the weight of one. */
+  /* The quotations, each given the weight of one. */
   .verse {
     margin: 1.5rem 0 0; padding: .875rem 0 .25rem 1.125rem;
     border-left: 3px solid var(--p-container);
@@ -235,6 +235,11 @@
   .verse p { font-size: 1.0625rem; color: var(--ink); margin: 0 0 .35rem; }
   .verse cite { font-style: normal; font-size: .8125rem;
     color: var(--faint); }
+  /* The closing wish, set between the last two quotations. It reads as
+     a sentence addressed to the reader rather than as another
+     paragraph about the project, so it is given the page's ink and a
+     little air above it. */
+  .why p.bless { margin: 1.75rem 0 0; color: var(--ink); }
 
   /* ── where the material comes from ────────────────────────── */
   .sites { display: grid; gap: .625rem; grid-template-columns: 1fr;
@@ -385,10 +390,19 @@
       <span data-l="en">To bring people to the one true God, Yahweh; to help them know His word by the best means we can manage; and to make the Bible living and worth reading, for anyone.</span>
     </p>
     <p>
-      <span data-l="hans">我们不参与任何政治，只关心神的国 —— 圣经说，我们是天上的国民（腓立比书 3:20）。</span>
-      <span data-l="hant">我們不參與任何政治，只關心神的國 —— 聖經說，我們是天上的國民（腓立比書 3:20）。</span>
-      <span data-l="en">We take no part in politics. Our concern is His Kingdom — Scripture says our citizenship is in heaven (Philippians 3:20).</span>
+      <span data-l="hans">我们不参与任何政治，只关心神的国 —— 圣经说，我们是天上的国民。</span>
+      <span data-l="hant">我們不參與任何政治，只關心神的國 —— 聖經說，我們是天上的國民。</span>
+      <span data-l="en">We take no part in politics. Our concern is His Kingdom — Scripture says our citizenship is in heaven.</span>
     </p>
+
+    <blockquote class="verse">
+      <p>
+        <span data-l="hans">我们却是天上的国民，并且等候救主，就是主耶稣基督从天上降临。</span>
+        <span data-l="hant">我們卻是天上的國民，並且等候救主，就是主耶穌基督從天上降臨。</span>
+        <span data-l="en">For our conversation is in heaven; from whence also we look for the Saviour, the Lord Jesus Christ.</span>
+      </p>
+      <cite><span data-l="hans">腓立比书 3:20</span><span data-l="hant">腓立比書 3:20</span><span data-l="en">Philippians 3:20</span></cite>
+    </blockquote>
 
     <blockquote class="verse">
       <p>
@@ -397,6 +411,21 @@
         <span data-l="en">Thy word is a lamp unto my feet, and a light unto my path.</span>
       </p>
       <cite><span data-l="hans">诗篇 119:105</span><span data-l="hant">詩篇 119:105</span><span data-l="en">Psalm 119:105</span></cite>
+    </blockquote>
+
+    <p class="bless">
+      <span data-l="hans">愿雅伟神向你我启示祂的名字和祂的心意，让我们透过主耶稣认识祂。</span>
+      <span data-l="hant">願雅偉神向你我啟示祂的名字和祂的心意，讓我們透過主耶穌認識祂。</span>
+      <span data-l="en">May Yahweh make His name and His heart known to you and to me, that we may know Him through the Lord Jesus.</span>
+    </p>
+
+    <blockquote class="verse">
+      <p>
+        <span data-l="hans">认识你独一的真神，并且认识你所差来的耶稣基督，这就是永生。</span>
+        <span data-l="hant">認識你獨一的真神，並且認識你所差來的耶穌基督，這就是永生。</span>
+        <span data-l="en">And this is life eternal, that they might know thee the only true God, and Jesus Christ, whom thou hast sent.</span>
+      </p>
+      <cite><span data-l="hans">约翰福音 17:3</span><span data-l="hant">約翰福音 17:3</span><span data-l="en">John 17:3</span></cite>
     </blockquote>
   </div>
 
@@ -419,7 +448,7 @@
       <div class="links">
         <a class="go" href="https://yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
         <a class="dl" href="/dl/words"><span data-l="hans">下载 APK</span><span data-l="hant">下載 APK</span><span data-l="en">Download APK</span></a>
-        <a class="gh" href="https://github.com/SuyangLiuPaul/YsWords/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
+        <a class="gh" href="https://github.com/SuyangLiuPaul/Yahwehs-Words/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
       </div>
     </article>
 
@@ -439,7 +468,7 @@
       <div class="links">
         <a class="go" href="https://sword.yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
         <a class="dl" href="/dl/sword"><span data-l="hans">下载 APK</span><span data-l="hant">下載 APK</span><span data-l="en">Download APK</span></a>
-        <a class="gh" href="https://github.com/SuyangLiuPaul/SeekSparks/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
+        <a class="gh" href="https://github.com/SuyangLiuPaul/Yahwehs-Sword/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
       </div>
     </article>
 
@@ -496,7 +525,7 @@
       <div class="links">
         <a class="go" href="https://newsinsight.yahwehword.com/"><span data-l="hans">打开</span><span data-l="hant">開啟</span><span data-l="en">Open</span></a>
         <a class="dl" href="/dl/news"><span data-l="hans">下载 APK</span><span data-l="hant">下載 APK</span><span data-l="en">Download APK</span></a>
-        <a class="gh" href="https://github.com/SuyangLiuPaul/yahwehs_world/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
+        <a class="gh" href="https://github.com/SuyangLiuPaul/News-Insight/releases/latest"><span data-l="hans">其他平台 · GitHub</span><span data-l="hant">其他平台 · GitHub</span><span data-l="en">Other platforms · GitHub</span></a>
       </div>
     </article>
 
