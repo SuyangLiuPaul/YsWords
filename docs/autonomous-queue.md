@@ -16525,26 +16525,53 @@ has never seen this repo.
         Excluded from this slice's comparison and pinned by name
         (`untappableChips`) so a NEW untappable chip fails loudly.
 
-- [ ] **`bible_chronology_test.dart`'s `laneRect.overlaps(...)` "on-screen
+- [x] **`bible_chronology_test.dart`'s `laneRect.overlaps(...)` "on-screen
       chip" filter is close to a no-op at ~4 remaining call sites.** Found
-      2026-09-18 fixing `queue:16351` above. `tester.getRect` on
-      `chronoTickLaneBox` returns the FULL unclipped scrolling-content
-      width (measured: `Rect.fromLTRB(-15876.1, 445.0, 515.9, 549.0)` at a
-      402pt device), not the visible viewport, so `laneRect.overlaps(chip
-      rect)` is true for nearly every chip in the whole corpus, not just
-      the ones actually on screen. Fixed in the ONE test this slice
-      touched (the "bare-lane route and chip route" test — now
-      `screenRect = Offset.zero & tester.view.physicalSize`,
-      `.contains(rect.center)`); grep the test file for the same
-      `laneRect.overlaps` idiom at the other ~4 sites (as of this writing:
-      the "content-based route" reachability test and the corpus-wide
-      drift sweep both above this item, plus at least one more) and check
-      whether each was silently exercising off-screen chips too — those
-      tests still pass today, which either means it never mattered there
-      or means their own pinned expectations were derived FROM the
-      already-wrong filter and would need re-deriving alongside the fix.
-      Audit before touching; don't assume the fix is a pure improvement
-      without checking what each site's pinned numbers currently assume.
+      2026-09-18 fixing `queue:16351` above. Audited 2026-09-18: grep found
+      exactly **3** remaining sites, not ~4 — `:3830`, `:3963` (both inside
+      the "13 pinned ticks" / "whole corpus" whole-span reachability tests)
+      and `:4612`-ish (the corpus-wide drift sweep) — line numbers shift
+      slightly per edit; search the file for `laneRect.overlaps` to find
+      them. Measured each with instrumented before/after admitted-chip
+      counts, not by inspection alone:
+      - **:3830 and :3963 — left unchanged, with justification.** Both
+        tests only ever call `wholeSpan(tester)` (fit view), never scroll
+        or zoom. At fit view `chronology_chart.dart` sets `plotWidth` to
+        the viewport width itself (`_density == null` branch), so
+        `laneRect` is bounded by the viewport with margins, not the full
+        corpus width — the two filters provably agree there. Measured:
+        :3830 admitted 25/25 candidates under both the old
+        `laneRect.overlaps` filter and a `screenRect.contains(center)`
+        filter; :3963 admitted 5/5 under both. Zero divergence. These two
+        sites' own comments also document a DIFFERENT intent than :4612's
+        (excluding chips outside the lane's own `Clip.hardEdge`, not
+        excluding off-screen-after-scroll chips), so even where they might
+        diverge in principle, changing them would risk weakening
+        reachability coverage rather than fixing a bug. Both left as
+        `laneRect.overlaps`, with an inline comment recording this.
+      - **:4612 (the drift sweep) — changed.** This one actually scrolls
+        (4 of its 5 viewports call `viewAt`), and its own comment already
+        wanted "actually on screen at this viewport". Measured: the old
+        filter admitted 72/72 candidates across all 5 viewports combined —
+        a true no-op, since `laneRect` there is the lane's own full
+        unclipped content box and every chip is by construction inside it.
+        Switched to `screenRect.contains(center)`: only 17/72 admitted.
+        Re-derived the three pinned constants
+        (`_pinnedMaxOrdinaryChipDrift`, `_pinnedOverBareLaneRadiusCount`,
+        `_pinnedMaxFoldChipDrift`) from an actual run under the corrected
+        filter — **all three came back identical** (45.25 / 6 / 13.75).
+        The 55 extra candidates the old filter let through never produced
+        a valid drift sample: `tester.tap()` dispatches at each chip's raw
+        global center, and a center outside the actual 402x874 device rect
+        fails Flutter's own root hit-test (the bound is the device's
+        physical size, not any ancestor scroll-view clip), so those taps
+        landed on nothing and were silently skipped by the loop's existing
+        `if (titles.isEmpty) continue`. So the standing "6 of 11 on-screen
+        ordinary chips drift past 14pt" write-up above is **reconfirmed,
+        not stale** — it was already measuring the right 11, just via a
+        filter that also let 61 harmless phantom candidates through.
+      `flutter analyze` clean, `bible_chronology_test.dart` green (129/129),
+      full suite green (3376 tests). No `lib/` changes — test-harness-only.
 
 - [ ] **One on-screen chronology-chart chip cannot be tapped at all in the
       widget-test harness — root cause unknown, possibly a real

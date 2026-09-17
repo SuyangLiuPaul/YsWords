@@ -46,6 +46,22 @@ import 'package:yswords/widgets/chronology_chart.dart';
 /// Ratchet pins for the chip-drift characterization test — see
 /// `docs/autonomous-queue.md:15260`/`:13639` for what these numbers are
 /// for. Re-derive, don't patch, if the packer or the corpus changes.
+///
+/// Re-derived 2026-09-18 (queue:16528) after switching this test's own
+/// on-screen filter from `laneRect.overlaps` (a no-op here by
+/// construction — `laneRect` is the lane's own full-content box, so
+/// every chip inside it always overlaps it; measured 72/72 candidates
+/// admitted across the sweep's 5 viewports) to a real
+/// `screenRect.contains(center)` filter (17/72 admitted): the measured
+/// max/count/max came back **identical**. The 55 extra candidates the
+/// old filter let through never produced a successful tap: `tester.tap`
+/// dispatches at the chip's raw global center, and a center outside the
+/// actual 402x874 device rect fails the hit test at the root — the
+/// bound is the device's own physical size, not the horizontal
+/// scroll view's clip — so those taps landed on nothing, opened no
+/// sheet, and were skipped by this loop's own `if (titles.isEmpty)
+/// continue`, rather than corrupting the pins. Confirmed unchanged by
+/// an actual run, not assumed.
 const _pinnedMaxOrdinaryChipDrift = 45.25;
 const _pinnedOverBareLaneRadiusCount = 6;
 const _pinnedMaxFoldChipDrift = 13.75;
@@ -3830,6 +3846,16 @@ void main() {
           if (!laneRect.overlaps(tester.getRect(chipFinder))) {
             // Painted outside the lane's own clip — not a real chip a
             // finger could reach, whatever `tester.tap()` would do to it.
+            //
+            // queue:16528 audit (2026-09-18): this is a CLIP check, not a
+            // viewport check — deliberately kept as `laneRect.overlaps`,
+            // not switched to the screen-rect filter :4612 uses. Measured
+            // at this test's only viewport (whole-span/fit, via
+            // `wholeSpan(tester)` above): 25/25 candidate chips admitted
+            // by both the clip filter and a screen-rect filter — at fit
+            // view the whole corpus already fits within the device
+            // width, so the two filters coincide here and neither one is
+            // silently admitting an off-screen chip. Left unchanged.
             continue;
           }
           await tester.tap(chipFinder, warnIfMissed: false);
@@ -3945,6 +3971,14 @@ void main() {
         // sheet rebuilds the lane (see the pinned test's own comment on
         // this), and this is the rect a tap on the NEXT chip is judged
         // against.
+        //
+        // queue:16528 audit (2026-09-18): same clip-vs-viewport question
+        // as the pinned-reachability test above — kept as
+        // `laneRect.overlaps`, not switched to the :4612 screen-rect
+        // filter. This test also only runs at whole-span/fit view
+        // (`wholeSpan(tester)` above), where measurement showed the two
+        // filters agree exactly (5/5 candidates admitted by both). Left
+        // unchanged.
         final laneRect = tester.getRect(laneBox);
         if (!laneRect.overlaps(tester.getRect(chipFinder))) continue;
         await tester.tap(chipFinder, warnIfMissed: false);
@@ -4592,11 +4626,24 @@ void main() {
         double xOf(int am) => (am - data.spanStartAm) / span * plotWidth;
 
         final laneRect = tester.getRect(laneBox);
-        // Same on-screen filter the 5b43d009 slice above uses: `Stack`
-        // builds every chip across the whole corpus regardless of
-        // scroll position, so without it this finder also picks up
-        // chips from decades that are not actually on screen at this
-        // viewport.
+        // queue:16528 audit (2026-09-18): this site's `laneRect` is the
+        // lane's own FULL scrolling-content rect (its own render-object
+        // bounds, unclipped) — `laneRect.overlaps` was measured to admit
+        // every candidate at every scrolled/zoomed viewport this sweep
+        // uses (72/72), i.e. a true no-op here, unlike the two
+        // whole-span-only reachability tests above where it agreed with
+        // a screen-rect filter exactly. This test actually scrolls
+        // (`viewAt` at four of its five viewports), so a screen-rect
+        // filter is the one that matches "actually on screen at this
+        // viewport" (the comment two lines below already claims); with
+        // the real filter only 17/72 candidates are admitted. Switched
+        // below — see the drift-pin comment further down for the
+        // re-derived numbers this produced.
+        final screenRect = Offset.zero & tester.view.physicalSize;
+        // `Stack` builds every chip across the whole corpus regardless of
+        // scroll position, so without an on-screen filter this finder
+        // also picks up chips from decades that are not actually on
+        // screen at this viewport.
         final chipEntries = find
             .descendant(
               of: laneBox,
@@ -4609,7 +4656,7 @@ void main() {
                 ))
             .where((r) =>
                 r.key != null &&
-                laneRect.overlaps(tester.getRect(find.byKey(r.key!))))
+                screenRect.contains(tester.getRect(find.byKey(r.key!)).center))
             .toList();
 
         for (final entry in chipEntries) {
