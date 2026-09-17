@@ -179,6 +179,11 @@
   }
   .en { color: var(--faint); font-size: .875rem; margin: .125rem 0 .75rem; }
   .what { margin: 0 0 .75rem; font-size: .9375rem; color: var(--muted); }
+  .wip {
+    font-size: .8125rem; margin: 0 0 .75rem; color: var(--on-p-container);
+    background: var(--p-container); border-radius: 8px;
+    padding: .4rem .6rem;
+  }
   .host { font-size: .75rem; color: var(--faint); margin: 0;
     word-break: break-all; }
   .links { margin-top: auto; padding-top: 1.125rem; display: flex;
@@ -420,6 +425,15 @@
         <span data-l="hans">圣经世界的三维地球：经文里的地名、旅程与疆域，放回它们所在的地方。</span>
         <span data-l="hant">聖經世界的三維地球：經文裡的地名、旅程與疆域，放回它們所在的地方。</span>
         <span data-l="en">The biblical globe: the places, journeys and kingdoms of scripture, put back where they actually are.</span>
+      </p>
+      <!-- 2026-09-17 「可以补一句 还在development当中」. Said plainly and
+           on the card rather than in a footnote: this one is younger
+           than the other three (v0.1.3 against v1.6.x), and a reader who
+           downloads it should know that before they do, not after. -->
+      <p class="wip">
+        <span data-l="hans">仍在开发中 —— 已经可以用，但还会不断加东西、也可能变。</span>
+        <span data-l="hant">仍在開發中 —— 已經可以用，但還會不斷加東西、也可能變。</span>
+        <span data-l="en">Still in development — usable today, but it will keep growing and may change.</span>
       </p>
       <p class="host">world.yahwehword.com</p>
       <div class="links">
