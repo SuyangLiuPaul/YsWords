@@ -16002,6 +16002,69 @@ has never seen this repo.
       Pushed to `origin/main`; CI watched to green (see commit log for
       the run).
 
+      **2026-09-17 slice — Esau, the chart's first OPEN_ENDED bar.**
+      NEXT_TASK.md picked this: Genesis 25:26 states Esau's birth (AM
+      2168, the same verse dating Jacob's — "she bare them") but no
+      verse anywhere gives his death age. `OPEN_ENDED` (previously an
+      empty set with a stale comment pointing at Ham/Japheth, who are
+      undrawable for a DIFFERENT reason — no birth either, per
+      `UNDRAWN` — not the same gap) now holds `{"esau"}`, and a new
+      `OPEN_ENDED_DERIVATION` dict gives his prose the "was N when born
+      … Scripture never records the death age" shape instead of the
+      generic branch's `%d`-formatted "lived N years", which would have
+      crashed on his `None`. New sixth line `edomite` (#7A9E2D, olive-
+      green — Genesis 36:1,8 "Esau, who is Edom" sources the name), not
+      a reuse of `isaac_jacob`, the same reasoning the Ishmael slice
+      used the other direction. 26 lifelines, `computedEndAm` 2369 and
+      `spanEndAm` 4098 unchanged (both filter `deathAm is not None`).
+      Builder re-run byte-identical.
+
+      **The layout risk flagged in the brief was real, and cost the
+      whole middle of this slice.** `endAm(spanEndAm)` (existing,
+      generic code) makes Esau's bar span to AM 4098 for overlap
+      purposes, so `chronologyRowsInView` correctly never folds his row
+      once he is born — the fade-to-invisible tail is still, by design,
+      "there." Six pre-existing fold tests hard-coded the old fact that
+      NOTHING is in view past AM 2187ish; that stopped being true. Two
+      were pure-function (`chronologyRowsInView` model-level) and got
+      exact fixes; four were widget-level, and the harder finding was
+      that Esau's unfolded row, sitting mid-corpus, SPLITS the other 25
+      into two separate fold bands (e.g. "23 条在视图外" + "2 条在视图外")
+      rather than one — so those four now sum whatever band texts are
+      on screen / tap the larger one / accept `findsWidgets` instead of
+      assuming a single fixed-count band. A seventh, unrelated
+      pre-existing assertion (`the two layers stay distinguishable`)
+      looped over every lifeline asserting `deathAm` non-null; given an
+      `esau`-shaped exception too. Full suite: 3335 tests, 1 pre-
+      existing unrelated skip, 0 failures, run in six 60-file
+      foreground chunks.
+
+      **A concurrent session shares this checkout and handled the
+      collision correctly.** Mid-slice, another session doing an
+      `/about` prod release ran `git stash` on this WIP rather than
+      clobbering it (`stash@{0}: "hold another session's WIP during
+      about prod release"`) — exactly the git-multimachine courtesy
+      this loop's own guard rails ask for. Recovered with
+      `git stash apply` (a plain `pop` collided with one small edit
+      made after the stash), confirmed `edomite`/byte-identical
+      generator output was back, and proceeded. No data was lost; filed
+      here so the next iteration recognises the pattern if it happens
+      again rather than assuming its own work vanished.
+
+      **Refuter: all four claims survived.** (1) Grepped kjv.json for
+      every "Esau" + "year(s)" verse: only 25:26 (birth) and 26:34 (age
+      at marriage) exist; Genesis 35:29 and all 43 verses of 36 give no
+      age for Esau. (2) Genesis 25:24's "twins" + 25:26's "when she bare
+      them" (plural) confirms the shared birth year. (3) `git show
+      HEAD:assets/bible_chronology.json` (pre-slice) has zero
+      `"deathAm": null` entries — Esau is genuinely first. (4) Colour
+      distance recomputed independently against all 11 existing hues in
+      both modes: light 68.15, dark 40.89, nearest neighbour `#6B5E3F`
+      both ways — matches the claimed ~68/~41 within stated rounding.
+
+      Not yet pushed at write time — see commit log for whether CI went
+      green.
+
 - [ ] **Follow-up, filed not built: the `matriarchs` line id/name is
       deliberately plural.** Noted 2026-09-17 landing the Sarah slice
       above. Only Sarah is on the `matriarchs` line today, but

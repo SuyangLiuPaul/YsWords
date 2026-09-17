@@ -7,7 +7,7 @@
     "spanStartAm": 0,
     "spanEndAm": 4098,
     "computedEndAm": 2369,
-    "count": 25,
+    "count": 26,
     "eventCount": 93,
     "description": "Two layers on one Anno Mundi axis. (1) LIFELINES — the begetting ages Genesis states, chained from Adam to Joseph: directly, for most; Shem's, Abraham's and Joseph's are each chained together from multiple verses instead, since no single verse states outright what age their father was (see CHAIN in this file). Names from assets/family_tree.json, years recomputed from the Masoretic ages and cross-checked against it. (2) EVENTS — the same 93 events the event list on this page shows, from assets/bible_timeline.json, placed on the AM axis by their stated BC/AD year through the 4004 BC anchor, so both views of the page span Creation to Revelation. The two layers are drawn differently and labelled, because a placed year is not a computed one. No data is taken from the copyrighted reference sheet in docs/reference/.",
     "computedNote": {
@@ -84,6 +84,13 @@
       "nameEn": "Ishmael's line",
       "nameZhHans": "以实玛利的家系",
       "nameZhHant": "以實瑪利的家系"
+    },
+    {
+      "id": "edomite",
+      "colorHex": "#7A9E2D",
+      "nameEn": "Esau's line (Edom)",
+      "nameZhHans": "以扫的家系（以东）",
+      "nameZhHant": "以掃的家系（以東）"
     },
     {
       "id": "matriarchs",
@@ -607,6 +614,24 @@
       "noteEn": "assets/family_tree.json dates Isaac 2066-1886 BC, a late-date scheme that does not join up with the Anno Mundi count used here (AM 2108-2288 is 1896-1716 BC on the 4004 BC anchor). Reconciling the two scales for the patriarchs is deliberately left to a later pass rather than fudged.",
       "noteZhHans": "assets/family_tree.json 把以撒定在公元前 2066-1886 年，属于晚期定年方案，与本图所用的创世纪元并不衔接（AM 2108-2288 在 4004 锚点下为公元前 1896-1716 年）。列祖世系两套刻度的调和刻意留待后续，不作勉强弥合。",
       "noteZhHant": "assets/family_tree.json 把以撒定在公元前 2066-1886 年，屬於晚期定年方案，與本圖所用的創世紀元並不銜接（AM 2108-2288 在 4004 錨點下為公元前 1896-1716 年）。列祖世系兩套刻度的調和刻意留待後續，不作勉強彌合。"
+    },
+    {
+      "personId": "esau",
+      "lineId": "edomite",
+      "scheme": "masoretic-ussher",
+      "nameEn": "Esau",
+      "nameZhHans": "以扫",
+      "nameZhHant": "以掃",
+      "fatherId": "isaac",
+      "birthAm": 2168,
+      "deathAm": null,
+      "lifespan": null,
+      "refs": [
+        "Genesis 25:26"
+      ],
+      "derivationEn": "Isaac was 60 when Esau was born (Genesis 25:26) — the same verse also dates Jacob's birth, since they were twins. Scripture never records Esau's death age, so this bar is drawn open-ended: the chart is saying it does not know, not that he never died.",
+      "derivationZhHans": "以撒 60 岁生以扫（创世记 25:26）——同一节经文也是雅各的出生年，因为他们是双生子。经文没有记载以扫哪年去世，因此这根横条画成开放式：本图是在说它不知道，不是说他从未离世。",
+      "derivationZhHant": "以撒 60 歲生以掃（創世記 25:26）——同一節經文也是雅各的出生年，因為他們是雙生子。經文沒有記載以掃哪年去世，因此這根橫條畫成開放式：本圖是在說它不知道，不是說他從未離世。"
     },
     {
       "personId": "jacob",

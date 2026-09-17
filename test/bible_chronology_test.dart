@@ -878,6 +878,54 @@ void main() {
       expect(data.spanEndAm, 4098);
     });
 
+    // Pins Esau's Genesis 25:26 twin-birth arithmetic (AM 2168, the same
+    // as Jacob's) and that he is the chart's first OPEN_ENDED row: no
+    // verse anywhere states his death age, cross-checked against
+    // family_tree.json's independently curated esau record, which has
+    // no deathYear and no lifespan field either — the curated tree
+    // reaches the same "birth known, death unknown" shape on its own.
+    test("Esau shares Jacob's Genesis 25:26 birth year and is drawn "
+        'open-ended, since Scripture never states his death age', () {
+      final isaac = data.lifelines.firstWhere((l) => l.personId == 'isaac');
+      final jacob = data.lifelines.firstWhere((l) => l.personId == 'jacob');
+      final esau = data.lifelines.firstWhere((l) => l.personId == 'esau');
+
+      expect(esau.fatherId, 'isaac');
+      expect(esau.lineId, 'edomite');
+      expect(esau.birthAm, isaac.birthAm + 60, reason: 'Genesis 25:26');
+      expect(esau.birthAm, 2168);
+      expect(esau.birthAm, jacob.birthAm,
+          reason: 'Genesis 25:26 dates both twins in the one verse');
+      expect(esau.deathAm, isNull,
+          reason: "no verse anywhere states Esau's death age");
+      expect(esau.refs, ['Genesis 25:26']);
+      for (final text in [
+        esau.derivationEn, esau.derivationZhHans, esau.derivationZhHant,
+      ]) {
+        expect(text, contains('25:26'));
+      }
+      expect(esau.derivationEn, isNot(contains('lived')),
+          reason: 'the open-ended prose must not claim a lifespan');
+      expect(esau.derivationZhHans, isNot(contains('活了')));
+      expect(esau.derivationZhHant, isNot(contains('活了')));
+
+      final famJacob = familyTree['jacob']!;
+      final famEsau = familyTree['esau']!;
+      expect(famEsau['yearSystem'], 'bc');
+      expect(famEsau['birthYear'], famJacob['birthYear'],
+          reason: 'family_tree.json independently gives Esau and Jacob '
+              'the same birthYear on its own late-date BC scale');
+      expect(famEsau.containsKey('deathYear'), isFalse,
+          reason: 'family_tree.json also has no deathYear for Esau');
+      expect(famEsau.containsKey('lifespan'), isFalse,
+          reason: 'nor a lifespan field');
+
+      // Esau's open-ended bar does not move the computed boundary: it
+      // is excluded from computed_end's max() because deathAm is null.
+      expect(data.computedEndAm, 2369);
+      expect(data.spanEndAm, 4098);
+    });
+
     // Pins the four-verse chain (Gen 41:46 + 41:53 + 45:6 + 47:9 = 91,
     // Jacob's age at Joseph's birth; Gen 50:22/50:26 = Joseph's 110-year
     // lifespan) AND cross-checks it against assets/family_tree.json,
@@ -2349,13 +2397,15 @@ void main() {
       // now — Isaac and Jacob's ages are stated as directly as Genesis
       // 11's, and Joseph's is the chain's first derived link — so this
       // pins the chain's actual end (Joseph), not a fixed "past
-      // Abraham" or "past Jacob" claim. 25, not 23: Ishmael is a branch
+      // Abraham" or "past Jacob" claim. 26, not 23: Ishmael is a branch
       // off Abraham, not a further link, so he adds a lifeline without
       // moving the chain's end; Sarah is a further branch again, anchored
       // on Isaac's birth rather than a father's begetting age (see
       // CHILD_ANCHORED in tools/build_bible_chronology.py), so she too
-      // adds a lifeline without moving it.
-      expect(data.lifelines, hasLength(25));
+      // adds a lifeline without moving it; Esau is a third branch, off
+      // Isaac this time, open-ended because Scripture never gives his
+      // death age (see OPEN_ENDED), and he does not move it either.
+      expect(data.lifelines, hasLength(26));
       expect(data.lifelines.first.personId, 'adam');
       final byId = {for (final l in data.lifelines) l.personId};
       expect(byId, contains('abraham'));
@@ -2372,11 +2422,23 @@ void main() {
                 'draws from',
           );
         }
+        // Esau is the one exception: his death age is never stated
+        // (see OPEN_ENDED in tools/build_bible_chronology.py), and a
+        // null deathAm does not move the computed boundary — it is
+        // excluded from the max() below by construction (computed_end
+        // in the generator).
+        if (l.personId == 'esau') {
+          expect(l.deathAm, isNull);
+          continue;
+        }
         expect(l.deathAm, isNotNull);
         expect(l.deathAm, lessThanOrEqualTo(data.computedEndAm));
       }
       expect(
-        data.lifelines.map((l) => l.deathAm!).reduce((a, b) => a > b ? a : b),
+        data.lifelines
+            .map((l) => l.deathAm)
+            .whereType<int>()
+            .reduce((a, b) => a > b ? a : b),
         data.computedEndAm,
         reason: 'the computed boundary must be read off the bars',
       );
@@ -3355,13 +3417,18 @@ void main() {
           reason: 'the default view must be exactly what it was');
     });
 
-    test('the right-hand end folds every row, because no bar is there',
-        () {
+    test(
+        'the right-hand end folds every row except Esau, whose open-ended '
+        'bar is genuinely still there', () {
       // AM 2187 is 53% of the way along a 4,098-year axis, so the last
-      // tenth of it — Rome, the Gospels, Patmos — contains no bar at
-      // all. That is the defect: twenty names and no bars.
+      // tenth of it — Rome, the Gospels, Patmos — contains no CLOSED bar
+      // at all. Esau is the one exception, and correctly so: his death
+      // age is never stated (see OPEN_ENDED in
+      // tools/build_bible_chronology.py), so `endAm()` gives him
+      // spanEndAm and his bar fades out across the whole rest of the
+      // axis instead of stopping — see chronology_chart.dart's `_lane`.
       final p = plan(0.9, 1.0);
-      expect(p.any((v) => v), isFalse, reason: 'in view: ${named(p)}');
+      expect(named(p), 'esau', reason: 'in view: ${named(p)}');
     });
 
     test('the left-hand end keeps the rows that are actually there', () {
@@ -3431,8 +3498,16 @@ void main() {
 
     test('a row that is out stays out until it really arrives', () {
       final cold = plan(0.9, 1.0);
-      expect(plan(0.9, 1.0, previous: cold).any((v) => v), isFalse,
-          reason: 'hysteresis must not resurrect a folded row');
+      final warm = plan(0.9, 1.0, previous: cold);
+      // Esau is genuinely in view on both calls (see the test above) —
+      // that is not a resurrection, he never left. Every other row must
+      // still be folded.
+      for (var i = 0; i < warm.length; i++) {
+        if (data.lifelines[i].personId == 'esau') continue;
+        expect(warm[i], isFalse,
+            reason: 'hysteresis must not resurrect a folded row: '
+                '${data.lifelines[i].personId}');
+      }
     });
   });
 
@@ -3461,10 +3536,20 @@ void main() {
 
       await viewAt(tester, data.spanEndAm, years: 800);
 
-      // The whole column folds into one band, labelled with the count
-      // and the reason. Not blank, not gone: twenty rows, named.
-      expect(find.text('${data.lifelines.length} not in view'),
-          findsOneWidget);
+      // Every row folds except Esau's: his bar has no stated death (see
+      // OPEN_ENDED in tools/build_bible_chronology.py), so it is still
+      // genuinely in view here — faded almost to nothing, but there.
+      // The other 25 fold into consecutive bands above and below his
+      // row, so this sums whatever band texts are on screen rather than
+      // assuming there is exactly one.
+      final foldTexts = find.textContaining(' not in view').evaluate();
+      final folded = foldTexts.fold<int>(
+          0, (a, e) => a + int.parse((e.widget as Text).data!.split(' ')[0]));
+      expect(folded, data.lifelines.length - 1,
+          reason: 'fold band texts: '
+              '${foldTexts.map((e) => (e.widget as Text).data).toList()}');
+      expect(find.text('Esau'), findsWidgets,
+          reason: 'the one row that should stay unfolded');
       // And the chart is now a fraction of its height. This is the
       // defect: it used to be all 597 pt of it, most of it empty.
       expect(plotHeight(tester), lessThan(tall1x * 0.45),
@@ -4422,15 +4507,26 @@ void main() {
         (tester) async {
       await pumpChart(tester, size: tall);
       await viewAt(tester, data.spanEndAm, years: 800);
-      final fold = find.text('${data.lifelines.length} not in view');
-      expect(fold, findsOneWidget);
+      // Esau's open-ended bar (see OPEN_ENDED) is genuinely in view
+      // here, splitting the other 25 rows' fold into bands above and
+      // below his own unfolded row. Tap the LARGER one — that is the
+      // one that actually holds Adam (adam..isaac, 22 rows), not
+      // whichever band happens to be found first.
+      final foldTexts = find
+          .textContaining(' not in view')
+          .evaluate()
+          .map((e) => (e.widget as Text).data!)
+          .toList();
+      expect(foldTexts, isNotEmpty);
+      final target = foldTexts.reduce((a, b) =>
+          int.parse(a.split(' ')[0]) >= int.parse(b.split(' ')[0]) ? a : b);
 
-      await tester.tap(fold);
+      await tester.tap(find.text(target));
       await tester.pumpAndSettle();
 
       // The way back is the same mechanism a "Jump to" chip uses: it
       // scrolls the plot to where those bars are, and they unfold.
-      expect(find.text('${data.lifelines.length} not in view'), findsNothing);
+      expect(find.text(target), findsNothing);
       expect(find.text('Adam'), findsWidgets);
       expect(tester.takeException(), isNull);
     });
@@ -4439,7 +4535,11 @@ void main() {
         (tester) async {
       await pumpChart(tester, locale: 'zh-Hans', size: const Size(402, 900));
       await viewAt(tester, data.spanEndAm, years: 400);
-      expect(find.textContaining('在视图外'), findsOneWidget);
+      // Esau's open-ended bar (see OPEN_ENDED) is genuinely in view at
+      // this end, splitting the rest of the fold into two bands — one
+      // above his row, one below — rather than the single band there
+      // used to be, so this only checks that folding happened at all.
+      expect(find.textContaining('在视图外'), findsWidgets);
       expect(tester.takeException(), isNull);
       await viewAt(tester, 0, years: 400);
       await tester.pump(const Duration(milliseconds: 60));

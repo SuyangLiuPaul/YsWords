@@ -189,6 +189,18 @@ CHAIN = [
     # one generation further than Genesis 11 alone — see the module
     # docstring.
     ("isaac",       "abraham",     100,   180,   ["Genesis 21:5"],                  ["Genesis 35:28"]),
+    # Esau is CHAIN's second fork: Isaac's son but not Jacob's ancestor,
+    # so his row shares Isaac's begetting-age link without feeding
+    # anything after it — the same shape Ishmael's row takes off
+    # Abraham above. Genesis 25:26 dates both twins in the one verse
+    # ("she bare them"), so Esau's begetting age is Jacob's own (60);
+    # his own death age is never stated anywhere in Scripture — 25:26
+    # gives only the birth, 35:29 buries him alongside Jacob at Isaac's
+    # death with no age given, and 36:1-43 is his genealogy, again
+    # without one — so this is the chart's first OPEN_ENDED row (see
+    # below). Placed here, ahead of Jacob, for birth order (Genesis
+    # 25:25: "and after that came his brother out").
+    ("esau",        "isaac",       60,    None,  ["Genesis 25:26"],                 []),
     ("jacob",       "isaac",       60,    147,   ["Genesis 25:26"],                 ["Genesis 47:28"]),
     # Jacob's age at Joseph's birth (91) is not stated by any single
     # verse — it is CHAINED: Joseph was 30 before Pharaoh (41:46) + 7
@@ -335,6 +347,38 @@ DERIVED_PEOPLE = {
     },
 }
 
+# Custom derivation prose for CHAIN rows whose death age Scripture never
+# gives (see OPEN_ENDED below) — never the generic "X lived N years"
+# phrasing the `else` branch below uses, which unconditionally formats
+# `lived` with %d and would crash on a None. The opening clause keeps
+# the same "X was N when Y was born" shape the generic branch and
+# DERIVED_PEOPLE both use, so `derivationAgeDefects` in
+# test/bible_chronology_test.dart — which greps that exact shape for
+# the begetting age — still finds the number; only the closing sentence
+# changes, to state plainly that the death year is not given rather
+# than naming one.
+OPEN_ENDED_DERIVATION = {
+    "esau": {
+        "en": (
+            "%s was %d when %s was born (%s) — the same verse also "
+            "dates Jacob's birth, since they were twins. Scripture "
+            "never records %s's death age, so this bar is drawn "
+            "open-ended: the chart is saying it does not know, not "
+            "that he never died."
+        ),
+        "hans": (
+            "%s %d 岁生%s（%s）——同一节经文也是雅各的出生年，因为他们是"
+            "双生子。经文没有记载%s哪年去世，因此这根横条画成开放式："
+            "本图是在说它不知道，不是说他从未离世。"
+        ),
+        "hant": (
+            "%s %d 歲生%s（%s）——同一節經文也是雅各的出生年，因為他們是"
+            "雙生子。經文沒有記載%s哪年去世，因此這根橫條畫成開放式："
+            "本圖是在說它不知道，不是說他從未離世。"
+        ),
+    },
+}
+
 # Which descent band each lifeline is drawn in.
 LINE_OF = {
     "adam": "sethite", "seth": "sethite", "enosh": "sethite",
@@ -353,17 +397,27 @@ LINE_OF = {
     # Ishmael is Abraham's son too, but not Isaac's line — the same
     # overclaim reusing "isaac_jacob" would make in the other direction.
     "ishmael": "ishmaelite",
+    # Esau is Isaac's son too, but not Jacob's line — the same overclaim
+    # reusing "isaac_jacob" would make for Esau that it already avoids
+    # for Ishmael, in the same direction. Genesis 36:1,8 states outright
+    # "Esau, who is Edom," so the line takes his descendants' own name
+    # rather than an inferred one.
+    "esau": "edomite",
     # Sarah is not a further link in anyone's begetting chain — see
     # CHILD_ANCHORED — so none of the descent-line labels above fit her
     # either.
     "sarah": "matriarchs",
 }
 
-# People whose death year Scripture never gives are drawn open-ended,
-# not guessed at. Nobody in CHAIN is in this state today; the flag
-# exists so a later iteration can add Ham, Japheth and others whose
-# lifespan Scripture never states.
-OPEN_ENDED = set()
+# People whose BIRTH Scripture states but whose death year it never
+# gives are drawn open-ended, not guessed at. That needs a stated
+# birth — it is not the same gap as Ham and Japheth (see UNDRAWN
+# below), whom Scripture never ages at all, so there is nothing to
+# plot for them even open-ended. Esau is the first and, for now, only
+# member: Genesis 25:26 states his birth (twin to Jacob's — see CHAIN);
+# 35:29 and 36:1-43 record his life and lineage without ever giving a
+# death age.
+OPEN_ENDED = {"esau"}
 
 # Chinese book names used when phrasing the derivation sentences.
 BOOK_ZH = {
@@ -513,10 +567,28 @@ LINES = [
         "nameZhHans": "以实玛利的家系",
         "nameZhHant": "以實瑪利的家系",
     },
+    # The chart's second fork: Esau branches off Isaac rather than
+    # continuing toward Jacob, the same shape Ishmael's fork off Abraham
+    # takes above. Genesis 36:1,8 names the line outright — "Esau, who
+    # is Edom" — so it is not an inferred label. A muted olive-green,
+    # checked by RGB distance against all four colours above AND the
+    # eight ERA_STYLE hues at both the light-theme value and the
+    # `_readable()` dark-theme lerp toward white (chronology_chart.dart):
+    # nearest neighbour either way is "sethite" (#6B5E3F, which the
+    # antediluvian era band also uses) — ~68 in RGB-distance terms in
+    # light mode, ~41 in dark mode's 40%-toward-white lerp, the same
+    # ~0.6 scaling the ishmaelite and matriarchs comments document.
+    {
+        "id": "edomite",
+        "colorHex": "#7A9E2D",
+        "nameEn": "Esau's line (Edom)",
+        "nameZhHans": "以扫的家系（以东）",
+        "nameZhHant": "以掃的家系（以東）",
+    },
     # Sarah is not a line of descent at all — a single bar, anchored on
     # her son's birth rather than a father's begetting age (see
     # CHILD_ANCHORED). A violet hue, checked by RGB distance against all
-    # four lines above AND the eight ERA_STYLE hues at both brightnesses
+    # five lines above AND the eight ERA_STYLE hues at both brightnesses
     # `_readable()` produces (chronology_chart.dart): nearest neighbour
     # either way is "exile" purple (#5F3F86) — ~74 in RGB-distance terms
     # in light mode, where `_readable()` leaves colours untouched; dark
@@ -709,6 +781,16 @@ def build():
             der_en = tpl["en"] % (lived, ", ".join(dref))
             der_hans = tpl["hans"] % (lived, zh_refs(dref, False))
             der_hant = tpl["hant"] % (lived, zh_refs(dref, True))
+        elif pid in OPEN_ENDED_DERIVATION:
+            tpl = OPEN_ENDED_DERIVATION[pid]
+            der_en = tpl["en"] % (fname, begat, person["name"],
+                                   ", ".join(bref), person["name"])
+            der_hans = tpl["hans"] % (fzh, begat, person["nameZhHans"],
+                                       zh_refs(bref, False),
+                                       person["nameZhHans"])
+            der_hant = tpl["hant"] % (fzt, begat, person["nameZhHant"],
+                                       zh_refs(bref, True),
+                                       person["nameZhHant"])
         else:
             der_en = ("%s was %d when %s was born (%s); %s lived %d years "
                       "(%s)." % (fname, begat, person["name"],
@@ -749,6 +831,13 @@ def build():
             # mismatch propagated down one chain — see CONTESTED_NOTE
             # for where it first shows). Sarah gets the identical note
             # below, once her CHILD_ANCHORED birth year is computed.
+            # Esau is deliberately NOT in this tuple: `two_scale_note`
+            # subtracts `person["deathYear"]`, and family_tree.json's
+            # esau record has no such key — it would raise, not silently
+            # fudge, which is the point. Skipping the note is the honest
+            # option per OPEN_ENDED_DERIVATION's own close; his birth
+            # carries the same ~170-year mismatch as Jacob's, but there
+            # is no death figure on either scale to contrast it with.
             entry.update(two_scale_note(person, birth, death))
 
         lifelines.append(entry)
