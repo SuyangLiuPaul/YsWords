@@ -623,6 +623,44 @@ UNDRAWN = {
     ),
 }
 
+# A third, distinct class from UNDRAWN above: these are not nameless or
+# ageless. Scripture states each lifespan plainly — the gap is that no
+# verse states the father's age at the birth, so there is no year to
+# anchor the bar's left edge on. Six lifespans, verified individually
+# against assets/kjv.json rather than assumed from the pattern.
+UNANCHORED = {
+    "en": (
+        "Exodus 6:16 gives Levi's 137 years, Exodus 6:18 his son "
+        "Kohath's 133, and Exodus 6:20 Kohath's son Amram's 137 — "
+        "three more lifespans in the same passage. Three more follow "
+        "the same pattern: Moses died at 120 (Deuteronomy 34:7), Aaron "
+        "at 123 (Numbers 33:39), Joshua at 110 (Joshua 24:29). None of "
+        "the six is drawn here. The reason is not that Scripture is "
+        "silent on their years — it plainly is not — but that no "
+        "verse states how old their father was when they were born; "
+        "Amram's age at Moses' birth, for instance, is never given, "
+        "so there is no birth year to anchor a bar on."
+    ),
+    "zh-Hans": (
+        "出埃及记 6:16 说利未活了 137 年，6:18 说他的儿子哥辖活了 133 年，"
+        "6:20 说哥辖的儿子暗兰活了 137 年，同一段经文又列出三笔岁数；后面"
+        "还有三位同样留下了岁数：摩西死时 120 岁（申命记 34:7）、亚伦死时 "
+        "123 岁（民数记 33:39）、约书亚死时 110 岁（约书亚记 24:29）。这"
+        "六位都没有画在图上。原因不是经文没提他们的岁数——分明是提了——而"
+        "是没有一节经文说他们出生时父亲几岁；譬如暗兰生摩西时几岁，经文"
+        "从未交代，因此没有出生年可供横条起点。"
+    ),
+    "zh-Hant": (
+        "出埃及記 6:16 說利未活了 137 年，6:18 說他的兒子哥轄活了 133 年，"
+        "6:20 說哥轄的兒子暗蘭活了 137 年，同一段經文又列出三筆歲數；後面"
+        "還有三位同樣留下了歲數：摩西死時 120 歲（申命記 34:7）、亞倫死時 "
+        "123 歲（民數記 33:39）、約書亞死時 110 歲（約書亞記 24:29）。這"
+        "六位都沒有畫在圖上。原因不是經文沒提他們的歲數——分明是提了——而"
+        "是沒有一節經文說他們出生時父親幾歲；譬如暗蘭生摩西時幾歲，經文"
+        "從未交代，因此沒有出生年可供橫條起點。"
+    ),
+}
+
 
 def marker(mid, am, era, refs, en, hans, hant):
     return {
@@ -1091,6 +1129,7 @@ def build():
             ) % len(events),
             "computedNote": COMPUTED_NOTE,
             "undrawnLines": UNDRAWN,
+            "unanchoredLifespans": UNANCHORED,
         },
         "schemes": SCHEMES,
         "lines": LINES,

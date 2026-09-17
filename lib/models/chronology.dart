@@ -424,6 +424,14 @@ class ChronologyData {
   /// draw, and why. Shown in the legend, not hidden in a tooltip.
   final Map<String, String> undrawnLines;
 
+  /// Trilingual sentence naming lifespans Scripture states outright but
+  /// this chart still cannot place — a third class, distinct from
+  /// [undrawnLines]: the person is named and their lifespan is stated
+  /// (Levi, Kohath, Amram, Moses, Aaron, Joshua), but no verse gives
+  /// their father's age at their birth, so there is no year to anchor
+  /// the bar's left edge on.
+  final Map<String, String> unanchoredLifespans;
+
   /// Trilingual explanation of the computed/placed boundary. Shown on
   /// the chart, not in a tooltip.
   final Map<String, String> computedNote;
@@ -441,6 +449,7 @@ class ChronologyData {
     required this.events,
     required this.contested,
     required this.undrawnLines,
+    required this.unanchoredLifespans,
     required this.computedNote,
   });
 
@@ -490,6 +499,9 @@ class ChronologyData {
   }
 
   String localizedUndrawn(String locale) => _localeMap(undrawnLines, locale);
+
+  String localizedUnanchored(String locale) =>
+      _localeMap(unanchoredLifespans, locale);
 
   /// Everyone alive in [am], in chart order.
   List<Lifeline> aliveAt(int am) =>
@@ -542,6 +554,13 @@ class ChronologyData {
           contested == null ? null : ChronologyContested.fromJson(contested),
       undrawnLines:
           ((meta['undrawnLines'] as Map?) ?? const {}).map<String, String>(
+        (k, v) => MapEntry(k.toString(), v.toString()),
+      ),
+      // Older builds of the asset predate this note; an empty map keeps
+      // them rendering rather than throwing — localizedUnanchored then
+      // returns '', which the legend widget checks before drawing a row.
+      unanchoredLifespans: ((meta['unanchoredLifespans'] as Map?) ?? const {})
+          .map<String, String>(
         (k, v) => MapEntry(k.toString(), v.toString()),
       ),
       computedNote:

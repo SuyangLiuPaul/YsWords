@@ -55,6 +55,7 @@ void main() {
   late ChronologyData data;
   late Map<String, dynamic> raw;
   late Map<String, Map<String, dynamic>> familyTree;
+  late List kjv;
 
   setUpAll(() {
     raw = json.decode(
@@ -68,7 +69,25 @@ void main() {
       for (final p in (fam['people'] as List).cast<Map<String, dynamic>>())
         p['id'] as String: p,
     };
+    kjv = json.decode(File('assets/kjv.json').readAsStringSync()) as List;
   });
+
+  /// `book`/`chapter`/`verse` straight out of `assets/kjv.json` — the
+  /// same asset the reader sees — so a future edit to that text (a
+  /// correction, a versification fix) is what this test actually
+  /// tracks, not a copy of the text frozen at write time.
+  String kjvVerseText(String book, int chapter, int verse) {
+    final row = kjv.cast<Map>().firstWhere(
+          (r) =>
+              r['book'] == book &&
+              r['chapter'] == '$chapter' &&
+              r['verse'] == '$verse',
+          orElse: () =>
+              throw StateError('$book $chapter:$verse missing from '
+                  'assets/kjv.json'),
+        );
+    return row['text'] as String;
+  }
 
   // ── fatherId — pure helpers, operating on whatever list of lifelines
   // they're handed. The tests below feed both the real loaded asset
@@ -1001,6 +1020,49 @@ void main() {
       for (final locale in const ['en', 'zh-Hans', 'zh-Hant']) {
         expect(data.localizedUndrawn(locale), isNotEmpty,
             reason: 'no $locale note about the lines that are NOT drawn');
+      }
+    });
+
+    // A third class, distinct from the undrawn-lines note above: Levi,
+    // Kohath, Amram, Moses, Aaron and Joshua all have a lifespan
+    // Scripture states outright, but no verse gives their father's age
+    // at their birth, so there is no year to anchor a bar on.
+    test(
+        'the unanchored-lifespans note is declared in all three locales',
+        () {
+      for (final locale in const ['en', 'zh-Hans', 'zh-Hant']) {
+        expect(data.localizedUnanchored(locale), isNotEmpty,
+            reason: 'no $locale note about lifespans this chart cannot '
+                'place');
+      }
+    });
+
+    test(
+        'every lifespan the unanchored-lifespans note cites matches '
+        'assets/kjv.json, and every reference it names is quoted', () {
+      const cites = [
+        ('Exodus', 6, 16, 'thirty and seven years', 137, 'Exodus 6:16'),
+        ('Exodus', 6, 18, 'thirty and three years', 133, 'Exodus 6:18'),
+        ('Exodus', 6, 20, 'thirty and seven years', 137, 'Exodus 6:20'),
+        ('Deuteronomy', 34, 7, 'hundred and twenty years old', 120,
+            'Deuteronomy 34:7'),
+        ('Numbers', 33, 39, 'hundred and twenty and three years old', 123,
+            'Numbers 33:39'),
+        ('Joshua', 24, 29, 'hundred and ten years old', 110, 'Joshua 24:29'),
+      ];
+      final en = data.localizedUnanchored('en');
+      for (final (book, chapter, verse, versePhrase, numeral, ref)
+          in cites) {
+        expect(kjvVerseText(book, chapter, verse), contains(versePhrase),
+            reason: '$ref no longer says "$versePhrase" in '
+                'assets/kjv.json — the note\'s figure needs re-deriving');
+        expect(en, contains(ref),
+            reason: 'the English note does not cite $ref');
+        for (final locale in const ['en', 'zh-Hans', 'zh-Hant']) {
+          expect(data.localizedUnanchored(locale), contains('$numeral'),
+              reason: 'the $locale note does not cite the age $numeral, '
+                  'from $ref');
+        }
       }
     });
 

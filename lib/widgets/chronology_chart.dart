@@ -1318,7 +1318,7 @@ class _ChronologyChartState extends State<ChronologyChart> {
                                   brightness: Theme.of(context).brightness,
                                   scheme: scheme,
                                   boundaryLabel: _s('chronologyComputedEnds',
-                                      'Genesis 5 & 11 ages end here'),
+                                      "Scripture's chain of ages ends here"),
                                   contestedLabel: _s('chronologyContestedLabel',
                                       'The two scales disagree here'),
                                 ),
@@ -2701,6 +2701,17 @@ class _ChronologyChartState extends State<ChronologyChart> {
             color: scheme.onSurface.withValues(alpha: 0.65),
           ),
         ),
+        if (widget.data.localizedUnanchored(widget.locale).isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            widget.data.localizedUnanchored(widget.locale),
+            style: TextStyle(
+              fontSize: 11.5,
+              height: 1.6,
+              color: scheme.onSurface.withValues(alpha: 0.65),
+            ),
+          ),
+        ],
         const SizedBox(height: 14),
         // The computed/placed key. It is a SECOND statement of a
         // distinction the chart already makes in the drawing — solid
@@ -2756,8 +2767,8 @@ class _ChronologyChartState extends State<ChronologyChart> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '${_s('chronologyComputedEnds', 'Genesis 5 & 11 ages end '
-                    'here')} · '
+                '${_s('chronologyComputedEnds', "Scripture's chain of "
+                    'ages ends here')} · '
                 '${formatChronologyYear(widget.data.computedEndAm, widget.data.activeScheme, widget.locale)}',
                 style: TextStyle(
                   fontSize: 12,

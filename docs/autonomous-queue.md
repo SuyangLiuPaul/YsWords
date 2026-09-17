@@ -15783,6 +15783,35 @@ has never seen this repo.
       predates this slice and is unrelated to Joseph — filed below
       rather than fixed inline, since it is outside this task's scope.
 
+      **A third class, distinct from `undrawnLines`, 2026-09-17.** Levi,
+      Kohath, Amram, Moses, Aaron and Joshua each have a lifespan Scripture
+      states outright (Exodus 6:16/18/20, Deuteronomy 34:7, Numbers 33:39,
+      Joshua 24:29), but no verse gives their father's age at their birth,
+      so there is no birth year to anchor a bar's left edge on — none of
+      the six is drawn. A `_meta.unanchoredLifespans` note in all three
+      locales names them and says why, worded narrowly ("no verse states
+      the father's age") rather than "Scripture offers no anchor" (Exodus
+      12:40's 430 years is a candidate anchor the Masoretic and LXX/
+      Galatians 3:17 read differently — not this note's business to
+      settle). This landed a picked-up-but-twice-abandoned slice
+      (`queue:17072` recurrences eighteen and nineteen, below): the
+      asset/code/test diff was already sitting in the tree from two prior
+      stages, this iteration only needed to land it. Landing surfaced one
+      real defect in that inherited diff — `test/bible_chronology_test.dart`
+      pins each citation as an exact substring (`contains('Exodus 6:18')`
+      etc.), but the inherited note text cited the passage as a single
+      range, "Exodus 6:16-20", which contains "Exodus 6:16" but not
+      "Exodus 6:18" or "Exodus 6:20" as substrings. Fixed by citing each
+      verse individually in `tools/build_bible_chronology.py`'s `UNANCHORED`
+      (en: "Exodus 6:16 gives Levi's 137 years, Exodus 6:18 his son
+      Kohath's 133, and Exodus 6:20 Kohath's son Amram's 137 …"; zh-Hans/
+      zh-Hant reworded to match), then regenerated `assets/
+      bible_chronology.json` from the builder — diff stayed the same five
+      additive lines. `flutter analyze` clean; `test/
+      bible_chronology_test.dart` (128 tests) passes in the foreground,
+      including the three-locale declaration test and the live
+      `assets/kjv.json` verse-text/reference check.
+
 - [x] **`build_bible_chronology.py`'s `_meta.description` says "98
       events"; the generator emits 93.** Found 2026-09-17 while adding
       the Joseph lifeline (entry above). `DUPLICATES` dedupes 5 timeline
@@ -17428,6 +17457,25 @@ so the bundle-size answer stays on the record.
       sites (international + CHINA_MODE), verified `version.json` on
       each, committed as `7155f4fd`, pushed, and watched CI run
       `35092044752` to **success**. No prod deploy.
+
+      **Eighteenth and nineteenth recurrence, both 2026-09-17, same
+      chronology slice (`queue:13907`).** 19:39:53 stage 2 ended rc=0
+      saying "I'll pause here and wait for the background test task to
+      complete" — nothing committed. The 20:47 plan then told the next
+      stage explicitly to run the suite in the foreground, "backgrounding
+      it is the exact failure that cost the last iteration"; the 20:50:25
+      stage ended rc=0 anyway saying it would "wait for the completion
+      notification" — nothing committed, again. Both left the same five
+      files (`assets/bible_chronology.json`, `lib/models/chronology.dart`,
+      `lib/widgets/chronology_chart.dart`, `test/bible_chronology_test.dart`,
+      `tools/build_bible_chronology.py`) sitting uncommitted for a third
+      stage to inherit. This 21:58 stage ran `flutter test
+      test/bible_chronology_test.dart` as one foreground Bash call, found
+      and fixed a genuine defect in the inherited diff (see `queue:13907`
+      above), then committed and pushed before running the full suite —
+      same conclusion as every prior recurrence: the fix is in
+      `run.sh`/`prompt.md` under `~/Library/Application Support/
+      yswords-loop/`, outside this repo, not touched here.
 
 - [x] **The `git secrets` hooks are LIVE as of 2026-08-23.**
       `git-secrets` 1.3.0 installed via brew; hooks chmod +x; an
