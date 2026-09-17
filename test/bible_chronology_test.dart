@@ -677,7 +677,7 @@ void main() {
           l.personId == 'shem'
               ? withDerivationEn(
                   shem,
-                  shem.derivationEn.replaceFirst('was 502 when', 'was 5 when'),
+                  shem.derivationEn.replaceFirst('= 502 when', '= 5 when'),
                 )
               : l,
       ];
@@ -2344,8 +2344,8 @@ void main() {
     test('lifelines are still bounded by a continuous chain of ages', () {
       // The span doubled; the BARS did not, past where Scripture stops
       // giving a continuous chain of ages — directly stated ages for
-      // everyone up to Jacob, and Joseph's alone chained together from
-      // four verses rather than a single one. That boundary moved twice
+      // most, and Shem's, Abraham's and Joseph's each chained together
+      // from multiple verses rather than a single one. That boundary moved twice
       // now — Isaac and Jacob's ages are stated as directly as Genesis
       // 11's, and Joseph's is the chain's first derived link — so this
       // pins the chain's actual end (Joseph), not a fixed "past

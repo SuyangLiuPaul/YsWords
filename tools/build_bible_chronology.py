@@ -8,9 +8,10 @@ Two layers, one axis:
     states, chapters 5 and 11 for Adam → Abraham, 16 for Ishmael, and
     21, 25 and 35/47 for Isaac and Jacob, and 41, 45, 47 and 50 for
     Joseph (Adam → Joseph, with Ishmael a branch off Abraham). Every
-    year traces to a verse — directly, for everyone except Joseph; his
-    alone is chained together from four verses, since his father's age
-    at his birth Genesis never states outright (see CHAIN).
+    year traces to a verse — directly, for most; Shem's, Abraham's and
+    Joseph's begetting-age figures are each chained together from
+    multiple verses instead, since no single verse states outright
+    what age their father was (see CHAIN and DERIVED_PEOPLE).
   * EVENTS, read from `assets/bible_timeline.json` and PLACED on the
     same Anno Mundi axis through the 4004 BC anchor, so the chart spans
     Creation → Revelation exactly as the event list on the same page
@@ -153,7 +154,14 @@ CHAIN = [
     ("methuselah",  "enoch",       65,    969,   ["Genesis 5:21"],                   ["Genesis 5:27"]),
     ("lamech",      "methuselah",  187,   777,   ["Genesis 5:25"],                   ["Genesis 5:31"]),
     ("noah",        "lamech",      182,   950,   ["Genesis 5:28-29"],                ["Genesis 9:29"]),
-    ("shem",        "noah",        502,   600,   ["Genesis 5:32", "Genesis 11:10"],  ["Genesis 11:11"]),
+    # Noah's age when Shem was born is not Genesis 5:32's 500. That
+    # verse names Shem, Ham and Japheth together at Noah's 500th year;
+    # Genesis 11:10 states Shem was 100, two years after the Flood,
+    # when he begat Arphaxad — so Shem was 98 at the Flood, which
+    # Genesis 7:6 puts at Noah's 600th year, making Noah 600 - 98 = 502
+    # when Shem was born. See DERIVED_PEOPLE below.
+    ("shem",        "noah",        502,   600,   ["Genesis 5:32", "Genesis 7:6",
+                                                  "Genesis 11:10"],                 ["Genesis 11:11"]),
     ("arphaxad",    "shem",        100,   438,   ["Genesis 11:10"],                  ["Genesis 11:12", "Genesis 11:13"]),
     ("shelah",      "arphaxad",    35,    433,   ["Genesis 11:12"],                  ["Genesis 11:14", "Genesis 11:15"]),
     ("eber",        "shelah",      30,    464,   ["Genesis 11:14"],                  ["Genesis 11:16", "Genesis 11:17"]),
@@ -187,10 +195,11 @@ CHAIN = [
     # years of plenty (41:53) + 2 years of famine already passed when he
     # sent for his family (45:6) = 39, Joseph's age when Jacob entered
     # Egypt; Jacob was 130 at that entry (47:9); 130 - 39 = 91. See
-    # DERIVED_PEOPLE below — this is the one CHAIN link whose "begat"
-    # figure is derived rather than directly stated, and its derivation
-    # sentence says so instead of using the generic "X was N when Y was
-    # born" phrasing every other row gets.
+    # DERIVED_PEOPLE below — like Shem's and Abraham's rows above, this
+    # is a CHAIN link whose "begat" figure is derived rather than
+    # directly stated by a single verse, and its derivation sentence
+    # says so instead of using the generic "X was N when Y was born"
+    # phrasing the single-verse rows get.
     ("joseph",      "jacob",       91,    110,   ["Genesis 41:46", "Genesis 41:53",
                                                   "Genesis 45:6", "Genesis 47:9"],  ["Genesis 50:22", "Genesis 50:26"]),
 ]
@@ -249,6 +258,55 @@ CHILD_ANCHORED_DERIVATION = {
 # "computed from" and show the chain — never the generic "X was N when Y
 # was born" phrasing, which would misattribute the number to one verse.
 DERIVED_PEOPLE = {
+    "shem": {
+        "en": (
+            "Genesis 5:32 states Noah was 500 when he begat Shem, Ham "
+            "and Japheth together — a birth-order note, not Shem's own "
+            "birth year. Noah was 600 at the Flood (Genesis 7:6); Shem "
+            "was 100, two years after the Flood, when he begat "
+            "Arphaxad (Genesis 11:10), so Shem was 98 at the Flood, "
+            "and Noah was 600 − 98 = 502 when Shem was born. Shem "
+            "lived %d years (%s)."
+        ),
+        "hans": (
+            "创世记 5:32 说挪亚 500 岁生了闪、含、雅弗三个儿子，说的是出生"
+            "次序，不是闪本人的出生年。挪亚在洪水那年是 600 岁（创世记 "
+            "7:6）；闪在洪水后两年、100 岁时生了亚法撒（创世记 11:10），"
+            "可见闪在洪水那年是 98 岁——600 − 98 = 502，就是挪亚生闪时的"
+            "年岁。闪共活了 %d 年（%s）。"
+        ),
+        "hant": (
+            "創世記 5:32 說挪亞 500 歲生了閃、含、雅弗三個兒子，說的是出生"
+            "次序，不是閃本人的出生年。挪亞在洪水那年是 600 歲（創世記 "
+            "7:6）；閃在洪水後兩年、100 歲時生了亞法撒（創世記 11:10），"
+            "可見閃在洪水那年是 98 歲——600 − 98 = 502，就是挪亞生閃時的"
+            "年歲。閃共活了 %d 年（%s）。"
+        ),
+    },
+    "abraham": {
+        "en": (
+            "Genesis 11:26 states Terah was 70 when he begat Abram, "
+            "Nahor and Haran together — a birth-order note, not "
+            "Abram's own birth year. Terah died at 205 (Genesis "
+            "11:32); Abram left Haran at 75, after his father's death "
+            "(Genesis 12:4, Acts 7:4), so Terah was 205 − 75 = 130 "
+            "when Abraham was born. Abraham lived %d years (%s)."
+        ),
+        "hans": (
+            "创世记 11:26 说他拉 70 岁生了亚伯兰、拿鹤、哈兰三个儿子，说的"
+            "是出生次序，不是亚伯兰本人的出生年。他拉死时 205 岁（创世记 "
+            "11:32）；亚伯兰离开哈兰时 75 岁，是在父亲死后（创世记 "
+            "12:4、使徒行传 7:4）——205 − 75 = 130，就是他拉生亚伯拉罕时"
+            "的年岁。亚伯拉罕共活了 %d 年（%s）。"
+        ),
+        "hant": (
+            "創世記 11:26 說他拉 70 歲生了亞伯蘭、拿鶴、哈蘭三個兒子，說的"
+            "是出生次序，不是亞伯蘭本人的出生年。他拉死時 205 歲（創世記 "
+            "11:32）；亞伯蘭離開哈蘭時 75 歲，是在父親死後（創世記 "
+            "12:4、使徒行傳 7:4）——205 − 75 = 130，就是他拉生亞伯拉罕時"
+            "的年歲。亞伯拉罕共活了 %d 年（%s）。"
+        ),
+    },
     "joseph": {
         "en": (
             "Genesis never states Jacob's age when Joseph was born; it "
@@ -512,9 +570,10 @@ def marker(mid, am, era, refs, en, hans, hant):
 COMPUTED_NOTE = {
     "en": (
         "Left of this line every year is COMPUTED: it is the ages "
-        "Scripture states, chained together — directly, for everyone up "
-        "to and including Jacob, and by chaining four verses together "
-        "for Joseph — and each bar carries the arithmetic. Right of it "
+        "Scripture states, chained together — directly, for most; "
+        "Shem's, Abraham's and Joseph's are each chained together from "
+        "multiple verses instead — and each bar carries the "
+        "arithmetic. Right of it "
         "Scripture stops giving a continuous chain of ages, so there are "
         "no lifelines to draw — only events, PLACED on the BC/AD years "
         "of assets/bible_timeline.json. The ground fades out there for "
@@ -523,16 +582,16 @@ COMPUTED_NOTE = {
     ),
     "zh-Hans": (
         "此线以左，每一个年份都是「推算」出来的：把经文所记的岁数逐代相连而"
-        "得——雅各及以前各代直接见于经文，约瑟一代则是把四处经文串联推得——"
-        "每根横条都附着算式。此线以右，经文不再给出连续的年岁链条，因此没有"
+        "得——大多直接见于经文，闪、亚伯拉罕、约瑟三代则各自把多处经文串联"
+        "推得——每根横条都附着算式。此线以右，经文不再给出连续的年岁链条，因此没有"
         "生平横条可画——只有事件，按 assets/bible_timeline.json 的公元前后"
         "年份「定位」。那一段的底色会淡出，理由和没有记载卒年的横条淡出是同"
         "一个：本图在说它不知道。"
     ),
     "zh-Hant": (
         "此線以左，每一個年份都是「推算」出來的：把經文所記的歲數逐代相連而"
-        "得——雅各及以前各代直接見於經文，約瑟一代則是把四處經文串聯推得——"
-        "每根橫條都附著算式。此線以右，經文不再給出連續的年歲鏈條，因此沒有"
+        "得——大多直接見於經文，閃、亞伯拉罕、約瑟三代則各自把多處經文串聯"
+        "推得——每根橫條都附著算式。此線以右，經文不再給出連續的年歲鏈條，因此沒有"
         "生平橫條可畫——只有事件，按 assets/bible_timeline.json 的公元前後"
         "年份「定位」。那一段的底色會淡出，理由和沒有記載卒年的橫條淡出是同"
         "一個：本圖在說它不知道。"
@@ -925,10 +984,11 @@ def build():
             "description": (
                 "Two layers on one Anno Mundi axis. (1) LIFELINES — the "
                 "begetting ages Genesis states, chained from Adam to "
-                "Joseph: directly, for everyone up to and including "
-                "Jacob; by chaining four verses together for Joseph, "
-                "whose father's age at his birth Genesis never states "
-                "outright (see CHAIN in this file). Names from "
+                "Joseph: directly, for most; Shem's, Abraham's and "
+                "Joseph's are each chained together from multiple "
+                "verses instead, since no single verse states outright "
+                "what age their father was (see CHAIN in this file). "
+                "Names from "
                 "assets/family_tree.json, years recomputed from the "
                 "Masoretic ages and cross-checked against it. "
                 "(2) EVENTS — the same %d events the event list on this "
