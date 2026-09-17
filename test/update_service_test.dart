@@ -7,29 +7,53 @@ import 'package:yswords/services/update_service.dart';
 void main() {
   group('UpdateService.repo', () {
     // 2026-08-30: this string constant was 'SuyangLiuPaul/Yahweh\'s Words'
-    // for months — the real GitHub repo is 'SuyangLiuPaul/YsWords'. The
-    // wrong slug 404s, checkForUpdate() swallows every non-200 into a
-    // silent null, and the About tile has reported "couldn't check" for
-    // its entire life with no test ever failing. Pin the exact string so
-    // a future rename (of the app's DISPLAY name, which legitimately is
-    // "Yahweh's Words") can't leak back into this constant.
-    test('is the real GitHub repo slug, not the app display name', () {
-      expect(UpdateService.repo, 'SuyangLiuPaul/YsWords');
+    // for months — the wrong slug 404s, checkForUpdate() swallows every
+    // non-200 into a silent null, and the About tile reported "couldn't
+    // check" for its entire life with no test ever failing.
+    //
+    // 2026-09-18: the repository was renamed to `Yahwehs-Words`, so the
+    // literal this test pinned became the stale one — and a literal
+    // against a literal could never have caught that. It asks the
+    // CHECKOUT instead: whatever remote this working copy pushes to is
+    // the repository whose releases the updater must read. GitHub
+    // redirects an old name for a while, which is exactly what makes
+    // this failure quiet enough to need a test.
+    test('is the repository this checkout actually belongs to', () {
+      final config = File('.git/config').readAsStringSync();
+      final match = RegExp(r'github\.com[/:]([\w.-]+/[\w.-]+?)(?:\.git)?\s')
+          .firstMatch(config);
+      expect(match, isNotNull,
+          reason: 'no github remote in .git/config, so this test cannot '
+              'tell what the right answer is');
+      expect(UpdateService.repo, match!.group(1),
+          reason: 'the updater is asking GitHub about a different '
+              'repository than the one this code is pushed to');
     });
 
-    test('no source file under lib/ still carries the old slug', () {
-      final offenders = <String>[];
+    test('every repo slug under lib/ is one GitHub could resolve', () {
+      // This used to look for the literal string "SuyangLiuPaul/Yahweh",
+      // which was the broken slug — and on 2026-09-18 became the prefix
+      // of the CORRECT one (`Yahwehs-Words`), so the guard would have
+      // failed the rename it was meant to survive.
+      //
+      // What was actually wrong with the old value is that
+      // `Yahweh's Words` is not a repository name: an apostrophe and a
+      // space cannot appear in one. So that is what this asks.
+      final bad = <String>[];
+      final slug = RegExp('SuyangLiuPaul/([^\\s\'")]*)');
       for (final entity in Directory('lib').listSync(recursive: true)) {
         if (entity is! File || !entity.path.endsWith('.dart')) continue;
-        final content = entity.readAsStringSync();
-        if (content.contains("SuyangLiuPaul/Yahweh") ||
-            content.contains('SuyangLiuPaul%2FYahweh')) {
-          offenders.add(entity.path);
+        for (final m in slug.allMatches(entity.readAsStringSync())) {
+          final name = m.group(1) ?? '';
+          if (!RegExp(r'^[A-Za-z0-9._-]+$').hasMatch(name)) {
+            bad.add('${entity.path}: "$name"');
+          }
         }
       }
-      expect(offenders, isEmpty,
-          reason: 'these files still reference the 404ing repo slug: '
-              '$offenders');
+      expect(bad, isEmpty,
+          reason: 'a GitHub repository name is letters, digits, dot, dash '
+              'and underscore — these are not names, so they 404 and the '
+              'update check goes quiet: $bad');
     });
   });
 

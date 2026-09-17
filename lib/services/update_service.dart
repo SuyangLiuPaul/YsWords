@@ -70,7 +70,7 @@ class UpdateInfo {
 class UpdateService {
   UpdateService._();
 
-  static const String repo = 'SuyangLiuPaul/YsWords';
+  static const String repo = 'SuyangLiuPaul/Yahwehs-Words';
   static const String _latestApi =
       'https://api.github.com/repos/$repo/releases/latest';
   static const String releasesPage =

@@ -10,8 +10,8 @@
   <a href="https://yahwehword.com">
     <img alt="Live site" src="https://img.shields.io/badge/Live-yahwehword.com-0284c7?style=for-the-badge&logo=netlify&logoColor=white">
   </a>
-  <a href="https://github.com/SuyangLiuPaul/YsWords/releases/latest">
-    <img alt="Release" src="https://img.shields.io/github/v/release/SuyangLiuPaul/YsWords?style=for-the-badge&label=Release&color=22c55e">
+  <a href="https://github.com/SuyangLiuPaul/Yahwehs-Words/releases/latest">
+    <img alt="Release" src="https://img.shields.io/github/v/release/SuyangLiuPaul/Yahwehs-Words?style=for-the-badge&label=Release&color=22c55e">
   </a>
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.44.2-02569B?style=for-the-badge&logo=flutter&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/License-See%20LICENSE-555?style=for-the-badge">
@@ -40,7 +40,7 @@ Open <https://yahwehword.com> and start reading. Tap any verse to copy / highlig
 
 ### For developers — clone, run, ship
 ```bash
-git clone https://github.com/SuyangLiuPaul/YsWords
+git clone https://github.com/SuyangLiuPaul/Yahwehs-Words
 cd YsWords
 flutter pub get
 flutter run -d chrome
@@ -105,7 +105,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ## App Screenshots
 
-<p align="center"><sub>Captured on an iPhone 17 Pro (iOS 26.5). Current release <b>v1.4.190</b>. Download builds for every platform from <a href="https://github.com/SuyangLiuPaul/YsWords/releases/latest">Releases</a>; full release log in <a href="HANDOFF.md">HANDOFF.md</a>.</sub></p>
+<p align="center"><sub>Captured on an iPhone 17 Pro (iOS 26.5). Current release <b>v1.4.190</b>. Download builds for every platform from <a href="https://github.com/SuyangLiuPaul/Yahwehs-Words/releases/latest">Releases</a>; full release log in <a href="HANDOFF.md">HANDOFF.md</a>.</sub></p>
 
 <h3 align="center">Read &amp; study the Word</h3>
 
@@ -193,7 +193,7 @@ any APIs themselves**; everything is at the Firebase project level.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/SuyangLiuPaul/YsWords.git
+git clone https://github.com/SuyangLiuPaul/Yahwehs-Words.git
 cd YsWords
 
 # 2. Install Flutter dependencies

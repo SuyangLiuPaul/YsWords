@@ -9289,7 +9289,7 @@ has never seen this repo.
       2026-08-30. Fixed both preconditions that were fixable without the
       user: `repo` in `update_service.dart:46` was
       `'SuyangLiuPaul/Yahweh\'s Words'` (404) → now
-      `'SuyangLiuPaul/YsWords'` (200, tag `v1.4.6`) — also fixed the same
+      `'SuyangLiuPaul/Yahwehs-Words'` (200, tag `v1.4.6`) — also fixed the same
       stale slug in `about_page.dart:664` and
       `setup_instructions_card.dart:279`, which grep turned up alongside
       it. `kAppVersion`'s fallback in `app_version.dart` was `1.3.113`

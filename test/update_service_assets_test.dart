@@ -26,14 +26,14 @@ UpdateInfo _info(String downloadUrl) => UpdateInfo(
       currentVersion: '1.5.21',
       latestVersion: '1.5.22',
       downloadUrl: downloadUrl,
-      releaseUrl: 'https://github.com/SuyangLiuPaul/YsWords/releases/latest',
+      releaseUrl: 'https://github.com/SuyangLiuPaul/Yahwehs-Words/releases/latest',
     );
 
 void main() {
   group('UpdateInfo.hasApk', () {
     test('a real release asset is installable', () {
       expect(
-        _info('https://github.com/SuyangLiuPaul/YsWords/releases/download/'
+        _info('https://github.com/SuyangLiuPaul/Yahwehs-Words/releases/download/'
                 'v1.5.22/YsWords-Android-v1.5.22.apk')
             .hasApk,
         isTrue,
@@ -43,12 +43,12 @@ void main() {
     test("the release's own page is not — this is the window while the "
         'Android job is still running', () {
       expect(
-        _info('https://github.com/SuyangLiuPaul/YsWords/releases/tag/v1.5.22')
+        _info('https://github.com/SuyangLiuPaul/Yahwehs-Words/releases/tag/v1.5.22')
             .hasApk,
         isFalse,
       );
       expect(
-        _info('https://github.com/SuyangLiuPaul/YsWords/releases/latest')
+        _info('https://github.com/SuyangLiuPaul/Yahwehs-Words/releases/latest')
             .hasApk,
         isFalse,
       );

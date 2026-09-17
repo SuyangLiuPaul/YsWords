@@ -33,10 +33,10 @@
 // improve on the old behaviour or match it; it cannot break it.
 
 const REPOS = {
-	words: 'SuyangLiuPaul/YsWords',
-	sword: 'SuyangLiuPaul/SeekSparks',
+	words: 'SuyangLiuPaul/Yahwehs-Words',
+	sword: 'SuyangLiuPaul/Yahwehs-Sword',
 	world: 'SuyangLiuPaul/yahwehs-globe',
-	news: 'SuyangLiuPaul/yahwehs_world',
+	news: 'SuyangLiuPaul/News-Insight',
 };
 
 // Unauthenticated api.github.com allows 60 requests an hour per IP, and

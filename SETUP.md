@@ -24,7 +24,7 @@ design.
 
 | If you have… | Do this |
 | --- | --- |
-| nothing installed | Open <https://shell.cloud.google.com>, paste:<br>`bash <(curl -s https://raw.githubusercontent.com/SuyangLiuPaul/YsWords/main/scripts/enable-cloud-apis.sh)` |
+| nothing installed | Open <https://shell.cloud.google.com>, paste:<br>`bash <(curl -s https://raw.githubusercontent.com/SuyangLiuPaul/Yahwehs-Words/main/scripts/enable-cloud-apis.sh)` |
 | `gcloud` CLI installed | Run `bash scripts/enable-cloud-apis.sh` from the repo root |
 | prefer clicking | Use the in-app diagnostic — Settings → Account → "Run check" → "Open in Cloud Shell" button |
 

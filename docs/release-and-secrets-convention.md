@@ -7,10 +7,10 @@ app 也这样」「包括 secret 这些存在哪里 Drive 怎么存之类的」�
 
 | app | 仓库 | 线上 |
 |---|---|---|
-| 雅伟之言 YsWords | `SuyangLiuPaul/YsWords` | yahwehword.com |
-| 雅伟之剑 SeekSparks | `SuyangLiuPaul/SeekSparks` | sword.yahwehword.com |
+| 雅伟之言 YsWords | `SuyangLiuPaul/Yahwehs-Words` | yahwehword.com |
+| 雅伟之剑 SeekSparks | `SuyangLiuPaul/Yahwehs-Sword` | sword.yahwehword.com |
 | 雅伟之界 Yahweh's World | `SuyangLiuPaul/yahwehs-globe` | world.yahwehword.com |
-| 新闻洞见 News Insight | `SuyangLiuPaul/yahwehs_world` | newsinsight.yahwehword.com |
+| 新闻洞见 News Insight | `SuyangLiuPaul/News-Insight` | newsinsight.yahwehword.com |
 
 （最后一个的仓库名是旧的。没改：一改仓库地址、发布脚本和已经发出去的
 链接都要跟着动，而仓库名不面向用户。）

@@ -7,7 +7,7 @@
 #
 # Usage (in Google Cloud Shell — recommended; no install needed):
 #   1. Open https://shell.cloud.google.com
-#   2. Run: bash <(curl -s https://raw.githubusercontent.com/SuyangLiuPaul/YsWords/main/scripts/enable-cloud-apis.sh)
+#   2. Run: bash <(curl -s https://raw.githubusercontent.com/SuyangLiuPaul/Yahwehs-Words/main/scripts/enable-cloud-apis.sh)
 #
 # What this enables:
 #   • generativelanguage.googleapis.com → Gemini AI (word study + AI search)
@@ -39,7 +39,7 @@ gcloud CLI not found.
 
 Easiest path — use Google Cloud Shell instead (no install needed):
   1. Open: https://shell.cloud.google.com
-  2. Paste:  bash <(curl -s https://raw.githubusercontent.com/SuyangLiuPaul/YsWords/main/scripts/enable-cloud-apis.sh)
+  2. Paste:  bash <(curl -s https://raw.githubusercontent.com/SuyangLiuPaul/Yahwehs-Words/main/scripts/enable-cloud-apis.sh)
 
 Or install the CLI locally:
   https://cloud.google.com/sdk/docs/install

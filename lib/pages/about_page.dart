@@ -1044,7 +1044,7 @@ class _AppLicenseCard extends StatelessWidget {
   Future<void> _openRepo(BuildContext context) async {
     if (!LinkOpener.isAvailable) return;
     await LinkOpener.openOrWarn(
-        context, 'https://github.com/SuyangLiuPaul/YsWords');
+        context, 'https://github.com/SuyangLiuPaul/Yahwehs-Words');
   }
 
   @override
