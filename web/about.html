@@ -198,6 +198,50 @@
   a.gh:hover { color: var(--primary); }
   a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
+  /* ── why ──────────────────────────────────────────────────── */
+  .why {
+    background: var(--card); border: 1px solid var(--outline);
+    border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow);
+    margin: 0 0 3.25rem;
+  }
+  .why p { margin: 0 0 1rem; color: var(--muted); }
+  .why p:last-child { margin-bottom: 0; }
+  .why b { color: var(--ink); }
+  .sub { font-size: .9375rem; font-weight: 700; color: var(--ink);
+    margin: 0 0 .5rem; }
+  .sub + p { margin-bottom: 1.5rem; }
+  .why .sub:not(:first-child) { margin-top: .25rem; }
+  /* The one quotation on the page, given the weight of one. */
+  .verse {
+    margin: 1.5rem 0 0; padding: .875rem 0 .25rem 1.125rem;
+    border-left: 3px solid var(--p-container);
+  }
+  .verse p { font-size: 1.0625rem; color: var(--ink); margin: 0 0 .35rem; }
+  .verse cite { font-style: normal; font-size: .8125rem;
+    color: var(--faint); }
+
+  /* ── where the material comes from ────────────────────────── */
+  .sites { display: grid; gap: .625rem; grid-template-columns: 1fr;
+    margin: 0 0 1rem; }
+  @media (min-width: 44rem) { .sites { grid-template-columns: 1fr 1fr; } }
+  a.site {
+    display: flex; align-items: center; gap: .75rem; text-decoration: none;
+    background: var(--card); border: 1px solid var(--outline);
+    border-radius: 12px; padding: .75rem .875rem; color: inherit;
+    min-width: 0;
+  }
+  a.site:hover { border-color: var(--primary); }
+  /* A white ground for all six, not for taste: two of these files are
+     transparent line art and one is a black ichthys, which disappears
+     on a dark surface. White is the ground each site composites its own
+     icon onto. */
+  a.site img { border-radius: 8px; flex: none; background: #fff; }
+  .site-t { display: grid; gap: .1rem; min-width: 0; }
+  .site-n { font-weight: 600; font-size: .9375rem; }
+  .site-d { font-size: .8125rem; color: var(--muted); }
+  .site-h { font-size: .75rem; color: var(--faint); word-break: break-all; }
+  .sites-note { margin: 0 0 3.25rem; }
+
   /* ── contact ──────────────────────────────────────────────── */
   .contact {
     background: var(--card); border: 1px solid var(--outline);
@@ -254,7 +298,7 @@
   footer p { margin: 0; }
 
   @media (prefers-reduced-motion: no-preference) {
-    a.go, a.dl, a.gh, .mail, .seg button, button.send,
+    a.go, a.dl, a.gh, a.site, .mail, .seg button, button.send,
     .cform input, .cform textarea {
       transition: background-color .15s, color .15s, border-color .15s,
         filter .15s;
@@ -285,6 +329,42 @@
       <span data-l="en">Four free Bible tools on one domain, each doing one thing: <b>read</b>, <b>study</b>, <b>see</b>, <b>discern</b>. No charge, no advertising, no account needed. Open them in a browser, or install them on a phone or a desktop.</span>
     </p>
   </header>
+
+  <!-- 2026-09-17. The owner dictated this section; it is their words,
+       tightened rather than rewritten. The one thing added is the
+       reference for each quotation, because a page that says "the Bible
+       says" without saying where is asking to be taken on trust by
+       readers this project exists to hand the text to directly. -->
+  <h2><span data-l="hans">我们为什么做这些</span><span data-l="hant">我們為什麼做這些</span><span data-l="en">Why we make these</span></h2>
+  <div class="why">
+    <h3 class="sub"><span data-l="hans">先说那个名字</span><span data-l="hant">先說那個名字</span><span data-l="en">First, the name</span></h3>
+    <p>
+      <span data-l="hans">圣经里神的名字写作四个希伯来字母 <b>YHWH</b>。中文多半译成「耶和华」—— 那个读法是把 YHWH 的辅音和「我主」（אֲדֹנָי）的元音拼在一起念出来的，十六世纪才进入西方译本，并不是原来的读音。按学界对古代读法的重建，<b>雅伟</b>更接近祂自己所报的那个名字。所以这四个 app 都称祂雅伟。</span>
+      <span data-l="hant">聖經裡神的名字寫作四個希伯來字母 <b>YHWH</b>。中文多半譯成「耶和華」—— 那個讀法是把 YHWH 的子音和「我主」（אֲדֹנָי）的母音拼在一起唸出來的，十六世紀才進入西方譯本，並不是原來的讀音。按學界對古代讀法的重建，<b>雅偉</b>更接近祂自己所報的那個名字。所以這四個 app 都稱祂雅偉。</span>
+      <span data-l="en">God’s name in the Hebrew Bible is written with four letters, <b>YHWH</b>. English has long said “Jehovah” — a reading made by setting those consonants against the vowels of <i>Adonai</i> (“my Lord”), which entered Western Bibles only in the sixteenth century and was never how the name was said. The reconstruction closest to the original sound is <b>Yahweh</b>, and that is the name all four apps use.</span>
+    </p>
+
+    <h3 class="sub"><span data-l="hans">我们想做的事</span><span data-l="hant">我們想做的事</span><span data-l="en">What we are trying to do</span></h3>
+    <p>
+      <span data-l="hans">把人带到独一的真神雅伟面前；用我们做得到的最好方法，帮助人认识祂的话；并且让圣经对每一个人都是活的、读得下去的。</span>
+      <span data-l="hant">把人帶到獨一的真神雅偉面前；用我們做得到的最好方法，幫助人認識祂的話；並且讓聖經對每一個人都是活的、讀得下去的。</span>
+      <span data-l="en">To bring people to the one true God, Yahweh; to help them know His word by the best means we can manage; and to make the Bible living and worth reading, for anyone.</span>
+    </p>
+    <p>
+      <span data-l="hans">我们<b>不参与任何政治</b>，只关心神的国 —— 圣经说，我们是天上的国民（腓立比书 3:20）。</span>
+      <span data-l="hant">我們<b>不參與任何政治</b>，只關心神的國 —— 聖經說，我們是天上的國民（腓立比書 3:20）。</span>
+      <span data-l="en">We take <b>no part in politics</b>. Our concern is His Kingdom — Scripture says our citizenship is in heaven (Philippians 3:20).</span>
+    </p>
+
+    <blockquote class="verse">
+      <p>
+        <span data-l="hans">你的话是我脚前的灯，是我路上的光。</span>
+        <span data-l="hant">你的話是我腳前的燈，是我路上的光。</span>
+        <span data-l="en">Thy word is a lamp unto my feet, and a light unto my path.</span>
+      </p>
+      <cite><span data-l="hans">诗篇 119:105</span><span data-l="hant">詩篇 119:105</span><span data-l="en">Psalm 119:105</span></cite>
+    </blockquote>
+  </div>
 
   <h2><span data-l="hans">四个应用</span><span data-l="hant">四個應用</span><span data-l="en">The four</span></h2>
   <div class="apps">
@@ -378,6 +458,81 @@
     </article>
 
   </div>
+
+
+  <!-- 2026-09-17 「Also other links and references we use can also
+       mention there」. These six are the churches and ministries the
+       apps actually draw material from — the same six the song
+       catalogue is sourced from, credited here under the names they
+       call themselves.
+
+       The icons are the files `assets/song_sources/` already carries,
+       copied rather than re-fetched: each was taken from the site's own
+       declared icon on 2026-09-03 and its provenance is written down in
+       `lib/constants/song_source_icons.dart`. Serving them from here
+       also means this page makes no request to six other hosts, which
+       matters for the readers behind the GFW that the whole no-webfont
+       rule at the top of this file is written for.
+
+       The full translation and licence credits are NOT duplicated here.
+       They live on the app's own About page, are long, and are the kind
+       of list that goes stale the moment it exists in two places. -->
+  <h2><span data-l="hans">相关网站</span><span data-l="hant">相關網站</span><span data-l="en">Where the material comes from</span></h2>
+  <div class="sites">
+    <a class="site" href="https://www.christiandiscipleschurch.org/" rel="noopener">
+      <img src="/link-icons/cdc.png" alt="" width="34" height="34" loading="lazy" decoding="async">
+      <span class="site-t">
+        <span class="site-n"><span data-l="hans">基督门徒福音会</span><span data-l="hant">基督門徒福音會</span><span data-l="en">Christian Disciples Church</span></span>
+        <span class="site-d"><span data-l="hans">讲道与诗歌的主要来源。</span><span data-l="hant">講道與詩歌的主要來源。</span><span data-l="en">The main source of the sermons and hymns.</span></span>
+        <span class="site-h">www.christiandiscipleschurch.org</span>
+      </span>
+    </a>
+    <a class="site" href="http://fydt.org/" rel="noopener">
+      <img src="/link-icons/fydt.jpg" alt="" width="34" height="34" loading="lazy" decoding="async">
+      <span class="site-t">
+        <span class="site-n"><span data-l="hans">福音电台</span><span data-l="hant">福音電台</span><span data-l="en">FYDT Gospel Radio</span></span>
+        <span class="site-d"><span data-l="hans">诗歌与广播讲道。</span><span data-l="hant">詩歌與廣播講道。</span><span data-l="en">Hymns and broadcast preaching.</span></span>
+        <span class="site-h">fydt.org</span>
+      </span>
+    </a>
+    <a class="site" href="https://yahwehdehua.net/cn" rel="noopener">
+      <img src="/link-icons/ydh.png" alt="" width="34" height="34" loading="lazy" decoding="async">
+      <span class="site-t">
+        <span class="site-n"><span data-l="hans">雅伟的话</span><span data-l="hant">雅偉的話</span><span data-l="en">Yahweh De Hua Ministry</span></span>
+        <span class="site-d"><span data-l="hans">和合本雅伟版经文与释经资料。</span><span data-l="hant">和合本雅偉版經文與釋經資料。</span><span data-l="en">The CUV (Yahweh) text and study material.</span></span>
+        <span class="site-h">yahwehdehua.net</span>
+      </span>
+    </a>
+    <a class="site" href="https://cgdc.hk/" rel="noopener">
+      <img src="/link-icons/cgdc.jpg" alt="" width="34" height="34" loading="lazy" decoding="async">
+      <span class="site-t">
+        <span class="site-n"><span data-l="hans">基督门徒福音会（香港）</span><span data-l="hant">基督門徒福音會（香港）</span><span data-l="en">CGDC Hong Kong</span></span>
+        <span class="site-d"><span data-l="hans">每年门徒营诗集。</span><span data-l="hant">每年門徒營詩集。</span><span data-l="en">The yearly camp songbooks.</span></span>
+        <span class="site-h">cgdc.hk</span>
+      </span>
+    </a>
+    <a class="site" href="https://cahayapengharapan.org/" rel="noopener">
+      <img src="/link-icons/cahaya.jpg" alt="" width="34" height="34" loading="lazy" decoding="async">
+      <span class="site-t">
+        <span class="site-n"><span data-l="hans">印尼 Cahaya Pengharapan</span><span data-l="hant">印尼 Cahaya Pengharapan</span><span data-l="en">Cahaya Pengharapan, Indonesia</span></span>
+        <span class="site-d"><span data-l="hans">印尼文诗歌。</span><span data-l="hant">印尼文詩歌。</span><span data-l="en">Hymns in Indonesian.</span></span>
+        <span class="site-h">cahayapengharapan.org</span>
+      </span>
+    </a>
+    <a class="site" href="https://www.setapakcdc.com/" rel="noopener">
+      <img src="/link-icons/setapak.png" alt="" width="34" height="34" loading="lazy" decoding="async">
+      <span class="site-t">
+        <span class="site-n"><span data-l="hans">基督门徒福音会（吉隆坡）</span><span data-l="hant">基督門徒福音會（吉隆坡）</span><span data-l="en">Setapak CDC, Kuala Lumpur</span></span>
+        <span class="site-d"><span data-l="hans">吉隆坡教会的诗歌。</span><span data-l="hant">吉隆坡教會的詩歌。</span><span data-l="en">Hymns from the Kuala Lumpur congregation.</span></span>
+        <span class="site-h">www.setapakcdc.com</span>
+      </span>
+    </a>
+  </div>
+  <p class="small sites-note">
+    <span data-l="hans">经文译本、原文资料与插图的完整版权说明，在「雅伟之言」app 内的「关于」页。</span>
+    <span data-l="hant">經文譯本、原文資料與插圖的完整版權說明，在「雅偉之言」app 內的「關於」頁。</span>
+    <span data-l="en">The full credits for the translations, original-language data and illustrations are on the About page inside Yahweh’s Words.</span>
+  </p>
 
   <h2><span data-l="hans">联系我们</span><span data-l="hant">聯絡我們</span><span data-l="en">Contact</span></h2>
   <div class="contact">
