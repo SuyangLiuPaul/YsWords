@@ -2666,6 +2666,47 @@ reported. Work these top-down before P2.
       (`ui_strings.dart`, `onboarding_dialog.dart`, the new test) went
       into this commit.
 
+- [x] **2026-09-18 FIXED — 「Sword和Words有分几段的 可以帮我合并 并且上次
+      听到哪里都记录下来吗」: a multi-part sermon showed `0:00 / 0:00
+      第 2 段 / 共 3 段` and the clock restarted at every tape-side
+      boundary**, so a listener forty minutes into a talk read four.
+      The parts are tape sides — part b opens mid-sentence where part a
+      ran out — and the player already rolled from one into the next;
+      what had never been merged was the reading. `SermonAudioService`
+      gained a combined timeline: `lengthOf` (measured duration once a
+      part has played, else `bytes ~/ 4000` at the corpus's stated
+      32 kbps — a small fraction of parts, concentrated in the undated
+      `yyyy-mmdd`-named sermons, read long under the estimate until
+      played once), `overallDuration`, `overallPosition`, `seekOverall`,
+      and a pure static `locate(lengths, at)`. `nudge` and the slider's
+      `onChangeEnd` now go through `seekOverall`, so 30s-back from the
+      head of part b lands in part a. The `第 N 段 / 共 M 段` counter is
+      gone from `sermon_audio_bar.dart` — the clock beside it now says
+      where the listener is in the talk, which is what they asked.
+      New `test/sermon_is_one_talk_test.dart`: pure `locate` cases, byte→
+      duration estimation, and a real-corpus sweep (reads
+      `assets/sermons/audio_index.json` off disk rather than
+      `svc.load()`, which goes through `rootBundle` and is documented
+      elsewhere in this repo as unreliable inside a plain test) —
+      confirms all 289 sermons / 589 parts have no zero-length part and
+      002 (2 parts) reads as one longer timeline than its first side.
+      `flutter analyze` clean, full suite green (3363 tests).
+- [x] **2026-09-18 FIXED — 「我按那个ios去另一个界面不对」: the update
+      banner's 下载 button sent an iPhone to a GitHub release page whose
+      only iOS asset is an unsigned `.ipa`**, which iOS cannot install
+      from Safari — confirmed against `.github/workflows/release-ios.yml`,
+      which builds with `--no-codesign` and names the artifact
+      `YsWords-iOS-<tag>-unsigned.ipa`, and is the only iOS-producing
+      workflow in the repo (no TestFlight or signed path exists).
+      `update_available_banner.dart` now detects
+      `!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS` and drops
+      the action button on that branch — the banner still states that a
+      newer version exists (the fact an iPhone reader cannot otherwise
+      learn), but no longer offers a tap that leads to a file the device
+      can't use. New case in `test/update_check_tile_test.dart` (`'on
+      iOS there is no button, because there is nothing it could do'`)
+      asserts the action is null and the version string still renders.
+
 ## P0 — scripture accuracy
 
 > ### ⏸ THE TRADITIONAL GLYPH WORK IS DEFERRED TO LAST — user, 2026-08-18
