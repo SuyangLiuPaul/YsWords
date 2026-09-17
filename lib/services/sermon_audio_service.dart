@@ -119,11 +119,12 @@ class SermonAudioService extends ChangeNotifier {
   /// index carries `bytes` and no duration, so a combined timeline has
   /// to start from an estimate; at the stated bitrate that estimate is
   /// within a second or two, and each part's real length replaces it
-  /// the first time that part plays. A minority of files were encoded
-  /// at a higher bitrate than the corpus header claims — their estimate
-  /// reads long until they have been played once, after which the
-  /// measured duration is exact. 2026-09-18 「Sword和Words有分几段的 可以
-  /// 帮我合并」.
+  /// the first time that part plays. A small fraction of files (~2% of
+  /// parts, concentrated in the undated `yyyy-mmdd`-named sermons — a
+  /// distinct batch, not scattered noise) read long under this estimate
+  /// until they have been played once, after which the measured
+  /// duration is exact. 2026-09-18 「Sword和Words有分几段的 可以帮我合
+  /// 并」.
   static const int _bytesPerSecond = 4000;
 
   /// Real durations, learned from the player and remembered, keyed by
