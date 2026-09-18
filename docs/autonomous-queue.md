@@ -12493,6 +12493,15 @@ has never seen this repo.
       `GetMaterialApp` → `.router` migration branch, or close this as
       "won't fix"?
 
+      **Deferred a thirtieth consecutive iteration, 2026-09-18** — this
+      hour's NEXT_TASK.md picked the chronology chart's unanchored-
+      lifespans completeness instead (below — the `UNANCHORED` note's
+      "seven" turned out to be at least nine; see that item). Still
+      branch-scale, still unattended-unsafe, still the only fully open P2
+      checkbox besides the chronology chart, and the question above to
+      the user is still unanswered: start the `GetMaterialApp` →
+      `.router` migration branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -16359,6 +16368,64 @@ has never seen this repo.
       Asset + code + test only, no version bump, no deploy — this
       item's own guard rail. Checkbox stays open; the chart item spans
       many slices.
+
+      **2026-09-18 slice — "seven" was never the whole set.** Swept
+      `assets/kjv.json` directly rather than trusting the prior pass's
+      claim to have already done so, and found two more people in the
+      same bucket: Jehoiada the priest, 130 (2 Chronicles 24:15, no
+      verse names his father at all), and Eli, 98 (1 Samuel 4:15, the
+      verse immediately before the one recording his death the same
+      day, 4:18 — no second death-scene verse to restate the age at).
+      Checked and excluded: Job's 140 (42:16, a stated post-restoration
+      *remainder*, not a total — 42:17 gives no death age) and
+      Barzillai's fourscore (2 Sam 19:32/35, stated while he is alive
+      and declining to travel, not near death) — both near-misses, now
+      named in the builder comment so a future sweep doesn't
+      "rediscover" them.
+
+      **The bigger find was a class, not a person**: from Rehoboam on,
+      many kings of Judah (Uzziah 16+52, Manasseh 12+55, Hezekiah
+      25+29, Josiah 8+31, and others) repeat David's own accession-age-
+      plus-reign-length arithmetic — a real, large pattern the prose
+      could have kept enumerating into a long tail. They're excluded
+      for a reason distinct from Job/Barzillai: `assets/family_tree.json`
+      already carries each of them a computed BC `birthYear` from the
+      wider regnal-synchronism chronology (checked directly — Rehoboam,
+      Hezekiah, Josiah and others all have one), not from a single
+      verse the way Levi through Eli do. The note is about verses, so it
+      stops at nine and says so, rather than either silently dropping
+      the kings or growing into a catalogue.
+
+      "Seven" → "nine" in the prose in all three locales (`en`,
+      `zh-Hans`, `zh-Hant`, regenerated side by side from one dict, so a
+      mismatch would be a typo not a translation choice). New
+      completeness invariant, independent of `unanchoredFamilyTreeIds`
+      because two of the nine (Jehoiada, Eli) aren't in
+      `family_tree.json` at all: `_meta.statedLifespansNotDrawn`,
+      id/age/ref per entry, read raw in the test. Proved it catches its
+      own failure — popped the last entry off the list by hand, watched
+      the id-set assertion fail naming the missing `eli`, then
+      regenerated from the builder and confirmed byte-identical to the
+      pre-perturbation asset.
+
+      Builder re-run twice, byte-identical both times. `flutter analyze`
+      clean. `bible_chronology_test.dart` green in the foreground first,
+      then the full suite (356 files) in 7 foreground chunks of ≤55,
+      all green. An independent refuter agent was given all three
+      factual claims (Jehoiada's father is never named; Eli's 98 is
+      functionally a death age; the new count of nine is complete,
+      including an explicit instruction to probe the kings'
+      accession-plus-reign pattern) and re-swept `assets/kjv.json`
+      independently rather than confirming from this description — all
+      three survived, no tenth person found.
+
+      Asset + code + test only, no version bump, no deploy. Checkbox
+      stays open; the chart item spans many slices.
+
+      Pushed as `73f2208b`. CI run `35333416041` had not concluded
+      inside this iteration's ~6-minute watch budget (still
+      `in_progress` at last check) — next iteration's step 0 should
+      check it before picking anything else.
 
 - [ ] **Follow-up, filed not built: the `matriarchs` line id/name is
       deliberately plural.** Noted 2026-09-17 landing the Sarah slice
