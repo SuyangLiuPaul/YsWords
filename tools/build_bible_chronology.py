@@ -626,58 +626,118 @@ UNDRAWN = {
 # A third, distinct class from UNDRAWN above: these are not nameless or
 # ageless. Scripture states each lifespan plainly — the gap is that no
 # verse states the father's age at the birth, so there is no year to
-# anchor the bar's left edge on. Seven lifespans, verified individually
-# against assets/kjv.json rather than assumed from the pattern. The
-# seventh, David, differs from the other six in HOW his number is known
-# — it is a sum, not a verse's own word — but not in the anchor gap: no
-# verse gives Jesse's age at David's birth either.
+# anchor the bar's left edge on.
+#
+# Swept against assets/kjv.json (2026-09-18) for every "lived N years"
+# and "N years old ... died" verse, then checked one by one rather than
+# assumed from the pattern:
+#   - The Genesis 5/11 patriarchs, Sarah, Jacob and Joseph also state a
+#     total lifespan, but each ALSO has a father's-age-at-birth verse
+#     (Genesis 5's own "lived N years, and begat", or Isaac's stated age
+#     at Jacob's birth, etc.) — anchored, already drawn, not this class.
+#   - Levi, Kohath, Amram, Moses, Aaron, Joshua, David — the original
+#     seven — plus two the previous pass missed: Jehoiada the priest,
+#     130 (2 Chronicles 24:15), and Eli, 98 (1 Samuel 4:15). Eli's is
+#     stated once, the verse immediately before the one in which he
+#     dies (4:18, same passage, same day) rather than restated at the
+#     death itself — the tightest case here short of a verse's own
+#     death-age wording.
+#   - Checked and excluded: Job's 140 (42:16) is a REMAINDER — "after
+#     this lived Job" — not a total; 42:17 gives no age at death.
+#     Barzillai's fourscore (2 Samuel 19:32/35) is his age at a moment
+#     he is declining to travel further, very much alive, not a death
+#     age.
+#   - Checked and excluded, a different reason: from Rehoboam on, many
+#     kings of Judah repeat David's OWN pattern — accession age plus
+#     reign length summing to an age at the throne's end (Uzziah
+#     16+52, Manasseh 12+55, Hezekiah 25+29, Josiah 8+31, and others in
+#     1-2 Kings and 2 Chronicles). They are not added to the list below
+#     because they are not in David's bucket: assets/family_tree.json
+#     already carries each of them a computed birthYear (BC), from the
+#     wider regnal-synchronism chronology, not from a single verse.
+#     David alone among kings has no such computed year in that file —
+#     hence his lone appearance in unanchoredFamilyTreeIds below, which
+#     a test keeps in step with this fact should it ever change.
+# The list is not offered as exhaustive over all of Scripture — the
+# kings above are proof it is not — only as exhaustive over the people
+# this chart's lifeline model could otherwise have drawn a bar for.
+STATED_LIFESPANS_NOT_DRAWN = [
+    {"id": "levi", "age": 137, "ref": "Exodus 6:16"},
+    {"id": "kohath", "age": 133, "ref": "Exodus 6:18"},
+    {"id": "amram", "age": 137, "ref": "Exodus 6:20"},
+    {"id": "moses", "age": 120, "ref": "Deuteronomy 34:7"},
+    {"id": "aaron", "age": 123, "ref": "Numbers 33:39"},
+    {"id": "joshua", "age": 110, "ref": "Joshua 24:29"},
+    {"id": "david", "age": 70, "ref": "2 Samuel 5:4"},
+    {"id": "jehoiada", "age": 130, "ref": "2 Chronicles 24:15"},
+    {"id": "eli", "age": 98, "ref": "1 Samuel 4:15"},
+]
 UNANCHORED = {
     "en": (
         "Exodus 6:16 gives Levi's 137 years, Exodus 6:18 his son "
         "Kohath's 133, and Exodus 6:20 Kohath's son Amram's 137 — "
-        "three more lifespans in the same passage. Three more follow "
-        "the same pattern: Moses died at 120 (Deuteronomy 34:7), Aaron "
-        "at 123 (Numbers 33:39), Joshua at 110 (Joshua 24:29). A "
-        "seventh belongs with them for the same anchor gap, though his "
+        "three lifespans in the same passage. Three more follow the "
+        "same pattern: Moses died at 120 (Deuteronomy 34:7), Aaron at "
+        "123 (Numbers 33:39), Joshua at 110 (Joshua 24:29). Two more "
+        "again: Jehoiada the priest died at 130 (2 Chronicles 24:15), "
+        "and Eli was 98 in the verse immediately before the one in "
+        "which he dies (1 Samuel 4:15, the same passage's 4:18). A "
+        "ninth belongs with them for the same anchor gap, though his "
         "number arrives differently: no verse states David's age "
         "outright. 2 Samuel 5:4 gives 30 at his accession and 40 more "
         "years on the throne — 70 by addition, not by any verse's own "
         "word. Even the 40 is rounded: 2 Samuel 5:5 itemises 7 years "
         "and 6 months in Hebron plus 33 in Jerusalem, and 1 Kings 2:11 "
         "repeats the 40; the exact total is 40 and a half. None of "
-        "the seven is drawn here. The reason is not that Scripture is "
+        "these nine is drawn here. The reason is not that Scripture is "
         "silent on their years — it plainly is not — but that no "
         "verse states how old their father was when they were born; "
         "Amram's age at Moses' birth, and Jesse's age at David's, are "
-        "never given, so there is no birth year to anchor a bar on."
+        "never given, so there is no birth year to anchor a bar on. "
+        "This is not a closed list: the same accession-age-plus-reign-"
+        "length arithmetic that gives David's 70 recurs across many "
+        "later kings of Judah, but those already carry a birth year "
+        "elsewhere in this chart's own data, reconstructed from the "
+        "wider regnal chronology rather than from a single verse of "
+        "the kind this note is about."
     ),
     "zh-Hans": (
         "出埃及记 6:16 说利未活了 137 年，6:18 说他的儿子哥辖活了 133 年，"
-        "6:20 说哥辖的儿子暗兰活了 137 年，同一段经文又列出三笔岁数；后面"
-        "还有三位同样留下了岁数：摩西死时 120 岁（申命记 34:7）、亚伦死时 "
-        "123 岁（民数记 33:39）、约书亚死时 110 岁（约书亚记 24:29）。第"
-        "七位的算法不同：没有一节经文直接说大卫活了多少岁。撒母耳记下 "
+        "6:20 说哥辖的儿子暗兰活了 137 年，同一段经文列出三笔岁数。后面还"
+        "有三位同样留下了岁数：摩西死时 120 岁（申命记 34:7）、亚伦死时 "
+        "123 岁（民数记 33:39）、约书亚死时 110 岁（约书亚记 24:29）。另"
+        "外还有两位：祭司耶何耶大死时 130 岁（历代志下 24:15）；以利 98 "
+        "岁那年记在他死（4:18）前一节（撒母耳记上 4:15，同一段经文）。第"
+        "九位的算法不同：没有一节经文直接说大卫活了多少岁。撒母耳记下 "
         "5:4 说他登基时 30 岁，在位 40 年——70 是加出来的，不是经文自己"
         "写的数。连 40 也是取整而来：撒母耳记下 5:5 拆开来是在希伯仑 7 年"
         "零 6 个月，在耶路撒冷 33 年，列王纪上 2:11 同样说是 40 年，精确"
-        "加总其实是 40 年半。这七位都没有画在图上。原因不是经文没提他们"
+        "加总其实是 40 年半。这九位都没有画在图上。原因不是经文没提他们"
         "的岁数——分明是提了——而是没有一节经文说他们出生时父亲几岁；譬如"
         "暗兰生摩西时几岁、耶西生大卫时几岁，经文从未交代，因此没有出生"
-        "年可供横条起点。"
+        "年可供横条起点。这并非一份封闭的名单：大卫这笔登基年龄加在位年"
+        "数的算法，后来许多犹大列王身上都能见到，只是他们的出生年份已经"
+        "由本图另一份数据算出——那是靠更大范围的列王年代学推算，不是靠这"
+        "类单一经文，本注只谈到这九位。"
     ),
     "zh-Hant": (
         "出埃及記 6:16 說利未活了 137 年，6:18 說他的兒子哥轄活了 133 年，"
-        "6:20 說哥轄的兒子暗蘭活了 137 年，同一段經文又列出三筆歲數；後面"
-        "還有三位同樣留下了歲數：摩西死時 120 歲（申命記 34:7）、亞倫死時 "
-        "123 歲（民數記 33:39）、約書亞死時 110 歲（約書亞記 24:29）。第"
-        "七位的算法不同：沒有一節經文直接說大衛活了多少歲。撒母耳記下 "
+        "6:20 說哥轄的兒子暗蘭活了 137 年，同一段經文列出三筆歲數。後面還"
+        "有三位同樣留下了歲數：摩西死時 120 歲（申命記 34:7）、亞倫死時 "
+        "123 歲（民數記 33:39）、約書亞死時 110 歲（約書亞記 24:29）。另"
+        "外還有兩位：祭司耶何耶大死時 130 歲（歷代志下 24:15）；以利 98 "
+        "歲那年記在他死（4:18）前一節（撒母耳記上 4:15，同一段經文）。第"
+        "九位的算法不同：沒有一節經文直接說大衛活了多少歲。撒母耳記下 "
         "5:4 說他登基時 30 歲，在位 40 年——70 是加出來的，不是經文自己"
         "寫的數。連 40 也是取整而來：撒母耳記下 5:5 拆開來是在希伯崙 7 年"
         "零 6 個月，在耶路撒冷 33 年，列王紀上 2:11 同樣說是 40 年，精確"
-        "加總其實是 40 年半。這七位都沒有畫在圖上。原因不是經文沒提他們"
+        "加總其實是 40 年半。這九位都沒有畫在圖上。原因不是經文沒提他們"
         "的歲數——分明是提了——而是沒有一節經文說他們出生時父親幾歲；譬如"
         "暗蘭生摩西時幾歲、耶西生大衛時幾歲，經文從未交代，因此沒有出生"
-        "年可供橫條起點。"
+        "年可供橫條起點。這並非一份封閉的名單：大衛這筆登基年齡加在位年"
+        "數的算法，後來許多猶大列王身上都能見到，只是他們的出生年份已經"
+        "由本圖另一份數據算出——那是靠更大範圍的列王年代學推算，不是靠這"
+        "類單一經文，本注只談到這九位。"
     ),
 }
 
@@ -1157,6 +1217,14 @@ def build():
             # off the chart without anyone noticing — see the
             # completeness test in test/bible_chronology_test.dart.
             "unanchoredFamilyTreeIds": ["david"],
+            # Every person UNANCHORED's prose names, independent of
+            # family_tree.json (two of these nine, Jehoiada and Eli,
+            # are not even in that file). See STATED_LIFESPANS_NOT_DRAWN
+            # above for the sweep this was built from and the classes
+            # of person deliberately left out of it. A completeness
+            # test checks the prose cites exactly this set and no age
+            # outside it.
+            "statedLifespansNotDrawn": STATED_LIFESPANS_NOT_DRAWN,
         },
         "schemes": SCHEMES,
         "lines": LINES,

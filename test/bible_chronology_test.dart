@@ -1041,10 +1041,12 @@ void main() {
     });
 
     // A third class, distinct from the undrawn-lines note above: Levi,
-    // Kohath, Amram, Moses, Aaron, Joshua and David all have a lifespan
-    // Scripture states (David's by sum, not by a verse's own word), but
-    // no verse gives their father's age at their birth, so there is no
-    // year to anchor a bar on.
+    // Kohath, Amram, Moses, Aaron, Joshua, David, Jehoiada and Eli all
+    // have a lifespan Scripture states (David's by sum, not by a
+    // verse's own word), but no verse gives their father's age at
+    // their birth, so there is no year to anchor a bar on. See
+    // STATED_LIFESPANS_NOT_DRAWN in tools/build_bible_chronology.py for
+    // the sweep this list came from and who was checked and excluded.
     test(
         'the unanchored-lifespans note is declared in all three locales',
         () {
@@ -1067,6 +1069,10 @@ void main() {
         ('Numbers', 33, 39, 'hundred and twenty and three years old', 123,
             'Numbers 33:39'),
         ('Joshua', 24, 29, 'hundred and ten years old', 110, 'Joshua 24:29'),
+        ('2 Chronicles', 24, 15, 'hundred and thirty years old', 130,
+            '2 Chronicles 24:15'),
+        ('1 Samuel', 4, 15, 'ninety and eight years old', 98,
+            '1 Samuel 4:15'),
         // David: 30 at accession and 40 on the throne (2 Sam 5:4), the
         // 40 itemised as 7½ + 33 (2 Sam 5:5) and repeated in 1 Kings
         // 2:11 — 70 is the note's own sum of 30 + 40, not a number any
@@ -1096,6 +1102,37 @@ void main() {
         expect(data.localizedUnanchored(locale), contains('70'),
             reason: 'the $locale note does not give David\'s summed age '
                 '70');
+      }
+    });
+
+    test(
+        '_meta.statedLifespansNotDrawn is exactly the nine people the '
+        'unanchored-lifespans note cites, and the note names no age it '
+        "can't source there", () {
+      final metaList =
+          ((raw['_meta'] as Map)['statedLifespansNotDrawn'] as List)
+              .cast<Map>();
+      expect(
+          metaList.map((e) => e['id'] as String).toSet(),
+          {
+            'levi', 'kohath', 'amram', 'moses', 'aaron', 'joshua', 'david',
+            'jehoiada', 'eli',
+          },
+          reason: 'a sweep of assets/kjv.json (2026-09-18) found nine '
+              "stated lifespans this chart can't anchor; if that set "
+              'changed, the prose above needs to change with it, not just '
+              'this list');
+      final en = data.localizedUnanchored('en');
+      for (final entry in metaList) {
+        final ref = entry['ref'] as String;
+        final age = entry['age'] as int;
+        expect(en, contains(ref), reason: 'the English note no longer '
+            'cites $ref, from _meta.statedLifespansNotDrawn');
+        for (final locale in const ['en', 'zh-Hans', 'zh-Hant']) {
+          expect(data.localizedUnanchored(locale), contains('$age'),
+              reason: 'the $locale note no longer cites the age $age, '
+                  'from $ref');
+        }
       }
     });
 
