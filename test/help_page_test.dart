@@ -63,4 +63,39 @@ void main() {
     expect(find.text('黑屏 / 恢复'), findsOneWidget);
     expect(find.text('B'), findsOneWidget);
   });
+
+  testWidgets('the search box keeps its shape under a theme that underlines '
+      'every field, and its hint sits in the middle', (t) async {
+    // 2026-09-18, reported from a phone in dark mode: main.dart's dark
+    // theme sets an UNDERLINE enabledBorder, which beats a field's own
+    // `border`, so the box went square and the hint rode high.
+    t.view.physicalSize = const Size(900, 1600);
+    t.view.devicePixelRatio = 1;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(ChangeNotifierProvider(
+      create: (_) => AppSettings(),
+      child: MaterialApp(
+        theme: ThemeData(
+          inputDecorationTheme: const InputDecorationTheme(
+            enabledBorder: UnderlineInputBorder(),
+            focusedBorder: UnderlineInputBorder(),
+          ),
+        ),
+        home: const HelpPage(),
+      ),
+    ));
+    await t.pumpAndSettle();
+
+    final field = find.byType(TextField).first;
+    final deco = t.widget<TextField>(field).decoration!;
+    expect(deco.enabledBorder, isA<OutlineInputBorder>());
+    expect(deco.focusedBorder, isA<OutlineInputBorder>());
+
+    final hint = find.descendant(
+        of: field, matching: find.text(deco.hintText!));
+    final box = t.getRect(find.descendant(
+        of: field, matching: find.byType(InputDecorator)));
+    expect((t.getRect(hint).center.dy - box.center.dy).abs(),
+        lessThan(2.0));
+  });
 }

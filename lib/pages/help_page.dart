@@ -290,6 +290,10 @@ class _HelpPageState extends State<HelpPage> {
           : n;
     }
 
+    final searchBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Column(
@@ -318,11 +322,17 @@ class _HelpPageState extends State<HelpPage> {
                       tooltip: _s('close', 'Clear', locale),
                       onPressed: () => setState(_query.clear),
                     ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
+              // Every state named: the dark theme's inputDecorationTheme
+              // sets an UNDERLINE enabledBorder, which beats `border` and
+              // turned this into a square box with the hint riding high.
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              border: searchBorder,
+              enabledBorder: searchBorder,
+              focusedBorder: searchBorder.copyWith(
+                  borderSide:
+                      BorderSide(color: scheme.primary, width: 1.5)),
             ),
+            textAlignVertical: TextAlignVertical.center,
           ),
           const SizedBox(height: 8),
           Row(
