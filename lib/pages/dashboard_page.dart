@@ -16,6 +16,7 @@ import 'package:yahwehs_words/models/dashboard_section.dart';
 import 'package:yahwehs_words/models/sermon.dart';
 import 'package:yahwehs_words/models/verse.dart';
 import 'package:yahwehs_words/models/bible_evidence.dart';
+import 'package:yahwehs_words/pages/help_page.dart' show openHelp;
 import 'package:yahwehs_words/pages/evidence_detail_page.dart';
 import 'package:yahwehs_words/pages/evidence_page.dart';
 import 'package:yahwehs_words/pages/bible_timeline_page.dart';
@@ -1134,6 +1135,13 @@ class _DashboardPageState extends State<DashboardPage> {
                   label: uiStrings['misconceptionsTile']?[locale] ??
                       'Misunderstandings',
                   onTap: () => pushPage(const MisconceptionsPage(), routeName: '/misconceptions'),
+                ),
+                // 2026-09-18: beside Feedback, which is the other thing a
+                // reader who is stuck reaches for.
+                _LinkTile(
+                  icon: Icons.help_outline_rounded,
+                  label: uiStrings['helpTile']?[locale] ?? 'Help',
+                  onTap: () => openHelp(context),
                 ),
                 _LinkTile(
                   icon: Icons.feedback_outlined,

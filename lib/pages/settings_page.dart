@@ -36,6 +36,7 @@ import 'package:yahwehs_words/pages/projection_page.dart' show kProjectionTypeSt
 import 'package:yahwehs_words/models/verse.dart';
 import 'package:yahwehs_words/constants/bible_versions.dart';
 import 'package:yahwehs_words/pages/about_page.dart';
+import 'package:yahwehs_words/pages/help_page.dart' show openHelp;
 import 'package:yahwehs_words/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yahwehs_words/utils/theme_color_helpers.dart';
 import 'package:yahwehs_words/pages/profiles_page.dart';
@@ -384,6 +385,22 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
             scrollCacheExtent: _deepLinkCacheExtent,
             padding: EdgeInsets.all(16 * s),
             children: [
+              // 2026-09-18: above everything, because this is where a
+              // reader looking for a feature arrives when they cannot
+              // find it — and until today there was nothing here to find.
+              Card(
+                elevation: 0,
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                child: ListTile(
+                  key: const Key('settings.help'),
+                  leading: const Icon(Icons.help_outline_rounded),
+                  title: Text(uiStrings['helpTitle']?[settings.locale] ??
+                      'Help & shortcuts'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => openHelp(context),
+                ),
+              ),
+              SizedBox(height: 12 * s),
               // Account section now FIRST — see comment below at the
               // old _accountKey location for the rationale.
               KeyedSubtree(

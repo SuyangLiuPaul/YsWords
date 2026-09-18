@@ -150,8 +150,17 @@ void main() {
         hits.add(f.path);
       }
     }
-    expect(hits,
-        ['lib/constants/search_synonyms.dart', 'lib/models/strongs.dart'],
+    //
+    // 2026-09-18: `lib/constants/help_topics.dart` joined, and was re-read
+    // as asked. Its header records that its 繁體 was WRITTEN with OpenCC
+    // at authoring time and corrected by hand; the strings ship as
+    // literals and nothing converts anything at run time. The claim
+    // holds.
+    expect(hits, [
+      'lib/constants/help_topics.dart',
+      'lib/constants/search_synonyms.dart',
+      'lib/models/strongs.dart',
+    ],
         reason: 'if a render-time converter is ever added, this item changes '
             'shape entirely — re-read it before acting');
   });

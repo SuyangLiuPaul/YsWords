@@ -379,42 +379,77 @@ enum ProjectionCommand {
 /// arrows are what a hand finds without looking: all four should move
 /// the same unit, in the direction they point.
 ProjectionCommand? projectionCommandFor(LogicalKeyboardKey key) {
-  if (key == LogicalKeyboardKey.arrowRight ||
-      key == LogicalKeyboardKey.arrowDown ||
-      key == LogicalKeyboardKey.space ||
-      key == LogicalKeyboardKey.enter ||
-      key == LogicalKeyboardKey.numpadEnter) {
-    return ProjectionCommand.nextVerse;
+  for (final (command, keys, _) in kProjectionKeymap) {
+    if (keys.contains(key)) return command;
   }
-  if (key == LogicalKeyboardKey.arrowLeft ||
-      key == LogicalKeyboardKey.arrowUp ||
-      key == LogicalKeyboardKey.backspace) {
-    return ProjectionCommand.previousVerse;
-  }
-  if (key == LogicalKeyboardKey.pageDown) {
-    return ProjectionCommand.nextChapter;
-  }
-  if (key == LogicalKeyboardKey.pageUp) {
-    return ProjectionCommand.previousChapter;
-  }
-  if (key == LogicalKeyboardKey.keyB || key == LogicalKeyboardKey.period) {
-    return ProjectionCommand.blank;
-  }
+  return null;
+}
+
+/// Every key [projectionCommandFor] answers, with the `ui_strings` key
+/// that names it — the table the handler reads AND the table the Help
+/// page prints (2026-09-18), so the operator's cheatsheet is the
+/// dispatch itself.
+///
+/// The reasons for each choice stay beside the row they justify.
+const List<(ProjectionCommand, List<LogicalKeyboardKey>, String)>
+    kProjectionKeymap = [
+  (
+    ProjectionCommand.nextVerse,
+    [
+      LogicalKeyboardKey.arrowRight,
+      LogicalKeyboardKey.arrowDown,
+      LogicalKeyboardKey.space,
+      LogicalKeyboardKey.enter,
+      LogicalKeyboardKey.numpadEnter,
+    ],
+    'projKeyNextVerse',
+  ),
+  (
+    ProjectionCommand.previousVerse,
+    [
+      LogicalKeyboardKey.arrowLeft,
+      LogicalKeyboardKey.arrowUp,
+      LogicalKeyboardKey.backspace,
+    ],
+    'projKeyPreviousVerse',
+  ),
+  (
+    ProjectionCommand.nextChapter,
+    [LogicalKeyboardKey.pageDown],
+    'projKeyNextChapter',
+  ),
+  (
+    ProjectionCommand.previousChapter,
+    [LogicalKeyboardKey.pageUp],
+    'projKeyPreviousChapter',
+  ),
+  (
+    ProjectionCommand.blank,
+    [LogicalKeyboardKey.keyB, LogicalKeyboardKey.period],
+    'projKeyBlank',
+  ),
   // Both faces of the two keys, because a keyboard prints `+` on the key
   // the operator presses and reports `=` unless they are holding Shift,
   // and a numeric keypad reports neither.
-  if (key == LogicalKeyboardKey.equal ||
-      key == LogicalKeyboardKey.add ||
-      key == LogicalKeyboardKey.numpadAdd) {
-    return ProjectionCommand.biggerType;
-  }
-  if (key == LogicalKeyboardKey.minus ||
-      key == LogicalKeyboardKey.numpadSubtract) {
-    return ProjectionCommand.smallerType;
-  }
-  if (key == LogicalKeyboardKey.keyP) {
-    return ProjectionCommand.toggleSecondVersion;
-  }
+  (
+    ProjectionCommand.biggerType,
+    [
+      LogicalKeyboardKey.equal,
+      LogicalKeyboardKey.add,
+      LogicalKeyboardKey.numpadAdd,
+    ],
+    'projKeyBigger',
+  ),
+  (
+    ProjectionCommand.smallerType,
+    [LogicalKeyboardKey.minus, LogicalKeyboardKey.numpadSubtract],
+    'projKeySmaller',
+  ),
+  (
+    ProjectionCommand.toggleSecondVersion,
+    [LogicalKeyboardKey.keyP],
+    'projKeySecondVersion',
+  ),
   // The three setup keys, added 2026-09-09 with the settings they
   // reach. Initials of what they do in English, because that is the
   // only mnemonic that survives an operator who uses this once a week:
@@ -423,44 +458,37 @@ ProjectionCommand? projectionCommandFor(LogicalKeyboardKey key) {
   // and none of them is a letter any presentation tool binds to
   // something else — so nothing a projectionist already has in their
   // fingers now does the wrong thing.
-  if (key == LogicalKeyboardKey.keyG) {
-    return ProjectionCommand.cycleGround;
-  }
-  if (key == LogicalKeyboardKey.keyV) {
-    return ProjectionCommand.chooseSecondVersion;
-  }
+  (ProjectionCommand.cycleGround, [LogicalKeyboardKey.keyG], 'projKeyBackground'),
+  (
+    ProjectionCommand.chooseSecondVersion,
+    [LogicalKeyboardKey.keyV],
+    'projKeyPickVersion',
+  ),
   // C for countdown. Bare, so it never fights Cmd+C — which
   // kBrowserOwnedChords names, and which the modifier guard in _onKey
   // already lets through.
-  if (key == LogicalKeyboardKey.keyC) {
-    return ProjectionCommand.countdown;
-  }
+  (ProjectionCommand.countdown, [LogicalKeyboardKey.keyC], 'projKeyCountdown'),
   // The order of service: A opens it, and the two brackets step it —
   // the same pair a presentation tool uses for "previous / next slide"
   // and neither of them a browser chord.
-  if (key == LogicalKeyboardKey.keyA) {
-    return ProjectionCommand.agenda;
-  }
-  if (key == LogicalKeyboardKey.bracketRight) {
-    return ProjectionCommand.agendaNext;
-  }
-  if (key == LogicalKeyboardKey.bracketLeft) {
-    return ProjectionCommand.agendaPrevious;
-  }
+  (ProjectionCommand.agenda, [LogicalKeyboardKey.keyA], 'projKeyAgenda'),
+  (
+    ProjectionCommand.agendaNext,
+    [LogicalKeyboardKey.bracketRight],
+    'projKeyAgendaNext',
+  ),
+  (
+    ProjectionCommand.agendaPrevious,
+    [LogicalKeyboardKey.bracketLeft],
+    'projKeyAgendaPrevious',
+  ),
   // D for display. Not a browser chord (those are C V X F P S T W N L K
   // R); a bare letter the operator can hit once, at the start, to put
   // the wall up on the second screen.
-  if (key == LogicalKeyboardKey.keyD) {
-    return ProjectionCommand.openStage;
-  }
-  if (key == LogicalKeyboardKey.keyS) {
-    return ProjectionCommand.presets;
-  }
-  if (key == LogicalKeyboardKey.escape) {
-    return ProjectionCommand.leave;
-  }
-  return null;
-}
+  (ProjectionCommand.openStage, [LogicalKeyboardKey.keyD], 'projKeyStage'),
+  (ProjectionCommand.presets, [LogicalKeyboardKey.keyS], 'projKeyPresets'),
+  (ProjectionCommand.leave, [LogicalKeyboardKey.escape], 'projKeyLeave'),
+];
 
 /// Where the projection is pointing: a chapter, by its index in
 /// `MainProvider.chapterList`, and a verse by its index within that

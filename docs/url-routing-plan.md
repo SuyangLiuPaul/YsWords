@@ -164,6 +164,7 @@ accept the parameter that would make it so (documented per-row).
 | `ChronologyChartPage` | `/chronology` | none | — | yes — the same page as `/timeline` opened on its chronology-chart view; a separate class because a route here is keyed by page class (see its doc comment in `bible_timeline_page.dart`), and a Featured destination has to be addressable |
 | `MisconceptionsPage` | `/misconceptions` | none | — | yes for the list; **individual entries are not a separate page today** (§2) — out of scope until/unless a `MisconceptionDetailPage` is split out |
 | `FeedbackPage` | `/feedback` | none | — | yes |
+| `HelpPage` | — | `initialSection`, `initialQuery` (both optional) | — | **no, by choice** (2026-09-18) — opened from Settings, the home page's Quick links and the reader's ⋯ menu, each of which is itself addressable; a link to a help page is a link to a search box. Revisit if someone asks to share a topic |
 | `ProfilesPage` | `/profiles` | none | — | yes |
 | `AboutPage` | `/about` | none | — | yes |
 | `ChangelogPage` | not addressable — opens the parent `/about` | none | — | yes (via parent) |
