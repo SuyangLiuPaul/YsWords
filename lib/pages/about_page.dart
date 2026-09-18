@@ -655,7 +655,7 @@ class _ScripturesTable extends StatelessWidget {
       ),
       _AttribRow(
         name: uiStrings['aboutVerLjk']?[locale] ??
-            'LJK1 / LJK2 梁家铿译本（2025年 · 第二版，简/繁）',
+            'LJK1 / LJK2 梁家铿译本（译者现行电子版，简/繁）',
         licence: uiStrings['aboutLicenseLjk']?[locale] ??
             '© Bible Exegesis Ministry · used with permission.',
         url: 'https://www.biblexg.com/',

@@ -58,12 +58,15 @@ void main() {
     // the publisher's cn-phi.json verseIndex 1+2 concatenated verbatim;
     // text is fully present, only the combined label has no entry of
     // its own).
+    // 2026-09-18: 約翰福音 5:4 is no longer a gap in v3. 梁牧師 ruled
+    // (ruling 五) that it is printed as bracketed body text, from his own
+    // note on 5:3, like 馬太福音 21:44 — tools/apply_ljk_2026_09_17.py.
     'assets/biblexg-v3.json': [
       '以弗所书 6: 20', '使徒行传 1: 22', '使徒行传 15: 34', '使徒行传 24: 7',
       '使徒行传 28: 29', '使徒行传 8: 37', '加拉太书 1: 2', '哥林多前书 15: 52',
       '哥林多后书 1: 14', '哥林多后书 13: 3,13', '希伯来书 6: 2',
       '提摩太前书 1: 19', '提摩太前书 2: 2', '歌罗西书 2: 21', '约翰一书 3: 20',
-      '约翰二书 1: 2', '约翰福音 5: 4', '罗马书 15: 19', '腓立比书 1: 2',
+      '约翰二书 1: 2', '罗马书 15: 19', '腓立比书 1: 2',
       '路加福音 1: 2,3,4,75', '路加福音 17: 36', '路加福音 9: 31',
       '马可福音 11: 26', '马可福音 15: 28', '马太福音 17: 21',
       '马太福音 18: 11', '马太福音 23: 14',
@@ -73,7 +76,7 @@ void main() {
       '使徒行傳 28: 29', '使徒行傳 8: 37', '加拉太書 1: 2', '哥林多前書 15: 52',
       '哥林多後書 1: 14', '哥林多後書 13: 3,13', '希伯來書 6: 2',
       '提摩太前書 1: 19', '提摩太前書 2: 2', '歌羅西書 2: 21', '約翰一書 3: 20',
-      '約翰二書 1: 2', '約翰福音 5: 4', '羅馬書 15: 19', '腓立比書 1: 2',
+      '約翰二書 1: 2',  '羅馬書 15: 19', '腓立比書 1: 2',
       '路加福音 1: 2,3,4,75', '路加福音 17: 36', '路加福音 9: 31',
       '馬可福音 11: 26', '馬可福音 15: 28', '馬太福音 17: 21',
       '馬太福音 18: 11', '馬太福音 23: 14',
@@ -219,7 +222,9 @@ void main() {
       'assets/biblexg-v2.json': ['约翰福音', '耶稣说完了这些话，便离开他们，隐藏起来了。'],
       'assets/biblexg-v2-tr.json': ['約翰福音', '耶穌說完了這些話，便離開他們，隱藏起來了。'],
       'assets/biblexg-v3.json': ['约翰福音', '耶稣说完了这些话，便离开他们，隐藏起来了。'],
-      'assets/biblexg-v3-tr.json': ['約翰福音', '耶穌說完了這些話，便離開他們，隱藏起來了。'],
+      // 2026-09-17: the translator revised his Traditional to end
+      // 「隱藏起來。」; the Simplified still has 了.
+      'assets/biblexg-v3-tr.json': ['約翰福音', '耶穌說完了這些話，便離開他們，隱藏起來。'],
     };
     wanted.forEach((path, want) {
       final verse = load(path).firstWhere((v) =>

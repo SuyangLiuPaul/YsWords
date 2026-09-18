@@ -4458,11 +4458,11 @@ const uiStrings = {
         '© Yahweh De Hua Ministry · used with permission.',
   },
   'aboutVerLjk': {
-    'zh-Hans': 'LJK1 / LJK2 梁家铿译本（2025年 · 第二版，简 / 繁）',
-    'zh-Hant': 'LJK1 / LJK2 梁家鏗譯本（2025年 · 第二版，簡 / 繁）',
+    'zh-Hans': 'LJK1 / LJK2 梁家铿译本（译者现行电子版，简 / 繁）',
+    'zh-Hant': 'LJK1 / LJK2 梁家鏗譯本（譯者現行電子版，簡 / 繁）',
     // 2026-09-18: the English name is the translator's own choice —
     // 「LJK Chinese translation」, not a surname-based gloss.
-    'en': 'LJK1 / LJK2 — LJK Chinese translation (2025, 2nd ed., simplified / traditional)',
+    'en': 'LJK1 / LJK2 — LJK Chinese translation (the translator\'s current electronic edition, simplified / traditional)',
   },
   'aboutLicenseLjk': {
     'zh-Hans': '© 圣经释经事工 · 经授权使用。',

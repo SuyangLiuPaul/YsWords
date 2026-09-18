@@ -87,6 +87,12 @@ REPAIRED_REFERENCES = {
     # absent on purpose rather than filled from an older fetch that does
     # not have it either.
     '50001002',
+    # The translator's own revision, not a repair step: 2026-09-17 梁牧師
+    # rewrote 路加福音 23:33-34 (「原来的安排不理想……正文，插注和注脚
+    # 都修改了」), and the prayer that was printed as a sub-verse 34a now
+    # opens 23:34 as the translator's supplied words. Older snapshots still
+    # carry 34a; putting it back would print the prayer twice.
+    '42023033a',
 }
 
 

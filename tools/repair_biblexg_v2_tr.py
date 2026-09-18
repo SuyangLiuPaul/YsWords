@@ -131,7 +131,21 @@ def main() -> int:
     ap.add_argument("--code", default="biblexg-v2-tr",
                     help="traditional-script asset to repair, without "
                          "assets/ or .json")
-    path = f"assets/{ap.parse_args().code}.json"
+    # 2026-09-18: the publisher started fixing these sites himself —
+    # 梁牧師 ruled on 會堂裡 and the three 准許 and corrected his own
+    # files — so a FRESH import can arrive with some sites already
+    # right. Without this flag that mix still reads as a half-finished
+    # run of this tool and refuses, which is the right answer for a file
+    # this tool has touched. With it, the caller is asserting the file
+    # came straight from `import_ljk2.py`, so a site already carrying the
+    # corrected reading was corrected upstream: it is reported and
+    # retired, and the rest are applied.
+    ap.add_argument("--fresh-import", action="store_true",
+                    help="the asset was just re-imported from the "
+                         "publisher; already-correct sites are the "
+                         "publisher's own fixes")
+    args = ap.parse_args()
+    path = f"assets/{args.code}.json"
 
     data = json.load(open(path, encoding="utf-8"))
     by_id = {r["id"]: r for r in data}
@@ -147,6 +161,8 @@ def main() -> int:
             todo.append((vid, cls, old, new, rec))
         elif rec["text"].count(new) == 1:
             done += 1
+            if args.fresh_import:
+                upstream.append((vid, cls, old, new))
         elif not (_defective_chars(old, new) & set(rec["text"])):
             # Neither context matches AND the character this rule exists
             # to remove is nowhere in the verse.
@@ -178,7 +194,7 @@ def main() -> int:
     if not todo:
         print(f"already repaired — all {done} sites carry the corrected reading, nothing to do")
         return 0
-    if done:
+    if done and not args.fresh_import:
         print(f"FAIL: {done} sites already repaired but {len(todo)} are not; "
               "the file is half-converted, refusing to guess", file=sys.stderr)
         return 1
