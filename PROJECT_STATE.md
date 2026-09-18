@@ -2150,6 +2150,38 @@ skipped (rate limit) or NEXT_TASK.md wasn't refreshed — not a crash.
     (`e806adc0`), so **macOS rides the next release**. Do not be
     surprised by the gap, and do not try to re-point the v1.6.8 tag.
 
+71. **Chaining several `pumpChart` + `viewAt`/`wholeSpan` navigations
+    inside ONE widget test can give a different, non-reproducible layout
+    answer than a fresh `pumpWidget` at the identical final viewport —
+    even though `pumpWidget` replaces the whole tree and should discard
+    all `State`.** Found 2026-09-18 measuring
+    `chronology_chart.dart`'s `_tickLane` (queue:16481's residual): one
+    draft of the measurement did `pumpChart` once, then looped
+    `wholeSpan`/`viewAt` + tap + pop through 5 viewports inside a single
+    `testWidgets`. At the 4th viewport (`viewAt(2200, years: 400)`) it
+    reported a real-looking collision (an individually-labelled tick's
+    native x inside a chip's span, tap reaching nothing) — but re-run in
+    total isolation (fresh `pumpChart`, one direct `viewAt` call, no
+    prior navigation or taps), the SAME viewport measured a different
+    chip bucket size (`+2` vs `+3`) and no collision. The only thing that
+    moved was `chronoTickLaneBox`'s own vertical `top` (800 vs 711 — same
+    height, 104, either way), i.e. how much the lifeline rows above the
+    tick lane had reclaimed. Hand-replicating the prior three
+    navigations, and even a synthetic tap+pop cycle, inside a fresh test
+    did NOT reproduce the drift — so the proximate cause was never pinned
+    to a specific mechanism (candidates: `PageStorage`/scroll-restoration
+    or some other harness-level state surviving a `pumpWidget` replace
+    within one test process, not present across separate test
+    processes). **Not shown to be a `chronology_chart.dart` defect** —
+    each of the 5 real viewports gives a stable, repeatable answer
+    (checked 3x) when it gets its OWN `testWidgets`/`pumpChart`, which is
+    what the landed test does. **The rule this earns:** when a widget
+    test's conclusion depends on exact layout/measurement (not just
+    "does a sheet open"), prefer one fresh `pumpChart` per viewport under
+    test over chaining navigations in one test — a chained run that
+    disagrees with an isolated run is a red flag for THIS class of
+    flutter_test state leakage, not automatically a real finding.
+
 ## Trap: "local green" and "CI green" are different claims
 
 `assets/sermon_library/` is a gitignored local staging area — the app

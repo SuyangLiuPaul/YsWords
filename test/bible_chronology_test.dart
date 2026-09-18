@@ -4630,6 +4630,217 @@ void main() {
       handle.dispose();
     });
 
+    // The fix the test above this one pins protects a CLUSTERED tick's
+    // self-tap, by measuring its bare-lane distance from its own chip's
+    // drawn SPAN instead of its undrawn native x. It does nothing for the
+    // opposite direction, named but left unmeasured by that same fix's own
+    // comment at `chronology_chart.dart:1846`: an INDIVIDUALLY-labelled
+    // tick's own native x — what a bare-lane tap aimed at that tick
+    // actually lands on — could, in principle, fall inside a DIFFERENT
+    // tick's chip span, since `chronologyChipPlan` nudges a chip right
+    // with no bound relative to any OTHER tick's position (see the
+    // drift-characterization test below this group). At that x both the
+    // labelled tick (`dx == 0` against its own native x) and the chip
+    // (`dx == 0` anywhere in its span) tie, and `dx <= bestDx` hands the
+    // tie to whichever comes LATER in `data.allTicks` order — iteration
+    // order, not which one the reader actually aimed at.
+    //
+    // Measured directly, not reasoned about — one FRESH `pumpChart` per
+    // viewport, each its own `testWidgets`, not five viewports chained
+    // inside one long test: an earlier draft of this measurement chained
+    // them (one `pumpChart`, then loop `wholeSpan`/`viewAt` + tap + pop 5
+    // times) and got a DIFFERENT, non-reproducible answer at AM2200/400y
+    // from run to run of the identical code — sometimes reporting
+    // "AM2128 native x falls inside chronoClusterChip_2106_+3, bare tap
+    // reaches {}", sometimes a `+2` chip with no collision at all, even
+    // though `viewAt(2200, years: 400)` should be a fully deterministic
+    // function of a freshly-loaded chart. That instability tracked to the
+    // vertical position of the tick lane itself (`chronoTickLaneBox`'s
+    // `top`, which several other tests in this file already document as
+    // reclaiming space from the lifeline rows above it): chained inside
+    // one long test it measured 800, isolated fresh it measured 711 —
+    // same viewport, same navigation calls, different answer — while the
+    // lane's own HEIGHT (104 either way) never moved. The proximate cause
+    // was never pinned down (candidates: `PageStorage`/scroll-restoration
+    // surviving a `pumpWidget` replace that a fresh test process does not
+    // carry, or some other state this harness — not `chronology_chart.dart`
+    // — retains across repeated pumps in one test). Since it could not be
+    // shown NOT to be a harness artifact, it is not reported as a finding
+    // below; each viewport instead gets a wholly independent test, which
+    // reproduced consistently across repeated runs.
+    //
+    // The 0-misrouted result below is not just this run's measurement —
+    // it is a structural necessity of `chronologyChipPlan`'s own left-to-
+    // right pass (`chronology_chart.dart:3268-3275`): buckets are visited
+    // in ascending `lefts` order (each bucket's own am-based anchor), and
+    // `left = max(desired, lastRight + gap)` only ever pushes a chip
+    // RIGHTWARD, never left. So if some chip's drawn span reaches far
+    // enough to cover a labelled tick T's native x, that chip's own
+    // bucket must anchor at or before T's own x — i.e. T is
+    // chronologically the SAME OR LATER than every tick in that chip's
+    // bucket. `allTicks` (what the bare-lane search iterates) is sorted
+    // by am too, so T always comes at or after that chip's own
+    // candidates in iteration order, and `dx <= bestDx` always hands a
+    // same-x tie to the LATER one — which is T. A chip can never drift
+    // into a labelled tick that is chronologically EARLIER than it, the
+    // one direction that would actually lose the tie. This is why the
+    // measurement below is expected to read 0 misrouted at every real
+    // viewport, not a coincidence of the five sampled here — and why
+    // fixing `onTapDown`'s tie-break is not needed unless
+    // `chronologyChipPlan`'s own left-to-right invariant changes.
+    Future<(int flagged, List<String> misrouted)> measureLabelChipCollisions(
+      WidgetTester tester,
+      String viewportLabel,
+      Future<void> Function(WidgetTester) navigate,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpChart(tester, size: const Size(402, 874));
+      await navigate(tester);
+      await tester.pumpAndSettle();
+
+      final allTicks = data.allTicks;
+      final allTitles = allTicks.map((t) => t.titleEn).toSet();
+      expect(allTitles, hasLength(allTicks.length),
+          reason: 'two ticks share a title — the harvest below tells '
+              'them apart by text, so a collision would under-count');
+
+      Future<Set<String>> harvestSheet() async {
+        final sheet = find.byType(BottomSheet);
+        if (sheet.evaluate().isEmpty) return {};
+        final found = <String>{};
+        void sweep() {
+          for (final e in find
+              .descendant(of: sheet, matching: find.byType(Text))
+              .evaluate()) {
+            final t = (e.widget as Text).data;
+            if (t != null && allTitles.contains(t)) found.add(t);
+          }
+        }
+
+        sweep();
+        final scrollables = find
+            .descendant(of: sheet, matching: find.byType(Scrollable))
+            .evaluate()
+            .toList();
+        if (scrollables.isNotEmpty) {
+          final state = tester.state<ScrollableState>(
+              find.byWidget(scrollables.first.widget));
+          final max = state.position.maxScrollExtent;
+          if (max > 0) {
+            for (final frac in [0.5, 1.0]) {
+              state.position.jumpTo(max * frac);
+              await tester.pumpAndSettle();
+              sweep();
+            }
+          }
+        }
+        return found;
+      }
+
+      final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+      final liveLaneRect = tester.getRect(laneBox);
+      final livePlotClipRect =
+          tester.getRect(find.byType(SingleChildScrollView).last);
+      final livePlotWidth = plotWidthOf(tester);
+      final liveSpan = (data.spanEndAm - data.spanStartAm).abs().toDouble();
+      double xOf(int am) =>
+          (am - data.spanStartAm) / liveSpan * livePlotWidth;
+
+      final labeledTexts = {
+        for (final e in find
+            .descendant(of: laneBox, matching: find.byType(Text))
+            .evaluate())
+          if ((e.widget as Text).data != null) (e.widget as Text).data!,
+      }.intersection(allTitles);
+
+      final liveChipRects = <String, Rect>{};
+      for (final e in find
+          .descendant(
+            of: laneBox,
+            matching: find.bySemanticsLabel(RegExp(r'^\+\d+$')),
+          )
+          .evaluate()) {
+        final key = e.findAncestorWidgetOfExactType<Positioned>()?.key;
+        if (key == null) continue;
+        final finder = find.byKey(key);
+        if (finder.evaluate().isEmpty) continue;
+        final rect = tester.getRect(finder);
+        if (!livePlotClipRect.contains(rect.center)) continue;
+        liveChipRects['${(key as ValueKey).value}_'
+            '${(e.widget as Semantics).properties.label}'] = rect;
+      }
+
+      var flagged = 0;
+      final misrouted = <String>[];
+      for (final t in allTicks) {
+        if (!labeledTexts.contains(t.titleEn)) continue;
+        final nativeX =
+            liveLaneRect.left + xOf(t.am).clamp(0.0, livePlotWidth);
+        String? hitChip;
+        for (final entry in liveChipRects.entries) {
+          if (nativeX >= entry.value.left && nativeX <= entry.value.right) {
+            hitChip = entry.key;
+            break;
+          }
+        }
+        if (hitChip == null) continue;
+        flagged++;
+        final freshLaneRect = tester.getRect(laneBox);
+        final bareDy = freshLaneRect.height - 2;
+        final samplePoint = Offset(nativeX, freshLaneRect.top + bareDy);
+        final freshClipRect =
+            tester.getRect(find.byType(SingleChildScrollView).last);
+        if (!freshClipRect.contains(samplePoint)) continue;
+        await tester.tapAt(samplePoint);
+        await tester.pumpAndSettle();
+        final titles = await harvestSheet();
+        final popSheet = find.byType(BottomSheet);
+        if (popSheet.evaluate().isNotEmpty) {
+          Navigator.of(tester.element(popSheet)).pop();
+          await tester.pumpAndSettle();
+        }
+        if (!titles.contains(t.titleEn)) {
+          misrouted.add('$viewportLabel: "${t.titleEn}" (AM ${t.am}) '
+              'native x fell inside chip $hitChip\'s span; a bare tap '
+              'there reached $titles instead of its own sheet');
+        }
+      }
+      expect(tester.takeException(), isNull, reason: viewportLabel);
+      handle.dispose();
+      return (flagged, misrouted);
+    }
+
+    // The whole-span fit view (this item's own acceptance criteria names
+    // it explicitly), the densest NT decade this file already knows
+    // about, and three more spread across the corpus — the same
+    // five-viewport set the drift-characterization test below this group
+    // uses, so this is not just one decade's anecdote. Each is its own
+    // `testWidgets` — see the design note above `measureLabelChipCollisions`
+    // for why chaining them inside one test is not trustworthy here.
+    for (final vp in <(String, Future<void> Function(WidgetTester))>[
+      ('fit', (t) => wholeSpan(t)),
+      ('AM4036/100y', (t) => viewAt(t, 4036, years: 100)),
+      ('AM2558/200y', (t) => viewAt(t, 2558, years: 200)),
+      ('AM2200/400y', (t) => viewAt(t, 2200, years: 400)),
+      ('AM4098/30y', (t) => viewAt(t, 4098, years: 30)),
+    ]) {
+      testWidgets(
+          'the residual queue:16481 disclosed rather than closed at '
+          '${vp.$1}: does an individually-labelled tick\'s own on-screen '
+          'x fall inside a DIFFERENT chip\'s drawn span?', (tester) async {
+        final (flagged, misrouted) =
+            await measureLabelChipCollisions(tester, vp.$1, vp.$2);
+        expect(misrouted, isEmpty,
+            reason: 'queue:16481\'s disclosed residual is now LIVE at '
+                '${vp.$1} — an individually-labelled tick\'s own '
+                'on-screen x fell inside a different chip\'s drawn span, '
+                'and the `dx <= bestDx` tie-break sent a tap at that '
+                'tick\'s own position to the chip instead of its own '
+                'sheet ($flagged candidate case(s) at this viewport):\n'
+                '${misrouted.join('\n')}');
+      });
+    }
+
     testWidgets('characterizing chronologyChipPlan drift: how far a '
         'packed chip lands from its own bucket\'s true tick x, swept '
         'across the real corpus', (tester) async {

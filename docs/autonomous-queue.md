@@ -12483,6 +12483,16 @@ has never seen this repo.
       `GetMaterialApp` → `.router` migration branch, or close this as
       "won't fix"?
 
+      **Deferred a twenty-ninth consecutive iteration, 2026-09-18** — this
+      hour's NEXT_TASK.md picked measuring the `queue:16481` residual
+      instead (below — does an individually-labelled tick's own on-screen
+      x ever fall inside a different chip's drawn span, at real
+      viewports). Still branch-scale, still unattended-unsafe, still the
+      only fully open P2 checkbox besides the chronology chart, and the
+      question above to the user is still unanswered: start the
+      `GetMaterialApp` → `.router` migration branch, or close this as
+      "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -16493,6 +16503,55 @@ has never seen this repo.
       positional overstatement on-screen even now that tapping it
       resolves to the right event; (a)/(b)/(c) above remains the user's
       threshold call, not this fix's.
+
+      **2026-09-18, later — the residual above, measured directly rather
+      than left as "not observed at 2 viewports."** Swept 5 real
+      viewports: whole-span fit, AM4036/100y (the densest NT decade this
+      item already uses), AM2558/200y, AM2200/400y, AM4098/30y — the same
+      set `queue:16528`'s own drift-characterization test uses, each its
+      own fresh `pumpChart` (chaining several viewports inside one test
+      turned out to give a different, non-reproducible answer at
+      AM2200/400y run to run — see the design note in
+      `bible_chronology_test.dart` above `measureLabelChipCollisions` for
+      the harness gotcha this ran into and worked around; not shown to be
+      a `chronology_chart.dart` defect). For every individually-labelled
+      tick at each viewport: does its own on-screen native x fall inside
+      a DIFFERENT chip's rendered span? 3 such geometric cases found (2 at
+      AM4036/100y, 0 at fit/AM2558/200y/AM4098/30y, 1 at AM2200/400y —
+      "Jacob's Family Enters Egypt", AM 2128, inside
+      `chronoClusterChip_2106`'s span). For every one of those 3, a real
+      simulated bare-lane tap at that exact position still correctly
+      reached the tick's own sheet — 0 misrouted, stable across 3 repeat
+      runs.
+      **Why, not just that:** `chronologyChipPlan` (`chronology_chart.dart
+      :3268-3275`) visits buckets in ascending `lefts` order (each
+      bucket's own am-based anchor) and only ever pushes a chip's drawn
+      `left` RIGHTWARD (`left = max(desired, lastRight + gap)`), never
+      left. So any chip whose span reaches far enough to cover some
+      labelled tick T's native x must itself anchor at or before T's own
+      x — T is chronologically the same age or LATER than every tick in
+      that chip's bucket. `allTicks` (what the bare-lane search iterates)
+      is sorted by am too, so T always comes at or after that chip's own
+      candidates in iteration order, and `dx <= bestDx` always hands a
+      same-x tie to whichever is LATER — always T. A chip can only ever
+      drift into a tick that is the same age or later, never into one
+      that is earlier — the one direction that would lose the tie. This
+      is a structural reason the residual is not reachable while
+      `chronologyChipPlan` keeps this invariant, not a coincidence of the
+      5 sampled viewports; landed as 5 pinned `testWidgets` (one per
+      viewport, `test/bible_chronology_test.dart`, search
+      `queue:16481`) so a future change to the packer's drift direction
+      would be caught. `flutter analyze` clean; full
+      `bible_chronology_test.dart` (134 tests) green; not deployed
+      (test-only, no `lib/` change).
+      A gap named but not chased down (per this slice's own hour-sized
+      scope): the collision search only harvests "+N"-labelled chips
+      (`find.bySemanticsLabel(RegExp(r'^\+\d+$'))`); a bucket-of-one
+      "fold" chip is labelled with the plain event title instead and is
+      invisible to that filter. The same rightward-only-drift argument
+      above applies to it too (it is placed by the same function, same
+      invariant), so this is not expected to change the 0-misrouted
+      result, but it was not independently swept.
 
       **Two more findings, filed as new items below, not fixed here
       (out of scope for this slice):**
