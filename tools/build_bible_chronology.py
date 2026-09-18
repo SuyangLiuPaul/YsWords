@@ -523,6 +523,17 @@ def zh_refs(refs, trad):
     return "、".join(zh_ref(r, trad) for r in refs)
 
 
+def en_names(items):
+    """Oxford-comma English list, for `contested_note`'s derived name
+    list — never hand-typed, so it can't drift from the ids that
+    actually triggered the note."""
+    if len(items) <= 1:
+        return "".join(items)
+    if len(items) == 2:
+        return "%s and %s" % (items[0], items[1])
+    return "%s and %s" % (", ".join(items[:-1]), items[-1])
+
+
 SCHEMES = [
     {
         "id": "masoretic-ussher",
@@ -871,28 +882,61 @@ COMPUTED_NOTE = {
     ),
 }
 
-CONTESTED_NOTE = {
-    "en": (
-        "Inside this band the two scales disagree by about 170 years. "
-        "The lifelines put Abram's birth at AM 2008 (1996 BC on this "
-        "anchor); assets/bible_timeline.json places his call at 2091 BC "
-        "on the late-date scheme, which is earlier than the lifelines "
-        "have him born. Both are shown where their own source puts "
-        "them. Neither has been shifted to make the picture tidy."
-    ),
-    "zh-Hans": (
-        "在这一带，两套刻度相差约 170 年。生平横条把亚伯兰的出生定在创世纪元 "
-        "2008 年（本锚点下为公元前 1996 年）；assets/bible_timeline.json 依晚期"
-        "定年方案把他蒙召定在公元前 2091 年，比横条所记的出生还早。两者都按各自"
-        "来源的位置照实画出，没有为了图面好看而挪动任何一方。"
-    ),
-    "zh-Hant": (
-        "在這一帶，兩套刻度相差約 170 年。生平橫條把亞伯蘭的出生定在創世紀元 "
-        "2008 年（本錨點下為公元前 1996 年）；assets/bible_timeline.json 依晚期"
-        "定年方案把他蒙召定在公元前 2091 年，比橫條所記的出生還早。兩者都按各自"
-        "來源的位置照實畫出，沒有為了圖面好看而挪動任何一方。"
-    ),
-}
+def contested_note(offset_years, offset_person_ids, people):
+    """Trilingual copy for the contested band's `_meta.contested.note`.
+
+    Assembled from OFFSET_YEARS/OFFSET_PERSON_IDS, which `build()`
+    derives from `assets/family_tree.json` rather than hand-typing, so
+    the sentence can never claim a count or a number the arithmetic
+    did not produce. It names two things on the same late-date BC
+    scale: the events `assets/bible_timeline.json` places (Abram's
+    call, the reason this band exists at all) and the patriarch years
+    `assets/family_tree.json` states directly, which the Family Tree
+    page reads. Both read ~`offset_years` years earlier than this
+    chart's Anno Mundi anchor puts the same people, for the same
+    anchor mismatch — see `two_scale_note` for the per-person figures
+    this sentence is summarising.
+    """
+    names_en = en_names([people[pid]["name"] for pid in offset_person_ids])
+    names_hans = "、".join(
+        people[pid]["nameZhHans"] for pid in offset_person_ids)
+    names_hant = "、".join(
+        people[pid]["nameZhHant"] for pid in offset_person_ids)
+    return {
+        "en": (
+            "Inside this band the two scales disagree by about %d years. "
+            "The lifelines put Abram's birth at AM 2008 (1996 BC on this "
+            "anchor); assets/bible_timeline.json places his call at 2091 "
+            "BC on the late-date scheme, which is earlier than the "
+            "lifelines have him born. assets/family_tree.json — what the "
+            "Family Tree page reads — is dated on that same late-date "
+            "scale: %s each show about %d years earlier there than on "
+            "this chart, for the same anchor mismatch. Every figure is "
+            "shown where its own source puts it. Nothing has been "
+            "shifted to make the picture tidy, and neither page is "
+            "wrong." % (offset_years, names_en, offset_years)
+        ),
+        "zh-Hans": (
+            "在这一带，两套刻度相差约 %d 年。生平横条把亚伯兰的出生定在创世"
+            "纪元 2008 年（本锚点下为公元前 1996 年）；assets/bible_timeline"
+            ".json 依晚期定年方案把他蒙召定在公元前 2091 年，比横条所记的出"
+            "生还早。assets/family_tree.json——「家谱」页面所读取的数据——用"
+            "的正是同一晚期定年方案：%s在那里显示的年份都比本图早约 %d 年，"
+            "同一个锚点差异所致。每一个数字都按各自来源的位置照实画出，没有"
+            "为了图面好看而挪动任何一方，两个页面也都没有错。"
+            % (offset_years, names_hans, offset_years)
+        ),
+        "zh-Hant": (
+            "在這一帶，兩套刻度相差約 %d 年。生平橫條把亞伯蘭的出生定在創世"
+            "紀元 2008 年（本錨點下為公元前 1996 年）；assets/bible_timeline"
+            ".json 依晚期定年方案把他蒙召定在公元前 2091 年，比橫條所記的出"
+            "生還早。assets/family_tree.json——「家譜」頁面所讀取的數據——用"
+            "的正是同一晚期定年方案：%s在那裡顯示的年份都比本圖早約 %d 年，"
+            "同一個錨點差異所致。每一個數字都按各自來源的位置照實畫出，沒有"
+            "為了圖面好看而挪動任何一方，兩個頁面也都沒有錯。"
+            % (offset_years, names_hant, offset_years)
+        ),
+    }
 
 
 def two_scale_note(person, birth, death):
@@ -1109,6 +1153,50 @@ def build():
         entry.update(two_scale_note(person, birth, death))
         lifelines.append(entry)
 
+    # ── Derive the family_tree.json BC-scale offset ────────────────
+    #
+    # `two_scale_note` above already attaches a per-person caveat to
+    # 6 of the 7 drawn lifelines whose family_tree.json record is
+    # dated `bc` rather than `am` (Esau's is skipped there because his
+    # record has no deathYear to contrast — see the comment on that
+    # tuple). This recomputes the offset independently, from the raw
+    # `bc` records themselves rather than from those notes, over ALL 7,
+    # so a future edit to family_tree.json or to CREATION_BC that broke
+    # the ~170-year figure fails the build instead of leaving stale
+    # prose on screen. Feeds `_meta.familyTreeScaleOffset` and
+    # `contested_note()`; the completeness test lives in
+    # test/bible_chronology_test.dart.
+    offset_years = None
+    offset_person_ids = []
+    for entry in lifelines:
+        person = people[entry["personId"]]
+        if person.get("yearSystem") != "bc":
+            continue
+        fam_birth_bc = -person["birthYear"]
+        am_birth_bc = CREATION_BC - entry["birthAm"]
+        birth_offset = fam_birth_bc - am_birth_bc
+        if entry["deathAm"] is not None and "deathYear" in person:
+            fam_death_bc = -person["deathYear"]
+            am_death_bc = CREATION_BC - entry["deathAm"]
+            death_offset = fam_death_bc - am_death_bc
+            if death_offset != birth_offset:
+                problems.append(
+                    "%s: family_tree.json birth offset %d years != its "
+                    "own death offset %d years"
+                    % (entry["personId"], birth_offset, death_offset))
+        if offset_years is None:
+            offset_years = birth_offset
+        elif birth_offset != offset_years:
+            problems.append(
+                "%s: family_tree.json offset %d years != the %d years "
+                "every other bc-system drawn lifeline uses"
+                % (entry["personId"], birth_offset, offset_years))
+        offset_person_ids.append(entry["personId"])
+    family_tree_scale_offset = {
+        "offsetYears": offset_years,
+        "personIds": sorted(offset_person_ids),
+    }
+
     flood = birth_of["noah"] + 600
     markers = [
         marker("creation", 0, "antediluvian",
@@ -1275,7 +1363,7 @@ def build():
             "startAm": min(x["am"] for x in misordered),
             "endAm": computed_end,
             "eventCount": len(misordered),
-            "note": CONTESTED_NOTE,
+            "note": contested_note(offset_years, offset_person_ids, people),
         }
 
     doc = {
@@ -1339,6 +1427,21 @@ def build():
             # as translatedNotDied, mirrored to the other end of the
             # bar.
             "createdNotBorn": CREATED_NOT_BORN,
+            # The drawn lifelines whose family_tree.json record uses
+            # its own `bc` scale rather than the `am` one the other 19
+            # drawn lifelines match exactly (see the cross-check just
+            # above and "years agree with the independently curated
+            # family tree" in test/bible_chronology_test.dart for that
+            # half). `offsetYears` and `personIds` are recomputed here
+            # from assets/family_tree.json at build time, not
+            # hand-typed — see the derivation right after the
+            # CHILD_ANCHORED loop above. A future edit to
+            # family_tree.json that changed the offset, or added an
+            # 8th `bc`-system drawn lifeline at a DIFFERENT offset,
+            # fails the build (see `problems` there) rather than
+            # silently drifting from `contested_note()`'s prose, which
+            # is built from these same two values.
+            "familyTreeScaleOffset": family_tree_scale_offset,
         },
         "schemes": SCHEMES,
         "lines": LINES,

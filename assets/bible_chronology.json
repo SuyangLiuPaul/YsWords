@@ -91,7 +91,19 @@
           "Genesis 5:1-2"
         ]
       }
-    ]
+    ],
+    "familyTreeScaleOffset": {
+      "offsetYears": 170,
+      "personIds": [
+        "abraham",
+        "esau",
+        "isaac",
+        "ishmael",
+        "jacob",
+        "joseph",
+        "sarah"
+      ]
+    }
   },
   "schemes": [
     {
@@ -2365,9 +2377,9 @@
     "endAm": 2369,
     "eventCount": 8,
     "note": {
-      "en": "Inside this band the two scales disagree by about 170 years. The lifelines put Abram's birth at AM 2008 (1996 BC on this anchor); assets/bible_timeline.json places his call at 2091 BC on the late-date scheme, which is earlier than the lifelines have him born. Both are shown where their own source puts them. Neither has been shifted to make the picture tidy.",
-      "zh-Hans": "在这一带，两套刻度相差约 170 年。生平横条把亚伯兰的出生定在创世纪元 2008 年（本锚点下为公元前 1996 年）；assets/bible_timeline.json 依晚期定年方案把他蒙召定在公元前 2091 年，比横条所记的出生还早。两者都按各自来源的位置照实画出，没有为了图面好看而挪动任何一方。",
-      "zh-Hant": "在這一帶，兩套刻度相差約 170 年。生平橫條把亞伯蘭的出生定在創世紀元 2008 年（本錨點下為公元前 1996 年）；assets/bible_timeline.json 依晚期定年方案把他蒙召定在公元前 2091 年，比橫條所記的出生還早。兩者都按各自來源的位置照實畫出，沒有為了圖面好看而挪動任何一方。"
+      "en": "Inside this band the two scales disagree by about 170 years. The lifelines put Abram's birth at AM 2008 (1996 BC on this anchor); assets/bible_timeline.json places his call at 2091 BC on the late-date scheme, which is earlier than the lifelines have him born. assets/family_tree.json — what the Family Tree page reads — is dated on that same late-date scale: Abraham, Ishmael, Isaac, Esau, Jacob (Israel), Joseph and Sarah each show about 170 years earlier there than on this chart, for the same anchor mismatch. Every figure is shown where its own source puts it. Nothing has been shifted to make the picture tidy, and neither page is wrong.",
+      "zh-Hans": "在这一带，两套刻度相差约 170 年。生平横条把亚伯兰的出生定在创世纪元 2008 年（本锚点下为公元前 1996 年）；assets/bible_timeline.json 依晚期定年方案把他蒙召定在公元前 2091 年，比横条所记的出生还早。assets/family_tree.json——「家谱」页面所读取的数据——用的正是同一晚期定年方案：亚伯拉罕、以实玛利、以撒、以扫、雅各（以色列）、约瑟、撒拉在那里显示的年份都比本图早约 170 年，同一个锚点差异所致。每一个数字都按各自来源的位置照实画出，没有为了图面好看而挪动任何一方，两个页面也都没有错。",
+      "zh-Hant": "在這一帶，兩套刻度相差約 170 年。生平橫條把亞伯蘭的出生定在創世紀元 2008 年（本錨點下為公元前 1996 年）；assets/bible_timeline.json 依晚期定年方案把他蒙召定在公元前 2091 年，比橫條所記的出生還早。assets/family_tree.json——「家譜」頁面所讀取的數據——用的正是同一晚期定年方案：亞伯拉罕、以實瑪利、以撒、以掃、雅各（以色列）、約瑟、撒拉在那裡顯示的年份都比本圖早約 170 年，同一個錨點差異所致。每一個數字都按各自來源的位置照實畫出，沒有為了圖面好看而挪動任何一方，兩個頁面也都沒有錯。"
     }
   }
 }

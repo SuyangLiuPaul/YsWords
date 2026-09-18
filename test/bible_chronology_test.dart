@@ -1106,6 +1106,99 @@ void main() {
       }
     });
 
+    // The `am`/`bc` cross-check above ("years agree with the
+    // independently curated family tree") only ever looked at the 19
+    // `am`-system drawn lifelines, because that test's own guard skips
+    // anything that is not `am`. This is its mirror for the other 7:
+    // family_tree.json dates Abraham, Sarah, Ishmael, Isaac, Esau,
+    // Jacob and Joseph on its own `bc` scale instead — not an error,
+    // a different anchor (see `contested_note()` and `two_scale_note`
+    // in tools/build_bible_chronology.py) — and every one of those 7
+    // sits exactly the SAME number of years earlier there than on this
+    // chart, on both the birth and (where family_tree.json states one)
+    // the death end. `_meta.familyTreeScaleOffset` is the completeness
+    // invariant the builder derives that offset into; this test
+    // recomputes the offset independently, from the raw JSON, rather
+    // than trusting the builder's own arithmetic back at itself.
+    test(
+        '_meta.familyTreeScaleOffset names exactly the drawn lifelines '
+        "whose family_tree.json record is 'bc', at one single offset, "
+        'recomputed independently from the raw years', () {
+      const creationBc = 4004;
+      final bcLifelines = data.lifelines.where((l) {
+        final fam = familyTree[l.personId];
+        return fam != null && fam['yearSystem'] == 'bc';
+      }).toList();
+      expect(bcLifelines, isNotEmpty,
+          reason: 'family_tree.json currently has no bc-system person '
+              'among the drawn lifelines — this test would pass '
+              'vacuously and the offset claim would go unchecked');
+
+      int? offsetYears;
+      for (final l in bcLifelines) {
+        final fam = familyTree[l.personId]!;
+        final famBirthBc = -(fam['birthYear'] as int);
+        final amBirthBc = creationBc - l.birthAm;
+        final birthOffset = famBirthBc - amBirthBc;
+        offsetYears ??= birthOffset;
+        expect(birthOffset, offsetYears,
+            reason: '${l.personId} birth offset $birthOffset years '
+                'disagrees with the $offsetYears years every other '
+                'bc-system drawn lifeline uses');
+
+        if (l.deathAm != null && fam.containsKey('deathYear')) {
+          final famDeathBc = -(fam['deathYear'] as int);
+          final amDeathBc = creationBc - l.deathAm!;
+          final deathOffset = famDeathBc - amDeathBc;
+          expect(deathOffset, offsetYears,
+              reason: '${l.personId} death offset $deathOffset years '
+                  'disagrees with its own birth offset $offsetYears '
+                  'years');
+        }
+      }
+
+      final meta =
+          (raw['_meta'] as Map)['familyTreeScaleOffset'] as Map;
+      expect(meta['offsetYears'], offsetYears,
+          reason: 'the recomputed offset must equal the one the builder '
+              'recorded in _meta');
+      final expectedIds = bcLifelines.map((l) => l.personId).toList()
+        ..sort();
+      expect((meta['personIds'] as List).cast<String>(), expectedIds,
+          reason: '_meta.familyTreeScaleOffset.personIds must name '
+              'exactly the drawn bc-system lifelines, sorted');
+      expect(
+        expectedIds,
+        ['abraham', 'esau', 'isaac', 'ishmael', 'jacob', 'joseph', 'sarah'],
+        reason: 'the set this slice measured — if it changed, the '
+              "contested band's note (built from the same set) needs "
+              're-checking too, not just this assertion',
+      );
+      expect(offsetYears, 170,
+          reason: 'the figure this slice measured for every one of '
+              'them — a change here means family_tree.json moved, not '
+              'that this test is stale');
+    });
+
+    test(
+        "the contested band's note names assets/family_tree.json, not "
+        'only assets/bible_timeline.json, in all three locales',
+        () {
+      final note = data.contested!.note;
+      for (final locale in const ['en', 'zh-Hans', 'zh-Hant']) {
+        expect(note[locale], isNotNull,
+            reason: 'contested.note is missing a $locale entry');
+        expect(note[locale], contains('family_tree.json'),
+            reason: 'the reader who sees this band and then taps '
+                'Abraham on the Family Tree page needs the same note '
+                'to explain the different year — $locale currently '
+                "does not mention family_tree.json");
+        expect(note[locale], contains('bible_timeline.json'),
+            reason: '$locale must still name the events source, the '
+                'reason the band exists at all');
+      }
+    });
+
     test("startKind is 'born' for every lifeline except Adam ('created')",
         () {
       for (final l in data.lifelines) {

@@ -12521,6 +12521,16 @@ has never seen this repo.
       above to the user is still unanswered: start the `GetMaterialApp`
       → `.router` migration branch, or close this as "won't fix"?
 
+      **Deferred a thirty-third consecutive iteration, 2026-09-19** —
+      this hour's NEXT_TASK.md picked the chronology chart's
+      family-tree-scale-offset slice instead (below — the app states two
+      different BC years for the same 7 patriarchs, on two different
+      pages, and neither page explained why). Still branch-scale, still
+      unattended-unsafe, still the only fully open P2 checkbox besides
+      the chronology chart, and the question above to the user is still
+      unanswered: start the `GetMaterialApp` → `.router` migration
+      branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -16584,6 +16594,87 @@ has never seen this repo.
       this iteration's ~6-minute watch budget (still `in_progress` at
       last check, ~6 min after push) — next iteration's step 0 should
       check it before picking anything else.
+
+      **2026-09-19 slice — the app states two different BC years for the
+      same person, on two different pages, and neither page said why.**
+      Same defect class as the Enoch/Adam slices above — a plausible,
+      wrong-sounding-but-not-actually-wrong claim about the chart — moved
+      from the verb to the year, and cross-surface rather than inside one
+      bar. `assets/family_tree.json` dates 19 of the 26 drawn lifelines
+      on its own `am` (Anno Mundi) scale, matching the chart exactly on
+      both ends, zero drift — already covered by the "years agree with
+      the independently curated family tree" test. The other 7 —
+      Abraham, Ishmael, Isaac, Esau, Jacob, Joseph, Sarah — are dated
+      `bc` there instead, on a late-date scheme ~170 years EARLIER than
+      this chart's Ussher anchor puts the same people, on both birth and
+      death, with every lifespan identical (already the fact
+      `two_scale_note()` puts on 6 of those 7 person sheets — Esau is the
+      documented exception, since his `family_tree.json` record has no
+      `deathYear` to contrast). Not a defect in either file: two
+      chronologies genuinely disagree, per the standing rule that a
+      cross-witness disagreement is recorded, not "corrected." What was
+      missing is that the band-level `CONTESTED_NOTE`
+      (`tools/build_bible_chronology.py`), which already explains the
+      same ~170-year gap for `bible_timeline.json`'s events layer, never
+      named `family_tree.json` — so a reader who sees the contested band
+      and then taps Abraham on the Family Tree page gets two different
+      years with no link between the two explanations.
+
+      `tools/build_bible_chronology.py`: after the two lifeline-building
+      loops, a new block derives the offset independently of
+      `two_scale_note()` — for every drawn lifeline whose
+      `family_tree.json` record is `bc`, computes `(-birthYear) - (4004 -
+      birthAm)`, asserts every one of the 7 gives the same value (and
+      that birth/death agree with each other where both exist), and
+      fails the build (`problems`, `SystemExit(1)`) if a future edit ever
+      broke that uniformity or introduced an outlier. Feeds two things:
+      `_meta.familyTreeScaleOffset` (`{offsetYears, personIds}`, sorted,
+      derived — not hand-typed) and a new `contested_note()` function
+      that replaces the static `CONTESTED_NOTE` dict, building the
+      trilingual band-level note from that same derived offset and an
+      Oxford-joined (`en_names()`) / 顿号-joined name list, so the prose
+      can never state a number or a name list the arithmetic did not
+      produce. The note now names `assets/family_tree.json` — "what the
+      Family Tree page reads" — alongside `bible_timeline.json`, and
+      says plainly that the ~170-year-earlier figure there is the same
+      anchor mismatch, not an error on either page.
+
+      **The refuter's counterexample is the reason the claim stays
+      narrow.** Asked to re-derive all five claims from the raw JSON
+      rather than confirm them, an independent agent confirmed the 19/7
+      split, the exact 170-year offset on both ends for all 7, and the
+      uniformity — then, unprompted, went looking for whether the same
+      offset holds anywhere else in `family_tree.json`'s wider ~242-
+      person `bc` half. It compared Moses's `bible_chronology.json`
+      event-marker years (`moses_born`/`moses_dies`) against his
+      `family_tree.json` record and got a diff of **-1 year**, not 170 —
+      a clean counterexample. The shipped note and the shipped `_meta`
+      invariant only ever claimed the offset for these 7 drawn
+      lifelines; this is recorded so a later pass doesn't reach for the
+      wider (false) generalization without re-deriving it, the same
+      shape as the Enoch/Adam slices' own refuter catches.
+
+      Two new tests in `test/bible_chronology_test.dart`: one recomputes
+      the offset from the raw asset + `family_tree.json` independently
+      of the builder and checks it against `_meta.familyTreeScaleOffset`
+      (both the `offsetYears` and the sorted `personIds`, plus the exact
+      measured set/value as a pin); one checks the contested band's note
+      names `family_tree.json` (not only `bible_timeline.json`) in all
+      three locales. Both proved red first — perturbed `offsetYears` to
+      171 and swapped `family_tree.json`→`nowhere.json` in the note by
+      hand, watched both name their exact failure, then regenerated from
+      the builder and confirmed the asset was byte-identical to the
+      pre-perturbation file. Builder re-run twice more after that,
+      byte-identical both times; `_meta.count` (26), `computedEndAm`
+      (2369) and `spanEndAm` (4098) all unmoved — this slice changes no
+      geometry, only which sources a note names. `flutter analyze` clean
+      repo-wide. Full suite (356 files) run in 7 foreground chunks of
+      ≤55, all green.
+
+      Asset + code + test only, no version bump, no deploy — this item's
+      own guard rail, unchanged even though user-visible copy moved (the
+      contested-band note is longer). Checkbox stays open; the chart
+      item spans many slices.
 
 - [ ] **Follow-up, filed not built: the `matriarchs` line id/name is
       deliberately plural.** Noted 2026-09-17 landing the Sarah slice
