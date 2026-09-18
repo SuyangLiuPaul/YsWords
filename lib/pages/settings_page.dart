@@ -36,6 +36,7 @@ import 'package:yahwehs_words/pages/projection_page.dart' show kProjectionTypeSt
 import 'package:yahwehs_words/models/verse.dart';
 import 'package:yahwehs_words/constants/bible_versions.dart';
 import 'package:yahwehs_words/pages/about_page.dart';
+import 'package:yahwehs_words/pages/changelog_page.dart';
 import 'package:yahwehs_words/pages/help_page.dart' show openHelp;
 import 'package:yahwehs_words/utils/ai_markdown.dart' show parseAiMarkdown;
 import 'package:yahwehs_words/utils/theme_color_helpers.dart';
@@ -398,6 +399,21 @@ class _SettingsPageBodyState extends State<_SettingsPageBody> {
                       'Help & shortcuts'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => openHelp(context),
+                ),
+              ),
+              // 2026-09-18: the release notes, one tap away. They lived only
+              // behind a button on the About page, where the owner could not
+              // find them (「可以有个地方放最新的release notes吗」).
+              Card(
+                elevation: 0,
+                child: ListTile(
+                  key: const Key('settings.changelog'),
+                  leading: const Icon(Icons.new_releases_outlined),
+                  title: Text(uiStrings['changelogTitle']?[settings.locale] ??
+                      "What's new"),
+                  subtitle: Text('v$kAppVersion'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => pushPage(const ChangelogPage()),
                 ),
               ),
               SizedBox(height: 12 * s),
