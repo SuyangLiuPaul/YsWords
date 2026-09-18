@@ -4457,17 +4457,26 @@ const uiStrings = {
     'en':
         '© Yahweh De Hua Ministry · used with permission.',
   },
+  // 2026-09-18: his own name for the current text is 「2026年第二版」 (the
+  // copyright line below); it is the electronic edition, not the 2025
+  // print (his ruling 三). English name: his choice, 「LJK Chinese
+  // translation」.
   'aboutVerLjk': {
-    'zh-Hans': 'LJK1 / LJK2 梁家铿译本（译者现行电子版，简 / 繁）',
-    'zh-Hant': 'LJK1 / LJK2 梁家鏗譯本（譯者現行電子版，簡 / 繁）',
-    // 2026-09-18: the English name is the translator's own choice —
-    // 「LJK Chinese translation」, not a surname-based gloss.
-    'en': 'LJK1 / LJK2 — LJK Chinese translation (the translator\'s current electronic edition, simplified / traditional)',
+    'zh-Hans': 'LJK1 / LJK2 梁家铿译本（2026年第二版，简 / 繁）',
+    'zh-Hant': 'LJK1 / LJK2 梁家鏗譯本（2026年第二版，簡 / 繁）',
+    'en': 'LJK1 / LJK2 — LJK Chinese translation (2026, 2nd edition, simplified / traditional)',
   },
+  // 2026-09-18: the translator's own copyright line, verbatim (his
+  // web app's footer, commits "update copyright info" / "fix copyright
+  // text"), where this used to name 圣经释经事工. Two lines, as he sets
+  // them. English: his title kept as printed; the rest rendered plainly,
+  // since he published no English line.
   'aboutLicenseLjk': {
-    'zh-Hans': '© 圣经释经事工 · 经授权使用。',
-    'zh-Hant': '© 聖經釋經事工 · 經授權使用。',
-    'en': '© Bible Exegesis Ministry · used with permission.',
+    'zh-Hans': '《新约圣经·梁家铿译本（注释本）》© 2026年第二版\n版权梁家铿所有，经授权使用。',
+    'zh-Hant': '《新約聖經·梁家鏗譯本（註釋本）》© 2026年第二版\n版權梁家鏗所有，經授權使用。',
+    // His own line, as his web app prints it: an English rendering would
+    // need his name in roman letters, which he does not use.
+    'en': '《新约圣经·梁家铿译本（注释本）》© 2026年第二版\n版权梁家铿所有，经授权使用。',
   },
   'aboutNivRemovedNote': {
     'zh-Hans': 'NIV（新国际译本）此前曾内置，但已于 2026 年 5 月移除——'
