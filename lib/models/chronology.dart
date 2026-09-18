@@ -136,6 +136,12 @@ class Lifeline {
 
   final int birthAm;
 
+  /// `'born'`, or `'created'` (Adam — Genesis 5:1-2 has God make him,
+  /// not beget him; see `CREATED` in `tools/build_bible_chronology.py`).
+  /// Mirrors [endKind] at the other end of the bar. AM 0 is a real,
+  /// solid year either way — only the verb changes.
+  final String startKind;
+
   /// Null when Scripture gives no death year. Drawn open-ended rather
   /// than guessed. Esau has been in this state since 2026-09-17 —
   /// Genesis 25:26 states his birth but no verse ever gives his death
@@ -177,6 +183,7 @@ class Lifeline {
     required this.fatherId,
     this.anchorChildId,
     required this.birthAm,
+    this.startKind = 'born',
     required this.deathAm,
     this.endKind = 'died',
     required this.lifespan,
@@ -212,6 +219,7 @@ class Lifeline {
         fatherId: j['fatherId'] as String?,
         anchorChildId: j['anchorChildId'] as String?,
         birthAm: (j['birthAm'] as num).toInt(),
+        startKind: j['startKind'] as String? ?? 'born',
         deathAm: (j['deathAm'] as num?)?.toInt(),
         endKind: j['endKind'] as String? ?? 'died',
         lifespan: (j['lifespan'] as num?)?.toInt() ?? 0,

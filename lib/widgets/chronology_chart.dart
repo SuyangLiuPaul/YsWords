@@ -2298,14 +2298,23 @@ class _ChronologyChartState extends State<ChronologyChart> {
                   child: ListView(
                     shrinkWrap: true,
                     children: [
-                      Text(
-                        '${_s('chronologyBorn', 'Born')} '
-                        '${formatChronologyYear(l.birthAm, active, locale)}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: scheme.onSurface.withValues(alpha: 0.85),
-                        ),
-                      ),
+                      Builder(builder: (_) {
+                        // 'created' is a real, solid AM 0 — only
+                        // Adam's verb differs from "Born", never
+                        // whether or how the year is shown. See
+                        // [Lifeline.startKind].
+                        final startVerb = l.startKind == 'created'
+                            ? _s('chronologyCreated', 'Created')
+                            : _s('chronologyBorn', 'Born');
+                        return Text(
+                          '$startVerb '
+                          '${formatChronologyYear(l.birthAm, active, locale)}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onSurface.withValues(alpha: 0.85),
+                          ),
+                        );
+                      }),
                       Builder(builder: (_) {
                         // 'translated' is a real, stated deathAm year —
                         // only Enoch's verb differs from "Died", never

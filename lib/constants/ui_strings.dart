@@ -7274,6 +7274,11 @@ const uiStrings = {
     'zh-Hans': '生于',
     'zh-Hant': '生於',
   },
+  'chronologyCreated': {
+    'en': 'Created',
+    'zh-Hans': '受造于',
+    'zh-Hant': '受造於',
+  },
   'chronologyDied': {
     'en': 'Died',
     'zh-Hans': '卒于',

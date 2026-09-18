@@ -12511,6 +12511,16 @@ has never seen this repo.
       start the `GetMaterialApp` → `.router` migration branch, or close
       this as "won't fix"?
 
+      **Deferred a thirty-second consecutive iteration, 2026-09-18** —
+      this hour's NEXT_TASK.md picked the chronology chart's `startKind`
+      slice instead (below — Adam's person sheet said "Born" at AM 0
+      while the chart's own `creation` marker at the identical year said
+      "Creation", the Enoch defect mirrored to the start of the bar).
+      Still branch-scale, still unattended-unsafe, still the only fully
+      open P2 checkbox besides the chronology chart, and the question
+      above to the user is still unanswered: start the `GetMaterialApp`
+      → `.router` migration branch, or close this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw

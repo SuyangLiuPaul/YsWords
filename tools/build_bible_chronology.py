@@ -464,11 +464,43 @@ TRANSLATED_DERIVATION = {
 }
 
 
+# The bar's third START-state, mirroring TRANSLATED/OPEN_ENDED for the
+# other end. Adam is the only one of the 26 drawn lifelines whose start
+# citation (Genesis 5:1-2, already his own ref) uses creation/making
+# language — "created", "made" — rather than any birth or begetting
+# verb. Of the other 25, 24 are CHAIN rows introduced by an explicit
+# begetting formula (a father, and a stated or derived age at the
+# birth). Sarah is the exception to THAT count, not to this one: her
+# fatherId is also None (she is CHILD_ANCHORED, not a CHAIN row), but
+# she is never described with creation language either, so she still
+# correctly defaults to "born" — Genesis 20:12 has Abraham call her
+# "the daughter of my father", i.e. his OWN father's daughter
+# (traditionally Terah), making her his half-sister sharing a father,
+# not his daughter; either reading still leaves her an ordinary birth,
+# only her begetting age going unstated. A second near-miss stays OUT
+# of this set for an unrelated reason: Eve (Genesis 2:22, "made" not
+# born) has no stated lifespan anywhere and is not drawn at all, so
+# there is no bar to label her creation on.
+CREATED = {"adam"}
+
+# Mirrors TRANSLATED_NOT_DIED for `_meta.createdNotBorn` — same
+# completeness-invariant pattern: a later addition to CREATED can't
+# silently drift from what the UI actually cites.
+CREATED_NOT_BORN = [
+    {"id": "adam", "refs": ["Genesis 5:1-2"]},
+]
+
+
 def end_kind(pid, death):
     """The third state alongside "died"/"unknown" — see TRANSLATED."""
     if pid in TRANSLATED:
         return "translated"
     return "unknown" if death is None else "died"
+
+
+def start_kind(pid):
+    """The birth-bar's third state — see CREATED. Mirrors end_kind()."""
+    return "created" if pid in CREATED else "born"
 
 # Chinese book names used when phrasing the derivation sentences.
 BOOK_ZH = {
@@ -1000,6 +1032,7 @@ def build():
             "fatherId": father,
             "birthAm": birth,
             "deathAm": death,
+            "startKind": start_kind(pid),
             "endKind": end_kind(pid, death),
             "lifespan": lived,
             "refs": bref + [r for r in dref if r not in bref],
@@ -1065,6 +1098,7 @@ def build():
             "anchorChildId": anchor_child,
             "birthAm": birth,
             "deathAm": death,
+            "startKind": start_kind(pid),
             "endKind": end_kind(pid, death),
             "lifespan": lived,
             "refs": bref + [r for r in dref if r not in bref],
@@ -1300,6 +1334,11 @@ def build():
             # grows, this has to grow with it or the completeness test
             # in test/bible_chronology_test.dart catches the drift.
             "translatedNotDied": TRANSLATED_NOT_DIED,
+            # Every lifeline whose startKind is "created", not "born"
+            # (see CREATED above). Same completeness-invariant pattern
+            # as translatedNotDied, mirrored to the other end of the
+            # bar.
+            "createdNotBorn": CREATED_NOT_BORN,
         },
         "schemes": SCHEMES,
         "lines": LINES,

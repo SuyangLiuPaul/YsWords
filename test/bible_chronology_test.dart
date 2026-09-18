@@ -1058,6 +1058,66 @@ void main() {
       }
     });
 
+    // Pins Adam's third start-state, the same defect shape as Enoch's
+    // above, moved to the other end of the bar: the person sheet said
+    // "Born 4004 BC" while the chart's own `creation` marker at the
+    // identical AM 0 said "Creation". The textual argument: every
+    // other CHAIN row is introduced by an explicit begetting formula;
+    // Genesis 5:1-2 — Adam's own refs — has God make him "in the
+    // likeness of God", never begat, never born.
+    test(
+        "Adam's startKind is 'created', not 'born' — his stated year "
+        'stays right, only the word for it was wrong', () {
+      final adam = data.lifelines.firstWhere((l) => l.personId == 'adam');
+      expect(adam.birthAm, 0);
+      expect(adam.fatherId, isNull);
+      expect(adam.startKind, 'created');
+      expect(adam.refs, contains('Genesis 5:1-2'));
+
+      // Only the label changed — AM 0 did not move.
+      expect(data.computedEndAm, 2369);
+      expect(data.spanEndAm, 4098);
+    });
+
+    test(
+        '_meta.createdNotBorn is exactly the lifelines whose startKind '
+        "is 'created', and every ref it names is one the lifeline's own "
+        'refs actually carries', () {
+      final metaList =
+          ((raw['_meta'] as Map)['createdNotBorn'] as List).cast<Map>();
+      final createdIds = data.lifelines
+          .where((l) => l.startKind == 'created')
+          .map((l) => l.personId)
+          .toSet();
+      expect(metaList.map((e) => e['id'] as String).toSet(), createdIds,
+          reason: '_meta.createdNotBorn must name exactly the lifelines '
+              "whose startKind is 'created' — this is the completeness "
+              "invariant a future addition to CREATED can't silently "
+              'drift from');
+      for (final entry in metaList) {
+        final id = entry['id'] as String;
+        final refs = (entry['refs'] as List).cast<String>();
+        final lifeline = data.lifelines.firstWhere((l) => l.personId == id);
+        for (final ref in refs) {
+          expect(lifeline.refs, contains(ref),
+              reason: '$id.refs is missing $ref, declared in '
+                  '_meta.createdNotBorn');
+        }
+      }
+    });
+
+    test("startKind is 'born' for every lifeline except Adam ('created')",
+        () {
+      for (final l in data.lifelines) {
+        if (l.personId == 'adam') {
+          expect(l.startKind, 'created');
+        } else {
+          expect(l.startKind, 'born',
+              reason: '${l.personId} gained an unexpected startKind');
+        }
+      }
+    });
+
     // Pins the four-verse chain (Gen 41:46 + 41:53 + 45:6 + 47:9 = 91,
     // Jacob's age at Joseph's birth; Gen 50:22/50:26 = Joseph's 110-year
     // lifespan) AND cross-checks it against assets/family_tree.json,
@@ -1601,6 +1661,30 @@ void main() {
             of: sheet, matching: find.textContaining('lived 365 years')),
         findsWidgets,
         reason: 'the year itself is not the defect — only the verb was',
+      );
+    });
+
+    testWidgets(
+        "Adam's sheet says he was created, at the same AM 0 the chart's "
+        "own `creation` marker uses, not that he was born "
+        '(Lifeline.startKind — Genesis 5:1-2)', (tester) async {
+      await pumpChart(tester);
+      // Adam's bar starts at AM 0, well before the default view's
+      // window around the Flood — same reason the earlier Adam/Enoch
+      // tests need wholeSpan first.
+      await wholeSpan(tester);
+      await tester.tap(find.text('Adam').first);
+      await tester.pumpAndSettle();
+      final sheet = find.byType(BottomSheet);
+      expect(
+        find.descendant(
+            of: sheet, matching: find.textContaining('Created')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: sheet, matching: find.textContaining('Born')),
+        findsNothing,
+        reason: 'the sheet must not say Adam was born',
       );
     });
 
