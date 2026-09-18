@@ -27,6 +27,9 @@ WHAT IS APPLIED
   5. 使徒行傳 11:12, both scripts: one full stop too many before the note —
      「不要疑惑。〔或作……〕」 → 「不要疑惑〔或作……〕」.
   6. The last book is 啓示錄, not 啟示錄, in the 繁體.
+  7. 秸 → 稭 in the two verses the list never named, 出埃及記 15:7 and
+     約書亞記 2:6 — his principle again; the owner, 2026-09-18: 「按照他
+     的做」.
 
 HOW A ROW IS FOUND — the same rule as the website's tools/apply-cuvt-rr.py,
 so the two come out alike. Notes stripped and both sides normalised
@@ -192,6 +195,14 @@ def main():
         if v['book'] == '啟示錄':
             v['book'] = '啓示錄'
             stats['book 啟示錄→啓示錄'] += 1
+
+    # 7. the two 秸 outside the list
+    for bk, c_, v_ in (('出埃及記', 15, 7), ('約書亞記', 2, 6)):
+        v = key[(bk, c_, v_)]
+        n = v['text'].count('秸')
+        if n:
+            v['text'] = v['text'].replace('秸', '稭')
+            stats['秸→稭 (outside the list, principle)'] += n
 
     # 5. 使徒行傳 11:12, both scripts
     acts = re.compile(r'(疑惑)。(<note:)')

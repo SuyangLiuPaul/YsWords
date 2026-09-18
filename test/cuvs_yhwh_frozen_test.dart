@@ -488,8 +488,10 @@ void main() {
     // incidentally agrees with THIS text's 他們; the wording difference
     // is left alone.
     // 2026-09-18, the eighth thaw: see the note above the simplified pin.
+    // The same day, 秸 → 稭 at 出埃及記 15:7 and 約書亞記 2:6, the two his
+    // list never named, by his principle (owner: 「按照他的做」).
     'assets/cuvs-yhwh-tr.json':
-        '4f5f20577b0a29fa5b72482043c86da5eac6fb5b460374ea3da3e0437cd0adc1',
+        'b8000bc08832a6516ace238e796ac22f59ff39501e9c07e707c3a1d136ce4589',
   };
 
   frozen.forEach((path, expected) {

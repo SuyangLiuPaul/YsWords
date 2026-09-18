@@ -288,8 +288,9 @@ void main() {
       // SeekSparks' cuvs-plus — read 所擺的麻秸中.
       expect(sanitizeVerseText(textOf('cuvs-yhwh', 'Joshua 2:6')),
           contains('所摆的麻秸中'));
+      // The 繁體 writes 稭 since 2026-09-18, by Raymond 牧師's principle.
       expect(sanitizeVerseText(textOf('cuvs-yhwh-tr', 'Joshua 2:6')),
-          contains('所擺的麻秸中'));
+          contains('所擺的麻稭中'));
       expect(sanitizeVerseText(textOf('cuvs-yhwh', 'Isaiah 23:13')),
           startsWith('（看哪'));
       expect(sanitizeVerseText(textOf('cuvs-yhwh-tr', 'Jeremiah 48:10')),
