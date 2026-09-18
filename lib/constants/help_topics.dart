@@ -456,9 +456,9 @@ const List<HelpTopic> kHelpTopics = [
       'AI explain',
     ),
     body: HelpText(
-      '选中经文后点「AI 解释经文」。可以追问、让它说得更详细或更简短，也可以把回答存成笔记。\n\nAI 的回答只作参考，请对照经文自己核对。「设置」›「AI 释义」可以选回应深度；如果常用，也可以填入你自己的免费 Gemini 密钥，就不受共用额度限制。',
-      '選中經文後點「AI 解釋經文」。可以追問、讓它說得更詳細或更簡短，也可以把回答存成筆記。\n\nAI 的回答只作參考，請對照經文自己核對。「設定」›「AI 釋義」可以選回應深度；如果常用，也可以填入你自己的免費 Gemini 金鑰，就不受共用額度限制。',
-      'Select a verse and tap AI explain. Ask follow-up questions, make it longer or shorter, or save the answer as a note.\n\nAI answers are for reference — check them against the text yourself. Settings › AI sets the response depth; if you use it a lot, add your own free Gemini key so the shared quota never runs out on you.',
+      '选中经文后点「AI 解释经文」。可以追问、让它说得更详细或更简短，也可以把回答存成笔记。\n\nAI 使用你自己的免费 Gemini 密钥：第一次用时会提示你怎么设置（见「设置 AI 密钥」）。AI 的回答只作参考，请对照经文自己核对；「设置」›「AI 释义」可以选回应深度。',
+      '選中經文後點「AI 解釋經文」。可以追問、讓它說得更詳細或更簡短，也可以把回答存成筆記。\n\nAI 使用你自己的免費 Gemini 金鑰：第一次用時會提示你怎麼設定（見「設定 AI 金鑰」）。AI 的回答只作參考，請對照經文自己核對；「設定」›「AI 釋義」可以選回應深度。',
+      'Select a verse and tap AI explain. Ask follow-up questions, make it longer or shorter, or save the answer as a note.\n\nAI runs on your own free Gemini key; the first time, you are shown how to set one up (see "Setting up your AI key"). AI answers are for reference — check them against the text yourself; Settings › AI sets the response depth.',
     ),
     path: ['settings', 'settingsSectionAi'],
     keywords: [
@@ -612,9 +612,9 @@ const List<HelpTopic> kHelpTopics = [
       'Searching by original word, number or theme',
     ),
     body: HelpText(
-      '• 打 Strong 编号（G2316、H7200）打开词典和经文索引；输入编号后会出现 AND、OR、✶ 按钮，可以组合几个编号\n• 直接打希腊文（ἀγάπη）或希伯来文（אהבה）\n• 打音译（agape、shalom、logos）：完全符合就打开词典，部分符合会问「您是否在找…」\n• 关键字找不到时，可以点「用 AI 智能搜索」，按主题或模糊的说法找（结果仅供参考）',
-      '• 打 Strong 編號（G2316、H7200）開啟詞典和經文索引；輸入編號後會出現 AND、OR、✶ 按鈕，可以組合幾個編號\n• 直接打希臘文（ἀγάπη）或希伯來文（אהבה）\n• 打音譯（agape、shalom、logos）：完全符合就開啟詞典，部分符合會問「您是否在找…」\n• 關鍵字找不到時，可以點「用 AI 智慧搜尋」，按主題或模糊的說法找（結果僅供參考）',
-      '• Type a Strong\'s number (G2316, H7200) for the lexicon and every occurrence; AND, OR and ✶ buttons then appear to combine numbers\n• Type the Greek (ἀγάπη) or Hebrew (אהבה) directly\n• Type a transliteration (agape, shalom, logos): an exact match opens the lexicon, a partial one asks "Did you mean…"\n• When keywords find nothing, AI search looks by theme or loose wording (for reference only)',
+      '• 打 Strong 编号（G2316、H7200）打开词典和经文索引；输入编号后会出现 AND、OR、✶ 按钮，可以组合几个编号\n• 直接打希腊文（ἀγάπη）或希伯来文（אהבה）\n• 打音译（agape、shalom、logos）：完全符合就打开词典，部分符合会问「您是否在找…」\n• 关键字找不到时，可以点「用 AI 智能搜索」，按主题或模糊的说法找（结果仅供参考；需要你自己的 AI 密钥）',
+      '• 打 Strong 編號（G2316、H7200）開啟詞典和經文索引；輸入編號後會出現 AND、OR、✶ 按鈕，可以組合幾個編號\n• 直接打希臘文（ἀγάπη）或希伯來文（אהבה）\n• 打音譯（agape、shalom、logos）：完全符合就開啟詞典，部分符合會問「您是否在找…」\n• 關鍵字找不到時，可以點「用 AI 智慧搜尋」，按主題或模糊的說法找（結果僅供參考；需要你自己的 AI 金鑰）',
+      '• Type a Strong\'s number (G2316, H7200) for the lexicon and every occurrence; AND, OR and ✶ buttons then appear to combine numbers\n• Type the Greek (ἀγάπη) or Hebrew (אהבה) directly\n• Type a transliteration (agape, shalom, logos): an exact match opens the lexicon, a partial one asks "Did you mean…"\n• When keywords find nothing, AI search looks by theme or loose wording (for reference only; needs your own AI key)',
     ),
     path: ['quickLinksFrequent', 'search'],
     keywords: [
@@ -967,9 +967,9 @@ const List<HelpTopic> kHelpTopics = [
       'Bible Evidence',
     ),
     body: HelpText(
-      '考古、手抄本、历史和科学方面的发现，每条都连到相关经文。可以浏览、搜索，也可以用 AI 按问题查找。\n\n主页的「今日证据」每天换一条；读某一章时，「⋯」›「本章资源」›「圣经实证」只列和这章有关的。',
-      '考古、手抄本、歷史和科學方面的發現，每條都連到相關經文。可以瀏覽、搜尋，也可以用 AI 按問題查詢。\n\n主頁的「今日證據」每天換一條；讀某一章時，「⋯」›「本章資源」›「聖經實證」只列和這章有關的。',
-      'Archaeological, manuscript, historical and scientific finds, each linked to its scripture. Browse, search, or ask the AI a question.\n\nToday\'s Evidence on the home page changes daily; while reading, ⋯ › This Chapter › Bible Evidence lists only the finds for that chapter.',
+      '考古、手抄本、历史和科学方面的发现，每条都连到相关经文。可以浏览、搜索，也可以用 AI 按问题查找（需要你自己的 AI 密钥）。\n\n主页的「今日证据」每天换一条；读某一章时，「⋯」›「本章资源」›「圣经实证」只列和这章有关的。',
+      '考古、手抄本、歷史和科學方面的發現，每條都連到相關經文。可以瀏覽、搜尋，也可以用 AI 按問題查詢（需要你自己的 AI 金鑰）。\n\n主頁的「今日證據」每天換一條；讀某一章時，「⋯」›「本章資源」›「聖經實證」只列和這章有關的。',
+      'Archaeological, manuscript, historical and scientific finds, each linked to its scripture. Browse, search, or ask the AI a question (with your own AI key).\n\nToday\'s Evidence on the home page changes daily; while reading, ⋯ › This Chapter › Bible Evidence lists only the finds for that chapter.',
     ),
     path: ['quickLinksExplore', 'bibleEvidence'],
     keywords: [
@@ -1157,9 +1157,9 @@ const List<HelpTopic> kHelpTopics = [
       'What\'s in Settings',
     ),
     body: HelpText(
-      '主页快捷入口的「设置」，或阅读页「⋯」›「设置」。\n\n• 账号：登录同步、管理本机账号\n• 显示：字号、菜单大小、行距、复制格式、字体、主色调、风格预设\n• 阅读：主题模式、阅读模式、护眼纸质背景、加粗经文、段落标题、书卷简介、词卡上的编号\n• 应用：界面语言、检查更新\n• 主页布局：主页显示哪些区块\n• 通知：每日提醒\n• AI 释义：回应深度、自己的 Gemini 密钥\n• 关于：版权说明、安装、导出导入、离线包、清除缓存、重新查看导览、恢复设置',
-      '主頁快捷入口的「設定」，或閱讀頁「⋯」›「設定」。\n\n• 賬號：登入同步、管理本機賬號\n• 顯示：字號、選單大小、行距、複製格式、字體、主色調、風格預設\n• 閱讀：主題模式、閱讀模式、護眼紙質背景、加粗經文、段落標題、書卷簡介、詞卡上的編號\n• 應用：介面語言、檢查更新\n• 主頁佈局：主頁顯示哪些區塊\n• 通知：每日提醒\n• AI 釋義：回應深度、自己的 Gemini 金鑰\n• 關於：版權說明、安裝、匯出匯入、離線包、清除快取、重新查看導覽、恢復設定',
-      'Settings in Quick links, or ⋯ › Settings in the reader.\n\n• Account: sign in to sync, manage profiles\n• Display: text size, menu size, line spacing, copy format, font, primary colour, style preset\n• Reading: theme mode, reading mode, paper theme, bold text, section titles, book introductions, numbers on word chips\n• App: interface language, update checks\n• Home layout: which sections the home page shows\n• Notifications: daily reminders\n• AI: response depth, your own Gemini key\n• About: attributions, install, export and import, offline pack, clear cache, tour, reset',
+      '主页快捷入口的「设置」，或阅读页「⋯」›「设置」。\n\n• 账号：登录同步、管理本机账号\n• 显示：字号、菜单大小、行距、复制格式、字体、主色调、风格预设\n• 阅读：主题模式、阅读模式、护眼纸质背景、加粗经文、段落标题、书卷简介、词卡上的编号\n• 应用：界面语言、检查更新\n• 主页布局：主页显示哪些区块\n• 通知：每日提醒\n• AI 释义：你的 Gemini 密钥（AI 功能必需）、回应深度\n• 关于：版权说明、安装、导出导入、离线包、清除缓存、重新查看导览、恢复设置',
+      '主頁快捷入口的「設定」，或閱讀頁「⋯」›「設定」。\n\n• 賬號：登入同步、管理本機賬號\n• 顯示：字號、選單大小、行距、複製格式、字體、主色調、風格預設\n• 閱讀：主題模式、閱讀模式、護眼紙質背景、加粗經文、段落標題、書卷簡介、詞卡上的編號\n• 應用：介面語言、檢查更新\n• 主頁佈局：主頁顯示哪些區塊\n• 通知：每日提醒\n• AI 釋義：你的 Gemini 金鑰（AI 功能必需）、回應深度\n• 關於：版權說明、安裝、匯出匯入、離線包、清除快取、重新查看導覽、恢復設定',
+      'Settings in Quick links, or ⋯ › Settings in the reader.\n\n• Account: sign in to sync, manage profiles\n• Display: text size, menu size, line spacing, copy format, font, primary colour, style preset\n• Reading: theme mode, reading mode, paper theme, bold text, section titles, book introductions, numbers on word chips\n• App: interface language, update checks\n• Home layout: which sections the home page shows\n• Notifications: daily reminders\n• AI: your Gemini key (required for AI), response depth\n• About: attributions, install, export and import, offline pack, clear cache, tour, reset',
     ),
     path: ['quickLinksFrequent', 'settings'],
     keywords: [
@@ -1201,6 +1201,48 @@ const List<HelpTopic> kHelpTopics = [
       'simplified',
       'interface',
     ],
+    open: HelpDestination.settings,
+  ),
+  HelpTopic(
+    id: 'ai-key',
+    section: HelpSection.settings,
+    title: HelpText(
+      '设置 AI 密钥',
+      '設定 AI 金鑰',
+      'Setting up your AI key',
+    ),
+    body: HelpText(
+      'AI 解释经文、原文释义里的 AI、AI 搜索和圣经实证的 AI 查找，都使用你自己的 Google Gemini API 密钥。免费，大约一分钟：\n\n• 打开 aistudio.google.com/apikey，用 Google 账号登录\n• 点「Create API key」，复制以 AIza 开头的那串密钥\n• 回到「设置」›「AI 释义」，粘贴到「使用我自己的 Gemini API 密钥」，点「测试」\n\n没设密钥时点任何 AI 功能，都会弹出同样的步骤，并有按钮直接打开申请页面和设置。密钥只存在你的设备上（登录后同步到你自己的其他设备），只随你的 AI 请求发送，我们不保存。免费额度用完后第二天会自动恢复。',
+      'AI 解釋經文、原文釋義裡的 AI、AI 搜尋和聖經實證的 AI 查詢，都使用你自己的 Google Gemini API 金鑰。免費，大約一分鐘：\n\n• 開啟 aistudio.google.com/apikey，用 Google 賬號登入\n• 點「Create API key」，複製以 AIza 開頭的那串金鑰\n• 回到「設定」›「AI 釋義」，貼上到「使用我自己的 Gemini API 金鑰」，點「測試」\n\n沒設金鑰時點任何 AI 功能，都會彈出同樣的步驟，並有按鈕直接開啟申請頁面和設定。金鑰只存在你的裝置上（登入後同步到你自己的其他裝置），只隨你的 AI 請求傳送，我們不儲存。免費額度用完後第二天會自動恢復。',
+      'AI explain, the AI in Exegesis, AI search and Bible Evidence\'s AI all run on your own Google Gemini API key. It is free and takes about a minute:\n\n• Open aistudio.google.com/apikey and sign in with a Google account\n• Click "Create API key" and copy the key that starts with AIza\n• Back in Settings › AI, paste it into "Use my own Gemini API key" and tap Test\n\nTap any AI feature without a key and the same steps appear, with buttons straight to the key page and to Settings. The key stays on your devices (syncing to your own when signed in), is sent only with your AI requests and is never stored by us. The free quota resets daily.',
+    ),
+    path: ['settings', 'settingsSectionAi', 'aiByokTitle'],
+    keywords: [
+      'AI',
+      'key',
+      '密钥',
+      '金钥',
+      'API',
+      'Gemini',
+      'Google',
+      'AI Studio',
+      'AIza',
+      'token',
+      '绑定',
+      'bind',
+      'setup',
+      '免费',
+      'free',
+      'quota',
+      '额度',
+    ],
+    notes: {
+      HelpPlatform.web: HelpText(
+        '在中国大陆，申请密钥需要能访问 Google；设好之后，中国版网站上的 AI 照常可用。',
+        '在中國大陸，申請金鑰需要能訪問 Google；設好之後，中國版網站上的 AI 照常可用。',
+        'In mainland China, getting the key needs access to Google; once saved, AI works on the China build as usual.',
+      ),
+    },
     open: HelpDestination.settings,
   ),
   HelpTopic(

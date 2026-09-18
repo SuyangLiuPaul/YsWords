@@ -13,6 +13,7 @@ import 'package:yahwehs_words/services/fetch_verses.dart' show FetchVerses;
 import 'package:yahwehs_words/services/reading_history_service.dart';
 import 'package:yahwehs_words/services/realtime_db_sync_service.dart';
 import 'package:yahwehs_words/services/profile_service.dart';
+import 'package:yahwehs_words/utils/safe_item_scroll.dart' show scrollToSafely;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -1409,7 +1410,8 @@ class MainProvider extends ChangeNotifier {
   void scrollToIndex({required int index}) {
     final mapped = _verseToItemMap[index] ?? index;
     if (itemScrollController.isAttached) {
-      itemScrollController.scrollTo(
+      scrollToSafely(
+        itemScrollController,
         index: mapped,
         duration: const Duration(milliseconds: 800),
       );
@@ -1448,7 +1450,8 @@ class MainProvider extends ChangeNotifier {
   }) {
     final mapped = _verseToItemMap[index] ?? index;
     if (itemScrollController.isAttached) {
-      itemScrollController.scrollTo(
+      scrollToSafely(
+        itemScrollController,
         index: mapped,
         duration: duration,
         alignment: alignment,

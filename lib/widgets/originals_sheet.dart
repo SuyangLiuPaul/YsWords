@@ -38,6 +38,8 @@ import 'package:yahwehs_words/utils/version_mapper.dart'
 import 'package:yahwehs_words/widgets/word_distribution.dart';
 import 'package:yahwehs_words/widgets/word_distribution_table.dart';
 import 'package:yahwehs_words/constants/motion.dart';
+import 'package:yahwehs_words/widgets/ai_key_required_dialog.dart'
+    show ensureGeminiKey;
 
 /// Bottom sheet that shows the original Hebrew/Greek text for one or
 /// more selected verses, with each word as a tappable chip linked to
@@ -759,6 +761,7 @@ class _OriginalsSheetState extends State<OriginalsSheet> {
     if (entry == null) return;
     final v = widget.verses.isNotEmpty ? widget.verses.first : null;
     if (v == null) return;
+    if (!await ensureGeminiKey(context) || !mounted) return;
     final englishBook = toEnglish(v.book) ?? v.book;
     final entryNumber = entry.number;
     setState(() {

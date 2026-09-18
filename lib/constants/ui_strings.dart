@@ -1714,10 +1714,10 @@ const uiStrings = {
     'en': 'AI study helpers',
   },
   'onboardAiBody': {
-    'zh-Hans': '按主题搜经文（"爱"、"信心"），点希腊文／希伯来文原文看 BDAG 级深度释义，对考古和手稿提具体问题。AI 由 Gemini 驱动——可在 设置 → AI 粘贴自己的免费密钥（按 Test 验证），用自己的额度跳过共享池。',
-    'zh-Hant': '按主題搜經文（「愛」、「信心」），點希臘文／希伯來文原文看 BDAG 級深度釋義，對考古和手稿提具體問題。AI 由 Gemini 驅動——可在 設定 → AI 貼上自己的免費密鑰（按 Test 驗證），用自己的額度跳過共享池。',
+    'zh-Hans': '按主题搜经文（"爱"、"信心"），点希腊文／希伯来文原文看 BDAG 级深度释义，对考古和手稿提具体问题。AI 由 Gemini 驱动——需要在 设置 → AI 粘贴自己的免费密钥（按 Test 验证）。',
+    'zh-Hant': '按主題搜經文（「愛」、「信心」），點希臘文／希伯來文原文看 BDAG 級深度釋義，對考古和手稿提具體問題。AI 由 Gemini 驅動——需要在 設定 → AI 貼上自己的免費金鑰（按 Test 驗證）。',
     'en':
-        'Search the Bible by theme ("love", "faith"), tap any Greek or Hebrew word for a BDAG-style deep dive, or ask questions about archaeology and manuscripts. Powered by Gemini — paste your own free key in Settings → AI (and tap Test to verify) to skip the shared developer pool.',
+        'Search the Bible by theme ("love", "faith"), tap any Greek or Hebrew word for a BDAG-style deep dive, or ask questions about archaeology and manuscripts. Powered by Gemini — needs your own free key, pasted in Settings → AI (tap Test to verify).',
   },
   'onboardSermonsTitle': {
     'zh-Hans': '讲道',
@@ -2527,20 +2527,18 @@ const uiStrings = {
   // a parseable `error` body — in normal operation the backend
   // sends a user-locale message that's surfaced directly.
   'aiQuotaExhaustedFallback': {
-    'zh-Hans': 'AI 今天的共享配额已用完。明天再试，或在「设置 → '
-        'AI」粘贴您自己的 Gemini API Key 用您的配额。',
-    'zh-Hant': 'AI 今天的共享配額已用完。明天再試，或在「設定 → '
-        'AI」貼上您自己的 Gemini API Key 用您的配額。',
-    'en':
-        'AI quota for the developer\'s shared key is used up for today. Try again tomorrow, or paste your own Gemini API key in Settings → AI to use your own quota.',
+    'zh-Hans': '你的 Gemini 密钥今天的免费额度已用完，明天会自动恢复。'
+        '也可以在 Google AI Studio 为这个密钥开通付费，或换一把密钥（「设置」›「AI 释义」）。',
+    'zh-Hant': '你的 Gemini 金鑰今天的免費額度已用完，明天會自動恢復。'
+        '也可以在 Google AI Studio 為這把金鑰開通付費，或換一把金鑰（「設定」›「AI 釋義」）。',
+    'en': "Your Gemini key's free quota is used up for today; it resets "
+        'tomorrow. You can also enable billing for the key in Google AI Studio, '
+        'or use another key (Settings › AI).',
   },
   'aiNotConfiguredFallback': {
-    'zh-Hans': 'AI 还没有配置。开发者需要在 Netlify 环境变量里设置 '
-        'GEMINI_API_KEY。',
-    'zh-Hant': 'AI 還沒有配置。開發者需要在 Netlify 環境變數裡設置 '
-        'GEMINI_API_KEY。',
-    'en':
-        'AI is not configured. The developer needs to set GEMINI_API_KEY in Netlify env.',
+    'zh-Hans': 'AI 功能需要你自己的 Gemini API 密钥（免费），请到「设置」›「AI 释义」设置。',
+    'zh-Hant': 'AI 功能需要你自己的 Gemini API 金鑰（免費），請到「設定」›「AI 釋義」設定。',
+    'en': 'AI features need your own Gemini API key (free) — set it in Settings › AI.',
   },
   // 2026-05-09 (v1.2.0): tag appended to the AboutPage footer when
   // the build was compiled with `--dart-define=CHINA_MODE=true`.
@@ -2609,25 +2607,21 @@ const uiStrings = {
     'zh-Hant': '使用我自己的 Gemini API 金鑰',
     'en': 'Use my own Gemini API key',
   },
+  // 2026-09-18: the key is REQUIRED now — the developer's shared key is
+  // retired (netlify/functions/_byok.mjs). The per-minute / per-day
+  // figures this used to quote are dropped: Google changes them, and the
+  // News Insight pipeline measured the real free tier far below them.
   'aiByokBody': {
-    // 2026-05-10 (v1.2.17): wording softened from "never synced
-    // across devices" to "lives on this device" — the key now
-    // syncs via the user's own Firebase project to their other
-    // signed-in devices when they're signed in. The new
-    // `aiByokSyncedNote` ui-string carries the explicit cloud-sync
-    // disclosure and only renders below the input when the
-    // condition (signed in + key present + intl build) matches.
-    'zh-Hans': '从 Google AI Studio 获取免费密钥并粘贴在这里——之后 AI 功能（原文释义、AI 搜索）'
-        '将走您自己的额度（每分钟 15 次，每日 1500 次），而不是与开发者池共享。'
-        '密钥保存在本设备本地。',
-    'zh-Hant': '從 Google AI Studio 取得免費金鑰並貼在這裡——之後 AI 功能（原文釋義、AI 搜尋）'
-        '將走您自己的配額（每分鐘 15 次，每日 1500 次），而不是與開發者池共享。'
-        '金鑰保存在本裝置本地。',
-    'en':
-        'Paste your free Gemini API key from AI Studio so AI features '
-            '(word explanations, AI search) use your own quota (15 RPM / '
-            '1500 RPD) instead of the shared developer pool. The key '
-            'lives on this device.',
+    'zh-Hans': 'AI 功能（AI 解释经文、原文释义、AI 搜索）使用你自己的 Gemini API 密钥，免费。'
+        '点「获取免费密钥」，用 Google 账号登录，点「Create API key」，复制以 AIza 开头的密钥，'
+        '粘贴到下面再点「测试」。密钥保存在本设备上。',
+    'zh-Hant': 'AI 功能（AI 解釋經文、原文釋義、AI 搜尋）使用你自己的 Gemini API 金鑰，免費。'
+        '點「取得免費金鑰」，用 Google 帳號登入，點「Create API key」，複製以 AIza 開頭的金鑰，'
+        '貼到下面再點「測試」。金鑰保存在本裝置上。',
+    'en': 'AI features (AI explain, exegesis AI, AI search) run on your own Gemini '
+        'API key, which is free. Tap "Get free key", sign in with a Google account, '
+        'click "Create API key", copy the key that starts with AIza, paste it below '
+        'and tap Test. The key is kept on this device.',
   },
   // 2026-05-10 (v1.2.17): cloud-sync disclosure shown only when the
   // user is signed in (intl build, Firebase available) and has a
@@ -2686,10 +2680,10 @@ const uiStrings = {
   // the default, (c) relative speed vs depth, and (d) free-tier
   // quota reality so they know when to BYOK.
   'aiModelFastDetail': {
-    'zh-Hans': '快 (默认) · Gemini 2.5 Flash-Lite。最快、最简明的回答，约 1-3 秒。免费配额最大——开发者共享池基本不会耗尽。适合日常研经、快速查询。',
-    'zh-Hant': '快 (預設) · Gemini 2.5 Flash-Lite。最快、最簡明的回答，約 1-3 秒。免費配額最大——開發者共享池基本不會耗盡。適合日常研經、快速查詢。',
+    'zh-Hans': '快 (默认) · Gemini 2.5 Flash-Lite。最快、最简明的回答，约 1-3 秒。你自己密钥的免费配额最大，基本不会耗尽。适合日常研经、快速查询。',
+    'zh-Hant': '快 (預設) · Gemini 2.5 Flash-Lite。最快、最簡明的回答，約 1-3 秒。你自己金鑰的免費配額最大，基本不會耗盡。適合日常研經、快速查詢。',
     'en':
-        'Fast (default) · Gemini 2.5 Flash-Lite. Quickest answers (~1-3 s), brief and direct. Largest free-tier quota — the shared developer pool almost never runs out. Best for everyday study and quick lookups.',
+        'Fast (default) · Gemini 2.5 Flash-Lite. Quickest answers (~1-3 s), brief and direct. Your own key\'s largest free-tier quota — it almost never runs out. Best for everyday study and quick lookups.',
   },
   'aiModelStandardDetail': {
     'zh-Hans': '标准 · Gemini 2.5 Flash。速度和深度的平衡，约 3-6 秒。免费配额中等，平时充足，高峰时段可能耗尽。适合需要稍详细解释的场景。',
@@ -8937,5 +8931,47 @@ const uiStrings = {
     'zh-Hans': '离开投影',
     'zh-Hant': '離開投影',
     'en': 'Leave projection',
+  },
+  // ── AI needs the reader's own key (2026-09-18) ─────────────────────
+  // See lib/widgets/ai_key_required_dialog.dart.
+  'aiKeyNeededTitle': {
+    'zh-Hans': 'AI 需要你自己的密钥',
+    'zh-Hant': 'AI 需要你自己的金鑰',
+    'en': 'AI needs your own key',
+  },
+  'aiKeyNeededBody': {
+    'zh-Hans': 'AI 功能使用你自己的 Google Gemini API 密钥。免费，大约一分钟就能设好：',
+    'zh-Hant': 'AI 功能使用你自己的 Google Gemini API 金鑰。免費，大約一分鐘就能設好：',
+    'en': 'AI features run on your own Google Gemini API key. It is free and takes about a minute:',
+  },
+  'aiKeyStep1': {
+    'zh-Hans': '打开 aistudio.google.com/apikey（点下面的「获取免费密钥」），用 Google 账号登录。',
+    'zh-Hant': '打開 aistudio.google.com/apikey（點下面的「取得免費金鑰」），用 Google 帳號登入。',
+    'en': 'Open aistudio.google.com/apikey (tap "Get free key" below) and sign in with a Google account.',
+  },
+  'aiKeyStep2': {
+    'zh-Hans': '点「Create API key」，复制以 AIza 开头的那串密钥。',
+    'zh-Hant': '點「Create API key」，複製以 AIza 開頭的那串金鑰。',
+    'en': 'Click "Create API key" and copy the key that starts with AIza.',
+  },
+  'aiKeyStep3': {
+    'zh-Hans': '回到这里，打开「设置」›「AI 释义」，粘贴到「使用我自己的 Gemini API 密钥」，点「测试」。',
+    'zh-Hant': '回到這裡，打開「設定」›「AI 釋義」，貼到「使用我自己的 Gemini API 金鑰」，點「測試」。',
+    'en': 'Come back, open Settings › AI, paste it into "Use my own Gemini API key" and tap Test.',
+  },
+  'aiKeyNeededPrivacy': {
+    'zh-Hans': '密钥只存在这台设备上（登录后同步到你自己的其他设备），只随你的 AI 请求发送，我们不保存。',
+    'zh-Hant': '金鑰只存在這台裝置上（登入後同步到你自己的其他裝置），只隨你的 AI 請求傳送，我們不保存。',
+    'en': 'The key stays on this device (and syncs to your own devices when signed in). It is sent only with your AI requests and never stored by us.',
+  },
+  'aiKeyNeededChina': {
+    'zh-Hans': '申请密钥需要能访问 Google；设好之后，AI 在这里照常可用。',
+    'zh-Hant': '申請金鑰需要能存取 Google；設好之後，AI 在這裡照常可用。',
+    'en': 'Getting the key needs access to Google; once it is saved, AI works here as usual.',
+  },
+  'aiKeyNeededOpenSettings': {
+    'zh-Hans': '去设置',
+    'zh-Hant': '去設定',
+    'en': 'Open Settings',
   },
 };

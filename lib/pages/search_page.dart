@@ -34,6 +34,8 @@ import 'package:yahwehs_words/utils/relative_time.dart' show relativeTime;
 import 'package:yahwehs_words/utils/responsive.dart';
 import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yahwehs_words/utils/log_diag.dart';
+import 'package:yahwehs_words/widgets/ai_key_required_dialog.dart'
+    show ensureGeminiKey;
 
 // 2026-05-10 (v1.2.31): hoisted regex — used inside the AI-results
 // `itemBuilder` for every visible row during scroll, plus the
@@ -702,6 +704,7 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> _askAi() async {
     final query = _textEditingController.text.trim();
     if (query.length < 2) return;
+    if (!await ensureGeminiKey(context) || !mounted) return;
     final settings = Provider.of<AppSettings>(context, listen: false);
     final mp = Provider.of<MainProvider>(context, listen: false);
     // 2026-05-07 (v6): refresh diagnostic so banner is not stuck on

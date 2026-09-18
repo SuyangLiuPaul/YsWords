@@ -98,6 +98,9 @@ import 'package:yahwehs_words/widgets/version_picker_sheet.dart'
     show showLanguageGroupedVersionMenu;
 import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 import 'package:yahwehs_words/utils/log_diag.dart';
+import 'package:yahwehs_words/utils/safe_item_scroll.dart' show scrollToSafely;
+import 'package:yahwehs_words/widgets/ai_key_required_dialog.dart'
+    show ensureGeminiKey;
 
 /// 2026-08-02 (v1.3.156): "护眼" (easy-on-eyes) reading theme — a warm
 /// sepia/paper palette for the Bible reading pane, toggled independently
@@ -583,7 +586,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
     final mp = context.read<MainProvider>();
     final c = mp.itemScrollController;
     if (!c.isAttached) return;
-    c.scrollTo(
+    scrollToSafely(
+      c,
       index: 0,
       duration: AppMotion.slow,
       curve: AppMotion.enter,
@@ -2437,12 +2441,18 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                                 locale: settings.locale,
                                 currentVersion: mainProvider.currentVersion,
                               ),
-                              onAiExplain: () => _showAiExplainSheet(
-                                context: context,
-                                verses: mainProvider.selectedVerses,
-                                settings: settings,
-                                mainProvider: mainProvider,
-                              ),
+                              onAiExplain: () async {
+                                if (!await ensureGeminiKey(context) ||
+                                    !context.mounted) {
+                                  return;
+                                }
+                                _showAiExplainSheet(
+                                  context: context,
+                                  verses: mainProvider.selectedVerses,
+                                  settings: settings,
+                                  mainProvider: mainProvider,
+                                );
+                              },
                               anyNoted: mainProvider.selectedVerses
                                   .any(mainProvider.isVerseNoted),
                               anyBookmarked: mainProvider.selectedVerses
@@ -2513,7 +2523,8 @@ class _BibleReadingPaneState extends State<BibleReadingPane> {
                               .itemScrollController.isAttached) {
                             return;
                           }
-                          mainProvider.itemScrollController.scrollTo(
+                          scrollToSafely(
+                            mainProvider.itemScrollController,
                             index: 0,
                             duration: AppMotion.slow,
                             curve: AppMotion.enter,

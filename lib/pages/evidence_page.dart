@@ -25,6 +25,8 @@ import 'package:yahwehs_words/widgets/home_icon_button.dart';
 import 'package:yahwehs_words/widgets/language_switcher_button.dart';
 import 'package:yahwehs_words/widgets/localized_back_button.dart';
 import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/widgets/ai_key_required_dialog.dart'
+    show ensureGeminiKey;
 
 /// Browse the Biblical Evidence Archive — 225 archaeological,
 /// manuscript, scientific, and historical findings that intersect
@@ -959,6 +961,7 @@ class _AiSearchDialogState extends State<_AiSearchDialog> {
   Future<void> _ask() async {
     final q = _ctrl.text.trim();
     if (q.length < 2) return;
+    if (!await ensureGeminiKey(context) || !mounted) return;
     final myGen = ++_askGen;
     setState(() {
       _busy = true;

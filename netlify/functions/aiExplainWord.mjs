@@ -49,6 +49,8 @@
 // 429) → gemini-2.5-flash → gemini-3-flash-preview, recovering automatically.
 // (An earlier same-day patch wrongly made gemini-2.5-flash the default; that
 // model's free tier is only ~20 req/day and exhausted fast — reverted.)
+import { byokRequiredError } from './_byok.mjs';
+
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 // 2026-05-10 (v1.2.26): per-request AI tier override, identical
@@ -568,23 +570,11 @@ function buildVersePrompt({ book, chapter, verseStart, verseEnd, verseText, loca
 //   GEMINI_API_KEY_BACKUP_2 … _9 — tertiary onward, optional
 //
 // Returned list is de-duplicated and trimmed; falsy entries skipped.
+// Retired 2026-09-18 with the developer's shared key — see _byok.mjs.
+// Kept as the one place a shared key would come from, returning none, so
+// no code path can quietly start spending one again.
 function geminiKeys() {
-	const seen = new Set();
-	const out = [];
-	const push = (s) => {
-		const k = (s || '').trim();
-		if (k && !seen.has(k)) {
-			seen.add(k);
-			out.push(k);
-		}
-	};
-	if (process.env.GEMINI_API_KEYS) {
-		for (const part of process.env.GEMINI_API_KEYS.split(',')) push(part);
-	}
-	push(process.env.GEMINI_API_KEY);
-	push(process.env.GEMINI_API_KEY_BACKUP);
-	for (let i = 2; i <= 9; i++) push(process.env[`GEMINI_API_KEY_BACKUP_${i}`]);
-	return out;
+	return [];
 }
 
 // Round 56 (continued — locale fix): system message now starts with
@@ -758,15 +748,7 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL, ctx
 	// in the response so the client can surface a one-time "your key
 	// failed; using shared" notice.
 	let keys = overrideKey ? [overrideKey] : geminiKeys();
-	if (keys.length === 0) {
-		const err = new Error(
-			'AI explanations are not configured yet. Set GEMINI_API_KEY in '
-			+ 'the Netlify dashboard (free tier; generate at '
-			+ 'https://aistudio.google.com/app/apikey).');
-		err.publicReason = err.message;
-		err.statusCode = 503;
-		throw err;
-	}
+	if (keys.length === 0) throw byokRequiredError(locale);
 	// 2026-05-11 (v1.2.42): step-down chain + BYOK bypass +
 	// deadline budget. See aiBibleSearch.mjs's longer comment.
 	let isByok = !!overrideKey;
@@ -796,19 +778,9 @@ async function callGemini(prompt, locale, overrideKey = null, model = MODEL, ctx
 		// RESOURCE_EXHAUSTED for quota) means the key won't work.
 		// 5xx + status=0 (timeout) skip the fallback because the
 		// shared key would hit the same Gemini-side issue.
-		if (isByok && !falledBackFromByok &&
-			result.status >= 400 && result.status < 500) {
-			const sharedKeys = geminiKeys();
-			if (sharedKeys.length > 0) {
-				console.warn(`[aiExplainWord] BYOK HTTP ${result.status}; ` +
-					`falling back to shared developer key`);
-				keys = sharedKeys;
-				isByok = false;
-				falledBackFromByok = true;
-				currentModel = model; // reset to user-picked tier
-				continue;
-			}
-		}
+		// (The fall-back to the developer's shared key that stood here was
+		// retired 2026-09-18 — see _byok.mjs. A reader's failing key now
+		// fails, with Gemini's own reason.)
 		// BYOK never steps down — user picked this tier on their own key.
 		if (isByok) break;
 		// 2026-06-30: step down on transient upstream 5xx (e.g. flash-lite's
@@ -1041,7 +1013,10 @@ export default async (req) => {
 			String(err?.message || err).slice(0, 600));
 		const status = err?.statusCode || 500;
 		return new Response(
-			JSON.stringify({ error: err?.publicReason || 'AI word study failed.' }),
+			JSON.stringify({
+				error: err?.publicReason || 'AI word study failed.',
+				...(err?.code && { code: err.code }),
+			}),
 			{ status, headers: cors });
 	}
 };
