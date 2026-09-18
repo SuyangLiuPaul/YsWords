@@ -16553,6 +16553,36 @@ has never seen this repo.
       invariant), so this is not expected to change the 0-misrouted
       result, but it was not independently swept.
 
+      **2026-09-18, later still — the gap above swept, and it does not
+      exist.** Read `chronology_chart.dart:1816-1819` (`chipTexts` is
+      unconditionally `_s('chronologyMoreEvents', '+{n}')` for every
+      cluster) and `:1875-1878` (`chipLabel` for a single-cluster slot —
+      the bucket-of-one fold case — is `chipTexts[slot.cluster]`, i.e.
+      also always `"+{n}"`). There is no branch anywhere in the chip
+      renderer that substitutes an event title; the "fold chip" the gap's
+      wording echoes is a same-named but unrelated widget in the LEFT
+      NAME COLUMN (`_foldNameCell`/`_foldLane`, `:2115-2197`, its own
+      `'{n} not in view'` label), not the tick-lane cluster chip. Measured
+      rather than trusted from the reading: at the same 5 viewports, 5
+      fresh `pumpChart`s each, counted every widget by its
+      `chronoClusterChip_` `ValueKey` (set on every chip regardless of
+      label text, `:1895`) against every widget under `chronoTickLaneBox`
+      whose semantics label matches `^\+\d+$` — fit 5/5, AM4036/100y
+      13/13, AM2558/200y 21/21, AM2200/400y 26/26, AM4098/30y 7/7, key
+      count equal to label count at all five, and every key-harvested
+      chip's own semantics label individually matched `^\+\d+$` too (not
+      just the aggregate counts). An independent refuter agent re-derived
+      this from the source itself (found the single chip-rendering site,
+      traced `chronologyChipPlan` end to end confirming no cluster is
+      ever silently dropped before reaching it, and checked
+      `chronologyMoreEvents` is `'+{n}'` in all three locales) and could
+      not break it. Landed as 5 new pinned `testWidgets` (one per
+      viewport, `test/bible_chronology_test.dart`, search "queue:16548"),
+      asserting key-count == label-count and per-chip label match, so a
+      future change that reintroduces a title-labelled chip would be
+      caught. `flutter analyze` clean; `bible_chronology_test.dart` (139
+      tests) green. Test-only, no `lib/` change, not deployed.
+
       **Two more findings, filed as new items below, not fixed here
       (out of scope for this slice):**
       - The `laneRect.overlaps(...)` "on-screen chip" filter idiom, used

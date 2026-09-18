@@ -4841,6 +4841,97 @@ void main() {
       });
     }
 
+    // queue:16548 named a gap in the sweep above without measuring it: the
+    // collision harvest only finds chips via
+    // `find.bySemanticsLabel(RegExp(r'^\+\d+$'))`, and a "fold" chip for a
+    // bucket of one event was said to carry the plain event title instead
+    // of "+n" — invisible to that filter. Reading `chronology_chart.dart`
+    // says otherwise: `chipLabel` (:1875-1878) is `chipTexts[slot.cluster]`
+    // whenever a slot merges only one cluster, and `chipTexts` (:1816-1819)
+    // is unconditionally `"+{n}"` for every cluster including one of size
+    // 1 — so a bucket-of-one chip should already read "+1", not its title,
+    // and the label filter should already reach it. This does not trust
+    // that reading: it counts chips two independent ways — by their own
+    // `chronoClusterChip_` `ValueKey`, which every chip gets regardless of
+    // label text, and by the `^\+\d+$` semantics-label filter the sweep
+    // above actually uses — and asserts the two counts (and label sets)
+    // agree, so `queue:16548`'s claim is confirmed or refuted by what is
+    // actually on screen, at all five viewports, not just this file's
+    // one already-read source snippet.
+    for (final vp in <(String, Future<void> Function(WidgetTester))>[
+      ('fit', (t) => wholeSpan(t)),
+      ('AM4036/100y', (t) => viewAt(t, 4036, years: 100)),
+      ('AM2558/200y', (t) => viewAt(t, 2558, years: 200)),
+      ('AM2200/400y', (t) => viewAt(t, 2200, years: 400)),
+      ('AM4098/30y', (t) => viewAt(t, 4098, years: 30)),
+    ]) {
+      testWidgets(
+          'queue:16548 at ${vp.$1}: every chronoClusterChip_-keyed chip '
+          'carries a "+n" semantics label, so the sweep\'s label filter '
+          'harvests every chip', (tester) async {
+        final handle = tester.ensureSemantics();
+        await pumpChart(tester, size: const Size(402, 874));
+        await vp.$2(tester);
+        await tester.pumpAndSettle();
+
+        final laneBox = find.byKey(const ValueKey('chronoTickLaneBox'));
+
+        final byKey = find.descendant(
+          of: laneBox,
+          matching: find.byWidgetPredicate((w) =>
+              w is Positioned &&
+              w.key is ValueKey<String> &&
+              (w.key as ValueKey<String>)
+                  .value
+                  .startsWith('chronoClusterChip_')),
+        );
+        final byLabel = find.descendant(
+          of: laneBox,
+          matching: find.bySemanticsLabel(RegExp(r'^\+\d+$')),
+        );
+        final keyCount = byKey.evaluate().length;
+        final labelCount = byLabel.evaluate().length;
+
+        // Not just the same COUNT — every key-harvested chip's own
+        // semantics label must itself match the sweep's filter, so two
+        // chips that happen to balance a miss and an extra elsewhere
+        // cannot hide behind an equal total.
+        final mismatched = <String>[];
+        for (final e in byKey.evaluate()) {
+          final key = (e.widget as Positioned).key as ValueKey<String>;
+          final labels = find
+              .descendant(
+                of: find.byKey(key),
+                matching: find.byType(Semantics),
+              )
+              .evaluate()
+              .map((se) => (se.widget as Semantics).properties.label)
+              .whereType<String>()
+              .toList();
+          if (!labels.any((l) => RegExp(r'^\+\d+$').hasMatch(l))) {
+            mismatched.add('${key.value}: labels=$labels');
+          }
+        }
+
+        expect(tester.takeException(), isNull, reason: vp.$1);
+        handle.dispose();
+
+        expect(keyCount, greaterThan(0),
+            reason: 'no chip was found by key at all — the viewport has '
+                'drifted and this test is not exercising the chip route');
+        expect(keyCount, labelCount,
+            reason: 'queue:16548 at ${vp.$1}: $keyCount chip(s) found by '
+                'the chronoClusterChip_ key but $labelCount by the '
+                r'^\+\d+$ label filter the collision sweep above uses — '
+                'a chip is falling through the label harvest, and '
+                'queue:16548\'s named gap is real at this viewport');
+        expect(mismatched, isEmpty,
+            reason: 'queue:16548 at ${vp.$1}: key-harvested chip(s) '
+                'whose own semantics label does not match "+n": '
+                '${mismatched.join(', ')}');
+      });
+    }
+
     testWidgets('characterizing chronologyChipPlan drift: how far a '
         'packed chip lands from its own bucket\'s true tick x, swept '
         'across the real corpus', (tester) async {
