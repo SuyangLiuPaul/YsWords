@@ -386,8 +386,20 @@ void main() {
     // 4:11). Three verified 和合本 corrections had also been unreachable
     // behind the same blockage — 撒迦利亞書 1:21 擡→抬, 撒迦利亞書 13:3
     // 托→託, 路加福音 13:7 占→佔 — and went in with them.
+    // 2026-09-18, the eighth thaw — and the first the publisher side
+    // ruled on line by line. Raymond 牧師 returned our 17,682-row list
+    // (docs/和合本雅偉版-繁體更正總說明.md in the Sword repo) with yes/no and
+    // remarks; the owner said apply it. Kept where he said yes; 原作 back
+    // where he said no — 戶 臥 稭 淒 by his stated principle, 梁 鏽 鑒 毀,
+    // and 著 at 傳道書 12:12 (著書多), his one exception to 着. Also his
+    // three notes: 什麼 → 甚麼 (1,059), 啓示錄 for 啟示錄, and one full stop
+    // too many before the note at 使徒行傳 11:12 — which is why the
+    // SIMPLIFIED hash moves too, by that one character.
+    // tools/apply_cuv_tr_rr_2026_09_18.py; every row it could not place
+    // is printed, and none of them was left holding a character he ruled
+    // against.
     'assets/cuvs-yhwh.json':
-        '5f4ea1c5a3f6690d54658889f042801e9f05e8e001f851679bc6d7475840712d',
+        '72b394bd01bfd97ac9c6feaf82dcaaef15fdb6f8a30ea767b2af0794f63dd47a',
     // 2026-09-14 — five over-conversions undone, against the published
     // Traditional 和合本 at 信望愛 (bible.fhl.net, VERSION4=unv).
     //
@@ -475,8 +487,9 @@ void main() {
     // the verse. The 和合本 settles the character anyway, and
     // incidentally agrees with THIS text's 他們; the wording difference
     // is left alone.
+    // 2026-09-18, the eighth thaw: see the note above the simplified pin.
     'assets/cuvs-yhwh-tr.json':
-        'edf763a57594aeb3179a33ea0f7168f70bf94e3f1c01624e7d5af920af21627a',
+        '4f5f20577b0a29fa5b72482043c86da5eac6fb5b460374ea3da3e0437cd0adc1',
   };
 
   frozen.forEach((path, expected) {

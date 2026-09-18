@@ -90,7 +90,8 @@ void main() {
     expect(textOf('以賽亞書', '3', '18'), contains('髮網'));
     expect(textOf('士師記', '20', '16'), contains('毫髮不差'));
     expect(textOf('利未記', '13', '45'), contains('蓬頭散髮'));
-    expect(textOf('啟示錄', '9', '8'), contains('頭髮像女人的頭髮'));
+    // 啓示錄 since 2026-09-18 (Raymond 牧師: the book name is 啓, not 啟).
+    expect(textOf('啓示錄', '9', '8'), contains('頭髮像女人的頭髮'));
 
     // The verb, in verses that sit right next to the hair ones.
     expect(textOf('約翰福音', '4', '35'), contains('發白'));

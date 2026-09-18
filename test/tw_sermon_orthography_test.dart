@@ -83,14 +83,15 @@ void main() {
     // that a future change to either corpus has to come back through here.
     expect(count(cuvTraditional, '着'), greaterThan(2000),
         reason: 'the Bible is Hong Kong: 着, not 著');
-    expect(count(cuvTraditional, '著'), 0);
-    expect(count(cuvTraditional, '啓'), 21,
+    // One 著, on purpose: 傳道書 12:12 「著書多」 (著 = to write), Raymond
+    // 牧師's single exception to 着, 2026-09-18.
+    expect(count(cuvTraditional, '著'), 1);
+    // 2026-09-18: the book name followed the text — 啓示錄, on Raymond 牧師's
+    // review — so every 啟 is gone: 21 in scripture plus 404 book names.
+    expect(count(cuvTraditional, '啓'), 21 + 404,
         reason: 'the Bible is Hong Kong: 啓, not 啟');
-    // The 404 remaining 啟 are all the book name 啟示錄, one per verse of
-    // Revelation, in the `book` field rather than in scripture. Book names
-    // were not part of the ruling and did not move.
-    expect(count(cuvTraditional, '啟'), 404);
-    expect(count(cuvTraditional, '啟示錄'), 404);
+    expect(count(cuvTraditional, '啟'), 0);
+    expect(count(cuvTraditional, '啓示錄'), 404);
   });
 
   test('the variant spellings are gone from every sermon', () {

@@ -173,8 +173,13 @@ void main() {
       //
       // Pinned rather than derived, so that a table which silently
       // COLLAPSES cannot pass by agreeing with itself.
+      //
+      // 2026-09-18, Raymond 牧師's review of the 繁體 list: 1121 → 1125.
+      // 什麼 → 甚麼, and 户 卧 着 now stand opposite 戶 臥 着 by his
+      // rulings; 樑 鑑 燬 鏽 are gone, so four second forms fold away
+      // (the pair count stays 1144).
       expect(kCuvSimplifiedChars.length, 1144);
-      expect(counts.length, 1121);
+      expect(counts.length, 1125);
     });
 
     test('no Traditional character stands opposite two Simplified ones, so '
@@ -213,10 +218,10 @@ void main() {
       // calls, where the majority is small enough that a re-derivation
       // could flip it and `simplifiedToTraditional` would change answer.
       expect(firstSeen['发'], '發');   // 發 1,286 / 髮 88
-      expect(firstSeen['锈'], '鏽');   // 鏽 5 / 銹 4
+      expect(firstSeen['锈'], '銹');   // 銹 9 (鏽 ruled out, 2026-09-18)
       expect(firstSeen['系'], '繫');   // 繫 12 / 係 5
       expect(firstSeen['饥'], '饑');   // 饑 99 / 飢 58
-      expect(firstSeen['鉴'], '鑒');   // 鑒 24 / 鑑 4
+      expect(firstSeen['鉴'], '鑒');   // 鑒 28 (鑑 ruled out, 2026-09-18)
       expect(firstSeen['坛'], '壇');
       expect(firstSeen['干'], '乾');
       expect(firstSeen['须'], '須');
@@ -232,9 +237,11 @@ void main() {
       for (final c in kCuvSimplifiedChars.split('')) {
         if (!seen.add(c)) twoForms.add(c);
       }
+      // 2026-09-18: twenty-two became eighteen. Raymond 牧師's review
+      // settled 凄 (淒 only), 毁 (毀), 鉴 (鑒) and 锈 (銹).
       expect(twoForms, {
-        '冲', '凄', '发', '叹', '坛', '复', '尽', '干', '并', '毁', '签',
-        '系', '脏', '苏', '荡', '迹', '鉴', '链', '锈', '闲', '须', '饥',
+        '冲', '发', '叹', '坛', '复', '尽', '干', '并', '签',
+        '系', '脏', '苏', '荡', '迹', '链', '闲', '须', '饥',
       });
     });
 

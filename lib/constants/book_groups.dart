@@ -87,7 +87,7 @@ const newTestamentBooks = <String>{
   '约翰二书', '約翰二書',
   '约翰三书', '約翰三書',
   '犹大书', '猶大書',
-  '启示录', '啟示錄',
+  '启示录', '啟示錄', '啓示錄',
 };
 
 /// Canonical English book names in canonical order — used for the
