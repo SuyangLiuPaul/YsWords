@@ -16525,6 +16525,66 @@ has never seen this repo.
       unstaged, per this loop's standing courtesy for a shared checkout —
       only this slice's six files were staged by explicit name.
 
+      **2026-09-18 slice — the chart said Adam was born. Scripture says
+      he was made.** The same defect shape as the Enoch slice above,
+      mirrored to the START of the bar: `assets/bible_chronology.json`'s
+      `creation` marker at AM 0 correctly says "Creation" (refs Genesis
+      1:1, 1:26-27), but the `adam` lifeline's own person sheet
+      unconditionally rendered "Born 4004 BC" — the identical year, a
+      contradictory verb. Genesis 5:1-2 (already Adam's own ref) has God
+      "create"/"make" him, not beget or bear him.
+
+      `tools/build_bible_chronology.py`: `CREATED = {"adam"}` beside
+      `TRANSLATED`, a `start_kind(pid)` helper mirroring `end_kind()`, a
+      per-lifeline `startKind` (`"created"` / `"born"`) written beside
+      `endKind` at both CHAIN and CHILD_ANCHORED write sites, and
+      `_meta.createdNotBorn` as the id+refs completeness invariant, same
+      pattern as `translatedNotDied`. `lib/models/chronology.dart` gained
+      `Lifeline.startKind` (default `'born'`, so all 25 other rows are
+      unaffected). New string `chronologyCreated` ('Created' / 受造于 /
+      受造於) beside `chronologyBorn`. `chronology_chart.dart`'s person
+      sheet now branches the Born/Created verb on `startKind`, the same
+      `Builder` shape the Died/Taken-by-God line already used for
+      `endKind`; the bar geometry itself is untouched — AM 0 is a real,
+      solid year either way.
+
+      **The refuter caught two real errors in the planned justification
+      before it shipped**, not in the code itself. Planned claim 1 said
+      "Adam alone has no father" — false: Sarah's row also has
+      `fatherId: null` (she is `CHILD_ANCHORED`, not a `CHAIN` row), so
+      "no father" cannot be the criterion or Sarah would qualify too.
+      Corrected to the criterion the code actually uses: Adam is the
+      only one of the 26 whose start citation uses creation/making
+      language rather than any birth or begetting verb; of the other 25,
+      24 are `CHAIN` rows with an explicit begetting formula, and Sarah
+      is a separate exception to THAT count (no begetting formula, but
+      no creation language either, so she still correctly defaults to
+      `'born'`). Planned claim 2 misread Genesis 20:12 as naming Abraham
+      as Sarah's father — the verse actually has Abraham call her "the
+      daughter of my father", i.e. his OWN father's daughter (Terah,
+      traditionally), making her his half-sister sharing a father, not
+      his daughter. Either reading still leaves her an ordinary birth
+      with only her begetting age unstated, so the code's conclusion
+      (don't classify her as `'created'`) survived — only the written
+      reasoning needed rewriting, in the builder comment above `CREATED`,
+      before it went into the commit.
+
+      Builder re-run twice, byte-identical both times; `_meta.count` (26),
+      `computedEndAm` (2369) and `spanEndAm` (4098) all unmoved. `flutter
+      analyze` clean repo-wide. `bible_chronology_test.dart`'s four new
+      tests (three data, one widget) run green in the foreground first —
+      140 tests total in that file (136 baseline + 4). Full suite (356
+      files) run in 7 foreground chunks of ≤55, all green.
+
+      Asset + code + test only, no version bump, no deploy — this item's
+      own guard rail. Checkbox stays open; the chart item spans many
+      slices.
+
+      Pushed as `e12fde79`. CI run `35349603110` had not concluded inside
+      this iteration's ~6-minute watch budget (still `in_progress` at
+      last check, ~6 min after push) — next iteration's step 0 should
+      check it before picking anything else.
+
 - [ ] **Follow-up, filed not built: the `matriarchs` line id/name is
       deliberately plural.** Noted 2026-09-17 landing the Sarah slice
       above. Only Sarah is on the `matriarchs` line today, but
