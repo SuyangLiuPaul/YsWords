@@ -4460,7 +4460,9 @@ const uiStrings = {
   'aboutVerLjk': {
     'zh-Hans': 'LJK1 / LJK2 梁家铿译本（2025年 · 第二版，简 / 繁）',
     'zh-Hant': 'LJK1 / LJK2 梁家鏗譯本（2025年 · 第二版，簡 / 繁）',
-    'en': 'LJK1 / LJK2 — Liang Jiakeng translation (2025, 2nd ed., simplified / traditional)',
+    // 2026-09-18: the English name is the translator's own choice —
+    // 「LJK Chinese translation」, not a surname-based gloss.
+    'en': 'LJK1 / LJK2 — LJK Chinese translation (2025, 2nd ed., simplified / traditional)',
   },
   'aboutLicenseLjk': {
     'zh-Hans': '© 圣经释经事工 · 经授权使用。',
