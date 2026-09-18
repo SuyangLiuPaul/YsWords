@@ -1,14 +1,14 @@
 #!/bin/zsh
-# 2026-05-24 (v1.3.38): China-mode YsWords multi-device install.
+# 2026-05-24 (v1.3.38): China-mode Yahweh’s Words multi-device install.
 #
 # Coexists with the regular international install. Uses:
 #   • Android: --flavor cn (defined in android/app/build.gradle.kts)
 #     → applicationId = com.example.yswords.cn
-#     → home-screen label = "YsWords CN"
+#     → home-screen label = "Yahweh's Words CN"
 #   • iOS:     patches ios/Runner.xcodeproj/project.pbxproj +
 #     ios/Runner/Info.plist before build, reverts after.
 #     → CFBundleIdentifier = com.example.yswords.cn
-#     → CFBundleDisplayName = "YsWords CN"
+#     → CFBundleDisplayName = "Yahweh's Words CN"
 #
 # Both paths set `--dart-define=CHINA_MODE=true` so the runtime
 # behaviour (skip Firebase init, hide Google-Fonts options, show
@@ -80,13 +80,13 @@ echo "→ patching iOS Runner bundle ID + display name"
 # `com.example.yswords.RunnerTests` so its lines won't match the
 # trailing `yswords;` and stay untouched.
 sed -i '' 's|PRODUCT_BUNDLE_IDENTIFIER = com\.example\.yswords;|PRODUCT_BUNDLE_IDENTIFIER = com.example.yswords.cn;|g' "$PBX"
-# Patch CFBundleDisplayName so the home-screen label differs from
-# the international install. The plist value sits two lines after
-# the key in Apple's plist format.
-sed -i '' 's|<key>CFBundleDisplayName</key>\n.*<string>.*</string>|<key>CFBundleDisplayName</key>\n\t<string>YsWords CN</string>|' "$INFO_PLIST"
-# sed -i '' on macOS doesn't reliably handle \n across two lines; do
-# it the safe way via plutil.
-plutil -replace CFBundleDisplayName -string "YsWords CN" "$INFO_PLIST"
+# Patch CFBundleDisplayName so the home-screen label differs from the
+# international install. A `sed` over the two-line key/value pair used
+# to sit here as well; macOS sed does not match \n across lines, so it
+# never did anything and was removed on 2026-09-18 — plutil was always
+# the line doing the work. The label matches the Android cn flavour's
+# app_name (android/app/src/cn/res/values/strings.xml).
+plutil -replace CFBundleDisplayName -string "Yahweh's Words CN" "$INFO_PLIST"
 
 echo "→ flutter build ios --release ${DEFINES[*]}"
 if "$FLUTTER" build ios --release "${DEFINES[@]}"; then

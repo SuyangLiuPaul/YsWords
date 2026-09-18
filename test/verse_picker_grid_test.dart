@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/verse.dart';
+import 'package:yahwehs_words/models/verse.dart';
 
 /// The "Pick a verse" grid draws one chip per verse NUMBER.
 ///

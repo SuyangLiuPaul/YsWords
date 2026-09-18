@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 import '../constants/contact.dart';
 
 /// Single source of truth for the "Made by Paul Liu · contact" line

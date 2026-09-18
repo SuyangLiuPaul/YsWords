@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:yswords/models/biblical_person.dart';
+import 'package:yahwehs_words/models/biblical_person.dart';
 
 /// Loads the curated `assets/family_tree.json` dataset and provides
 /// id-based lookups + a few traversal helpers used by the

@@ -110,9 +110,9 @@
 /// carried to a third repository the way it was carried to this one.
 library;
 
-import 'package:yswords/constants/search_synonyms.dart';
-import 'package:yswords/utils/chinese_segmentation.dart';
-import 'package:yswords/utils/porter_stemmer.dart';
+import 'package:yahwehs_words/constants/search_synonyms.dart';
+import 'package:yahwehs_words/utils/chinese_segmentation.dart';
+import 'package:yahwehs_words/utils/porter_stemmer.dart';
 
 // ── The switch ──────────────────────────────────────────────────────
 

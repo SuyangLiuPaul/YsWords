@@ -4,8 +4,8 @@ import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/widgets/liquid_glass.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/widgets/liquid_glass.dart';
 
 /// The Dashboard can be reached from the keyboard.
 ///

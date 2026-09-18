@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/services/song_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
 
 /// 2026-08-10 (v1.4.39). A cached edition must never outlive a newer
 /// bundled one.

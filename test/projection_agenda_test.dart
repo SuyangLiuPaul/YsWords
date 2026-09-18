@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/projection_agenda.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/projection_agenda.dart';
 
 /// The order of service: what goes on the wall, in order, prepared
 /// before the room fills.

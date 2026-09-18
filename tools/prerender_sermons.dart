@@ -54,12 +54,12 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:yswords/constants/book_slugs.dart';
-import 'package:yswords/constants/canon_chapters.dart';
-import 'package:yswords/constants/sermon_credit.dart';
-import 'package:yswords/constants/sermon_topics.dart';
-import 'package:yswords/utils/passage_localizer.dart';
-import 'package:yswords/utils/version_mapper.dart';
+import 'package:yahwehs_words/constants/book_slugs.dart';
+import 'package:yahwehs_words/constants/canon_chapters.dart';
+import 'package:yahwehs_words/constants/sermon_credit.dart';
+import 'package:yahwehs_words/constants/sermon_topics.dart';
+import 'package:yahwehs_words/utils/passage_localizer.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart';
 
 /// The public origin every absolute URL on these pages points at. The
 /// cn-* Netlify sites serve the same files; their canonical still names

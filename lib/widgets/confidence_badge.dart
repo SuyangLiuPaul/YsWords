@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Small pill showing an evidence's confidence level (Definitive /
 /// Strong / Circumstantial). Uses the colors defined on the

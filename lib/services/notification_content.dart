@@ -21,8 +21,8 @@ import 'dart:math' show Random;
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:yswords/models/notification_category.dart';
-import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
+import 'package:yahwehs_words/models/notification_category.dart';
+import 'package:yahwehs_words/utils/passage_localizer.dart' show localizePassage;
 
 /// One resolved reminder, ready to hand to whichever delivery mechanism
 /// the platform has.

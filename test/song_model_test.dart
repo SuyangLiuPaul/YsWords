@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/services/song_player_service.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
 
 /// 2026-08-09 (Songs v2). The previous Songs feature was deleted
 /// because its catalogue rotted without anything catching it, so these

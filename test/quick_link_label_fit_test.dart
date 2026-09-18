@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 
 /// The dashboard quick-link labels.
 ///

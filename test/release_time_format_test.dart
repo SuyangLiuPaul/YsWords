@@ -10,7 +10,7 @@
 // mirrors the helper's logic.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/app_version.dart';
+import 'package:yahwehs_words/constants/app_version.dart';
 
 void main() {
   group('kAppReleaseTime + formatReleaseTimeLocal', () {

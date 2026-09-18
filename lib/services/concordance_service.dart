@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:yswords/services/versification_service.dart';
+import 'package:yahwehs_words/services/versification_service.dart';
 
 /// Result of a concordance lookup for one Strong's number.
 ///

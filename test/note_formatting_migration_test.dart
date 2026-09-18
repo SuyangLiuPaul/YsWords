@@ -33,8 +33,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/note_markdown.dart';
-import 'package:yswords/utils/note_reference_parser.dart';
+import 'package:yahwehs_words/utils/note_markdown.dart';
+import 'package:yahwehs_words/utils/note_reference_parser.dart';
 
 /// The complete load → edit → save → persist → sync → load chain a note
 /// goes through when the user opens the editor and taps Save without

@@ -16,7 +16,7 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'package:yswords/services/error_reporter.dart';
+import 'package:yahwehs_words/services/error_reporter.dart';
 
 class BreadcrumbObserver extends NavigatorObserver {
   @override

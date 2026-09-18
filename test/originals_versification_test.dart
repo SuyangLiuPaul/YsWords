@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/versification_service.dart';
+import 'package:yahwehs_words/services/versification_service.dart';
 
 /// The Originals sheet used to answer 詩篇 3:1 with מִזְמוֹר לְדָוִד —
 /// the superscription, which the Hebrew numbers as verse 1 and the CUV

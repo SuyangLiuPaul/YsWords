@@ -10,15 +10,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/chronology.dart';
-import 'package:yswords/pages/bible_timeline_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/chronology_service.dart';
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/route_paths.dart';
-import 'package:yswords/widgets/chronology_chart.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/chronology.dart';
+import 'package:yahwehs_words/pages/bible_timeline_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/chronology_service.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/route_paths.dart';
+import 'package:yahwehs_words/widgets/chronology_chart.dart';
 
 /// The interactive chronology chart, asked for 2026-08-12 with a
 /// reference sheet and the note that it is low priority and will take

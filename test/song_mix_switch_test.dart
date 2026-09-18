@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_queue.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
 
 /// Switching the whole queue's mix while it is playing.
 ///

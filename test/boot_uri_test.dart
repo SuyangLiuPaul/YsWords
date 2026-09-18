@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/utils/boot_uri.dart';
+import 'package:yahwehs_words/utils/boot_uri.dart';
 
 /// The share query has to survive the boot, the way the hash already does.
 ///

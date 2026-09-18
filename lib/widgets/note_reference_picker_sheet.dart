@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/book_names.dart';
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/utils/note_reference_parser.dart'
+import 'package:yahwehs_words/constants/book_names.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart' show sanitizeForSearch;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/utils/note_reference_parser.dart'
     show formatCompactReference;
-import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/services/fetch_books.dart' show standardBookOrder;
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// 2026-05-19 (v1.2.59): book → chapter → verse picker for the
 /// note editor's "+ Reference" button.

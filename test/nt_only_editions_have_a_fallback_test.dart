@@ -24,7 +24,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
 
 /// A book from each Testament, in the book-name language each edition
 /// uses. An edition is judged to carry a Testament if it has ANY of the

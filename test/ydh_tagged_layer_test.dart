@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/tagged_text_service.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
 
 /// `assets/tagged/bsb-yhwh/` and `assets/tagged/asv-yhwh/`, built by
 /// `tools/import_ydh_texts.py --tagged` on 2026-09-08.

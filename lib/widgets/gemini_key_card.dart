@@ -4,14 +4,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:yswords/constants/build_flags.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/ai_bible_search_service.dart';
-import 'package:yswords/services/api_base.dart';
-import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/utils/theme_color_helpers.dart';
+import 'package:yahwehs_words/constants/build_flags.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/ai_bible_search_service.dart';
+import 'package:yahwehs_words/services/api_base.dart';
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/utils/theme_color_helpers.dart';
 
 /// Settings → AI → "Use my own Gemini API key" (BYOK) card.
 ///

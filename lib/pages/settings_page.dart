@@ -1,73 +1,73 @@
 // 2026-05-20 (v1.2.67): `dart:js_interop` was here. See
 // `lib/utils/clear_cache_helper.dart` for the conditional-import
 // pattern that replaced it.
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/app_scroll_behavior.dart'
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
-import 'package:yswords/utils/clear_cache_helper.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/clear_cache_helper.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
 
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart' show Clipboard;
-import 'package:yswords/constants/sermon_credit.dart';
-import 'package:yswords/constants/app_version.dart';
-import 'package:yswords/constants/motion.dart';
-import 'package:yswords/constants/build_flags.dart';
-import 'package:yswords/constants/fuzzy_search_strings.dart';
-import 'package:yswords/constants/text_patterns.dart'
+import 'package:yahwehs_words/constants/sermon_credit.dart';
+import 'package:yahwehs_words/constants/app_version.dart';
+import 'package:yahwehs_words/constants/motion.dart';
+import 'package:yahwehs_words/constants/build_flags.dart';
+import 'package:yahwehs_words/constants/fuzzy_search_strings.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart'
     show sanitizeForCopy, parentheticalNotePattern;
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/app_style_preset.dart';
-import 'package:yswords/models/dashboard_section.dart';
-import 'package:yswords/services/update_service.dart';
-import 'package:yswords/widgets/update_check_tile.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/constants/projection_strings.dart';
-import 'package:yswords/services/projection_backdrop.dart';
-import 'package:yswords/services/verse_photo_picker.dart' show pickVersePhoto;
-import 'package:yswords/widgets/projection_stage.dart';
-import 'package:yswords/pages/projection_page.dart' show kProjectionTypeSteps;
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/pages/about_page.dart';
-import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
-import 'package:yswords/utils/theme_color_helpers.dart';
-import 'package:yswords/pages/profiles_page.dart';
-import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/widgets/gemini_key_card.dart';
-import 'package:yswords/widgets/email_auth_sheet.dart';
-import 'package:yswords/widgets/sync_unreachable_notice.dart';
-import 'package:yswords/widgets/google_g_logo.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/app_style_preset.dart';
+import 'package:yahwehs_words/models/dashboard_section.dart';
+import 'package:yahwehs_words/services/update_service.dart';
+import 'package:yahwehs_words/widgets/update_check_tile.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/constants/projection_strings.dart';
+import 'package:yahwehs_words/services/projection_backdrop.dart';
+import 'package:yahwehs_words/services/verse_photo_picker.dart' show pickVersePhoto;
+import 'package:yahwehs_words/widgets/projection_stage.dart';
+import 'package:yahwehs_words/pages/projection_page.dart' show kProjectionTypeSteps;
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/pages/about_page.dart';
+import 'package:yahwehs_words/utils/ai_markdown.dart' show parseAiMarkdown;
+import 'package:yahwehs_words/utils/theme_color_helpers.dart';
+import 'package:yahwehs_words/pages/profiles_page.dart';
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/widgets/gemini_key_card.dart';
+import 'package:yahwehs_words/widgets/email_auth_sheet.dart';
+import 'package:yahwehs_words/widgets/sync_unreachable_notice.dart';
+import 'package:yahwehs_words/widgets/google_g_logo.dart';
 import 'dart:async' show Timer;
 
-import "package:yswords/services/cloud_sync_service.dart"
+import "package:yahwehs_words/services/cloud_sync_service.dart"
     show CloudSyncStatus, SyncErrorKind, classifySyncError;
-import "package:yswords/services/realtime_db_sync_service.dart";
-import 'package:yswords/models/notification_category.dart';
-import 'package:yswords/services/notification_service.dart';
-import 'package:yswords/widgets/contact_line.dart';
-import 'package:yswords/widgets/profile_avatar.dart';
+import "package:yahwehs_words/services/realtime_db_sync_service.dart";
+import 'package:yahwehs_words/models/notification_category.dart';
+import 'package:yahwehs_words/services/notification_service.dart';
+import 'package:yahwehs_words/widgets/contact_line.dart';
+import 'package:yahwehs_words/widgets/profile_avatar.dart';
 // 2026-05-07 (v17): fetch_books / fetch_verses imports removed; the
 // only consumer was the deleted "Check for Updates" reload path.
-import 'package:yswords/services/export_service.dart';
-import 'package:yswords/services/import_service.dart';
-import 'package:yswords/services/install_prompt_service.dart';
-import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
-import 'package:yswords/utils/font_catalog.dart';
+import 'package:yahwehs_words/services/export_service.dart';
+import 'package:yahwehs_words/services/import_service.dart';
+import 'package:yahwehs_words/services/install_prompt_service.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
+import 'package:yahwehs_words/utils/floating_toast.dart' show showFloatingToast;
+import 'package:yahwehs_words/utils/font_catalog.dart';
 
-import 'package:yswords/services/offline_pack_service.dart';
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/onboarding_dialog.dart';
-import 'package:yswords/utils/responsive.dart';
+import 'package:yahwehs_words/services/offline_pack_service.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/onboarding_dialog.dart';
+import 'package:yahwehs_words/utils/responsive.dart';
 
 String getDevotionalFormattedText(
     List<Map<String, dynamic>> verses, String? book, int? chapter,

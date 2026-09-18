@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
-import 'package:yswords/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
 
 /// One harmony entry from `assets/gospel_synopsis.json`. Each entry
 /// maps a single Gospel event to its parallel passage in each Gospel

@@ -3,7 +3,7 @@
 // the converter with a stale dataset) surfaces immediately.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/cross_reference_service.dart';
+import 'package:yahwehs_words/services/cross_reference_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

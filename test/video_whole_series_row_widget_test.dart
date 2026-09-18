@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/video_series.dart';
-import 'package:yswords/pages/videos_page.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/video_series.dart';
+import 'package:yahwehs_words/pages/videos_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 /// Widget-layer coverage for `_wholeSeriesRow` (`videos_page.dart`),
 /// the "watch the whole series" row that sits below a series' episode

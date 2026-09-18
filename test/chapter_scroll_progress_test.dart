@@ -5,7 +5,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/chapter_scroll_progress.dart';
+import 'package:yahwehs_words/utils/chapter_scroll_progress.dart';
 
 void main() {
   // 2026-06-28 (v1.3.110): the LIVE bar is PIXEL-proportional — it advances

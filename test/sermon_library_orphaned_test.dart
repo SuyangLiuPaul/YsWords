@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/sermon_library_service.dart';
+import 'package:yahwehs_words/services/sermon_library_service.dart';
 
 /// The 福音电台 sermon library cluster (`SermonLibraryPage` and its two
 /// children, the chrome widget, the model and the service) has no

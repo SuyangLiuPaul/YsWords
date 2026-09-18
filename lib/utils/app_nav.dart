@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
-import 'package:yswords/constants/motion.dart';
-import 'package:yswords/utils/route_paths.dart' show matchesRegisteredRoute;
+import 'package:yahwehs_words/constants/motion.dart';
+import 'package:yahwehs_words/utils/route_paths.dart' show matchesRegisteredRoute;
 
 /// Canonical page-push helper — every `Get.to(...)` in the app should
 /// route through here instead of specifying its own transition/duration/

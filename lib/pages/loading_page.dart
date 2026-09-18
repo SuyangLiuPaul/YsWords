@@ -2,16 +2,16 @@ import 'dart:async';
 // 2026-05-20 (v1.2.67): `dart:js_interop` was here, blocking
 // native compile. Replaced with a conditional-export helper —
 // see lib/utils/clear_cache_helper.dart.
-import 'package:yswords/utils/app_scroll_behavior.dart'
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
-import 'package:yswords/utils/clear_cache_helper.dart';
+import 'package:yahwehs_words/utils/clear_cache_helper.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/legacy_reading_position_quarantine.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/legacy_reading_position_quarantine.dart';
 import '../models/app_settings.dart';
 import '../models/verse.dart';
 import '../providers/main_provider.dart';

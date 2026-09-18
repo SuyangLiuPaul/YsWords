@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/app_version.dart';
+import 'package:yahwehs_words/constants/app_version.dart';
 
 /// Regression coverage for the About-footer "last updated" stamp.
 ///

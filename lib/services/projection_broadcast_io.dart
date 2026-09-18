@@ -40,8 +40,8 @@ import 'projection_broadcast.dart' show ProjectionFrame;
 /// the page is written for that build; serving the same spelling here
 /// means one file works in both places.
 const String _kStageAsset = 'web/stage.html';
-const String _kFontUrlPath = 'assets/assets/fonts/NotoSansSC-YsWords.otf';
-const String _kFontAsset = 'assets/fonts/NotoSansSC-YsWords.otf';
+const String _kFontUrlPath = 'assets/assets/fonts/NotoSansSC-YahwehsWords.otf';
+const String _kFontAsset = 'assets/fonts/NotoSansSC-YahwehsWords.otf';
 
 HttpServer? _server;
 String? _token;

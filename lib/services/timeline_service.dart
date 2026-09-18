@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:yswords/models/timeline_event.dart';
+import 'package:yahwehs_words/models/timeline_event.dart';
 
 /// Loads the curated `assets/bible_timeline.json` dataset and
 /// caches it for the process lifetime.

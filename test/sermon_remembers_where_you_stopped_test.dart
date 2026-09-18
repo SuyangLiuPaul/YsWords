@@ -15,8 +15,8 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/services/media_focus.dart';
-import 'package:yswords/services/sermon_audio_service.dart';
+import 'package:yahwehs_words/services/media_focus.dart';
+import 'package:yahwehs_words/services/sermon_audio_service.dart';
 
 import 'support/fake_song_playback_engine.dart';
 

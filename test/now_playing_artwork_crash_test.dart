@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/widgets/remote_image.dart';
+import 'package:yahwehs_words/widgets/remote_image.dart';
 
 /// The 2026-08-12 crash report, reproduced — and its stated cause
 /// corrected.

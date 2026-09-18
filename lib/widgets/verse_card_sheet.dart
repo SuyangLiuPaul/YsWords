@@ -24,14 +24,14 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/verse_card_export.dart';
-import 'package:yswords/services/verse_card_service.dart';
-import 'package:yswords/services/verse_photo_picker.dart';
-import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/widgets/verse_card.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/verse_card_export.dart';
+import 'package:yahwehs_words/services/verse_card_service.dart';
+import 'package:yahwehs_words/services/verse_photo_picker.dart';
+import 'package:yahwehs_words/utils/floating_toast.dart' show showFloatingToast;
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/widgets/verse_card.dart';
 
 /// Bottom sheet showing a live [VerseCard] with the handful of
 /// presentation choices the feature offers, plus the one button that

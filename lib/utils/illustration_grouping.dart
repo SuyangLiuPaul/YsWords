@@ -1,4 +1,4 @@
-import 'package:yswords/models/bible_map.dart';
+import 'package:yahwehs_words/models/bible_map.dart';
 
 /// Span threshold for the browse-all catalogue grouping: an
 /// illustration tagged to this many books or fewer is listed under

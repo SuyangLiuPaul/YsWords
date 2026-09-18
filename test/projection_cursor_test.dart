@@ -7,7 +7,7 @@
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/pages/projection_page.dart';
+import 'package:yahwehs_words/pages/projection_page.dart';
 
 /// A three-chapter corpus: 2 verses, then 3, then 2.
 ///

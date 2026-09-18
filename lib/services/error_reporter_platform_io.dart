@@ -11,7 +11,7 @@ library;
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:yswords/utils/synthetic_device.dart';
+import 'package:yahwehs_words/utils/synthetic_device.dart';
 
 String get platformName {
   if (Platform.isIOS) return 'ios';

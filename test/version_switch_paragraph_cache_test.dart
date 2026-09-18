@@ -7,8 +7,8 @@
 // one it hit; the returned value is the only thing that can, which is why
 // these tests failed rather than silently passing on the wrong edition.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 /// 2026-09-06: the "switching the Bible version doesn't switch" bug,
 /// reported twice from an iPad and reproduced in headless Chrome against

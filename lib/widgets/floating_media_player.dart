@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/media_focus.dart';
-import 'package:yswords/utils/embeddable_media.dart';
-import 'package:yswords/widgets/media_embed.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/media_focus.dart';
+import 'package:yahwehs_words/utils/embeddable_media.dart';
+import 'package:yahwehs_words/widgets/media_embed.dart';
 
 /// A draggable window that keeps playing while the app stays usable.
 ///

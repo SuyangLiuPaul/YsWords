@@ -1,4 +1,4 @@
-import 'package:yswords/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
 
 /// The passage the Sermons list is filtered to, carried into the
 /// sermon so the same passage can be highlighted where it appears.

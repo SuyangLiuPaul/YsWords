@@ -6,12 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/biblical_person.dart';
-import 'package:yswords/pages/bible_timeline_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/widgets/person_detail_sheet.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/biblical_person.dart';
+import 'package:yahwehs_words/pages/bible_timeline_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/widgets/person_detail_sheet.dart';
 
 /// The timeline's `_RefChip` and the person sheet's `_refChip` wired
 /// their tap the same unconditional way the evidence chip did before it

@@ -3,8 +3,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/api_base.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/api_base.dart';
 
 /// Calls the YsWords Cloud Function that proxies Gemini for AI-
 /// powered Bible reference search. Different from `AiSearchService`

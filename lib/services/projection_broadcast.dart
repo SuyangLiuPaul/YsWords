@@ -26,7 +26,7 @@
 // This is the door `projection_page.dart` said it was leaving open,
 // walked through.
 
-import 'package:yswords/widgets/projection_stage.dart' show ProjectionLayout;
+import 'package:yahwehs_words/widgets/projection_stage.dart' show ProjectionLayout;
 
 import 'projection_broadcast_stub.dart'
     if (dart.library.js_interop) 'projection_broadcast_web.dart'

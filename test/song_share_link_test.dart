@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/utils/route_paths.dart';
+import 'package:yahwehs_words/utils/route_paths.dart';
 
 /// The shareable song link, added 2026-09-07.
 ///

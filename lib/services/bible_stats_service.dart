@@ -1,5 +1,5 @@
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
-import 'package:yswords/models/verse.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart' show sanitizeForSearch;
+import 'package:yahwehs_words/models/verse.dart';
 
 /// Whole-Bible vocabulary + structural statistics computed from the
 /// currently-loaded version's verses. The compute is O(n) over every

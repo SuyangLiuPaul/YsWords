@@ -6,7 +6,7 @@
 /// [formatVerseRangeLabels].
 library;
 
-import 'package:yswords/models/verse.dart';
+import 'package:yahwehs_words/models/verse.dart';
 
 /// Collapses consecutive verse numbers: `[3,4,5,7]` → `3–5, 7`.
 String formatVerseRange(List<int> nums) {

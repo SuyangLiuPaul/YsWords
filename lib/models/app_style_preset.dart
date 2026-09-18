@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/models/app_settings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
 
 /// Bundled-style "presets" that the user can apply with one tap.
 /// Each preset bundles a coordinated set of visual settings —

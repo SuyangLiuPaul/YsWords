@@ -25,12 +25,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/book.dart';
-import 'package:yswords/models/chapter.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/book.dart';
+import 'package:yahwehs_words/models/chapter.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/pages/home_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

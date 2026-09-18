@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:yswords/utils/cbol_references.dart';
+import 'package:yahwehs_words/utils/cbol_references.dart';
 
 /// One row in the Originals stats table — a single Strong's number
 /// with its Hebrew/Greek lemma, transliteration, English + Chinese

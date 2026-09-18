@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/dashboard_section.dart';
+import 'package:yahwehs_words/models/dashboard_section.dart';
 
 /// A section shipped after the user already has a saved layout must
 /// land where the default order says, not at the bottom.

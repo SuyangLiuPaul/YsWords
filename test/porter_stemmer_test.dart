@@ -20,7 +20,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/porter_stemmer.dart';
+import 'package:yahwehs_words/utils/porter_stemmer.dart';
 
 void main() {
   void published(String label, String Function(String) step,

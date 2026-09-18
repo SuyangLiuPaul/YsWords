@@ -1,5 +1,5 @@
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show localeAwareBookName;
 
 /// Pattern that detects English (full + abbreviated) and Chinese
 /// (Simplified + Traditional) Bible references inside free-form

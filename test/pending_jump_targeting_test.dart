@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 /// 2026-08-23, from the user: "I use AI to search … if I click it won't
 /// jump into the words straight away … it won't jump to the correct

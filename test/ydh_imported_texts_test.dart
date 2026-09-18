@@ -4,10 +4,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/constants/book_names.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/verse_card_service.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/book_names.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/verse_card_service.dart';
 
 /// The four texts imported from the 雅伟的话 export on 2026-09-08 —
 /// BSB, BSB (Yahweh), ASV (Yahweh) and the Westcott-Hort Greek NT.

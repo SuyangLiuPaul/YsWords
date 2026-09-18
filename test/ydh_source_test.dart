@@ -6,13 +6,13 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/constants/song_source_icons.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/pages/songs_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/song_service.dart';
+import 'package:yahwehs_words/constants/song_source_icons.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/pages/songs_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/song_service.dart';
 
 /// 2026-09-03. `ydh` — yahwehdehua.net, 雅伟的话 — joined as a sixth
 /// source for the five Good Friday / Easter songs on

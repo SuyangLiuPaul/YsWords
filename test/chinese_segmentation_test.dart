@@ -18,8 +18,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/chinese_segmentation.dart';
-import 'package:yswords/utils/fuzzy_search.dart' show synonymVocabulary;
+import 'package:yahwehs_words/utils/chinese_segmentation.dart';
+import 'package:yahwehs_words/utils/fuzzy_search.dart' show synonymVocabulary;
 
 void main() {
   late Map<String, String> verses;

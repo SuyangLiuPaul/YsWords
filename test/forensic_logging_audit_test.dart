@@ -106,7 +106,7 @@ void main() {
       test('[${chain.tag}] in ${chain.file.split('/').last}', () {
         final src = File(chain.file).readAsStringSync();
 
-        expect(src, contains("import 'package:yswords/utils/log_diag.dart';"),
+        expect(src, contains("import 'package:yahwehs_words/utils/log_diag.dart';"),
             reason: '${chain.file} logs forensics but does not import '
                 'logDiag');
 

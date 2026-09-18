@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_playlist.dart';
-import 'package:yswords/models/song_queue.dart';
-import 'package:yswords/pages/now_playing_page.dart';
-import 'package:yswords/pages/song_playlist_detail_page.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/services/song_playlist_service.dart';
-import 'package:yswords/services/song_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_playlist.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
+import 'package:yahwehs_words/pages/now_playing_page.dart';
+import 'package:yahwehs_words/pages/song_playlist_detail_page.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/services/song_playlist_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/responsive.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
 
 /// Playlists — favourites, curated lists, and saved filters.
 class SongPlaylistsPage extends StatefulWidget {

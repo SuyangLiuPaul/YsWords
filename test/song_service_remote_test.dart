@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/services/song_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
 
 /// 2026-08-09. The Songs catalogue moved from a bundled-only asset to
 /// the yswords-data dataset, so a song added upstream reaches users

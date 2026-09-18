@@ -27,12 +27,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/constants/update_check_frequency.dart';
-import 'package:yswords/services/app_update_installer.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/services/update_service.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/update_check_frequency.dart';
+import 'package:yahwehs_words/services/app_update_installer.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/services/update_service.dart';
 
 String _s(String locale, String key, String fallback) =>
     uiStrings[key]?[locale] ?? fallback;

@@ -15,7 +15,7 @@
 /// data it did not fetch.
 library;
 
-import 'package:yswords/constants/sermon_credit.dart' show sermonPreacher;
+import 'package:yahwehs_words/constants/sermon_credit.dart' show sermonPreacher;
 
 /// Minimum body length, in characters, at which a body is worth
 /// opening.

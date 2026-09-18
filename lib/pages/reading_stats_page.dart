@@ -30,22 +30,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/canon_chapters.dart' show canonLastChapter;
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
-import 'package:yswords/services/reading_history_service.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/utils/app_nav.dart' show pushPage;
-import 'package:yswords/utils/jump_to_reference.dart'
+import 'package:yahwehs_words/constants/canon_chapters.dart' show canonLastChapter;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/fetch_books.dart' show standardBookOrder;
+import 'package:yahwehs_words/services/reading_history_service.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/pages/home_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/utils/app_nav.dart' show pushPage;
+import 'package:yahwehs_words/utils/jump_to_reference.dart'
     show resolveAndPrepareJump, showJumpResultSnackBar;
-import 'package:yswords/utils/reference_parser.dart' show BibleReference;
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart' show BibleReference;
+import 'package:yahwehs_words/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
 
 /// Matthew is the 40th book in `standardBookOrder`, so the first 39 are
 /// the Old Testament. Derived from the shared order rather than a second

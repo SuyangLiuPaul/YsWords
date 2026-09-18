@@ -18,9 +18,9 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/cloud_sync_service.dart';
-import 'package:yswords/widgets/sync_unreachable_notice.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/cloud_sync_service.dart';
+import 'package:yahwehs_words/widgets/sync_unreachable_notice.dart';
 
 void main() {
   group('classifySyncError', () {

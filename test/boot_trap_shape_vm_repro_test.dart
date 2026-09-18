@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/fetch_books.dart';
-import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/services/url_sync_service.dart';
-import 'package:yswords/utils/jump_to_reference.dart' as jumper;
-import 'package:yswords/utils/reference_parser.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/fetch_books.dart';
+import 'package:yahwehs_words/services/fetch_verses.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
+import 'package:yahwehs_words/services/url_sync_service.dart';
+import 'package:yahwehs_words/utils/jump_to_reference.dart' as jumper;
+import 'package:yahwehs_words/utils/reference_parser.dart';
 
 /// 2026-08-31 / 2026-09-01: VM-side repro attempts for the mailed-in boot
 /// crash — `Invalid argument: 0`, web release only (queue:

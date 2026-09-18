@@ -21,7 +21,7 @@ library;
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/build_flags.dart';
+import 'package:yahwehs_words/constants/build_flags.dart';
 
 /// Strip `//` and `///` comments. Both retired keys and the word
 /// `kChinaMode` still appear all over this repo's PROSE — the

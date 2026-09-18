@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/pages/library_page.dart';
+import 'package:yahwehs_words/pages/library_page.dart';
 
 /// A tile labelled Bookmarks must open Bookmarks.
 ///

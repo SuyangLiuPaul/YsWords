@@ -5,7 +5,7 @@ import 'dart:ui_web' as ui_web;
 import 'package:flutter/widgets.dart';
 import 'package:web/web.dart' as web;
 
-import 'package:yswords/widgets/youtube_embed_src.dart';
+import 'package:yahwehs_words/widgets/youtube_embed_src.dart';
 
 /// The YouTube player, embedded as a real `<iframe>` in the page.
 ///

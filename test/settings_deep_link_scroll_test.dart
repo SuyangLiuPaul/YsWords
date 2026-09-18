@@ -3,10 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/settings_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/widgets/gemini_key_card.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/settings_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/widgets/gemini_key_card.dart';
 
 /// Regression test for "`/settings/:section` is an alias for `/settings`"
 /// (2026-09-03).

@@ -20,10 +20,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/fuzzy_search_strings.dart';
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
-import 'package:yswords/utils/fuzzy_result_label.dart';
-import 'package:yswords/utils/fuzzy_search.dart';
+import 'package:yahwehs_words/constants/fuzzy_search_strings.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart' show sanitizeForSearch;
+import 'package:yahwehs_words/utils/fuzzy_result_label.dart';
+import 'package:yahwehs_words/utils/fuzzy_search.dart';
 
 void main() {
   late List<String> kjv;
@@ -419,10 +419,10 @@ void main() {
         'lib/constants/fuzzy_search_strings.dart',
       ];
       const allowed = {
-        'package:yswords/constants/search_synonyms.dart',
-        'package:yswords/utils/chinese_segmentation.dart',
-        'package:yswords/utils/porter_stemmer.dart',
-        'package:yswords/utils/fuzzy_search.dart',
+        'package:yahwehs_words/constants/search_synonyms.dart',
+        'package:yahwehs_words/utils/chinese_segmentation.dart',
+        'package:yahwehs_words/utils/porter_stemmer.dart',
+        'package:yahwehs_words/utils/fuzzy_search.dart',
       };
       final importLine = RegExp(r"^import '([^']+)'", multiLine: true);
       for (final path in portable) {
@@ -441,7 +441,7 @@ void main() {
       // fuzzy work, the layer is no longer liftable and this fails
       // before anyone finds that out by trying.
       final glue = File('lib/utils/fuzzy_result_label.dart').readAsStringSync();
-      expect(glue, contains("package:yswords/constants/text_patterns.dart"));
+      expect(glue, contains("package:yahwehs_words/constants/text_patterns.dart"));
       expect(glue, isNot(contains('package:flutter/')));
     });
   });

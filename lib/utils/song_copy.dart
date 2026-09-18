@@ -1,5 +1,5 @@
-import 'package:yswords/models/song.dart';
-import 'package:yswords/utils/entry_copy.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/utils/entry_copy.dart';
 
 /// The `source · code · credit · duration` line printed under a song's
 /// title.

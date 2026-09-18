@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/strongs.dart';
-import 'package:yswords/services/tagged_text_service.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/strongs.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
 
 /// The secondary line under a tapped run of the tagged Chinese verse:
 /// the OTHER original words that run's span covers.

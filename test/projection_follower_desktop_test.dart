@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/projection_broadcast.dart';
-import 'package:yswords/services/projection_broadcast_io.dart';
+import 'package:yahwehs_words/services/projection_broadcast.dart';
+import 'package:yahwehs_words/services/projection_broadcast_io.dart';
 
 /// The desktop follower — `projection_broadcast_io.dart`.
 ///
@@ -90,7 +90,7 @@ void main() {
     final token = url.pathSegments.first;
     expect(
         (await _get(url.replace(
-                path: '/$token/assets/assets/fonts/NotoSansSC-YsWords.otf',
+                path: '/$token/assets/assets/fonts/NotoSansSC-YahwehsWords.otf',
                 query: '')))
             .statusCode,
         200);

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/sermon_audio_service.dart';
+import 'package:yahwehs_words/services/sermon_audio_service.dart';
 
 /// Sermon audio went from "written and dormant" to live on 2026-09-02:
 /// the user pointed at the church's own public page

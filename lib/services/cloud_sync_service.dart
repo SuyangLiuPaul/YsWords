@@ -5,14 +5,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/services/profile_service.dart';
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
 // 2026-05-20 (v1.2.67): isOnline lookup moved behind a
 // conditional-export helper so this file compiles on iOS /
 // Android. The web stub reads `navigator.onLine`; the native
 // stub returns `true` (no real connectivity detection on
 // native without adding `connectivity_plus`).
-import 'package:yswords/utils/navigator_online_helper.dart'
+import 'package:yahwehs_words/utils/navigator_online_helper.dart'
     as netcheck;
 
 bool get _isWebOnline {

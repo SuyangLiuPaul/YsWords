@@ -6,9 +6,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/services/cloud_sync_service.dart' show CloudSyncStatus;
-import 'package:yswords/services/profile_service.dart';
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/services/cloud_sync_service.dart' show CloudSyncStatus;
+import 'package:yahwehs_words/services/profile_service.dart';
 
 /// Replaces Drive sync (and the older Firestore-based CloudSyncService)
 /// with Firebase Realtime Database. Why this is the right call for

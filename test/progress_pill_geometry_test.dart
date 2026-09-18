@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/progress_pill_geometry.dart';
+import 'package:yahwehs_words/utils/progress_pill_geometry.dart';
 
 /// BUGS #1, root-caused 2026-09-02 from the crash email's full stack.
 ///

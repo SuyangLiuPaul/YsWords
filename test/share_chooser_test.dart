@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/widgets/share_chooser_sheet.dart';
+import 'package:yahwehs_words/widgets/share_chooser_sheet.dart';
 
 void main() {
   Future<void> open(WidgetTester tester, {String locale = 'zh-Hans'}) async {

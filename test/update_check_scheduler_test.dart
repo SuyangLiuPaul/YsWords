@@ -17,12 +17,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/update_check_frequency.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/services/update_check_scheduler.dart';
-import 'package:yswords/services/update_service.dart';
-import 'package:yswords/widgets/update_check_tile.dart';
+import 'package:yahwehs_words/constants/update_check_frequency.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
+import 'package:yahwehs_words/services/update_check_scheduler.dart';
+import 'package:yahwehs_words/services/update_service.dart';
+import 'package:yahwehs_words/widgets/update_check_tile.dart';
 
 UpdateInfo _info({required bool available}) => UpdateInfo(
       updateAvailable: available,

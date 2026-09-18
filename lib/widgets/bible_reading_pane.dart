@@ -8,66 +8,66 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/utils/reader_header_fit.dart';
-import 'package:yswords/constants/motion.dart';
-import 'package:yswords/constants/projection_strings.dart';
-import 'package:yswords/constants/text_patterns.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/chrome_scale.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/route_paths.dart' show evidencePath;
-import 'package:yswords/utils/verse_citation.dart';
-import 'package:yswords/utils/progress_pill_geometry.dart';
-import 'package:yswords/utils/app_scroll_behavior.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/utils/reader_header_fit.dart';
+import 'package:yahwehs_words/constants/motion.dart';
+import 'package:yahwehs_words/constants/projection_strings.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/utils/chrome_scale.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/route_paths.dart' show evidencePath;
+import 'package:yahwehs_words/utils/verse_citation.dart';
+import 'package:yahwehs_words/utils/progress_pill_geometry.dart';
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
-import 'package:yswords/widgets/commentary_sheet.dart';
-import 'package:yswords/widgets/verse_card_sheet.dart';
-import 'package:yswords/widgets/note_reference_picker_sheet.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/bible_map.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/bible_trivia_page.dart' as trivia;
-import 'package:yswords/pages/books_page.dart';
-import 'package:yswords/pages/evidence_page.dart';
-import 'package:yswords/pages/highlights_page.dart';
-import 'package:yswords/pages/projection_page.dart';
-import 'package:yswords/pages/library_page.dart';
-import 'package:yswords/pages/map_viewer_page.dart';
-import 'package:yswords/pages/search_page.dart';
-import 'package:yswords/pages/settings_page.dart';
-import 'package:yswords/pages/stats_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/fetch_books.dart';
-import 'package:yswords/services/ai_word_service.dart';
-import 'package:yswords/utils/ai_text_cleaner.dart';
-import 'package:yswords/utils/chapter_scroll_progress.dart';
-import 'package:yswords/services/concordance_service.dart';
-import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/constants/sermon_topics.dart';
-import 'package:yswords/models/sermon.dart';
-import 'package:yswords/pages/sermon_detail_page.dart';
-import 'package:yswords/services/commentary_service.dart';
-import 'package:yswords/services/cross_reference_service.dart';
-import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/services/book_intro_service.dart';
-import 'package:yswords/services/map_service.dart';
-import 'package:yswords/services/section_title_service.dart';
-import 'package:yswords/services/sermon_service.dart';
-import 'package:yswords/services/synopsis_service.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/ref_list_copy.dart';
-import 'package:yswords/utils/haptics.dart';
-import 'package:yswords/utils/illustration_grouping.dart';
+import 'package:yahwehs_words/widgets/commentary_sheet.dart';
+import 'package:yahwehs_words/widgets/verse_card_sheet.dart';
+import 'package:yahwehs_words/widgets/note_reference_picker_sheet.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/bible_map.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/pages/bible_trivia_page.dart' as trivia;
+import 'package:yahwehs_words/pages/books_page.dart';
+import 'package:yahwehs_words/pages/evidence_page.dart';
+import 'package:yahwehs_words/pages/highlights_page.dart';
+import 'package:yahwehs_words/pages/projection_page.dart';
+import 'package:yahwehs_words/pages/library_page.dart';
+import 'package:yahwehs_words/pages/map_viewer_page.dart';
+import 'package:yahwehs_words/pages/search_page.dart';
+import 'package:yahwehs_words/pages/settings_page.dart';
+import 'package:yahwehs_words/pages/stats_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/fetch_books.dart';
+import 'package:yahwehs_words/services/ai_word_service.dart';
+import 'package:yahwehs_words/utils/ai_text_cleaner.dart';
+import 'package:yahwehs_words/utils/chapter_scroll_progress.dart';
+import 'package:yahwehs_words/services/concordance_service.dart';
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/constants/sermon_topics.dart';
+import 'package:yahwehs_words/models/sermon.dart';
+import 'package:yahwehs_words/pages/sermon_detail_page.dart';
+import 'package:yahwehs_words/services/commentary_service.dart';
+import 'package:yahwehs_words/services/cross_reference_service.dart';
+import 'package:yahwehs_words/services/fetch_verses.dart';
+import 'package:yahwehs_words/services/book_intro_service.dart';
+import 'package:yahwehs_words/services/map_service.dart';
+import 'package:yahwehs_words/services/section_title_service.dart';
+import 'package:yahwehs_words/services/sermon_service.dart';
+import 'package:yahwehs_words/services/synopsis_service.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/ref_list_copy.dart';
+import 'package:yahwehs_words/utils/haptics.dart';
+import 'package:yahwehs_words/utils/illustration_grouping.dart';
 // 2026-05-10 (v1.2.13): the `as jumper` import was only needed by
 // the `_captureChapterRelativeVerseNum` / `_scrollToVerseInChapter`
 // thin wrappers that v1.2.13 removed alongside the version-switch
 // scroll-restore complexity. Only `prepareJumpToVerse` is still
 // used in this file (jump-to-reference flow on a verse tap).
-import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
-import 'package:yswords/utils/note_markdown.dart'
+import 'package:yahwehs_words/utils/jump_to_reference.dart' show prepareJumpToVerse;
+import 'package:yahwehs_words/utils/note_markdown.dart'
     show NoteFormatAction, NoteMarkdownMode, applyNoteFormat;
-import 'package:yswords/utils/note_reference_parser.dart'
+import 'package:yahwehs_words/utils/note_reference_parser.dart'
     show
         extractNoteReferences,
         NoteReferenceMatch,
@@ -75,25 +75,25 @@ import 'package:yswords/utils/note_reference_parser.dart'
         spliceComposingUnderline,
         normalizeNoteReferenceBookNames,
         formatCompactReference;
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
-import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/utils/short_book_name.dart';
-import 'package:yswords/widgets/google_g_logo.dart';
-import 'package:yswords/widgets/illustration_image.dart';
-import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
-import 'package:yswords/utils/version_mapper.dart'
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/widgets/verse_popup_sheet.dart' show showVersePopup;
+import 'package:yahwehs_words/utils/responsive.dart';
+import 'package:yahwehs_words/utils/short_book_name.dart';
+import 'package:yahwehs_words/widgets/google_g_logo.dart';
+import 'package:yahwehs_words/widgets/illustration_image.dart';
+import 'package:yahwehs_words/utils/floating_toast.dart' show showFloatingToast;
+import 'package:yahwehs_words/utils/version_mapper.dart'
     show translateBookName, toEnglish, localeAwareBookName;
-import 'package:yswords/widgets/highlights_sheet.dart';
-import 'package:yswords/widgets/originals_sheet.dart';
-import 'package:yswords/widgets/verse_widget.dart';
-import 'package:yswords/widgets/paragraph_group_widget.dart';
-import 'package:yswords/widgets/overflow_hint_scroll.dart';
-import 'package:yswords/widgets/share_chooser_sheet.dart';
-import 'package:yswords/widgets/version_picker_sheet.dart'
+import 'package:yahwehs_words/widgets/highlights_sheet.dart';
+import 'package:yahwehs_words/widgets/originals_sheet.dart';
+import 'package:yahwehs_words/widgets/verse_widget.dart';
+import 'package:yahwehs_words/widgets/paragraph_group_widget.dart';
+import 'package:yahwehs_words/widgets/overflow_hint_scroll.dart';
+import 'package:yahwehs_words/widgets/share_chooser_sheet.dart';
+import 'package:yahwehs_words/widgets/version_picker_sheet.dart'
     show showLanguageGroupedVersionMenu;
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/log_diag.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/log_diag.dart';
 
 /// 2026-08-02 (v1.3.156): "护眼" (easy-on-eyes) reading theme — a warm
 /// sepia/paper palette for the Bible reading pane, toggled independently

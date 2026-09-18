@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/sermon_detail_page.dart';
-import 'package:yswords/services/sermon_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/route_paths.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/sermon_detail_page.dart';
+import 'package:yahwehs_words/services/sermon_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/route_paths.dart';
 
 /// URL-routing Stage 4 (`docs/url-routing-plan.md`, §6 batch 2): the
 /// first parameterized route, `/sermons/:id`. Stages 2–3 only ever

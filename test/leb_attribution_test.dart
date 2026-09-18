@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 
 /// The LEB's licence does not merely ask to be credited — it prescribes
 /// the exact sentence, and two phrases inside it that must be links.

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/verse_card_export.dart';
+import 'package:yahwehs_words/services/verse_card_export.dart';
 
 /// Keeping the picture, as opposed to handing it to somebody.
 ///

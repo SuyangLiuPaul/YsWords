@@ -3,8 +3,8 @@
 // Flutter model.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/bible_evidence.dart';
-import 'package:yswords/services/bible_evidence_service.dart';
+import 'package:yahwehs_words/models/bible_evidence.dart';
+import 'package:yahwehs_words/services/bible_evidence_service.dart';
 
 void main() {
   group('BibleEvidence.fromJson', () {

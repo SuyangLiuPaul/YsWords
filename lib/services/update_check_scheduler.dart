@@ -36,8 +36,8 @@
 // web and the gate below inherits that; nothing extra was needed.
 library;
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/update_service.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/update_service.dart';
 
 /// Runs the check if it is due, and reports a newer release.
 ///

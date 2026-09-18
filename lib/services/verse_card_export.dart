@@ -22,12 +22,12 @@
 
 import 'dart:typed_data';
 
-import 'package:yswords/services/verse_card_export_types.dart';
+import 'package:yahwehs_words/services/verse_card_export_types.dart';
 
 import 'verse_card_export_stub.dart'
     if (dart.library.js_interop) 'verse_card_export_web.dart' as impl;
 
-export 'package:yswords/services/verse_card_export_types.dart';
+export 'package:yahwehs_words/services/verse_card_export_types.dart';
 
 abstract class VerseCardExport {
   /// Whether the platform can hand the image to a share sheet, as

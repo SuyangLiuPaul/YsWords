@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/book_names.dart' show bookNameToEnglish;
+import 'package:yahwehs_words/constants/book_names.dart' show bookNameToEnglish;
 
 /// `bookNameToEnglish` (this package) and `_zhAliasToEn`
 /// (`book_name_mapping.dart`) are two independently-maintained tables of

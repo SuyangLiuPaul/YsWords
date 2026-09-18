@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/models/library_sermon.dart';
-import 'package:yswords/services/sermon_library_service.dart';
+import 'package:yahwehs_words/models/library_sermon.dart';
+import 'package:yahwehs_words/services/sermon_library_service.dart';
 
 /// `SermonLibraryService` — the one door into the 940-record 福音电台
 /// library.

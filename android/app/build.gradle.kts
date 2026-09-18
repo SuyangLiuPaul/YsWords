@@ -125,7 +125,7 @@ android {
     // (default) build and the China-mode build can coexist on the
     // same Android device. The `cn` flavor uses
     //   applicationIdSuffix=".cn"  → installs as `com.example.yswords.cn`
-    //   resValue app_name="YsWords CN" → distinct home-screen label
+    //   resValue app_name="Yahweh's Words CN" → distinct home-screen label
     // and is paired at build time with `--dart-define=CHINA_MODE=true`
     // which gates the runtime behavior (Firebase init skipped,
     // Google Fonts options hidden, etc.). Build commands:

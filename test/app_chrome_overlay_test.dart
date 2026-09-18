@@ -4,11 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/services/song_service.dart';
-import 'package:yswords/widgets/global_mini_player.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
+import 'package:yahwehs_words/widgets/global_mini_player.dart';
 
 /// `No Overlay widget found`, reported twice.
 ///

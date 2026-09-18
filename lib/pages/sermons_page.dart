@@ -4,26 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/sermon_credit.dart';
-import 'package:yswords/constants/motion.dart';
-import 'package:yswords/constants/sermon_topics.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/widgets/press_scale.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/passage_filter.dart';
-import 'package:yswords/models/sermon.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/pages/sermon_detail_page.dart';
-import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
-import 'package:yswords/services/sermon_audio_service.dart';
-import 'package:yswords/services/sermon_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/passage_localizer.dart' show localizePassage;
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yahwehs_words/constants/sermon_credit.dart';
+import 'package:yahwehs_words/constants/motion.dart';
+import 'package:yahwehs_words/constants/sermon_topics.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/widgets/press_scale.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/passage_filter.dart';
+import 'package:yahwehs_words/models/sermon.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/pages/sermon_detail_page.dart';
+import 'package:yahwehs_words/services/fetch_books.dart' show standardBookOrder;
+import 'package:yahwehs_words/services/sermon_audio_service.dart';
+import 'package:yahwehs_words/services/sermon_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/passage_localizer.dart' show localizePassage;
+import 'package:yahwehs_words/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// Topic-grouped browser for the Pastor Eric sermon corpus.
 ///

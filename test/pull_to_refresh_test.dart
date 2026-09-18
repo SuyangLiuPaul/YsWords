@@ -18,12 +18,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/update_check_frequency.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/update_check_scheduler.dart';
-import 'package:yswords/pages/dashboard_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/update_service.dart';
+import 'package:yahwehs_words/constants/update_check_frequency.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/update_check_scheduler.dart';
+import 'package:yahwehs_words/pages/dashboard_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/update_service.dart';
 
 import 'dart:io';
 

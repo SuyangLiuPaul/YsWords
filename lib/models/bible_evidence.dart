@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 
 /// One row in the Biblical Evidence Archive.
 ///

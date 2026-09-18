@@ -1,5 +1,5 @@
-import 'package:yswords/constants/book_name_mapping.dart' show zhToEn, toLocale;
-import 'package:yswords/utils/reference_parser.dart' show BibleReference, parseReference;
+import 'package:yahwehs_words/constants/book_name_mapping.dart' show zhToEn, toLocale;
+import 'package:yahwehs_words/utils/reference_parser.dart' show BibleReference, parseReference;
 
 String translateBookName(String? book, String version) {
   if (book == null) return '';

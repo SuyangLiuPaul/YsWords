@@ -4,7 +4,7 @@ import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;
 
-import 'package:yswords/services/playback/playback_blocked.dart';
+import 'package:yahwehs_words/services/playback/playback_blocked.dart';
 
 /// Web playback on a bare `HTMLAudioElement`.
 ///

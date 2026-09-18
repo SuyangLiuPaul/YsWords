@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/constants/text_patterns.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/widgets/verse_notes_block.dart'
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/widgets/verse_notes_block.dart'
     show superscriptNumber, isNoteMarkerText;
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Builds InlineSpan list for a single verse (number + text with annotations).
 /// Shared by VerseWidget and ParagraphGroupWidget.

@@ -24,8 +24,8 @@ import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:image_picker/image_picker.dart';
 
-import 'package:yswords/services/verse_photo_temp_stub.dart'
-    if (dart.library.io) 'package:yswords/services/verse_photo_temp_io.dart';
+import 'package:yahwehs_words/services/verse_photo_temp_stub.dart'
+    if (dart.library.io) 'package:yahwehs_words/services/verse_photo_temp_io.dart';
 
 /// Longest edge the picked photograph is downscaled to before it is
 /// decoded, in pixels.

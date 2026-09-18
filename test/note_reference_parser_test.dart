@@ -12,7 +12,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/note_reference_parser.dart';
+import 'package:yahwehs_words/utils/note_reference_parser.dart';
 
 List<NoteReferenceMatch> _fireAllRefs(String noteText) {
   final caught = <NoteReferenceMatch>[];

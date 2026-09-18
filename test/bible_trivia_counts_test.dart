@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/pages/bible_trivia_page.dart';
+import 'package:yahwehs_words/pages/bible_trivia_page.dart';
 
 /// Guards the mechanically-checkable numeric claims in
 /// `bible_trivia_page.dart` — verse counts, chapter counts and

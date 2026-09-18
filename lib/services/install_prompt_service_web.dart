@@ -7,7 +7,7 @@ library;
 import 'dart:js_interop';
 
 import 'package:web/web.dart' as web;
-import 'package:yswords/services/install_prompt_service.dart';
+import 'package:yahwehs_words/services/install_prompt_service.dart';
 
 @JS('yswordsInstall')
 external _YsInstall? get _yswordsInstall;

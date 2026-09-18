@@ -35,12 +35,12 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/app_update_installer.dart';
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/services/update_service.dart';
-import 'package:yswords/services/web_update_checker.dart';
-import 'package:yswords/widgets/update_check_tile.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/app_update_installer.dart';
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/services/update_service.dart';
+import 'package:yahwehs_words/services/web_update_checker.dart';
+import 'package:yahwehs_words/widgets/update_check_tile.dart';
 
 class UpdateAvailableBanner extends StatefulWidget {
   const UpdateAvailableBanner({

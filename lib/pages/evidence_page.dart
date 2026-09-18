@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/widgets/press_scale.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/app_scroll_behavior.dart'
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/widgets/press_scale.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
-import 'package:yswords/utils/theme_color_helpers.dart';
-import 'package:yswords/models/bible_evidence.dart';
-import 'package:yswords/pages/evidence_detail_page.dart';
-import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/pages/settings_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/ai_search_service.dart';
-import 'package:yswords/services/bible_evidence_service.dart';
-import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
-import 'package:yswords/utils/jump_to_reference.dart';
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/version_mapper.dart' show localizedReferenceLabel;
-import 'package:yswords/widgets/confidence_badge.dart';
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/theme_color_helpers.dart';
+import 'package:yahwehs_words/models/bible_evidence.dart';
+import 'package:yahwehs_words/pages/evidence_detail_page.dart';
+import 'package:yahwehs_words/pages/home_page.dart';
+import 'package:yahwehs_words/pages/settings_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/ai_search_service.dart';
+import 'package:yahwehs_words/services/bible_evidence_service.dart';
+import 'package:yahwehs_words/utils/ai_markdown.dart' show parseAiMarkdown;
+import 'package:yahwehs_words/utils/jump_to_reference.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show localizedReferenceLabel;
+import 'package:yahwehs_words/widgets/confidence_badge.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Browse the Biblical Evidence Archive — 225 archaeological,
 /// manuscript, scientific, and historical findings that intersect

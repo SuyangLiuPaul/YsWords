@@ -42,7 +42,7 @@ import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import 'package:yswords/services/verse_card_export_types.dart';
+import 'package:yahwehs_words/services/verse_card_export_types.dart';
 
 /// Whether the image can be handed to a share sheet.
 ///

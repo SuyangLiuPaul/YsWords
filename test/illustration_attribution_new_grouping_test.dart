@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/about_page.dart';
-import 'package:yswords/services/map_service.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/about_page.dart';
+import 'package:yahwehs_words/services/map_service.dart';
 
 /// The pin a hardcoded credit cannot pass.
 ///

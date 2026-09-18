@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/chinese_lexicon_service.dart';
-import 'package:yswords/widgets/cbol_reference_text.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/chinese_lexicon_service.dart';
+import 'package:yahwehs_words/widgets/cbol_reference_text.dart';
 
 /// The Chinese BDB/Thayer article, rendered under the CBOL definition
 /// that YsWords already shows.

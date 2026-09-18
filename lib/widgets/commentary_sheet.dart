@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/app_scroll_behavior.dart'
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/services/commentary_service.dart';
-import 'package:yswords/utils/version_mapper.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/services/commentary_service.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart';
 
 /// Renders a commentary string. `**` delimits a bold run and is the only
 /// markup `tools/build_commentary_jfb.py` emits, so this is the whole parser.

@@ -1,14 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/book_groups.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/strongs.dart';
-import 'package:yswords/services/concordance_service.dart';
-import 'package:yswords/services/lxx_service.dart';
-import 'package:yswords/services/strongs_service.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yahwehs_words/constants/book_groups.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/strongs.dart';
+import 'package:yahwehs_words/services/concordance_service.dart';
+import 'package:yahwehs_words/services/lxx_service.dart';
+import 'package:yahwehs_words/services/strongs_service.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show localeAwareBookName;
 
 /// Holistic per-book / per-corpus distribution table for a set of
 /// Strong's entries (typically the current word + its word family +

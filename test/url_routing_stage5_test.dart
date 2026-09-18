@@ -6,15 +6,15 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/library_page.dart';
-import 'package:yswords/pages/settings_page.dart';
-import 'package:yswords/pages/song_score_page.dart';
-import 'package:yswords/pages/song_video_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/song_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/route_paths.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/library_page.dart';
+import 'package:yahwehs_words/pages/settings_page.dart';
+import 'package:yahwehs_words/pages/song_score_page.dart';
+import 'package:yahwehs_words/pages/song_video_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/song_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/route_paths.dart';
 
 /// URL-routing Stage 5 (`docs/url-routing-plan.md` §6): the rest of the
 /// conversion — batch 3 (multi-param / enum pages), batch 4 (the two

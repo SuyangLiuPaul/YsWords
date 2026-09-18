@@ -16,8 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:yswords/constants/app_version.dart';
-import 'package:yswords/services/web_update_checker.dart';
+import 'package:yahwehs_words/constants/app_version.dart';
+import 'package:yahwehs_words/services/web_update_checker.dart';
 
 void main() {
   final checker = WebUpdateChecker.instance;

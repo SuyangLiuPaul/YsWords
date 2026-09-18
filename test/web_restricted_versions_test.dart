@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
 
 /// NASB and LEB are licensed for quotation, not for redistribution of the
 /// whole text as a file — and `flutter build web` writes every declared

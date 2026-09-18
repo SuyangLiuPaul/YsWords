@@ -5,7 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
-import 'package:yswords/widgets/youtube_embed_src.dart';
+import 'package:yahwehs_words/widgets/youtube_embed_src.dart';
 
 /// The YouTube player, embedded in-app on iOS, Android and macOS.
 ///

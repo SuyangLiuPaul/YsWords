@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:yswords/models/library_sermon.dart';
+import 'package:yahwehs_words/models/library_sermon.dart';
 
 /// Reads one text file out of the sermon library.
 ///

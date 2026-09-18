@@ -15,8 +15,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/widgets/projection_stage.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/widgets/projection_stage.dart';
 
 const _verse = Verse(
     book: '罗马书', chapter: 8, verse: 1, text: '现在那些在基督耶稣里的人就不被定罪了。');

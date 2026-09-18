@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:yswords/models/strongs.dart';
+import 'package:yahwehs_words/models/strongs.dart';
 
 /// Lazy loader for Strong's Greek + Hebrew lexicons. The two files are
 /// loaded independently the first time a number from that language is

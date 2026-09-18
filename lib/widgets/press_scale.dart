@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/motion.dart';
+import 'package:yahwehs_words/constants/motion.dart';
 
 /// Subtle "presses in" scale feedback for tappable surfaces.
 ///

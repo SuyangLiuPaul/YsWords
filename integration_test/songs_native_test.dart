@@ -4,14 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_playlist.dart';
-import 'package:yswords/models/song_queue.dart';
-import 'package:yswords/services/playback/song_playback_engine.dart';
-import 'package:yswords/services/song_download_service.dart';
-import 'package:yswords/services/song_download_types.dart';
-import 'package:yswords/services/song_playlist_service.dart';
-import 'package:yswords/services/song_service.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_playlist.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
+import 'package:yahwehs_words/services/playback/song_playback_engine.dart';
+import 'package:yahwehs_words/services/song_download_service.dart';
+import 'package:yahwehs_words/services/song_download_types.dart';
+import 'package:yahwehs_words/services/song_playlist_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
 
 /// Songs, on a real device.
 ///

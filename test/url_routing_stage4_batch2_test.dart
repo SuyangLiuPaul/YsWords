@@ -4,15 +4,15 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/evidence_detail_page.dart';
-import 'package:yswords/pages/map_viewer_page.dart';
-import 'package:yswords/pages/videos_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/bible_evidence_service.dart';
-import 'package:yswords/services/map_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/route_paths.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/evidence_detail_page.dart';
+import 'package:yahwehs_words/pages/map_viewer_page.dart';
+import 'package:yahwehs_words/pages/videos_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/bible_evidence_service.dart';
+import 'package:yahwehs_words/services/map_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/route_paths.dart';
 
 /// URL-routing Stage 4, batch 2 (`docs/url-routing-plan.md`, §6): the
 /// two parameterized routes `/strongs/:number` and

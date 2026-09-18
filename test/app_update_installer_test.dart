@@ -21,7 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart' show MockClient;
 
-import 'package:yswords/services/app_update_installer.dart';
+import 'package:yahwehs_words/services/app_update_installer.dart';
 
 /// A real APK's first bytes, followed by filler. Only the magic is
 /// checked, so nothing here has to be a valid archive.

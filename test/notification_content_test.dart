@@ -7,8 +7,8 @@
 // is today's" would have drifted the first time either was corrected.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/notification_category.dart';
-import 'package:yswords/services/notification_content.dart';
+import 'package:yahwehs_words/models/notification_category.dart';
+import 'package:yahwehs_words/services/notification_content.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

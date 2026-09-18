@@ -6,20 +6,20 @@ import 'dart:async';
 import 'package:flutter/material.dart' hide RepeatMode;
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/song_copy.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/song_queue.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/remote_image.dart';
-import 'package:yswords/widgets/song_actions.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/song_copy.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/responsive.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/remote_image.dart';
+import 'package:yahwehs_words/widgets/song_actions.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// Full-screen player.
 ///

@@ -22,7 +22,7 @@
 // and `greek_hidden_test` pin that, and nothing here should weaken it.
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
 
 void main() {
   test('a stored 梁家鏗 v2 preference lands on v3, not on another translation',

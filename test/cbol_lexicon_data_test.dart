@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/strongs.dart';
-import 'package:yswords/utils/cbol_references.dart';
-import 'package:yswords/utils/reference_parser.dart';
+import 'package:yahwehs_words/models/strongs.dart';
+import 'package:yahwehs_words/utils/cbol_references.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
 
 /// The CBOL citation notation, measured over the assets that ship.
 ///

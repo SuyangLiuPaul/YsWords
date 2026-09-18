@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/utils/legacy_reading_position_quarantine.dart';
+import 'package:yahwehs_words/utils/legacy_reading_position_quarantine.dart';
 
 /// 2026-08-31: coverage for the boot-trap mitigation described in the
 /// queue — an origin whose only stored state is the unscoped `book` /

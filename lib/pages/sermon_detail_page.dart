@@ -2,33 +2,33 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:yswords/utils/app_scroll_behavior.dart'
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
-import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/canon_chapters.dart';
-import 'package:yswords/constants/sermon_credit.dart';
-import 'package:yswords/constants/sermon_topics.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/passage_filter.dart';
-import 'package:yswords/models/sermon.dart';
-import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/passage_localizer.dart'
+import 'package:yahwehs_words/constants/canon_chapters.dart';
+import 'package:yahwehs_words/constants/sermon_credit.dart';
+import 'package:yahwehs_words/constants/sermon_topics.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/passage_filter.dart';
+import 'package:yahwehs_words/models/sermon.dart';
+import 'package:yahwehs_words/utils/floating_toast.dart' show showFloatingToast;
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/passage_localizer.dart'
     show localizePassage, passageRefPattern, usesChineseChapterMark;
-import 'package:yswords/widgets/verse_popup_sheet.dart' show showVersePopup;
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/services/sermon_service.dart';
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
-import 'package:yswords/widgets/sermon_audio_bar.dart';
+import 'package:yahwehs_words/widgets/verse_popup_sheet.dart' show showVersePopup;
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/services/sermon_service.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yahwehs_words/widgets/sermon_audio_bar.dart';
 
 /// Reads one sermon body in the user's preferred language with a
 /// language-toggle (EN / 简 / 繁) at the top.

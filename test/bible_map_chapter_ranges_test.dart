@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/bible_map.dart';
+import 'package:yahwehs_words/models/bible_map.dart';
 
 /// Chapter-matching tests for [BibleMap].
 ///

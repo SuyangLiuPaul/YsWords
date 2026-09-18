@@ -8,9 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/song.dart';
-import 'package:yswords/services/song_download_types.dart';
-import 'package:yswords/services/song_player_service.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/services/song_download_types.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
 
 /// Downloads song audio for offline listening.
 ///

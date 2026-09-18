@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/widgets/verse_card.dart';
+import 'package:yahwehs_words/widgets/verse_card.dart';
 
 /// 2026-09-13: the photo card's veil answers to the photograph.
 ///

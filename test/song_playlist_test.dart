@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_playlist.dart';
-import 'package:yswords/models/song_queue.dart';
-import 'package:yswords/services/song_playlist_service.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_playlist.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
+import 'package:yahwehs_words/services/song_playlist_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

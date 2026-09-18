@@ -1,4 +1,4 @@
-import 'package:yswords/utils/youtube_url.dart';
+import 'package:yahwehs_words/utils/youtube_url.dart';
 
 /// What a third-party media link looks like when it can be played
 /// inside the app, and how tall its player wants to be.

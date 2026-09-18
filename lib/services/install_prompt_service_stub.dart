@@ -2,7 +2,7 @@
 /// installed native binary; no install affordance needed.
 library;
 
-import 'package:yswords/services/install_prompt_service.dart';
+import 'package:yahwehs_words/services/install_prompt_service.dart';
 
 InstallFlowKind detect() => InstallFlowKind.notApplicable;
 

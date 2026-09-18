@@ -36,17 +36,17 @@
 import 'dart:async';
 import 'dart:js_interop';
 
-import 'package:yswords/constants/bible_versions.dart' show availableVersions;
-import 'package:yswords/constants/book_slugs.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/error_reporter.dart';
-import 'package:yswords/services/fetch_books.dart';
-import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/utils/route_paths.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart' show availableVersions;
+import 'package:yahwehs_words/constants/book_slugs.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/error_reporter.dart';
+import 'package:yahwehs_words/services/fetch_books.dart';
+import 'package:yahwehs_words/services/fetch_verses.dart';
+import 'package:yahwehs_words/utils/route_paths.dart'
     show hashToRoutePath, matchesRegisteredRoute;
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
-import 'package:yswords/utils/log_diag.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show translateBookName;
+import 'package:yahwehs_words/utils/log_diag.dart';
 
 // ── JS interop bindings ─────────────────────────────────────────
 

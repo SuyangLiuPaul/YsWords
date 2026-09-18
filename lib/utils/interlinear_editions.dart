@@ -62,8 +62,8 @@
 /// asset, so every rule below is a pure function a test can call.
 library;
 
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/services/tagged_text_service.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
 
 /// The edition codes the interlinear picker may list, in catalogue order.
 ///

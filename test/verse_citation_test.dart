@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/utils/verse_citation.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/utils/verse_citation.dart';
 
 /// 路加福音 23:34 is the only split verse in the app. Copying the whole
 /// of it in 灵修 mode used to produce:

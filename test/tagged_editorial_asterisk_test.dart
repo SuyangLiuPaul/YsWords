@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/tagged_text_service.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
 
 /// The word-tap corpus printed `主*` as scripture, and the fix deleted it.
 /// **The deletion was wrong.** This file records both, because the wrong

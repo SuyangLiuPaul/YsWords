@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/sermon_service.dart';
+import 'package:yahwehs_words/services/sermon_service.dart';
 
 /// Pastor Eric's Matthew series exists twice: as our 289 transcribed
 /// cassette recordings, and as the church's *124 Messages*, a

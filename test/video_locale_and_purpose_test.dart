@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/video_series.dart';
+import 'package:yahwehs_words/models/video_series.dart';
 
 /// Two requests from 2026-08-23.
 ///

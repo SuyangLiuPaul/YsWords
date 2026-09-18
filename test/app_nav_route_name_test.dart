@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:yswords/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
 
 /// Regression guard for the v1.4.3 "dead taps" bug.
 ///

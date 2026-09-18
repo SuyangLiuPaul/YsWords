@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/bible_map.dart';
-import 'package:yswords/pages/about_page.dart';
-import 'package:yswords/services/map_service.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/bible_map.dart';
+import 'package:yahwehs_words/pages/about_page.dart';
+import 'package:yahwehs_words/services/map_service.dart';
 
 /// Regression tests for the Sweet Publishing / Jim Padgett attribution.
 ///

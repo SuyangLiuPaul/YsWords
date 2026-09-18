@@ -24,8 +24,8 @@ library;
 
 import 'dart:convert';
 
-import 'package:yswords/constants/app_version.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/constants/app_version.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 class ExportService {
   /// Returns a Markdown document with three sections (Highlights,

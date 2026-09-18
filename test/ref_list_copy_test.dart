@@ -6,7 +6,7 @@
 // outside that library can reach it, and the part with real decisions
 // in it is the format, not the button.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/ref_list_copy.dart';
+import 'package:yahwehs_words/utils/ref_list_copy.dart';
 
 void main() {
   test('one [ref] text line per row, joined by newlines', () {

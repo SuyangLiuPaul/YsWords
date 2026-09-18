@@ -117,7 +117,7 @@
 ///
 /// ## EVERY STYLE HERE PINS `kCjkFontFallback`
 ///
-/// `main.dart`'s two themes already carry `NotoSansSC-YsWords` in their
+/// `main.dart`'s two themes already carry `NotoSansSC-YahwehsWords` in their
 /// own `fontFamilyFallback`, so inheriting would work today. Scripture
 /// surfaces in this app pin it anyway — `main.dart`'s own comment says
 /// "verse text + word spans already use kCjkFontFallback", and
@@ -135,13 +135,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/bible_versions.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart'
     show shortBibleVersionLabel, bibleVersionLanguage;
-import 'package:yswords/constants/projection_strings.dart';
-import 'package:yswords/constants/text_patterns.dart'
+import 'package:yahwehs_words/constants/projection_strings.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart'
     show sanitizeForProjection;
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/utils/font_catalog.dart'
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart'
     show kCjkFontFallback, resolveFontFamily;
 
 /// The palette the projection paints in, whatever the reader's own

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/passage_filter.dart';
-import 'package:yswords/utils/reference_parser.dart';
+import 'package:yahwehs_words/models/passage_filter.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
 
 /// 2026-08-23, from the user, in two messages:
 ///

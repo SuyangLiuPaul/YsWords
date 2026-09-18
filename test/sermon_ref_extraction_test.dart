@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/passage_localizer.dart' show passageRefPattern;
-import 'package:yswords/utils/reference_parser.dart' show parseReference;
+import 'package:yahwehs_words/utils/passage_localizer.dart' show passageRefPattern;
+import 'package:yahwehs_words/utils/reference_parser.dart' show parseReference;
 
 /// 2026-08-25. `scripts/extract_sermon_refs.py` decides which verses each
 /// sermon is filed under, and it is Python — so nothing in `flutter

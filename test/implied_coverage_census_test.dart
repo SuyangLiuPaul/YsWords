@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/book_names.dart';
-import 'package:yswords/constants/text_patterns.dart';
-import 'package:yswords/models/strongs.dart';
-import 'package:yswords/services/tagged_text_service.dart';
-import 'package:yswords/widgets/implied_coverage_line.dart';
+import 'package:yahwehs_words/constants/book_names.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
+import 'package:yahwehs_words/models/strongs.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
+import 'package:yahwehs_words/widgets/implied_coverage_line.dart';
 
 /// **How much the reader actually gains from the implied-coverage line,
 /// and how much of the corpus it does not touch at all.**

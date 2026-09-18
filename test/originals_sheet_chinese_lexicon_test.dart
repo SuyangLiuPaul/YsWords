@@ -4,17 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/chinese_lexicon_service.dart';
-import 'package:yswords/services/concordance_service.dart';
-import 'package:yswords/services/originals_service.dart';
-import 'package:yswords/services/strongs_service.dart';
-import 'package:yswords/services/tagged_text_service.dart';
-import 'package:yswords/utils/strongs_inline.dart';
-import 'package:yswords/widgets/originals_sheet.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/chinese_lexicon_service.dart';
+import 'package:yahwehs_words/services/concordance_service.dart';
+import 'package:yahwehs_words/services/originals_service.dart';
+import 'package:yahwehs_words/services/strongs_service.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
+import 'package:yahwehs_words/utils/strongs_inline.dart';
+import 'package:yahwehs_words/widgets/originals_sheet.dart';
 
 /// The word-study sheet — the surface this port was actually for.
 ///

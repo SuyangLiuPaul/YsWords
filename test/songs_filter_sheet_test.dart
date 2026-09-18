@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/songs_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/song_service.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/songs_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/song_service.dart';
 
 /// 2026-08-09. The Songs filter sheet grew a Media section on top of
 /// the existing Language / Source / Theme / Book ones, which pushed

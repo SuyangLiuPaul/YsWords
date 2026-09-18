@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/tagged_text_service.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
 
 /// The join that makes "tap a word to see the original" possible.
 ///

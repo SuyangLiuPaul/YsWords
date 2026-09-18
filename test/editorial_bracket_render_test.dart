@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/text_patterns.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/utils/build_verse_content_spans.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/utils/build_verse_content_spans.dart';
 
 /// The brackets in 和合本雅伟版 are the edition's own notation for an
 /// editorial insertion, and the reader has to be able to see them.

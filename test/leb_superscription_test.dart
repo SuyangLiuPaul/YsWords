@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/widgets/superscription_line.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/services/fetch_verses.dart';
+import 'package:yahwehs_words/widgets/superscription_line.dart';
 
 /// The LEB prints an unnumbered heading above 116 psalms — "A psalm of
 /// David at his fleeing from the presence of Absalom, his son." — and

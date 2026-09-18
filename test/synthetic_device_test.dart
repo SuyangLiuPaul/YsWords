@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/synthetic_device.dart';
+import 'package:yahwehs_words/utils/synthetic_device.dart';
 
 void main() {
   group('isSyntheticAndroidOs', () {

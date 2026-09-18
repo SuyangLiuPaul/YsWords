@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/verse_photo_picker.dart';
+import 'package:yahwehs_words/services/verse_photo_picker.dart';
 
 /// 2026-09-13: image_picker honours maxWidth/maxHeight on the phones and
 /// the web and silently ignores them on macOS, Windows and Linux, so the

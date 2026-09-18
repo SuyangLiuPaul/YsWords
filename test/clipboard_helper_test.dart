@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
 
 /// Regression tests for the 2026-07-10 prod crash
 /// `PlatformException(copy_fail, Clipboard.setData failed.)` (iOS

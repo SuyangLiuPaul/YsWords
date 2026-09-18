@@ -4,40 +4,40 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/text_patterns.dart'
+import 'package:yahwehs_words/constants/text_patterns.dart'
     show sanitizeForSearch, notePattern, bracePattern, squarePattern;
-import 'package:yswords/constants/bible_versions.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart'
     show fullBibleVersionLabel;
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/original_word.dart';
-import 'package:yswords/models/strongs.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/settings_page.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/interlinear_editions.dart';
-import 'package:yswords/utils/strongs_inline.dart';
-import 'package:yswords/utils/app_scroll_behavior.dart'
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/original_word.dart';
+import 'package:yahwehs_words/models/strongs.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/pages/settings_page.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/interlinear_editions.dart';
+import 'package:yahwehs_words/utils/strongs_inline.dart';
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
-import 'package:yswords/widgets/collapsible_english_ref.dart';
-import 'package:yswords/widgets/chinese_lexicon_block.dart';
-import 'package:yswords/widgets/implied_coverage_line.dart';
-import 'package:yswords/widgets/left_accent_card.dart';
-import 'package:yswords/services/tagged_text_service.dart';
-import 'package:yswords/services/ai_word_service.dart';
-import 'package:yswords/services/chinese_lexicon_service.dart';
-import 'package:yswords/services/concordance_service.dart';
-import 'package:yswords/services/lxx_service.dart';
-import 'package:yswords/services/originals_service.dart';
-import 'package:yswords/services/strongs_service.dart';
-import 'package:yswords/utils/ai_markdown.dart' show parseAiMarkdown;
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/theme_color_helpers.dart';
-import 'package:yswords/utils/version_mapper.dart'
+import 'package:yahwehs_words/widgets/collapsible_english_ref.dart';
+import 'package:yahwehs_words/widgets/chinese_lexicon_block.dart';
+import 'package:yahwehs_words/widgets/implied_coverage_line.dart';
+import 'package:yahwehs_words/widgets/left_accent_card.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
+import 'package:yahwehs_words/services/ai_word_service.dart';
+import 'package:yahwehs_words/services/chinese_lexicon_service.dart';
+import 'package:yahwehs_words/services/concordance_service.dart';
+import 'package:yahwehs_words/services/lxx_service.dart';
+import 'package:yahwehs_words/services/originals_service.dart';
+import 'package:yahwehs_words/services/strongs_service.dart';
+import 'package:yahwehs_words/utils/ai_markdown.dart' show parseAiMarkdown;
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/theme_color_helpers.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart'
     show localeAwareBookName, toEnglish;
-import 'package:yswords/widgets/word_distribution.dart';
-import 'package:yswords/widgets/word_distribution_table.dart';
-import 'package:yswords/constants/motion.dart';
+import 'package:yahwehs_words/widgets/word_distribution.dart';
+import 'package:yahwehs_words/widgets/word_distribution_table.dart';
+import 'package:yahwehs_words/constants/motion.dart';
 
 /// Bottom sheet that shows the original Hebrew/Greek text for one or
 /// more selected verses, with each word as a tappable chip linked to

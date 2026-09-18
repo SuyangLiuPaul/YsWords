@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/book_names.dart';
-import 'package:yswords/constants/text_patterns.dart';
-import 'package:yswords/services/tagged_text_service.dart';
+import 'package:yahwehs_words/constants/book_names.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
 
 /// The Originals sheet prints the tagged runs **instead of** the verse,
 /// so anything the tagged import lost is missing from a panel that

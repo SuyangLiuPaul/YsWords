@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 /// 2026-06-11: regression coverage for `MainProvider.useCachedVersion`
 /// — the warm-path version switch. Listed as an open coverage gap in

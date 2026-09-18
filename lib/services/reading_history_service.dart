@@ -56,8 +56,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/book_names.dart' show bookNameToEnglish;
-import 'package:yswords/services/profile_service.dart';
+import 'package:yahwehs_words/constants/book_names.dart' show bookNameToEnglish;
+import 'package:yahwehs_words/services/profile_service.dart';
 
 /// One chapter-open, as the recent-activity list renders it.
 @immutable

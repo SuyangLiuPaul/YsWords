@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/scripture_markup.dart';
+import 'package:yahwehs_words/utils/scripture_markup.dart';
 
 /// 和合本雅偉版 marks the referent of 主 in THREE ways, not two.
 ///

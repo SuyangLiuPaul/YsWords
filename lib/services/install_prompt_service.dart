@@ -17,8 +17,8 @@
 /// installed" semantics since the user is in the native shell.
 library;
 
-import 'package:yswords/services/install_prompt_service_stub.dart'
-    if (dart.library.js_interop) 'package:yswords/services/install_prompt_service_web.dart'
+import 'package:yahwehs_words/services/install_prompt_service_stub.dart'
+    if (dart.library.js_interop) 'package:yahwehs_words/services/install_prompt_service_web.dart'
     as platform;
 
 /// Hint for which install-flow UI to show.

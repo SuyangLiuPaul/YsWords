@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:yswords/models/song.dart';
+import 'package:yahwehs_words/models/song.dart';
 
 /// Which rendering of each song a queue should play.
 ///

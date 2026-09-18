@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
-import 'package:yswords/services/media_focus.dart';
+import 'package:yahwehs_words/services/media_focus.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/pages/song_score_page.dart' show SongNotFoundScaffold;
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/services/song_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/route_paths.dart' show songSubPagePath;
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/song_actions.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/pages/song_score_page.dart' show SongNotFoundScaffold;
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/route_paths.dart' show songSubPagePath;
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/song_actions.dart';
 
 /// The music video, played inside the app.
 ///

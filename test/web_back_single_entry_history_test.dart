@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 
-import 'package:yswords/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
 
 /// Regression test for "Back leaves the app" (2026-09-03), and for the
 /// claim in `docs/url-routing-plan.md` §5 point 5 that turned out false.

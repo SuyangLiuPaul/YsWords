@@ -2,12 +2,12 @@ import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/utils/cbol_references.dart';
-import 'package:yswords/utils/jump_to_reference.dart' as jumper;
-import 'package:yswords/utils/navigate_to_reader.dart';
-import 'package:yswords/utils/reference_parser.dart' show BibleReference;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/utils/cbol_references.dart';
+import 'package:yahwehs_words/utils/jump_to_reference.dart' as jumper;
+import 'package:yahwehs_words/utils/navigate_to_reader.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart' show BibleReference;
 
 /// A run of Chinese lexicon text whose scripture citations are live.
 ///

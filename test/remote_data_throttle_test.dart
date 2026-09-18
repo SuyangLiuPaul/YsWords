@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/remote_data_service.dart';
+import 'package:yahwehs_words/services/remote_data_service.dart';
 
 /// 2026-06-12 (v1.3.63 perf): the dashboard's single "Today's Evidence"
 /// card used to re-download the whole ~420 KB evidence archive from

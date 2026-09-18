@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/tagged_text_service.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
 
 /// The twelve runs in the word-tap corpus that print nothing.
 ///

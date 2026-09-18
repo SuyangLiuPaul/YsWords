@@ -22,17 +22,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/verse_photo_temp_stub.dart'
-    if (dart.library.io) 'package:yswords/services/verse_photo_temp_io.dart';
+import 'package:yahwehs_words/services/verse_photo_temp_stub.dart'
+    if (dart.library.io) 'package:yahwehs_words/services/verse_photo_temp_io.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/verse_card_service.dart';
-import 'package:yswords/widgets/verse_card.dart';
-import 'package:yswords/widgets/verse_card_sheet.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/verse_card_service.dart';
+import 'package:yahwehs_words/widgets/verse_card.dart';
+import 'package:yahwehs_words/widgets/verse_card_sheet.dart';
 
 const String _verse = 'Jesus wept.';
 

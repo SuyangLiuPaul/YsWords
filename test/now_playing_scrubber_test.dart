@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/now_playing_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/services/song_service.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/now_playing_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
 
 /// The seek bar used to seek on every drag frame. Each seek made the
 /// engine's position stream emit, which rebuilt the Slider from the

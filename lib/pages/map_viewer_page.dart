@@ -1,14 +1,14 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/entry_copy.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/bible_map.dart';
-import 'package:yswords/services/map_service.dart';
-import 'package:yswords/widgets/illustration_image.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/entry_copy.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/bible_map.dart';
+import 'package:yahwehs_words/services/map_service.dart';
+import 'package:yahwehs_words/widgets/illustration_image.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
 import 'package:provider/provider.dart';
 
 /// URL-routing Stage 4 (`docs/url-routing-plan.md` §6 batch 2): the

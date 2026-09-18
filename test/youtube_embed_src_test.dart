@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/widgets/youtube_embed_src.dart';
+import 'package:yahwehs_words/widgets/youtube_embed_src.dart';
 
 /// The position-preserving language switch.
 ///

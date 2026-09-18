@@ -16,8 +16,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/projection_strings.dart';
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/projection_strings.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 
 /// The three the app ships. A key present in one and missing in another
 /// is the same defect, one locale further along.

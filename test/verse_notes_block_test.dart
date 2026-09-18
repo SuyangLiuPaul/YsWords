@@ -22,8 +22,8 @@
 // immediately after the truncated text.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/widgets/verse_notes_block.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/widgets/verse_notes_block.dart';
 
 const _short = '參4.6、16';
 const _long = '26-27节注：“灵也在我们的软弱中帮助我们……但灵亲自替我们代求'

@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import 'package:yswords/services/api_base.dart';
+import 'package:yahwehs_words/services/api_base.dart';
 
 /// Asks the YsWords Cloud Function to explain a Hebrew/Greek word
 /// in the context of a specific verse. Sister of [AiSearchService] —

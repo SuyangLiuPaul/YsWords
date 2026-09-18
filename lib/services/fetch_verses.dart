@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/error_reporter.dart';
-import 'package:yswords/services/fetch_books.dart'
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/error_reporter.dart';
+import 'package:yahwehs_words/services/fetch_books.dart'
     show bookNameToEnglish, standardBookOrder;
 
 /// Lightweight record of paragraph metadata for one verse, used when applying

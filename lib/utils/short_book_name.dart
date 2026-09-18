@@ -1,7 +1,7 @@
 // ignore: depend_on_referenced_packages
 import 'package:characters/characters.dart';
 
-import 'package:yswords/utils/version_mapper.dart' show toEnglish;
+import 'package:yahwehs_words/utils/version_mapper.dart' show toEnglish;
 
 /// Standard 1-character (or 2-3 char for paired) Chinese-Bible
 /// abbreviations. Same maps that `widgets/word_distribution_table.dart`

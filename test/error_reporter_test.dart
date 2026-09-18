@@ -8,7 +8,7 @@ library;
 /// shipped in v1.3.21.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/error_reporter.dart';
+import 'package:yahwehs_words/services/error_reporter.dart';
 
 void main() {
   setUp(() {

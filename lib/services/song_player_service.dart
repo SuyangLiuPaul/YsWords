@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_queue.dart';
-import 'package:yswords/services/media_focus.dart';
-import 'package:yswords/services/song_audio_handler.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
+import 'package:yahwehs_words/services/media_focus.dart';
+import 'package:yahwehs_words/services/song_audio_handler.dart';
 
 /// Which mix of a song is playing. fydt and CDC both publish up to
 /// three renderings of the same piece and the church uses all of them —

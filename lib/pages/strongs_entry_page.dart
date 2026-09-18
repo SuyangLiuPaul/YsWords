@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/text_patterns.dart'
+import 'package:yahwehs_words/constants/text_patterns.dart'
     show notePattern, bracePattern, squarePattern;
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/strongs.dart';
-import 'package:yswords/utils/navigate_to_reader.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/chinese_lexicon_service.dart';
-import 'package:yswords/services/concordance_service.dart';
-import 'package:yswords/services/strongs_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/jump_to_reference.dart' show prepareJumpToVerse;
-import 'package:yswords/utils/version_mapper.dart'
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/strongs.dart';
+import 'package:yahwehs_words/utils/navigate_to_reader.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/chinese_lexicon_service.dart';
+import 'package:yahwehs_words/services/concordance_service.dart';
+import 'package:yahwehs_words/services/strongs_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/jump_to_reference.dart' show prepareJumpToVerse;
+import 'package:yahwehs_words/utils/version_mapper.dart'
     show translateBookName, localeAwareBookName, toEnglish;
-import 'package:yswords/widgets/chinese_lexicon_block.dart';
-import 'package:yswords/widgets/collapsible_english_ref.dart';
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/widgets/chinese_lexicon_block.dart';
+import 'package:yahwehs_words/widgets/collapsible_english_ref.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Collapses runs of 2+ spaces left after stripping inline annotations
 /// from a verse-text preview. Module-level so it compiles once.

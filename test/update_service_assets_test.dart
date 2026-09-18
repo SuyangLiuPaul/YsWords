@@ -19,7 +19,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/update_service.dart';
+import 'package:yahwehs_words/services/update_service.dart';
 
 UpdateInfo _info(String downloadUrl) => UpdateInfo(
       updateAvailable: true,

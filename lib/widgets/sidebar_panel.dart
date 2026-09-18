@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/widgets/book_chapter_picker.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/widgets/book_chapter_picker.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 class SidebarPanel extends StatelessWidget {
   final String currentBook;

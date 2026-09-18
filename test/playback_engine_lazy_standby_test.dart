@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/playback/song_playback_engine_native.dart';
+import 'package:yahwehs_words/services/playback/song_playback_engine_native.dart';
 
 /// 2026-09-13: the gapless hand-off gave the engine a second player, and
 /// the second player was built in the constructor. Creating and wiring a

@@ -36,9 +36,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:yswords/constants/app_version.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/utils/page_reload.dart';
+import 'package:yahwehs_words/constants/app_version.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/utils/page_reload.dart';
 
 class WebUpdateChecker with WidgetsBindingObserver {
   WebUpdateChecker._();

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/strongs.dart';
+import 'package:yahwehs_words/models/strongs.dart';
 
 /// The Chinese lexicon card printed English for 11 words — including
 /// three of the commonest in the Bible.

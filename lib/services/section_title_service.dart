@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import 'package:yswords/constants/section_title_map.dart';
+import 'package:yahwehs_words/constants/section_title_map.dart';
 
 /// One row from `assets/section_titles.json` — title + optional
 /// `context` (a short paragraph of historical / theological

@@ -27,9 +27,9 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/notification_category.dart';
-import 'package:yswords/services/notification_content.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/notification_category.dart';
+import 'package:yahwehs_words/services/notification_content.dart';
 
 final FlutterLocalNotificationsPlugin _plugin =
     FlutterLocalNotificationsPlugin();

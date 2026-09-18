@@ -35,8 +35,8 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/theme_accent.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/theme_accent.dart';
 
 /// The card's logical width. Everything else about the card is
 /// derived or intrinsic.

@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_queue.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
 
 /// Pure-logic tests for the playback queue. No player, no platform —
 /// these pin the semantics that are easy to get subtly wrong and

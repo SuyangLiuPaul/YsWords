@@ -27,8 +27,8 @@ library;
 // these tests failed rather than silently passing on the wrong edition.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

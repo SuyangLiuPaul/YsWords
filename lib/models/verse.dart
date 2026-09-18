@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 // `book_names.dart` (not via `fetch_books.dart`, which pulls in
 // `MainProvider` → `cloud_sync_service` → `dart:js_interop` and
 // blocks any test that touches Verse from compiling on the VM).
-import 'package:yswords/constants/book_names.dart';
+import 'package:yahwehs_words/constants/book_names.dart';
 
 @immutable
 class Verse {

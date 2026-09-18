@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/models/strongs.dart';
-import 'package:yswords/services/tagged_text_service.dart';
-import 'package:yswords/widgets/implied_coverage_line.dart';
+import 'package:yahwehs_words/models/strongs.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
+import 'package:yahwehs_words/widgets/implied_coverage_line.dart';
 
 /// The secondary line that finally reads `TaggedRun.implied`.
 ///

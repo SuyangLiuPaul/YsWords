@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/services/realtime_db_sync_service.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
+import 'package:yahwehs_words/services/realtime_db_sync_service.dart';
 
 /// Per-profile recent-search history. Surfaced as tappable rows
 /// above the search results list when the query box is empty so

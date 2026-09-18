@@ -506,7 +506,7 @@
 /// in the China build with "all stays on this device". The slide-
 /// builder in `onboarding_dialog.dart` now branches on `kChinaMode`
 /// for the title + body, leaving the international tour byte-
-/// identical. New `import 'package:yswords/constants/build_flags.dart'`
+/// identical. New `import 'package:yahwehs_words/constants/build_flags.dart'`
 /// in onboarding_dialog.
 ///
 /// 2026-05-10 (v1.2.12 — v1.2.10's retry was a placebo): user came

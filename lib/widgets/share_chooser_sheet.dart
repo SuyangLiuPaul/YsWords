@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 
 /// The share button asks which kind of share, instead of guessing.
 ///

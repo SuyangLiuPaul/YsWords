@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/bible_versions.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart'
     show availableVersions, bibleVersions, disabledVersions;
-import 'package:yswords/services/offline_pack_service.dart';
-import 'package:yswords/constants/section_title_map.dart'
+import 'package:yahwehs_words/services/offline_pack_service.dart';
+import 'package:yahwehs_words/constants/section_title_map.dart'
     show sectionTitleSetByVersion;
 
 /// Every English-language `BibleVersionInfo` must be wired into three

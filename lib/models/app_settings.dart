@@ -5,25 +5,25 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/update_check_frequency.dart';
-import 'package:yswords/models/projection_agenda.dart';
+import 'package:yahwehs_words/constants/update_check_frequency.dart';
+import 'package:yahwehs_words/models/projection_agenda.dart';
 
-import 'package:yswords/models/app_style_preset.dart' show CardMaterial;
-import 'package:yswords/models/dashboard_section.dart';
-import 'package:yswords/models/notification_category.dart';
-import 'package:yswords/models/projection_preset.dart';
-import 'package:yswords/widgets/projection_stage.dart' show ProjectionLayout;
-import 'package:yswords/services/app_icon_service.dart';
-import 'package:yswords/services/notification_catchup.dart';
-import 'package:yswords/services/notification_scheduler.dart'
+import 'package:yahwehs_words/models/app_style_preset.dart' show CardMaterial;
+import 'package:yahwehs_words/models/dashboard_section.dart';
+import 'package:yahwehs_words/models/notification_category.dart';
+import 'package:yahwehs_words/models/projection_preset.dart';
+import 'package:yahwehs_words/widgets/projection_stage.dart' show ProjectionLayout;
+import 'package:yahwehs_words/services/app_icon_service.dart';
+import 'package:yahwehs_words/services/notification_catchup.dart';
+import 'package:yahwehs_words/services/notification_scheduler.dart'
     as scheduler;
-import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/services/realtime_db_sync_service.dart';
-import 'package:yswords/utils/font_catalog.dart';
-import 'package:yswords/utils/fuzzy_search.dart'
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
+import 'package:yahwehs_words/services/realtime_db_sync_service.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart';
+import 'package:yahwehs_words/utils/fuzzy_search.dart'
     show setFuzzySearchEnabled;
-import 'package:yswords/utils/log_diag.dart';
+import 'package:yahwehs_words/utils/log_diag.dart';
 
 const _kFontFamily = 'fontFamily';
 const _kFontSize = 'fontSize';

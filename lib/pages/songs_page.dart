@@ -4,37 +4,37 @@ import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/song_source_icons.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/song_copy.dart';
-import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_playlist.dart';
-import 'package:yswords/pages/song_downloads_page.dart';
-import 'package:yswords/pages/song_playlists_page.dart';
-import 'package:yswords/pages/song_score_page.dart';
-import 'package:yswords/pages/song_video_page.dart';
-import 'package:yswords/services/song_download_service.dart';
-import 'package:yswords/services/song_download_types.dart';
-import 'package:yswords/services/song_playlist_service.dart';
-import 'package:yswords/services/fetch_books.dart' show standardBookOrder;
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/services/song_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/app_scroll_behavior.dart'
+import 'package:yahwehs_words/constants/song_source_icons.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/song_copy.dart';
+import 'package:yahwehs_words/utils/floating_toast.dart' show showFloatingToast;
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_playlist.dart';
+import 'package:yahwehs_words/pages/song_downloads_page.dart';
+import 'package:yahwehs_words/pages/song_playlists_page.dart';
+import 'package:yahwehs_words/pages/song_score_page.dart';
+import 'package:yahwehs_words/pages/song_video_page.dart';
+import 'package:yahwehs_words/services/song_download_service.dart';
+import 'package:yahwehs_words/services/song_download_types.dart';
+import 'package:yahwehs_words/services/song_playlist_service.dart';
+import 'package:yahwehs_words/services/fetch_books.dart' show standardBookOrder;
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart'
     show kSelectableTextPhysics;
-import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
-import 'package:yswords/widgets/song_actions.dart';
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
-import 'package:yswords/widgets/remote_image.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/responsive.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yahwehs_words/widgets/song_actions.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yahwehs_words/widgets/remote_image.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Church-songs directory page.
 ///

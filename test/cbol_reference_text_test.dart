@@ -4,10 +4,10 @@ import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/chinese_lexicon_service.dart';
-import 'package:yswords/utils/cbol_references.dart';
-import 'package:yswords/widgets/cbol_reference_text.dart';
-import 'package:yswords/widgets/chinese_lexicon_block.dart';
+import 'package:yahwehs_words/services/chinese_lexicon_service.dart';
+import 'package:yahwehs_words/utils/cbol_references.dart';
+import 'package:yahwehs_words/widgets/cbol_reference_text.dart';
+import 'package:yahwehs_words/widgets/chinese_lexicon_block.dart';
 
 /// The one surface that renders a CBOL citation as a target rather than
 /// as text.

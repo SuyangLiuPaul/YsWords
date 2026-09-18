@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/widgets/press_scale.dart';
+import 'package:yahwehs_words/widgets/press_scale.dart';
 
 /// Guards the property that makes [PressScale] safe to wrap around existing
 /// tappable cards: it observes pointers via a `Listener` and must never join

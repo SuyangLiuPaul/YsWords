@@ -1,4 +1,4 @@
-import 'package:yswords/utils/cbol_references.dart';
+import 'package:yahwehs_words/utils/cbol_references.dart';
 
 /// A Strong's Concordance dictionary entry.
 ///

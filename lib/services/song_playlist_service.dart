@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_playlist.dart';
-import 'package:yswords/models/song_queue.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_playlist.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
 
 /// Stores the user's playlists and favourites.
 ///

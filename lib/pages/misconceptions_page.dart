@@ -4,23 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/feedback_service.dart';
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/jump_to_reference.dart';
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/utils/version_mapper.dart'
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/home_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/feedback_service.dart';
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/jump_to_reference.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/responsive.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart'
     show localizedReferenceLabel;
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
 import '../constants/contact.dart';
 
 /// 常見的聖經誤解 — what people repeat, and what the text actually says.

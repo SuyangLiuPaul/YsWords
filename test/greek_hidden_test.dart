@@ -16,7 +16,7 @@
 // that path has no same-language edition left to fall back to. This file
 // pins where it lands instead.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
 
 void main() {
   test('neither Greek edition is offered in any language list', () {

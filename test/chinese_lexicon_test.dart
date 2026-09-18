@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/chinese_lexicon_service.dart';
-import 'package:yswords/services/tagged_text_service.dart';
-import 'package:yswords/widgets/chinese_lexicon_block.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/chinese_lexicon_service.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
+import 'package:yahwehs_words/widgets/chinese_lexicon_block.dart';
 
 /// The Chinese BDB/Thayer module ported from SeekSparks on 2026-09-08.
 ///

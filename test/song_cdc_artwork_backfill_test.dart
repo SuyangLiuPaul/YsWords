@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/services/song_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
 
 /// The 191 CDC covers exist only in the bundled catalogue, and the
 /// live fetch path had no cover logic at all.

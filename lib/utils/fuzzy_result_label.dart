@@ -52,9 +52,9 @@
 /// characters that say the verse actually spells it 矶法.
 library;
 
-import 'package:yswords/constants/fuzzy_search_strings.dart';
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
-import 'package:yswords/utils/fuzzy_search.dart';
+import 'package:yahwehs_words/constants/fuzzy_search_strings.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart' show sanitizeForSearch;
+import 'package:yahwehs_words/utils/fuzzy_search.dart';
 
 // ── The two keys, which must be built the same way ──────────────────
 

@@ -8,7 +8,7 @@
 // missing verse degrades to "no target" rather than to index 0 — which
 // would silently send the reader to verse 1 of the wrong place.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/navigate_to_chapter_verse.dart';
+import 'package:yahwehs_words/utils/navigate_to_chapter_verse.dart';
 
 class _V {
   _V(this.chapter, this.verse);

@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/commentary_service.dart';
-import 'package:yswords/widgets/commentary_sheet.dart';
+import 'package:yahwehs_words/services/commentary_service.dart';
+import 'package:yahwehs_words/widgets/commentary_sheet.dart';
 
 /// Guards the public-domain commentary import (JFB 1871, Gospel of Matthew).
 ///

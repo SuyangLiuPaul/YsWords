@@ -18,12 +18,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/verse_card_service.dart';
-import 'package:yswords/widgets/verse_card.dart';
-import 'package:yswords/widgets/verse_card_sheet.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/verse_card_service.dart';
+import 'package:yahwehs_words/widgets/verse_card.dart';
+import 'package:yahwehs_words/widgets/verse_card_sheet.dart';
 
 /// A short English verse — one line of body text, nothing to wrap.
 const String _shortVerse = 'Jesus wept.';
@@ -271,8 +271,8 @@ void main() {
     // spends the ten minutes again.
     setUpAll(() async {
       TestWidgetsFlutterBinding.ensureInitialized();
-      final loader = FontLoader('NotoSansSC-YsWords')
-        ..addFont(rootBundle.load('assets/fonts/NotoSansSC-YsWords.otf'));
+      final loader = FontLoader('NotoSansSC-YahwehsWords')
+        ..addFont(rootBundle.load('assets/fonts/NotoSansSC-YahwehsWords.otf'));
       await loader.load();
     });
 

@@ -12,7 +12,7 @@
 // a returning reader's stored preference). This file pins the whole
 // chain, not just the flag.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
 
 void main() {
   test('the NASB is not offered in any language list', () {

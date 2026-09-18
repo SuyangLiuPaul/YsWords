@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:collection' show LinkedHashMap;
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:yswords/constants/bible_versions.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart'
     show resolvableVersion;
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/models/book.dart';
-import 'package:yswords/services/error_reporter.dart';
-import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
-import 'package:yswords/services/fetch_verses.dart' show FetchVerses;
-import 'package:yswords/services/reading_history_service.dart';
-import 'package:yswords/services/realtime_db_sync_service.dart';
-import 'package:yswords/services/profile_service.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart' show sanitizeForSearch;
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/models/book.dart';
+import 'package:yahwehs_words/services/error_reporter.dart';
+import 'package:yahwehs_words/services/fetch_books.dart' show bookNameToEnglish;
+import 'package:yahwehs_words/services/fetch_verses.dart' show FetchVerses;
+import 'package:yahwehs_words/services/reading_history_service.dart';
+import 'package:yahwehs_words/services/realtime_db_sync_service.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
-import 'package:yswords/services/tagged_text_service.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart' show sanitizeForSearch;
+import 'package:yahwehs_words/services/tagged_text_service.dart';
 
 /// Four verses printed a WORD on the word-tap sheet that this edition does not
 /// print, and three of them survived a repair pass that removed seven

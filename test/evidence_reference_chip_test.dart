@@ -3,10 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/bible_evidence.dart';
-import 'package:yswords/pages/evidence_detail_page.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/bible_evidence.dart';
+import 'package:yahwehs_words/pages/evidence_detail_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 /// An evidence card citing more than one passage must not run off the
 /// screen.

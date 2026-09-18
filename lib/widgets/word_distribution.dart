@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/version_mapper.dart'
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart'
     show localeAwareBookName;
 
 /// EaglesView-style "Word Study" distribution panel. Given a per-book

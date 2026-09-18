@@ -19,8 +19,8 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/profile_service.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

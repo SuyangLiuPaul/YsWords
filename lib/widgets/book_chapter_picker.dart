@@ -2,19 +2,19 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:yswords/models/book.dart';
-import 'package:yswords/models/chapter.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/models/book.dart';
+import 'package:yahwehs_words/models/chapter.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
-import 'package:yswords/constants/book_groups.dart'
+import 'package:yahwehs_words/constants/book_groups.dart'
     show oldTestamentBooks, newTestamentBooks, kBibleDivisions;
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/utils/responsive.dart';
-import 'package:yswords/utils/version_mapper.dart' show toEnglish;
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/utils/responsive.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show toEnglish;
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 class BookChapterPicker extends StatefulWidget {
   final String currentBook;

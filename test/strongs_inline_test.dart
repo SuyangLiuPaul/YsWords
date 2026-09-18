@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/utils/strongs_inline.dart';
+import 'package:yahwehs_words/utils/strongs_inline.dart';
 
 /// The two rules behind the numbers in the Exegesis sheet's tagged line.
 ///

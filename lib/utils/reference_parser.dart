@@ -1,5 +1,5 @@
-import 'package:yswords/constants/book_name_mapping.dart' show zhToEn;
-import 'package:yswords/constants/canon_chapters.dart' show chapterExistsInCanon;
+import 'package:yahwehs_words/constants/book_name_mapping.dart' show zhToEn;
+import 'package:yahwehs_words/constants/canon_chapters.dart' show chapterExistsInCanon;
 
 /// Result of parsing a string like "John 3:16", "约 3:16-18",
 /// "1 Cor 13", "创 1:1" — a Bible reference resolved to its

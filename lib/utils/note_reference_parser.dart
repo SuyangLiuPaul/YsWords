@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import 'package:yswords/utils/note_markdown.dart';
-import 'package:yswords/utils/reference_parser.dart' show resolveBookName;
+import 'package:yahwehs_words/utils/note_markdown.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart' show resolveBookName;
 
 /// 2026-05-19 (v1.2.59): parses user-written note text and returns
 /// an [InlineSpan] list where any `[Book Ch:V]` or `[Book Ch:V-V]`

@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/sermon_credit.dart';
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/sermon_credit.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 
 /// Guards the two facts the sermon module states about itself.
 ///

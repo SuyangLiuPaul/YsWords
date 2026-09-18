@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/song_copy.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/services/song_download_service.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/services/song_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/route_paths.dart' show songSubPagePath;
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/song_actions.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/song_copy.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/services/song_download_service.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/services/song_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/route_paths.dart' show songSubPagePath;
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/song_actions.dart';
 
 /// Sheet music, shown inside the app.
 ///

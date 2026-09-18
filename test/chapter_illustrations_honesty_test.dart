@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/bible_map.dart';
-import 'package:yswords/services/map_service.dart';
-import 'package:yswords/widgets/bible_reading_pane.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/bible_map.dart';
+import 'package:yahwehs_words/services/map_service.dart';
+import 'package:yahwehs_words/widgets/bible_reading_pane.dart';
 
 /// Regression tests for the illustration sheet's "For this chapter"
 /// tab.

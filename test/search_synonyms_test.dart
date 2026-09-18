@@ -26,9 +26,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/search_synonyms.dart';
-import 'package:yswords/utils/chinese_segmentation.dart' show isHanChar;
-import 'package:yswords/utils/fuzzy_result_label.dart'
+import 'package:yahwehs_words/constants/search_synonyms.dart';
+import 'package:yahwehs_words/utils/chinese_segmentation.dart' show isHanChar;
+import 'package:yahwehs_words/utils/fuzzy_result_label.dart'
     show fuzzySearchCorpusKey;
 
 void main() {

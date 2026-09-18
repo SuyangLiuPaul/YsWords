@@ -2,21 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/text_patterns.dart' show sanitizeForSearch;
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/biblical_person.dart';
-import 'package:yswords/services/family_tree_service.dart';
-import 'package:yswords/utils/biblical_role.dart' show localizedRole;
-import 'package:yswords/utils/theme_color_helpers.dart';
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/person_detail_sheet.dart';
-import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart' show sanitizeForSearch;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/biblical_person.dart';
+import 'package:yahwehs_words/services/family_tree_service.dart';
+import 'package:yahwehs_words/utils/biblical_role.dart' show localizedRole;
+import 'package:yahwehs_words/utils/theme_color_helpers.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/person_detail_sheet.dart';
+import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// Browseable Bible family tree, modelled on the structure of the
 /// Wikipedia article *"Genealogies in the Bible"*:

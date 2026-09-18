@@ -1,4 +1,4 @@
-import 'package:yswords/constants/text_patterns.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
 
 /// Formats a LIST of single verses drawn from different books for the
 /// clipboard — cross-references, search hits, any "here are some verses

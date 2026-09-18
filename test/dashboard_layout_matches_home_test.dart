@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/dashboard_section.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/dashboard_section.dart';
 
 /// 2026-08-25, from the user: "设置里面的主页布局的位置和主页真实位置是不
 /// 一样的，这个不是应该一致吗".

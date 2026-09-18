@@ -4,8 +4,8 @@
 // page, so this is where the shape is pinned rather than in three
 // places that would drift.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/utils/song_copy.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/utils/song_copy.dart';
 
 Song _song({
   String? code,

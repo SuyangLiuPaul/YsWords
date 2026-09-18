@@ -23,7 +23,7 @@ import 'dart:async';
 
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/spinner_ceiling.dart';
+import 'package:yahwehs_words/utils/spinner_ceiling.dart';
 
 void main() {
   test('a pull over work that never finishes still lets go', () {

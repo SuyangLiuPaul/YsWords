@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/ai_text_cleaner.dart';
+import 'package:yahwehs_words/utils/ai_text_cleaner.dart';
 
 /// Regression coverage for the AI verse-explanation cleanup — the
 /// client-side defence behind the v1.3.55 → v1.3.57 "weird AI output"

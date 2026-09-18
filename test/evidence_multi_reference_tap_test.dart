@@ -7,12 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/bible_evidence.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/evidence_detail_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/utils/reference_parser.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/bible_evidence.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/pages/evidence_detail_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
 
 /// An evidence entry citing two or more passages must let a reader
 /// reach EVERY one of them.

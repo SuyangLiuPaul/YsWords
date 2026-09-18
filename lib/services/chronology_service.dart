@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:yswords/models/chronology.dart';
+import 'package:yahwehs_words/models/chronology.dart';
 
 /// Loads `assets/bible_chronology.json` — the lifeline layer behind the
 /// chronology chart — and caches it for the process lifetime, matching

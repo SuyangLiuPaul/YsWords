@@ -14,8 +14,8 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
 
 /// Every code the service can produce. Kept beside the switch it
 /// mirrors; the "no code maps to a missing key" case below also feeds

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/services/song_playlist_service.dart';
-import 'package:yswords/services/song_file_saver.dart';
-import 'package:yswords/services/song_player_service.dart' show SongPlayerService;
-import 'package:yswords/utils/floating_toast.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/services/song_playlist_service.dart';
+import 'package:yahwehs_words/services/song_file_saver.dart';
+import 'package:yahwehs_words/services/song_player_service.dart' show SongPlayerService;
+import 'package:yahwehs_words/utils/floating_toast.dart';
 
-import 'package:yswords/utils/clipboard_helper.dart';
-import 'package:yswords/utils/route_paths.dart' show songShareUrl;
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/route_paths.dart' show songShareUrl;
 
 /// Saving a song, wherever you happen to be.
 ///

@@ -2,15 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/bible_versions.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart'
     show bibleVersionFullCanonFallback, bibleVersions, BibleVersionInfo;
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
-import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/utils/log_diag.dart';
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/version_mapper.dart' show translateBookName;
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/fetch_books.dart' show bookNameToEnglish;
+import 'package:yahwehs_words/services/fetch_verses.dart';
+import 'package:yahwehs_words/utils/log_diag.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show translateBookName;
 
 /// Result of a [resolveAndPrepareJump] call. Carries everything the
 /// caller needs to navigate (or knows enough to abort + tell the user

@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/models/projection_preset.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/services/projection_broadcast.dart';
-import 'package:yswords/widgets/projection_stage.dart';
+import 'package:yahwehs_words/models/projection_preset.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/services/projection_broadcast.dart';
+import 'package:yahwehs_words/widgets/projection_stage.dart';
 
 /// How the wall is laid out — asked for on 2026-09-13: "middle aligned,
 /// verse by verse 还是连在一起, plain txt, include ref, devotional

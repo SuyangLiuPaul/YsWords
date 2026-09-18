@@ -1,7 +1,7 @@
-import 'package:yswords/constants/bible_versions.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart'
     show availableVersions;
 import 'package:flutter/foundation.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 /// 2026-05-10 (v1.2.25 — restored from v1.2.18): eager pre-load of ALL
 /// Bible versions, so every version switch for the rest of the session

@@ -12,15 +12,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/book.dart';
-import 'package:yswords/models/chapter.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/constants/projection_strings.dart';
-import 'package:yswords/pages/projection_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/widgets/projection_stage.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/book.dart';
+import 'package:yahwehs_words/models/chapter.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/constants/projection_strings.dart';
+import 'package:yahwehs_words/pages/projection_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/widgets/projection_stage.dart';
 
 // A two-chapter corpus with a boundary in the middle. The texts are
 // distinguishable on sight so a failure names the verse it is looking
@@ -260,7 +260,7 @@ void main() {
       'every string the room can see pins the bundled CJK subset, so a wall '
       'of Chinese scripture cannot come up as tofu', (tester) async {
     // On Flutter web's CanvasKit an unresolved face draws as tofu, and
-    // `NotoSansSC-YsWords` is the only entry in the chain Skia can
+    // `NotoSansSC-YahwehsWords` is the only entry in the chain Skia can
     // actually see — the rest are CSS names that need the OS. Inheriting
     // from the app theme would work today; this surface pins it anyway,
     // because 34 tofu boxes at 76 px in front of a congregation is not a

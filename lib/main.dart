@@ -2,73 +2,73 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:yswords/constants/build_flags.dart';
-import 'package:yswords/constants/motion.dart' show AppMotion;
-import 'package:yswords/constants/ui_strings.dart' show uiStrings;
-import 'package:yswords/models/sermon.dart';
-import 'package:yswords/pages/about_page.dart';
-import 'package:yswords/pages/bible_timeline_page.dart';
-import 'package:yswords/pages/dashboard_page.dart';
-import 'package:yswords/pages/evidence_detail_page.dart';
-import 'package:yswords/pages/evidence_page.dart';
-import 'package:yswords/pages/family_tree_page.dart';
-import 'package:yswords/pages/feedback_page.dart';
-import 'package:yswords/pages/highlights_page.dart';
-import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/pages/library_page.dart';
-import 'package:yswords/pages/loading_page.dart';
-import 'package:yswords/pages/map_viewer_page.dart';
-import 'package:yswords/pages/misconceptions_page.dart';
-import 'package:yswords/pages/profiles_page.dart';
-import 'package:yswords/pages/projection_page.dart';
-import 'package:yswords/pages/sermon_detail_page.dart';
-import 'package:yswords/pages/sermons_page.dart';
-import 'package:yswords/pages/settings_page.dart';
-import 'package:yswords/pages/song_downloads_page.dart';
-import 'package:yswords/pages/song_playlist_detail_page.dart';
-import 'package:yswords/pages/song_playlists_page.dart';
-import 'package:yswords/pages/song_score_page.dart';
-import 'package:yswords/pages/song_video_page.dart';
-import 'package:yswords/pages/songs_page.dart';
-import 'package:yswords/pages/reading_stats_page.dart';
-import 'package:yswords/pages/stats_page.dart';
-import 'package:yswords/pages/strongs_entry_page.dart';
-import 'package:yswords/pages/videos_page.dart';
-import 'package:yswords/services/app_icon_service.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/sermon_service.dart';
-import 'package:yswords/services/web_update_checker.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/app_scroll_behavior.dart';
-import 'package:yswords/utils/jump_to_reference.dart' as jumper;
-import 'package:yswords/utils/boot_uri.dart';
-import 'package:yswords/utils/route_paths.dart' show songSharePath;
-import 'package:yswords/utils/reference_parser.dart' show BibleReference;
-import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/services/daily_verse_service.dart';
-import 'package:yswords/services/error_reporter.dart';
-import 'package:yswords/utils/breadcrumb_observer.dart';
-import 'package:yswords/services/notification_catchup.dart';
-import 'package:yswords/services/notification_scheduler.dart'
+import 'package:yahwehs_words/constants/build_flags.dart';
+import 'package:yahwehs_words/constants/motion.dart' show AppMotion;
+import 'package:yahwehs_words/constants/ui_strings.dart' show uiStrings;
+import 'package:yahwehs_words/models/sermon.dart';
+import 'package:yahwehs_words/pages/about_page.dart';
+import 'package:yahwehs_words/pages/bible_timeline_page.dart';
+import 'package:yahwehs_words/pages/dashboard_page.dart';
+import 'package:yahwehs_words/pages/evidence_detail_page.dart';
+import 'package:yahwehs_words/pages/evidence_page.dart';
+import 'package:yahwehs_words/pages/family_tree_page.dart';
+import 'package:yahwehs_words/pages/feedback_page.dart';
+import 'package:yahwehs_words/pages/highlights_page.dart';
+import 'package:yahwehs_words/pages/home_page.dart';
+import 'package:yahwehs_words/pages/library_page.dart';
+import 'package:yahwehs_words/pages/loading_page.dart';
+import 'package:yahwehs_words/pages/map_viewer_page.dart';
+import 'package:yahwehs_words/pages/misconceptions_page.dart';
+import 'package:yahwehs_words/pages/profiles_page.dart';
+import 'package:yahwehs_words/pages/projection_page.dart';
+import 'package:yahwehs_words/pages/sermon_detail_page.dart';
+import 'package:yahwehs_words/pages/sermons_page.dart';
+import 'package:yahwehs_words/pages/settings_page.dart';
+import 'package:yahwehs_words/pages/song_downloads_page.dart';
+import 'package:yahwehs_words/pages/song_playlist_detail_page.dart';
+import 'package:yahwehs_words/pages/song_playlists_page.dart';
+import 'package:yahwehs_words/pages/song_score_page.dart';
+import 'package:yahwehs_words/pages/song_video_page.dart';
+import 'package:yahwehs_words/pages/songs_page.dart';
+import 'package:yahwehs_words/pages/reading_stats_page.dart';
+import 'package:yahwehs_words/pages/stats_page.dart';
+import 'package:yahwehs_words/pages/strongs_entry_page.dart';
+import 'package:yahwehs_words/pages/videos_page.dart';
+import 'package:yahwehs_words/services/app_icon_service.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/sermon_service.dart';
+import 'package:yahwehs_words/services/web_update_checker.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/app_scroll_behavior.dart';
+import 'package:yahwehs_words/utils/jump_to_reference.dart' as jumper;
+import 'package:yahwehs_words/utils/boot_uri.dart';
+import 'package:yahwehs_words/utils/route_paths.dart' show songSharePath;
+import 'package:yahwehs_words/utils/reference_parser.dart' show BibleReference;
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/services/daily_verse_service.dart';
+import 'package:yahwehs_words/services/error_reporter.dart';
+import 'package:yahwehs_words/utils/breadcrumb_observer.dart';
+import 'package:yahwehs_words/services/notification_catchup.dart';
+import 'package:yahwehs_words/services/notification_scheduler.dart'
     as notif_scheduler;
-import 'package:yswords/services/realtime_db_sync_service.dart';
-import 'package:yswords/services/offline_pack_service.dart';
-import 'package:yswords/services/fetch_books.dart';
-import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/services/profile_service.dart';
-import 'package:yswords/services/book_intro_service.dart';
-import 'package:yswords/services/section_title_service.dart';
-import 'package:yswords/services/song_download_service.dart';
-import 'package:yswords/widgets/global_mini_player.dart';
-import 'package:yswords/services/song_audio_handler.dart';
-import 'package:yswords/services/song_player_service.dart';
-import 'package:yswords/services/url_sync_service.dart';
-import 'package:yswords/services/version_preloader.dart';
+import 'package:yahwehs_words/services/realtime_db_sync_service.dart';
+import 'package:yahwehs_words/services/offline_pack_service.dart';
+import 'package:yahwehs_words/services/fetch_books.dart';
+import 'package:yahwehs_words/services/fetch_verses.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
+import 'package:yahwehs_words/services/book_intro_service.dart';
+import 'package:yahwehs_words/services/section_title_service.dart';
+import 'package:yahwehs_words/services/song_download_service.dart';
+import 'package:yahwehs_words/widgets/global_mini_player.dart';
+import 'package:yahwehs_words/services/song_audio_handler.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
+import 'package:yahwehs_words/services/url_sync_service.dart';
+import 'package:yahwehs_words/services/version_preloader.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/theme_accent.dart'
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/theme_accent.dart'
     show darkReadingAccent, onAccentColor;
 
 void main() {
@@ -1017,7 +1017,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
             // chain. Each entry tries the next platform's
             // canonical UI font; the first one Flutter / the
             // browser can resolve wins. Order:
-            //   • CJK fallback (bundled) → NotoSansSC-YsWords — added
+            //   • CJK fallback (bundled) → NotoSansSC-YahwehsWords — added
             //     2026-05-24 v1.3.31; works on Flutter web CanvasKit
             //     where the CSS-only system fonts below are invisible
             //     to Skia. See `lib/utils/font_catalog.dart` for the
@@ -1047,7 +1047,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               // Verse text + word spans already use kCjkFontFallback
               // which has the same entry. Cheap to list twice — the
               // engine just walks until it finds a glyph.
-              'NotoSansSC-YsWords',
+              'NotoSansSC-YahwehsWords',
               'Microsoft YaHei',
               '微软雅黑',
               'Source Han Sans SC',
@@ -1135,7 +1135,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
             // 2026-05-08 (v1.1.0 / v1.1.2): same comprehensive OS-
             // native font fallback chain as light theme. See light
             // theme above for the rationale + per-platform mapping.
-            // 2026-05-24 (v1.3.31): bundled NotoSansSC-YsWords added
+            // 2026-05-24 (v1.3.31): bundled NotoSansSC-YahwehsWords added
             // for CanvasKit CJK coverage (see light theme comment).
             fontFamilyFallback: const [
               '-apple-system',
@@ -1146,7 +1146,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
               'Helvetica Neue',
               'Cantarell',
               'Noto Sans',
-              'NotoSansSC-YsWords',
+              'NotoSansSC-YahwehsWords',
               'Microsoft YaHei',
               '微软雅黑',
               'Source Han Sans SC',

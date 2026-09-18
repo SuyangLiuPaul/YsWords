@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/navigate_to_reader.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/navigate_to_reader.dart';
 
 /// 2026-08-23, from the user: tapping a search result opens the right
 /// chapter at verse 1 with no highlight.

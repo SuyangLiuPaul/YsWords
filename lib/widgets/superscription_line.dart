@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/utils/build_verse_content_spans.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/utils/responsive.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/utils/build_verse_content_spans.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/utils/responsive.dart';
 
 /// 2026-08-10 (v1.4.37): the unnumbered heading a psalm carries above
 /// its first verse — "For the [music] director; with stringed

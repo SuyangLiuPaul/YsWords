@@ -14,10 +14,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/update_service.dart';
-import 'package:yswords/services/web_update_checker.dart';
-import 'package:yswords/widgets/update_available_banner.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/update_service.dart';
+import 'package:yahwehs_words/services/web_update_checker.dart';
+import 'package:yahwehs_words/widgets/update_available_banner.dart';
 
 void main() {
   final checker = WebUpdateChecker.instance;

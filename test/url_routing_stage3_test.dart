@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:yswords/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
 
 /// URL-routing Stage 3 (`docs/url-routing-plan.md`, §6 batch 1
 /// remainder): what's VM-testable about the 11 pages added on top of

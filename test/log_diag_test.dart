@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/log_diag.dart';
+import 'package:yahwehs_words/utils/log_diag.dart';
 
 /// `debugPrint` emits nothing from a release web build.
 ///
@@ -37,7 +37,7 @@ void main() {
       // that reports bugs, and silently — which is how it went unnoticed
       // for months.
       final src = File('lib/utils/jump_to_reference.dart').readAsStringSync();
-      expect(src, contains("import 'package:yswords/utils/log_diag.dart';"));
+      expect(src, contains("import 'package:yahwehs_words/utils/log_diag.dart';"));
       expect(RegExp(r"debugPrint\('\[Yahweh").hasMatch(src), isFalse,
           reason: 'use logDiag for the user-facing jump chain');
       expect(RegExp(r"logDiag\('\[Yahweh").allMatches(src).length, 4);

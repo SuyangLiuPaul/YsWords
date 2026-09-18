@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/book_names.dart';
-import 'package:yswords/services/versification_service.dart';
+import 'package:yahwehs_words/constants/book_names.dart';
+import 'package:yahwehs_words/services/versification_service.dart';
 
 /// The CUV folds some numbered verses into the one before them and
 /// prints the vacated number as 「见上节」. 民数记 1:21 is one, and the

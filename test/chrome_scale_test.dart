@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/chrome_scale.dart';
+import 'package:yahwehs_words/utils/chrome_scale.dart';
 
 /// The rule itself, beside the screen-level measurement in
 /// `header_pill_truncation_test.dart`. That file says the pills fit;

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 2026-05-24 (v1.3.31): generate the bundled Noto Sans CJK SC subset
-# at assets/fonts/NotoSansSC-YsWords.otf.
+# at assets/fonts/NotoSansSC-YahwehsWords.otf.
 #
 # WHY: Flutter web's CanvasKit renderer can only fall back to fonts
 # that are registered in its Skia font registry. CSS font names like
@@ -14,7 +14,7 @@
 #
 # Resulting subset is ~1.88 MB OTF (down from 16 MB full font),
 # bundled via `fonts:` in pubspec.yaml with family name
-# `NotoSansSC-YsWords`, and registered as the FIRST entry in
+# `NotoSansSC-YahwehsWords`, and registered as the FIRST entry in
 # `kCjkFontFallback` (lib/utils/font_catalog.dart).
 #
 # When to re-run:
@@ -76,17 +76,17 @@ echo "  $((size/1024/1024)) MB source font"
 echo "==> 3/4 Running pyftsubset"
 pyftsubset noto.otf \
   --text-file=charset.txt \
-  --output-file=NotoSansSC-YsWords.otf \
+  --output-file=NotoSansSC-YahwehsWords.otf \
   --no-hinting \
   --no-recommended-glyphs \
   --layout-features='*'
-subsize=$(stat -f%z NotoSansSC-YsWords.otf 2>/dev/null || stat -c%s NotoSansSC-YsWords.otf)
+subsize=$(stat -f%z NotoSansSC-YahwehsWords.otf 2>/dev/null || stat -c%s NotoSansSC-YahwehsWords.otf)
 echo "  subset: $((subsize/1024)) KB"
 
 echo "==> 4/4 Installing into assets/fonts/"
 mkdir -p "$PROJECT/assets/fonts"
-cp NotoSansSC-YsWords.otf "$PROJECT/assets/fonts/NotoSansSC-YsWords.otf"
-ls -la "$PROJECT/assets/fonts/NotoSansSC-YsWords.otf"
+cp NotoSansSC-YahwehsWords.otf "$PROJECT/assets/fonts/NotoSansSC-YahwehsWords.otf"
+ls -la "$PROJECT/assets/fonts/NotoSansSC-YahwehsWords.otf"
 
 echo
 echo "✓ Done. Re-run flutter build to bundle the new subset."

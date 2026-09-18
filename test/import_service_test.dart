@@ -5,10 +5,10 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/export_service.dart';
-import 'package:yswords/services/import_service.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/export_service.dart';
+import 'package:yahwehs_words/services/import_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

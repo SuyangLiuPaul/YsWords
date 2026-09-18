@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/youtube_url.dart';
+import 'package:yahwehs_words/utils/youtube_url.dart';
 
 /// 2026-08-24: "歌曲里面有几个是YouTube如果按了去YouTube了，但是web 和ios
 /// 能不能不跳转出去，好像WhatsApp那样YouTube对话框在播放音乐，其实整个app

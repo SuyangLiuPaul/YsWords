@@ -11,7 +11,7 @@
 // drifts from this inline copy, this test catches the divergence.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/verse.dart';
+import 'package:yahwehs_words/models/verse.dart';
 
 class _NoteGroup {
   final List<Verse> verses;

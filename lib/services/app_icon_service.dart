@@ -44,8 +44,8 @@ import 'package:flutter/services.dart'
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/services/app_icon_service_web.dart'
-    if (dart.library.io) 'package:yswords/services/app_icon_service_web_stub.dart'
+import 'package:yahwehs_words/services/app_icon_service_web.dart'
+    if (dart.library.io) 'package:yahwehs_words/services/app_icon_service_web_stub.dart'
     as web_impl;
 
 /// Set while an Android launcher-icon swap is queued, i.e. while this

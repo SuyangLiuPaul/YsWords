@@ -13,8 +13,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart' show GlobalKey;
 
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 
 /// The scale factor `toImage` rasterises the card at.
 ///

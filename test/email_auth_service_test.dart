@@ -28,7 +28,7 @@ library;
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
 
 /// Strip `//` line comments and `///` doc comments so a source guard
 /// cannot be satisfied — or defeated — by prose. Without this, the

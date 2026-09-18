@@ -183,26 +183,26 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/bible_versions.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart'
     show
         availableVersions,
         bibleVersionLanguage,
         fullBibleVersionLabel,
         resolvableVersion,
         shortBibleVersionLabel;
-import 'package:yswords/constants/book_names.dart' show bookNameToEnglish;
-import 'package:yswords/services/projection_backdrop.dart';
-import 'package:yswords/constants/motion.dart';
-import 'package:yswords/constants/projection_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/projection_agenda.dart';
-import 'package:yswords/services/projection_broadcast.dart';
-import 'package:yswords/models/projection_preset.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/widgets/overflow_hint_scroll.dart';
-import 'package:yswords/widgets/projection_stage.dart';
+import 'package:yahwehs_words/constants/book_names.dart' show bookNameToEnglish;
+import 'package:yahwehs_words/services/projection_backdrop.dart';
+import 'package:yahwehs_words/constants/motion.dart';
+import 'package:yahwehs_words/constants/projection_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/projection_agenda.dart';
+import 'package:yahwehs_words/services/projection_broadcast.dart';
+import 'package:yahwehs_words/models/projection_preset.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/fetch_verses.dart';
+import 'package:yahwehs_words/widgets/overflow_hint_scroll.dart';
+import 'package:yahwehs_words/widgets/projection_stage.dart';
 
 /// The path this page is registered under — see `route_paths.dart`'s
 /// `kRegisteredRoutePaths`, `main.dart`'s `_registeredGetPages` and the

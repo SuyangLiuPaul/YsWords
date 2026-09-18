@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:yswords/models/song.dart';
-import 'package:yswords/services/remote_data_service.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/services/remote_data_service.dart';
 
 /// The one source whose covers the publisher does not know about.
 const String _cdcSource = 'cdc';

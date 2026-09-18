@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/video_series.dart';
+import 'package:yahwehs_words/models/video_series.dart';
 
 /// The 在十字架下 references shipped in `assets/videos.json` on
 /// 2026-09-02 and were invisible for a day, because `VideoEpisode`

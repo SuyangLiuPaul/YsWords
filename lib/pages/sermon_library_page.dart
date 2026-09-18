@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/library_sermon.dart';
-import 'package:yswords/pages/sermon_library_speaker_page.dart';
-import 'package:yswords/services/sermon_library_service.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/press_scale.dart';
-import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
-import 'package:yswords/widgets/sermon_library_chrome.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/library_sermon.dart';
+import 'package:yahwehs_words/pages/sermon_library_speaker_page.dart';
+import 'package:yahwehs_words/services/sermon_library_service.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/press_scale.dart';
+import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yahwehs_words/widgets/sermon_library_chrome.dart';
 
 /// The 福音电台 sermon library, browsable by speaker.
 ///

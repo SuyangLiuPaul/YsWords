@@ -1,13 +1,13 @@
-import 'package:yswords/constants/book_names.dart';
-import 'package:yswords/models/book.dart';
-import 'package:yswords/models/chapter.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/constants/book_names.dart';
+import 'package:yahwehs_words/models/book.dart';
+import 'package:yahwehs_words/models/chapter.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 // 2026-05-18 (v1.2.53): `bookNameToEnglish` moved to a dependency-
 // free file in `lib/constants/book_names.dart`. Re-exported here so
 // existing call-sites that do `import '...fetch_books.dart' show
 // bookNameToEnglish` keep working unchanged.
-export 'package:yswords/constants/book_names.dart' show bookNameToEnglish;
+export 'package:yahwehs_words/constants/book_names.dart' show bookNameToEnglish;
 
 const List<String> standardBookOrder = [
   'Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy',

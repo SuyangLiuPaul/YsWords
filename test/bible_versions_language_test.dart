@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
 
 /// 2026-06-22: guards for the language-grouped version picker.
 /// The picker groups the ~14 editions under English / 繁體 / 简体 tabs,

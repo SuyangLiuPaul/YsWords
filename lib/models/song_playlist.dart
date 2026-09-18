@@ -1,5 +1,5 @@
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_queue.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
 
 /// How a playlist decides what is in it.
 enum PlaylistKind {

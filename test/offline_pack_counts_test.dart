@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/constants/ui_strings.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
 
 /// Guards the two counts the offline-pack settings screen states about
 /// itself — `offlinePackSermons` and `offlinePackBibles`.

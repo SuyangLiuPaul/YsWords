@@ -6,13 +6,13 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/sermon_credit.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/sermon_library_page.dart';
-import 'package:yswords/pages/sermon_library_sermon_page.dart';
-import 'package:yswords/pages/sermon_library_speaker_page.dart';
-import 'package:yswords/services/sermon_library_service.dart';
+import 'package:yahwehs_words/constants/sermon_credit.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/sermon_library_page.dart';
+import 'package:yahwehs_words/pages/sermon_library_sermon_page.dart';
+import 'package:yahwehs_words/pages/sermon_library_speaker_page.dart';
+import 'package:yahwehs_words/services/sermon_library_service.dart';
 
 /// The three screens of the 福音电台 library, mounted against the real
 /// 940-record corpus.

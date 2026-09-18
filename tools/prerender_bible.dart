@@ -48,11 +48,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/constants/book_name_mapping.dart';
-import 'package:yswords/constants/book_slugs.dart';
-import 'package:yswords/constants/canon_chapters.dart';
-import 'package:yswords/constants/text_patterns.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/book_name_mapping.dart';
+import 'package:yahwehs_words/constants/book_slugs.dart';
+import 'package:yahwehs_words/constants/canon_chapters.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
 
 /// The public origin every absolute URL on these pages points at. The
 /// cn-* Netlify sites serve the same files; their canonical still names

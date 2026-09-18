@@ -17,8 +17,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/verse_card_export_types.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/verse_card_export_types.dart';
 
 const _locales = ['zh-Hans', 'zh-Hant', 'en'];
 

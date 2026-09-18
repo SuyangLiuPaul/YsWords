@@ -9,9 +9,9 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web/web.dart' as web;
 
-import 'package:yswords/models/song.dart';
-import 'package:yswords/services/song_download_types.dart';
-import 'package:yswords/services/song_player_service.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/services/song_download_types.dart';
+import 'package:yahwehs_words/services/song_player_service.dart';
 
 /// Web build of the download service — real offline downloads, backed
 /// by the Cache Storage API.

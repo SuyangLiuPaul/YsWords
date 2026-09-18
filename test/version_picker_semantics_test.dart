@@ -10,8 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/widgets/version_picker_sheet.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/widgets/version_picker_sheet.dart';
 
 /// 2026-09-06: the version picker, driven the way assistive technology
 /// drives it.

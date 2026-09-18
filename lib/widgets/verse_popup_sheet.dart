@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
 // 2026-05-24 (v1.3.7): get package no longer used directly here —
 // navigateToReader helper encapsulates all push/pop logic.
 // import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/motion.dart';
-import 'package:yswords/constants/text_patterns.dart' show sanitizeVerseText;
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/verse.dart';
+import 'package:yahwehs_words/constants/motion.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart' show sanitizeVerseText;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/verse.dart';
 // 2026-05-24 (v1.3.7): home_page direct import gone — navigateToReader
 // helper owns the HomePage construction.
-// import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/fetch_books.dart' show bookNameToEnglish;
-import 'package:yswords/utils/floating_toast.dart' show showFloatingToast;
-import 'package:yswords/utils/jump_to_reference.dart' as jumper;
-import 'package:yswords/utils/navigate_to_reader.dart';
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+// import 'package:yahwehs_words/pages/home_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/fetch_books.dart' show bookNameToEnglish;
+import 'package:yahwehs_words/utils/floating_toast.dart' show showFloatingToast;
+import 'package:yahwehs_words/utils/jump_to_reference.dart' as jumper;
+import 'package:yahwehs_words/utils/navigate_to_reader.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// Modal bottom sheet that previews a Bible reference in-place
 /// without navigating away. Used by the sermon detail page so

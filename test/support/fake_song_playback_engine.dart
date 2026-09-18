@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:yswords/services/playback/song_playback_engine.dart';
+import 'package:yahwehs_words/services/playback/song_playback_engine.dart';
 
 /// A hand-written fake of the engine seam — no audio plugin, no
 /// network, so tests run headlessly where the real bugs it was built to

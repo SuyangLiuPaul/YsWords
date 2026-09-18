@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/media_focus.dart';
+import 'package:yahwehs_words/services/media_focus.dart';
 
 /// One sound at a time.
 ///

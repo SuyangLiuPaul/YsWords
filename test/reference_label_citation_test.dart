@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/utils/version_mapper.dart' show localizedReferenceLabel;
+import 'package:yahwehs_words/utils/version_mapper.dart' show localizedReferenceLabel;
 
 /// A displayed reference must cite what the source cites.
 ///

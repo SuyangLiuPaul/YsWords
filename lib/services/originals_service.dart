@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:yswords/models/original_word.dart';
-import 'package:yswords/services/versification_service.dart';
+import 'package:yahwehs_words/models/original_word.dart';
+import 'package:yahwehs_words/services/versification_service.dart';
 
 /// Lazy loader for the tagged original-language Bible text.
 ///

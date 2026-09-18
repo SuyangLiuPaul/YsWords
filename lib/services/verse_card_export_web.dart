@@ -23,7 +23,7 @@ import 'dart:typed_data';
 
 import 'package:web/web.dart' as web;
 
-import 'package:yswords/services/verse_card_export_types.dart';
+import 'package:yahwehs_words/services/verse_card_export_types.dart';
 
 /// Cached because this is read from `build` to label the button, and
 /// the probe allocates a JS File. Browser capability does not change

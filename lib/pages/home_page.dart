@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/constants/motion.dart';
-import 'package:yswords/utils/navigate_to_chapter_verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/fetch_books.dart';
-import 'package:yswords/services/fetch_verses.dart';
-import 'package:yswords/utils/jump_to_reference.dart' as jumper;
-import 'package:yswords/widgets/sidebar_panel.dart';
-import 'package:yswords/widgets/bible_reading_pane.dart';
-import 'package:yswords/utils/responsive.dart';
+import 'package:yahwehs_words/constants/motion.dart';
+import 'package:yahwehs_words/utils/navigate_to_chapter_verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/fetch_books.dart';
+import 'package:yahwehs_words/services/fetch_verses.dart';
+import 'package:yahwehs_words/utils/jump_to_reference.dart' as jumper;
+import 'package:yahwehs_words/widgets/sidebar_panel.dart';
+import 'package:yahwehs_words/widgets/bible_reading_pane.dart';
+import 'package:yahwehs_words/utils/responsive.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

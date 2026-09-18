@@ -6,8 +6,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
 
-import 'package:yswords/firebase_options.dart';
-import 'package:yswords/services/profile_service.dart';
+import 'package:yahwehs_words/firebase_options.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
 // 2026-05-20 (v1.2.67 follow-up): the v1.2.49 "self-register
 // Firebase web plugins" block (lines ~177-224 below) used to
 // `import 'package:cloud_firestore_web/...'`, etc. directly,
@@ -16,7 +16,7 @@ import 'package:yswords/services/profile_service.dart';
 // registration body now live in `web_plugin_registrants_web.dart`;
 // the native build resolves to a no-op stub. Web behaviour is
 // byte-for-byte identical.
-import 'package:yswords/services/web_plugin_registrants.dart'
+import 'package:yahwehs_words/services/web_plugin_registrants.dart'
     show registerWebPluginsIfNeeded;
 
 /// Result of a sign-in / sign-up attempt. Carries either the

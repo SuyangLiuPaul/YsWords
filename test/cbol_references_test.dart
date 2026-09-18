@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/cbol_references.dart';
-import 'package:yswords/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/cbol_references.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
 
 /// Every source string below is copied verbatim out of the bundled
 /// lexicon assets — `assets/strongs/{greek,hebrew,bdb_zh,thayer_zh}.json`

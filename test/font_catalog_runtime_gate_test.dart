@@ -2,9 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/constants/build_flags.dart';
-import 'package:yswords/services/google_fonts_reachability.dart';
-import 'package:yswords/utils/font_catalog.dart';
+import 'package:yahwehs_words/constants/build_flags.dart';
+import 'package:yahwehs_words/services/google_fonts_reachability.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart';
 
 /// 2026-08-30 (queue: retire the China bundle, item A/B).
 ///

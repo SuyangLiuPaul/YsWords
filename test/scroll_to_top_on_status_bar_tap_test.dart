@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';
+import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';
 
 /// First test for [ScrollToTopOnStatusBarTap] (2026-08-11 widget, never
 /// covered — `grep ScrollToTopOnStatusBarTap test/` returned nothing before
@@ -250,7 +250,7 @@ void main() {
       expect(
         src,
         contains(
-            "import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';"),
+            "import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';"),
       );
       // One wrapper around the whole body — `_scrollController` is shared
       // by four mutually exclusive result lists, so wrapping each list
@@ -269,7 +269,7 @@ void main() {
       expect(
         src,
         contains(
-            "import 'package:yswords/widgets/scroll_to_top_on_status_bar_tap.dart';"),
+            "import 'package:yahwehs_words/widgets/scroll_to_top_on_status_bar_tap.dart';"),
       );
       // `_OriginalsOverviewTab` is child 0 of the page's TabBarView.
       // If the index ever stops matching the position in `children:`,

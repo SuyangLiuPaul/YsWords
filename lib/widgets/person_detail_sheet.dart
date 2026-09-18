@@ -1,20 +1,20 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/clipboard_helper.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/clipboard_helper.dart';
 import 'package:provider/provider.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/biblical_person.dart';
-import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/family_tree_service.dart';
-import 'package:yswords/utils/theme_color_helpers.dart';
-import 'package:yswords/utils/biblical_role.dart' show localizedRole;
-import 'package:yswords/utils/jump_to_reference.dart' as jumper;
-import 'package:yswords/utils/reference_parser.dart';
-import 'package:yswords/utils/version_mapper.dart' show localeAwareBookName;
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/biblical_person.dart';
+import 'package:yahwehs_words/pages/home_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/family_tree_service.dart';
+import 'package:yahwehs_words/utils/theme_color_helpers.dart';
+import 'package:yahwehs_words/utils/biblical_role.dart' show localizedRole;
+import 'package:yahwehs_words/utils/jump_to_reference.dart' as jumper;
+import 'package:yahwehs_words/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/version_mapper.dart' show localeAwareBookName;
 
 /// Bottom sheet showing the full record for one [BiblicalPerson].
 /// Sections (in render order):

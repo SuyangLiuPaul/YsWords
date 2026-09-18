@@ -1,5 +1,5 @@
-name: yswords
-description: "YsWords means Yahweh's words. A bilingual Bible app to help you listen to His voice and abide in Him daily."
+name: yahwehs_words
+description: "Yahweh's Words / 雅伟之言 — a bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
 version: 1.6.16
 
@@ -361,14 +361,14 @@ flutter:
     # 16 MB full Noto Sans CJK SC). Regenerate with:
     #   tools/build_cjk_font_subset.sh
     #
-    # The family name is `NotoSansSC-YsWords` — registered first in
+    # The family name is `NotoSansSC-YahwehsWords` — registered first in
     # `kCjkFontFallback` so CanvasKit consults it before falling
     # through to the CSS-only system-font names (which are still kept
     # as further fallbacks for native iOS / macOS / Android where the
     # OS fonts ARE accessible to Flutter).
-    - family: NotoSansSC-YsWords
+    - family: NotoSansSC-YahwehsWords
       fonts:
-        - asset: assets/fonts/NotoSansSC-YsWords.otf
+        - asset: assets/fonts/NotoSansSC-YahwehsWords.otf
 
     # Microsoft YaHei was previously bundled here. It is a proprietary
     # Microsoft font (licence forbids redistribution), so we removed it

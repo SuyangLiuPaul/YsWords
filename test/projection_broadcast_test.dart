@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/projection_broadcast.dart';
+import 'package:yahwehs_words/services/projection_broadcast.dart';
 
 /// The projector's second screen, without a second Flutter engine.
 ///

@@ -20,7 +20,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/widgets/media_embed_io.dart';
+import 'package:yahwehs_words/widgets/media_embed_io.dart';
 
 void main() {
   group('webviewSupportsBackgroundColor', () {

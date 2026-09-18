@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/verse.dart';
+import 'package:yahwehs_words/models/verse.dart';
 
 /// 路加福音 23:34a — the publisher's doubtful-passage affix used to be
 /// printed at readers as three literal characters in the middle of 23:33:

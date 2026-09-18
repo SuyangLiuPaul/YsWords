@@ -14,14 +14,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/book.dart';
-import 'package:yswords/pages/books_page.dart';
-import 'package:yswords/models/chapter.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/utils/navigate_to_chapter_verse.dart';
-import 'package:yswords/widgets/book_chapter_picker.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/book.dart';
+import 'package:yahwehs_words/pages/books_page.dart';
+import 'package:yahwehs_words/models/chapter.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/utils/navigate_to_chapter_verse.dart';
+import 'package:yahwehs_words/widgets/book_chapter_picker.dart';
 
 // 2026-09-03: these taps used to be `find.text('徒')` — the one-character
 // abbreviation the old default grid drew. The default book view is now

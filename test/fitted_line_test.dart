@@ -10,7 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/widgets/fitted_line.dart';
+import 'package:yahwehs_words/widgets/fitted_line.dart';
 
 const _style = TextStyle(fontSize: 14);
 

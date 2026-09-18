@@ -1,6 +1,6 @@
 // 2026-06-18 (v1.3.91): tests for the boolean Strong's-search logic.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/strongs_boolean_search.dart';
+import 'package:yahwehs_words/utils/strongs_boolean_search.dart';
 
 void main() {
   group('parseStrongsBoolean', () {

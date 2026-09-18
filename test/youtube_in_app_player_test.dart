@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/services/link_opener.dart';
-import 'package:yswords/services/media_focus.dart';
-import 'package:yswords/utils/embeddable_media.dart';
-import 'package:yswords/widgets/floating_media_player.dart';
+import 'package:yahwehs_words/services/link_opener.dart';
+import 'package:yahwehs_words/services/media_focus.dart';
+import 'package:yahwehs_words/utils/embeddable_media.dart';
+import 'package:yahwehs_words/widgets/floating_media_player.dart';
 
 /// 2026-08-24, in two rounds.
 ///

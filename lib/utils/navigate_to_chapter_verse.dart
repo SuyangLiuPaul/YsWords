@@ -14,7 +14,7 @@
 /// chapter is committed is resolved against the old chapter.
 library;
 
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 
 /// The verses of one chapter in verse order. Exposed for tests — the
 /// index a jump uses is a position in THIS list, not a verse number, and

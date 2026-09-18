@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_queue.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
 
 /// The mini-player must always offer a way out.
 ///

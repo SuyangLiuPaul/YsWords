@@ -1,5 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/services/profile_service.dart' show ProfileService;
+import 'package:yahwehs_words/services/profile_service.dart' show ProfileService;
 
 /// Persistent (SharedPreferences, NOT sessionStorage) one-shot guard.
 /// Unlike the boot-recovery latch in clear_cache_helper_web.dart, this

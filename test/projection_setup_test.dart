@@ -36,17 +36,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/bible_versions.dart'
+import 'package:yahwehs_words/constants/bible_versions.dart'
     show fullBibleVersionLabel;
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/book.dart';
-import 'package:yswords/models/chapter.dart';
-import 'package:yswords/models/projection_preset.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/projection_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/widgets/overflow_hint_scroll.dart';
-import 'package:yswords/widgets/projection_stage.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/book.dart';
+import 'package:yahwehs_words/models/chapter.dart';
+import 'package:yahwehs_words/models/projection_preset.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/pages/projection_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/widgets/overflow_hint_scroll.dart';
+import 'package:yahwehs_words/widgets/projection_stage.dart';
 
 const _g11 =
     Verse(book: 'Genesis', chapter: 1, verse: 1, text: 'In the beginning.');

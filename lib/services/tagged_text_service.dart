@@ -39,7 +39,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:yswords/utils/scripture_markup.dart'
+import 'package:yahwehs_words/utils/scripture_markup.dart'
     show isReferentGloss;
 
 /// One run of translation text and the original-language word behind it.

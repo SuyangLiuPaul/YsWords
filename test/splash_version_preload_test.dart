@@ -16,11 +16,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/loading_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/services/version_preloader.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/pages/loading_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/services/version_preloader.dart';
 
 /// Records what the pre-loader asked for without touching an asset.
 class _RecordingProvider extends MainProvider {

@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/passage_localizer.dart';
-import 'package:yswords/utils/reference_parser.dart';
+import 'package:yahwehs_words/utils/passage_localizer.dart';
+import 'package:yahwehs_words/utils/reference_parser.dart';
 
 /// The Chinese chapter-mark grammar — 「馬太福音第5章第7節」.
 ///

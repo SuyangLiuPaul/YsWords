@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/book_names.dart';
-import 'package:yswords/constants/text_patterns.dart';
+import 'package:yahwehs_words/constants/book_names.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
 
 /// Structural audit of the five whole-Bible versions, the same way
 /// `biblexg_verse_integrity_test.dart` audits the 梁家鏗譯本.

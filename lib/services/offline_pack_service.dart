@@ -4,9 +4,9 @@ import 'dart:convert';
 // the conditional-export helper. Web build still uses
 // `fetch(url)`; native build skips with a debug log (the
 // offline-pack UI is web-only anyway).
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/services/tagged_text_service.dart';
-import 'package:yswords/utils/fetch_helper.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
+import 'package:yahwehs_words/utils/fetch_helper.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';

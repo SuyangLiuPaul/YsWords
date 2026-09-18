@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/services/sermon_audio_service.dart';
-import 'package:yswords/widgets/sermon_audio_bar.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/services/sermon_audio_service.dart';
+import 'package:yahwehs_words/widgets/sermon_audio_bar.dart';
 
 /// The bar is docked on the sermon page, so it is built for *every*
 /// sermon — including any that has no audio. Rendering nothing in that

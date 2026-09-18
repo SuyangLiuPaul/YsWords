@@ -30,8 +30,8 @@
 //      offered.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/widgets/projection_stage.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/widgets/projection_stage.dart';
 
 /// Two verses of Chinese — enough that 76 px type cannot fit a small
 /// box, which is the condition both defects need.

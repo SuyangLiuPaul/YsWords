@@ -20,8 +20,8 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/widgets/floating_media_player.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/widgets/floating_media_player.dart';
 
 import 'link_opener_stub.dart'
     if (dart.library.js_interop) 'link_opener_web.dart' as impl;

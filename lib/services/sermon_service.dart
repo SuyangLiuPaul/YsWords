@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:yswords/models/sermon.dart';
+import 'package:yahwehs_words/models/sermon.dart';
 
 /// Reverse-index payload loaded from `assets/sermons/refs.json`.
 /// `byVerse` maps a canonical "Book chapter[:verse]" string to the

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:yswords/providers/main_provider.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/widgets/home_icon_button.dart';
-import 'package:yswords/widgets/language_switcher_button.dart';
-import 'package:yswords/widgets/localized_back_button.dart';
-import 'package:yswords/widgets/book_chapter_picker.dart';
-import 'package:yswords/utils/navigate_to_chapter_verse.dart';
-import 'package:yswords/utils/responsive.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/widgets/home_icon_button.dart';
+import 'package:yahwehs_words/widgets/language_switcher_button.dart';
+import 'package:yahwehs_words/widgets/localized_back_button.dart';
+import 'package:yahwehs_words/widgets/book_chapter_picker.dart';
+import 'package:yahwehs_words/utils/navigate_to_chapter_verse.dart';
+import 'package:yahwehs_words/utils/responsive.dart';
 
 class BooksPage extends StatelessWidget {
   final int chapterIdx;

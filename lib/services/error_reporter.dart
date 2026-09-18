@@ -52,10 +52,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:yswords/constants/app_version.dart';
+import 'package:yahwehs_words/constants/app_version.dart';
 // Conditional import: dart:io on native, stub on web.
-import 'package:yswords/services/error_reporter_platform_io.dart'
-    if (dart.library.js_interop) 'package:yswords/services/error_reporter_platform_web.dart'
+import 'package:yahwehs_words/services/error_reporter_platform_io.dart'
+    if (dart.library.js_interop) 'package:yahwehs_words/services/error_reporter_platform_web.dart'
     as platform;
 
 class ErrorReporter {

@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/tagged_text_service.dart';
-import 'package:yswords/utils/interlinear_editions.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/tagged_text_service.dart';
+import 'package:yahwehs_words/utils/interlinear_editions.dart';
 
 /// The Exegesis sheet's interlinear picker: which rows it may show, and
 /// which row it opens on.

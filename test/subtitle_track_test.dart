@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/models/subtitle_track.dart';
+import 'package:yahwehs_words/models/subtitle_track.dart';
 
 /// Guards the generated subtitle files and the parser that reads them.
 ///

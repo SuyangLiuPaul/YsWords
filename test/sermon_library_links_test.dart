@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:yswords/services/sermon_library_service.dart';
+import 'package:yahwehs_words/services/sermon_library_service.dart';
 
 /// The sermons this app holds twice, and what it does about them.
 ///

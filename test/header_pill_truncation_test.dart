@@ -7,15 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/book.dart';
-import 'package:yswords/models/chapter.dart';
-import 'package:yswords/models/verse.dart';
-import 'package:yswords/pages/home_page.dart';
-import 'package:yswords/providers/main_provider.dart';
-import 'package:yswords/utils/reader_header_fit.dart';
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/book.dart';
+import 'package:yahwehs_words/models/chapter.dart';
+import 'package:yahwehs_words/models/verse.dart';
+import 'package:yahwehs_words/pages/home_page.dart';
+import 'package:yahwehs_words/providers/main_provider.dart';
+import 'package:yahwehs_words/utils/reader_header_fit.dart';
 
 /// The book and version pills in the reading-pane header, measured on
 /// the real screen, at every width the app is meant to run on.
@@ -71,7 +71,7 @@ void main() {
     // name so the Han metrics are real; PingFang, which `-apple-system`
     // resolves to on the reported iPhone, sets Han at the same 1em.
     await (FontLoader('-apple-system')
-          ..addFont(rootBundle.load('assets/fonts/NotoSansSC-YsWords.otf')))
+          ..addFont(rootBundle.load('assets/fonts/NotoSansSC-YahwehsWords.otf')))
         .load();
   });
 

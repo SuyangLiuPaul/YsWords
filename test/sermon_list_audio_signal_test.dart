@@ -7,11 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/pages/sermons_page.dart';
-import 'package:yswords/services/sermon_audio_service.dart';
-import 'package:yswords/services/sermon_service.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/pages/sermons_page.dart';
+import 'package:yahwehs_words/services/sermon_audio_service.dart';
+import 'package:yahwehs_words/services/sermon_service.dart';
 
 /// The sermon list used to contain the string "audio" zero times.
 ///

@@ -4,9 +4,9 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:yswords/models/song.dart';
-import 'package:yswords/models/song_queue.dart';
-import 'package:yswords/services/playback/song_playback_engine.dart';
+import 'package:yahwehs_words/models/song.dart';
+import 'package:yahwehs_words/models/song_queue.dart';
+import 'package:yahwehs_words/services/playback/song_playback_engine.dart';
 
 /// Bridges the song queue to the platform media session.
 ///

@@ -10,7 +10,7 @@
 // added a render-layer collapse pass as defense-in-depth.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/text_patterns.dart';
+import 'package:yahwehs_words/constants/text_patterns.dart';
 
 void main() {
   group('sanitizeForSearch / sanitizeVerseText collapse', () {

@@ -17,7 +17,7 @@
 // Hence the emphasis below on consume-exactly-once.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/services/app_icon_service.dart';
+import 'package:yahwehs_words/services/app_icon_service.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));

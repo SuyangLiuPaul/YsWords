@@ -5,9 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/services/error_reporter.dart';
-import 'package:yswords/services/media_focus.dart';
-import 'package:yswords/services/playback/song_playback_engine.dart';
+import 'package:yahwehs_words/services/error_reporter.dart';
+import 'package:yahwehs_words/services/media_focus.dart';
+import 'package:yahwehs_words/services/playback/song_playback_engine.dart';
 
 /// One audio file of a sermon.
 ///

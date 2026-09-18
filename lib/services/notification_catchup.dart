@@ -82,11 +82,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/notification_category.dart';
-import 'package:yswords/services/notification_content.dart';
-import 'package:yswords/services/notification_service.dart';
-import 'package:yswords/services/profile_service.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/notification_category.dart';
+import 'package:yahwehs_words/services/notification_content.dart';
+import 'package:yahwehs_words/services/notification_service.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
 
 class NotificationCatchup with WidgetsBindingObserver {
   NotificationCatchup._();

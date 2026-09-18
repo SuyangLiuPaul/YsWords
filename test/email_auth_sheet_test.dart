@@ -17,9 +17,9 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/ui_strings.dart';
-import 'package:yswords/services/cloud_auth_service.dart';
-import 'package:yswords/widgets/email_auth_sheet.dart';
+import 'package:yahwehs_words/constants/ui_strings.dart';
+import 'package:yahwehs_words/services/cloud_auth_service.dart';
+import 'package:yahwehs_words/widgets/email_auth_sheet.dart';
 
 const _fakeEmail = 'reader@example.invalid';
 const _fakePassword = 'not-a-real-password';

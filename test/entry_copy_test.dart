@@ -5,7 +5,7 @@
 // what stop the pages drifting apart: a user who copies from two of
 // them notices when one uses commas and the other semicolons.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/utils/entry_copy.dart';
+import 'package:yahwehs_words/utils/entry_copy.dart';
 
 void main() {
   group('formatEntryForCopy', () {

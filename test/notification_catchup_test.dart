@@ -13,10 +13,10 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yswords/models/app_settings.dart';
-import 'package:yswords/models/notification_category.dart';
-import 'package:yswords/services/notification_catchup.dart';
-import 'package:yswords/services/profile_service.dart';
+import 'package:yahwehs_words/models/app_settings.dart';
+import 'package:yahwehs_words/models/notification_category.dart';
+import 'package:yahwehs_words/services/notification_catchup.dart';
+import 'package:yahwehs_words/services/profile_service.dart';
 
 /// A weekday and a weekend day in the same week, so the weekday mask can
 /// be exercised without arithmetic in the test bodies.

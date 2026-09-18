@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 
-import 'package:yswords/utils/app_nav.dart';
-import 'package:yswords/utils/route_paths.dart';
+import 'package:yahwehs_words/utils/app_nav.dart';
+import 'package:yahwehs_words/utils/route_paths.dart';
 
 /// The acceptance test for the queue item this whole work exists for:
 ///

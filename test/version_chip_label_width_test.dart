@@ -3,8 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yswords/constants/bible_versions.dart';
-import 'package:yswords/utils/font_catalog.dart' show kCjkFontFallback;
+import 'package:yahwehs_words/constants/bible_versions.dart';
+import 'package:yahwehs_words/utils/font_catalog.dart' show kCjkFontFallback;
 
 /// The version pill in the reading-pane header, measured rather than
 /// counted.
@@ -39,8 +39,8 @@ void main() {
     // `flutter_test`, and a width comparison between Han characters and
     // Latin ones becomes a character count wearing a disguise — which
     // is precisely the measurement this file exists to replace.
-    await (FontLoader('NotoSansSC-YsWords')
-          ..addFont(rootBundle.load('assets/fonts/NotoSansSC-YsWords.otf')))
+    await (FontLoader('NotoSansSC-YahwehsWords')
+          ..addFont(rootBundle.load('assets/fonts/NotoSansSC-YahwehsWords.otf')))
         .load();
   });
 
@@ -51,7 +51,7 @@ void main() {
       text: TextSpan(
         text: label,
         style: TextStyle(
-          fontFamily: 'NotoSansSC-YsWords',
+          fontFamily: 'NotoSansSC-YahwehsWords',
           fontFamilyFallback: kCjkFontFallback,
           fontSize: readerFontSize * 0.78,
           fontWeight: FontWeight.w600,
