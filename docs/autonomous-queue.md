@@ -16676,6 +16676,11 @@ has never seen this repo.
       contested-band note is longer). Checkbox stays open; the chart
       item spans many slices.
 
+      Pushed as `31d84c66`. CI run `35359435072` had not concluded
+      inside this iteration's ~6-minute watch budget (still
+      `in_progress` at last check) — next iteration's step 0 should
+      check it before picking anything else.
+
 - [ ] **Follow-up, filed not built: the `matriarchs` line id/name is
       deliberately plural.** Noted 2026-09-17 landing the Sarah slice
       above. Only Sarah is on the `matriarchs` line today, but
