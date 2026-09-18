@@ -16573,9 +16573,34 @@ has never seen this repo.
       `flutter analyze` clean, `bible_chronology_test.dart` green (129/129),
       full suite green (3376 tests). No `lib/` changes — test-harness-only.
 
-- [ ] **One on-screen chronology-chart chip cannot be tapped at all in the
+- [x] **One on-screen chronology-chart chip cannot be tapped at all in the
       widget-test harness — root cause unknown, possibly a real
-      interaction bug, not confirmed either way.** Found 2026-09-18 fixing
+      interaction bug, not confirmed either way.**
+      **RESOLVED 2026-09-18: harness-only, not a real interaction bug.**
+      Root cause is scroll-clip straddle: the plot is a
+      `SingleChildScrollView` (default `clipBehavior: Clip.hardEdge`),
+      and its render object paints AND hit-tests against the identical
+      `size` (`RenderBox.hitTest` gates on `_size!.contains(position)`
+      before even reaching `hitTestChildren` — checked directly against
+      the Flutter 3.44.2 SDK source, not assumed). The old filter
+      admitted a chip as "on screen" whenever its centre fell inside the
+      402×874 *device* rect, but the plot's own laid-out box
+      (`Rect.fromLTRB(149.8, 308.0, 386.0, 549.0)` at this viewport) is
+      narrower than the device — `chronoClusterChip_4063` straddled that
+      real edge. Fixed by filtering against `plotClipRect`
+      (`tester.getRect(find.byType(SingleChildScrollView).last)`)
+      instead of the device rect; `untappableChips` now comes back
+      empty, and a real finger cannot reach that clipped sliver either,
+      since paint and hit-test share the same rect. Not `am=4063`-
+      specific: scrolling the same viewport ±20–150px moves the straddle
+      onto `_4030`, `_4038` or `_4029` in turn (measured). The "getRect
+      reports a wider box" second anomaly was a misreading of the same
+      straddle, not a separate defect — `getRect` never reflects an
+      ancestor's clip. `flutter analyze` clean, `bible_chronology_test.dart`
+      green (129/129, foreground), full suite run as backstop. No
+      `lib/` changes — test-harness-only, no deploy.
+
+      Found 2026-09-18 fixing
       `queue:16351` above. At `viewAt(4036, years: 100)` / `Size(402,
       874)`, `chronoClusterChip_4063` (a "+1" bucket naming "Paul in
       Rome", genuinely on screen per the corrected filter above — its
@@ -17901,6 +17926,25 @@ so the bundle-size answer stays on the record.
       and fixed a genuine defect in the inherited diff (see `queue:13907`
       above), then committed and pushed before running the full suite —
       same conclusion as every prior recurrence: the fix is in
+      `run.sh`/`prompt.md` under `~/Library/Application Support/
+      yswords-loop/`, outside this repo, not touched here.
+
+      **Twentieth and twenty-first recurrence, both 2026-09-18,
+      `queue:16576`.** 09:44:11-10:33:30 stage did the whole
+      investigation and wrote `test/bible_chronology_test.dart`
+      (+117/-32), ended rc=0 saying "Waiting for the full test suite to
+      finish before committing" -- nothing committed. 11:36:22-11:40:36
+      stage applied the one must-fix the 11:33 plan called out (both new
+      finders use `find.byType(SingleChildScrollView).last`), then ended
+      rc=0 after four minutes saying "I've queued the verification steps
+      and scheduled a wakeup" -- nothing committed, again. This 12:4x
+      stage ran `flutter analyze` then `flutter test
+      test/bible_chronology_test.dart` as one foreground Bash call
+      (129/129 green, including the target assertion), independently
+      verified the load-bearing SDK claim against
+      `~/flutter/packages/flutter/lib/src/{widgets/single_child_scroll_view.dart,rendering/box.dart}`,
+      then committed and pushed before running the full suite -- same
+      conclusion as every prior recurrence: the fix is in
       `run.sh`/`prompt.md` under `~/Library/Application Support/
       yswords-loop/`, outside this repo, not touched here.
 

@@ -4369,9 +4369,38 @@ void main() {
       // taps on chips scrolled far off both edges, which real coordinates
       // cannot reach — measured, not guessed: `tester.tap`'s own
       // `warnIfMissed` diagnostic confirmed one such tap never even
-      // hit-tested onto the chip's own render object. The DEVICE's own
-      // screen rect is the actual bound a real tap is limited to.
-      final screenRect = Offset.zero & tester.view.physicalSize;
+      // hit-tested onto the chip's own render object.
+      //
+      // NOT the device's own screen rect either (`queue:16528` used that
+      // fix here first, and it is what let `chronoClusterChip_4063` slip
+      // through as "on screen" while still being untappable — see
+      // `queue:16576`). The device rect is generous: the plot itself is a
+      // `SingleChildScrollView` sitting to the right of the name column
+      // and inside the page's own padding, so its own laid-out box is
+      // narrower than the device — measured at this exact viewport as
+      // `Rect.fromLTRB(149.8, 308.0, 386.0, 549.0)` against a 402pt-wide
+      // device. `SingleChildScrollView`'s default `clipBehavior` is
+      // `Clip.hardEdge` (`single_child_scroll_view.dart:159` in the
+      // Flutter 3.44.2 SDK), and its render object,
+      // `_RenderSingleChildViewport` (same file, `:347`), paints and
+      // hit-tests against exactly the same rect — its own `size`: `paint`
+      // (`:544`) clips to `Offset.zero & size`, and it has no `hitTest`
+      // override of its own, so it inherits plain `RenderBox.hitTest`'s
+      // `size.contains(position)` check unchanged. So a point past this
+      // box's right edge is neither painted nor hit-testable, even
+      // though it is still comfortably inside the 402pt device the old
+      // filter checked against. A chip whose centre
+      // falls in that gap (the page's right padding, or the name column
+      // on the left) reads as "on screen" under the device-rect filter
+      // but is actually split by the scroll clip: the fraction of its
+      // width before the clip edge is real and tappable, the fraction
+      // past it is neither drawn nor reachable. This is this plot's OWN
+      // visible box, not the device's.
+      // `.last`, matching every other call site in this file (:1639 etc.):
+      // the chart's own scroll view is the last one built on the page,
+      // after any that come from ancestor scaffolding.
+      final plotClipRect =
+          tester.getRect(find.byType(SingleChildScrollView).last);
       final chipEntries = find
           .descendant(
             of: laneBox,
@@ -4384,7 +4413,8 @@ void main() {
               ))
           .where((r) =>
               r.key != null &&
-              screenRect.contains(tester.getRect(find.byKey(r.key!)).center))
+              plotClipRect
+                  .contains(tester.getRect(find.byKey(r.key!)).center))
           .toList();
       expect(chipEntries, isNotEmpty,
           reason: 'this viewport should still be crowded enough to fold '
@@ -4427,23 +4457,59 @@ void main() {
           await tester.pumpAndSettle();
         }
 
-        // Measured, not assumed: a `tester.tap()` at this chip's OWN
-        // reported centre can fail to hit-test onto this widget's tree
-        // at all (confirmed with `warnIfMissed: true` for the AM 4063
-        // "+1" chip — the hit-test result never includes this chip's own
-        // render object at that coordinate, only the chart's background
-        // paint layer and framework internals above it). A "+1" bucket's
-        // own single event is independently derivable from its
-        // `chronoClusterChip_$am` key without ever tapping the chip, and
-        // doing that revealed the anomaly runs deeper than "untappable":
-        // a bare-lane tap at 10% into this chip's OWN `tester.getRect`
-        // width reaches that ground-truth event, but 50% and 90% reach
-        // NOTHING — meaning `tester.getRect` is reporting a wider box for
-        // this one chip than what is actually hit-testable, so sampling
-        // by fraction of it is unreliable here specifically. That is a
-        // second, separate rendering anomaly on top of the first, both
-        // filed to the queue; skipped here rather than asserted on data
-        // now known to be self-inconsistent for this one chip.
+        // RESOLVED (queue:16576): `tester.tap()` at this chip's OWN
+        // reported centre used to fail to hit-test onto this widget's
+        // tree at all for the AM 4063 "+1" chip specifically. Root cause,
+        // confirmed against the Flutter 3.44.2 SDK source, not assumed:
+        // the plot is a `SingleChildScrollView`, whose default
+        // `clipBehavior` is `Clip.hardEdge`
+        // (`packages/flutter/lib/src/widgets/single_child_scroll_view.dart:159`),
+        // and its render object, `_RenderSingleChildViewport` (same file,
+        // `:347`), paints (`:544`, clips to `Offset.zero & size`) and
+        // hit-tests (no override of its own — inherits plain
+        // `RenderBox.hitTest`'s `size.contains(position)` check
+        // unchanged) against that identical `size`. So a point past this
+        // box's own right edge is neither drawn nor reachable — not a
+        // defect in `chronology_chart.dart`, and not specific to this
+        // chip: scrolling the SAME viewport by ±20 to ±150px moves the
+        // straddling chip to `chronoClusterChip_4030`, `_4038` or
+        // `_4029` in turn (measured directly), so this is generic
+        // scroll-edge clipping, not something about a bucket-of-1 or
+        // about `am=4063` — `chronologyChipPlan` (which places every
+        // chip) reasons purely about the full-canvas `plotWidth`, never
+        // about the current scroll offset, so it has no way to single
+        // this chip out. `tester.getRect` was never "reporting a wider
+        // box than what hit-tests" either — `getRect` (like `paintBounds`
+        // translated by `localToGlobal`) never reflects an ANCESTOR's
+        // clip at all; it was simply reporting this chip's true,
+        // correct, and PARTLY CLIPPED box, which the old
+        // `screenRect.contains(centre)` filter above admitted as
+        // "on-screen" because the device is wider than the plot's own
+        // scrollable area (see the filter's own comment) — the 10%/50%/
+        // 90% split this filed under the queue item's own "second
+        // anomaly" is just this straddle: the clip edge falls at ~33% of
+        // this chip's own width, so 10% lands before it and 50%/90% land
+        // after.
+        //
+        // The `plotClipRect`-based filter above now excludes a chip
+        // whose centre sits past the plot's real edge, so this chip no
+        // longer reaches this loop at this viewport — proving the
+        // "harness only" half of the open question directly, not by
+        // inference: a point genuinely on the plot's un-clipped canvas
+        // but past its visible box is neither painted nor reachable for
+        // a real touch either, since paint and hit-test share the
+        // identical rect, and widget-test hit-testing runs through the
+        // same `RendererBinding`/`GestureBinding` pipeline production
+        // touch input does. A real finger has nothing to aim at out
+        // there, and the visible sliver of the same chip (whatever
+        // fraction sits before the clip edge) is exactly as tappable as
+        // any other on-screen chip — the sampling loop below reaches it
+        // as usual. (Not separately traced: whether a screen reader's
+        // semantics-tree reachability is clipped identically — the same
+        // render object's approximate paint-clip description suggests it
+        // is, but that path was not walked end to end.) This is the
+        // ordinary, unavoidable shape of ANY horizontally-scrolled
+        // content's trailing/leading edge, not a chart bug.
         if (chipTitles.isEmpty) {
           untappableChips.add(baseId);
           continue;
@@ -4460,7 +4526,23 @@ void main() {
           // staleness.
           final liveLaneRect = tester.getRect(laneBox);
           final bareDy = liveLaneRect.height - 2;
-          await tester.tapAt(Offset(sampleDx, liveLaneRect.top + bareDy));
+          final samplePoint = Offset(sampleDx, liveLaneRect.top + bareDy);
+          // A chip whose CENTRE is inside `plotClipRect` (the only way
+          // it reached this loop) can still have an edge poke past it —
+          // that sliver is genuinely unpainted and unreachable, not a
+          // routing disagreement, so skip just that sample rather than
+          // excluding the whole chip by name (queue:16576's own
+          // acceptance criteria for the harness-only outcome). Re-read
+          // the scrollview's own rect fresh here, not the one captured
+          // before any taps: popping a sheet can grow the tick lane's
+          // reserved rows (same staleness `liveLaneRect` above already
+          // guards against), which grows the scrollview's own laid-out
+          // height too — a stale clip rect would reject a bare-lane
+          // sample that is actually still on screen.
+          final livePlotClipRect =
+              tester.getRect(find.byType(SingleChildScrollView).last);
+          if (!livePlotClipRect.contains(samplePoint)) continue;
+          await tester.tapAt(samplePoint);
           await tester.pumpAndSettle();
           final bareTitles = await harvestSheet();
           sheet = find.byType(BottomSheet);
@@ -4530,17 +4612,20 @@ void main() {
       // chip this run's own direct tap could not reach at all (see the
       // comment where it is populated above) — excluded from the
       // comparison rather than asserted on, since there is no reliable
-      // chip-side content to compare against. Pinned to the one chip
-      // measured at the time this test was written, filed as a follow-up
-      // — a NEW name appearing here needs its own investigation, not a
-      // silent widening of this list.
-      expect(untappableChips, ['chronoClusterChip_4063_+1'],
+      // chip-side content to compare against. RESOLVED (queue:16576):
+      // this was pinned to `chronoClusterChip_4063_+1` because the old
+      // `screenRect` filter (the device's own bounds) let a chip past
+      // the plot's real scroll-clip edge into `chipEntries`. The
+      // `plotClipRect` filter above excludes it correctly, so this
+      // should now be empty — a name reappearing here means a NEW,
+      // different chip has gone genuinely untappable and needs its own
+      // investigation, not a silent widening of this list.
+      expect(untappableChips, isEmpty,
           reason: 'the set of chips this harness cannot tap directly at '
-              'all has changed — got $untappableChips. If this list grew, '
-              'investigate the new entry the same way (see the comment '
-              'above `untappableChips.add`) before deciding whether to '
-              'add it here or fix it. If it shrank, the fix for the '
-              'known AM 4063 case may have landed — remove it here.');
+              'all despite passing the plotClipRect on-screen filter has '
+              'changed — got $untappableChips. Investigate the new entry '
+              'the same way documented above `untappableChips.add` before '
+              'deciding whether to pin it or fix it.');
       expect(tester.takeException(), isNull);
       handle.dispose();
     });
