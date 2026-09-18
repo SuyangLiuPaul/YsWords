@@ -962,6 +962,102 @@ void main() {
       expect(data.spanEndAm, 4098);
     });
 
+    // Pins Enoch's third end-state, the opposite gap from Esau's:
+    // deathAm is a real, stated year (365 lived, Genesis 5:23 — the
+    // same "X lived N years" arithmetic every other Genesis 5 patriarch
+    // gets), but endKind is "translated", not "died" — Genesis 5:24 and
+    // Hebrews 11:5 both say he did not see death. The textual argument:
+    // "and he died" closes every OTHER chained patriarch's entry in
+    // Genesis 5 (5:5, 5:8, 5:11, 5:14, 5:17, 5:20, 5:27, 5:31) and is
+    // conspicuously missing at 5:23-24 — checked directly against
+    // assets/kjv.json below, not assumed.
+    test(
+        "Enoch's endKind is 'translated', not 'died' — his stated year "
+        "stays right, only the word for it was wrong", () {
+      final jared = data.lifelines.firstWhere((l) => l.personId == 'jared');
+      final enoch = data.lifelines.firstWhere((l) => l.personId == 'enoch');
+
+      expect(enoch.birthAm, jared.birthAm + 162, reason: 'Genesis 5:18');
+      expect(enoch.lifespan, 365, reason: 'Genesis 5:23');
+      expect(enoch.deathAm, enoch.birthAm + 365);
+      expect(enoch.deathAm, 987);
+      expect(enoch.endKind, 'translated');
+      expect(
+        enoch.refs,
+        containsAll(['Genesis 5:23', 'Genesis 5:24', 'Hebrews 11:5']),
+      );
+
+      for (final text in [
+        enoch.derivationEn, enoch.derivationZhHans, enoch.derivationZhHant,
+      ]) {
+        expect(text, contains('365'));
+      }
+      expect(enoch.derivationEn, isNot(contains('Died')));
+      expect(enoch.derivationEn, contains('taken by God'));
+      expect(enoch.derivationZhHans, contains('被神接去'));
+      expect(enoch.derivationZhHant, contains('被神接去'));
+
+      for (final ref in const [
+        'Genesis 5:5', 'Genesis 5:8', 'Genesis 5:11', 'Genesis 5:14',
+        'Genesis 5:17', 'Genesis 5:20', 'Genesis 5:27', 'Genesis 5:31',
+      ]) {
+        final verse = int.parse(ref.split(':')[1]);
+        expect(kjvVerseText('Genesis', 5, verse), contains('he died'),
+            reason: '$ref should still close with "and he died"');
+      }
+      expect(kjvVerseText('Genesis', 5, 24), isNot(contains('he died')),
+          reason: 'Genesis 5:24 is the one verse in the chapter that '
+              'does not close with the refrain — that gap is the '
+              'textual argument for "translated" over "died"');
+
+      // Only the label changed — the arithmetic that produced AM 987
+      // did not move.
+      expect(data.computedEndAm, 2369);
+      expect(data.spanEndAm, 4098);
+    });
+
+    test(
+        '_meta.translatedNotDied is exactly the lifelines whose endKind '
+        "is 'translated', and every ref it names is one the lifeline's "
+        'own refs actually carries', () {
+      final metaList =
+          ((raw['_meta'] as Map)['translatedNotDied'] as List).cast<Map>();
+      final translatedIds = data.lifelines
+          .where((l) => l.endKind == 'translated')
+          .map((l) => l.personId)
+          .toSet();
+      expect(metaList.map((e) => e['id'] as String).toSet(), translatedIds,
+          reason: '_meta.translatedNotDied must name exactly the '
+              "lifelines whose endKind is 'translated' — this is the "
+              'completeness invariant a future addition to TRANSLATED '
+              "can't silently drift from");
+      for (final entry in metaList) {
+        final id = entry['id'] as String;
+        final refs = (entry['refs'] as List).cast<String>();
+        final lifeline = data.lifelines.firstWhere((l) => l.personId == id);
+        for (final ref in refs) {
+          expect(lifeline.refs, contains(ref),
+              reason: '$id.refs is missing $ref, declared in '
+                  '_meta.translatedNotDied');
+        }
+      }
+    });
+
+    test(
+        'endKind is "died" for every lifeline except Esau ("unknown") '
+        'and Enoch ("translated")', () {
+      for (final l in data.lifelines) {
+        if (l.personId == 'esau') {
+          expect(l.endKind, 'unknown');
+        } else if (l.personId == 'enoch') {
+          expect(l.endKind, 'translated');
+        } else {
+          expect(l.endKind, 'died',
+              reason: '${l.personId} gained an unexpected endKind');
+        }
+      }
+    });
+
     // Pins the four-verse chain (Gen 41:46 + 41:53 + 45:6 + 47:9 = 91,
     // Jacob's age at Joseph's birth; Gen 50:22/50:26 = Joseph's 110-year
     // lifespan) AND cross-checks it against assets/family_tree.json,
@@ -1472,6 +1568,39 @@ void main() {
           matching: find.text('Son of Jared (aged 162 at the birth)'),
         ),
         findsOneWidget,
+      );
+    });
+
+    testWidgets(
+        "Enoch's sheet says he was taken by God, at the same stated "
+        'year, not that he died (Lifeline.endKind — Genesis 5:24, '
+        'Hebrews 11:5)', (tester) async {
+      await pumpChart(tester);
+      // Enoch's whole bar (AM 622-987) sits before the default view's
+      // 800-year window around the Flood (AM 1656) — same reason the
+      // Adam test above needs wholeSpan first.
+      await wholeSpan(tester);
+      await tester.tap(find.text('Enoch').first);
+      await tester.pumpAndSettle();
+      final sheet = find.byType(BottomSheet);
+      expect(
+        find.descendant(
+            of: sheet, matching: find.textContaining('Taken by God')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: sheet, matching: find.textContaining('Died')),
+        findsNothing,
+        reason: 'the sheet must not say Enoch died',
+      );
+      // "lived 365 years" appears twice under the sheet — once in the
+      // "Taken by God … lived 365 years" line, once in the derivation
+      // prose below it — so this only checks it survived, not count.
+      expect(
+        find.descendant(
+            of: sheet, matching: find.textContaining('lived 365 years')),
+        findsWidgets,
+        reason: 'the year itself is not the defect — only the verb was',
       );
     });
 

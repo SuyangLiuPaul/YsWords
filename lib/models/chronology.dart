@@ -137,11 +137,17 @@ class Lifeline {
   final int birthAm;
 
   /// Null when Scripture gives no death year. Drawn open-ended rather
-  /// than guessed. (Empty today; the field exists so a later pass can
-  /// add Ham, Japheth and others without a schema change — Isaac,
-  /// Jacob and Joseph all have a stated death year and are no longer
-  /// in this state.)
+  /// than guessed. Esau has been in this state since 2026-09-17 —
+  /// Genesis 25:26 states his birth but no verse ever gives his death
+  /// age.
   final int? deathAm;
+
+  /// `'died'`, `'unknown'` (Esau — [deathAm] is null), or `'translated'`
+  /// (Enoch — [deathAm] is a real, stated year, but Genesis 5:24 and
+  /// Hebrews 11:5 say he did not die; see `TRANSLATED` in
+  /// `tools/build_bible_chronology.py`). Never blank the year for
+  /// `'translated'` — only the verb changes.
+  final String endKind;
 
   final int lifespan;
 
@@ -172,6 +178,7 @@ class Lifeline {
     this.anchorChildId,
     required this.birthAm,
     required this.deathAm,
+    this.endKind = 'died',
     required this.lifespan,
     required this.refs,
     required this.derivationEn,
@@ -206,6 +213,7 @@ class Lifeline {
         anchorChildId: j['anchorChildId'] as String?,
         birthAm: (j['birthAm'] as num).toInt(),
         deathAm: (j['deathAm'] as num?)?.toInt(),
+        endKind: j['endKind'] as String? ?? 'died',
         lifespan: (j['lifespan'] as num?)?.toInt() ?? 0,
         refs: (j['refs'] as List?)?.cast<String>() ?? const [],
         derivationEn: j['derivationEn'] as String? ?? '',

@@ -12502,6 +12502,15 @@ has never seen this repo.
       the user is still unanswered: start the `GetMaterialApp` →
       `.router` migration branch, or close this as "won't fix"?
 
+      **Deferred a thirty-first consecutive iteration, 2026-09-18** —
+      this hour's NEXT_TASK.md picked the chronology chart's Enoch
+      endKind slice instead (below — the chart said he died; Scripture
+      says he was taken). Still branch-scale, still unattended-unsafe,
+      still the only fully open P2 checkbox besides the chronology
+      chart, and the question above to the user is still unanswered:
+      start the `GetMaterialApp` → `.router` migration branch, or close
+      this as "won't fix"?
+
 - [x] **FIXED 2026-09-05 (`3a12f70f`) — On the Bible reader, Back pushed a
       route instead of popping.** Pre-existing, orthogonal to the two
       defects above, flagged 2026-09-03. `_writeStateToUrl` issued a raw
@@ -16426,6 +16435,85 @@ has never seen this repo.
       inside this iteration's ~6-minute watch budget (still
       `in_progress` at last check) — next iteration's step 0 should
       check it before picking anything else.
+
+      **2026-09-18 slice — the chart said Enoch died. Scripture says he
+      didn't.** `assets/bible_chronology.json` carried two contradictory
+      statements about AM 987: the `enoch_taken` marker (correct — "Enoch
+      is taken", refs Genesis 5:24 + Hebrews 11:5) and the `enoch`
+      lifeline, whose person sheet rendered "Died 3017 BC · lived 365
+      years" — the exact "reads plausibly, is wrong, gets quoted" failure
+      this item's own priority rule names. The year (AM 987, from Genesis
+      5:23's stated 365) was never in doubt; only the verb was wrong, so
+      the fix is a third end-state, not an open-ended bar (that would
+      wrongly say the year is unknown, when Scripture states it).
+
+      `tools/build_bible_chronology.py`: `TRANSLATED = {"enoch"}` beside
+      `OPEN_ENDED`, a per-lifeline `endKind` (`"translated"` / `"unknown"`
+      / `"died"`), and `_meta.translatedNotDied` as the id+refs
+      completeness invariant (same pattern `statedLifespansNotDrawn` and
+      `unanchoredFamilyTreeIds` already use). Enoch's derivation prose
+      now cites Genesis 5:23 for the 365 years and Genesis 5:24 + Hebrews
+      11:5 for "taken by God rather than dying", instead of citing 5:24
+      as a source for the lifespan it does not state. `lib/models/
+      chronology.dart` gained `Lifeline.endKind` (default `'died'`, so
+      every pre-existing row is unaffected) and its stale `deathAm` doc
+      comment ("Empty today…", wrong since Esau went open-ended
+      2026-09-17) is corrected in the same edit — the same stale-copy
+      class the 2026-09-17 slice swept. New string `chronologyTranslated`
+      ('Taken by God' / 被神接去 / 被神接去 — the marker's own verb, so the
+      two layers agree word-for-word) beside `chronologyDied`/
+      `chronologyDeathUnknown`. `chronology_chart.dart`'s person sheet
+      branches the verb on `endKind`; the bar itself stays solid (Enoch's
+      `deathAm` is real, not null), only Esau still gets the open-ended
+      gradient.
+
+      **The refuter caught a real overclaim before it shipped.** The
+      planned claim was "Enoch is the only one of the 26 drawn lifelines
+      Scripture doesn't say died." An independent refuter agent, told to
+      re-derive from `assets/kjv.json` rather than trust the framing,
+      found this FALSE as stated: Shem, Arphaxad, Shelah, Eber, Peleg,
+      Reu, Serug and Nahor_elder (the Genesis 11 line) also never get an
+      explicit "and he died" — Genesis 11's genealogy formula is two
+      verses per person with no third "and all the days of X were N
+      years: and he died" sentence the way Genesis 5 has. The difference
+      that actually matters, and the one this slice's code and comments
+      stick to, is narrower and survives: Genesis 5's death-refrain
+      closes all EIGHT other entries in that one chapter and is
+      conspicuously missing only at Enoch's (5:23-24) — a same-chapter,
+      same-formula contrast, not a whole-chart uniqueness claim. Genesis
+      11's silence is just a terser formula with no evidence either way,
+      not a hint anyone else was translated; nothing in the shipped
+      code, tests or comments asserts the broader (false) version.
+      Recorded here so a later pass doesn't reach for the wider claim
+      without re-deriving it.
+
+      Enoch's endKind and the Genesis 5:23-based year were verified
+      against `assets/kjv.json` directly (all nine relevant verses
+      quoted in the new test, not paraphrased). Builder re-run twice,
+      byte-identical both times — `computedEndAm` (2369) and `spanEndAm`
+      (4098) unmoved, confirming only the label changed. `flutter
+      analyze` clean repo-wide. `bible_chronology_test.dart`'s four new
+      tests proved red first: perturbed `TRANSLATED` to the empty set,
+      watched all four fail naming Enoch (a `StateError` on the widget
+      test since his sheet no longer said "Taken by God", and the three
+      data tests naming the `endKind`/`_meta.translatedNotDied`
+      mismatch), then restored and confirmed byte-identical regeneration.
+      Full suite (356 files) run in 8 foreground chunks of ≤55, all
+      green — 2,890 tests total across the run, zero failures.
+
+      Asset + code + test only, no version bump, no deploy — this item's
+      own guard rail, unchanged even though user-visible strings moved.
+      Checkbox stays open; the chart item spans many slices.
+
+      **Unrelated to this slice's own work, but visible while it ran:** a
+      second session was actively running `tools/release_web.sh --bump
+      --include-prod` in this same shared checkout partway through this
+      iteration (`ps` showed the process; `pubspec.yaml`/
+      `lib/constants/app_version.dart`/`assets/changelog.json` picked up
+      its in-flight 1.6.21→1.6.22 bump as uncommitted working-tree
+      changes that were never part of this slice). Left untouched and
+      unstaged, per this loop's standing courtesy for a shared checkout —
+      only this slice's six files were staged by explicit name.
 
 - [ ] **Follow-up, filed not built: the `matriarchs` line id/name is
       deliberately plural.** Noted 2026-09-17 landing the Sarah slice

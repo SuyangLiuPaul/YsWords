@@ -150,7 +150,7 @@ CHAIN = [
     ("kenan",       "enosh",       90,    910,   ["Genesis 5:9"],                    ["Genesis 5:14"]),
     ("mahalalel",   "kenan",       70,    895,   ["Genesis 5:12"],                   ["Genesis 5:17"]),
     ("jared",       "mahalalel",   65,    962,   ["Genesis 5:15"],                   ["Genesis 5:20"]),
-    ("enoch",       "jared",       162,   365,   ["Genesis 5:18"],                   ["Genesis 5:23", "Genesis 5:24"]),
+    ("enoch",       "jared",       162,   365,   ["Genesis 5:18"],                   ["Genesis 5:23", "Genesis 5:24", "Hebrews 11:5"]),
     ("methuselah",  "enoch",       65,    969,   ["Genesis 5:21"],                   ["Genesis 5:27"]),
     ("lamech",      "methuselah",  187,   777,   ["Genesis 5:25"],                   ["Genesis 5:31"]),
     ("noah",        "lamech",      182,   950,   ["Genesis 5:28-29"],                ["Genesis 9:29"]),
@@ -418,6 +418,57 @@ LINE_OF = {
 # 35:29 and 36:1-43 record his life and lineage without ever giving a
 # death age.
 OPEN_ENDED = {"esau"}
+
+# People a stated lifespan places a bar for, but who Scripture says did
+# NOT die at the end of it — a third end-state beside OPEN_ENDED
+# ("we don't know") and the ordinary "died". Distinct from OPEN_ENDED
+# in the opposite direction: Esau's year is unknown, Enoch's year (AM
+# 987, from his stated 365) is exactly as solid as any other patriarch
+# on this chain — only the word "died" is wrong for it. Genesis 5:23
+# gives the 365 years; 5:24 and Hebrews 11:5 both say he did not see
+# death. The textual tell: "and he died" closes every other patriarch's
+# entry in the chapter (5:5, 5:8, 5:11, 5:14, 5:17, 5:20, 5:27, 5:31)
+# and is conspicuously missing at 5:23-24.
+TRANSLATED = {"enoch"}
+
+# Mirrors TRANSLATED as (id, refs) pairs for `_meta.translatedNotDied`,
+# the same completeness-invariant pattern STATED_LIFESPANS_NOT_DRAWN and
+# UNANCHORED_FAMILY_TREE_IDS use, so a later addition to TRANSLATED
+# can't silently drift from what the UI actually cites.
+TRANSLATED_NOT_DIED = [
+    {"id": "enoch", "refs": ["Genesis 5:24", "Hebrews 11:5"]},
+]
+
+# Prose for CHAIN rows in TRANSLATED. Keeps the same opening clause as
+# the generic branch below ("X was N when Y was born") so
+# `derivationAgeDefects` in test/bible_chronology_test.dart still finds
+# the begetting age, but splits the closing citation in two: the first
+# death-ref column entry sources the lifespan number, the rest source
+# the "taken, not died" fact — see CHAIN's comment on Enoch's row for
+# why 5:24 cannot be made to source both.
+TRANSLATED_DERIVATION = {
+    "enoch": {
+        "en": (
+            "%s was %d when %s was born (%s); %s lived %d years (%s), "
+            "and was then taken by God rather than dying (%s)."
+        ),
+        "hans": (
+            "%s %d 岁生%s（%s）；%s共活了 %d 年（%s），后来被神接去，"
+            "并非死去（%s）。"
+        ),
+        "hant": (
+            "%s %d 歲生%s（%s）；%s共活了 %d 年（%s），後來被神接去，"
+            "並非死去（%s）。"
+        ),
+    },
+}
+
+
+def end_kind(pid, death):
+    """The third state alongside "died"/"unknown" — see TRANSLATED."""
+    if pid in TRANSLATED:
+        return "translated"
+    return "unknown" if death is None else "died"
 
 # Chinese book names used when phrasing the derivation sentences.
 BOOK_ZH = {
@@ -909,6 +960,22 @@ def build():
             der_hant = tpl["hant"] % (fzt, begat, person["nameZhHant"],
                                        zh_refs(bref, True),
                                        person["nameZhHant"])
+        elif pid in TRANSLATED_DERIVATION:
+            tpl = TRANSLATED_DERIVATION[pid]
+            lifespan_ref, taken_refs = dref[0], dref[1:]
+            der_en = tpl["en"] % (fname, begat, person["name"],
+                                   ", ".join(bref), person["name"], lived,
+                                   lifespan_ref, ", ".join(taken_refs))
+            der_hans = tpl["hans"] % (fzh, begat, person["nameZhHans"],
+                                       zh_refs(bref, False),
+                                       person["nameZhHans"], lived,
+                                       zh_ref(lifespan_ref, False),
+                                       zh_refs(taken_refs, False))
+            der_hant = tpl["hant"] % (fzt, begat, person["nameZhHant"],
+                                       zh_refs(bref, True),
+                                       person["nameZhHant"], lived,
+                                       zh_ref(lifespan_ref, True),
+                                       zh_refs(taken_refs, True))
         else:
             der_en = ("%s was %d when %s was born (%s); %s lived %d years "
                       "(%s)." % (fname, begat, person["name"],
@@ -933,6 +1000,7 @@ def build():
             "fatherId": father,
             "birthAm": birth,
             "deathAm": death,
+            "endKind": end_kind(pid, death),
             "lifespan": lived,
             "refs": bref + [r for r in dref if r not in bref],
             "derivationEn": der_en,
@@ -997,6 +1065,7 @@ def build():
             "anchorChildId": anchor_child,
             "birthAm": birth,
             "deathAm": death,
+            "endKind": end_kind(pid, death),
             "lifespan": lived,
             "refs": bref + [r for r in dref if r not in bref],
             "derivationEn": der_en,
@@ -1225,6 +1294,12 @@ def build():
             # test checks the prose cites exactly this set and no age
             # outside it.
             "statedLifespansNotDrawn": STATED_LIFESPANS_NOT_DRAWN,
+            # Every lifeline whose endKind is "translated", not "died"
+            # (see TRANSLATED above). A completeness invariant, the same
+            # pattern as unanchoredFamilyTreeIds: if TRANSLATED ever
+            # grows, this has to grow with it or the completeness test
+            # in test/bible_chronology_test.dart catches the drift.
+            "translatedNotDied": TRANSLATED_NOT_DIED,
         },
         "schemes": SCHEMES,
         "lines": LINES,

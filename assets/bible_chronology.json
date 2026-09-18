@@ -74,6 +74,15 @@
         "age": 98,
         "ref": "1 Samuel 4:15"
       }
+    ],
+    "translatedNotDied": [
+      {
+        "id": "enoch",
+        "refs": [
+          "Genesis 5:24",
+          "Hebrews 11:5"
+        ]
+      }
     ]
   },
   "schemes": [
@@ -240,6 +249,7 @@
       "fatherId": null,
       "birthAm": 0,
       "deathAm": 930,
+      "endKind": "died",
       "lifespan": 930,
       "refs": [
         "Genesis 5:1-2",
@@ -259,6 +269,7 @@
       "fatherId": "adam",
       "birthAm": 130,
       "deathAm": 1042,
+      "endKind": "died",
       "lifespan": 912,
       "refs": [
         "Genesis 5:3",
@@ -278,6 +289,7 @@
       "fatherId": "seth",
       "birthAm": 235,
       "deathAm": 1140,
+      "endKind": "died",
       "lifespan": 905,
       "refs": [
         "Genesis 5:6",
@@ -297,6 +309,7 @@
       "fatherId": "enosh",
       "birthAm": 325,
       "deathAm": 1235,
+      "endKind": "died",
       "lifespan": 910,
       "refs": [
         "Genesis 5:9",
@@ -316,6 +329,7 @@
       "fatherId": "kenan",
       "birthAm": 395,
       "deathAm": 1290,
+      "endKind": "died",
       "lifespan": 895,
       "refs": [
         "Genesis 5:12",
@@ -335,6 +349,7 @@
       "fatherId": "mahalalel",
       "birthAm": 460,
       "deathAm": 1422,
+      "endKind": "died",
       "lifespan": 962,
       "refs": [
         "Genesis 5:15",
@@ -354,15 +369,17 @@
       "fatherId": "jared",
       "birthAm": 622,
       "deathAm": 987,
+      "endKind": "translated",
       "lifespan": 365,
       "refs": [
         "Genesis 5:18",
         "Genesis 5:23",
-        "Genesis 5:24"
+        "Genesis 5:24",
+        "Hebrews 11:5"
       ],
-      "derivationEn": "Jared was 162 when Enoch was born (Genesis 5:18); Enoch lived 365 years (Genesis 5:23, Genesis 5:24).",
-      "derivationZhHans": "雅列 162 岁生以诺（创世记 5:18）；以诺共活了 365 年（创世记 5:23、创世记 5:24）。",
-      "derivationZhHant": "雅列 162 歲生以諾（創世記 5:18）；以諾共活了 365 年（創世記 5:23、創世記 5:24）。"
+      "derivationEn": "Jared was 162 when Enoch was born (Genesis 5:18); Enoch lived 365 years (Genesis 5:23), and was then taken by God rather than dying (Genesis 5:24, Hebrews 11:5).",
+      "derivationZhHans": "雅列 162 岁生以诺（创世记 5:18）；以诺共活了 365 年（创世记 5:23），后来被神接去，并非死去（创世记 5:24、希伯来书 11:5）。",
+      "derivationZhHant": "雅列 162 歲生以諾（創世記 5:18）；以諾共活了 365 年（創世記 5:23），後來被神接去，並非死去（創世記 5:24、希伯來書 11:5）。"
     },
     {
       "personId": "methuselah",
@@ -374,6 +391,7 @@
       "fatherId": "enoch",
       "birthAm": 687,
       "deathAm": 1656,
+      "endKind": "died",
       "lifespan": 969,
       "refs": [
         "Genesis 5:21",
@@ -393,6 +411,7 @@
       "fatherId": "methuselah",
       "birthAm": 874,
       "deathAm": 1651,
+      "endKind": "died",
       "lifespan": 777,
       "refs": [
         "Genesis 5:25",
@@ -412,6 +431,7 @@
       "fatherId": "lamech",
       "birthAm": 1056,
       "deathAm": 2006,
+      "endKind": "died",
       "lifespan": 950,
       "refs": [
         "Genesis 5:28-29",
@@ -431,6 +451,7 @@
       "fatherId": "noah",
       "birthAm": 1558,
       "deathAm": 2158,
+      "endKind": "died",
       "lifespan": 600,
       "refs": [
         "Genesis 5:32",
@@ -452,6 +473,7 @@
       "fatherId": "shem",
       "birthAm": 1658,
       "deathAm": 2096,
+      "endKind": "died",
       "lifespan": 438,
       "refs": [
         "Genesis 11:10",
@@ -472,6 +494,7 @@
       "fatherId": "arphaxad",
       "birthAm": 1693,
       "deathAm": 2126,
+      "endKind": "died",
       "lifespan": 433,
       "refs": [
         "Genesis 11:12",
@@ -492,6 +515,7 @@
       "fatherId": "shelah",
       "birthAm": 1723,
       "deathAm": 2187,
+      "endKind": "died",
       "lifespan": 464,
       "refs": [
         "Genesis 11:14",
@@ -512,6 +536,7 @@
       "fatherId": "eber",
       "birthAm": 1757,
       "deathAm": 1996,
+      "endKind": "died",
       "lifespan": 239,
       "refs": [
         "Genesis 11:16",
@@ -532,6 +557,7 @@
       "fatherId": "peleg",
       "birthAm": 1787,
       "deathAm": 2026,
+      "endKind": "died",
       "lifespan": 239,
       "refs": [
         "Genesis 11:18",
@@ -552,6 +578,7 @@
       "fatherId": "reu",
       "birthAm": 1819,
       "deathAm": 2049,
+      "endKind": "died",
       "lifespan": 230,
       "refs": [
         "Genesis 11:20",
@@ -572,6 +599,7 @@
       "fatherId": "serug",
       "birthAm": 1849,
       "deathAm": 1997,
+      "endKind": "died",
       "lifespan": 148,
       "refs": [
         "Genesis 11:22",
@@ -592,6 +620,7 @@
       "fatherId": "nahor_elder",
       "birthAm": 1878,
       "deathAm": 2083,
+      "endKind": "died",
       "lifespan": 205,
       "refs": [
         "Genesis 11:24",
@@ -611,6 +640,7 @@
       "fatherId": "terah",
       "birthAm": 2008,
       "deathAm": 2183,
+      "endKind": "died",
       "lifespan": 175,
       "refs": [
         "Genesis 11:26",
@@ -636,6 +666,7 @@
       "fatherId": "abraham",
       "birthAm": 2094,
       "deathAm": 2231,
+      "endKind": "died",
       "lifespan": 137,
       "refs": [
         "Genesis 16:16",
@@ -658,6 +689,7 @@
       "fatherId": "abraham",
       "birthAm": 2108,
       "deathAm": 2288,
+      "endKind": "died",
       "lifespan": 180,
       "refs": [
         "Genesis 21:5",
@@ -680,6 +712,7 @@
       "fatherId": "isaac",
       "birthAm": 2168,
       "deathAm": null,
+      "endKind": "unknown",
       "lifespan": null,
       "refs": [
         "Genesis 25:26"
@@ -698,6 +731,7 @@
       "fatherId": "isaac",
       "birthAm": 2168,
       "deathAm": 2315,
+      "endKind": "died",
       "lifespan": 147,
       "refs": [
         "Genesis 25:26",
@@ -720,6 +754,7 @@
       "fatherId": "jacob",
       "birthAm": 2259,
       "deathAm": 2369,
+      "endKind": "died",
       "lifespan": 110,
       "refs": [
         "Genesis 41:46",
@@ -747,6 +782,7 @@
       "anchorChildId": "isaac",
       "birthAm": 2018,
       "deathAm": 2145,
+      "endKind": "died",
       "lifespan": 127,
       "refs": [
         "Genesis 17:17",

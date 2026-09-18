@@ -7284,6 +7284,11 @@ const uiStrings = {
     'zh-Hans': '经文未记载卒年',
     'zh-Hant': '經文未記載卒年',
   },
+  'chronologyTranslated': {
+    'en': 'Taken by God',
+    'zh-Hans': '被神接去',
+    'zh-Hant': '被神接去',
+  },
   'chronologyNotInScripture': {
     'en': 'Not recorded in Scripture',
     'zh-Hans': '经文未记载',

@@ -2306,18 +2306,26 @@ class _ChronologyChartState extends State<ChronologyChart> {
                           color: scheme.onSurface.withValues(alpha: 0.85),
                         ),
                       ),
-                      Text(
-                        l.deathAm == null
-                            ? _s('chronologyDeathUnknown',
-                                'Death year not given in Scripture')
-                            : '${_s('chronologyDied', 'Died')} '
-                                '${formatChronologyYear(l.deathAm!, active, locale)}'
-                                ' · ${_s('chronologyLifespan', 'lived {n} years').replaceAll('{n}', '${l.lifespan}')}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: scheme.onSurface.withValues(alpha: 0.85),
-                        ),
-                      ),
+                      Builder(builder: (_) {
+                        // 'translated' is a real, stated deathAm year —
+                        // only Enoch's verb differs from "Died", never
+                        // whether the year is shown. See [Lifeline.endKind].
+                        final endVerb = l.endKind == 'translated'
+                            ? _s('chronologyTranslated', 'Taken by God')
+                            : _s('chronologyDied', 'Died');
+                        return Text(
+                          l.deathAm == null
+                              ? _s('chronologyDeathUnknown',
+                                  'Death year not given in Scripture')
+                              : '$endVerb '
+                                  '${formatChronologyYear(l.deathAm!, active, locale)}'
+                                  ' · ${_s('chronologyLifespan', 'lived {n} years').replaceAll('{n}', '${l.lifespan}')}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onSurface.withValues(alpha: 0.85),
+                          ),
+                        );
+                      }),
                       if (l.fatherId != null) ...[
                         Builder(builder: (_) {
                           final father = widget.data.lifelineById(l.fatherId!);
