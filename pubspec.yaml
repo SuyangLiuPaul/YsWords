@@ -1,7 +1,7 @@
 name: yahwehs_words
 description: "Yahweh's Words / 雅伟之言 — a bilingual Bible app to help you listen to His voice and abide in Him daily."
 publish_to: 'none'
-version: 1.6.21
+version: 1.6.22
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
